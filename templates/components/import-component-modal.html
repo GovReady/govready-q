@@ -1,5 +1,6 @@
 {% load static %}
 <div id="import_component_modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="invitation_modal_title" aria-hidden="true">
+
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -23,10 +24,11 @@
         </form>
       </div>
     </div>
-  </div>
+</div>
 </div>
 
 {% block scripts %}
+
 <script>
   function show_import_component_modal(callback) {
     var m = $('#import_component_modal');
@@ -44,8 +46,8 @@
     };
   }
 
-  function show_spinner() {
-    $("#import_loading_spinner").show();
-  }
-</script>
+        function show_spinner() {
+            $("#import_loading_spinner").show();
+        }
+    </script>
 {% endblock %}

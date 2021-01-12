@@ -32,7 +32,9 @@ jsonfield # MIT License
 dj_database_url # BSD License
 whitenoise # MIT License
 django-guardian # MIT License
+django-simple-history # BSD License
 pyinstrument # BSD License
+
 
 # Python Packages Developed by GovReady and/or Josh
 rtyaml # CC0

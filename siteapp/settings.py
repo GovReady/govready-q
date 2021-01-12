@@ -102,6 +102,7 @@ THIRD_PARTY_APPS = [
 	'allauth',
 	'allauth.account',
 	'allauth.socialaccount',
+	'simple_history',
 	# add any allauth social providers as you like
 ]
 
@@ -131,6 +132,7 @@ MIDDLEWARE = [
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'simple_history.middleware.HistoryRequestMiddleware',
 	'pyinstrument.middleware.ProfilerMiddleware',
 ]
 if environment["debug"] and os.path.exists(os.path.join(os.path.dirname(__file__), 'helper_middleware.py')):
