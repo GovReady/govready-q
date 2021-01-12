@@ -539,7 +539,7 @@ class ComponentImporter(object):
 
         component_name = component_json['name']
         while Element.objects.filter(name=component_name).count() > 0:
-            component_name = increment_component_name(component_name)
+            component_name = increment_element_name(component_name)
 
         new_component = Element.objects.create(
             name=component_name,
@@ -2457,7 +2457,16 @@ def project_import(request, project_id):
             new_project.root_task = root_task
             # Need new element to for the new System
             element = Element()
-            element.name = new_project.title
+            project_names = Element.objects.filter(element_type="system").values_list('name', flat=True)
+            # If it is a new title just make that the new system name otherwise increment
+            new_title = new_project.title
+            if new_title not in project_names:
+                new_title = new_project.title
+            else:
+                while new_title in project_names:
+                    new_title = increment_element_name(new_title)
+
+            element.name = new_title
             element.element_type = "system"
             element.save()
             # Create system
@@ -2469,9 +2478,6 @@ def project_import(request, project_id):
             project.save()
             messages.add_message(request, messages.INFO, f'Created a new project with id: {project.id}.')
 
-        system_id = project.system.id
-        # Retrieve identified System
-        system = System.objects.get(id=system_id)
         #Import questionnaire data
         log_output = []
         try:
@@ -2497,7 +2503,8 @@ def project_import(request, project_id):
             # Load and get the components then dump
             for k, val in enumerate(loaded_imported_jsondata.get('component-definitions')):
                 oscal_component_json = json.dumps(loaded_imported_jsondata.get('component-definitions')[k])
-                result = ComponentImporter().import_component_as_json(oscal_component_json, request)
+                import_name = request.POST.get('import_name', '')
+                result = ComponentImporter().import_components_as_json(import_name, oscal_component_json, request)
 
         return HttpResponseRedirect("/projects")
 
