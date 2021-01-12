@@ -698,7 +698,6 @@ class OrgParamTests(TestCase):
         parameter_values = project.get_parameter_values(Catalogs.NIST_SP_800_53_rev4)
         self.assertEquals(parameter_values["ac-1_prm_2"], "at least every 100 years")
 
-
 class ControlComponentTests(OrganizationSiteFunctionalTests):
 
     def create_test_statement(self, sid, sid_class, body, statement_type, status):

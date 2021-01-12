@@ -40,7 +40,6 @@ class SystemException(Exception):
     """Class for raising custom exceptions with Systems"""
     pass
 
-
 class Statement(models.Model):
     sid = models.CharField(max_length=100, help_text="Statement identifier such as OSCAL formatted Control ID", unique=False, blank=True, null=True)
     sid_class = models.CharField(max_length=200, help_text="Statement identifier 'class' such as 'NIST_SP-800-53_rev4' or other OSCAL catalog name Control ID.", unique=False, blank=True, null=True)
@@ -664,7 +663,6 @@ class OrgParams(object):
     
     def get_params(self, name):
         return self.cache.get(name, {})
-
 
 class Poam(models.Model):
     statement = models.OneToOneField(Statement, related_name="poam", unique=False, blank=True, null=True, on_delete=models.CASCADE, help_text="The Poam details for this statement. Statement must be type Poam.")
