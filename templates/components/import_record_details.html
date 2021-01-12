@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} Import Records
+{% endblock %}
+
+{% block head %}
+{% include "controls/_style-controls.html" %}
+
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+
+<div class="portfolio-top">
+  <div class="container">
+    <div class="portfolio-main">
+      <a class="btn" href="{% url 'import_records' %}">&#171; Back to All Import Records</a>
+    </div>
+
+    <h2>Import Record ID: {{ import_record.id }}</h2>
+    <h3>{{ import_record.name }}</h3>
+    <h3>{{ import_record.created }}</h3>
+    <br>
+
+  {% if component_statements|length > 0 %}
+    <p>This import includes {{ component_statements|length }} components{{ component|pluralize }}.</p>
+  {% else %}
+    <p>This import did not include any components.</p>
+  {% endif %}
+
+  <div id="tab-content" class="row rows-header" style="">
+    <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">Imported Component</div>
+    <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">Statements Imported</div>
+  </div>
+  {% for component, statements in component_statements.items %}
+    <div id="tab-content" class="row row-control" style="">
+      <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+        <a href="/controls/components/{{ component.id }}">{{ component.name }}</a>
+      </div>
+      <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">{{ statements|length }} statement{{ statements|pluralize }}</div>
+    </div>
+  {% endfor %}
+
+  <a id="delete-import" class="btn btn-danger" href="{% url 'confirm_import_record_delete' import_record.id %}">Delete</a>
+
+  {{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

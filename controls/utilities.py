@@ -78,3 +78,27 @@ def oscalize_catalog_key(catalogkey):
         catalogkey = split_key_list[0] + "-800-" + split_key_list[1]
 
     return catalogkey
+
+
+def get_control_statement_part(control_stmnt_id):
+    """ Parses part from control statement id
+    ra-5_smt.a --> a
+    """
+
+    if "." not in control_stmnt_id and "_" not in control_stmnt_id:
+        return control_stmnt_id
+
+    # Portion after the '_smt.' is the part
+    split_stmnt = control_stmnt_id.split("_smt.")
+    return split_stmnt[1] if len(split_stmnt) > 1 else ""
+
+
+def increment_component_name(component_name):
+    """Increments a Component Name by adding (1)"""
+
+    if re.search("\((\d+)\)$", component_name):
+        new_component_name = re.sub("\((\d+)\)$", lambda m: " (" + str(int(m.groups()[0])+1) + ")", component_name)
+    else:
+        new_component_name = component_name + " (1)"
+
+    return new_component_name

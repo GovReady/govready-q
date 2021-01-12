@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} Confirm Import Delete
+{% endblock %}
+
+{% block head %}
+{% include "controls/_style-controls.html" %}
+
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+    <h2 class="">Confirm Import Delete: Import Record {{ import_record.id }}</h2>
+    <h3>{{ import_record.created }}</h3>
+
+    <p>This import includes {{ component_count }} components{{ component|pluralize }} and {{ statement_count }} statements{{ statement|pluralize }}.</p>
+
+  <a id="cancel-import-delete" class="btn btn-default" href="{% url 'component_library' %}">Cancel</a>
+  <a id="confirm-import-delete" class="btn btn-danger" href="{% url 'import_record_delete' import_record.id %}">Delete</a>
+
+  {{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
