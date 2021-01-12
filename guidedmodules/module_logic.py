@@ -1,3 +1,6 @@
+import uuid
+from itertools import groupby
+
 from django.conf import settings
 from jinja2.sandbox import SandboxedEnvironment
 
@@ -283,6 +286,70 @@ def get_question_context(answers, question):
     return context_sorted
 
 
+def oscal_context(answers):
+    if not hasattr(answers, 'task'):
+        return dict()
+    
+    system = answers.task.project.system
+
+    def _component(e):
+        return {
+            'uuid': e.uuid,
+            'title': e.name,
+            'description': e.description,
+            'state': ''
+        }
+    components = [_component(e) for e in system.producer_elements]
+    statements = system.root_element.statements_consumed \
+                                    .filter(statement_type="control_implementation") \
+                                    .order_by('pid')
+    grouped_by_control = groupby(statements, lambda s: s.sid)
+    implemented_requirements = []
+    for control_id, group in grouped_by_control:
+        ir = {
+            "control_id": control_id,
+            "uuid": str(uuid.uuid4()),
+            "statements": []
+        }
+
+        for pid, group in groupby(sorted(group, key=lambda s: s.pid),
+                                 lambda s: s.pid):
+            group = list(group)
+            first_statement = group[0]
+            statement = {
+                "id": first_statement.oscal_statement_id,
+                "uuid": str(first_statement.uuid),
+                "by_components": []
+            }
+            for s in group:
+                by_component = {
+                    "component_uuid": s.producer_element.uuid,
+                    "description": s.body
+                }
+                statement["by_components"].append(by_component)
+            ir['statements'].append(statement)
+        implemented_requirements.append(ir)
+
+    return {
+        "make_uuid": uuid.uuid4,
+        "version": "OSCAL VERSION", # version of ssp
+        "profile": "OSCAL PROFILE", # baseline
+        "last_modified": "OSCAL LAST MODIFIED", # SSP last modified
+        "system_id": "OSCAL SYSTEM ID",         # system id
+        "system_information_type_title": "OSCAL SIT TITLE",
+        "system_information_type_description": "OSCAL SIT DESC",
+        "system_information_type_confidentiality_impact": "OSCAL SIT CONF",
+        "system_information_type_integrity_impact": "OSCAL SIT INT",
+        "system_information_type_availability_impact": "OSCAL SIT AVAIL",
+        "system_authorization_boundary": "OSCAL AUTH BOUNDARY",
+        "system_security_impact_level_confidentiality": "OSCAL SIL CONF",
+        "system_security_impact_level_integrity": "OSCAL SIL INT",
+        "system_security_impact_level_availability": "OSCAL SIL AVAIL",
+        "components": components,
+        "implemented_requirements": implemented_requirements
+    }
+
+
 def render_content(content, answers, output_format, source,
                    additional_context={}, demote_headings=True,
                    show_answer_metadata=False, use_data_urls=False,
@@ -470,6 +537,7 @@ def render_content(content, answers, output_format, source,
             # and loop over the items in the sequence. For each item, the "%body" key
             # of this object is rendered with the context amended with variable name
             # assigned the sequence item.
+
             elif isinstance(value, dict) and isinstance(value.get("%for"), str):
                 # The value of the "%for" key is "variable in expression". Parse that
                 # first.
@@ -496,6 +564,41 @@ def render_content(content, answers, output_format, source,
                     for i, item in enumerate(seq)
                 ]
 
+            elif isinstance(value, dict) and isinstance(value.get("%dict"), str):
+                # The value of the "%dict" key is "variable in expression". Parse that
+                # first.
+                m = re.match(r"^(\w+) in (.*)", value.get("%dict"), re.I)
+                if not m:
+                    raise ValueError("%dict directive needs 'variable in expression' value")
+                varname = m.group(1)
+                expr = m.group(2)
+
+                condition_func = compile_jinja2_expression(expr)
+                if output_format == "PARSE_ONLY":
+                    return value
+
+                # Evaluate the expression.
+                context.update(additional_context_2)
+                seq = condition_func(context)
+
+                # Render the %item key for each item in sequence.
+                retval = dict()
+                if "%item" not in value:
+                    raise ValueError("%dict directive missing %item")
+                item_value = value["%item"]
+                
+                for i, item in enumerate(seq):
+                    obj = walk(
+                        item_value,
+                        path+[str(i)],
+                        { **additional_context_2, **{ varname: item } })
+                    if "%key" not in obj:
+                        raise ValueError("%dict directive %item did not produce a %key")
+                    dict_key = obj.pop('%key')
+                    retval[dict_key] = obj
+
+                return retval
+            
             elif isinstance(value, dict) and isinstance(value.get("%if"), str):
                 # The value of the "%if" key is an expression.
                 condition_func = compile_jinja2_expression(value["%if"])
@@ -538,7 +641,9 @@ def render_content(content, answers, output_format, source,
 
         # Render the template. Recursively walk the JSON data structure and apply the walk()
         # function to each value in it.
-        value = walk(template_body, [])
+
+        oscal = oscal_context(answers)
+        value = walk(template_body, [], dict(oscal=oscal) if oscal else {})
 
         # If we're just testing parsing the template, return
         # any output now. Since the inner templates may have
@@ -659,6 +764,7 @@ def render_content(content, answers, output_format, source,
             for varname in get_jinja2_template_vars(template_body):
                 context.setdefault(varname, UndefinedReference(varname, errorfunc, [source]))
             # Now really render.
+
             output = template.render(context)
         except Exception as e:
             raise ValueError("There was an error executing the template %s: %s" % (source, str(e)))
@@ -1345,6 +1451,8 @@ class TemplateContext(Mapping):
                 # Retrieve the system object associated with this project
                 # Returned value must be a python dictionary
                 return self.module_answers.task.project.system
+            if item == "oscal":
+                return oscal_context(self.module_answers.task.project.system)
             if item in ("is_started", "is_finished"):
                 # These are methods on the Task instance. Don't
                 # call the method here because that leads to infinite
