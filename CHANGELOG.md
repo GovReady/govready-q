@@ -10,6 +10,7 @@ v.999 (January XX, 2021)
 **UI changes**
 
 * You can now click the history button in a given statement's panel in the controls selected implementation statement page or component library.
+* You can now import and export a project from a project's page or its settings page.
 
 **Developer changes**
 
