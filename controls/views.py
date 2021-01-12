@@ -27,6 +27,7 @@ from .forms import ImportOSCALComponentForm
 from .forms import StatementPoamForm, PoamForm, ElementForm
 from .models import *
 from .utilities import *
+from simple_history.utils import update_change_reason
 
 logging.basicConfig()
 import structlog
@@ -821,6 +822,11 @@ def restore_to_history(request, smt_id, history_id):
     Restore the current model instance to a previous version
     """
     full_smt_history = None
+    for query_key in request.POST:
+        if "restore" in query_key:
+            change_reason = request.POST.get(query_key, "")
+        else:
+            change_reason = None
     try:
         smt = Statement.objects.get(id=smt_id)
         recent_smt = smt.history.first()
@@ -832,6 +838,11 @@ def restore_to_history(request, smt_id, history_id):
         historical_smt = smt.history.get(history_id=history_id)
         # saving historical statement as a new instance
         historical_smt.instance.save()
+        # Update the reason for the new statement record
+        update_change_reason(smt.history.first().instance, change_reason)
+
+        logger.info( f"Change reason: {change_reason}")
+
         logger.info(
             f"Restoring the current statement with an id of {smt_id} to version with a history id of {history_id}")
         messages.add_message(request, messages.INFO,
@@ -847,8 +858,6 @@ def restore_to_history(request, smt_id, history_id):
             logger.info("{} changed from {} to {}".format(change.field, change.old, change.new))
     except ObjectDoesNotExist as ex:
         messages.add_message(request, messages.ERROR, f'{ex} Is this still a statement record in GovReady?')
-
-
 
     context = {
         "history_id": history_id,
