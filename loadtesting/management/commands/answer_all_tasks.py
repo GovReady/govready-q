@@ -22,7 +22,7 @@ class Command(BaseCommand):
         parser.add_argument('--impute', choices=['halt', 'skip', 'answer'], default='halt', help="specify 'halt' (the default) to abort on the first non-handled imputed question, 'skip' to ignore it and answer future questions, or 'answer' to answer it despite possibly being imputed")
         parser.add_argument('--quiet', action='store_true', help="Reduces verbosity")
         parser.add_argument('--delay', default=0, type=float, help="Number of seconds to wait between each action. Must be non-negative (0 is no delay)")
-        parser.add_argument('--task_ids', type=str, help="comma-separate list of ints. if provided, filter to only these tasks (`id` field in DB)")
+        parser.add_argument('--task_ids', type=str, help="comma-separated list of ints. if provided, filter to only these tasks (`id` field in DB)")
 
     def handle(self, *args, **options):
 
