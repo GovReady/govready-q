@@ -12,11 +12,11 @@ catalog:
   source_url: https://github.com/GovReady/GovReady-Q
   description:
     short: |
-      A simple pject used for testing
+      A simple project used for testing
 introduction:
   format: markdown
   template: |
-    A simple pject used for testing
+    A simple project used for testing
 questions:
 
   - id: simple_module
