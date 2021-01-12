@@ -911,7 +911,9 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         self._new_project()
 
         # Checks the number of projects and components before the import
-        self.assertEqual(Project.objects.all().count(), 3)
+        project_count_before_import = Project.objects.all().count()
+
+        self.assertEqual(project_count_before_import, 3)
         self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 0)
 
         ## Import a new project
@@ -919,18 +921,26 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         self.click_element("#action-buttons\ action-row > div.btn-group > button:nth-child(4)")
         ## select through the modal information needed and browse for the import needed
         self.select_option_by_visible_text("#id_appsource_compapp", "project")
-        self.browser.find_element_by_xpath("(//option[@value='3'])[2]").click()
+        # The selection variable found by id
+        select = Select(self.browser.find_element_by_id("id_appsource_compapp"))
+        # Select the last option by index
+        selectLen = len(select.options)
+        select.select_by_index(selectLen - 1)
         self.browser.find_element_by_id("id_importcheck").click()
-        #self.browser.find_element_by_id("id_file").click()
+
         file_input = self.browser.find_element_by_css_selector("#id_file")
 
         file_path = os.getcwd() + "/fixtures/test_project_import_data.json"
         # convert filepath if necessary and send keys
         self.filepath_conversion(file_input, file_path, "sendkeys")
+        select = Select(self.browser.find_element_by_id("id_appsource_version_id"))
+        # Select the last option by index
+        selectLen = len(select.options)
+        select.select_by_index(selectLen - 1)
         self.browser.find_element_by_id("import_component_submit").click()
 
         # Check the new number of projects, and validate that it's 1 more than the previous count.
-        self.assertEqual(Project.objects.all().count(), 4)
+        self.assertEqual(Project.objects.all().count(), project_count_before_import + 1)
         # Has the correct name?
         self.assertEqual(Project.objects.get(id=4).title, "New Test Project")
         # Components and their statements?
@@ -970,9 +980,11 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         self.browser.find_element_by_id("import_component_submit").click()
 
         # Check the new number of projects, and validate that it's the same
-        self.assertEqual(Project.objects.all().count(), 3)
+        project_num = Project.objects.all().count()
+        self.assertEqual(project_num, 3)
         # Has the updated name?
-        self.assertEqual(Project.objects.get(id=3).title, "New Test Project")
+        var_sleep(5)
+        self.assertEqual(Project.objects.all()[project_num-1].title, "New Test Project")
 
         # Components and their statements?
         self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 1)
