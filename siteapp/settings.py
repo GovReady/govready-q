@@ -122,6 +122,10 @@ except ImportError:
 if DEBUG:
 	PYINSTRUMENT_PROFILE_DIR = 'profiles'
 
+# profile every request and save the HTML output to the folder profiles
+if DEBUG:
+	PYINSTRUMENT_PROFILE_DIR = 'profiles'
+
 # Add standard middleware.
 MIDDLEWARE = [
 	'django.middleware.security.SecurityMiddleware',
