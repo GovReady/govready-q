@@ -97,7 +97,7 @@ class ImportProjectForm(forms.Form):
     file = forms.FileField(label="Select project file (.json)",
         widget=forms.FileInput(
             attrs={
-                'onchange': "fillJSONContent(this);",
+                'onchange': "fillProjectJSONContent(this);",
                 'accept':'application/json'
             }
         ),

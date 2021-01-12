@@ -8,6 +8,7 @@
             </div>
             <form id="project_import_form" action="{% url 'project_import' project.id %}" onsubmit="show_spinner();" role="form" method="POST">
                 {% csrf_token %}
+                  <input type="hidden" name="import_name" value=""/>
                 <div class="modal-body">
                     {{ import_project_form.file }}
                     <label for="{{ import_project_form.appsource_compapp.id }}">{{ import_project_form.appsource_compapp.label }}:</label>
@@ -39,8 +40,9 @@
             m.modal();
         }
 
-        function fillJSONContent(file) {
+        function fillProjectJSONContent(file) {
             filecontents = $('#{{import_project_form.file.auto_id}}').prop('files')[0];
+            $('input[name=import_name]').val(filecontents.name);
             var reader = new FileReader();
             reader.readAsText(filecontents);
             reader.onload = function (e) {
