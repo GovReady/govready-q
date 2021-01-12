@@ -107,16 +107,13 @@ def delete_objects(model):
     with open(_getpath(model), 'w') as file:
         file.write('');
 
-def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, quiet=False):
+def answer_randomly(task, dummy_user, overwrite=False, halt_impute=True, skip_impute=False, quiet=False):
     
     def log(item):
         if not quiet:
             print(item)
 
     current_answers = [x for x in task.get_current_answer_records()]
-
-    # sooo... sometimes we might have accidentally created a project with no admin. Use the org admin instead.
-    dummy_user = task.project.organization.get_organization_project().get_admins()[0]
 
     # we want to communicate back to the caller whether this was fully skipped or not
     did_anything = False
@@ -155,8 +152,8 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
             answer = [x['key'] for x in sample(choices, amount)]
         elif type == 'datagrid':
             choices = question.spec['fields']
-            amount = randint(question.spec['min'], len(fields))
-            answer = [x['key'] for x in sample(fields, amount)]
+            amount = randint(question.spec['min'], len(choices))
+            answer = [x['key'] for x in sample(choices, amount)]
         elif type == 'module' and 'module-id' in question.spec:
             subtask = task.get_or_create_subtask(dummy_user, question, create=True)
             log("doing subtask")
