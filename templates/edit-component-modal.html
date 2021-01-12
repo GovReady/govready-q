@@ -1,0 +1,40 @@
+<div id="edit-component-modal" class="modal"">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title" id="invitation_modal_title">Edit Component</h4>
+        </div>
+        <form role="form" method="get">
+           <div class="modal-body">
+            <div class="form-group" data-children-count="1">
+                <label class="control-label" for="id_name">Name</label>
+                <input type="text" name="name" maxlength="250" class="form-control" placeholder="Name" title="Common name or acronym of the element" required="" id="name-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0">
+                <div class="help-block">Common name or acronym of the element</div>
+            </div>
+            <div class="form-group" data-children-count="1">
+                <label class="control-label" for="id_name">Description</label>
+                <input type="text" name="name" maxlength="250" class="form-control" placeholder="Description" title="Common name or acronym of the element" required="" id="description-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0">
+                <div class="help-block">Brief description of the Element</div>
+            </div>
+           </div>
+           <div class="modal-footer">
+             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+             <button id="submit-btn" class="btn btn-success" type="submit">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {% block scripts %}
+  <script>
+    function show_edit_component_modal(name,description,callback) {
+      document.getElementById("name-input").value = name;
+      document.getElementById("description-input").value = description;
+      $('#edit-component-modal').modal();
+      $('#submit-btn').on('click', () => callback(document.getElementById("name-input").value,document.getElementById("description-input").value));
+    }
+  </script>
+  {% endblock %}

@@ -73,10 +73,10 @@ if test -f env/bin/activate
 then
 	source env/bin/activate;
 	pip3 install -r requirements.txt;
-elif [ -v $VIRTUALENV_ENV ]
+elif [ -v VIRTUALENV_ENV ]
 then
 	pip3 install -r requirements.txt;
-else 
+else
 	pip3 install --user -r requirements.txt;
 fi
 
