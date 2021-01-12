@@ -319,7 +319,8 @@ class Catalog (object):
             "guidance": self.get_control_prose_as_markdown(control, part_types={ "guidance" }),
             "catalog_file": self.catalog_file,
             "catalog_id": self.catalog_id,
-            "sort_id": self.get_control_property_by_name(control, "sort-id")
+            "sort_id": self.get_control_property_by_name(control, "sort-id"),
+            "label": self.get_control_property_by_name(control, "label")
         }
         # cl_dict = {"id": "te-1", "title": "Test Control"}
         return cl_dict

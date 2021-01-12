@@ -1,4 +1,6 @@
+import logging
 import requests
+import structlog
 import parsel
 from random import sample
 import re
@@ -11,6 +13,10 @@ from siteapp.urls import urlpatterns
 from django.urls.exceptions import Resolver404 as Resolver404
 
 from siteapp.models import *
+from guidedmodules.models import *
+
+logging.basicConfig()
+logger = get_logger()
 
 class WebClient():
     session = None
@@ -33,10 +39,21 @@ class WebClient():
 
     def _use_page(self, response):
         self.response = response
+        if (self.response.status_code != 200):
+            print("Got a non-200 response: {}".format(self.response.status_code))
+            if (self.response.status_code == 302):
+                print("proper URL: {}".format(self.response.url))
         self.selector = parsel.Selector(text=response.content.decode('utf-8'))
         self.html_debug(dir="/tmp/")
 
     def _resolve(self, req):
+        # see https://stackoverflow.com/a/12011907
+        # we might actually want to switch to the "test client" rather than RequstFactory
+        from django.contrib.messages.storage.fallback import FallbackStorage
+        setattr(req, 'session', 'session')
+        messages = FallbackStorage(req)
+        setattr(req, '_messages', messages)
+
         self.current_url = req.path
         for url in urlpatterns:
             try:
@@ -45,7 +62,7 @@ class WebClient():
                     self._use_page(match.func(req, *match.args, **match.kwargs))
                     return
             except Resolver404:
-                pass
+                logger.error(event="_resolve_path", msg="404: Failed to resolve url request path")
         raise Exception("{} not resolved".format(req.path))
 
     def load(self, path):
@@ -90,12 +107,8 @@ class WebClient():
     def add_system(self):
         portfolio = sample(list(self.user.portfolio_list()), 1)[0]
         print("Adding project to portfolio: {} (#{})".format(portfolio.title, portfolio.id))
-        self.post("/store", {"portfolio":portfolio.id})
-
-        form = sample(self.selector.css('[action^="/store/"]'), 1)[0]
-        self.form_by_ref(form)
+        self.post("/store/govready-q-files-startpack/System-Description-Demo?portfolio={}".format(portfolio.id), {"organization":self.org.slug})
         print(self.response.url)
-        #self.html_debug()
 
     def get_projects(self):
         if not self.projects:
@@ -108,7 +121,7 @@ class WebClient():
         
 
     def start_section_for_proj(self, id):
-        url = [x for x in self.get_projects() if x.startswith('/projects/{}/'.format(id))][0]
+        url = Project.objects.get(id=id).get_absolute_url()
         self.load(url)
         all_forms = self.selector.css('form.start-task')
         if len(all_forms) == 0:

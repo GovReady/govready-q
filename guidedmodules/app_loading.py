@@ -5,8 +5,11 @@
 
 import enum
 import json
+import logging
+import structlog
 import sys
 from collections import OrderedDict
+from structlog import get_logger
 
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
@@ -18,6 +21,9 @@ from .models import AppSource, AppVersion, ModuleAsset, \
 from .validate_module_specification import \
     validate_module, \
     ValidationError as ModuleValidationError
+
+logging.basicConfig()
+logger = get_logger()
 
 class AppImportUpdateMode(enum.Enum):
     CreateInstance = 1
@@ -96,7 +102,7 @@ def load_app_into_database(app, update_mode=AppImportUpdateMode.CreateInstance, 
         appinst.catalog_metadata\
             .setdefault("description", {})["long"] = readme
     except fs.errors.ResourceNotFound:
-        pass
+        logger.error(event="read_from_readme.md", msg="Failed to read README.md")
 
     # Update appinst. It may have been modified by extract_catalog_metadata
     # and by the loading of a README.md file.
@@ -163,7 +169,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
             m = Module.objects.get(app=appinst, module_name=spec['id'])
         except Module.DoesNotExist:
             # If it doesn't exist yet in the previous app, we'll just create it.
-            pass
+            logger.info(event="load_module_into_database", msg="module does not exist in database yet")
     if m:
         # What is the difference between the app's module and the module in the database?
         change = is_module_changed(m, app.store.source, spec)

@@ -1,0 +1,140 @@
+{
+  "component-definition": {
+    "metadata": {
+      "title": "Sample OSCAL for Testing",
+      "published": "2020-12-01T20:38:51+00:00",
+      "last-modified": "2020-12-01T20:25:29+00:00",
+      "version": "string",
+      "oscal-version": "1.0.0-milestone2"
+    },
+    "components": {
+      "098040f9-a453-4854-ad88-f093bb683dab": {
+        "name": "Test OSCAL Component1",
+        "component-type": "software",
+        "title": "",
+        "description": "This is a sample OSCAL component.",
+        "control-implementations": [
+          {
+            "uuid": "0ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "Valid Catalog, Partial implementation of NIST_SP-800-53_rev4",
+            "implemented-requirements": [
+              {
+                "uuid": "1ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+                "control-id": "ac-7",
+                "description": "Default statement description",
+                "remarks": "",
+                "statements" : {
+                  "ac-7_smt.a": {
+                    "uuid": "2ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+                    "description": "Part a description"
+                  },
+                  "ac-7_smt.b": {
+                    "uuid": "3ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+                    "description": "Part b description"
+                  }
+                },
+                "properties": [
+                  {
+                  "name": "n/a",
+                  "value": "test"
+                  }
+                ]
+              },
+              {
+                "uuid": "4ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+                "control-id": "ac-17(9)",
+                "description": "Sample extended control",
+                "remarks": "",
+                "statements" : {
+                  "ac-17(9)_smt.c": {
+                    "uuid": "5ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+                    "description": "Part c of a sample control extension."
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "uuid": "6ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+            "source": "NIST_SP-800-53_rev5",
+            "description": "Valid Catalog, Partial implementation of NIST_SP-800-53_rev5",
+            "implemented-requirements": [
+              {
+                "uuid": "7ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+                "control-id": "ac-7",
+                "description": "Default statement description",
+                "remarks": "",
+                "statements" : {
+                  "ac-7_smt.d": {
+                    "uuid": "8ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+                    "description": "Part d description"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "198040f9-a453-4854-ad88-f093bb683dab": {
+        "name": "Test OSCAL Component2",
+        "component-type": "software",
+        "title": "",
+        "description": "Sample Component #2 with invalid statements",
+        "control-implementations": [
+          {
+            "uuid": "9ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+            "source": "SMPL_SP-800-53_rev20",
+            "description": "Invalid Catalog",
+            "implemented-requirements": [
+              {
+                "uuid": "0bb0b252-90d3-4d2c-9785-0c4efb254dfc",
+                "control-id": "ac-5",
+                "description": "Allow a user 5 login attempts before locking them out.",
+                "remarks": "",
+                "statements" : {
+                  "ac-5_smt.d": {
+                    "uuid": "1bb0b252-90d3-4d2c-9785-0c4efb254dfc",
+                    "description": "Part d description"
+                  }
+                },
+                "properties": [
+                  {
+                  "name": "unused",
+                  "value": "x"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "2bb0b252-90d3-4d2c-9785-0c4efb254dfc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "Valid Catalog, Partial implementation of NIST_SP-800-53_rev4",
+            "implemented-requirements": [
+              {
+                "uuid": "3bb0b252-90d3-4d2c-9785-0c4efb254dfc",
+                "control-id": "xz-0",
+                "description": "Invalid Control ID",
+                "remarks": "",
+                "statements" : {
+                  "xz-0_smt.d": {
+                    "uuid": "4bb0b252-90d3-4d2c-9785-0c4efb254dfc",
+                    "description": "Part d description"
+                  }
+                },
+                "properties": [
+                  {
+                  "name": "unused",
+                  "value": "x"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "back-matter": []
+}

@@ -3,5 +3,5 @@
   "govready-url": "http://example.com:8000",
   "debug": false,
   "secret-key": "-8=7$%xri9_279=lop8+22zd7a1gb+ff5^oyi1s-#2drd_=sk=",
-  "static": "/home/govready-q/govready-q/siteapp/static"
+  "static": "/home/govready-q/govready-q/static_root"
 }

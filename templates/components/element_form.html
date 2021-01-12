@@ -1,0 +1,46 @@
+{% extends "../base.html" %}
+{% load bootstrap3 %}
+
+{% block title %}
+Create System Element (a.k.a. Component)
+{% endblock %}
+
+{% block body-wide %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-3 portfolio-org-col ">
+            <h2>New Component (aka Element)</h2>
+            <p>A discrete identifiable information technology or organizational asset that represents a building block of a system and may include hardware, software, firmware, policies, and teams.</p>
+        </div>
+
+        <div class="col-md-9 portfolio-org-col ">
+            <div class="well">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type=hidden name=action value=neworg>
+                    {% bootstrap_form form %}
+                    <p><button type="submit" id="create-portfolio-button" class="btn btn-success">Create &raquo;</button></p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $('#id_name').on('keyup', function () {
+        var slug = $(this).val();
+        slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "-").replace(/^-+/, "").replace(/-+$/, "");
+        $('#id_slug').val(slug);
+    })
+
+    {% if request.method == "POST" %}
+    smooth_scroll_to($('input[name=action][value={{request.POST.action|escapejs}}]').parent('form'));
+    {% endif %}
+</script>
+{% endblock %}
