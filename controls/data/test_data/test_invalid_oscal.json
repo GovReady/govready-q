@@ -1,0 +1,57 @@
+{
+  "invalid-item": "invalid item",
+  "component-definition": {
+    "metadata": {
+      "title": "Sample OSCAL JSON for Testing",
+      "published": "2020-12-01T20:38:51+00:00",
+      "last-modified": "2020-12-01T20:25:29+00:00",
+      "version": "string",
+      "oscal-version": "1.0.0-milestone2"
+    },
+    "components": {
+      "123456a7-b890-1234-cd56-e789fa012bcd": {
+        "name": "Test Component",
+        "component-type": "software",
+        "title": "",
+        "description": "This is a sample OSCAL component used for testing.",
+        "control-implementations": [
+          {
+            "uuid": "1ab2c345-67d8-9e0f-1234-5a6bcd789efa",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "A sample control implementation of NIST_SP-800-53_rev4",
+            "implemented-requirements": [
+              {
+                "uuid": "1ab2c345-67d8-9e0f-1234-5a6bcd789efa",
+                "control-id": "ac-7",
+                "description": "Creates a sample implementation statement for use in testing the component import feature.",
+                "remarks": "",
+                "properties": {
+                  "name": "label",
+                  "value": "a"
+                }
+              }
+            ]
+          },
+          {
+            "uuid": "2bc3d456-78e9-0f1a-2345-6b7cde890fab",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "A second sample control implementation of NIST_SP-800-53_rev4",
+            "implemented-requirements": [
+              {
+                "uuid": "2bc3d456-78e9-0f1a-2345-6b7cde890fab",
+                "control-id": "ac-7",
+                "description": "Creates a second sample implementation statement for use in testing the component import feature.",
+                "remarks": "",
+                "properties": {
+                  "name": "label",
+                  "value": "a"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "back-matter": []
+}

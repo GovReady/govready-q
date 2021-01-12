@@ -19,7 +19,7 @@ Welcome to Compliance Automation
             <div class="well">
                 <form method="post">
                     {% csrf_token %}
-                    <input type=hidden name=action value=neworg>
+                    <input type=hidden name=action value=newportfolio>
                     {% bootstrap_form form %}
                     <p><button type="submit" id="create-portfolio-button" class="btn btn-success">Next &raquo;</button></p>
                 </form>

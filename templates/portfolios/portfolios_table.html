@@ -8,7 +8,7 @@
   <div class="col-xs-10 col-md-5"><strong>Portfolio</strong></div>
   <div class="col-xs-6 col-sm-1"><strong>ID</strong></div>
   <div class="col-xs-6 col-sm-2"><strong>Role</strong></div>
-  <div class="col-md-2">&nbsp;</div>
+  <div class="col-xs-6 col-sm-2"><strong>Manage</strong></div>
   <div class="col-xs-12 col-md-2"><strong>Created</strong></div>
 </div>
 {% endif %}
@@ -18,7 +18,7 @@
 
     <div class="col-xs-10 col-md-5">
       <div>
-        <span class="glyphicon glyphicon-folder-close"></span>&nbsp;&nbsp;&nbsp;
+        <span class="glyphicon glyphicon-folder-close"></span>
         <a href="/portfolios/{{portfolio.id}}/projects" id="portfolio_{{portfolio.title}}" class="portfolio-project-link">{{portfolio.title}}</a>
       </div>
     </div>
@@ -28,12 +28,22 @@
     {% get_obj_perms request.user for portfolio as "perms" %}
     {% if "can_grant_portfolio_owner_permission" in perms %}
     <div class="col-md-2">Owner</div>
+        <div class="col-md-2">
+            <a id="" class="portfolio-project-link" href="{% url "edit_portfolio" portfolio.id %}" title="Edit portfolio" aria-label="Edit portfolio" ><span class="glyphicon glyphicon-pencil"></span></a>
+        </div>
     {% elif "change_portfolio" in perms%}
     <div class="col-md-2">Portfolio Member</div>
+    <div class="col-md-2">
+        <div class="col-md-2">
+            <a id="" class="portfolio-project-link" href="{% url "edit_portfolio" portfolio.id %}" title="Edit portfolio" aria-label="Edit portfolio"><span class="glyphicon glyphicon-pencil"></span></a>
+        </div>
     {% else %}
     <div class="col-md-2">Project Member</div>
+        <div class="col-md-2">
+            <span class="glyphicon glyphicon-minus"></span>
+        No Permission
+        </div>
     {% endif %}
-    <div class="col-md-2">&nbsp;</div>
 
     <div class="col-xs-12 col-md-2 left-text">
         {{portfolio.created|naturaltime}}</div>

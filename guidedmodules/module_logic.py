@@ -571,7 +571,7 @@ def render_content(content, answers, output_format, source,
         else:
             raise ValueError("Cannot render %s to %s in %s." % (template_format, output_format, source))
 
-    elif template_format in ("text", "markdown", "html", "oscal_json", "oscal_xml"):
+    elif template_format in ("text", "markdown", "html", "xml"):
         # The plain-text and HTML template types are rendered using Jinja2.
         #
         # The only difference is in how escaping of substituted variables works.
@@ -581,7 +581,7 @@ def render_content(content, answers, output_format, source,
         # For other values we perform standard HTML escaping.
         import jinja2
 
-        if template_format in ("text", "markdown", "oscal_json", "oscal_xml"):
+        if template_format in ("text", "markdown", "xml"):
             def escapefunc(question, task, has_answer, answerobj, value):
                 # Don't perform any escaping. The caller will wrap the
                 # result in jinja2.Markup().
@@ -680,16 +680,7 @@ def render_content(content, answers, output_format, source,
             elif output_format == "markdown":
                 # markdown => markdown -- nothing to do
                 return output
-        elif template_format == "oscal_json":
-            if output_format == "text":
-                # TODO: markdown => text, for now just return the Markdown markup
-                return output
-            elif output_format == "markdown":
-                # markdown => markdown -- nothing to do
-                return output
-            # markdown => html never occurs because we convert the Markdown to
-            # HTML earlier and then we see it as html => html.
-        elif template_format == "oscal_xml":
+        elif template_format == "xml":
             if output_format == "text":
                 # TODO: markdown => text, for now just return the Markdown markup
                 return output

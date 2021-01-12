@@ -62,7 +62,7 @@
                 Available documents
               </a>
               <div class="pull-right">
-                <a id="force-refresh" class="btn btn-success btn-sm" onclick="refresh_output_doc({{project.root_task.module.app.id}});return false;"><span class="glyphicon glyphicon-refresh"></span> Force Refresh</a>
+                <button type="button" id="force-refresh" class="btn btn-warning btn-xs" onclick="refresh_output_doc({{project.root_task.module.app.id}});return false;"> Refresh documents <span class="glyphicon glyphicon-refresh"></span></button>
               </div>
             </h4>
           </div>
@@ -81,9 +81,12 @@
                         <td>{{document.title}}</td>
                         <td>
                           {% if document.format == "json" %}
-                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/plain">OSCAL (json)</a>&nbsp;&nbsp;
-                          {% elif document.format == "oscal_xml" %}
-                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/oscal_xml">OSCAL (xml)</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/json">OSCAL (json)</a>&nbsp;&nbsp;
+                            <!-- <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/plain">View as text</a>&nbsp;&nbsp; -->
+                          {% elif document.format == "yaml" %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/yaml">Download OSCAL (yaml)</a>&nbsp;&nbsp;
+                          {% elif document.format == "xml" %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/xml">OSCAL (xml)</a>&nbsp;&nbsp;
                           {% else %}
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (docx)</a>&nbsp;&nbsp;
                             {% if gr_pdf_generator == 'wkhtmltopdf' %}<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/pdf">PDF</a>&nbsp;&nbsp;{% endif %}
