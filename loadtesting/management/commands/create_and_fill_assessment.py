@@ -66,8 +66,8 @@ class Command(BaseCommand):
             echo_section('Filling assessments (tasks, pass #2)...')
             call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org_slug, '--delay', options['action_delay'], '--task_ids', task_ids)
             ans_t1 = time.time()
-            with open('benchmark.tmp', 'a') as file:
-                file.write("add_system: {} sec\n".format(sys_t1 - sys_t0))
-                file.write("start_section: {} sec\n".format(assess_t1 - assess_t0))
-                file.write("answer_all_tasks: {} sec\n".format(ans_t1 - ans_t0))
-                file.write("\n")
+            # with open('benchmark.tmp', 'a') as file:
+            #     file.write("add_system: {} sec\n".format(sys_t1 - sys_t0))
+            #     file.write("start_section: {} sec\n".format(assess_t1 - assess_t0))
+            #     file.write("answer_all_tasks: {} sec\n".format(ans_t1 - ans_t0))
+            #     file.write("\n")
