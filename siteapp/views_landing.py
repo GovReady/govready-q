@@ -52,8 +52,10 @@ def homepage(request):
                 if not request.user.is_authenticated:
                     # Create account.
                     new_user = signup_form.save(request)
-                    # Gives the new user the permission to view appsources
+                    # Add default permission, view AppSource
                     new_user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
+                    new_user.save()
+
                     # Log them in.
                     from django.contrib.auth import authenticate, login
                     user = authenticate(request, username=signup_form.cleaned_data['username'], password=signup_form.cleaned_data['password1'])
