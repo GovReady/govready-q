@@ -10,6 +10,7 @@ ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSIO
 
 **Feature changes**
 
+* Add default Organizational Defined Parameter values.
 * Track batch imports of components (via OSCAL) into component library for tracking and management purposes; enable deletes of batch imports.
 * Support defining multiple allowed hosts via the `local/environment.json` file.
 * Allow administrators to change component name and description in Component Library.
@@ -33,6 +34,7 @@ ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSIO
 
 **Data changes**
 
+* Add default Organizational Defined Parameter values.
 * Add `validators` argument to the `file` field in the Attachment model.
 * Add `history` field in the Statement model. This is the source for the new HistoricalStatement table that captures all Statement history.
 
@@ -51,6 +53,7 @@ ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSIO
 * Update various Python libraries.
 * Added file extension, size and type validation for Comment Attachment uploads.
 * Introducing request profiling with pyinstrument.
+* Add default `controls.models.OrgParams` class to support basic, default generation of orgizational defined parameters.
 
 **Bug fixes**
 
@@ -58,13 +61,6 @@ ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSIO
 * Fix display of OSCAL into correct tab on system's component's page
 * When generating OSCAL component files, emit `statement` elements with ids that correlate with the control catalog.
 * New non-admin users did not have the permission to view appsource. Added permission after the new user is created with the SignupForm from allauth.account.forms.
-
-
-Add default Organizational Defined Parameter values.
-
-**Developer changes**
-
-* Add default `controls.models.OrgParams` class to support basic, default generation of orgizational defined parameters.
 
 v.0.9.1.48.1 (December 17, 2020)
 --------------------------------
