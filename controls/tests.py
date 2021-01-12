@@ -149,7 +149,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.json_download = \
             self.download_path / PurePath(slugify(self.component_name)).with_suffix(".json")
-        print("********* self.json_download", self.json_download)
+        # print("********* self.json_download", self.json_download)
 
         # we need a system and a component
         root_element = Element(name="My Root Element",
@@ -211,6 +211,11 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         var_sleep(2)            # need to wait for download, alas
         # assert download exists!
         try:
+            # The following test FAILS on MacOS when tests run in HEADLESS mode.
+            # Test passes when tests run in visible mode.
+            # See: https://github.com/SeleniumHQ/selenium/issues/5292#issuecomment-544264234
+            # To use visible mode, add to environment.json file ` "test_visible": true `
+            # See: https://govready-q.readthedocs.io/en/latest/testing-for-govready-q/automated-testing.html#for-developers
             self.assertTrue(self.json_download.is_file())
             filetoopen = self.json_download
         except:
