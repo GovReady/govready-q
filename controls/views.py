@@ -848,8 +848,6 @@ def restore_to_history(request, smt_id, history_id):
     except ObjectDoesNotExist as ex:
         messages.add_message(request, messages.ERROR, f'{ex} Is this still a statement record in GovReady?')
 
-
-
     context = {
         "history_id": history_id,
         "smt_id": smt_id,
