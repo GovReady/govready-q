@@ -108,7 +108,7 @@
       <div class="col-sm-2">
         <div id="btn-edit-title" style="text-align: center;">
           {% if is_admin %}
-            <button class="btn btn-default btn-small" id="edit-button" onclick="return rename_component();">Edit</button>
+            <button class="btn btn-default btn-small" id="edit-button" onclick="return edit_component();">Edit</button>
           {% endif %}
         </div>
       </div>
@@ -282,13 +282,13 @@
                           onchange="$('#producer_element-panel_num-title').text($(this).val());" value="{{ element.name }}">
                       </div>
                       <div class="form-group">
-                        <label for="component">Control</label>
-                        <select class=form-control id="sid_panel_num" name="sid" style="">
-                          {% for ctl in catalog_controls %}
-                            <option value='{{ ctl.id }}'>{{ ctl.id|upper }} - {{ ctl.title }}</option>
-                          {% endfor %}
+                        <label for="control-selection">Control</label>
+                        <select class="form-control control-select" id="sid_control_panel_num" name="sid" style="width:580px;" onchange="set_catalog_key($('#sid_control_panel_num option:selected').text(), '#sid_class_panel_num');return false;">
+                          set_catalog_key(display_text)
+                          <option value=''>Select a control</option>
                         </select>
                         <input type="hidden" id="sid_class_panel_num" name="sid_class" prompt="Enter catalog_key" value="{{ catalog_key }}">
+                        <input type="hidden" id="form_source_panel_num" name="form_source" prompt="Form source" value="component_library">
                       </div>
                       <div class="form-group">
                         <input type="hidden" id="smt_id" name="smt_id" value="">
@@ -327,6 +327,58 @@
               </div>
             </div>`.replace(/panel_num/g, panel_num);
           $( "#smt-list" ).append(smt_form);
+
+          $(".control-select").select2({
+                  ajax: {
+                      url: "/controls/api/controlsselect/",
+                      dataType: 'json',
+                      delay: 250,
+                      data: function(params) {
+                          return {
+                              q: params.term // search term
+                          };
+                      },
+                      processResults: function(data, params) {
+                        console.log(data.data.controls.length)
+                        // data.data.controls.forEach(function(item, index, array) {
+                        //   console.log(item, index)
+                        // });
+                        console.log("params: "+params);
+                          // parse the results into the format expected by Select2
+                          // since we are using custom formatting functions we do not need to
+                          // alter the remote JSON data, except to indicate that infinite
+                          // scrolling can be used
+                          var resData = [];
+                          data.data.controls.forEach(function(value) {
+                              if (value.display_text.indexOf(params.term) != -1)
+                                  resData.push(value)
+                          })
+                          return {
+                              results: $.map(resData, function(item) {
+                                  return {
+                                      text: item.display_text,
+                                      id: item.id
+                                  }
+                              })
+                          };
+                      },
+                      cache: true
+                  },
+                  minimumInputLength: 1
+              });
+        }
+
+        function set_catalog_key(display_text, element) {
+          // Determine the catalog from the selected display_text
+          console.log(display_text);
+          // Split text
+          dtv = display_text.split(' - ');
+          console.log(dtv)
+          ck = dtv[2]
+          console.log(ck)
+          //$('#sid_class_panel_num').val('NIST_SP-800-53_rev4')
+          console.log(element)
+          $(element).val(ck)
         }
 
         function save_smt(smt_panel_num) {
@@ -417,24 +469,30 @@
               }
           }
         }
-        function rename_component() {
-          var new_name = prompt("Rename this component?", "{{element.name|escapejs}}");
-          if (new_name === null || new_name == "{{element.name|escapejs}}") return;
-          ajax_with_indicator({
-            url: '{% url "rename_element" element.id %}',
-            method: "POST",
-            data: {name: new_name},
-            keep_indicator_forever: true,
-            success: function() {
-              window.location.reload();
-            }
+        function edit_component() {
+          show_edit_component_modal("{{element.name}}","{{element.description}}",(newName, newDescription)=>{
+            ajax_with_indicator({
+              url: '{% url "rename_element" element.id %}',
+              method: "POST",
+              data: {name: newName,description: newDescription},
+              keep_indicator_forever: true,
+              success: function() {
+                window.location.reload();
+              }
+            });
           });
         }
       </script>
-      <script>
+
+
+<script src="{% static "vendor/js/select2.min.js" %}"></script>
+    <link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
+
+    <script>
         $( document ).ready(function() {
             //console.log("document ready");
         });
 
-      </script>
+    </script>
+
 {% endblock %}

@@ -135,7 +135,7 @@
           </div>
           <div id="discussion-your-comment-tips">
 
-            <label for="discussion-attach-file"><span class="glyphicon glyphicon-paperclip" style="margin-right: 3px"></span>Attach a File</label>
+            <label for="discussion-attach-file"><span class="glyphicon glyphicon-paperclip" style="margin-right: 3px"></span> <span href="#" title="Accepted file types are: ZIP, PDF, PNG, JPG, DOC, DOCX, XLS, XLSX, CSV, PPT, PPTX ">Attach a File</span></label>
             <div style="display: none"><input name="value" type="file" id="discussion-attach-file" multiple onchange="attach_files(this.files)" /></div>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <span>formatting:</span>
@@ -989,7 +989,7 @@ function attach_files(files) {
     data.append("draft", draft_state.id);
     for (var i = 0; i < files.length; i++)
       data.append("file" + i, files[i])
-    
+
     // Submit the ajax request.
     ajax_with_indicator({
       url: "{% url 'discussion-comment-create-attachments' %}",
@@ -1001,7 +1001,7 @@ function attach_files(files) {
           var attachment = res[key];
           var ins;
           if (attachment.is_image)
-            ins = "\n![Uploaded File](attachment:" + attachment.id + ")\n";
+            ins = "\n![Uploaded Image File](attachment:" + attachment.id + ")\n";
           else
             ins = " [" + attachment.original_fn.replace(/[\\[\]]/g, "") + "](attachment:" + attachment.id + ") ";
           $('#discussion-your-comment').insertAtCaret(ins);
@@ -1012,7 +1012,11 @@ function attach_files(files) {
       },
       complete: function() {
         disable_enable_submit_comment_controls(false);
-      }
+      },
+        error: function(res){
+          var errorjson = $.parseJSON(res);
+            show_modal_error("Attachment Error", errorjson["message"]);
+        }
     });
   }, function() {
     // update_draft error handler
