@@ -44,7 +44,7 @@ RUN \
     && yum clean all && rm -rf /var/cache/yum
 
 # Upgrade pip to version 20.1+ - IMPORTANT
-python3 -m pip install --upgrade pip
+RUN python3.6 -m pip install --upgrade pip
 
 # install wkhtmltopdf for generating PDFs, thumbnails
 # TAKE CAUTION WITH wkhtmltopdf security issues where crafted content renders server-side information
