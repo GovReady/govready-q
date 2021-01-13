@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v999 (January xxx, 2021)
+-----------------------------
+
+**Developer changes**
+
+* Created a recursive method `wait_for` that wraps around other functions allowing for drastically shorter wait times necessary compared to peppering var_sleeps.
+
 v.0.9.1.49 (January 12, 2021)
 -----------------------------
 
