@@ -575,10 +575,11 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.wait_for(lambda: self.assertInNodeText("The email address is not valid.", "#global_modal") )# make sure we get a stern message.
         self.wait_for(lambda: self.click_element("#global_modal button") )# dismiss the warning.
 
-        self.wait_for(lambda:  self.click_element("#show-project-invite") )# Re-open the invite box.
+        self.wait_for(lambda: self.click_element("#show-project-invite") )# Re-open the invite box.
         self.browser.execute_script("invite_user_into_project()") # See comment above.
         # Toggle field to invite user by email
-        self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
+
+        self.wait_for(lambda: self.browser.execute_script("$('#invite-user-email').parent().toggle(true)") )
 
         do_invitation(self.user2.email)
         self.fill_field("#id_login", self.user2.username)
