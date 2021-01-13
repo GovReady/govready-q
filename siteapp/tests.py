@@ -15,7 +15,9 @@ import os.path
 import pathlib
 import re
 import tempfile
+import time
 import selenium.webdriver
+from selenium.common.exceptions import WebDriverException
 from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
@@ -29,7 +31,7 @@ from tools.utils.linux_to_dos import convert_w
 
 def var_sleep(duration):
     '''
-    Tweak sleep globally by multple, a fraction, or depend on env
+    Tweak sleep globally by multiple, a fraction, or depend on env
     '''
     from time import sleep
     sleep(duration*2)
@@ -149,7 +151,7 @@ class SeleniumTest(StaticLiveServerTestCase):
         elem = self.browser.find_element_by_css_selector(css_selector)
         self.browser.execute_script("arguments[0].scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });", elem)
         elem.click()
-        
+
     def find_selected_option(self, css_selector):
         selected_option = self.browser.find_element_by_css_selector(f"{css_selector}")
         return selected_option
@@ -249,12 +251,12 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Load the Q modules from the fixtures directory.
         from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
-        
+
         AppSource.objects.all().delete()
         AppSource.objects.get_or_create(
               # this one exists on first db load because it's created by
               # migrations, but because the testing framework seems to
-              # get rid of it after the first test in this class 
+              # get rid of it after the first test in this class
             slug="system",
             is_system_source=True,
             defaults={
@@ -359,6 +361,17 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.fill_field("#id_password", password or self.user.clear_password)
         self.click_element("form#login_form button[type=submit]")
 
+    def wait_for(self, fn):
+        MAX_WAIT = 10
+        start_time = time.time()
+        while True:
+            try:
+                return fn()
+            except (AssertionError, WebDriverException) as e:
+                if time.time() - start_time > MAX_WAIT:
+                    raise e
+                time.sleep(0.5)
+
     def _new_project(self):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
@@ -366,15 +379,12 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Select Portfolio
         self.select_option_by_visible_text('#id_portfolio', self.user.username)
         self.click_element("#select_portfolio_submit")
-        # TODO add permissions to the user to see certain things by role and individuals
-        #
-        var_sleep(2)
 
+        var_sleep(2)
         # Click Add Button
         self.click_element(".app[data-app='project/simple_project'] .start-app")
 
-        var_sleep(2)
-        self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "I want to answer some questions on Q."))
 
         m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
         self.current_project = Project.objects.get(id=m.group(1))
@@ -398,17 +408,14 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Extract the URL in the email and visit it.
         invitation_body = self.pop_email().body
         invitation_url_pattern = re.escape(self.url("/invitation/")) + r"\S+"
-        print("invitation_url_pattern", invitation_url_pattern)
+        #print("invitation_url_pattern", invitation_url_pattern)
         self.assertRegex(invitation_body, invitation_url_pattern)
         m = re.search(invitation_url_pattern, invitation_body)
-        print("m.group(0)", m.group(0))
+       # print("m.group(0)", m.group(0))
         self.browser.get(m.group(0))
-        var_sleep(0.5) # wait for page to load
         # Since we're not logged in, we hit the invitation splash page.
-        self.click_element('#button-sign-in')
-        print("###################################")
-        var_sleep(0.5) # wait for page to load
-        self.assertRegex(self.browser.title, "Sign In")
+        self.wait_for(lambda:  self.click_element('#button-sign-in'))
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "Sign In"))
 
         # TODO check if the below should still be happening
         # Test that an allauth confirmation email was sent.
@@ -450,38 +457,35 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self._login()
 
         self.click_element('#user-menu-dropdown')
-        var_sleep(0.75) # wait for menu to open
 
-        self.click_element('#user-menu-account-settings')
-        var_sleep(1) # wait for page to open
-        self.assertIn("Introduction | GovReady Account Settings", self.browser.title)
+        self.wait_for(lambda: self.click_element('#user-menu-account-settings'))
+        self.wait_for(lambda: self.assertIn("Introduction | GovReady Account Settings", self.browser.title))
 
-        # - The user is looking at the Introduction page.
-        self.click_element("#save-button")
-        var_sleep(1.0) # wait for page to load
+        var_sleep(.5)
+        #  # - The user is looking at the Introduction page.
+        self.wait_for(lambda: self.click_element("#save-button"))
 
-        # - Now at the what is your name page?
-        self.fill_field("#inputctrl", "John Doe")
-        self.click_element("#save-button")
-        var_sleep(.5) # wait for page to load
+        #  # - Now at the what is your name page?
+        self.wait_for(lambda: self.fill_field("#inputctrl", "John Doe"))
+        self.wait_for(lambda: self.click_element("#save-button"))
 
         # - We're on the module finished page.
-        self.assertNodeNotVisible('#return-to-project')
-        self.click_element("#return-to-projects")
-        var_sleep(1.5)
-        self.assertRegex(self.browser.title, "Your Compliance Projects")
-        self.assertNodeNotVisible('#please-complete-account-settings')
+        self.wait_for(lambda: self.assertNodeNotVisible('#return-to-project'))
+        self.wait_for(lambda: self.click_element("#return-to-projects"))
+
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "Your Compliance Projects"))
+        self.wait_for(lambda: self.assertNodeNotVisible('#please-complete-account-settings'))
 
     def test_static_pages(self):
+
         self.browser.get(self.url("/privacy"))
-        self.assertRegex(self.browser.title, "Privacy Policy")
-        var_sleep(0.5)
-        self.browser.get(self.url("/terms-of-service"))
-        self.assertRegex(self.browser.title, "Terms of Service")
-        var_sleep(0.5)
-        self.browser.get(self.url("/love-assessments"))
-        self.assertRegex(self.browser.title, "Love Assessments")
-        var_sleep(0.5)
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "Privacy Policy"))
+
+        self.wait_for(lambda: self.browser.get(self.url("/terms-of-service")))
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "Terms of Service"))
+
+        self.wait_for(lambda: self.browser.get(self.url("/love-assessments")))
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "Love Assessments"))
 
     def test_simple_module(self):
         # Log in and create a new project and start its task.
@@ -492,34 +496,33 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Answer the questions.
 
         # Introduction screen.
-        var_sleep(1)
-        self.assertRegex(self.browser.title, "Next Question: Introduction")
-        self.click_element("#save-button")
-        var_sleep(1.75)
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "Next Question: Introduction"))
+        var_sleep(.5)
+        self.wait_for(lambda: self.click_element("#save-button"))
 
         # Text question.
-        self.assertIn("| A Simple Module - GovReady-Q", self.browser.title)
-        self.fill_field("#inputctrl", "This is some text.")
-        self.click_element("#save-button")
-        var_sleep(.5)
+        self.wait_for(lambda: self.assertIn("| A Simple Module - GovReady-Q", self.browser.title))
+
+        self.wait_for(lambda: self.fill_field("#inputctrl", "This is some text."))
+        self.wait_for(lambda: self.click_element("#save-button"))
 
         # Finished.
-        self.assertRegex(self.browser.title, "^A Simple Module - ")
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "^A Simple Module - "))
 
         # Go to project page, then review page.
         # self.click_element("#return-to-project")
         self.click_element("#review-answers")
 
         # Mark the answer as reviewed then test that it was saved.
-        var_sleep(2)
-        self.click_element(".task-" + str(task.id) + "-answer-q1-review-1")
-        var_sleep(2) # wait for ajax
+        self.wait_for(lambda: self.click_element(".task-" + str(task.id) + "-answer-q1-review-1"))
+
+        var_sleep(.5) # wait for ajax
         for question, answer in task.get_current_answer_records():
             if question.key == "q1":
                 self.assertEqual(answer.reviewed, 1)
 
     def test_invitations(self):
-        print("INFO: Entering '{}'".format('test_invitations(self)'))
+        #print("INFO: Entering '{}'".format('test_invitations(self)'))
         # Test a bunch of invitations.
 
         # Log in and create a new project.
@@ -535,30 +538,27 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.browser.get(project_page)
 
         def start_invitation(username):
-            print("INFO: Entering '{}', '{}'".format('start_invitation(username)', username))
+            #print("INFO: Entering '{}', '{}'".format('start_invitation(username)', username))
             # Fill out the invitation modal.
             # self.select_option_by_visible_text('#invite-user-select', username) # This is for selecting user from dropdown list
-            var_sleep(1)
-            self.fill_field("input#invite-user-email", username)
-            var_sleep(1)
-            self.click_element("#invitation_modal button.btn-submit")
+            self.wait_for(lambda: self.fill_field("input#invite-user-email", username))
+            self.wait_for(lambda: self.click_element("#invitation_modal button.btn-submit"))
 
         def do_invitation(username):
-            print("INFO: Entering '{}', '{}'".format('do_invitation(username)', username))
+            #print("INFO: Entering '{}', '{}'".format('do_invitation(username)', username))
             start_invitation(username)
-            var_sleep(1) # wait for invitation to be sent
+            #var_sleep(.5) # wait for invitation to be sent
 
             # Log out and accept the invitation as an anonymous user.
             self.browser.get(self.url("/accounts/logout/"))
             self._accept_invitation(username)
 
         def reset_login():
-            print("INFO: Entering '{}'".format('reset_login()'))
+            #print("INFO: Entering '{}'".format('reset_login()'))
             # Log out and back in as the original user.
             self.browser.get(self.url("/accounts/logout/"))
             self._login()
-            self.browser.get(project_page)
-            var_sleep(1)
+            self.wait_for(lambda: self.browser.get(project_page))
 
         # Test an invitation to that project. For unknown reasons, when
         # executing this on CircleCI (but not locally), the click fails
@@ -572,11 +572,10 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Test an invalid email address.
         start_invitation("example")
-        var_sleep(.5)
-        self.assertInNodeText("The email address is not valid.", "#global_modal") # make sure we get a stern message.
-        self.click_element("#global_modal button") # dismiss the warning.
-        var_sleep(.25)
-        self.click_element("#show-project-invite") # Re-open the invite box.
+        self.wait_for(lambda: self.assertInNodeText("The email address is not valid.", "#global_modal") )# make sure we get a stern message.
+        self.wait_for(lambda: self.click_element("#global_modal button") )# dismiss the warning.
+
+        self.wait_for(lambda:  self.click_element("#show-project-invite") )# Re-open the invite box.
         self.browser.execute_script("invite_user_into_project()") # See comment above.
         # Toggle field to invite user by email
         self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
@@ -587,30 +586,27 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.click_element("form button.primaryAction")
 
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
-        var_sleep(1.5)
-        self.click_element('#question-simple_module') # go to the task page
-        var_sleep(1.5)
-        self.assertRegex(self.browser.title, "Next Question: Introduction") # user is on the task page
+        self.wait_for(lambda: self.click_element('#question-simple_module') )# go to the task page
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "Next Question: Introduction") )# user is on the task page
 
         # reset_login()
 
         # Test an invitation to take over editing a task but without joining the project.
-        var_sleep(2)
+        var_sleep(.5)
+        self.wait_for(lambda: self.click_element("#save-button"))# pass over the Introductory question because the Help link is suppressed on interstitials
+        self.wait_for(lambda: self.click_element('#transfer-editorship'))# Toggle field to invite user by email
 
-        self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
-        self.click_element('#transfer-editorship')
-        # Toggle field to invite user by email
         self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
-        var_sleep(2)
-        do_invitation(self.user3.email)
+        self.wait_for(lambda: do_invitation(self.user3.email))# Toggle field to invite user by email
+
         self.fill_field("#id_login", self.user3.username)
         self.fill_field("#id_password", self.user3.clear_password)
         self.click_element("form button.primaryAction")
-        var_sleep(1.5)
-        self.assertRegex(self.browser.title, "Next Question: The Question") # user is on the task page
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "Next Question: The Question"))# user is on the task page
 
         # Test assigning existing user to a project.
         reset_login()
+
         self._new_project()
         project_page = self.browser.current_url
 
@@ -620,15 +616,13 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # But now go back to the project page.
         self.browser.get(project_page)
-        var_sleep(1.25)
-        self.click_element("#show-project-invite")
-        var_sleep(0.75)
+        self.wait_for(lambda: self.click_element("#show-project-invite"))
+
         # Select username "me3"
-        self.select_option_by_visible_text('#invite-user-select', "me3")
-        self.click_element("#invite_submit_btn")
-        var_sleep(0.75)
-        self.assertTrue("× me3 granted edit permission to project." == self._getNodeText(".alert-info"))
-       
+        self.wait_for(lambda: self.select_option_by_visible_text('#invite-user-select', "me3"))
+        self.wait_for(lambda: self.click_element("#invite_submit_btn"))
+        self.wait_for(lambda:  self.assertTrue("× me3 granted edit permission to project." == self._getNodeText(".alert-info")))
+
         # reset_login()
 
         # Invitations to join discussions are tested in test_discussion.
