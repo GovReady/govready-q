@@ -214,7 +214,7 @@ class DiscussionTests(SeleniumTest):
         # Test Script injection
         script = "<script id='injectiontest2'>document.getElementsByTagName('body')[0]" \
                  ".appendChild('<div id=\\'injectiontest1\\'></div>');</script>"
-        self.fill_field("#discussion-your-comment", script)
+        self.wait_for(lambda: self.fill_field("#discussion-your-comment", script) )
         var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
         var_sleep(.5)
@@ -250,7 +250,7 @@ class DiscussionTests(SeleniumTest):
         var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
 
-        var_sleep(.5)# Give time for the image to upload.
+        var_sleep(1.5)# Give time for the image to upload.
         # Test that we have an image.
         img = self.wait_for(lambda: self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img') )
         self.assertIsNotNone(img)
@@ -288,8 +288,7 @@ class DiscussionTests(SeleniumTest):
 
         var_sleep(1)
         self.click_element("#discussion .comment-input button.btn-primary")
-        var_sleep(1)  # Give time for the image to upload.
-
+        var_sleep(1.5)  # Give time for the image to upload.
         # Test that we still have an image.
         img = self.wait_for(lambda: self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img') )
         self.assertIsNotNone(img)
