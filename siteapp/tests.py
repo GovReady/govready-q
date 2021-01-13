@@ -724,69 +724,63 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
         # Navigate to portfolio created on signup
         self.click_element_with_link_text("portfolio-user")
-        var_sleep(0.5)
 
         # Test creating a portfolio using the form
         # Navigate to the portfolio form
-        self.click_element_with_link_text("Portfolios")
+        self.wait_for(lambda: self.click_element_with_link_text("Portfolios"))
         # Click Create Portfolio button
         self.click_element("#new-portfolio")
-        var_sleep(0.25)
+        var_sleep(0.5)
         # Fill in form
-        self.fill_field("#id_title", "Test 1")
+        self.wait_for(lambda: self.fill_field("#id_title", "Test 1"))
         self.fill_field("#id_description", "Test 1 portfolio")
         # Submit form
         self.click_element("#create-portfolio-button")
         # Test we are on portfolio page we just created
-        var_sleep(0.35)
-        self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q")
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q"))
 
         # Test we cannot create a portfolio with the same name
         # Navigate to the portfolio form
         self.click_element_with_link_text("Portfolios")
         # Click Create Portfolio button
         self.click_element("#new-portfolio")
-        var_sleep(0.25)
+        var_sleep(0.5)
         # Fill in form
-        self.fill_field("#id_title", "Test 1")
+        self.wait_for(lambda: self.fill_field("#id_title", "Test 1"))
         self.fill_field("#id_description", "Test 1 portfolio")
         # Submit form
         self.click_element("#create-portfolio-button")
         # We should get an error
-        var_sleep(0.25)
+
         # test error
-        self.assertIn("Portfolio name Test 1 not available.", self._getNodeText("div.alert.alert-danger.alert-dismissable.alert-link"))
-        # Test uniqueness with case insentivity
+        self.wait_for(lambda: self.assertIn("Portfolio name Test 1 not available.", self._getNodeText("div.alert.alert-danger.alert-dismissable.alert-link")))
+        # Test uniqueness with case insensitivity
         # Navigate to the portfolio form
         self.click_element_with_link_text("Portfolios")
         # Click Create Portfolio button
         self.click_element("#new-portfolio")
-        var_sleep(0.25)
-        # Fill in form
-        self.fill_field("#id_title", "test 1")
-        # Submit form
         var_sleep(0.5)
-        self.click_element("#create-portfolio-button")
+        # Fill in form
+        self.wait_for(lambda: self.fill_field("#id_title", "test 1"))
+        # Submit form
+        self.wait_for(lambda: self.click_element("#create-portfolio-button"))
         # We should get an error
-        var_sleep(0.25)
+        var_sleep(0.5)
         # test error
-        self.assertIn("Portfolio name test 1 not available.", self._getNodeText("div.alert.alert-danger.alert-dismissable.alert-link"))
+        self.wait_for(lambda: self.assertIn("Portfolio name test 1 not available.", self._getNodeText("div.alert.alert-danger.alert-dismissable.alert-link")))
 
     def test_create_portfolio_project(self):
         # Create new project within portfolio
         self._login()
         self._new_project()
-        var_sleep(0.5)
 
         # Create new portfolio
-        self.browser.get(self.url("/portfolios"))
-        var_sleep(0.5)
-        self.click_element("#new-portfolio")
+        self.wait_for(lambda: self.browser.get(self.url("/portfolios")))
+        self.wait_for(lambda: self.click_element("#new-portfolio"))
         self.fill_field("#id_title", "Security Projects")
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
-        var_sleep(1.75)
-        self.assertRegex(self.browser.title, "Security Projects")
+        self.wait_for(lambda:  self.assertRegex(self.browser.title, "Security Projects"))
 
     def test_create_project_without_portfolio(self):
         self._login()
@@ -799,25 +793,21 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.browser.get(self.url("/portfolios"))
         self.click_element("#portfolio_{}".format(self.user.username))
         self.click_element("#grant-portfolio-access")
-        var_sleep(1.25)
-        self.select_option_by_visible_text('#invite-user-select', 'me2')
-        var_sleep(0.75)
-        self.click_element("#invitation_modal button.btn-submit")
-        var_sleep(1)
-        self.assertInNodeText("me2", "#portfolio-member-me2")
+        var_sleep(.5)
+        self.wait_for(lambda: self.select_option_by_visible_text('#invite-user-select', 'me2'))
+        self.wait_for(lambda: self.click_element("#invitation_modal button.btn-submit"))
+        self.wait_for(lambda: self.assertInNodeText("me2", "#portfolio-member-me2"))
 
         # Grant another member ownership of portfolio
+        self.wait_for(lambda: self.click_element("#me2_grant_owner_permission"))
         var_sleep(0.5)
-        self.click_element("#me2_grant_owner_permission")
-        var_sleep(0.5)
-        self.assertInNodeText("me2 (Owner)", "#portfolio-member-me2")
+        self.wait_for(lambda: self.assertInNodeText("me2 (Owner)", "#portfolio-member-me2"))
 
        # Grant another member access to portfolio
         self.click_element("#grant-portfolio-access")
         self.select_option_by_visible_text('#invite-user-select', 'me3')
         self.click_element("#invitation_modal button.btn-submit")
-        var_sleep(0.5)
-        self.assertInNodeText("me3", "#portfolio-member-me3")
+        self.wait_for(lambda: self.assertInNodeText("me3", "#portfolio-member-me3"))
 
         # Remove another member access to portfolio
         self.click_element("#me3_remove_permissions")
@@ -851,15 +841,15 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.click_element_with_link_text("Portfolios")
         # Click Create Portfolio button
         self.click_element("#new-portfolio")
-        var_sleep(0.25)
+        var_sleep(0.5)
         # Fill in form
-        self.fill_field("#id_title", "Test 1")
+        self.wait_for(lambda: self.fill_field("#id_title", "Test 1"))
         self.fill_field("#id_description", "Test 1 portfolio")
         # Submit form
         self.click_element("#create-portfolio-button")
         # Test we are on portfolio page we just created
         var_sleep(0.35)
-        self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q")
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q"))
         # Navigate to portfolios
         self.browser.get(self.url("/portfolios"))
         # Assert we have the new portfolio
@@ -874,9 +864,7 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # Submit form
         self.click_element("#edit_portfolio_submit")
         # We should get an error
-        var_sleep(0.25)
-        # test error
-        self.assertIn("Portfolio name me not available.", self._getNodeText("div.alert.fade.in.alert-danger"))
+        self.wait_for(lambda: self.assertIn("Portfolio name me not available.", self._getNodeText("div.alert.fade.in.alert-danger")))
 
         # Navigate to portfolios
         self.browser.get(self.url("/portfolios"))
@@ -929,39 +917,37 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def test_questions_text(self):
         # Log in and create a new project.
-        var_sleep(.5)
         self._login()
-        var_sleep(.5)
         self._new_project()
-        self.click_element('#question-question_types_text')
+        self.wait_for(lambda: self.click_element('#question-question_types_text'))
 
         # Introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
         var_sleep(.5)
 
-        # Click interstital "Got it" button
-        self.click_element("#save-button")
-        var_sleep(.5)
+        # Click interstitial "Got it" button
+        self.wait_for(lambda: self.click_element("#save-button"))
+        var_sleep(1)
 
         # text
-        self.assertIn("| Test The Text Input Question Types - GovReady-Q", self.browser.title)
-        self.fill_field("#inputctrl", "This is some text.")
+        self.wait_for(lambda: self.assertIn("| Test The Text Input Question Types - GovReady-Q", self.browser.title))
+        self.wait_for(lambda: self.fill_field("#inputctrl", "This is some text."))
         self.click_element("#save-button")
         var_sleep(.5)
-        self._test_api_get(["question_types_text", "q_text"], "This is some text.")
+        self.wait_for(lambda: self._test_api_get(["question_types_text", "q_text"], "This is some text."))
 
         # text w/ default
         self.assertRegex(self.browser.title, "Next Question: text_with_default")
         self.click_element("#save-button")
         var_sleep(.5)
-        self._test_api_get(["question_types_text", "q_text_with_default"], "I am a kiwi.")
+        self.wait_for(lambda: self._test_api_get(["question_types_text", "q_text_with_default"], "I am a kiwi."))
 
         # password-type question input (this is not a user pwd)
         self.assertRegex(self.browser.title, "Next Question: password")
         self.fill_field("#inputctrl", "th1s1z@p@ssw0rd!")
         self.click_element("#save-button")
-        var_sleep(1)
+        var_sleep(.5)
         self._test_api_get(["question_types_text", "q_password"], "th1s1z@p@ssw0rd!")
 
         # email-address
@@ -970,16 +956,15 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # test a bad address
         self.fill_field("#inputctrl", "a@a")
         self.click_element("#save-button")
-        var_sleep(1.0)
-        self.assertInNodeText("is not valid.", "#global_modal p") # make sure we get a stern message.
-        self.click_element("#global_modal button") # dismiss the warning.
+        self.wait_for(lambda: self.assertInNodeText("is not valid.", "#global_modal p"))# make sure we get a stern message.
+        self.wait_for(lambda: self.click_element("#global_modal button"))# dismiss the warning.
         var_sleep(.5)
 
         # test a good address
         val = "test+%s@q.govready.com" % get_random_string(8)
-        self.clear_and_fill_field("#inputctrl", val)
+        self.wait_for(lambda: self.clear_and_fill_field("#inputctrl", val))
         self.click_element("#save-button")
-        var_sleep(1.5)
+        var_sleep(.5)
         self._test_api_get(["question_types_text", "q_email_address"], val)
 
         # url
@@ -1021,8 +1006,8 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.select_option("select[name='value_month']", "2")
         self.select_option("select[name='value_day']", "31")
         self.click_element("#save-button")
-        var_sleep(.5)
-        self.assertInNodeText("day is out of range for month", "#global_modal p") # make sure we get a stern message.
+
+        self.wait_for(lambda: self.assertInNodeText("day is out of range for month", "#global_modal p"))# make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
 
         # test a good date
@@ -1031,7 +1016,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.select_option("select[name='value_day']", "22")
         self.click_element("#save-button")
         var_sleep(.5)
-        self._test_api_get(["question_types_text", "q_date"], "2016-08-22")
+        self._test_api_get(["question_types_text", "q_date"], "2016-08-22") # make sure we get a stern message.
 
         # Finished.
         self.assertRegex(self.browser.title, "^Test The Text Input Question Types - ")
@@ -1047,11 +1032,11 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # Introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
-        self.click_element("#save-button")
+        self.wait_for(lambda: self.click_element("#save-button"))
         var_sleep(.5)
 
-        # Click interstital "Got it" button
-        self.click_element("#save-button")
+        # Click interstitial "Got it" button
+        self.wait_for(lambda: self.click_element("#save-button"))
         var_sleep(.5)
 
         # choice
@@ -1059,15 +1044,16 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question input[name="value"][value="choice2"]')
         self.click_element("#save-button")
         var_sleep(.5)
-        self._test_api_get(["question_types_choice", "q_choice"], "choice2")
+
+        self.wait_for(lambda: self._test_api_get(["question_types_choice", "q_choice"], "choice2"))
         self._test_api_get(["question_types_choice", "q_choice.text"], "Choice 2")
 
         # yesno
         self.assertRegex(self.browser.title, "Next Question: yesno")
         self.click_element('#question input[name="value"][value="yes"]')
         self.click_element("#save-button")
-        var_sleep(.5)
-        self._test_api_get(["question_types_choice", "q_yesno"], "yes")
+
+        self.wait_for(lambda: self._test_api_get(["question_types_choice", "q_yesno"], "yes"))
         self._test_api_get(["question_types_choice", "q_yesno.text"], "Yes")
 
         # multiple-choice
@@ -1106,30 +1092,29 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # integer
         self.assertIn("| Test The Numeric Question Types - GovReady-Q", self.browser.title)
 
-        # Click interstital "Got it" button
+        # Click interstitial "Got it" button
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1)
 
         # Test a non-integer.
         self.clear_and_fill_field("#inputctrl", "1.01")
         self.click_element("#save-button")
         var_sleep(.5)
 
-        self.assertInNodeText("Invalid input. Must be a whole number.", "#global_modal p") # make sure we get a stern message.
+        self.wait_for(lambda: self.assertInNodeText("Invalid input. Must be a whole number.", "#global_modal p"))# make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a string.
         self.clear_and_fill_field("#inputctrl", "asdf")
         self.click_element("#save-button")
-        var_sleep(.5)
+
 
         # This is caught by the browser itself, so we don't have to dismiss anything.
         # Make sure we haven't moved past the url page.
-        self.assertIn("| Test The Numeric Question Types - GovReady-Q", self.browser.title)
-        var_sleep(.5)
+        self.wait_for(lambda: self.assertIn("| Test The Numeric Question Types - GovReady-Q", self.browser.title))
 
         # Test a good integer.
-        self.clear_and_fill_field("#inputctrl", "5000")
+        self.wait_for(lambda: self.clear_and_fill_field("#inputctrl", "5000"))
         self.click_element("#save-button")
         var_sleep(.5)
         self._test_api_get(["question_types_numeric", "q_integer"], 5000)
@@ -1140,17 +1125,15 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # Test a too-small number
         self.clear_and_fill_field("#inputctrl", "0")
         self.click_element("#save-button")
-        var_sleep(.5)
 
-        self.assertInNodeText("Must be at least 1.", "#global_modal p") # make sure we get a stern message.
+        self.wait_for(lambda: self.assertInNodeText("Must be at least 1.", "#global_modal p"))# make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a too-large number
         self.clear_and_fill_field("#inputctrl", "27")
         self.click_element("#save-button")
-        var_sleep(.5)
 
-        self.assertInNodeText("Must be at most 10.", "#global_modal p") # make sure we get a stern message.
+        self.wait_for(lambda: self.assertInNodeText("Must be at most 10.", "#global_modal p"))  # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a non-integer.
@@ -1160,8 +1143,8 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # This should be caught by the browser itself, so we don't have to dismiss anything.
         # Make sure we haven't moved past the url page.
-        self.assertRegex(self.browser.title, "Next Question: integer min/max")
-        var_sleep(.5)
+
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "Next Question: integer min/max"))
 
         # Test a good integer.
         self.clear_and_fill_field("#inputctrl", "3")
@@ -1178,25 +1161,22 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # Test a too-small number
         self.clear_and_fill_field("#inputctrl", "0")
         self.click_element("#save-button")
-        var_sleep(.5)
 
-        self.assertInNodeText("Must be at least 1.", "#global_modal p") # make sure we get a stern message.
+        self.wait_for(lambda: self.assertInNodeText("Must be at least 1.", "#global_modal p"))# make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a too-large number
         self.clear_and_fill_field("#inputctrl", "15000")
         self.click_element("#save-button")
-        var_sleep(.5)
 
-        self.assertInNodeText("Must be at most 10000.", "#global_modal p") # make sure we get a stern message.
+        self.wait_for(lambda: self.assertInNodeText("Must be at most 10000.", "#global_modal p") )# make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a non-integer.
         self.clear_and_fill_field("#inputctrl", "1.01")
         self.click_element("#save-button")
-        var_sleep(.5)
 
-        self.assertInNodeText("Invalid input. Must be a whole number.", "#global_modal p") # make sure we get a stern message.
+        self.wait_for(lambda: self.assertInNodeText("Invalid input. Must be a whole number.", "#global_modal p"))# make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a good integer that has a comma in it.
@@ -1215,7 +1195,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # This is caught by the browser itself, so we don't have to dismiss anything.
         # Make sure we haven't moved past the url page.
-        self.assertRegex(self.browser.title, "Next Question: real")
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "Next Question: real"))
 
         # Test a real number.
         self.clear_and_fill_field("#inputctrl", "1.050")
@@ -1229,17 +1209,15 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # Test a number that's too small.
         self.clear_and_fill_field("#inputctrl", "0.01")
         self.click_element("#save-button")
-        var_sleep(.5)
-        # var_sleep(60)
-        self.assertInNodeText("Must be at least 1.", "#global_modal p") # make sure we get a stern message.
+
+        self.wait_for(lambda: self.assertInNodeText("Must be at least 1.", "#global_modal p"))# make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a number that's too large.
         self.clear_and_fill_field("#inputctrl", "1000")
         self.click_element("#save-button")
-        var_sleep(.5)
 
-        self.assertInNodeText("Must be at most 100.", "#global_modal p") # make sure we get a stern message.
+        self.wait_for(lambda: self.assertInNodeText("Must be at most 100.", "#global_modal p"))# make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a real number.
@@ -1263,9 +1241,9 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         # file upload
-        self.assertIn("| Test The Media Question Types - GovReady-Q", self.browser.title)
+        self.wait_for(lambda:  self.assertIn("| Test The Media Question Types - GovReady-Q", self.browser.title))
 
-        # Click interstital "Got it" button
+        # Click interstitial "Got it" button
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -1279,12 +1257,10 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             testFilePath = convert_w(testFilePath)
         var_sleep(1)
         self.fill_field("#inputctrl", testFilePath)
-
         self.click_element("#save-button")
-        var_sleep(1)
 
         # Clicking the global modal error ok button
-        self.browser.find_element_by_xpath("//*[@id='global_modal']/div/div/div[3]/button[1]").click()
+        self.wait_for(lambda: self.browser.find_element_by_xpath("//*[@id='global_modal']/div/div/div[3]/button[1]").click())
 
         # interstitial
         # nothing to really test in terms of functionality, but check that
@@ -1348,11 +1324,20 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         def change_answer():
             print("change_answer() - self.click_element(\"#link-to-question-q_module a\")") #debug
             self.click_element("#link-to-question-q_module a")
+            var_sleep(3)
         change_answer()
         self.assertIn("| Test The Module Question Types - GovReady-Q", self.browser.title)
         self.click_element('#question input[name="value"][value="__new"]')
+        var_sleep(1)
+        # Next button
         self.click_element("#save-button")
-        var_sleep(2.25)
+        var_sleep(1)
+
+        # Got it button
+        self.click_element("#save-button")
+        var_sleep(1)
+
+        # Click module and then select start over
         do_submodule("My second answer.")
         self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
 
@@ -1373,7 +1358,6 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
 
     def test_settings_page(self):
         # Log in
-        var_sleep(.5)
         self._login()
         # test navigating to settings page not logged in
         self.browser.get(self.url("/settings"))
@@ -1382,7 +1366,7 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         var_sleep(0.5)
 
         # login as user without admin privileges and test settings page unreachable
-        self.browser.get(self.url("/accounts/logout/"))
+        self.wait_for(lambda: self.browser.get(self.url("/accounts/logout/")))
         self._login(self.user2.username, self.user2.clear_password)
         self.browser.get(self.url("/projects"))
         var_sleep(1)
@@ -1396,8 +1380,7 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # login as user with admin privileges access settings page
         self._login()
         self.browser.get(self.url("/settings"))
-        self.assertRegex(self.browser.title, "GovReady-Q Setup")
-        var_sleep(1)
+        self.wait_for(lambda: self.assertRegex(self.browser.title, "GovReady-Q Setup"))
 
         print("self.user is '{}'".format(self.user))
         print("self.user.username is '{}'".format(self.user.username))
