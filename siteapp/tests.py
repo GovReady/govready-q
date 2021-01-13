@@ -580,7 +580,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Toggle field to invite user by email
 
         self.wait_for(lambda: self.browser.execute_script("$('#invite-user-email').parent().toggle(true)") )
-
+        var_sleep(3)# Adding to avoid lock
         do_invitation(self.user2.email)
         self.fill_field("#id_login", self.user2.username)
         self.fill_field("#id_password", self.user2.clear_password)
