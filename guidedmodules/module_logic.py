@@ -3,6 +3,7 @@ from itertools import groupby
 
 from django.conf import settings
 from jinja2.sandbox import SandboxedEnvironment
+from controls.oscal import Catalogs
 
 def get_jinja2_template_vars(template):
     from jinja2 import meta, TemplateSyntaxError
@@ -287,11 +288,23 @@ def get_question_context(answers, question):
 
 
 def oscal_context(answers):
+    # sometimes we run into answers w/o a task, in which case
+    # there is not much we can do
+    
     if not hasattr(answers, 'task'):
         return dict()
     
-    system = answers.task.project.system
+    project = answers.task.project
+    system = project.system
 
+    # TODO: where do we get the catalog key from?
+    
+    catalog_key = Catalogs.NIST_SP_800_53_rev5
+    
+    params = project.get_parameter_values(catalog_key)
+    
+    print("params =", params.keys())
+    
     def _component(e):
         return {
             'uuid': e.uuid,
