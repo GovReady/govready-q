@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v.999 (January XX, 2021)
+------------------------
+**Developer changes**
+
+* Add `pyup.yml` configuration file to have pyup.io pull requests go against `develop` branch.
+
+
 v.0.9.1.49 (January 12, 2021)
 -----------------------------
 
