@@ -43,6 +43,9 @@ RUN \
     supervisor \
     && yum clean all && rm -rf /var/cache/yum
 
+# Upgrade pip to version 20.1+ - IMPORTANT
+RUN python3.6 -m pip install --upgrade pip
+
 # install wkhtmltopdf for generating PDFs, thumbnails
 # TAKE CAUTION WITH wkhtmltopdf security issues where crafted content renders server-side information
 RUN if [ "$GR_PDF_GENERATOR" = "wkhtmltopdf" ] ; then (yum -y install xorg-x11-server-Xvfb wkhtmltopdf && yum clean all && rm -rf /var/cache/yum) ; fi

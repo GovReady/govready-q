@@ -1,0 +1,264 @@
+{
+  "schema": "GovReady Q Project Export Data 1.0",
+  "project": {
+    "created": "2020-12-17T17:49:49.555639+00:00",
+    "modified": "2021-01-05T15:07:56.323791+00:00",
+    "title": "New Test Project",
+    "module": {
+      "key": "app",
+      "created": "2020-12-17T15:18:30.056416+00:00",
+      "modified": "2020-12-17T15:18:30.236448+00:00"
+    },
+    "answers": {
+      "pta_intro": {
+        "answeredBy": "me",
+        "answeredAt": "2020-12-18T15:28:25.076687+00:00",
+        "answeredByMethod": "",
+        "questionType": "module",
+        "value": {
+          "id": "b8a56ffc-6771-4208-80ad-f8d4fdd52cee",
+          "title": "Privacy Threshold Analysis (PTA) Overview",
+          "created": "2020-12-18T15:28:24.991078+00:00",
+          "modified": "2021-01-05T15:22:50.320739+00:00",
+          "module": {
+            "key": "pta_intro",
+            "created": "2020-12-17T15:18:29.896380+00:00",
+            "modified": "2020-12-17T15:18:29.896406+00:00"
+          },
+          "answers": {
+            "q1": {
+              "answeredBy": "me",
+              "answeredAt": "2020-12-18T15:28:27.388258+00:00",
+              "answeredByMethod": "web",
+              "questionType": "interstitial",
+              "value": null
+            },
+            "q2": {
+              "answeredBy": "me",
+              "answeredAt": "2020-12-18T15:28:30.657300+00:00",
+              "answeredByMethod": "web",
+              "questionType": "interstitial",
+              "value": null
+            },
+            "q3": {
+              "answeredBy": "me",
+              "answeredAt": "2020-12-18T15:28:32.414315+00:00",
+              "answeredByMethod": "web",
+              "questionType": "interstitial",
+              "value": null
+            }
+          }
+        }
+      },
+      "purpose": {
+        "answeredBy": "me",
+        "answeredAt": "2021-01-02T15:21:37.201813+00:00",
+        "answeredByMethod": "",
+        "questionType": "module",
+        "value": {
+          "id": "5168d54f-802d-4c60-b9a1-c917985f8c25",
+          "title": "Purpose of the Information Collection",
+          "created": "2021-01-02T15:21:37.198314+00:00",
+          "modified": "2021-01-05T15:22:50.320739+00:00",
+          "module": {
+            "key": "purpose",
+            "created": "2020-12-17T15:18:29.926356+00:00",
+            "modified": "2020-12-17T15:18:29.926382+00:00"
+          },
+          "answers": {
+            "purpose_intro": {
+              "answeredBy": "me",
+              "answeredAt": "2021-01-02T15:21:38.741008+00:00",
+              "answeredByMethod": "web",
+              "questionType": "interstitial",
+              "value": null
+            },
+            "collection_purpose": {
+              "answeredBy": "me",
+              "answeredAt": "2021-01-02T15:21:44.683770+00:00",
+              "answeredByMethod": "web",
+              "questionType": "longtext",
+              "value": "12323123",
+              "html": "<p>12323123</p>"
+            },
+            "updated_pta": {
+              "answeredBy": "me",
+              "answeredAt": "2021-01-02T15:21:48.517174+00:00",
+              "answeredByMethod": "web",
+              "questionType": "yesno",
+              "value": "yes",
+              "text": "Yes"
+            },
+            "changes_to_pta": {
+              "answeredBy": "me",
+              "answeredAt": "2021-01-02T15:21:53.317816+00:00",
+              "answeredByMethod": "web",
+              "questionType": "longtext",
+              "value": "ioio",
+              "html": "<p>ioio</p>"
+            },
+            "authority_intro": {
+              "answeredBy": "me",
+              "answeredAt": "2021-01-02T15:21:54.745459+00:00",
+              "answeredByMethod": "web",
+              "questionType": "interstitial",
+              "value": null
+            },
+            "statutes_agency_policies": {
+              "answeredBy": "me",
+              "answeredAt": "2021-01-02T15:21:56.965439+00:00",
+              "answeredByMethod": "web",
+              "questionType": "yesno",
+              "value": "yes",
+              "text": "Yes"
+            },
+            "statutes_agency_policies_list": {
+              "answeredBy": "me",
+              "answeredAt": "2021-01-02T15:22:00.301626+00:00",
+              "answeredByMethod": "web",
+              "questionType": "longtext",
+              "value": "asasas",
+              "html": "<p>asasas</p>"
+            },
+            "component_policies": {
+              "answeredBy": "me",
+              "answeredAt": "2021-01-02T15:22:03.598327+00:00",
+              "answeredByMethod": "web",
+              "questionType": "yesno",
+              "value": "yes",
+              "text": "Yes"
+            },
+            "component_policies_list": {
+              "answeredBy": "me",
+              "answeredAt": "2021-01-02T15:22:07.029632+00:00",
+              "answeredByMethod": "web",
+              "questionType": "longtext",
+              "value": "qwewqw",
+              "html": "<p>qwewqw</p>"
+            }
+          }
+        }
+      },
+      "poc_details": {
+        "answeredBy": "me",
+        "answeredAt": "2020-12-18T15:28:36.974873+00:00",
+        "answeredByMethod": "",
+        "questionType": "module",
+        "value": {
+          "id": "3d5c6190-4282-45c4-89f9-e2636e94f2f3",
+          "title": "POC Details",
+          "created": "2020-12-18T15:28:36.973833+00:00",
+          "modified": "2021-01-05T15:22:50.320739+00:00",
+          "module": {
+            "key": "poc_details",
+            "created": "2020-12-17T15:18:29.941987+00:00",
+            "modified": "2020-12-17T15:18:29.942011+00:00"
+          },
+          "answers": {
+            "intro": {
+              "answeredBy": "me",
+              "answeredAt": "2020-12-18T15:28:38.508903+00:00",
+              "answeredByMethod": "web",
+              "questionType": "interstitial",
+              "value": null
+            }
+          }
+        }
+      },
+      "pta_form": {
+        "answeredBy": "me",
+        "answeredAt": "2021-01-05T15:22:50.297259+00:00",
+        "answeredByMethod": "",
+        "questionType": "module",
+        "value": {
+          "id": "44d2057f-1e11-4f6c-b004-e2fb5025cd24",
+          "title": "Privacy Threshold Analysis Artifact",
+          "created": "2021-01-05T15:22:50.271055+00:00",
+          "modified": "2021-01-05T15:22:50.320739+00:00",
+          "module": {
+            "key": "pta_form",
+            "created": "2020-12-17T15:18:30.054007+00:00",
+            "modified": "2020-12-17T15:18:30.054033+00:00"
+          },
+          "answers": {
+            "dummy": {
+              "imputed": true,
+              "questionType": "raw",
+              "value": null
+            }
+          }
+        }
+      }
+    }
+  },
+  "component-definitions": [
+    {
+      "component-definition": {
+        "metadata": {
+          "title": "AWS Component-to-Control Narratives",
+          "published": "2021-01-06T17:39:05+00:00",
+          "last-modified": "2020-12-27T18:37:58+00:00",
+          "version": "string",
+          "oscal-version": "1.0.0-milestone2"
+        },
+        "components": {
+          "b882a10b-8aaf-4059-8611-40a8ad78bb9d": {
+            "name": "AWS",
+            "component-type": "system_element",
+            "title": "",
+            "description": "",
+            "control-implementations": [
+              {
+                "uuid": "c319c8b6-043d-4a44-b508-464aefa40d2c",
+                "source": "NIST_SP-800-53_rev4",
+                "description": "Partial implementation of NIST_SP-800-53_rev4",
+                "implemented-requirements": [
+                  {
+                    "uuid": "a678cb99-4d06-4d7e-b2d5-02a89f92841d",
+                    "control-id": "ac-1",
+                    "description": "",
+                    "remarks": "",
+                    "statements": {
+                      "ac-1_smt.a": {
+                        "uuid": "f5a991c6-55a2-405d-b0a4-5c0ee33e2ea5",
+                        "description": "an example AWS component",
+                        "remarks": ""
+                      }
+                    }
+                  },
+                  {
+                    "uuid": "96904b50-f383-49d9-b759-29873d6e15b5",
+                    "control-id": "ac-2",
+                    "description": "",
+                    "remarks": "",
+                    "statements": {
+                      "ac-2_smt.a": {
+                        "uuid": "4106aa12-34fe-4675-b80a-89f94bd70ee1",
+                        "description": "yes",
+                        "remarks": ""
+                      }
+                    }
+                  },
+                  {
+                    "uuid": "56e329a9-53b9-47de-a897-fe2c481069b8",
+                    "control-id": "ac-2.5",
+                    "description": "",
+                    "remarks": "",
+                    "statements": {
+                      "ac-2.5_smt.a": {
+                        "uuid": "40c93833-0384-4461-bf39-0fa5d7c3333f",
+                        "description": "yes",
+                        "remarks": ""
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "back-matter": []
+    }
+  ]
+}
