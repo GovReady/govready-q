@@ -3,7 +3,7 @@ from itertools import groupby
 
 from django.conf import settings
 from jinja2.sandbox import SandboxedEnvironment
-from controls.oscal import Catalogs
+from controls.oscal import Catalogs, Catalog
 
 def get_jinja2_template_vars(template):
     from jinja2 import meta, TemplateSyntaxError
@@ -300,11 +300,8 @@ def oscal_context(answers):
     # TODO: where do we get the catalog key from?
     
     catalog_key = Catalogs.NIST_SP_800_53_rev5
-    
-    params = project.get_parameter_values(catalog_key)
-    
-    print("params =", params.keys())
-    
+    catalog = Catalog.GetInstance(catalog_key)
+
     def _component(e):
         return {
             'uuid': e.uuid,
@@ -315,9 +312,11 @@ def oscal_context(answers):
     components = [_component(e) for e in system.producer_elements]
     statements = system.root_element.statements_consumed \
                                     .filter(statement_type="control_implementation") \
-                                    .order_by('pid')
+                                    .order_by('sid')
     grouped_by_control = groupby(statements, lambda s: s.sid)
     implemented_requirements = []
+    params = project.get_parameter_values(catalog_key)
+
     for control_id, group in grouped_by_control:
         ir = {
             "control_id": control_id,
@@ -325,6 +324,13 @@ def oscal_context(answers):
             "statements": []
         }
 
+        param_ids = catalog.get_parameter_ids_for_control(control_id)
+        ir["parameter_settings"] = [
+            dict(param_id=param_id, value=params.get(param_id))
+            for param_id in param_ids
+            if params.get(param_id)
+        ]
+        
         for pid, group in groupby(sorted(group, key=lambda s: s.pid),
                                  lambda s: s.pid):
             group = list(group)
