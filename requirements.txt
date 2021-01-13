@@ -638,10 +638,9 @@ rtyaml==1.0.0 \
     --hash=sha256:589129e75ecb2ba0def3dcc094bb462f68faed48e42a8fa0fcf4a9d6119fd725 \
     --hash=sha256:66aa6e2f2c8c29ccab9d1713072a4e06c52c6cdcfe27ebd50706df09638c4586 \
     # via -r requirements.in
-safety==1.10.0 \
-    --hash=sha256:2ebc71b44666588d7898905d86d575933fcd5fa3c92d301ed12482602b1e928a \
-    --hash=sha256:69437acf5dd617abd7086ccd0d50e813e67aa969bb9ca90f1847d5fbea047dcc \
-    # via -r requirements.in
+safety==1.10.2.post1 \
+    --hash=sha256:1d8f904c7df7c99f094154a6d2c3ae9703fd2fa58914bd80e005e860a9f4045c \
+    --hash=sha256:6f50edff1c5162d096cacd9557406b32c021c77fe8d2229750eeff22a3e10dfe    # via -r requirements.in
 selenium==3.141.0 \
     --hash=sha256:2d7131d7bc5a5b99a2d9b04aaf2612c411b03b8ca1b1ee8d3de5845a9be2cb3c \
     --hash=sha256:deaf32b60ad91a4611b98d8002757f29e6f2c2d5fcaf202e1c9ad06d6772300d \
