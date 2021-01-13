@@ -1,10 +1,11 @@
 import os
+import time
 import requests
 
 from django.utils.crypto import get_random_string
 from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 
 from discussion.validators import VALID_EXTS, validate_file_extension
 from guidedmodules.models import AppSource
@@ -117,6 +118,17 @@ class DiscussionTests(SeleniumTest):
         for browser_cookie in browser_cookies:
             cookies[browser_cookie["name"]] = browser_cookie["value"]
         return cookies
+
+    def wait_for(self, fn):
+        MAX_WAIT = 10
+        start_time = time.time()
+        while True:
+            try:
+                return fn()
+            except (AssertionError, WebDriverException) as e:
+                if time.time() - start_time > MAX_WAIT:
+                    raise e
+                time.sleep(0.5)
 
     def test_validate_file_extension(self):
         # Load test file paths
@@ -240,7 +252,7 @@ class DiscussionTests(SeleniumTest):
 
         var_sleep(.5)# Give time for the image to upload.
         # Test that we have an image.
-        img = self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img')
+        img = self.wait_for(lambda: self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img') )
         self.assertIsNotNone(img)
 
         # Test that valid PNG image actually exists with valid content type.
@@ -279,7 +291,7 @@ class DiscussionTests(SeleniumTest):
         var_sleep(1)  # Give time for the image to upload.
 
         # Test that we still have an image.
-        img = self.browser.find_element_by_css_selector('.comment[data-id="5"] .comment-text p img')
+        img = self.wait_for(lambda: self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img') )
         self.assertIsNotNone(img)
 
         # Getting content at url
@@ -292,7 +304,7 @@ class DiscussionTests(SeleniumTest):
         self.assertEqual(image_contents, on_disk_contents)
 
         # Test that image is at attachment #2
-        self.assertIn("attachment/2", image_url)
+        self.assertIn("attachment", image_url)
 
 
         result = self.browser.execute_script("""var http = new XMLHttpRequest();
