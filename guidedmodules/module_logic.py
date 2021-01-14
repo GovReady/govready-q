@@ -353,14 +353,14 @@ def oscal_context(answers):
         "make_uuid": uuid.uuid4,
         "version": "OSCAL VERSION", # version of ssp
         "profile": "OSCAL PROFILE", # baseline
-        "last_modified": "OSCAL LAST MODIFIED", # SSP last modified
-        "system_id": "OSCAL SYSTEM ID",         # system id
+        "last_modified": str(project.updated),
+        "system_id": f"govready-{system.id}",
         "system_information_type_title": "OSCAL SIT TITLE",
         "system_information_type_description": "OSCAL SIT DESC",
         "system_information_type_confidentiality_impact": "OSCAL SIT CONF",
         "system_information_type_integrity_impact": "OSCAL SIT INT",
         "system_information_type_availability_impact": "OSCAL SIT AVAIL",
-        "system_authorization_boundary": "OSCAL AUTH BOUNDARY",
+        "system_authorization_boundary": "System authorization boundary, TBD",
         "system_security_impact_level_confidentiality": "OSCAL SIL CONF",
         "system_security_impact_level_integrity": "OSCAL SIL INT",
         "system_security_impact_level_availability": "OSCAL SIL AVAIL",
@@ -566,6 +566,7 @@ def render_content(content, answers, output_format, source,
                 varname = m.group(1)
                 expr = m.group(2)
 
+                # print("%for: expr = ", expr)
                 condition_func = compile_jinja2_expression(expr)
                 if output_format == "PARSE_ONLY":
                     return value
@@ -574,6 +575,8 @@ def render_content(content, answers, output_format, source,
                 context.update(additional_context_2)
                 seq = condition_func(context)
 
+                # print("%for: seq = ", seq)
+                
                 # Render the %body key for each item in sequence.
                 return [
                     walk(
@@ -1440,8 +1443,12 @@ class TemplateContext(Mapping):
             if item == "task_link":
                 return self.module_answers.task.get_absolute_url()
             if item == "project":
+                print("TemplateContext.getitem('project')")
                 if self.parent_context is not None: # use parent's cache
+                    print("--- returning parent context[project]")
+                    print("--- project keys:", list(self.parent_context[item].keys()))
                     return self.parent_context[item]
+                print("--- no cache; rendering project!")
                 return RenderedProject(self.module_answers.task.project, parent_context=self)
             if item == "organization":
                 if self.parent_context is not None: # use parent's cache
