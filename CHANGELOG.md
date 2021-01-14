@@ -1,6 +1,12 @@
 GovReady-Q Release Notes
 ========================
 
+v999
+-----
+**Developer changes**
+
+* run tests in parallel in Circleci
+
 v.0.9.1.49 (January 12, 2021)
 -----------------------------
 
