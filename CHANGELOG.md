@@ -3,10 +3,19 @@ GovReady-Q Release Notes
 
 v.999 (January XX, 2021)
 ------------------------
+
+**Feature changes**
+
+* Add system deployments and system deployment inventory-items to track instantiated nodes and assessments of those nodes.
+
 **Developer changes**
 
 * Add `pyup.yml` configuration file to have pyup.io pull requests go against `develop` branch.
+* New routes and views related to tracking system deployments and deployment inventories.
 
+**Data changes**
+
+* Add `controls.Deployment` object Model to track a system's deployments.
 
 v.0.9.1.49 (January 12, 2021)
 -----------------------------
@@ -58,7 +67,7 @@ ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSIO
 * Add 'label' value to `oscal.Catalog.cx.get_flattened_controls_all_as_dict`.
 * Introducing model history tracking with django-simple-history.
 * Update various Python libraries.
-* Added file extension, size and type validation for Comment Attachment uploads.
+* Add file extension, size and type validation for Comment Attachment uploads.
 * Introducing request profiling with pyinstrument.
 * Add default `controls.models.OrgParams` class to support basic, default generation of orgizational defined parameters.
 

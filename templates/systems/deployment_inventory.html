@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load system_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} System Inventory
+{% endblock %}
+
+{% block head %}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div  class="systems-top">
+  <div class="container">
+
+  <div class="row">
+    <div id="above-tab-content" class="row">
+      <!-- Page Title-->
+      <div class="systems-title">
+          <h2 class="control-heading">
+            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a>
+            > <a href="{{ deployment.get_absolute_url }}" class="systems-link">Deployments</a>
+            > {{ deployment.name }}
+          </h2>
+      </div>
+    </div>
+  </div><!--/row-->
+    <p>&nbsp;</p>
+
+    <div id="tab-content" class="row rows-header">
+        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam">Inventory Items</div>
+        <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">&nbsp;</div>
+        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+          <!-- <a href="/systems/{{ system.id }}/deployment/new" class="btn btn-sm btn-success systems-element-button">New Deployment</a> -->
+          <span class="glyphicon glyphicon-download-alt pull-right systems-poam-glyphicon"
+                style="cursor: pointer;"
+                onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
+        </div>
+    </div>
+    {% if inventory_items|length < 1 %}
+      <div id="tab-content" class="row row-control">
+        <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+          <p>No Inventory-items are currently identified for this deployment.</p>
+        </div>
+      </div>
+    {% else %}
+      {% for item in inventory_items %}
+        <div id="tab-content" class="row row-control">
+            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                <a href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/inventory">{{ item.name }}</a>
+            </div>
+            <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
+                {{ item.description }}
+            </div>
+            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                {% if item.scan.time %}
+                scanned: {{ item.scan.time }}
+                {% else %}
+                scanned: not available
+                {% endif %}
+            </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+  </div>
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // The download button shows a modal to ask what file format to download in.
+  function download_document(document_id, system_id) {
+    var dom = $("<div><p>Select download format:</p>"
+      + "<select class=form-control>"
+      + "<option value='xlsx'>Microsoft Excel Spreadsheet</option>"
+      + "<option value='csv'>CSV Text File</option>"
+      + "</select>"
+      + "</div>");
+    show_modal_confirm("Download Document", dom, "Download", function() {
+      var format = dom.find("select").val();
+      switch(format) {
+        case "xlsx":
+          window.location = "/systems/" + system_id + "/deployments/export/xlsx";
+          break;
+        case "csv":
+          window.location = "/systems/" + system_id + "/deployments/export/csv";
+          break;
+      }
+    });
+  }
+</script>
+
+{% endblock %}

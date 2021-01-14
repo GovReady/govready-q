@@ -236,7 +236,6 @@ def rename_element(request,element_id):
         import sys
         return JsonResponse({ "status": "error", "message": sys.exc_info() })
 
-
 def components_selected(request, system_id):
     """Display System's selected components view"""
 
@@ -260,7 +259,6 @@ def components_selected(request, system_id):
         # User does not have permission to this system
         raise Http404
 
-
 def component_library(request):
     """Display the library of components"""
 
@@ -270,7 +268,6 @@ def component_library(request):
     }
 
     return render(request, "components/component_library.html", context)
-
 
 def import_records(request):
     """Display the records of component imports"""
@@ -287,7 +284,6 @@ def import_records(request):
 
     return render(request, "components/import_records.html", context)
 
-
 def import_record_details(request, import_record_id):
     """Display the records of component imports"""
 
@@ -299,7 +295,6 @@ def import_record_details(request, import_record_id):
         "component_statements": component_statements,
     }
     return render(request, "components/import_record_details.html", context)
-
 
 def confirm_import_record_delete(request, import_record_id):
     """Delete the components and statements imported from a particular import record"""
@@ -318,7 +313,6 @@ def confirm_import_record_delete(request, import_record_id):
     }
     return render(request, "components/confirm_import_record_delete.html", context)
 
-
 def import_record_delete(request, import_record_id):
     """Delete the components and statements imported from a particular import record"""
 
@@ -330,7 +324,6 @@ def import_record_delete(request, import_record_id):
 
     response = redirect('/controls/components')
     return response
-
 
 class ComponentSerializer(object):
 
@@ -449,7 +442,6 @@ class OpenControlComponentSerializer(ComponentSerializer):
             satisfies_smts.append(my_dict)
         opencontrol_string = rtyaml.dump(ocf)
         return opencontrol_string
-
 
 class ComponentImporter(object):
 
@@ -633,7 +625,6 @@ class ComponentImporter(object):
             control = catalog.get_control_by_id(control_id)
             return True if control is not None else False
 
-
 def system_element(request, system_id, element_id):
     """Display System's selected element detail view"""
 
@@ -780,6 +771,7 @@ def api_controls_select(request):
         data = {}
         return JsonResponse({"status": status, "message": message, "data": data})
 
+@login_required
 def component_library_component_copy(request, element_id):
     """Copy a component"""
 
@@ -795,7 +787,6 @@ def component_library_component_copy(request, element_id):
     # Redirect to the new page for the component
     return HttpResponseRedirect("/controls/components/{}".format(e_copy.id))
 
-
 @login_required
 def import_component(request):
     """Import a Component in JSON"""
@@ -805,6 +796,7 @@ def import_component(request):
     result = ComponentImporter().import_components_as_json(import_name, oscal_component_json, request)
     return component_library(request)
 
+@login_required
 def statement_history(request, smt_id=None):
     """Returns the history for the given statement"""
     from controls.models import Statement
@@ -819,6 +811,7 @@ def statement_history(request, smt_id=None):
 
     return render(request, "controls/statement_history.html", context)
 
+@login_required
 def restore_to_history(request, smt_id, history_id):
     """
     Restore the current model instance to a previous version
@@ -901,7 +894,7 @@ def system_element_download_oscal_json(request, system_id, element_id):
 
     return response
 
-
+@login_required
 def controls_selected_export_xacta_xslx(request, system_id):
     """Export System's selected controls compatible with Xacta 360"""
 
@@ -1208,7 +1201,7 @@ def controls_selected_export_xacta_xslx(request, system_id):
         # User does not have permission to this system
         raise Http404
 
-
+@login_required
 def editor(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
@@ -1340,6 +1333,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
 def editor_compare(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
@@ -2227,7 +2221,6 @@ def poams_list(request, system_id):
         # User does not have permission to this system
         raise Http404
 
-
 def new_poam(request, system_id):
     """Form to create new POAM"""
 
@@ -2272,7 +2265,6 @@ def new_poam(request, system_id):
     else:
         # User does not have permission to this system
         raise Http404
-
 
 def edit_poam(request, system_id, poam_id):
     """Form to create new POAM"""
@@ -2331,14 +2323,11 @@ def edit_poam(request, system_id, poam_id):
         # User does not have permission to this system
         raise Http404
 
-
 def poam_export_xlsx(request, system_id):
     return poam_export(request, system_id, 'xlsx')
 
-
 def poam_export_csv(request, system_id):
     return poam_export(request, system_id, 'csv')
-
 
 def poam_export(request, system_id, format='xlsx'):
     """Export POA&M in either xlsx or csv"""
@@ -2600,3 +2589,187 @@ def project_export(request, project_id):
     filename = project.title.replace(" ", "_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
     response['Content-Disposition'] = f'attachment; filename="{quote(filename)}.json"'
     return response
+
+
+# System Deployments
+def system_deployments(request, system_id):
+    """List deployments for a system"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve list of deployments for the system
+        deployments = system.deployments.all()
+        # controls = system.root_element.controls.all()
+        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+        # Return the controls
+        context = {
+            "system": system,
+            "project": project,
+            "deployments": deployments,
+            # "controls": controls,
+            # "poam_smts": poam_smts,
+            # "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            # "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            # "project_form": ProjectForm(request.user),
+        }
+        return render(request, "systems/deployments_list.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+def system_deployment_inventory(request, system_id, deployment_id):
+    """List system deployment inventory"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve list of deployments for the system
+        deployments = system.deployments.all()
+        # deployment = {"id": 3, "name": "production"}
+        deployment = get_object_or_404(Deployment, pk=deployment_id)
+        # controls = system.root_element.controls.all()
+        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+        inventory_all = [
+  {
+    "id": "1",
+    "name": "host-1",
+    "ip": "10.10.0.11",
+    "deployment_id": "1",
+    "uuid": "8e1f1131-2a28-4b85-b0c3-069f49399112",
+    "description": "webserver"
+  },
+  {
+    "id": "2",
+    "name": "host-2",
+    "ip": "10.10.0.12",
+    "deployment_id": "1",
+    "uuid": "ce625f39-cfd0-433d-8ab5-83fe5563a62a",
+    "description": "database"
+  },
+  {
+    "id": "3",
+    "name": "service-1",
+    "ip": "34.15.15.02",
+    "deployment_id": "1",
+    "uuid": "4421c378-06fe-497d-a2b3-b26cce8f9a1d",
+    "description": "geo service"
+  },
+  {
+    "id": "4",
+    "name": "webserver",
+    "ip": "10.10.0.21",
+    "deployment_id": "3",
+    "uuid": "1697a233-6cd5-4050-983d-41ae61b7796d",
+    "description": "webserver",
+    "ram": {
+      "usage": 67,
+      "total": 1048176,
+      "free": 343996
+    },
+    "cpu": {
+      "cores": 1,
+      "mhz": 2400,
+      "name": "Intel(R) Xeon(R) CPU E5-2676 v3 @ 2.40GHz"
+    },
+    "scan": {
+      "id": 707357457,
+      "time": "2018/09/06 01:02:13"
+    }
+  },
+  {
+    "id": "5",
+    "name": "database",
+    "ip": "10.10.0.22",
+    "deployment_id": "3",
+    "uuid": "1f2b094d-9d71-4aba-b381-1e64ad4f3dc5",
+    "description": "database",
+    "ram": {
+      "usage": 67,
+      "total": 1048176,
+      "free": 343996
+    },
+    "cpu": {
+      "cores": 1,
+      "mhz": 2400,
+      "name": "Intel(R) Xeon(R) CPU E5-2676 v3 @ 2.40GHz"
+    },
+    "scan": {
+      "id": 707357457,
+      "time": "2018/09/06 01:02:13"
+    }
+  },
+  {
+    "id": "6",
+    "name": "service-1",
+    "ip": "34.15.15.02",
+    "deployment_id": "3",
+    "uuid": "6189309c-aa7d-402a-a428-6b50e9e59d68",
+    "description": "geo service"
+  },
+  {
+    "id": "7",
+    "name": "host-3",
+    "ip": "10.10.0.21",
+    "deployment_id": "2",
+    "uuid": "d52cb9b6-d2aa-464f-b90d-48cda00cd91b",
+    "description": "webserver"
+  },
+  {
+    "id": "8",
+    "name": "host-4",
+    "ip": "10.10.0.22",
+    "deployment_id": "2",
+    "uuid": "154b3254-ec17-4bfb-915e-d1769f7e763f",
+    "description": "database"
+  },
+  {
+    "id": "9",
+    "name": "service-1",
+    "ip": "34.15.15.02",
+    "deployment_id": "2",
+    "uuid": "134e3c89-8e5c-4e30-9527-064278fe5025",
+    "description": "geo service"
+  },
+  {
+    "id": "10",
+    "name": "host-8",
+    "ip": "10.10.0.13",
+    "deployment_id": "1",
+    "uuid": "629de7b4-ba0a-4d8e-be4c-866e7c9b8ca2",
+    "description": "data parsing"
+  }
+]
+
+        # filter inventory to environment
+
+        inventory_items = [item for item in inventory_all if item["deployment_id"] == deployment_id]
+
+        # Return the controls
+        context = {
+            "system": system,
+            "project": project,
+            "deployment": deployment,
+            "inventory_items": inventory_items,
+            # "controls": controls,
+            # "poam_smts": poam_smts,
+            # "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            # "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            # "project_form": ProjectForm(request.user),
+        }
+        return render(request, "systems/deployment_inventory.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404

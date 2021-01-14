@@ -29,6 +29,10 @@ urlpatterns = [
     url(r'^statement_history/(?P<smt_id>.*)/$', views.statement_history, name="statement_history"),
     url(r'^restore_to/(?P<smt_id>.*)/(?P<history_id>.*)/$', views.restore_to_history, name="restore_to"),
 
+    # Systems Inventory and Deployments
+    url(r'^(?P<system_id>.*)/deployments$', views.system_deployments, name="system_deployments"),
+    url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/inventory$', views.system_deployment_inventory, name="system_deployment_inventory"),
+
     url(r'^smt/_save/$', views.save_smt),
     url(r'^smt/_delete/$', views.delete_smt),
     url(r'^smt/_update_smt_prototype/$', views.update_smt_prototype),

@@ -184,7 +184,6 @@ class Statement(models.Model):
     # TODO:c
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
-
 class Element(models.Model):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
@@ -698,3 +697,29 @@ class Poam(models.Model):
 
     # TODO:
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
+
+class Deployment(models.Model):
+    name = models.CharField(max_length=250, help_text="Name of the deployment", unique=False, blank=False, null=False)
+    description = models.CharField(max_length=255, help_text="Brief description of the deployment", unique=False, blank=False, null=False)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for the deployment.")
+    system = models.ForeignKey('System', related_name='deployments', on_delete=models.CASCADE, blank=True, null=True, help_text="The system associated with the deployment.")
+
+    # Notes
+    #
+    # Retrieve System Deployment
+    #    from controls.models import *
+    #    s = System.objects.get(pk=11)
+    #    s.deployments.all()
+    #    # returns <QuerySet ['ac-2 id=1', 'ac-3 id=2', 'au-2 id=3']>
+
+    def __str__(self):
+        return "'%s id=%d'" % (self.name, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "'%s id=%d'" % (self.name, self.id)
+
+    def get_absolute_url(self):
+        return "/systems/%d/deployments" % (self.system.id)
