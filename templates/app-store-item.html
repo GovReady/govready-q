@@ -145,14 +145,9 @@
             </select>
           </div>
         {% endif %}
-        <button id="start-project" type="submit" class="btn btn-success app-button-width">
-          {% if not request.GET.q %}
-          Add
-          {% else %}
-          Add
-          {% endif %}
-          ►
-        </button>
+        {% if portfolio %}
+          <button id="start-project" type="submit" class="btn btn-success app-button-width">Add ►</button>
+        {% endif %}
       </form>
       <button id="start-project" type="submit" class="btn btn-link btn-start-project">
           {% if portfolio %}
