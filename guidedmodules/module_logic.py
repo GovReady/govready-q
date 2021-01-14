@@ -1,9 +1,13 @@
 import uuid
 from itertools import groupby
+from urllib.parse import urlunparse
 
 from django.conf import settings
+from django.urls import reverse
+
 from jinja2.sandbox import SandboxedEnvironment
 from controls.oscal import Catalogs, Catalog
+from siteapp.settings import GOVREADY_URL
 
 def get_jinja2_template_vars(template):
     from jinja2 import meta, TemplateSyntaxError
@@ -288,6 +292,12 @@ def get_question_context(answers, question):
 
 
 def oscal_context(answers):
+    """
+    Generate a dictionary of values useful for rendering OSCAL.
+
+    Lots of work in progress here!
+    """
+
     # sometimes we run into answers w/o a task, in which case
     # there is not much we can do
     
@@ -299,25 +309,34 @@ def oscal_context(answers):
 
     # TODO: where do we get the catalog key from?
     
-    catalog_key = Catalogs.NIST_SP_800_53_rev5
+    catalog_key = Catalogs.NIST_SP_800_53_rev4
     catalog = Catalog.GetInstance(catalog_key)
 
+    # build a component from an Element
     def _component(e):
         return {
             'uuid': e.uuid,
             'title': e.name,
             'description': e.description,
-            'state': ''
+            'state': "operational",         # TODO: OSCAL asks for individual component state
+            'type': "software"              # TODO: OSCAL components have a type
         }
     components = [_component(e) for e in system.producer_elements]
+
+    # collect all the control implementation statements
     statements = system.root_element.statements_consumed \
                                     .filter(statement_type="control_implementation") \
                                     .order_by('sid')
-    grouped_by_control = groupby(statements, lambda s: s.sid)
-    implemented_requirements = []
+
+    # and all the project's organizational parameters
     params = project.get_parameter_values(catalog_key)
 
-    for control_id, group in grouped_by_control:
+
+    # loop over all statements, grouped by control id and
+    # build a list of implemented_requirements
+
+    implemented_requirements = []
+    for control_id, group in groupby(statements, lambda s: s.sid):
         ir = {
             "control_id": control_id,
             "uuid": str(uuid.uuid4()),
@@ -331,17 +350,27 @@ def oscal_context(answers):
             if params.get(param_id)
         ]
         
+        # loop over all the statements for this control, grouped by
+        # "part id".  I.e., "ac-1.a", "ac-1.b", etc.
         for pid, group in groupby(sorted(group, key=lambda s: s.pid),
                                  lambda s: s.pid):
+            # useful to extract the statement id from the first statement
+            # (should be the same for all the statements in this group)
             group = list(group)
             first_statement = group[0]
             statement = {
                 "id": first_statement.oscal_statement_id,
-                "uuid": str(first_statement.uuid),
+                "uuid": str(uuid.uuid4()),
                 "by_components": []
             }
+            # assumption: at this point, each statement in the group
+            # has been contributed by a different component. if
+            # assumption is not valid, we'll have to fix this code a
+            # bit, since OSCAL doesn't obiviously support multiple
+            # contributions to a statement from the same component
             for s in group:
                 by_component = {
+                    "uuid": str(s.uuid),
                     "component_uuid": s.producer_element.uuid,
                     "description": s.body
                 }
@@ -349,23 +378,41 @@ def oscal_context(answers):
             ir['statements'].append(statement)
         implemented_requirements.append(ir)
 
+        # TODO: placeholder for information types -- should be able to pull this out
+        # from questionnaire
+        
+        information_types = [
+            {
+                "title": "UNKNOWN information type title",
+                "description": "information type description",
+                "confidentiality_impact": "information type confidentiality impact",
+                "integrity_impact": "information type integrity impact",
+                "availability_impact": "information type availability impact"
+            }
+        ]
+
+    # generate a URL to reference this system's OSCAL profile (baseline)
+    profile_path = reverse('profile_oscal_json', kwargs=dict(system_id=system.id))
+    profile = urlunparse((GOVREADY_URL.scheme, GOVREADY_URL.netloc,
+                          profile_path,
+                          None, None, None))
     return {
-        "make_uuid": uuid.uuid4,
-        "version": "OSCAL VERSION", # version of ssp
-        "profile": "OSCAL PROFILE", # baseline
+        "uuid": str(uuid.uuid4()), # SSP UUID
+        "make_uuid": uuid.uuid4, # so we can gen UUIDS if needed in the templates
+        "version": project.version,
+        "profile": profile,
+        "oscal_version": "1.0.0rc1",
         "last_modified": str(project.updated),
         "system_id": f"govready-{system.id}",
-        "system_information_type_title": "OSCAL SIT TITLE",
-        "system_information_type_description": "OSCAL SIT DESC",
-        "system_information_type_confidentiality_impact": "OSCAL SIT CONF",
-        "system_information_type_integrity_impact": "OSCAL SIT INT",
-        "system_information_type_availability_impact": "OSCAL SIT AVAIL",
-        "system_authorization_boundary": "System authorization boundary, TBD",
-        "system_security_impact_level_confidentiality": "OSCAL SIL CONF",
-        "system_security_impact_level_integrity": "OSCAL SIL INT",
-        "system_security_impact_level_availability": "OSCAL SIL AVAIL",
+        "system_authorization_boundary": "System authorization boundary, TBD", # TODO
+        "system_information_types": information_types,
+        "system_security_impact_level_confidentiality": "UNKNOWN", # TODO
+        "system_security_impact_level_integrity": "UNKNOWN",       # TODO
+        "system_security_impact_level_availability": "UNKNOWN",    # TODO
+        "system_operating_status": "operational", # TODO: need from questionnaire, but wrong format
         "components": components,
-        "implemented_requirements": implemented_requirements
+        "implemented_requirements": implemented_requirements,
+        "information_types": information_types
     }
 
 
@@ -553,7 +600,7 @@ def render_content(content, answers, output_format, source,
             # Process objects with a special "%___" key specially.
             # If it has a %for key with a string value, then interpret the string value as
             # an expression in Jinja2 which we assume evaluates to a sequence-like object
-            # and loop over the items in the sequence. For each item, the "%body" key
+            # and loop over the items in the sequence. For each item, the "%loop" key
             # of this object is rendered with the context amended with variable name
             # assigned the sequence item.
 
@@ -576,8 +623,7 @@ def render_content(content, answers, output_format, source,
                 seq = condition_func(context)
 
                 # print("%for: seq = ", seq)
-                
-                # Render the %body key for each item in sequence.
+                # Render the %loop key for each item in sequence.
                 return [
                     walk(
                         value.get("%loop"),
@@ -586,6 +632,9 @@ def render_content(content, answers, output_format, source,
                     for i, item in enumerate(seq)
                 ]
 
+            # For a %dict key, we will add a dictionary for each element in the
+            # sequence.  The key for the dictionary is specified by value of %key
+            # item, and the value of the item itself is specified by the %value
             elif isinstance(value, dict) and isinstance(value.get("%dict"), str):
                 # The value of the "%dict" key is "variable in expression". Parse that
                 # first.
@@ -603,19 +652,50 @@ def render_content(content, answers, output_format, source,
                 context.update(additional_context_2)
                 seq = condition_func(context)
 
-                # Render the %item key for each item in sequence.
+                # Render the %value key for each item in sequence,
+                # producing a dict of dicts.  Each rendered dict
+                # must contain a special item with the key "%key".
+                # The value of "%key" is used to key a dictionary
+                # containing the remainder of the rendered items.
+                # E.g.,
+                # {
+                #     "books": {
+                #         "%dict": "book in books",
+                #         "%value": {
+                #             "%key": "{{ book.id }}",
+                #             "title": "{{ book.title }}",
+                #             "author": "{{ book.author }}"
+                #          }
+                #      }
+                # }    
+                # will render to:
+                # {
+                #     "books": {
+                #         "100": {
+                #             "title": "Harry Potter and the Chamber of Secrets",
+                #             "author": "JK"
+                #         },
+                #         "101": {
+                #             "title": "Harry Potter and the Goblet of Fire",
+                #             "author": "JK"
+                #         }
+                #     }
+                # }
+
                 retval = dict()
-                if "%item" not in value:
-                    raise ValueError("%dict directive missing %item")
-                item_value = value["%item"]
+                if "%value" not in value:
+                    raise ValueError("%dict directive missing %value")
+                item_value = value["%value"]
                 
                 for i, item in enumerate(seq):
                     obj = walk(
                         item_value,
                         path+[str(i)],
                         { **additional_context_2, **{ varname: item } })
+                    if not isinstance(obj, dict):
+                        raise ValueError("%value did not produce a dict")
                     if "%key" not in obj:
-                        raise ValueError("%dict directive %item did not produce a %key")
+                        raise ValueError("dict returned by %value had no %key")
                     dict_key = obj.pop('%key')
                     retval[dict_key] = obj
 
@@ -1443,12 +1523,8 @@ class TemplateContext(Mapping):
             if item == "task_link":
                 return self.module_answers.task.get_absolute_url()
             if item == "project":
-                print("TemplateContext.getitem('project')")
                 if self.parent_context is not None: # use parent's cache
-                    print("--- returning parent context[project]")
-                    print("--- project keys:", list(self.parent_context[item].keys()))
                     return self.parent_context[item]
-                print("--- no cache; rendering project!")
                 return RenderedProject(self.module_answers.task.project, parent_context=self)
             if item == "organization":
                 if self.parent_context is not None: # use parent's cache

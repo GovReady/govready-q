@@ -2592,3 +2592,14 @@ def project_export(request, project_id):
     filename = project.title.replace(" ", "_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
     response['Content-Disposition'] = f'attachment; filename="{quote(filename)}.json"'
     return response
+
+def system_profile_oscal_json(request, system_id):
+    """
+    Return an OSCAL profile for this system.
+    TODO: for now, we return an empty response.
+    """
+
+    data = {}
+    return JsonResponse(data)
+    response['Content-Disposition'] = f'attachment; filename="oscal-profile.json"'
+    return response
