@@ -243,10 +243,9 @@ filetype==1.0.7 \
     --hash=sha256:353369948bb1c09b8b3ea3d78390b5586e9399bff9aab894a1dff954e31a66f6 \
     --hash=sha256:da393ece8d98b47edf2dd5a85a2c8733e44b769e32c71af4cd96ed8d38d96aa7 \
     # via -r requirements.in
-fs==2.4.11 \
-    --hash=sha256:cc99d476b500f993df8ef697b96dc70928ca2946a455c396a566efe021126767 \
-    --hash=sha256:cd6b178f373a0370feac8612fd3c142aa6a5cadd3d471b525b08db4d3b511c9c \
-    # via -r requirements.in
+fs==2.4.12 \
+    --hash=sha256:c10ba188b14d6213a1ca950efd004931abbfa64b294c80bbf1045753831bf42f \
+    --hash=sha256:da6cc360677712ae27ac4be8a3ef404dd7970dbd1c3eebe87a25bebd94e84b4c    # via -r requirements.in
 future==0.18.2 \
     --hash=sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d \
     # via commonmark
