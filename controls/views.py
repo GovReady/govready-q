@@ -78,7 +78,7 @@ def catalog(request, catalog_key, system_id=None):
         system = System.objects.get(pk=system_id)
 
     # Get catalog
-    catalog = Catalog(catalog_key)
+    catalog = Catalog.GetInstance(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
     control_groups = catalog.get_groups()
     context = {
@@ -95,7 +95,7 @@ def group(request, catalog_key, g_id):
     """Temporary index page for catalog control group"""
 
     # Get catalog
-    catalog = Catalog(catalog_key)
+    catalog = Catalog.GetInstance(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
     control_groups = catalog.get_groups()
     group = None
@@ -121,7 +121,7 @@ def control(request, catalog_key, cl_id):
     catalog_key = oscalize_catalog_key(catalog_key)
 
     # Get catalog
-    catalog = Catalog(catalog_key)
+    catalog = Catalog.GetInstance(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
 
     # Handle properly formatted control id that does not exist
@@ -340,14 +340,6 @@ class ComponentSerializer(object):
 
 class OSCALComponentSerializer(ComponentSerializer):
 
-    @staticmethod
-    def statement_id_from_control(control_id, part_id):
-        if part_id:
-            return f"{control_id}_smt.{part_id}"
-        else:
-            return f"{control_id}_smt"
-
-
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
@@ -404,7 +396,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "description": smt.body,
                     "remarks": smt.remarks
                 }
-                statement_id = self.statement_id_from_control(control_id, smt.pid)
+                statement_id = smt.oscal_statement_id
                 requirement["statements"][statement_id] = statement
                 
             by_class[smt.sid_class].append(requirement)
@@ -1216,7 +1208,7 @@ def editor(request, system_id, catalog_key, cl_id):
     catalog_key = oscalize_catalog_key(catalog_key)
 
     # Get control catalog
-    catalog = Catalog(catalog_key)
+    catalog = Catalog.GetInstance(catalog_key)
 
     # TODO: maybe catalogs could provide an API that returns a set of 
     # control ids instead?
@@ -1244,7 +1236,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # We need to grab the catalog again.
 
         parameter_values = project.get_parameter_values(catalog_key)
-        catalog = Catalog(catalog_key, parameter_values=parameter_values)
+        catalog = Catalog.GetInstance(catalog_key, parameter_values=parameter_values)
         cg_flat = catalog.get_flattened_controls_all_as_dict()
 
         common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
@@ -1346,7 +1338,7 @@ def editor_compare(request, system_id, catalog_key, cl_id):
     cl_id = oscalize_control_id(cl_id)
 
     # Get control catalog
-    catalog = Catalog(catalog_key)
+    catalog = Catalog.GetInstance(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
     # If control id does not exist in catalog
     if cl_id.lower() not in cg_flat:
@@ -2599,4 +2591,15 @@ def project_export(request, project_id):
     response = JsonResponse(data, json_dumps_params={"indent": 2})
     filename = project.title.replace(" ", "_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
     response['Content-Disposition'] = f'attachment; filename="{quote(filename)}.json"'
+    return response
+
+def system_profile_oscal_json(request, system_id):
+    """
+    Return an OSCAL profile for this system.
+    TODO: for now, we return an empty response.
+    """
+
+    data = {}
+    return JsonResponse(data)
+    response['Content-Disposition'] = f'attachment; filename="oscal-profile.json"'
     return response
