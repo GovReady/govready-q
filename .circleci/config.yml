@@ -105,7 +105,7 @@ jobs:
 #        command: |
 #          TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split)
 #            coverage run --source='.' --branch -p manage.py test system_settings $TESTFILES -v 2
-  - run:
+   - run:
        name: All tests run in split
        command: |
          echo $(circleci tests glob "controls/**/*" "discussion/**/*")
