@@ -7,7 +7,7 @@ workflows:
       - controls
       - discussions
 jobs:
-  build:
+  controls:
     docker:
     - image: circleci/python:3.8.1-browsers # when upgrading, check that it works with selenium
     parallelism: 2
