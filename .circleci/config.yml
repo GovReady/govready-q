@@ -74,7 +74,7 @@ jobs:
     - run:
         name: Create test results folder
         command: |
-          sudo mkdir -m 0755 -p  mkdir test-results
+          sudo mkdir -m 0755 -p test-results
     # Run unit and functional tests with code coverage, and store code coverage
     # results. CircleCI commands can't go on forever, so we run the tests
     # separately (with -p) and then combine code coverage results.
@@ -111,8 +111,8 @@ jobs:
     - run:
        name: All tests run in split
        command: |
-         echo $(circleci tests glob "test/**/*.py")
          TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split --split-by=timings)
+         echo ${TESTFILES}
          coverage run --source='.' --branch -p manage.py test $TESTFILES -v 2
 
     # - run: coverage run --source='.' --branch -p manage.py test discussion
