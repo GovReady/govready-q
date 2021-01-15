@@ -432,10 +432,9 @@ oauthlib==3.1.0 \
     --hash=sha256:bee41cc35fcca6e988463cacc3bcb8a96224f470ca547e697b604cc697b2f889 \
     --hash=sha256:df884cd6cbe20e32633f1db1072e9356f53638e4361bef4e8b03c9127c9328ea \
     # via requests-oauthlib
-openpyxl==3.0.5 \
-    --hash=sha256:18e11f9a650128a12580a58e3daba14e00a11d9e907c554a17ea016bf1a2c71b \
-    --hash=sha256:f7d666b569f729257082cf7ddc56262431878f602dcc2bc3980775c59439cdab \
-    # via -r requirements.in
+openpyxl==3.0.6 \
+    --hash=sha256:1a4b3869c2500b5c713e8e28341cdada49ecfcff1b10cd9006945f5bcefc090d \
+    --hash=sha256:b229112b46e158b910a5d1b270b212c42773d39cab24e8db527f775b82afc041    # via -r requirements.in
 packaging==20.8 \
     --hash=sha256:24e0da08660a87484d1602c30bb4902d74816b6985b93de36926f5bc95741858 \
     --hash=sha256:78598185a7008a470d64526a8059de9aaa449238f280fc9eb6b13ba6c4109093 \
