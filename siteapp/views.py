@@ -21,6 +21,7 @@ from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
 from controls.models import Element, System
+from system_settings.models import SystemSettings
 
 from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
@@ -804,6 +805,8 @@ def project(request, project):
         "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
         "has_outputs": has_outputs,
+
+        "enable_experimental_evidence": SystemSettings.enable_experimental_evidence,
 
         "layout_mode": layout_mode,
         "columns": columns,

@@ -20,3 +20,7 @@ class SystemSettings(models.Model):
   @classmethod
   def enable_experimental_oscal(cls):
     return cls.objects.get(setting="enable_experimental_oscal").active
+
+  @classmethod
+  def enable_experimental_evidence(cls):
+    return cls.objects.get(setting="enable_experimental_evidence").active
