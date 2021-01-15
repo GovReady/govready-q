@@ -35,7 +35,7 @@ whitenoise # MIT License
 django-guardian # MIT License
 django-simple-history # BSD License
 pyinstrument # BSD License
-
+django-nose # BSD License
 
 # Python Packages Developed by GovReady and/or Josh
 rtyaml # CC0
