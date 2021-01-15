@@ -547,7 +547,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         def do_invitation(username):
             #print("INFO: Entering '{}', '{}'".format('do_invitation(username)', username))
             start_invitation(username)
-            #var_sleep(.5) # wait for invitation to be sent
+            var_sleep(.5) # wait for invitation to be sent
 
             # Log out and accept the invitation as an anonymous user.
             self.browser.get(self.url("/accounts/logout/"))
