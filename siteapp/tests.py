@@ -263,7 +263,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
 
-        AppSource.objects.all().delete()
+        try:
+            AppSource.objects.all().delete()
+        except Exception as ex:
+            print(f"Exception: {ex}")
+            print(f"App Sources:{AppSource.objects.all()}")
         AppSource.objects.get_or_create(
               # this one exists on first db load because it's created by
               # migrations, but because the testing framework seems to
@@ -1277,9 +1281,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def test_questions_module(self):
         # Log in and create a new project.
-        var_sleep(.5)
         self._login()
-        var_sleep(.5)
         self._new_project()
         # start "Test The Module Question Types"
         self.click_element('#question-question_types_module')
