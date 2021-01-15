@@ -634,7 +634,11 @@ class OrgParamTests(TestCase):
         from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
         
-        AppSource.objects.all().delete()
+        try:
+            AppSource.objects.all().delete()
+        except Exception as ex:
+            print(f"Exception: {ex}")
+            print(f"App Sources:{AppSource.objects.all()}")
         AppSource.objects.get_or_create(
             slug="system",
             is_system_source=True,

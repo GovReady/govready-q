@@ -35,7 +35,11 @@ class DiscussionTests(SeleniumTest):
         # Load modules from the fixtures directory so that we have the required
         # modules as well as a test project.
 
-        AppSource.objects.all().delete()
+        try:
+            AppSource.objects.all().delete()
+        except Exception as ex:
+            print(f"Exception: {ex}")
+            print(f"App Sources:{AppSource.objects.all()}")
         AppSource.objects.get_or_create(
               # this one exists on first db load because it's created by
               # migrations, but because the testing framework seems to
@@ -279,7 +283,7 @@ class DiscussionTests(SeleniumTest):
         self.click_element("#discussion .comment-input button.btn-primary")
         var_sleep(1.5)  # Give time for the image to upload.
         # Test that we still have an image.
-        img = wait_for_sleep_after(lambda: self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img') )
+        img = wait_for_sleep_after(lambda: self.browser.find_element_by_css_selector('.comment[data-id="5"] .comment-text p img') )
         self.assertIsNotNone(img)
 
         # Getting content at url
@@ -292,7 +296,7 @@ class DiscussionTests(SeleniumTest):
         self.assertEqual(image_contents, on_disk_contents)
 
         # Test that image is at attachment #2
-        self.assertIn("attachment", image_url)
+        self.assertIn("attachment/2", image_url)
 
 
         result = self.browser.execute_script("""var http = new XMLHttpRequest();
