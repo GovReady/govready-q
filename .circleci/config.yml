@@ -1,6 +1,7 @@
 # A CircleCI configuration file because we do continuous integration testing!
 
-version: 2
+workflows:
+  version: 2
   test:
     jobs:
       - build
