@@ -72,16 +72,31 @@ jobs:
     # Run unit and functional tests with code coverage, and store code coverage
     # results. CircleCI commands can't go on forever, so we run the tests
     # separately (with -p) and then combine code coverage results.
-#    - run: coverage run --source='.' --branch -p manage.py test controls
-#    - run: coverage run --source='.' --branch -p manage.py test discussion
-#    - run: coverage run --source='.' --branch -p manage.py test guidedmodules
-#    - run: coverage run --source='.' --branch -p manage.py test siteapp
-#    - run: coverage run --source='.' --branch -p manage.py test system_settings
-    - run:
-          name: Run python tests using test splitting
-          command: |
-            TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split)
-            ./manage.py test $TESTFILES -v 2
+    - run: coverage run --source='.' --branch -p manage.py test controls
+      - command: |
+          echo "I am result of above failed job in controls"
+          when: on_fail
+    - run: coverage run --source='.' --branch -p manage.py test discussion
+      - command: |
+          echo "I am result of above failed job in discussion"
+          when: on_fail
+    - run: coverage run --source='.' --branch -p manage.py test guidedmodules
+      - command: |
+          echo "I am result of above failed job in guidedmodules"
+          when: on_fail
+    - run: coverage run --source='.' --branch -p manage.py test siteapp
+      - command: |
+          echo "I am result of above failed job in siteapp"
+          when: on_fail
+    - run: coverage run --source='.' --branch -p manage.py test system_settings
+      - command: |
+          echo "I am result of above failed job in system_settings"
+        when: on_fail
+#    - run:
+#          name: Run python tests using test splitting
+#          command: |
+#            TESTFILES=$(circleci tests glob "controls/test/**/*.py" | circleci tests split)
+#            ./manage.py test $TESTFILES -v 2
     # - run: coverage run --source='.' --branch -p manage.py test discussion
     # Commenting out tests until better solution for testing after page loaded
     #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.LandingSiteFunctionalTests
