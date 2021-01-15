@@ -108,7 +108,7 @@ jobs:
     - run:
        name: All tests run in split
        command: |
-         mkdir -p $CIRCLE_TEST_REPORTS/django
+         sudo mkdir -m 0755 -p $CIRCLE_TEST_REPORTS/django
          TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split --split-by=timings)
          coverage run --source='.' --branch -p manage.py test $TESTFILES -v 2 --xunit-file=$CIRCLE_TEST_REPORTS/django/test_result.xml
 
