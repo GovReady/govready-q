@@ -74,7 +74,7 @@ jobs:
     - run:
         name: Create test results folder
         command: |
-          sudo mkdir -m 0755 -p test-results
+          sudo mkdir -m 0755 -p /tmp/test-results
     # Run unit and functional tests with code coverage, and store code coverage
     # results. CircleCI commands can't go on forever, so we run the tests
     # separately (with -p) and then combine code coverage results.
@@ -130,4 +130,4 @@ jobs:
         path: htmlcov
       # Upload test results
     - store_test_results:
-        path: test-results
+        path: /tmp/test-results
