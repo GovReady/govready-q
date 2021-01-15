@@ -24,7 +24,7 @@ from controls.models import System
 from controls.models import STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED
 from controls.views import OSCALComponentSerializer
 from siteapp.models import User, Organization, OrganizationalSetting
-from siteapp.tests import SeleniumTest, OrganizationSiteFunctionalTests
+from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests
 from system_settings.models import SystemSettings
 from .models import *
 from .oscal import Catalogs, Catalog
@@ -819,6 +819,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         search_comps_txtbar[-1].clear()
         search_comps_txtbar[-1].send_keys("Component")
         self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
+        var_sleep(2)
         assert len(comps_dropdown.options) == 3
 
         ## Search for 2
@@ -826,6 +827,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         search_comps_txtbar[-1].clear()
         search_comps_txtbar[-1].send_keys("2")
         self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
+        var_sleep(2)
         assert len(comps_dropdown.options) == 2
         # Use elements from database to avoid hard-coding element ids expected
         elements = Element.objects.all()
