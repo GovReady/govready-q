@@ -108,8 +108,9 @@ jobs:
     - run:
        name: All tests run in split
        command: |
+         mkdir -p $CIRCLE_TEST_REPORTS/django
          TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split --split-by=timings)
-         coverage run --source='.' --branch -p manage.py test $TESTFILES -v 2
+         coverage run --source='.' --branch -p manage.py test $TESTFILES -v 2 --xunit-file=$CIRCLE_TEST_REPORTS/django/test_result.xml
 
     # - run: coverage run --source='.' --branch -p manage.py test discussion
     # Commenting out tests until better solution for testing after page loaded
@@ -126,4 +127,4 @@ jobs:
         path: htmlcov
       # Upload test results
     - store_test_results:
-        path: test-results
+        path: $CIRCLE_TEST_REPORTS
