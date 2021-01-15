@@ -1053,7 +1053,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Next Question: yesno")
         self.click_element('#question input[name="value"][value="yes"]')
         self.click_element("#save-button")
-
+        var_sleep(.5)
         self.wait_for(lambda: self._test_api_get(["question_types_choice", "q_yesno"], "yes"))
         self._test_api_get(["question_types_choice", "q_yesno.text"], "Yes")
 
