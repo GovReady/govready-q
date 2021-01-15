@@ -1,0 +1,68 @@
+version: 2.1
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test-python
+jobs:
+  test-python:
+    docker:
+      - image: kogancom/circleci-py36-node
+      - image: circleci/redis
+      - image: elasticsearch
+        name: elasticsearch
+      - image: rabbitmq
+      - image: circleci/postgres
+        environment:
+          POSTGRES_USER: postgres
+    resource_class: medium+
+    parallelism: 4
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pip-36-cache-{{ checksum "requirements/production.txt" }}-{{ checksum "requirements/develop.txt"}}
+      - run:
+          name: Install System Packages
+          command: |
+            sudo apt update
+            sudo apt install -y libyajl2 postgresql-client libpq-dev
+      - run:
+          name: Install Python Packages
+          command: pip install --user --no-warn-script-location -r requirements/develop.txt
+      - save_cache:
+          key: pip-36-cache-{{ checksum "requirements/production.txt" }}-{{ checksum "requirements/develop.txt"}}
+          paths:
+            - /home/circleci/.cache/pip
+      - run:
+          name: Prepare Postgres
+          command: |
+            psql -h localhost -p 5432 -U postgres -d template1 -c "create extension citext"
+            psql -h localhost -p 5432 -U postgres -d template1 -c "create extension hstore"
+            psql -h localhost -p 5432 -U postgres -c 'create database xxx;'
+      - run:
+          # pip install --user installs scripts to ~/.local/bin
+          name: Setup Path
+          command: echo 'export PATH=/home/circleci/.local/bin:$PATH' >> $BASH_ENV
+      - run:
+          name: PyTest
+          no_output_timeout: 8m
+          environment:
+            DJANGO_SETTINGS_MODULE: xxx.settings.test
+            TEST_NO_MIGRATE: '1'
+            BOTO_CONFIG: /dev/null
+            DATABASE_HOST: localhost
+            DATABASE_NAME: xxx
+            DATABASE_USER: postgres
+            DATABASE_PASSWORD: xxx
+            REDIS_HOST: localhost
+            BROKER_URL: 'pyamqp://xxx:yyy@localhost:5672//'
+          command: |
+            cd myapp
+            mkdir test-reports
+            TESTFILES=$(circleci tests glob "**/tests/**/test*.py" "**/tests.py" | circleci tests split --split-by=timings)
+            # coverage disabled until we can find a way to aggregate parallel cov reports
+            # --cov=apps --cov-report html:test-reports/coverage
+            pytest  --rootdir="." --tb=native --durations=20 --nomigrations --create-db --log-level=ERROR -v --junitxml=test-reports/python/junit.xml --timeout=20 $TESTFILES
+      - store_test_results:
+          path: myapp/test-reports
