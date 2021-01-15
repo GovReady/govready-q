@@ -1,6 +1,16 @@
 GovReady-Q Release Notes
 ========================
 
+
+v999
+----
+
+**Developer changes**
+
+* New '%dict' operator for JSON/YAML output templates
+
+* Pass OSCAL context to JSON/YAML output templates
+
 v.0.9.1.49 (January 12, 2021)
 -----------------------------
 
