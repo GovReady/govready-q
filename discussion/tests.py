@@ -11,7 +11,7 @@ from discussion.validators import VALID_EXTS, validate_file_extension
 from guidedmodules.models import AppSource
 from guidedmodules.management.commands.load_modules import Command as load_modules
 from siteapp.models import User, Organization, Portfolio
-from siteapp.tests import SeleniumTest, var_sleep
+from siteapp.tests import SeleniumTest, var_sleep, wait_for_sleep_after
 
 from selenium.common.exceptions import NoSuchElementException
 from tools.utils.linux_to_dos import convert_w
@@ -119,17 +119,6 @@ class DiscussionTests(SeleniumTest):
             cookies[browser_cookie["name"]] = browser_cookie["value"]
         return cookies
 
-    def wait_for(self, fn):
-        MAX_WAIT = 10
-        start_time = time.time()
-        while True:
-            try:
-                return fn()
-            except (AssertionError, WebDriverException) as e:
-                if time.time() - start_time > MAX_WAIT:
-                    raise e
-                time.sleep(0.5)
-
     def test_validate_file_extension(self):
         # Load test file paths
         random_ext = ".random"
@@ -214,7 +203,7 @@ class DiscussionTests(SeleniumTest):
         # Test Script injection
         script = "<script id='injectiontest2'>document.getElementsByTagName('body')[0]" \
                  ".appendChild('<div id=\\'injectiontest1\\'></div>');</script>"
-        self.wait_for(lambda: self.fill_field("#discussion-your-comment", script) )
+        wait_for_sleep_after(lambda: self.fill_field("#discussion-your-comment", script) )
         var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
         var_sleep(.5)
@@ -252,7 +241,7 @@ class DiscussionTests(SeleniumTest):
 
         var_sleep(1.5)# Give time for the image to upload.
         # Test that we have an image.
-        img = self.wait_for(lambda: self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img') )
+        img = wait_for_sleep_after(lambda: self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img') )
         self.assertIsNotNone(img)
 
         # Test that valid PNG image actually exists with valid content type.
@@ -290,7 +279,7 @@ class DiscussionTests(SeleniumTest):
         self.click_element("#discussion .comment-input button.btn-primary")
         var_sleep(1.5)  # Give time for the image to upload.
         # Test that we still have an image.
-        img = self.wait_for(lambda: self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img') )
+        img = wait_for_sleep_after(lambda: self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img') )
         self.assertIsNotNone(img)
 
         # Getting content at url
