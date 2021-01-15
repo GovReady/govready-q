@@ -117,13 +117,7 @@ try:
 except ImportError:
 	print("WARNING: 'test_without_migrations' could not be imported")
 
-# Test runner to generate j-unit xml
-#TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-# NOSE_ARGS = [
-#     '--verbosity=2',  # verbose output
-#     '--with-xunit',  # enable XUnit plugin
-#     '--xunit-file=xunittest.xml',  # the XUnit report file
-# ]
+
 # profile every request and save the HTML output to the folder profiles
 if DEBUG:
 	PYINSTRUMENT_PROFILE_DIR = 'profiles'
