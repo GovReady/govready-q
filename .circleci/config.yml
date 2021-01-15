@@ -127,4 +127,4 @@ jobs:
         path: htmlcov
       # Upload test results
     - store_test_results:
-        path: /tmp/test-reports
+        path: coverage.xml
