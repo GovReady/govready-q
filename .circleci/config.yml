@@ -1,12 +1,14 @@
 # A CircleCI configuration file because we do continuous integration testing!
 
 version: 2
-
+  test:
+    jobs:
+      - build
 jobs:
   build:
     docker:
     - image: circleci/python:3.8.1-browsers # when upgrading, check that it works with selenium
-
+    parallelism: 4
     steps:
     # Add .local/bin to PATH for utilities install by `pip install --user`.
     - run: echo 'export PATH=~/.local/bin:$PATH' >> $BASH_ENV
@@ -81,27 +83,27 @@ jobs:
           name: Run python tests using test splitting controls
           command: |
             TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split)
-            ./manage.py test controls $TESTFILES -v 2
+            coverage run --source='.' --branch -p manage.py test controls $TESTFILES -v 2
     - run:
         name: Run python tests using test splitting discussion
         command: |
           TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split)
-          ./manage.py test discussion $TESTFILES -v 2
+            coverage run --source='.' --branch -p manage.py test discussion $TESTFILES -v 2
     - run:
           name: Run python tests using test splitting guidedmodules
           command: |
             TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split)
-            ./manage.py test guidedmodules $TESTFILES -v 2
+            coverage run --source='.' --branch -p manage.py test guidedmodules $TESTFILES -v 2
     - run:
         name: Run python tests using test splitting siteapp
         command: |
           TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split)
-          ./manage.py test siteapp $TESTFILES -v 2
+            coverage run --source='.' --branch -p manage.py test siteapp $TESTFILES -v 2
     - run:
         name: Run python tests using test splitting system_settings
         command: |
           TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split)
-          ./manage.py test system_settings $TESTFILES -v 2
+            coverage run --source='.' --branch -p manage.py test system_settings $TESTFILES -v 2
     # - run: coverage run --source='.' --branch -p manage.py test discussion
     # Commenting out tests until better solution for testing after page loaded
     #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.LandingSiteFunctionalTests
