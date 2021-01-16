@@ -31,6 +31,7 @@ urlpatterns = [
 
     # Systems Inventory and Deployments
     url(r'^(?P<system_id>.*)/deployments$', views.system_deployments, name="system_deployments"),
+    url(r'^(?P<system_id>.*)/deployment/new$', views.new_system_deployment, name="new_system_deployment"),
     url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/inventory$', views.system_deployment_inventory, name="system_deployment_inventory"),
 
     url(r'^smt/_save/$', views.save_smt),

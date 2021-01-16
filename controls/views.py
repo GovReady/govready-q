@@ -25,8 +25,9 @@ from guidedmodules.models import Task, Module, AppVersion, AppSource
 from siteapp.forms import ProjectForm
 from siteapp.models import Project
 from system_settings.models import SystemSettings
-from .forms import ImportOSCALComponentForm
-from .forms import StatementPoamForm, PoamForm, ElementForm
+# from .forms import ImportOSCALComponentForm
+# from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
+from .forms import *
 from .models import *
 from .utilities import *
 from simple_history.utils import update_change_reason
@@ -2623,6 +2624,30 @@ def system_deployments(request, system_id):
     else:
         # User does not have permission to this system
         raise Http404
+
+@login_required
+def new_system_deployment(request, system_id):
+    """Form to create new system deployment"""
+
+    if request.method == 'POST':
+        form = DeploymentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            deployment = form.instance
+            # Create message to display to user
+            messages.add_message(request, messages.INFO, f'Deployment "{deployment.name}" created.')
+            logger.info(
+                event="new_deployment",
+                object={"object": "deployment", "id": deployment.id, "name":deployment.name},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return redirect('system_deployments', system_id=system_id)
+    else:
+        form = DeploymentForm(system_id=system_id,)
+
+    return render(request, 'systems/deployment_form.html', {
+        'form': form,
+    })
 
 def system_deployment_inventory(request, system_id, deployment_id):
     """List system deployment inventory"""

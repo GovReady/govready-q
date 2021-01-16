@@ -704,7 +704,7 @@ class Deployment(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for the deployment.")
-    system = models.ForeignKey('System', related_name='deployments', on_delete=models.CASCADE, blank=True, null=True, help_text="The system associated with the deployment.")
+    system = models.ForeignKey('System', related_name='deployments', on_delete=models.CASCADE, blank=True, null=True, help_text="The system associated with the deployment")
 
     # Notes
     #
