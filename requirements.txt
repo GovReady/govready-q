@@ -580,10 +580,9 @@ pyinstrument==3.2.0 \
     --hash=sha256:266a02d874799a8e06889ed9030dcef518b61c7a8e64a3a0ad0754645f901285 \
     --hash=sha256:ce8fef6ea88349f0060b6d974483fd64d2c061346e6b78bca6357509a5121665 \
     # via -r requirements.in
-pyjwt[crypto]==2.0.0 \
-    --hash=sha256:5c2ff2eb27d7e342dfc3cafcc16412781f06db2690fbef81922b0172598f085b \
-    --hash=sha256:7a2b271c6dac2fda9e0c33d176c4253faba2c6c6b3a99c7f28a32c3c97522779 \
-    # via django-allauth, pygithub
+pyjwt[crypto]==2.0.1 \
+    --hash=sha256:a5c70a06e1f33d81ef25eecd50d50bd30e34de1ca8b2b9fa3fe0daaabcf69bf7 \
+    --hash=sha256:b70b15f89dc69b993d8a8d32c299032d5355c82f9b5b7e851d1a6d706dffe847    # via django-allauth, pygithub
 pynliner==0.8.0 \
     --hash=sha256:32da16ed8ba1fec775909e39f0ffa8e6e02a674b889286c9a2370c3c03f617a5 \
     --hash=sha256:83e7dd4d48001bebbe0a648d7089e94e21ffb74c5af2f582c47d8793ffe8628e \
