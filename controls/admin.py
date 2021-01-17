@@ -69,7 +69,7 @@ class PoamAdmin(admin.ModelAdmin, ExportCsvMixin):
     def consumer_element(self, obj):
         return obj.statement.consumer_element
 
-class DeploymentAdmin(admin.ModelAdmin, ExportCsvMixin):
+class DeploymentAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     list_display = ('id', 'name', 'system')
     actions = ["export_as_csv"]
 

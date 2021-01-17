@@ -15,7 +15,6 @@ INSTALLED_APPS += [
     'guidedmodules',
     'discussion',
     'controls',
-    'inventory',
     'system_settings',
 
     'loadtesting',

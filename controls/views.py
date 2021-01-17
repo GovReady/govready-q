@@ -13,6 +13,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
+from django.db.models.functions import Lower
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
     HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
@@ -2605,7 +2606,7 @@ def system_deployments(request, system_id):
         project = system.projects.all()[0]
 
         # Retrieve list of deployments for the system
-        deployments = system.deployments.all()
+        deployments = system.deployments.all().order_by(Lower('name'))
         # controls = system.root_element.controls.all()
         # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
 
@@ -2626,29 +2627,56 @@ def system_deployments(request, system_id):
         raise Http404
 
 @login_required
-def new_system_deployment(request, system_id):
-    """Form to create new system deployment"""
+def manage_system_deployment(request, system_id, deployment_id=None):
+    """Form to create or edit system deployment"""
 
+    # TODO Make sure user has permission on system!
+    di = get_object_or_404(Deployment, pk=deployment_id) if deployment_id else None
     if request.method == 'POST':
-        form = DeploymentForm(request.POST)
+        form = DeploymentForm(request.POST, instance=di, system_id=system_id)
         if form.is_valid():
             form.save()
             deployment = form.instance
             # Create message to display to user
-            messages.add_message(request, messages.INFO, f'Deployment "{deployment.name}" created.')
-            logger.info(
-                event="new_deployment",
-                object={"object": "deployment", "id": deployment.id, "name":deployment.name},
-                user={"id": request.user.id, "username": request.user.username}
-            )
+            if di:
+                messages.add_message(request, messages.INFO, f'Deployment "{deployment.name}" edited.')
+                logger.info(
+                    event="edit_deployment",
+                    object={"object": "deployment", "id": deployment.id, "name":deployment.name},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+            else:
+                messages.add_message(request, messages.INFO, f'Deployment "{deployment.name}" created.')
+                logger.info(
+                    event="create_deployment",
+                    object={"object": "deployment", "id": deployment.id, "name":deployment.name},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
             return redirect('system_deployments', system_id=system_id)
     else:
-        form = DeploymentForm(system_id=system_id,)
+        form = DeploymentForm(instance=di, system_id=system_id)
 
     return render(request, 'systems/deployment_form.html', {
         'form': form,
+        'deployment': di,
     })
 
+@login_required
+def deployment_history(request, system_id, deployment_id=None):
+    """Returns the history for the given deployment"""
+
+    # TODO check user permission to view
+    from controls.models import Deployment
+    full_dpt_history = None
+    try:
+        deployments = Deployment.objects.get(id=deployment_id)
+        full_dpt_history = deployments.history.all()
+    except Deployment.DoesNotExist:
+        messages.add_message(request, messages.ERROR, f'The deployment id is not valid. Is this still a deployment in GovReady?')
+    context = {"deployment": full_dpt_history}
+    return render(request, "systems/deployment_history.html", context)
+
+@login_required
 def system_deployment_inventory(request, system_id, deployment_id):
     """List system deployment inventory"""
 
@@ -2667,120 +2695,8 @@ def system_deployment_inventory(request, system_id, deployment_id):
         # controls = system.root_element.controls.all()
         # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
 
-        inventory_all = [
-  {
-    "id": "1",
-    "name": "host-1",
-    "ip": "10.10.0.11",
-    "deployment_id": "1",
-    "uuid": "8e1f1131-2a28-4b85-b0c3-069f49399112",
-    "description": "webserver"
-  },
-  {
-    "id": "2",
-    "name": "host-2",
-    "ip": "10.10.0.12",
-    "deployment_id": "1",
-    "uuid": "ce625f39-cfd0-433d-8ab5-83fe5563a62a",
-    "description": "database"
-  },
-  {
-    "id": "3",
-    "name": "service-1",
-    "ip": "34.15.15.02",
-    "deployment_id": "1",
-    "uuid": "4421c378-06fe-497d-a2b3-b26cce8f9a1d",
-    "description": "geo service"
-  },
-  {
-    "id": "4",
-    "name": "webserver",
-    "ip": "10.10.0.21",
-    "deployment_id": "3",
-    "uuid": "1697a233-6cd5-4050-983d-41ae61b7796d",
-    "description": "webserver",
-    "ram": {
-      "usage": 67,
-      "total": 1048176,
-      "free": 343996
-    },
-    "cpu": {
-      "cores": 1,
-      "mhz": 2400,
-      "name": "Intel(R) Xeon(R) CPU E5-2676 v3 @ 2.40GHz"
-    },
-    "scan": {
-      "id": 707357457,
-      "time": "2018/09/06 01:02:13"
-    }
-  },
-  {
-    "id": "5",
-    "name": "database",
-    "ip": "10.10.0.22",
-    "deployment_id": "3",
-    "uuid": "1f2b094d-9d71-4aba-b381-1e64ad4f3dc5",
-    "description": "database",
-    "ram": {
-      "usage": 67,
-      "total": 1048176,
-      "free": 343996
-    },
-    "cpu": {
-      "cores": 1,
-      "mhz": 2400,
-      "name": "Intel(R) Xeon(R) CPU E5-2676 v3 @ 2.40GHz"
-    },
-    "scan": {
-      "id": 707357457,
-      "time": "2018/09/06 01:02:13"
-    }
-  },
-  {
-    "id": "6",
-    "name": "service-1",
-    "ip": "34.15.15.02",
-    "deployment_id": "3",
-    "uuid": "6189309c-aa7d-402a-a428-6b50e9e59d68",
-    "description": "geo service"
-  },
-  {
-    "id": "7",
-    "name": "host-3",
-    "ip": "10.10.0.21",
-    "deployment_id": "2",
-    "uuid": "d52cb9b6-d2aa-464f-b90d-48cda00cd91b",
-    "description": "webserver"
-  },
-  {
-    "id": "8",
-    "name": "host-4",
-    "ip": "10.10.0.22",
-    "deployment_id": "2",
-    "uuid": "154b3254-ec17-4bfb-915e-d1769f7e763f",
-    "description": "database"
-  },
-  {
-    "id": "9",
-    "name": "service-1",
-    "ip": "34.15.15.02",
-    "deployment_id": "2",
-    "uuid": "134e3c89-8e5c-4e30-9527-064278fe5025",
-    "description": "geo service"
-  },
-  {
-    "id": "10",
-    "name": "host-8",
-    "ip": "10.10.0.13",
-    "deployment_id": "1",
-    "uuid": "629de7b4-ba0a-4d8e-be4c-866e7c9b8ca2",
-    "description": "data parsing"
-  }
-]
-
-        # filter inventory to environment
-
-        inventory_items = [item for item in inventory_all if item["deployment_id"] == deployment_id]
+        # inventory_items = [item for item in inventory_all if item["deployment_id"] == deployment_id]
+        inventory_items = [item for item in deployment.inventory_items] if deployment.inventory_items != None else []
 
         # Return the controls
         context = {

@@ -10,7 +10,7 @@ Create System Deployment
 <div class="container">
     <div class="row">
         <div class="col-md-3 portfolio-org-col ">
-            <h2>New Deployment</h2>
+            <h2>Deployment</h2>
             <p>A discrete instantiation of an IT System.</p>
         </div>
 
@@ -19,13 +19,18 @@ Create System Deployment
                 <form method="post">
                     {% csrf_token %}
                     {% bootstrap_form form %}
-                    <p><button type="submit" id="create-object-button" class="btn btn-success">Create &raquo;</button></p>
+                    {% if form.name.value %}
+                        <p><button type="submit" id="create-object-button" class="btn btn-success">Update &raquo;</button>
+                        <button type="button" name="history" value="history" class="btn btn-primary" onclick="location.href='/systems/{{ deployment.system.id }}/deployment/{{ deployment.id }}/history'">History</button>
+                        </p>
+                    {% else %}
+                        <p><button type="submit" id="create-object-button" class="btn btn-success">Create &raquo;</button></p>
+                    {% endif %}
                 </form>
             </div>
         </div>
     </div>
 </div>
-
 
 {{ block.super }}
 {% endblock %}

@@ -4,18 +4,39 @@ GovReady-Q Release Notes
 v.999 (January XX, 2021)
 ------------------------
 
+Add deployments to capture system deployments and the inventory items in each deployment.
+
+One system has multiple deployments (e.g., dev, stage, prod) and each deployment contains an inventory of the actual endpoints/items in a deployment of the system. Systems start with several common default (empty) deployments.
+
+The "design" deployment by convention is a special deployment to represent the system architecture.
+
+Deployments maintain a complete version history.
+
+Deployment inventory-items are represented as JSON data object following a scheme that is similar to OSCAL inventory-item section.
+Data for deployment inventory-items is assumed to be generated outside of GovReady. It is critical that the inventory items have UUIDs prior to import. Inventory item UUIDs for the life of the instantiated inventory item.
+
+Inventory items in an deployment can be associated with an inventory item in the "design" deployment by referencing the "design" inventory item's UUID. This enablea a virtual persistence of an inventory-item across different instances of the "same" assest, such as a virtual database server.
+
+
 **Feature changes**
 
-* Add system deployments and system deployment inventory-items to track instantiated nodes and assessments of those nodes.
+* Add system deployments with inventory items to track instantiations of the system in real assets.
+
+**UI changes**
+
+* Add deployment index page for listing deployments associated with a system.
+* Add deployment form page for creating/editing deployments.
+* Add deployment history page.
 
 **Developer changes**
 
 * Add `pyup.yml` configuration file to have pyup.io pull requests go against `develop` branch.
-* New routes and views related to tracking system deployments and deployment inventories.
+* Add controls.Deployment object, related routes, views, templates, and admin to track system deployments and deployment inventory items.
+* Add DeploymentForm for Deployment model.
 
 **Data changes**
 
-* Add `controls.Deployment` object Model to track a system's deployments.
+* Populate every new system with default deployments design, dev, stage, prod.
 
 v.0.9.1.49 (January 12, 2021)
 -----------------------------

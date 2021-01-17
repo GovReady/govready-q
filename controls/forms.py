@@ -6,6 +6,8 @@ from django.db.models import Exists
 
 from guidedmodules.models import AppSource, AppVersion
 from .models import Statement, Poam, Element, Deployment
+# from jsonfield import JSONField
+
 
 class StatementPoamForm(ModelForm):
     def __init__(self, *args, **kwargs):
@@ -111,17 +113,20 @@ class DeploymentForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         self._system_id = kwargs.pop('system_id', None)
-        print('kwargs',kwargs)
         super().__init__(*args, **kwargs)
         self.initial['system'] = self._system_id
-        # self.fields['system'].widget = forms.HiddenInput()
+        self.fields['system'].widget = forms.HiddenInput()
 
     class Meta:
         model = Deployment
-        fields = ['name', 'description', 'system']
+        fields = ['name', 'description', 'system', 'inventory_items']
 
     def clean(self):
         """Validate data."""
 
         cd = self.cleaned_data
         return cd
+
+    inventory_items = forms.CharField(label='Inventory items (JSON)', required=False, widget=forms.Textarea(),
+            help_text="Listing of inventory items in JSON")
+

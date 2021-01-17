@@ -178,14 +178,14 @@ h3.question-group-title {
 {% block action_buttons %}
   <div class="btn-group" role="group" aria-label="action buttons group">
     {% if project.system is not None %}
-      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
-        <em class="glyphicon glyphicon-book"></em> Controls</a>
+      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/deployments';">
+        <em class="glyphicon glyphicon-th"></em>&nbsp; Deployments</a>
       </button>
       <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
         <em class="glyphicon glyphicon-tags"></em>&nbsp; Components</a>
       </button>
-      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/deployments';">
-        <em class="glyphicon glyphicon-th"></em>&nbsp; Inventory</a>
+      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
+        <em class="glyphicon glyphicon-book"></em> Controls</a>
       </button>
       <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/poams';">
         <em class="glyphicon glyphicon-check"></em>&nbsp; POA&Ms</a>
@@ -317,7 +317,7 @@ h3.question-group-title {
 
     <div class="row">
       <div class="col-md-12">
-        <span class="last-login">Last login: {{request.user.last_login}}</span>
+        <span class="last-login">Last visit: {{request.user.last_login}}</span>
         <h2 class="status-welcome">Welcome back, {{request.user}}</h2>
       </div>
     </div>
