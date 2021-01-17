@@ -18,10 +18,10 @@
       <ul class="nav navbar-nav navbar-left">
         {% if request.user.is_authenticated and not request.user.is_anonymous %}
           <li><a href="/projects" id="menu-projects">Projects</a></li>
-          <li>&nbsp;&nbsp;&nbsp;&nbsp;</li>
           <li><a href="/portfolios" id="menu-portfolios">Portfolios</a></li>
           <li><a href="/controls" id="menu-controls">Controls</a></li>
           <li><a href="/controls/components" id="menu-controls">Component Library</a></li>
+          <li><a href="{% url 'store' %}">App Library</a></li>
         {% endif %}
       </ul>
 

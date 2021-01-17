@@ -17,7 +17,6 @@ Data for deployment inventory-items is assumed to be generated outside of GovRea
 
 Inventory items in an deployment can be associated with an inventory item in the "design" deployment by referencing the "design" inventory item's UUID. This enablea a virtual persistence of an inventory-item across different instances of the "same" assest, such as a virtual database server.
 
-
 **Feature changes**
 
 * Add system deployments with inventory items to track instantiations of the system in real assets.
@@ -33,6 +32,8 @@ Inventory items in an deployment can be associated with an inventory item in the
 * Add `pyup.yml` configuration file to have pyup.io pull requests go against `develop` branch.
 * Add controls.Deployment object, related routes, views, templates, and admin to track system deployments and deployment inventory items.
 * Add DeploymentForm for Deployment model.
+* New '%dict' operator for JSON/YAML output templates
+* Pass OSCAL context to JSON/YAML output templates
 
 **Data changes**
 
