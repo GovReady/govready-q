@@ -118,7 +118,7 @@ class DiscussionTests(SeleniumTest):
         """
         var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
-        var_sleep(1)# Give time for the image to upload.
+        var_sleep(1.5)# Give time for the image to upload.
         img = wait_for_sleep_after(lambda: self.browser.find_element_by_css_selector(img_css_selector) )
         return img
 

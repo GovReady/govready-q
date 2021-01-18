@@ -16,6 +16,8 @@ import pathlib
 import re
 import tempfile
 import time
+from unittest.case import skip
+
 import selenium.webdriver
 from selenium.common.exceptions import WebDriverException
 from django.contrib.auth.models import Permission
@@ -781,11 +783,10 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
         wait_for_sleep_after(lambda:  self.assertRegex(self.browser.title, "Security Projects"))
-
+    @skip
     def test_create_project_without_portfolio(self):
         self._login()
         self.browser.get(self.url("/store"))
-        wait_for_sleep_after(lambda: self.assertInNodeText("Please select 'Start a project' to continue.", ".alert-danger"))
 
     def test_grant_portfolio_access(self):
         # Grant another member access to portfolio
