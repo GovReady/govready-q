@@ -318,8 +318,12 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         portfolio.assign_owner_permissions(self.user)
 
         # Create the Organization.
-        self.org = Organization.objects.get_or_create(name="Our Organization", slug="testorg",
-            admin_user=self.user)
+        try:
+            self.org = Organization.create(name="Our Organization", slug="testorg",
+                admin_user=self.user)
+        except:
+            self.org = Organization.create(name="Our Organization", slug="testorg2",
+                                                          admin_user=self.user)
 
         # Grant the user permission to change the review state of answers.
         self.org.reviewers.add(self.user)
@@ -339,7 +343,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         portfolio.assign_owner_permissions(self.user2)
 
         # create a third user
-        self.user = wait_for_sleep_after(lambda: User.objects.get_or_create(
+        self.user3 = wait_for_sleep_after(lambda: User.objects.get_or_create(
             username="me3",
             email="test+user3@q.govready.com")[0])
         self.user3.clear_password = get_random_string(16)
