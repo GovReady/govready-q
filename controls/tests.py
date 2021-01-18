@@ -103,7 +103,7 @@ class Oscal80053Tests(TestCase):
         self.assertTrue('Access control policy every 12 parsecs' in description,
                         description)
 
-class OSCALComponentSerializerTests(TestCase):
+class StatementTests(TestCase):
     
     def test_statement_id_from_control(self):
         cases = (
@@ -112,7 +112,7 @@ class OSCALComponentSerializerTests(TestCase):
             ('ac-1.1', 'a', 'ac-1.1_smt.a'),
             ('1.1.1', '', '1.1.1_smt')
         )
-        test_func = OSCALComponentSerializer.statement_id_from_control
+        test_func = Statement._statement_id_from_control
         
         for control_id, part, expected in cases:
             self.assertEqual(test_func(control_id, part), expected)
