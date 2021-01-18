@@ -314,7 +314,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.client.login(username=self.user.username, password=self.user.clear_password)
 
         # Create a Portfolio and Grant Access
-        portfolio = Portfolio.objects.create(title=self.user.username)
+        portfolio = Portfolio.objects.get_or_create(title=self.user.username)[0]
         portfolio.assign_owner_permissions(self.user)
 
         # Create the Organization.
@@ -325,9 +325,9 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.org.reviewers.add(self.user)
 
         # create a second user
-        self.user2 = User.objects.create(
+        self.user2 = User.objects.get_or_create(
             username="me2",
-            email="test+user2@q.govready.com")
+            email="test+user2@q.govready.com")[0]
         self.user2.clear_password = get_random_string(16)
         self.user2.set_password(self.user2.clear_password)
         self.user2.user_permissions.add(Permission.objects.get(codename='view_appsource'))
@@ -335,13 +335,13 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.user2.reset_api_keys()
         self.user2.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.client.login(username=self.user2.username, password=self.user2.clear_password)
-        portfolio = Portfolio.objects.create(title=self.user2.username)
+        portfolio = Portfolio.objects.get_or_create(title=self.user2.username)[0]
         portfolio.assign_owner_permissions(self.user2)
 
         # create a third user
-        self.user3 = User.objects.create(
+        self.user3 = User.objects.get_or_create(
             username="me3",
-            email="test+user3@q.govready.com")
+            email="test+user3@q.govready.com")[0]
         self.user3.clear_password = get_random_string(16)
         self.user3.set_password(self.user3.clear_password)
         self.user3.user_permissions.add(Permission.objects.get(codename='view_appsource'))
@@ -349,7 +349,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.user3.reset_api_keys()
         self.user3.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.client.login(username=self.user3.username, password=self.user3.clear_password)
-        portfolio = Portfolio.objects.create(title=self.user3.username)
+        portfolio = Portfolio.objects.get_or_create(title=self.user3.username)[0]
         portfolio.assign_owner_permissions(self.user3)
 
         # Grant second user membership in the organization
