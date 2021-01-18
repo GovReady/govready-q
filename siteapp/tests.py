@@ -300,15 +300,15 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # headless browser.
 
         # self.user = User.objects.create_superuser(
-        self.user = User.objects.get_or_create(
+        self.user = wait_for_sleep_after(lambda: User.objects.get_or_create(
             username="me",
             email="test+user@q.govready.com",
             is_staff=True
-        )[0]
+        )[0])
         self.user.clear_password = get_random_string(16)
         self.user.set_password(self.user.clear_password)
         self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
-        self.user.save()
+        wait_for_sleep_after(lambda: self.user.save())
         self.user.reset_api_keys()
         self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.client.login(username=self.user.username, password=self.user.clear_password)
@@ -318,20 +318,20 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         portfolio.assign_owner_permissions(self.user)
 
         # Create the Organization.
-        self.org = Organization.create(name="Our Organization", slug="testorg",
+        self.org = Organization.objects.get_or_create(name="Our Organization", slug="testorg",
             admin_user=self.user)
 
         # Grant the user permission to change the review state of answers.
         self.org.reviewers.add(self.user)
 
         # create a second user
-        self.user2 = User.objects.get_or_create(
+        self.user2 = wait_for_sleep_after(lambda: User.objects.get_or_create(
             username="me2",
-            email="test+user2@q.govready.com")[0]
+            email="test+user2@q.govready.com")[0])
         self.user2.clear_password = get_random_string(16)
         self.user2.set_password(self.user2.clear_password)
         self.user2.user_permissions.add(Permission.objects.get(codename='view_appsource'))
-        self.user2.save()
+        wait_for_sleep_after(lambda: self.user2.save())
         self.user2.reset_api_keys()
         self.user2.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.client.login(username=self.user2.username, password=self.user2.clear_password)
@@ -339,13 +339,13 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         portfolio.assign_owner_permissions(self.user2)
 
         # create a third user
-        self.user3 = User.objects.get_or_create(
+        self.user = wait_for_sleep_after(lambda: User.objects.get_or_create(
             username="me3",
-            email="test+user3@q.govready.com")[0]
+            email="test+user3@q.govready.com")[0])
         self.user3.clear_password = get_random_string(16)
         self.user3.set_password(self.user3.clear_password)
         self.user3.user_permissions.add(Permission.objects.get(codename='view_appsource'))
-        self.user3.save()
+        wait_for_sleep_after(lambda: self.user3.save())
         self.user3.reset_api_keys()
         self.user3.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.client.login(username=self.user3.username, password=self.user3.clear_password)
