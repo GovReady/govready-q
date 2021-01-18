@@ -80,7 +80,7 @@ def catalog(request, catalog_key, system_id=None):
         system = System.objects.get(pk=system_id)
 
     # Get catalog
-    catalog = Catalog.GetInstance(catalog_key)
+    catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
     control_groups = catalog.get_groups()
     context = {
@@ -97,7 +97,7 @@ def group(request, catalog_key, g_id):
     """Temporary index page for catalog control group"""
 
     # Get catalog
-    catalog = Catalog.GetInstance(catalog_key)
+    catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
     control_groups = catalog.get_groups()
     group = None
@@ -123,7 +123,7 @@ def control(request, catalog_key, cl_id):
     catalog_key = oscalize_catalog_key(catalog_key)
 
     # Get catalog
-    catalog = Catalog.GetInstance(catalog_key)
+    catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
 
     # Handle properly formatted control id that does not exist
@@ -335,6 +335,14 @@ class ComponentSerializer(object):
 
 class OSCALComponentSerializer(ComponentSerializer):
 
+    @staticmethod
+    def statement_id_from_control(control_id, part_id):
+        if part_id:
+            return f"{control_id}_smt.{part_id}"
+        else:
+            return f"{control_id}_smt"
+
+
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
@@ -391,7 +399,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "description": smt.body,
                     "remarks": smt.remarks
                 }
-                statement_id = smt.oscal_statement_id
+                statement_id = self.statement_id_from_control(control_id, smt.pid)
                 requirement["statements"][statement_id] = statement
                 
             by_class[smt.sid_class].append(requirement)
@@ -1203,7 +1211,7 @@ def editor(request, system_id, catalog_key, cl_id):
     catalog_key = oscalize_catalog_key(catalog_key)
 
     # Get control catalog
-    catalog = Catalog.GetInstance(catalog_key)
+    catalog = Catalog(catalog_key)
 
     # TODO: maybe catalogs could provide an API that returns a set of 
     # control ids instead?
@@ -1231,7 +1239,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # We need to grab the catalog again.
 
         parameter_values = project.get_parameter_values(catalog_key)
-        catalog = Catalog.GetInstance(catalog_key, parameter_values=parameter_values)
+        catalog = Catalog(catalog_key, parameter_values=parameter_values)
         cg_flat = catalog.get_flattened_controls_all_as_dict()
 
         common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
@@ -1334,7 +1342,7 @@ def editor_compare(request, system_id, catalog_key, cl_id):
     cl_id = oscalize_control_id(cl_id)
 
     # Get control catalog
-    catalog = Catalog.GetInstance(catalog_key)
+    catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
     # If control id does not exist in catalog
     if cl_id.lower() not in cg_flat:
@@ -2584,7 +2592,18 @@ def project_export(request, project_id):
     response['Content-Disposition'] = f'attachment; filename="{quote(filename)}.json"'
     return response
 
-<<<<<<< HEAD
+# System OSCAL
+def system_profile_oscal_json(request, system_id):
+    """
+    Return an OSCAL profile for this system.
+    TODO: for now, we return an empty response.
+    """
+
+    data = {}
+    return JsonResponse(data)
+    response['Content-Disposition'] = f'attachment; filename="oscal-profile.json"'
+    return response
+
 # System Deployments
 def system_deployments(request, system_id):
     """List deployments for a system"""
@@ -2682,7 +2701,6 @@ def system_deployment_inventory(request, system_id, deployment_id):
 
         # Retrieve list of deployments for the system
         deployments = system.deployments.all()
-        # deployment = {"id": 3, "name": "production"}
         deployment = get_object_or_404(Deployment, pk=deployment_id)
         # controls = system.root_element.controls.all()
         # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
@@ -2707,19 +2725,40 @@ def system_deployment_inventory(request, system_id, deployment_id):
         # User does not have permission to this system
         raise Http404
 
-=======
->>>>>>> origin/feature/oscal-ssp-json
-def system_profile_oscal_json(request, system_id):
-    """
-    Return an OSCAL profile for this system.
-    TODO: for now, we return an empty response.
-    """
+@login_required
+def inventory_item_assessment_results_list(request, system_id=None, deployment_id=None):
+    """List PoamS for a system"""
 
-    data = {}
-    return JsonResponse(data)
-    response['Content-Disposition'] = f'attachment; filename="oscal-profile.json"'
-    return response
-<<<<<<< HEAD
+    # Retrieve identified System
+    if system_id:
+        system = System.objects.get(id=system_id)
+        # Retrieve related selected controls if user has permission on system
+        if not request.user.has_perm('view_system', system):
+            # User does not have permission to this system
+            raise Http404
 
-=======
->>>>>>> origin/feature/oscal-ssp-json
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+        controls = system.root_element.controls.all()
+        poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+        # impl_smts_count = {}
+        # ikeys = system.smts_control_implementation_as_dict.keys()
+        # for c in controls:
+        #     impl_smts_count[c.oscal_ctl_id] = 0
+        #     if c.oscal_ctl_id in ikeys:
+        #         impl_smts_count[c.oscal_ctl_id] = len(system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+
+        # Return the controls
+        context = {
+            "system": system,
+            "project": project,
+            "controls": controls,
+            "poam_smts": poam_smts,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            "project_form": ProjectForm(request.user),
+        }
+        return render(request, "systems/poams_list.html", context)
+

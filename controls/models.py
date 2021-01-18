@@ -752,42 +752,44 @@ class Deployment(models.Model):
     def get_absolute_url(self):
         return "/systems/%d/deployments" % (self.system.id)
 
-# class AssessmentResults(models.Model):
-#     statement = models.OneToOneField(Statement, related_name="assessment_results",
-#         unique=False, blank=True, null=True, on_delete=models.CASCADE,
-#         help_text="The assessment results details for this statement. Statement must be type 'assessment_results'.")
-#     deployment = models.OneToOneField(Deployment, related_name="assessment_results",
-#         unique=False, blank=True, null=True, on_delete=models.SET_NULL,
-#         help_text="The deployment associated with the assessment results.")
-#     data = JSONField(blank=True, null=True,
-#         help_text="JSON object representing the assessment results items in a deployment.")
-#     ar_type = models.CharField(max_length=150, unique=False, blank=True, null=True,
-#         help_text="Assessment results type.")
-#     generated = models.DateTimeField(db_index=True)
-#     history = HistoricalRecords(cascade_delete_history=True)
+class InventoryItemAssessmentResults(models.Model):
+    statement = models.OneToOneField(Statement, related_name="assessment_results",
+        unique=False, blank=True, null=True, on_delete=models.CASCADE,
+        help_text="The assessment results details for this statement. Statement must be type 'assessment_results'.")
+    deployment = models.OneToOneField(Deployment, related_name="assessment_results",
+        unique=False, blank=True, null=True, on_delete=models.SET_NULL,
+        help_text="The deployment associated with the inventory item's assessment results.")
+    inventory_item_uuid = models.UUIDField(default=None, editable=True, unique=False, blank=True, null=True,
+        help_text="UUID of the inventory item.")
+    data = JSONField(blank=True, null=True,
+        help_text="JSON object representing the inventory item's assessment results.")
+    ar_type = models.CharField(max_length=150, unique=False, blank=True, null=True,
+        help_text="Assessment results type.")
+    generated = models.DateTimeField(db_index=True)
+    history = HistoricalRecords(cascade_delete_history=True)
 
-#     # Notes
-#     #
-#     # IMPORTANT
-#     #
-#     # JSON data must follow a scheme that is similar to OSCAL.
-#     # Data is assumed to be generated fropm outside of GovReady.
-#     # Data should either be in `data` or `data_binary` field.
-#     # `data_binary` field can hold PDF report or other machine readable format
-#     # Inventory-items must have UUIDs. A UUIDs persits for the life of the instantiaded inventory-item.
-#     #
-#     # The inventory-items in an assessment report can be related to
-#     # UUID of the related inventory-item in the `reference` deployment
-#     # to create a virtual persistence across different instances of
-#     # the "same" assest, such as a virtual database server.
-#     #
-#     # Retrieve System Deployment Inventory
-#     #
+    # Notes
+    #
+    # IMPORTANT
+    #
+    # JSON data must follow a scheme that is similar to OSCAL.
+    # Data is assumed to be generated fropm outside of GovReady.
+    # Data should either be in `data` or `data_binary` field.
+    # `data_binary` field can hold PDF report or other machine readable format
+    # Inventory-items must have UUIDs. A UUIDs persits for the life of the instantiaded inventory-item.
+    #
+    # The inventory-items in an assessment report can be related to
+    # UUID of the related inventory-item in the `reference` deployment
+    # to create a virtual persistence across different instances of
+    # the "same" assest, such as a virtual database server.
+    #
+    # Retrieve System Deployment Inventory
+    #
 
-#     def __str__(self):
-#         return "<Inventory %s id=%d>" % (self.statement, self.id)
+    def __str__(self):
+        return "<Inventory %s id=%d>" % (self.statement, self.id)
 
-#     def __repr__(self):
-#         # For debugging.
-#         return "<Inventory %s id=%d>" % (self.statement, self.id)
+    def __repr__(self):
+        # For debugging.
+        return "<Inventory %s id=%d>" % (self.statement, self.id)
 

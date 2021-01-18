@@ -54,9 +54,12 @@
       {% for item in inventory_items %}
         <div id="tab-content" class="row row-control">
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                <a href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/inventory">{{ item.name }}</a>
+                <a href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/inventory">{{ item.id }}</a>
             </div>
-            <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
+            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                {{ item.name }}
+            </div>
+            <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
                 {{ item.description }}
             </div>
             <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
