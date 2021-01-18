@@ -386,8 +386,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         var_sleep(2)
         # Click Add Button
-        self.click_element(".app[data-app='project/simple_project'] .start-app")
-
+        wait_for_sleep_after(lambda: self.click_element(".app[data-app='project/simple_project'] .start-app"))
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "I want to answer some questions on Q."))
 
         m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
@@ -463,12 +462,11 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.click_element('#user-menu-dropdown')
 
         wait_for_sleep_after(lambda: self.click_element('#user-menu-account-settings'))
+        var_sleep(.5) # wait for page to open
         wait_for_sleep_after(lambda: self.assertIn("Introduction | GovReady Account Settings", self.browser.title))
 
-        var_sleep(.5)
         #  # - The user is looking at the Introduction page.
         wait_for_sleep_after(lambda: self.click_element("#save-button"))
-
         #  # - Now at the what is your name page?
         wait_for_sleep_after(lambda: self.fill_field("#inputctrl", "John Doe"))
         wait_for_sleep_after(lambda: self.click_element("#save-button"))
@@ -481,7 +479,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.assertNodeNotVisible('#please-complete-account-settings'))
 
     def test_static_pages(self):
-
         self.browser.get(self.url("/privacy"))
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Privacy Policy"))
 
@@ -611,7 +608,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Test assigning existing user to a project.
         reset_login()
-
         self._new_project()
         project_page = self.browser.current_url
 
