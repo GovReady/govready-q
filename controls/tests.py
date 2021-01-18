@@ -812,7 +812,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         search_comps_txtbar[-1].click()
         search_comps_txtbar[-1].clear()
         search_comps_txtbar[-1].send_keys("Component")
-        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()# Ajax request
         var_sleep(2)
         assert len(comps_dropdown.options) == 3
 
@@ -820,7 +820,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         search_comps_txtbar[-1].click()
         search_comps_txtbar[-1].clear()
         search_comps_txtbar[-1].send_keys("2")
-        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()# Ajax request
         var_sleep(2)
         assert len(comps_dropdown.options) == 2
         # Use elements from database to avoid hard-coding element ids expected
