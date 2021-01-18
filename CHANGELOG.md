@@ -34,6 +34,8 @@ Inventory items in an deployment can be associated with an inventory item in the
 * Add DeploymentForm for Deployment model.
 * New '%dict' operator for JSON/YAML output templates
 * Pass OSCAL context to JSON/YAML output templates
+* New '%dict' operator for JSON/YAML output templates
+* Pass OSCAL context to JSON/YAML output templates
 
 **Data changes**
 

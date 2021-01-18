@@ -2584,6 +2584,7 @@ def project_export(request, project_id):
     response['Content-Disposition'] = f'attachment; filename="{quote(filename)}.json"'
     return response
 
+<<<<<<< HEAD
 # System Deployments
 def system_deployments(request, system_id):
     """List deployments for a system"""
@@ -2706,6 +2707,8 @@ def system_deployment_inventory(request, system_id, deployment_id):
         # User does not have permission to this system
         raise Http404
 
+=======
+>>>>>>> origin/feature/oscal-ssp-json
 def system_profile_oscal_json(request, system_id):
     """
     Return an OSCAL profile for this system.
@@ -2716,4 +2719,7 @@ def system_profile_oscal_json(request, system_id):
     return JsonResponse(data)
     response['Content-Disposition'] = f'attachment; filename="oscal-profile.json"'
     return response
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/feature/oscal-ssp-json
