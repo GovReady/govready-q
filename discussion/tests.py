@@ -228,7 +228,7 @@ class DiscussionTests(SeleniumTest):
             test_file_name
         )
         self.filepath_conversion("#discussion-attach-file", test_file_path, "fill")
-
+        var_sleep(1)
         img = self._upload_discussion_image('.comment[data-id="4"] .comment-text p img')
         self.assertIsNotNone(img)
 
@@ -262,7 +262,7 @@ class DiscussionTests(SeleniumTest):
             on_disk_contents = filep.read()
 
         self.filepath_conversion("#discussion-attach-file", test_file_path, "fill")
-
+        var_sleep(1)
         # Test that we still have an image.
         img = self._upload_discussion_image('.comment[data-id="5"] .comment-text p img')
         self.assertIsNotNone(img)
