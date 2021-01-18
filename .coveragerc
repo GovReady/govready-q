@@ -1,0 +1,9 @@
+[run]
+source = .
+omit = ./venv/*,*apps.py,*manage.py,*__init__.py,*migrations*,*asgi*,*wsgi*,*admin.py,*urls.py
+branch = True
+
+[report]
+omit = ./venv/*,*apps.py,*manage.py,*__init__.py,*migrations*,*asgi*,*wsgi*,*admin.py,*urls.py
+show_missing = True
+skip_covered = True
