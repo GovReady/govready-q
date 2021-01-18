@@ -283,15 +283,14 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         )
         load_modules().handle() # load system modules
 
-        AppSource.objects.create(
+        AppSource.objects.get_or_create(
             slug="project",
             spec={ # contains a test project
                 "type": "local",
                 "path": "fixtures/modules/other",
             },
             trust_assets=True
-        )\
-            .add_app_to_catalog("simple_project")
+        )[0].add_app_to_catalog("simple_project")
 
         # Create a default user that is a member of the organization.
         # Log the user into the test client, which is used for API
@@ -1228,7 +1227,8 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self._test_api_get(["question_types_numeric", "q_real_minmax"], 23.051)
 
         # Finished.
-        self.assertRegex(self.browser.title, "^Test The Numeric Question Types - ")
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "^Test The Numeric Question Types - "))
+
 
     def test_questions_media(self):
         # Log in and create a new project.
