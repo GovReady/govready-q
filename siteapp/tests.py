@@ -299,17 +299,12 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # tests. The Selenium tests require a separate log in via the
         # headless browser.
 
-        # Remove any lingering users
-        try:
-            User.objects.all().delete()
-        except Exception as ex:
-            print(f"Exception: {ex}")
-            print(f"Users:{User.objects.all()}")
-        self.user = User.objects.create(
+        # self.user = User.objects.create_superuser(
+        self.user = User.objects.get_or_create(
             username="me",
             email="test+user@q.govready.com",
             is_staff=True
-        )
+        )[0]
         self.user.clear_password = get_random_string(16)
         self.user.set_password(self.user.clear_password)
         self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
