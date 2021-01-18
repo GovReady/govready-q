@@ -8,6 +8,13 @@ v999 (January xxx, 2021)
 
 * Created a recursive method `wait_for` that wraps around other functions allowing for drastically shorter wait times necessary compared to peppering var_sleeps.
 
+**Developer changes**
+
+* New '%dict' operator for JSON/YAML output templates
+
+* Pass OSCAL context to JSON/YAML output templates
+
+
 v.0.9.1.49 (January 12, 2021)
 -----------------------------
 
