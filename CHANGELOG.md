@@ -3,10 +3,12 @@ GovReady-Q Release Notes
 
 v.999 (January XX, 2021)
 ------------------------
+
 **Developer changes**
 
 * Add `pyup.yml` configuration file to have pyup.io pull requests go against `develop` branch.
-
+* New '%dict' operator for JSON/YAML output templates
+* Pass OSCAL context to JSON/YAML output templates
 
 v.0.9.1.49 (January 12, 2021)
 -----------------------------
