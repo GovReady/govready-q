@@ -1,0 +1,82 @@
+id: certification.html
+format: html
+title: Certification Cover Memo
+...
+<style type="text/css" scoped>
+    h2 { border-bottom:1px solid #888; }
+    h3 { border-bottom: 0.5px solid #aaa; }
+    h4 { margin-top: 15px; font-weight: bold; font-size: 1em; }
+    blockquote { color: #666; font-size:0.8em; margin: 0 10px; }
+    .notice {color: red; font-size:3.0em; text-align:center; transform: scaleY(.85);
+    font-weight: bold;}
+    table { border: none; border-collapse: collapse; }
+    th, td { border: 1px solid #888; padding: 15px; text-align: left;}
+    @media all {
+        .page-break     { display: none; }
+    }
+
+    @media print {
+        h1.title {
+            /* v-center, need absolute */
+            position: absolute; /* repeats once */
+            bottom: 50%;
+            /* h-center, for element with absolute positioning */
+            left: 0;
+            right: 0;
+            margin-left: 20%;
+            margin-right: 20%;
+        }
+        .footer {
+            position: fixed; /* repeats on every page */
+            bottom: 0;
+        }
+        table.footer {
+            width: 95%;
+            display: table;
+        }
+        table.footer td {
+            border: none;
+            padding: 0px;
+            padding-bottom: .1em;
+        }
+        .page-break { display: block; page-break-after: always; }
+    }
+</style>
+
+
+<p>{{project.system_info.system_owner}}</p>
+<p>{{project.system_info.system_name}}, IT System Owner</p>
+<p>{{project.system_info_poc.system_owner_address}}</p>
+
+<br>
+
+<p>Mr./Mrs.{{project.system_info.system_owner}}:</p>
+
+<br>
+
+<p> The {{project.system_info.system_org}} has completed its review of the {{project.system_info.system_name}} system’s security authorization package. Based on the Federal Information Processing Standard (FIPS) security categorization of “{{project.fisma_level.fisma_level}}” and the provided documents associated with this security assessment... </p> 
+<p><strong>{{project.authorization_letter.cert_adjudicate.text}}</strong></p>
+
+<p>{% if project.authorization_letter.cert_adjudicate == "conditions" %} {{project.authorization_letter.choice_conditions}}{% endif %} {% if project.authorization_letter.cert_adjudicate == "reject"%} {{project.authorization_letter.choice_reject}}{% endif %}</p>
+
+<br>
+
+<p>{% if project.authorization_letter.cert_adjudicate == "accept" or project.authorization_letter.cert_adjudicate == "conditions" %} The security authorization of the informaiton system will remain in effect until {{project.authorization_letter.expiration_date}} as long as {{project.system_info.system_name}} satisfies the requisite requirements and manages significant changes or critical vulnerabilities in accordance with applicable Federal law, guidelines, and policies.{% else %}{% endif %}</p>
+
+<p>{% if project.authorization_letter.cert_adjudicate == "accept" or project.authorization_letter.cert_adjudicate == "conditions" %} {{project.system_info.system_org}} is leveraging the documentation provided within the FedRAMP secure repository as a key element of the Authority to Operate (ATO).  Based on the documentation within the FedRAMP secure repository and customer-specific tailoring and operating procedures, the {{project.system_info.system_org}} believes the security authorization package accurately documents the {{project.system_info.system_name}} system and clearly defines outstanding risk considerations. {% endif %}</p>
+
+<br>
+
+<p><strong>SIGNED:</strong></p>
+
+<p>{{project.system_info_poc.system_ao_name}}</p>
+<p>{{project.system_info_poc.system_ao_title}}</p>
+<p>{{project.system_info_poc.system_ao_org}}</p>
+<p>{{project.system_info_poc.system_ao_address}}</p>
+<p>{{project.system_info_poc.system_ao_phone}}</p>
+<p>{{project.system_info_poc.system_ao_email}}</p>
+
+
+
+
+

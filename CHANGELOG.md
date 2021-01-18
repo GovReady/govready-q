@@ -1,6 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
+Add lightweight-ato to default apps so users can get started easier.
 
 v999
 ----
@@ -10,6 +11,16 @@ v999
 * New '%dict' operator for JSON/YAML output templates
 
 * Pass OSCAL context to JSON/YAML output templates
+
+* Update install scripts.
+* Update default and recommended `local/environment.json` file from `first_run` and `install-govready-q.sh`.
+* By default, set organization name to "main".
+* Add optional `PIPUSER` parameter to `install-govready-q.sh` to avoid error of running pip install with `--user` flag in virtual environments.
+* Comment out starting GovReady-Q server automatically because too many edge cases exist to execute that well.
+
+**Data changes**
+
+* Add lightweight-ato to default apps.
 
 v.0.9.1.49 (January 12, 2021)
 -----------------------------
@@ -116,7 +127,7 @@ Fix tests so they execute successfully in CircleCI.
 * Move component implementation statement tab to left of combined statement tab in control editor.
 * Updating certified text also updates the HTML block showing the certified text with updated certified text on edit pages.
 * Add components (system elements) via an autocomplete to a system on system's selected components page.
-* Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement. 
+* Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement.
 * Make statement synchronization status lable/alert clickable to reveal certified statement and diff between local and certified.
 * Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
 * Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
@@ -194,7 +205,7 @@ Example:
       "by-component": {
         "%for": "smt in system.control_implementation_as_dict[control]['control_impl_smts']",
         "%loop": {
-          "key": "{{ smt.producer_element.uuid }}", 
+          "key": "{{ smt.producer_element.uuid }}",
           "value": { "uuid" : "{{ smt.uuid }}",
             "component-name": "{{   smt.producer_element.name|safe }}",
             "description" : "{{ smt.body|safe }}"
@@ -220,7 +231,7 @@ v.0.9.1.47.1 (December 02, 2020)
 
 **Developer changes**
 
-* Minor further tweaks to CSS refactoring. 
+* Minor further tweaks to CSS refactoring.
 
 v.0.9.1.47 (December 01, 2020)
 ------------------------------

@@ -1,0 +1,36 @@
+id: cp_site_location
+title: Site Location
+introduction:
+  format: markdown
+  template: |
+    Describe the alternate facilities that have been established
+    for the use in a contingency.
+questions:
+- id: designation
+  title: Designation
+  prompt: Designation
+  type: text
+
+- id: site_name
+  title: Site Name
+  prompt: Site Name
+  type: text
+
+- id: site_type
+  title: Site Type
+  prompt: Site Type
+  type: text
+
+- id: address
+  title: Address
+  prompt: Address
+  type: longtext
+
+outputs: []
+
+related:
+  - id: q11_site_locations
+  title: Site Locations
+  prompt: Here is the site locations
+  type: module-set
+  module-id: cp_site_location
