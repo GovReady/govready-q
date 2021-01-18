@@ -106,7 +106,7 @@ FOR OFFICIAL USE ONLY
 
 **Updated (Date Information)**
 
-**System Name:** 
+**System Name:**
 **{{project.system_info.system_name}} {% if project.system_info.system_short_name %} ({{project.system_info.system_short_name}}){% endif %}**
 
 
@@ -152,7 +152,7 @@ The security safeguards implemented for the Enter Information System Abbreviatio
       <th class="th-header">Information System Abbreviation</th>
     </tr>
     <tr>
-      <td>{{project.fisma_level.application_number}}</td>
+      <td>{{project.system_info.application_number}}</td>
       <td>{{project.system_info.system_name}}</td>
       <td>{{project.system_info.system_short_name}}</td>
     </tr>
@@ -177,9 +177,9 @@ The overall information system sensitivity categorization is recorded in Table 2
 
 This section describes how the information types used by the information system are categorized for confidentiality, integrity and availability sensitivity levels.
 
-The following tables identify the information types that are input, stored, processed and/or output from Enter Information System Abbreviation.  The selection of the information types is based on guidance provided by Office of Management and Budget (OMB) Federal Enterprise Architecture Program Management Office Business Reference Model 2.0 and FIPS Pub 199, Standards for Security Categorization of Federal Information and Information Systems which is based on NIST Special Publication (SP) 800-60, Guide for Mapping Types of Information and Information Systems to Security Categories. 
+The following tables identify the information types that are input, stored, processed and/or output from Enter Information System Abbreviation.  The selection of the information types is based on guidance provided by Office of Management and Budget (OMB) Federal Enterprise Architecture Program Management Office Business Reference Model 2.0 and FIPS Pub 199, Standards for Security Categorization of Federal Information and Information Systems which is based on NIST Special Publication (SP) 800-60, Guide for Mapping Types of Information and Information Systems to Security Categories.
 
-The tables also identify the security impact levels for confidentiality, integrity and availability for each of the information types expressed as low, moderate, or high.  The security impact levels are based on the potential impact definitions for each of the security objectives (i.e., confidentiality, integrity and availability) discussed in NIST SP 800-60 and FIPS Pub 199. 
+The tables also identify the security impact levels for confidentiality, integrity and availability for each of the information types expressed as low, moderate, or high.  The security impact levels are based on the potential impact definitions for each of the security objectives (i.e., confidentiality, integrity and availability) discussed in NIST SP 800-60 and FIPS Pub 199.
 The potential impact is low if—
 
 * The loss of confidentiality, integrity, or availability could be expected to have a limited adverse effect on organizational operations, organizational assets, or individuals.
@@ -187,20 +187,20 @@ The potential impact is low if—
 
 The potential impact is moderate if—
 
-* The loss of confidentiality, integrity, or availability could be expected to have a serious adverse effect on organizational operations, organizational assets, or individuals. 
+* The loss of confidentiality, integrity, or availability could be expected to have a serious adverse effect on organizational operations, organizational assets, or individuals.
 * A serious adverse effect means that, for example, the loss of confidentiality, integrity, or availability might: (i) cause a significant degradation in mission capability to an extent and duration that the organization is able to perform its primary functions, but the effectiveness of the functions is significantly reduced; (ii) result in significant damage to organizational assets; (iii) result in significant financial loss; or (iv) result in significant harm to individuals that does not involve loss of life or serious life threatening injuries.
 
 The potential impact is high if—
 
-* The loss of confidentiality, integrity, or availability could be expected to have a severe or catastrophic adverse effect on organizational operations, organizational assets, or individuals. 
-* A severe or catastrophic adverse effect means that, for example, the loss of confidentiality, integrity, or availability might: (i) cause a severe degradation in or loss of mission capability to an extent and duration that the organization is not able to perform one or more of its primary functions; (ii) result in major damage to organizational assets; (iii) result in major financial loss; or (iv) result in severe or catastrophic harm to individuals involving loss of life or serious life threatening injuries. 
+* The loss of confidentiality, integrity, or availability could be expected to have a severe or catastrophic adverse effect on organizational operations, organizational assets, or individuals.
+* A severe or catastrophic adverse effect means that, for example, the loss of confidentiality, integrity, or availability might: (i) cause a severe degradation in or loss of mission capability to an extent and duration that the organization is not able to perform one or more of its primary functions; (ii) result in major damage to organizational assets; (iii) result in major financial loss; or (iv) result in severe or catastrophic harm to individuals involving loss of life or serious life threatening injuries.
 
 <div class="table-caption">Table 2-2. Sensitivity Categorization of Information Types</div>
 <!-- Sensitivity Categorization of Information Types Table goes -->
 {{project.technical_information.info_type_table_01}}
 
 <h2>2.2 Security Objectives Categorization</h2>
-Based on the information provided in Table 2 2. Sensitivity Categorization of Information Types, for the Enter Information System Abbreviation, default to the high-water mark for the Information Types as identified in Table 2 3. Security Impact Level below. 
+Based on the information provided in Table 2 2. Sensitivity Categorization of Information Types, for the Enter Information System Abbreviation, default to the high-water mark for the Information Types as identified in Table 2 3. Security Impact Level below.
 
 <div class="table-caption">Table 2-3. Security Impact Level</div>
 
@@ -223,7 +223,7 @@ Using this categorization, in conjunction with the risk assessment and any uniqu
 
 <h2>3.  INFORMATION SYSTEM OWNER</h2>
 
-The following individual is identified as the system owner or functional proponent/advocate for this system.  
+The following individual is identified as the system owner or functional proponent/advocate for this system.
 
 <div class="table-caption">Table 3-1. Information System Owner</div>
 
@@ -460,7 +460,7 @@ Information systems, particularly those based on cloud architecture models, are 
     <tr>
 </table>
 
-Note: Refer to NIST SP 800-145 for information on cloud computing architecture models.  
+Note: Refer to NIST SP 800-145 for information on cloud computing architecture models.
 
 <h3>8.2.  Cloud Deployment Models</h3>
 
@@ -510,7 +510,7 @@ All personnel have their status categorized with a sensitivity level in accordan
 
 <h3>9.4.  Network Architecture</h3>
 
-The logical network topology is shown in Figure 9 2. Network Diagram mapping the data flow between components. 
+The logical network topology is shown in Figure 9 2. Network Diagram mapping the data flow between components.
 The following Figure 9 2. Network Diagram(s) provides a visual depiction of the system network components that constitute Enter Information System Abbreviation.
 
 <h2>10. SYSTEM ENVIRONMENT AND INVENTORY</h2>
@@ -521,7 +521,7 @@ The data flow in and out of the system boundaries is represented in Figure 10 1.
 
 <h3>10.2. Ports, Protocols and Services</h3>
 
-The Table 10 1. Ports, Protocols and Services below lists the ports, protocols and services enabled in this information system.  
+The Table 10 1. Ports, Protocols and Services below lists the ports, protocols and services enabled in this information system.
 
 <div class="table-caption">Table 10-1. Ports, Protocols and Services</div>
 
@@ -559,11 +559,11 @@ Table 12 2. Information System Name Standards and Guidance includes in this sect
 <a id="controls" name="controls"></a>
 <h2>13. MINIMUM SECURITY CONTROLS</h2>
 
-Security controls must meet minimum security control baseline requirements.  Upon categorizing a system as Low, Moderate, or High sensitivity in accordance with FIPS 199, the corresponding security control baseline standards apply.  Some of the control baselines have enhanced controls which are indicated in parentheses.  
+Security controls must meet minimum security control baseline requirements.  Upon categorizing a system as Low, Moderate, or High sensitivity in accordance with FIPS 199, the corresponding security control baseline standards apply.  Some of the control baselines have enhanced controls which are indicated in parentheses.
 
-Security controls that are representative of the sensitivity of Enter Information System Abbreviation are described in the sections that follow.  Security controls that are designated as “Not Selected” or “Withdrawn by NIST” are not described unless they have additional FedRAMP controls.  Guidance on how to describe the implemented standard can be found in NIST 800-53, Rev 4.  Control enhancements are marked in parentheses in the sensitivity columns.  
+Security controls that are representative of the sensitivity of Enter Information System Abbreviation are described in the sections that follow.  Security controls that are designated as “Not Selected” or “Withdrawn by NIST” are not described unless they have additional FedRAMP controls.  Guidance on how to describe the implemented standard can be found in NIST 800-53, Rev 4.  Control enhancements are marked in parentheses in the sensitivity columns.
 
-Systems that are categorized as FIPS 199 Low use the controls designated as Low, systems categorized as FIPS 199 Moderate use the controls designated as Moderate and systems categorized as FIPS 199 High use the controls designated as High.  
+Systems that are categorized as FIPS 199 Low use the controls designated as Low, systems categorized as FIPS 199 Moderate use the controls designated as Moderate and systems categorized as FIPS 199 High use the controls designated as High.
 
 <!--Control catalog here-->
 
