@@ -10,8 +10,8 @@ v999 (January xxx, 2021)
 
 **Developer changes**
 
+* Add `pyup.yml` configuration file to have pyup.io pull requests go against `develop` branch.
 * New '%dict' operator for JSON/YAML output templates
-
 * Pass OSCAL context to JSON/YAML output templates
 
 
