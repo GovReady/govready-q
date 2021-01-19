@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block body %}
+
+    <div class="container">
+        <h1 class="text-center"><u>Statement Version History for {{ statement.0.sid }}_smt.{{ statement.0.pid }}</u></h1>
+        <h3 class="text-center"> (This statement comes from the {{ statement.0.producer_element.name }} component)</h3><br>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Version id</th>
+                <th>Changed By</th>
+                <th>Date created</th>
+                <th>Statement body</th>
+                <th>Change Reason</th>
+                <th>Enter Reason</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% if statement %}
+                {% for smt_record in statement %}
+                    <tr>
+                        <td class="col-xs-1 col-sm-1 col-md-1">{{ smt_record.history_id }}</td>
+                        <td class="col-xs-2 col-sm-2 col-md-2">{{ smt_record.history_user }}</td>
+                        <td class="col-xs-2 col-sm-2 col-md-2">{{ smt_record.history_date }}</td>
+                        <td>{{ smt_record.body }}</td>
+                         <td class="col-xs-2 col-sm-2 col-md-2">{{ smt_record.history_change_reason }}</td>
+                    <form method="post" action = "{% url 'restore_to' smt_id=smt_record.id history_id=smt_record.history_id %}" id="import-form">
+                     {% csrf_token %}
+                        <td>{% if not forloop.first %}<input type="text" class="form-control" id="change_reason" placeholder="Enter your reason to here." onchange="change_reason_update('restore_{{ forloop.counter0 }}', this.value)">{% endif %}</td>
+                        <td class="col-xs-2 col-sm-2 col-md-2">{% if not forloop.first %} <button type="submit"  name="restore_{{ forloop.counter0 }}" id="restore_{{ forloop.counter0 }}" class="btn btn-xs btn-primary" value="hihi">Restore to this version</button>{% endif %}</td>
+                    </form>
+                    </tr>
+                {% endfor %}
+             {% else %}
+            <div>Somehow there is no statement history for this statement. Please contact your GovReady administrator.</div>
+             {% endif %}
+
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function change_reason_update(restore_id, text_input) {
+        // update reason value with text input value
+    document.getElementById(restore_id).value = text_input;
+    }
+
+</script>}
+{% endblock %}

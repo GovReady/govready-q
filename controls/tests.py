@@ -22,7 +22,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from controls.models import System
 from controls.models import STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED
 from controls.views import OSCALComponentSerializer
-from siteapp.models import User
+from siteapp.models import User, Organization, OrganizationalSetting
 from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests
 from system_settings.models import SystemSettings
 from .models import *
@@ -107,7 +107,7 @@ class Oscal80053Tests(TestCase):
         self.assertTrue('Access control policy every 12 parsecs' in description,
                         description)
 
-class OSCALComponentSerializerTests(TestCase):
+class StatementTests(TestCase):
     
     def test_statement_id_from_control(self):
         cases = (
@@ -116,7 +116,7 @@ class OSCALComponentSerializerTests(TestCase):
             ('ac-1.1', 'a', 'ac-1.1_smt.a'),
             ('1.1.1', '', '1.1.1_smt')
         )
-        test_func = OSCALComponentSerializer.statement_id_from_control
+        test_func = Statement._statement_id_from_control
         
         for control_id, part, expected in cases:
             self.assertEqual(test_func(control_id, part), expected)
@@ -158,6 +158,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.system = System()
         self.system.root_element = root_element
         self.system.save()
+
         project = self.org.get_organization_project()
         project.system = self.system
         project.save()
@@ -235,6 +236,10 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         file_input = self.find_selected_option('input#id_file')
         self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
+        element_count_before_import = Element.objects.filter(element_type="system_element").count()
+        statement_count_before_import = Statement.objects.filter(
+            statement_type="control_implementation_prototype").count()
+
         # Verify that the contents got copied correctly from the file to the textfield
         try:
             # Load contents from file
@@ -252,19 +257,19 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.click_element('input#import_component_submit')
 
-        element_count = Element.objects.filter(uuid='123456a7-b890-1234-cd56-e789fa012bcd').count()
-        self.assertEqual(element_count, 0)
+        element_count_after_import = Element.objects.filter(element_type="system_element").count()
+        self.assertEqual(element_count_before_import, element_count_after_import)
 
-        statement1_count = Statement.objects.filter(uuid='1ab2c345-67d8-9e0f-1234-5a6bcd789efa').count()
-        self.assertEqual(statement1_count, 0)
-
-        statement2_count = Statement.objects.filter(uuid='2bc3d456-78e9-0f1a-2345-6b7cde890fab').count()
-        self.assertEqual(statement2_count, 0)
+        statement_count_after_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        self.assertEqual(statement_count_before_import, statement_count_after_import)
 
     def test_component_import_oscal_json(self):
         self._login()
         url = self.url(f"/controls/components")
         self.browser.get(url)
+
+        element_count_before_import = Element.objects.filter(element_type="system_element").count()
+        statement_count_before_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
 
         # Test initial import of Component(s) and Statement(s)
         self.click_element('a#component-import-oscal')
@@ -275,23 +280,22 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.click_element('input#import_component_submit')
 
-        element_count = Element.objects.filter(element_type="system_element").count()
-        self.assertEqual(element_count, 2)
+        var_sleep(3) # Wait for OSCAL to be imported
 
-        statement_count = Statement.objects.filter(statement_type="control_implementation_prototype").count()
-        self.assertEqual(statement_count, 4)
+        element_count_after_import = Element.objects.filter(element_type="system_element").count()
+        self.assertEqual(element_count_before_import + 2, element_count_after_import)
 
-        # Verify that statements without a proper Catalog don't get entered
-        bad_catalog_statement_count = Statement.objects.filter(uuid='1bb0b252-90d3-4d2c-9785-0c4efb254dfc').count()
-        self.assertEqual(bad_catalog_statement_count, 0)
+        statement_count_after_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        self.assertEqual(statement_count_before_import + 4, statement_count_after_import)
+        # Test file contains 6 Statements, but only 4 get imported
+        # because one has an improper Catalog
+        # and another has an improper Control
+        # but we can't test individual statements because the UUIDs are randomly generated and not consistent
+        # with the OSCAL JSON file. So we simply do a count.
 
-        # Verify that statements without a proper Control don't get entered
-        bad_control_id_statement_count = Statement.objects.filter(uuid='3bb0b252-90d3-4d2c-9785-0c4efb254dfc').count()
-        self.assertEqual(bad_control_id_statement_count, 0)
+        var_sleep(3) # Needed to allow page to refresh and messages to render
 
-        var_sleep(1) # Needed to allow page to refresh and messages to render
-
-        # Test that duplicate Components and Statements are not re-imported
+        # Test that duplicate Components are re-imported with a different name and that Statements get reimported
         self.click_element('a#component-import-oscal')
         file_input = self.find_selected_option('input#id_file')
         # Using converted keys from above
@@ -299,11 +303,21 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.click_element('input#import_component_submit')
 
-        element_count = Element.objects.filter(element_type="system_element").count()
-        self.assertEqual(element_count, 2)
+        var_sleep(3) # Wait for OSCAL to be imported
 
-        statement_count = Statement.objects.filter(statement_type="control_implementation_prototype").count()
-        self.assertEqual(statement_count, 4)
+        element_count_after_duplicate_import = Element.objects.filter(element_type="system_element").count()
+        self.assertEqual(element_count_after_import + 2, element_count_after_duplicate_import)
+
+        original_import_element_count = Element.objects.filter(name='Test OSCAL Component1').count()
+        self.assertEqual(original_import_element_count, 1)
+
+        duplicate_import_element_count = Element.objects.filter(name='Test OSCAL Component1 (1)').count()
+        self.assertEqual(duplicate_import_element_count, 1)
+
+        statement_count_after_duplicate_import = Statement.objects.filter(
+            statement_type="control_implementation_prototype").count()
+        self.assertEqual(statement_count_after_import + 4, statement_count_after_duplicate_import)
+
 
     def test_import_tracker(self):
         """Tests that imports are tracked correctly."""
@@ -519,13 +533,16 @@ class ElementUnitTests(TestCase):
         """Test renaming an element"""
 
         # Create an element
-        e = Element.objects.create(name="Element A", full_name="Element A FN", element_type="component")
-        self.assertTrue(e.id is not None)
-        self.assertTrue(e.name == "Element A")
+        e = Element.objects.create(name="Element A", full_name="Element A Full Name",description="Element A Description",element_type="component")
+        self.assertIsNotNone(e.id)
+        self.assertEqual(e.name, "Element A")
+        self.assertEqual(e.description, "Element A Description")
         e.save() 
         e.name = "Renamed Element A"
+        e.description = "Renamed Element A Description"
         e.save()
-        self.assertTrue(e.name == "Renamed Element A")
+        self.assertEqual(e.name, "Renamed Element A")
+        self.assertEqual(e.description, "Renamed Element A Description")
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):
@@ -591,6 +608,95 @@ class PoamUnitTests(TestCase):
         poam.save()
         # poam.delete()
         # self.assertTrue(poam.uuid is None)
+
+class OrgParamTests(TestCase):
+    """Class for OrgParam Unit Tests"""
+
+    def test_org_params(self):
+        odp = OrgParams()
+        self.assertIn('mod_fedramp', odp.get_names())
+        odp53 = odp.get_params("mod_fedramp")
+        self.assertTrue('at least every 3 years' == odp53['ac-1_prm_2'])
+        self.assertEqual(177, len(odp53))
+
+    def test_catalog_all_controls_with_organizational_parameters(self):
+        odp = OrgParams()
+        self.assertIn('mod_fedramp', odp.get_names())
+        odp53 = odp.get_params("mod_fedramp")
+        # parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
+        parameter_values = odp53
+        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4,
+                                 parameter_values=parameter_values)
+        cg_flat = cg.get_flattened_controls_all_as_dict()
+        control = cg_flat['ac-1']
+        description = control['description']
+        self.assertTrue('at least every 3 years' in description, description)
+
+    def test_organizational_parameters_via_project(self):
+
+        # for this test, we need a Project, System, and Organization
+
+        # REMIND: it would be nice to refactor all this setup code so
+        # it could be easily reused ...
+        
+        from guidedmodules.models import AppSource
+        from guidedmodules.management.commands.load_modules import Command as load_modules
+        
+        AppSource.objects.all().delete()
+        AppSource.objects.get_or_create(
+            slug="system",
+            is_system_source=True,
+            defaults={
+                "spec": { # required system projects
+                    "type": "local",
+                    "path": "fixtures/modules/system",
+                }
+            }
+        )
+        load_modules().handle() # load system modules
+
+        AppSource.objects.create(
+            slug="project",
+            spec={ # contains a test project
+                "type": "local",
+                "path": "fixtures/modules/other",
+            },
+            trust_assets=True
+        )\
+            .add_app_to_catalog("simple_project")
+
+        user = User.objects.create(
+            username="me",
+            email="test+user@q.govready.com",
+            is_staff=True
+        )
+        org = Organization.create(name="Our Organization", slug="testorg",
+                                  admin_user=user)
+
+        root_element = Element(name="My Root Element",
+                               description="Description of my root element")
+        root_element.save()
+
+        system = System()
+        system.root_element = root_element
+        system.save()
+
+        project = org.get_organization_project()
+        project.system = system
+        project.save()
+
+        parameter_values = project.get_parameter_values(Catalogs.NIST_SP_800_53_rev4)
+        self.assertEquals(parameter_values["ac-1_prm_2"], "at least every 3 years")
+
+        # now, add an organizational setting and try again
+        OrganizationalSetting.objects.create(organization=org, 
+                                             catalog_key=Catalogs.NIST_SP_800_53_rev4,
+                                             parameter_key="ac-1_prm_2", 
+                                             value="at least every 100 years")
+        
+        # we should now see the organizational setting override
+        parameter_values = project.get_parameter_values(Catalogs.NIST_SP_800_53_rev4)
+        self.assertEquals(parameter_values["ac-1_prm_2"], "at least every 100 years")
 
 class ControlComponentTests(OrganizationSiteFunctionalTests):
 
@@ -789,3 +895,121 @@ class ControlTestHelper(object):
         statement.save()
 
         return import_record
+
+class ImportExportProjectTests(OrganizationSiteFunctionalTests):
+    """
+    Testing the whole import of project JSON which will form a new system, project, and set of components and their statements.
+    """
+
+    def test_new_project_json_import(self):
+        """
+        Testing the import of a new project through JSON
+        """
+
+        # login as the first user and create a new project
+        self._login()
+        self._new_project()
+
+        # Checks the number of projects and components before the import
+        project_count_before_import = Project.objects.all().count()
+
+        self.assertEqual(project_count_before_import, 3)
+        self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 0)
+
+        ## Import a new project
+        # click import project button, opening the modal
+        self.click_element("#action-buttons\ action-row > div.btn-group > button:nth-child(4)")
+        ## select through the modal information needed and browse for the import needed
+        self.select_option_by_visible_text("#id_appsource_compapp", "project")
+        # The selection variable found by id
+        select = Select(self.browser.find_element_by_id("id_appsource_compapp"))
+        # Select the last option by index
+        selectLen = len(select.options)
+        select.select_by_index(selectLen - 1)
+        self.browser.find_element_by_id("id_importcheck").click()
+
+        file_input = self.browser.find_element_by_css_selector("#id_file")
+
+        file_path = os.getcwd() + "/fixtures/test_project_import_data.json"
+        # convert filepath if necessary and send keys
+        self.filepath_conversion(file_input, file_path, "sendkeys")
+        select = Select(self.browser.find_element_by_id("id_appsource_version_id"))
+        # Select the last option by index
+        selectLen = len(select.options)
+        select.select_by_index(selectLen - 1)
+        self.browser.find_element_by_id("import_component_submit").click()
+        # Should be incremented by one compared to earlier
+        project_count_after_import = Project.objects.all().count()
+        # Check the new number of projects, and validate that it's 1 more than the previous count.
+        self.assertEqual(Project.objects.all().count(), project_count_before_import + 1)
+        # Has the correct name?
+        self.assertEqual(Project.objects.all()[project_count_after_import -1 ].title, "New Test Project")
+
+        # Components and their statements?
+        self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 1)
+        self.assertEqual(Statement.objects.all().count(), 3)
+
+    def test_update_project_json_import(self):
+        """
+        Testing the update of a project through project JSON import and ingestion of components and their statements
+        """
+
+        # login as the first user and create a new project
+        self._login()
+        self._new_project()
+
+        # Checks the number of projects and components before the import
+        self.assertEqual(Project.objects.all().count(), 3)
+        self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 0)
+
+        ## Update current project
+        # click import project button, opening the modal
+        self.click_element("#action-buttons\ action-row > div.btn-group > button:nth-child(4)")
+        ## select through the modal information needed and browse for the import needed
+        self.select_option_by_visible_text("#id_appsource_compapp", "project")
+
+        # The selection variable found by id
+        select = Select(self.browser.find_element_by_id("id_appsource_version_id"))
+        # Select the last option by index
+        selectLen = len(select.options)
+        select.select_by_index(selectLen - 1)
+
+        file_input = self.browser.find_element_by_css_selector("#id_file")
+
+        file_path = os.getcwd() + "/fixtures/test_project_import_data.json"
+        # convert filepath if necessary and send keys
+        self.filepath_conversion(file_input, file_path, "sendkeys")
+        self.browser.find_element_by_id("import_component_submit").click()
+
+        # Check the new number of projects, and validate that it's the same
+        project_num = Project.objects.all().count()
+        self.assertEqual(project_num, 3)
+        # Has the updated name?
+        var_sleep(5)
+        self.assertEqual(Project.objects.all()[project_num-1].title, "New Test Project")
+
+        # Components and their statements?
+        self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 1)
+        self.assertEqual(Statement.objects.all().count(), 3)
+
+    def test_project_json_export(self):
+        """
+        Testing the export of a project through JSON and ingestion of components and their statements
+        """
+
+        # login as the first user and create a new project
+        self._login()
+        self._new_project()
+
+        # export the only project we have so far
+        self.navigateToPage('/systems/3/export')
+
+        # Project title to search for in file names
+        project_title = "I_want_to_answer_some_questions_on_Q._3"
+        file_system = os.listdir(os.getcwd())
+        # Assert there is a file
+        for file_name in file_system:
+            if file_name ==project_title:
+                project_title = file_name
+
+        self.assertIn(file_name, file_system)

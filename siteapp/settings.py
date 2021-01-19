@@ -46,8 +46,8 @@ else:
 	# Show the defaults.
 	print("\nCouldn't find `local/environment.json` file. Generating default environment params.")
 	print("Please create a '%s' file containing something like this:" % local("environment.json"))
+	environment["secret-key"] = make_secret_key() # Generate a new key since the initial one was printed for the user for edification
 	print(json.dumps(environment, sort_keys=True, indent=2))
-	print()
 
 # Load pre-specified admin users
 # Example: "govready_admins":[{"username": "username", "email":"first.last@example.com", "password": "REPLACEME"}]
@@ -74,7 +74,7 @@ ALLOWED_HOSTS = []
 if "host" in environment:
 	ALLOWED_HOSTS = [environment["host"].split(':')[0]]
 	print("WARNING: Use of 'host' environment parameter deprecated. Please use 'govready-url' environment parameter in future.")
-if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
 	ALLOWED_HOSTS.append(GOVREADY_URL.hostname)
 print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)
 # Support multiple hosts if set
@@ -86,7 +86,7 @@ if "allowed_hosts" in environment:
 SITE_ID = 1
 
 # Add standard apps to INSTALLED_APPS.
-INSTALLED_APPS = [
+DJANGO_APPS = [
 	'django.contrib.admin',
 	'django.contrib.auth',
 	'django.contrib.contenttypes',
@@ -96,12 +96,18 @@ INSTALLED_APPS = [
 	'django.contrib.messages',
 	'django.contrib.humanize',
 
+]
+THIRD_PARTY_APPS = [
 	'bootstrap3',
 	'allauth',
 	'allauth.account',
 	'allauth.socialaccount',
+	'simple_history',
 	# add any allauth social providers as you like
 ]
+
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS
 
 # Add test_without_migrations if it is installed. This provides --nomigrations
 # to the test management command.
@@ -109,7 +115,12 @@ try:
 	import test_without_migrations
 	INSTALLED_APPS.append('test_without_migrations')
 except ImportError:
-	pass
+	print("WARNING: 'test_without_migrations' could not be imported")
+
+
+# profile every request and save the HTML output to the folder profiles
+if DEBUG:
+	PYINSTRUMENT_PROFILE_DIR = 'profiles'
 
 # Add standard middleware.
 MIDDLEWARE = [
@@ -121,9 +132,11 @@ MIDDLEWARE = [
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'simple_history.middleware.HistoryRequestMiddleware',
+	'pyinstrument.middleware.ProfilerMiddleware',
 ]
 if environment["debug"] and os.path.exists(os.path.join(os.path.dirname(__file__), 'helper_middleware.py')):
-	MIDDLEWARE_CLASSES.append(primary_app+'.helper_middleware.DumpErrorsToConsole')
+	MIDDLEWARE.append(primary_app+'.helper_middleware.DumpErrorsToConsole')
 
 # Load templates for app directories and from a main `templates` directory located
 # at the project root. Add standard context processors.
@@ -291,7 +304,7 @@ if environment.get("syslog"):
 	}
 
 SILENCED_SYSTEM_CHECKS = []
-
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440
 # Settings that have normal values based on the primary app
 # (the app this file resides in).
 
@@ -322,7 +335,7 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 # always turned on.
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not ""):
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != ""):
 	EMAIL_SUBJECT_PREFIX = '[' + GOVREADY_URL.hostname + '] '
 elif "host" in environment:
 	EMAIL_SUBJECT_PREFIX = '[' + environment['host'] + '] '
@@ -411,7 +424,7 @@ if os.path.join(siteapp_path, STATIC_ROOT) == os.path.join(siteapp_path, "siteap
 # Construct value from preferred "govready-url" environment parameter and temporarily
 # support the deprecated "https" and "host" environment settings.
 SITE_ROOT_URL = None
-if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not ""):
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != ""):
 	SITE_ROOT_URL = "{}://{}".format(GOVREADY_URL.scheme, GOVREADY_URL.netloc)
 	print("INFO: 'SITE_ROOT_URL' set to {} ".format(SITE_ROOT_URL))
 elif "host" in environment and "https" in environment:

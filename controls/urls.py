@@ -26,6 +26,9 @@ urlpatterns = [
     url(r'^related_system_components/', views.RelatedComponentStatements.as_view(), name="related_system_components"),
     url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),
     url(r'^(?P<system_id>.*)/components/editor_autocomplete$',  views.EditorAutocomplete.as_view(), name="editor_autocomplete"),
+    url(r'^(?P<system_id>.)/profile/oscal/json', views.system_profile_oscal_json, name="profile_oscal_json"),
+    url(r'^statement_history/(?P<smt_id>.*)/$', views.statement_history, name="statement_history"),
+    url(r'^restore_to/(?P<smt_id>.*)/(?P<history_id>.*)/$', views.restore_to_history, name="restore_to"),
 
     url(r'^smt/_save/$', views.save_smt),
     url(r'^smt/_delete/$', views.delete_smt),
@@ -57,6 +60,7 @@ urlpatterns = [
     # Controls
     url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)', views.group, name="control_group"),
     url(r'^catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)', views.control, name="control_info"),
+    url(r'^api/controlsselect/', views.api_controls_select, name="api_controls_select"),
 
     # Baselines
     url(r'^(?P<system_id>.*)/controls/baseline/(?P<catalog_key>.*)/(?P<baseline_name>.*)/_assign$', views.assign_baseline, name="assign_baseline"),
@@ -68,4 +72,7 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/poams/export/csv$', views.poam_export_csv, name="poam_export_csv"),
     url(r'^(?P<system_id>.*)/poams/export/xlsx$', views.poam_export_xlsx, name="poam_export_xlsx"),
 
+    # Project
+    url(r'^(?P<project_id>.*)/import', views.project_import, name="project_import"),
+    url(r'^(?P<project_id>.*)/export', views.project_export, name="project_export"),
 ]

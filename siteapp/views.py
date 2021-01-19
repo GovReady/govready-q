@@ -16,6 +16,7 @@ from django.views.decorators.http import require_http_methods
 from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model
 
+from controls.forms import ImportProjectForm
 from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
@@ -364,10 +365,7 @@ def apps_catalog(request):
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
     # Add the portfolio id the user is creating the project from to the args
-    if "portfolio" not in request.GET:
-        messages.add_message(request, messages.ERROR, "Please select 'Start a project' to continue.")
-        return redirect('projects')
-    else:
+    if "portfolio" in request.GET:
         forward_qsargs["portfolio"] = request.GET["portfolio"]
 
     # Get the app catalog. If the user is answering a question, then filter to
@@ -814,6 +812,7 @@ def project(request, project):
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
         "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
+        "import_project_form": ImportProjectForm()
     })
 
 @project_read_required
@@ -876,6 +875,7 @@ def project_settings(request, project):
         "users": User.objects.all(),
 
         "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
+        "import_project_form": ImportProjectForm()
     })
 
 @project_read_required
@@ -1277,7 +1277,7 @@ def make_revoke_project_admin(request, project):
     return JsonResponse({ "status": "ok" })
 
 @project_admin_login_post_required
-def export_project(request, project):
+def export_project_questionnaire(request, project):
     from urllib.parse import quote
     data = project.export_json(include_metadata=True, include_file_content=True)
     resp = JsonResponse(data, json_dumps_params={"indent": 2})
@@ -1286,7 +1286,7 @@ def export_project(request, project):
     return resp
 
 @project_admin_login_post_required
-def import_project_data(request, project):
+def import_project_questionnaire(request, project):
     # Deserialize the JSON from request.FILES. Assume the JSON data is
     # UTF-8 encoded and ensure dicts are parsed as OrderedDict so that
     # key order is preserved, since key order matters because deserialization

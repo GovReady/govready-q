@@ -13,7 +13,7 @@ from guidedmodules.models import AppSource, Module
 from siteapp.models import User, Organization
 
 from django.utils.crypto import get_random_string
-from testmocking.data_management import create_user, create_portfolio
+from loadtesting.data_management import create_user, create_portfolio
 
 class Command(BaseCommand):
     help = 'Create a set of dummy data for extended testing/verification. Creates users, portfolios, organizations, user/org assignments, and with --full, can also populate the created organizations with assessments.'
