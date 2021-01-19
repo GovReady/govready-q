@@ -7,11 +7,7 @@ Compliance Apps
 
 {% block head %}
 <style>
-  body {
-    padding-left: 20px;
-    padding-right: 20px;
-    background-color: rgb(247,247,247);
-  }
+/* remove body tag because it shouldn't be here. */
 
   h1 {
     margin-bottom: 30px;
@@ -182,7 +178,7 @@ Compliance Apps
         <tr valign="top">
         <td>
           <h3>{{app.title}}</h3>
-          <div class="body">
+          <div>
           {{app.description.short|safe|truncatewords_html:18}}
           </div>
           {% if app.authz != "none" %}
@@ -205,9 +201,7 @@ Compliance Apps
                       {% with app.organizations|first as first_org %}
                           <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
                       {% endwith %}
-                      <button type="submit" class="btn btn-success btn-sm start-app">
-                          Add ►
-                      </button>&nbsp;
+                      <button type="submit" class="btn btn-success btn-app-sm start-app">Add</button>
                   </form>
               {% endif %}
             <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-default btn-sm view-app">Info</a>
