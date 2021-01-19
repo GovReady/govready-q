@@ -1275,6 +1275,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertInNodeText("Upload a file!", "h1")
 
         self.click_element("#save-button")
+        var_sleep(1)
         # TODO: commenting out for now they are not passing
        # self.assertRegex(self.browser.title, "^Test The Media Question Types - ")
        # self.assertInNodeText("Download attachment (image; 90.5 kB; ",
