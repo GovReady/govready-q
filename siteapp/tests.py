@@ -1234,7 +1234,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # Finished.
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "^Test The Numeric Question Types - "))
 
-
     def test_questions_media(self):
         # Log in and create a new project.
         self._login()
@@ -1264,6 +1263,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(1)
         self.fill_field("#inputctrl", testFilePath)
         self.click_element("#save-button")
+        var_sleep(1)
 
         # Clicking the global modal error ok button
         wait_for_sleep_after(lambda: self.browser.find_element_by_xpath("//*[@id='global_modal']/div/div/div[3]/button[1]").click())
