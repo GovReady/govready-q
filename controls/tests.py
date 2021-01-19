@@ -204,6 +204,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         elif os.path.isfile(self.json_download.name):
             os.remove(self.json_download.name)
         self.click_element("a#oscal_download_json_link")
+        var_sleep(1)
         # assert download exists!
         try:
             wait_for_sleep_after(lambda: self.assertTrue(self.json_download.is_file()))
@@ -372,7 +373,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.click_element(f"a#confirm-import-delete")
 
-        current_path = wait_for_sleep_after(lambda: urlparse(self.browser.current_url).path)
+        current_path = urlparse(self.browser.current_url).path
 
         self.assertEqual('/controls/components', current_path)
 
