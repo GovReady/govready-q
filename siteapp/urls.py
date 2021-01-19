@@ -11,7 +11,7 @@ from .good_settings_helpers import signup_wrapper
 from .settings import *
 
 urlpatterns = [
-    url(r"^$", views.homepage, name="homepage"),
+    url(r"^$", views.homepage, name="main"),
     url(r"^login$", views.homepage, name="homepage"),
     url(r"^(privacy|terms-of-service|love-assessments)$", views.shared_static_pages),
 
@@ -20,9 +20,6 @@ urlpatterns = [
 
     # incoming email hook for responses to notifications
     url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook),
-
-    # Enterprise Single Sign On
-    url(r'^sso-logout$', views.sso_logout, name="sso-logout"),
 
     # Django admin site
     url(r'^admin/', admin.site.urls),
