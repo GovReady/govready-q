@@ -771,8 +771,6 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
 
         # TODO: Why is system being overridden/conditional. system_id will be 1 in test class and 4 in full test suite
         systemid = System.objects.all().first()
-        #print("systemid")
-        #print(systemid.id)
         self.navigateToPage(f"/systems/{systemid.id}/controls/selected")
 
         # Select moderate

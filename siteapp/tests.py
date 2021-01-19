@@ -416,10 +416,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Extract the URL in the email and visit it.
         invitation_body = self.pop_email().body
         invitation_url_pattern = re.escape(self.url("/invitation/")) + r"\S+"
-        #print("invitation_url_pattern", invitation_url_pattern)
         self.assertRegex(invitation_body, invitation_url_pattern)
         m = re.search(invitation_url_pattern, invitation_body)
-       # print("m.group(0)", m.group(0))
         self.browser.get(m.group(0))
         # Since we're not logged in, we hit the invitation splash page.
         wait_for_sleep_after(lambda:  self.click_element('#button-sign-in'))
@@ -528,7 +526,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
                 self.assertEqual(answer.reviewed, 1)
 
     def test_invitations(self):
-        #print("INFO: Entering '{}'".format('test_invitations(self)'))
         # Test a bunch of invitations.
 
         # Log in and create a new project.
@@ -544,14 +541,12 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.browser.get(project_page)
 
         def start_invitation(username):
-            #print("INFO: Entering '{}', '{}'".format('start_invitation(username)', username))
             # Fill out the invitation modal.
             # self.select_option_by_visible_text('#invite-user-select', username) # This is for selecting user from dropdown list
             wait_for_sleep_after(lambda: self.fill_field("input#invite-user-email", username))
             wait_for_sleep_after(lambda: self.click_element("#invitation_modal button.btn-submit"))
 
         def do_invitation(username):
-            #print("INFO: Entering '{}', '{}'".format('do_invitation(username)', username))
             start_invitation(username)
             var_sleep(.5) # wait for invitation to be sent
 
@@ -560,7 +555,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
             self._accept_invitation(username)
 
         def reset_login():
-            #print("INFO: Entering '{}'".format('reset_login()'))
             # Log out and back in as the original user.
             self.browser.get(self.url("/accounts/logout/"))
             self._login()
