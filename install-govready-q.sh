@@ -136,15 +136,6 @@ fi
 
 echo $SPACER
 
-# TODO - Need a test to see if jq is installed on system; commented out code in meantime
-#
-# Use jq and cut to extract hostname from govready-url param in local/environment.json
-# environment_json=$(<local/environment.json)
-# govready_url=`cat local/environment.json | jq .\"govready-url\"`
-# # echo "govready_url is $govready_url"
-# govready_host_and_port=$(echo $govready_url | cut -f2 -d\" | cut -f3 -d/)
-# echo "govready_host_and_port is $govready_host_and_port"
-
 echo ""
 echo "***********************************"
 echo "* GovReady-Q Server configured... *"
@@ -156,24 +147,3 @@ echo "or"
 echo "  python manage.py runserver"
 
 
-# TODO - Need a better way to start GovReady because of different use cases
-#        Commenting out code in meantime
-#
-# if [ $NONINTERACTIVE ];
-# then
-# 	echo "Starting GovReady-Q Server..."
-# 	python3 manage.py runserver "$govready_host_and_port"
-# else
-# 	# prompt the user if they want to run the webserver now
-# 	# this currently runs synchronously, in the foreground, so it needs to be the last
-# 	# functional line of the script
-# 	while true;
-# 	do
-# 		read -p "Do you want to run the GovReady-Q now, in the foreground? [y/n] " answer
-# 		case $answer in
-# 			[Yy]* ) python3 manage.py runserver "$govready_host_and_port"; break;;
-# 			[Nn]* ) break;;
-# 			* ) echo "Please answer 'yes' or 'no'";;
-# 		esac
-# 	done
-# fi
