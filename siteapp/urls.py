@@ -11,8 +11,7 @@ from .good_settings_helpers import signup_wrapper
 from .settings import *
 
 urlpatterns = [
-    url(r"^$", views.homepage, name="main"),
-    url(r"^login$", views.homepage, name="homepage"),
+    url(r"^(?![\s\S]|login)$", views.homepage, name="homepage"),
     url(r"^(privacy|terms-of-service|love-assessments)$", views.shared_static_pages),
 
     url(r'^api/v1/projects/(?P<project_id>\d+)/answers$', views_landing.project_api),
