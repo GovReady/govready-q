@@ -178,69 +178,69 @@ h3.question-group-title {
 {% block action_buttons %}
   <div class="btn-group" role="group" aria-label="action buttons group">
     {% if project.system is not None %}
-      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/deployments';">
+      <button id="btn-deployments" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/deployments';">
         <em class="glyphicon glyphicon-th"></em>&nbsp; Deployments</a>
       </button>
-      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
+      <button id="btn-components" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
         <em class="glyphicon glyphicon-tags"></em>&nbsp; Components</a>
       </button>
-      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
+      <button id="btn-controls" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
         <em class="glyphicon glyphicon-book"></em> Controls</a>
       </button>
-      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/poams';">
+      <button id="btn-poams" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/poams';">
         <em class="glyphicon glyphicon-check"></em>&nbsp; POA&Ms</a>
       </button>
-      <button class="btn btn-sm btn-default" onclick="show_import_project_modal('{{ portfolio.id }}'); return false;" href="#">
+      <button id="btn-import-project" class="btn btn-sm btn-default" onclick="show_import_project_modal('{{ portfolio.id }}'); return false;" href="#">
         <em class="glyphicon glyphicon-arrow-up"></em>&nbsp; Import Project</a>
       </button>
-      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.id}}/export';">
+      <button id="btn-export-project" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.id}}/export';">
         <em class="glyphicon glyphicon-arrow-down"></em>&nbsp; Export project</a>
       </button>
     {% endif %}
     {% if not project.is_account_project or project.is_deletable %}
-      <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/settings';">
+      <button id="btn-project-settings" class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/settings';">
         <em class="glyphicon glyphicon-cog"></em> Settings</a>
       </button>
     {% endif %}
     {% if send_invitation.can_add_invitee_to_team %}
-      <button id="show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
+      <button id="btn-show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
         <em class="glyphicon glyphicon-user"></em><em class="glyphicon glyphicon-plus"></em>
         Invite
       </button>
     {% endif %}
 
-    <button id="review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
+    <button id="btn-review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
       <em class="glyphicon glyphicon-list"></em>
       Review
     </button>
 
     {% if has_outputs %}
-      <button id="related-controls" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
+      <button id="btn-related-controls" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
         <em class="glyphicon glyphicon-th"></em>
         Documents
       </button>
     {% endif %}
 
-    <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/api';">
+    <button id="btn-api" class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/api';">
       <em class="glyphicon glyphicon-sort"></em>
       API Docs
     </button>
 
     {% if can_upgrade_app %}
-      <button class="btn btn-sm btn-default" onclick="upgrade_app({{project.root_task.module.app.id}});">
+      <button id="btn-upgrade-app" class="btn btn-sm btn-default" onclick="upgrade_app({{project.root_task.module.app.id}});">
         <em class="glyphicon glyphicon-upload"></em>
         Upgrade Project
       </button>
     {% endif %}
 
     {% if authoring_tool_enabled %}
-      <button id="open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
+      <button id="btn-open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
         <em class="glyphicon glyphicon-pencil"></em>
         Authoring Tool
       </button>
     {% endif %}
 
-    <button class="btn btn-sm btn-default"  onclick='move_project()'>
+    <button id="btn-move-project" class="btn btn-sm btn-default"  onclick='move_project()'>
       <em class="glyphicon glyphicon-sort"></em>
       Move Project
     </button>

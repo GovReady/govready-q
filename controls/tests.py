@@ -911,7 +911,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
 
         ## Import a new project
         # click import project button, opening the modal
-        self.click_element("#action-buttons\ action-row > div.btn-group > button:nth-child(4)")
+        self.click_element("#btn-import-project")
         ## select through the modal information needed and browse for the import needed
         self.select_option_by_visible_text("#id_appsource_compapp", "project")
         # The selection variable found by id
@@ -957,7 +957,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
 
         ## Update current project
         # click import project button, opening the modal
-        self.click_element("#action-buttons\ action-row > div.btn-group > button:nth-child(4)")
+        self.click_element("#btn-import-project")
         ## select through the modal information needed and browse for the import needed
         self.select_option_by_visible_text("#id_appsource_compapp", "project")
 
