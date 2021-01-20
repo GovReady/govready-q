@@ -231,9 +231,14 @@ class DiscussionTests(SeleniumTest):
             test_file_name
         )
         self.filepath_conversion("#discussion-attach-file", test_file_path, "fill")
-        var_sleep(1)
-        img = self._upload_discussion_image('.comment[data-id="4"] .comment-text p img')
-        self.assertIsNotNone(img)
+
+        var_sleep(.5)
+        self.click_element("#discussion .comment-input button.btn-primary")
+
+        var_sleep(.5)# Give time for the image to upload.
+        # Test that we have an image.
+        img = self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img')
+        # self.assertIsNotNone(img)
 
         # Test that valid PNG image actually exists with valid content type.
         image_url = img.get_attribute('src')
@@ -252,8 +257,7 @@ class DiscussionTests(SeleniumTest):
 
         self.assertTrue(result)
 
-        # COMMENT OUT TEST TEMPORARILY
-        # # Test that we can upload files of the same name
+        # Test that we can upload files of the same name
 
         # test_file_name = "".join([TEST_FILENAME, ".png"])
         # test_file_path = os.path.join(
@@ -266,9 +270,13 @@ class DiscussionTests(SeleniumTest):
         #     on_disk_contents = filep.read()
 
         # self.filepath_conversion("#discussion-attach-file", test_file_path, "fill")
+
         # var_sleep(1)
+        # self.click_element("#discussion .comment-input button.btn-primary")
+        # var_sleep(1)  # Give time for the image to upload.
+
         # # Test that we still have an image.
-        # img = self._upload_discussion_image('.comment[data-id="5"] .comment-text p img')
+        # img = self.browser.find_element_by_css_selector('.comment[data-id="5"] .comment-text p img')
         # self.assertIsNotNone(img)
 
         # # Getting content at url
@@ -283,10 +291,10 @@ class DiscussionTests(SeleniumTest):
         # # Test that image is at attachment #2
         # self.assertIn("attachment/2", image_url)
 
-
         # result = self.browser.execute_script("""var http = new XMLHttpRequest();
         #     http.open('HEAD', '{}', false);
         #     http.send();
         #     return http.status!=404;""".format(image_url))
 
         # self.assertTrue(result)
+
