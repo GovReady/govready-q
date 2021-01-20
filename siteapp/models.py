@@ -402,7 +402,7 @@ class Organization(models.Model):
         first parameter for ac-1.
         """
 
-        settings = self.organizationalsetting_set.filter(catalog_key=catalog_key)
+        settings = self.org_setting.filter(catalog_key=catalog_key)
         return dict((setting.parameter_key, setting.value) for setting in settings)
 
 class OrganizationalSetting(models.Model):
