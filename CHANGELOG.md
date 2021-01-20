@@ -1,6 +1,18 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.49.1 (January 20, 2021)
+------------------------------
+
+Fixes to 0.9.1.49 after merge.
+
+**Bug fixes**
+
+* Remove duplicate appearance of tabs in system selected components
+* Remove OSCAL download link from selected control pages because OSCAL for a single control would rarely be downloaded and would require different handling
+* Hide a discussion test that is failing to address later (not critical)
+* Add notes about testing download OSCAL that on Mac test must be run visible for custom download route to work.
+
 v0.9.1.49 (January 12, 2021)
 -----------------------------
 

@@ -20,13 +20,16 @@ from django.utils.text import slugify
 from django.views import View
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
-
+from urllib.parse import quote
+from guidedmodules.models import Task, Module, AppVersion, AppSource
 from siteapp.forms import ProjectForm
+from siteapp.models import Project
 from system_settings.models import SystemSettings
 from .forms import ImportOSCALComponentForm
 from .forms import StatementPoamForm, PoamForm, ElementForm
 from .models import *
 from .utilities import *
+from simple_history.utils import update_change_reason
 
 logging.basicConfig()
 import structlog
@@ -536,7 +539,7 @@ class ComponentImporter(object):
 
         component_name = component_json['name']
         while Element.objects.filter(name=component_name).count() > 0:
-            component_name = increment_component_name(component_name)
+            component_name = increment_element_name(component_name)
 
         new_component = Element.objects.create(
             name=component_name,
@@ -821,6 +824,11 @@ def restore_to_history(request, smt_id, history_id):
     Restore the current model instance to a previous version
     """
     full_smt_history = None
+    for query_key in request.POST:
+        if "restore" in query_key:
+            change_reason = request.POST.get(query_key, "")
+        else:
+            change_reason = None
     try:
         smt = Statement.objects.get(id=smt_id)
         recent_smt = smt.history.first()
@@ -832,6 +840,11 @@ def restore_to_history(request, smt_id, history_id):
         historical_smt = smt.history.get(history_id=history_id)
         # saving historical statement as a new instance
         historical_smt.instance.save()
+        # Update the reason for the new statement record
+        update_change_reason(smt.history.first().instance, change_reason)
+
+        logger.info( f"Change reason: {change_reason}")
+
         logger.info(
             f"Restoring the current statement with an id of {smt_id} to version with a history id of {history_id}")
         messages.add_message(request, messages.INFO,
@@ -847,8 +860,6 @@ def restore_to_history(request, smt_id, history_id):
             logger.info("{} changed from {} to {}".format(change.field, change.old, change.new))
     except ObjectDoesNotExist as ex:
         messages.add_message(request, messages.ERROR, f'{ex} Is this still a statement record in GovReady?')
-
-
 
     context = {
         "history_id": history_id,
@@ -2039,7 +2050,7 @@ def assign_baseline(request, system_id, catalog_key, baseline_name):
                              'Baseline "{} {}" assignment failed.'.format(catalog_key.replace("_", " "),
                                                                           baseline_name.title()))
 
-    return HttpResponseRedirect("/systems/{}/controls/selected".format(system_id))
+    return HttpResponseRedirect(f"/systems/{system_id}/controls/selected")
 
 
 # Export OpenControl
@@ -2474,3 +2485,118 @@ def poam_export(request, system_id, format='xlsx'):
     else:
         # User does not have permission to this system
         raise Http404
+
+def project_import(request, project_id):
+    """
+    Import an entire project's components and control content
+    """
+    project = Project.objects.get(id=project_id)
+    # Retrieve identified System
+    if request.method == 'POST':
+        project_data = request.POST['json_content']
+        importcheck = False
+        if "importcheck" in request.POST:
+            importcheck = request.POST["importcheck"]
+
+        # We are just updating the current project
+        if importcheck == False:
+            logger.info(
+                event="project JSON import update",
+                object={"object": "project", "id": project.id, "title": project.title},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            messages.add_message(request, messages.INFO, 'The current project was updated.')
+        else:
+            # Creating a new project
+            new_project = Project.objects.create(organization=project.organization)
+            # Need to get or create the app source by the id of the given app source
+            src = AppSource.objects.get(id=request.POST["appsource_compapp"])
+            app = AppVersion.objects.get(source=src, id=request.POST["appsource_version_id"])
+            module_name = json.loads(project_data).get('project').get('module').get('key')
+            root_task = Task.objects.create(
+                module=Module.objects.get(app=app, module_name=module_name),
+                project=project, editor=request.user)# TODO: Make sure the root task created here is saved
+            new_project.root_task = root_task
+            # Need new element to for the new System
+            element = Element()
+            project_names = Element.objects.filter(element_type="system").values_list('name', flat=True)
+            # If it is a new title just make that the new system name otherwise increment
+            new_title = new_project.title
+            if new_title not in project_names:
+                new_title = new_project.title
+            else:
+                while new_title in project_names:
+                    new_title = increment_element_name(new_title)
+
+            element.name = new_title
+            element.element_type = "system"
+            element.save()
+            # Create system
+            system = System(root_element=element)
+            system.save()
+            new_project.system = system
+            new_project.portfolio = project.portfolio
+            project = new_project
+            project.save()
+            messages.add_message(request, messages.INFO, f'Created a new project with id: {project.id}.')
+
+        #Import questionnaire data
+        log_output = []
+        try:
+            from collections import OrderedDict
+            data = json.loads(project_data, object_pairs_hook=OrderedDict)
+        except Exception as e:
+            log_output.append("There was an error reading the export file.")
+        else:
+            try:
+                # Update project data.
+                project.import_json(data, request.user, "imp", lambda x: log_output.append(x))
+            except Exception as e:
+                log_output.append(str(e))
+
+        # Log output
+        logger.info(
+            event="project JSON import",
+            object={"object": "project", "id": project.id, "title": project.title, "log_output": log_output},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        loaded_imported_jsondata = json.loads(project_data)
+        if loaded_imported_jsondata.get('component-definitions') != None:
+            # Load and get the components then dump
+            for k, val in enumerate(loaded_imported_jsondata.get('component-definitions')):
+                oscal_component_json = json.dumps(loaded_imported_jsondata.get('component-definitions')[k])
+                import_name = request.POST.get('import_name', '')
+                result = ComponentImporter().import_components_as_json(import_name, oscal_component_json, request)
+
+        return HttpResponseRedirect("/projects")
+
+def project_export(request, project_id):
+    """
+    Export an entire project's components and control content
+    """
+    # Of the project in the current system. pick one project to export
+    project = Project.objects.get(id=project_id)
+    system_id = project.system.id
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+
+        # Iterate through the elements associated with the system get all statements produced for each
+        oscal_comps = []
+        for element in system.producer_elements:
+            # Implementation statement OSCAL JSON
+            impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+            component = OSCALComponentSerializer(element, impl_smts).as_json()
+            oscal_comps.append(component)
+
+    # TODO: multiple export types
+
+    questionnaire_data = json.dumps(project.export_json(include_metadata=True, include_file_content=True))
+    data = json.loads(questionnaire_data)
+    data['component-definitions'] = [json.loads(oscal_comp) for oscal_comp in oscal_comps]
+    response = JsonResponse(data, json_dumps_params={"indent": 2})
+    filename = project.title.replace(" ", "_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
+    response['Content-Disposition'] = f'attachment; filename="{quote(filename)}.json"'
+    return response
