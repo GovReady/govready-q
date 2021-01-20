@@ -1,7 +1,8 @@
 import csv
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import ImportRecord, Statement, Element, ElementControl, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam, Deployment, InventoryItemAssessmentResults
+from .models import ImportRecord, Statement, Element, ElementControl, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam, Deployment
+# from .models import InventoryItemAssessmentResults
 from guardian.admin import GuardedModelAdmin
 from simple_history.admin import SimpleHistoryAdmin
 
