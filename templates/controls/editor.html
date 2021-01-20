@@ -594,9 +594,6 @@
                 if (result != '') {
                     // loop
                     $.each(result['producer_element_name_value'], function (k, v) {
-                        console.log("k, v");
-                        console.log(k, v);
-
                         dropdown.append("<option value='" + v["id"] + "'>" + v["name"] + "</option>");
                     });
                 }

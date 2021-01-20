@@ -1,0 +1,243 @@
+id: cp_activation
+title: Contingency Plan Activation and Notification
+internal:
+  snippets:
+  - snippet: |
+      Contingency Plan Activation
+introduction:
+  format: markdown
+  template: |
+    In the following questions, we'll cover how the Contingency Plan
+    is activated and how appropriate persons are notified.
+questions:
+- id: q13_pre
+  title: Plan Distribution and Availability (pre)
+  prompt: >
+    Will you leverage template Plan Distribution and Availability language used for
+    AWS information systems?
+
+
+    > During a disaster situation, the availability of the contingency plan is essential
+    to the success of the restoration efforts.  The Contingency Plan Team has immediate
+    access to the plan upon notification of an emergency.  The Contingency Plan Coordinator
+    ensures that a copy of the most current version of the Contingency Plan is maintained
+    at CSP Name’s facility.  This plan has been distributed to all personnel listed
+    in B Appendix – Key Personnel and Team Member Contact List.
+
+
+    > Contingency Plan Team members are obligated to inform the Contingency Planning
+    Coordinator, if and when, they no longer require a copy of the plan.  In addition,
+    each recipient of the plan is obligated to return or destroy any portion of the
+    plan that is no longer needed and upon termination from CSP Name.
+  type: choice
+  choices:
+  - key: 'yes'
+    text: 'Yes'
+  - key: yes_edit
+    text: Yes, but I will edit the template language.
+  - key: 'no'
+    text: 'No'
+    
+- id: q13_activation_personnel
+  title: Personnel Authorized to Activate the ISCP
+  prompt: |
+    Enter information on the personnel who are authorized to activate the IT system
+
+  type: datagrid
+  fields:
+    - key: Name
+      text: Name
+    - key: Title and ISCP Role
+      text: Title and ISCP Role
+    - key: Contact Information
+      text: Contact Information
+  min: 0
+  max: ~
+
+- id: q13
+  title: Plan Distribution and Availability
+  prompt: >
+    {% if q13_pre == 'yes_edit' %} Edit your Plan Distribution and Availability statement.
+    {% endif %} {% if q13_pre == 'no' %} Write your Plan Distribution and Availability
+    statement. {% endif %}
+  type: longtext
+  default: >
+    {% if q13_pre == 'yes_edit' %}
+
+    During a disaster situation, the availability of the contingency plan is essential
+    to the success of the restoration efforts.  The Contingency Plan Team has immediate
+    access to the plan upon notification of an emergency.  The Contingency Plan Coordinator
+    ensures that a copy of the most current version of the Contingency Plan is maintained
+    at CSP Name’s facility.  This plan has been distributed to all personnel listed
+    in B Appendix – Key Personnel and Team Member Contact List.
+
+
+    Contingency Plan Team members are obligated to inform the Contingency Planning
+    Coordinator, if and when, they no longer require a copy of the plan.  In addition,
+    each recipient of the plan is obligated to return or destroy any portion of the
+    plan that is no longer needed and upon termination from CSP Name.
+
+
+    {% endif %}
+  examples:
+  - example: >
+      During a disaster situation, the availability of the contingency plan is essential
+      to the success of the restoration efforts.  The Contingency Plan Team has immediate
+      access to the plan upon notification of an emergency.  The Contingency Plan
+      Coordinator ensures that a copy of the most current version of the Contingency
+      Plan is maintained at CSP Name’s facility.  This plan has been distributed to
+      all personnel listed in B Appendix – Key Personnel and Team Member Contact List.
+
+
+      Contingency Plan Team members are obligated to inform the Contingency Planning
+      Coordinator, if and when, they no longer require a copy of the plan.  In addition,
+      each recipient of the plan is obligated to return or destroy any portion of
+      the plan that is no longer needed and upon termination from CSP Name.
+  impute:
+  - condition: q0x_pre == 'yes'
+    value: >
+      During a disaster situation, the availability of the contingency plan is essential
+      to the success of the restoration efforts.  The Contingency Plan Team has immediate
+      access to the plan upon notification of an emergency.  The Contingency Plan
+      Coordinator ensures that a copy of the most current version of the Contingency
+      Plan is maintained at CSP Name’s facility.  This plan has been distributed to
+      all personnel listed in B Appendix – Key Personnel and Team Member Contact List.
+
+
+      Contingency Plan Team members are obligated to inform the Contingency Planning
+      Coordinator, if and when, they no longer require a copy of the plan.  In addition,
+      each recipient of the plan is obligated to return or destroy any portion of
+      the plan that is no longer needed and upon termination from CSP Name.
+- id: q14_pre
+  title: Line of Succession/Alternates Roles (pre)
+  prompt: Will you leverage template Line of Succession/Alternates Roles language
+    used for AWS information systems?
+  type: choice
+  choices:
+  - key: 'yes'
+    text: 'Yes'
+  - key: yes_edit
+    text: Yes, but I will edit the template language.
+  - key: 'no'
+    text: 'No'
+- id: q14
+  title: Line of Succession/Alternates Roles
+  prompt: >
+    {% if q14_pre == 'yes_edit' %} Edit your Line of Succession/Alternates Roles statement.
+    {% endif %} {% if q14_pre == 'no' %} Write your Activation Criteria and Procedure
+    statement. {% endif %}
+  type: longtext
+  default: |
+    {% if q14_pre == 'yes_edit' %}
+
+      The {{project.system_info.system_org}} sets forth an order of succession, in coordination with
+      the order set forth by the organization to ensure that decision-making authority for the
+      {{project.system_info.system_name}} ISCP is uninterrupted.
+
+      In order to preserve the continuity of operations, individuals designated as key personnel
+      have been assigned an individual who can assume the key personnel’s position if the key
+      personnel is not able to perform their duties. Alternate key personnel are named in a line
+      of succession and are notified and trained to assume their alternate role, should the need
+      arise. 
+
+    {% endif %}
+  examples:
+  - example: |
+      The {{project.system_info.system_org}} sets forth an order of succession, in coordination with
+      the order set forth by the organization to ensure that decision-making authority for the
+      {{project.system_info.system_name}} ISCP is uninterrupted.
+
+      In order to preserve the continuity of operations, individuals designated as key personnel
+      have been assigned an individual who can assume the key personnel’s position if the key
+      personnel is not able to perform their duties. Alternate key personnel are named in a line
+      of succession and are notified and trained to assume their alternate role, should the need
+      arise. 
+  impute:
+  - condition: q14_pre == 'yes'
+    value: |
+      The {{project.system_info.system_org}} sets forth an order of succession, in coordination with
+      the order set forth by the organization to ensure that decision-making authority for the
+      {{project.system_info.system_name}} ISCP is uninterrupted.
+
+      In order to preserve the continuity of operations, individuals designated as key personnel
+      have been assigned an individual who can assume the key personnel’s position if the key
+      personnel is not able to perform their duties. Alternate key personnel are named in a line
+      of succession and are notified and trained to assume their alternate role, should the need
+      arise. 
+- id: q16_pre
+  title: Activation Criteria and Procedure (pre)
+  prompt: "Will you leverage the template Activation Criteria and Procedure statement\
+    \ used for AWS information systems?\n\n> The {{project.system_info.system_name}}\
+    \ ISCP may be activated if one or more of the following criteria are met:\n> \n\
+    > 1. The type of outage indicates {{project.system_info.system_name}} will be\
+    \ down for more than _Enter Number_  RTO hours.\n> 2. The facility housing {{project.system_info.system_name}}\
+    \ is damaged and may not be available within _Enter Number_ RTO hours\n> 3. Other\
+    \ criteria, as appropriate."
+  type: choice
+  choices:
+  - key: 'yes'
+    text: 'Yes'
+  - key: yes_edit
+    text: Yes, but I will edit the template language.
+  - key: 'no'
+    text: 'No'
+- id: q16
+  title: Activation Criteria and Procedure
+  prompt: >
+    {% if q16_pre == 'yes_edit' %} Edit your Activation Criteria and Procedure statement.
+    {% endif %} {% if q16_pre == 'no' %} Write your Activation Criteria and Procedure
+    statement. {% endif %}
+  type: longtext
+  default: |
+    {% if q16_pre == 'yes_edit' %}
+    The {{project.system_info.system_name}} ISCP may be activated if one or more of the following criteria are met:
+
+    1. The type of outage indicates {{project.system_info.system_name}} will be down for more than _Enter Number_ RTO hours.
+    2. The facility housing {{project.system_info.system_name}} is damaged and may not be available within _Enter Number_ RTO hours
+    3. Other criteria, as appropriate.
+
+    {% endif %}
+  examples:
+  - example: |
+      The {{project.system_info.system_name}} ISCP may be activated if one or more of the following criteria are met:
+
+      1. The type of outage indicates {{project.system_info.system_name}} will be down for more than _Enter Number_ RTO hours.
+      2. The facility housing {{project.system_info.system_name}} is damaged and may not be available within _Enter Number_ RTO hours
+      3. Other criteria, as appropriate.
+  impute:
+  - condition: q16_pre == 'yes'
+    value: |
+      The {{project.system_info.system_name}} ISCP may be activated if one or more of the following criteria are met:
+
+      1. The type of outage indicates {{project.system_info.system_name}} will be down for more than _Enter Number_ RTO hours.
+      2. The facility housing {{project.system_info.system_name}} is damaged and may not be available within _Enter Number_ RTO hours
+      3. Other criteria, as appropriate.
+- id: q17_notification_instructions
+  title: Notification Instructions
+  prompt: >-
+    Describe established notifications procedures.
+
+
+    Notification procedures must include who makes the initial notifications, the
+    sequence in which personnel are notified and the method of notification (e.g.,
+    email blast, call tree, text messaging, automated notification system, etc.).
+  type: longtext
+- id: q17_outage_assessment_role
+  title: Outage Assessment Role
+  prompt: >
+    What organizational role conducts the Outage Assessment?
+
+
+    Following notification, a thorough outage assessment is necessary to determine
+    the extent of the disruption, any damage, and expected recovery time.  This outage
+    assessment is conducted by what organizational role? Do not give a person's name.
+  type: text
+- id: q17_outage_assessment
+  title: Outage Assessment Procedure
+  prompt: "Describe Outage Assessment procedures.\n\nOutline detailed procedures to\
+    \ include how to determine the cause of the outage; identification of potential\
+    \ for additional disruption or damage; assessment of affected physical area(s);\
+    \ and determination of the physical infrastructure status, IS equipment functionality,\
+    \ and inventory.  \n\nProcedures must include notation of items that will be needed\
+    \ to be replaced and estimated time to restore service to normal operations."
+  type: longtext
