@@ -76,14 +76,14 @@ class DeploymentAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     def uuid(self, obj):
         return obj.deployment.uuid
 
-class InventoryItemAssessmentResultsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'statement')
+# class InventoryItemAssessmentResultsAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'statement')
 
-    # def uuid(self, obj):
-    #     return obj.statement.uuid
+#     # def uuid(self, obj):
+#     #     return obj.statement.uuid
 
-    # def consumer_element(self, obj):
-    #     return obj.statement.consumer_element
+#     # def consumer_element(self, obj):
+#     #     return obj.statement.consumer_element
 
 
 admin.site.register(ImportRecord, ImportRecordAdmin)
@@ -96,5 +96,5 @@ admin.site.register(CommonControl, CommonControlAdmin)
 admin.site.register(ElementCommonControl, ElementCommonControlAdmin)
 admin.site.register(Poam, PoamAdmin)
 admin.site.register(Deployment, DeploymentAdmin)
-admin.site.register(InventoryItemAssessmentResults, InventoryItemAssessmentResultsAdmin)
+# admin.site.register(InventoryItemAssessmentResults, InventoryItemAssessmentResultsAdmin)
 
