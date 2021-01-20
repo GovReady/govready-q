@@ -87,7 +87,7 @@
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-    <div class="systems-top">
+  <div class="systems-top">
       <!-- <div class="container"> -->
       <div class="row">
           <div id="above-tab-content" class="row">
@@ -97,85 +97,36 @@
                       <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> &gt; <a href="/systems/{{system.id}}/components/selected" class="systems-link">Selected Components</a>
                   </h2>
               </div>
-              <!-- Control Lookup-->
-              <div class="systems-control-lookup">
-                  <!-- <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
-                    <input type="text" name="id" placeholder="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
-                        <button type="submit" class="btn btn-success">Look up</button>
-                  </form> -->
-              </div>
-          </div><!--/row-->
-
-<div class="systems-top">
-  <div class="container">
-
-  <div class="row">
-    <div id="above-tab-content" class="row">
-      <!-- Page Title-->
-      <div class="systems-title">
-          <h2 class="control-heading">
-            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> &gt; <a href="/systems/{{system.id}}/components/selected" class="systems-link">Selected Components</a>
-          </h2>
-      </div>
-    </div><!--/row-->
-
-  <div id="above-tab-content" class="row">
-    <div class="systems-control-heading">
-        <h2 class="control-heading">
-            {{ element.name }}
-        </h2>
-    </div>
-  </div>
-  <div>&nbsp;</div>
-  <div id="tab-content" class="row">
-    <!-- Nav tabs -->
-    <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="active"><a href="#component" aria-controls="component" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Component</a></li>
-
-      <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
-      {% if enable_experimental_oscal %}
-        <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
-
-      {% endif %}
-      {% if enable_experimental_opencontrol %}
-      <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
-      {% endif %}
-    </ul>
-
-    <!-- Tab panels -->
-    <div class="tab-content">
-      <!-- Tab panel: component -->
-      <div role="tabpanel" class="tab-pane active" id="component">
-        <div class="row">
-          <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10">
-            <h3>Description</h3>
-            {% if element.description %}
-              {{ element.description }}
-            {% else %}
-              No description exists for this component.
-            {% endif %}
           </div>
-          <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-            <div>&nbsp;</div>
-          </div>
+      </div><!--/row-->
+
+      <div id="above-tab-content" class="row">
+        <div class="systems-control-heading">
+            <h2 class="control-heading">
+                {{ element.name }}
+            </h2>
+            <h2 class="control-heading" style="">
+                &nbsp;<!-- <small style="color: #888;">{{ catalog.catalog_key_display }}</small> -->
+            </h2>
+        </div>
       </div>
+
+
       <div id="tab-content" class="row">
-          <!-- Nav tabs -->
-          <ul class="nav nav-tabs" role="tablist">
-              <li role="presentation" class="active"><a href="#component" aria-controls="component" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Component</a></li>
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+          <li role="presentation" class="active"><a href="#component" aria-controls="component" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Component</a></li>
+          <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
+          {% if enable_experimental_oscal %}
+            <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
+          {% endif %}
+          {% if enable_experimental_opencontrol %}
+          <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
+          {% endif %}
+        </ul>
 
-              <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
-              {% if enable_experimental_oscal %}
-                <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
-
-              {% endif %}
-              {% if enable_experimental_opencontrol %}
-              <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
-              {% endif %}
-          </ul>
-
-          <!-- Tab panels -->
-          <div class="tab-content">
+            <!-- Tab panels -->
+            <div class="tab-content">
               <!-- Tab panel: component -->
               <div role="tabpanel" class="tab-pane active" id="component">
                   <div class="row">
