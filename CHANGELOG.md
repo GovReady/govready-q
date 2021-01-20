@@ -3,7 +3,6 @@ GovReady-Q Release Notes
 
 v.999 (January XX, 2021)
 ------------------------
-<<<<<<< HEAD
 
 Add deployments to capture system deployments and the inventory items in each deployment.
 
