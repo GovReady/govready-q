@@ -1,8 +1,8 @@
 GovReady-Q Release Notes
 ========================
 
-v.999 (January XX, 2021)
-------------------------
+v0.9.1.50.1 (January 20, 2021)
+------------------------------
 
 Add deployments to capture system deployments and the inventory items in each deployment.
 
