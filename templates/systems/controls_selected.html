@@ -58,14 +58,9 @@
           <p>FEATURE NOTE: We are automating the assigning of control baselines by system categorization.
           Prior to feature completion, we humbly ask you manually select the desired control baseline...</p>
           <ul>
-            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-53_rev4/low/_assign">Assign 800-53 rev4 Low Impact Baseline</a></li>
-            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign">Assign 800-53 rev4 Moderate Impact Baseline</a></li>
-            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-53_rev4/high/_assign">Assign 800-53 rev4 High Impact Baseline</a></li>
-            <!--
-            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-53_rev5/low/_assign">Assign 800-53 rev5 Low Impact Baseline</a></li>
-            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-53_rev5/moderate/_assign">Assign 800-53 rev5 Moderate Impact Baseline</a></li>
-            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-53_rev5/high/_assign">Assign 800-53 rev5 High Impact Baseline</a></li>
-            -->
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='low' %}>Assign 800-53 rev4 Low Impact Baseline</a></li>
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='moderate' %}>Assign 800-53 rev4 Moderate Impact Baseline</a></li>
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='high' %}>Assign 800-53 rev4 High Impact Baseline</a></li>
             <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-171_rev1/cui/_assign">Assign 800-171 rev1 Baseline</a></li>
           </ul>
         </div>
