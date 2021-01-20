@@ -61,7 +61,7 @@
             <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='low' %}>Assign 800-53 rev4 Low Impact Baseline</a></li>
             <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='moderate' %}>Assign 800-53 rev4 Moderate Impact Baseline</a></li>
             <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='high' %}>Assign 800-53 rev4 High Impact Baseline</a></li>
-            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-171_rev1/cui/_assign">Assign 800-171 rev1 Baseline</a></li>
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-171_rev1' baseline_name='cui' %}>Assign 800-171 rev1 Baseline</a></li>
           </ul>
         </div>
       </div>
@@ -69,7 +69,7 @@
       {% for control in controls %}
         <div id="tab-content" class="row row-control">
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                <a href="/systems/{{ system.id }}/controls/catalogs/{{ control.oscal_catalog_key }}/control/{{ control.oscal_ctl_id }}">{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}</a>
+                <a href= {% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}>{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}</a>
             </div>
             <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
                 {{ control.get_flattened_oscal_control_as_dict.title }}
