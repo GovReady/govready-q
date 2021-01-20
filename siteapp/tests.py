@@ -781,6 +781,7 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
         wait_for_sleep_after(lambda:  self.assertRegex(self.browser.title, "Security Projects"))
+    
     @skip
     def test_create_project_without_portfolio(self):
         self._login()

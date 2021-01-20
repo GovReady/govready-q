@@ -1,0 +1,88 @@
+id: irp_assess
+title: Incident Response Plan (Assess)
+questions:
+
+- id: intro
+  title: Introduction
+  prompt: |
+    Introduction
+
+    The second step to any Incident Response Plan is the 'Assess Phase'. The 'Assess Phase' typically includes the determination if an event is actually a confirmed security incident, how to figure out the severity of the incident, whether or not to trigger the usage of a contingency, etc.
+  type: interstitial
+
+- id: q1
+  title: Incident Elevation
+  prompt: |
+    How does {{project.system_info.system_org}}'s incident response team determine if an event has elevated to an incident?
+
+  examples:
+    - example: |
+        An event is considered to have elevated to an incident if the system has been offline for more than five minutes,
+        if there is demonstrated likelihood that PII may have been leaked. Consult documentation at this location... 
+  type: longtext
+
+- id: q2
+  title: Incident Severity
+  prompt: |
+    How does {{project.system_info.system_org}}'s incident response team measure the severity of an incident?
+
+  examples:
+    - example: |
+        An event is considered to have elevated to an incident if the system has been offline for more than five minutes,
+        if there is demonstrated likelihood that PII may have been leaked. Consult documentation at this location... 
+  type: longtext
+
+- id: q3
+  title: External Dependencies
+  prompt: |
+    Does {{project.system_info.system_org}} have any external dependencies that could have triggered this event?
+
+  examples:
+    - example: |
+        {{project.system_info.system_org}} uses TidalWorks.0 for mail services which recently reported a...
+  type: longtext
+
+- id: q4
+  title: False Alarm or Valid Incident
+  prompt: |
+    Given the answers to the previous three questions, how will you determine if the event is a false alarm or a valid incident?
+  examples:
+    - example: |
+        We judge an incident is valid based on the evaluation of external dependencies and initial incident severity evaluation by the system's first responder.
+  type: longtext
+
+- id: q5
+  title: Impact and Severity
+  prompt: |
+    If the event is valid, how will the team assess its impact and determine initial severity?  
+  examples:
+    - example: |
+        Our team assesses impact and severity by consulting our impact matrix which can be found here...
+  type: longtext
+
+- id: q6
+  title: Incident Forensics Storage
+  prompt: |
+    If the event is valid, how will the team ensure that information collected from incident forensics is properly stored?   
+  examples:
+    - example: |
+        The first responder stores incident forensics information in the associated ticket and our incident response storage drive located here...
+  type: longtext
+
+- id: q7
+  title: Activate Contingency Plan
+  prompt: |
+    When will the team activate an agency contingency plan?   
+  examples:
+    - example: |
+        The team will activate an agency contingency plan if the incident regarding the IT system reaches a high impact level...      
+  type: longtext
+
+- id: q8
+  title: Assessment Communication Strategy
+  prompt: |
+    What are your communication strategies and templates? Where can they be accessed?  
+  examples:
+    - example: |
+        The team's communication strategies and templates follow our agency response guidelines which can be found here:...      
+  type: longtext

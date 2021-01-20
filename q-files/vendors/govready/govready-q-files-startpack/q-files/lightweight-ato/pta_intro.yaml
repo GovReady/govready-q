@@ -1,0 +1,47 @@
+id: pta_intro
+title: Privacy Threshold Analysis (PTA) Overview
+
+questions:
+
+- id: q1
+  title: Overview
+  prompt: |
+    What is a "Privacy Threshold Analysis?"
+
+    A Privacy Threshold Analysis (PTA) supports the agency Privacy Office identify the privacy compliance requirements for all Departmental uses of personally identifiable information (PII). 
+  type: interstitial
+
+- id: q2
+  title: PTA Definition
+  prompt: |
+    What is involved in a "Privacy Threshold Analysis?" 
+
+    A PTA includes a general description of the IT system, information collection, form, technology, rulemaking, program, pilot project, information sharing arrangement, or other Department activity and describes what PII is collected (and from whom) and how that information is used and managed. 
+  type: interstitial
+
+- id: q3
+  title: PTA Process
+  prompt: |
+    Preparing your PTA
+
+    This questionnaire will gather information about your Information Collection that is part of your IT system and prepare your PTA.
+
+    Upon completion of this questionnaire, your PTA will be submitted to your agency Privacy Office.
+
+    Upon receipt from your completed questionnaire the Privacy Office will review this form and assess whether any privacy compliance documentation is required. If compliance documentation is required – such as Privacy Impact Assessment (PIA), System of Records Notice (SORN), Privacy Act Statement, or Computer Matching Agreement (CMA) – the  Privacy Office or component Privacy Office will send you a copy of the relevant compliance template to complete and return.
+
+    The main Privacy Office can be reached at:
+
+    ```
+    Senior Director, Privacy Compliance
+    The Privacy Office
+    U.S. Department of Sobriety
+    Washington, DC 20200
+    Tel: 202-555-1111
+
+    PIA@hq.dos.gov
+    ```
+  type: interstitial
+
+output:
+- templates/pta_intro.md
