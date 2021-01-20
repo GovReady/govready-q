@@ -17,6 +17,7 @@ v999
 * By default, set organization name to "main".
 * Add optional `PIPUSER` parameter to `install-govready-q.sh` to avoid error of running pip install with `--user` flag in virtual environments.
 * Comment out starting GovReady-Q server automatically because too many edge cases exist to execute that well.
+* Add method `get_answer` guidedmodules.models.Task to easily return answers from a project tasks answers.
 
 **Data changes**
 
