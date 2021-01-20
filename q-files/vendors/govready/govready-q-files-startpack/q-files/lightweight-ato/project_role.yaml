@@ -1,0 +1,49 @@
+id: project_role
+title: Project Role
+instance-name: "{{name}} ({{role}})"
+introduction:
+  format: markdown
+  template: |
+    Identify an individual in a role.
+questions:
+  - id: role
+    title: Role
+    prompt: Team role?
+    type: text
+
+  - id: name
+    title: Name
+    prompt: Person in role?
+    type: text
+
+  - id: responsibility
+    title: Responsibility
+    prompt: Responsibility or task of {{role}} role?
+    type: text
+
+  - id: engagement
+    title: Engagement
+    prompt: For what aspect of the project will role be engaged in project?
+    type: choice
+    choices:
+      - key: project_life
+        text: life of project
+      - key: project_portion
+        text: project portion
+
+  - id: allocation
+    title: Allocation
+    prompt: |
+      Percentage of person's time allocated to role?
+    type: integer
+    help: 'Ex: "20" for 20%, "100" for 100%'
+
+output:
+  - title: Data
+    format: yaml
+    template:
+      - role: "{{role}}"
+        name: "{{name}}"
+        responsibility: "{{responsibility}}"
+        engagement: "{{engagement}}"
+        allocation: "{{allocation}}"

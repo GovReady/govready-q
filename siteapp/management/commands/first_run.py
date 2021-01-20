@@ -57,7 +57,7 @@ class Command(BaseCommand):
             # Load the AppSource's assessments (apps) we want
             # We will do some hard-coding here temporarily
             created_appsource = AppSource.objects.get(slug="govready-q-files-startpack")
-            for appname in ["System-Description-Demo", "PTA-Demo", "rules-of-behavior"]:
+            for appname in ["System-Description-Demo", "PTA-Demo", "rules-of-behavior", "lightweight-ato"]:
                 print("Adding appname '{}' from AppSource '{}' to catalog.".format(appname, created_appsource))
                 try:
                     appver = created_appsource.add_app_to_catalog(appname)
@@ -121,19 +121,8 @@ class Command(BaseCommand):
             # One or more superusers already exist
             print("\n[WARNING] Superuser(s) already exist, not creating default admin superuser. Did you specify 'govready_admins' in 'local/environment.json'? Are you connecting to a persistent database?\n")
 
-        # Create the first organization.
-        if not Organization.objects.filter(slug="main").exists():
-            if not options['non_interactive']:
-                print("Let's create your organization.")
-                name = Organization._meta.get_field("name")
-                get_input = createsuperuser.Command().get_input_data
-                
-                name = get_input(name, "Organization name: ", "My Organization")
-            else:
-                name = "The Secure Organization"
-            org = Organization.create(name=name, slug="main", admin_user=user)
-        else:
-            org = Organization.objects.get(slug="main")
+        # Create the default organization.
+        org, result = Organization.objects.get_or_create(name="main", slug="main")
 
         # Add the user to the org's help squad and reviewers lists.
         try:
@@ -145,4 +134,4 @@ class Command(BaseCommand):
             if user not in org.reviewers.all(): org.reviewers.add(user)
 
         # Provide feedback to user
-        print("You can now login into GovReady-Q...")
+        print("GovReady-Q configuration complete.")
