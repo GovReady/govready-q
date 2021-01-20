@@ -1,15 +1,16 @@
 GovReady-Q Release Notes
 ========================
 
-Add lightweight-ato to default apps so users can get started easier.
 
-v999
-----
+v.999 (January XX, 2021)
+------------------------
+
+Add lightweight-ato to default apps so users can get started easier.
 
 **Developer changes**
 
+* Add `pyup.yml` configuration file to have pyup.io pull requests go against `develop` branch.
 * New '%dict' operator for JSON/YAML output templates
-
 * Pass OSCAL context to JSON/YAML output templates
 
 * Update install scripts.
@@ -20,7 +21,7 @@ v999
 
 **Data changes**
 
-* Add lightweight-ato to default apps.
+* Add Lightweight-ato apps to default apps.
 
 v.0.9.1.49 (January 12, 2021)
 -----------------------------
