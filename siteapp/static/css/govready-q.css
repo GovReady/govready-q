@@ -35,6 +35,9 @@ body, blockquote {
 
 .glyphicon-globe { color: #888; }
 
+
+
+
 h1, h2 {
   font-family: 'Lato', sans-serif;
   font-weight: bold;
@@ -47,6 +50,9 @@ h3 { font-size: 18px; }
 .btn { white-space: normal; font-size: inherit; }
 .btn.btn-sm { font-size: 12px; }
 .btn.btn-xs { font-size: 12px; }
+
+
+
 
 footer { margin-top:60px;
   font-size: .75em;
@@ -117,7 +123,7 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 }
 
 /* New CSS based on removing inline CSS */
-.btn-sm { width:95%; max-width:180px;  } /* this makes the action buttons all the same width.
+.btn-sm { width:95%; max-width:200px;  } /* this makes the action buttons all the same width.
 
 /* misc templates */
 .task-progress-project-truncate { margin: 12px 0 12px 6px; text-align: left;  }

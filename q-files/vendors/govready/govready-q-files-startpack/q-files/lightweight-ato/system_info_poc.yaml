@@ -1,0 +1,199 @@
+id: system_info_poc
+title: System Info Point of Contact
+questions:
+
+- id: information_system_owner
+  title: Information System Owner
+  type: interstitial
+  prompt: |
+    Information System Owner
+
+    This section will allow you to provide specific contact information for the system owner of {{project.system_info.system_name}}.
+    The system owner's name is {{project.system_info.system_owner}} based at the {{project.system_info.system_org}}. Let's find out more about this individual.
+
+- id: system_owner_title
+  title: System Owner (Title)
+  prompt: What is {{project.system_info.system_owner}}'s title?
+  type: text
+- id: system_owner_phone
+  title: System Owner (Phone)
+  prompt: What is {{project.system_info.system_owner}}'s phone number?
+  type: text
+- id: system_owner_email
+  title: System Owner (Email)
+  prompt: What is {{project.system_info.system_owner}}'s email?
+  type: text
+- id: system_owner_address
+  title: System Owner (Address)
+  prompt: What is {{project.system_info.system_owner}}'s address?
+  type: text
+
+- id: information_system_ao
+  title: Information System - Authorizing Official
+  type: interstitial
+  prompt: |
+    Information System - Authorizing Official
+
+    This section will allow you to provide specific contact information for the Authorizing Official of {{project.system_info.system_name}}.
+    Let's find out more about the main point of contact for the authorization of this system.
+
+- id: system_ao_name
+  title: Authorizing Official (Name)
+  prompt: What is the name of your Authorizing Official for this system?
+  type: text
+- id: system_ao_title
+  title: Authorizing Official (Title)
+  prompt: What is {{system_ao_name}}'s title?
+  type: text
+- id: system_ao_org
+  title: Authorizing Official (Organization)
+  prompt: What organization is {{system_ao_name}} based in?
+  type: text
+- id: system_ao_phone
+  title: Authorizing Official (Phone)
+  prompt: What is {{system_ao_name}}'s phone number?
+  type: text
+- id: system_ao_email
+  title: Authorizing Official (Email)
+  prompt: What is {{system_ao_name}}'s email?
+  type: text
+- id: system_ao_address
+  title: Authorizing Official (Address)
+  prompt: What is {{system_ao_name}}'s address?
+  type: text
+
+- id: information_system_manager
+  title: Information System Manager
+  type: interstitial
+  prompt: |
+    Information System Manager
+
+    This section will allow you to provide specific contact information for the system manager/project manager for {{project.system_info.system_name}}.
+    The system owner's name is {{project.system_info.system_pm}}. Let's find out more about this individual.
+
+- id: system_manager_title
+  title: System Manager (Title)
+  prompt: What is {{project.system_info.system_pm}}'s title?
+  type: text
+- id: system_manager_org
+  title: System Manager (Organization)
+  prompt: What organization is {{project.system_info.system_pm}} based in?
+  type: text
+- id: system_manager_phone
+  title: System Manager (Phone)
+  prompt: What is {{project.system_info.system_pm}}'s phone number?
+  type: text
+- id: system_manager_email
+  title: System Manager (Email)
+  prompt: What is {{project.system_info.system_pm}}'s email?
+  type: text
+- id: system_manager_address
+  title: System Manager (Address)
+  prompt: What is {{project.system_info.system_pm}}'s address?
+  type: text
+
+- id: information_system_tech
+  title: Information System - Technical POC
+  type: interstitial
+  prompt: |
+    Information System - Technical POC
+
+    This section will allow you to provide specific contact information for the technical POC of {{project.system_info.system_name}}.
+    The system's admin team is {{project.system_info.system_admin_team}} based at {{project.system_info.primary_agency_admin_site}}. 
+    Let's find out more about the main point of contact for the technical administration of the system.
+
+- id: system_tech_name
+  title: Technical POC (Name)
+  prompt: What is the name of your Technical POC for this system?
+  type: text
+- id: system_tech_title
+  title: Technical POC (Title)
+  prompt: What is {{system_tech_name}}'s title?
+  type: text
+- id: system_tech_phone
+  title: Technical POC (Phone)
+  prompt: What is {{system_tech_name}}'s phone number?
+  type: text
+- id: system_tech_email
+  title: Technical POC (Email)
+  prompt: What is {{system_tech_name}}'s email?
+  type: text
+- id: system_tech_address
+  title: Technical POC (Address)
+  prompt: What is {{system_tech_name}}'s address?
+  type: text
+
+- id: information_system_security
+  title: Information System - Security POC
+  type: interstitial
+  prompt: |
+    Information System - Security POC
+
+    This section will allow you to provide specific contact information for the security POC of {{project.system_info.system_name}}.
+    Typically, this role would be an organization's relevant cybersecurity practicion, internal ISSO, or equivalent position. 
+    Let's find out more about the main point of contact for the security responsibilities for this system.
+
+- id: system_security_name
+  title: Security POC (Name)
+  prompt: What is the name of your Security POC for this system?
+  type: text
+- id: system_security_title
+  title: Security POC (Title)
+  prompt: What is {{system_security_name}}'s title?
+  type: text
+- id: system_security_org
+  title: Security POC (Organization)
+  prompt: What organization is {{system_security_name}} based in?
+  type: text
+- id: system_security_phone
+  title: Security POC (Phone)
+  prompt: What is {{system_security_name}}'s phone number?
+  type: text
+- id: system_security_email
+  title: Security POC (Email)
+  prompt: What is {{system_security_name}}'s email?
+  type: text
+- id: system_security_address
+  title: Security POC (Address)
+  prompt: What is {{system_security_name}}'s address?
+  type: text
+
+- id: information_system_ao_poc
+  title: Information System - Authorizing Official (POC)
+  type: interstitial
+  prompt: |
+    Information System - Authorizing Official
+
+    This section will allow you to provide specific contact information for the Authorizing Official POC of {{project.system_info.system_name}}.
+    Let's find out more about the main point of contact for the authorization of this system.
+
+# - id: system_ao_poc_yesno
+#   title: Authorizing Official vs Authorizaing Official POC
+#   prompt: Is the Authorization Official on this system the same person as the Authorizing Offical POC?
+#   type: yesno
+#intention of imputing this if AO = AOPOC
+
+- id: system_ao_poc_name
+  title: AO POC (Name)
+  prompt: What is the name of your AO POC for this system?
+  type: text
+- id: system_ao_poc_title
+  title: AO POC (Title)
+  prompt: What is {{system_ao_poc_name}}'s title?
+  type: text
+- id: system_ao_poc_org
+  title: AO POC (Organization)
+  prompt: What organization is {{system_ao_poc_name}} based in?
+  type: text
+- id: system_ao_poc_phone
+  title: AO POC (Phone)
+  prompt: What is {{system_ao_poc_name}}'s phone number?
+  type: text
+- id: system_ao_poc_email
+  title: AO POC (Email)
+  prompt: What is {{system_ao_poc_name}}'s email?
+  type: text
+- id: system_ao_poc_address
+  title: AO POC (Address)
+  prompt: What is {{system_ao_poc_name}}'s address?
+  type: text

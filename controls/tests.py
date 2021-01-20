@@ -9,11 +9,12 @@
 # So we hard-code the Chromium binary using options.binary_location="/usr/bin/chromium-browser".
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
-
+import time
 from pathlib import PurePath
 
 from django.test import TestCase
 from django.utils.text import slugify
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
@@ -23,7 +24,7 @@ from controls.models import System
 from controls.models import STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED
 from controls.views import OSCALComponentSerializer
 from siteapp.models import User, Organization, OrganizationalSetting
-from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests
+from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests, wait_for_sleep_after
 from system_settings.models import SystemSettings
 from .models import *
 from .oscal import Catalogs, Catalog
@@ -35,13 +36,8 @@ from urllib.parse import urlparse
 
 #####################################################################
 
+
 # Control Tests
-
-class SampleTest(TestCase):
-    ## Simply dummy test ##
-    def test_tests(self):
-        self.assertEqual(1,1)
-
 
 class Oscal80053Tests(TestCase):
     # Test
@@ -107,7 +103,7 @@ class Oscal80053Tests(TestCase):
         self.assertTrue('Access control policy every 12 parsecs' in description,
                         description)
 
-class OSCALComponentSerializerTests(TestCase):
+class StatementTests(TestCase):
     
     def test_statement_id_from_control(self):
         cases = (
@@ -116,7 +112,7 @@ class OSCALComponentSerializerTests(TestCase):
             ('ac-1.1', 'a', 'ac-1.1_smt.a'),
             ('1.1.1', '', '1.1.1_smt')
         )
-        test_func = OSCALComponentSerializer.statement_id_from_control
+        test_func = Statement._statement_id_from_control
         
         for control_id, part, expected in cases:
             self.assertEqual(test_func(control_id, part), expected)
@@ -129,9 +125,9 @@ class ControlUITests(SeleniumTest):
 
     def test_control_lookup(self):
         self.browser.get(self.url("/controls/catalogs/NIST_SP-800-53_rev4/control/au-2"))
-        var_sleep(2)
-        self.assertInNodeText("AU-2", "#control-heading")
-        self.assertInNodeText("Audit Events", "#control-heading")
+        wait_for_sleep_after(lambda: self.assertInNodeText("AU-2", "#control-heading"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("Audit Events", "#control-heading"))
+
 
     def test_control_enhancement_lookup(self):
         self.browser.get(self.url("/controls/catalogs/NIST_SP-800-53_rev4/control/AC-2 (4)"))
@@ -208,7 +204,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         elif os.path.isfile(self.json_download.name):
             os.remove(self.json_download.name)
         self.click_element("a#oscal_download_json_link")
-        var_sleep(2)            # need to wait for download, alas
+        var_sleep(1)
         # assert download exists!
         try:
             # The following test FAILS on MacOS when tests run in HEADLESS mode.
@@ -217,9 +213,10 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
             # To use visible mode, add to environment.json file ` "test_visible": true `
             # See: https://govready-q.readthedocs.io/en/latest/testing-for-govready-q/automated-testing.html#for-developers
             self.assertTrue(self.json_download.is_file())
+            wait_for_sleep_after(lambda: self.assertTrue(self.json_download.is_file()))
             filetoopen = self.json_download
         except:
-            self.assertTrue(os.path.isfile(self.json_download.name))
+            wait_for_sleep_after(lambda: self.assertTrue(os.path.isfile(self.json_download.name)))
             # assert that it is valid JSON by trying to load it
             filetoopen = self.json_download.name
         with open(filetoopen, 'r') as f:
@@ -285,9 +282,8 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.click_element('input#import_component_submit')
 
-        var_sleep(3) # Wait for OSCAL to be imported
+        element_count_after_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
 
-        element_count_after_import = Element.objects.filter(element_type="system_element").count()
         self.assertEqual(element_count_before_import + 2, element_count_after_import)
 
         statement_count_after_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
@@ -298,19 +294,18 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         # but we can't test individual statements because the UUIDs are randomly generated and not consistent
         # with the OSCAL JSON file. So we simply do a count.
 
-        var_sleep(3) # Needed to allow page to refresh and messages to render
-
         # Test that duplicate Components are re-imported with a different name and that Statements get reimported
-        self.click_element('a#component-import-oscal')
+
+        wait_for_sleep_after(lambda: self.click_element('a#component-import-oscal'))
+
         file_input = self.find_selected_option('input#id_file')
         # Using converted keys from above
         file_input.send_keys(oscal_json_path)
 
         self.click_element('input#import_component_submit')
 
-        var_sleep(3) # Wait for OSCAL to be imported
+        element_count_after_duplicate_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
 
-        element_count_after_duplicate_import = Element.objects.filter(element_type="system_element").count()
         self.assertEqual(element_count_after_import + 2, element_count_after_duplicate_import)
 
         original_import_element_count = Element.objects.filter(name='Test OSCAL Component1').count()
@@ -345,9 +340,8 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         helper.create_simple_import_record()
 
         self.browser.refresh()
-        var_sleep(1)
 
-        import_record_links = self.browser.find_elements_by_class_name('import_record_detail_link')
+        import_record_links = wait_for_sleep_after(lambda: self.browser.find_elements_by_class_name('import_record_detail_link'))
         self.assertEqual(len(import_record_links), 1)
 
     def test_import_delete(self):
@@ -385,8 +379,8 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.click_element(f"a#confirm-import-delete")
 
-        var_sleep(1)
         current_path = urlparse(self.browser.current_url).path
+
         self.assertEqual('/controls/components', current_path)
 
         import_records_count = ImportRecord.objects.all().count()
@@ -647,7 +641,11 @@ class OrgParamTests(TestCase):
         from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
         
-        AppSource.objects.all().delete()
+        try:
+            AppSource.objects.all().delete()
+        except Exception as ex:
+            print(f"Exception: {ex}")
+            print(f"App Sources:{AppSource.objects.all()}")
         AppSource.objects.get_or_create(
             slug="system",
             is_system_source=True,
@@ -756,9 +754,9 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         except:
             new_comp_btn = self.browser.find_element_by_id(f"producer_element-{num}-title")
         new_comp_btn.click()
-        var_sleep(2)
         # Fill out form
-        self.browser.find_element_by_id("producer_element_name").send_keys(name)
+        wait_for_sleep_after(lambda: self.browser.find_element_by_id("producer_element_name").send_keys(name))
+
         self.browser.find_elements_by_name("body")[-1].send_keys(statement)
         self.browser.find_elements_by_name("pid")[-1].send_keys(part)
         select = self.dropdown_option(status)
@@ -779,8 +777,6 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
 
         # TODO: Why is system being overridden/conditional. system_id will be 1 in test class and 4 in full test suite
         systemid = System.objects.all().first()
-        #print("systemid")
-        #print(systemid.id)
         self.navigateToPage(f"/systems/{systemid.id}/controls/selected")
 
         # Select moderate
@@ -796,25 +792,20 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
 
         self.create_fill_statement_form("Component 1", "Component body", 'a', 'status_', "Planned", "Component remarks", num)
         num += 1
-        var_sleep(.5)
-        self.create_fill_statement_form("Component 2", "Component body", 'b', 'status_', "Planned", "Component remarks", num)
+        wait_for_sleep_after(lambda: self.create_fill_statement_form("Component 2", "Component body", 'b', 'status_', "Planned", "Component remarks", num))
         num += 1
-        var_sleep(.5)
-        self.create_fill_statement_form("Component 3", "Component body", 'c', 'status_', "Planned", "Component remarks", num)
+        wait_for_sleep_after(lambda: self.create_fill_statement_form("Component 3", "Component body", 'c', 'status_', "Planned", "Component remarks", num))
         num += 1
-        var_sleep(.5)
-        self.create_fill_statement_form("Test name 1", "Component body", 'a', 'status_', "Planned", "Component remarks", num)
+        wait_for_sleep_after(lambda: self.create_fill_statement_form("Test name 1", "Component body", 'a', 'status_', "Planned", "Component remarks", num))
         num += 1
-        var_sleep(.5)
-        self.create_fill_statement_form("Test name 2", "Component body", 'b', 'status_', "Planned", "Component remarks", num)
+        wait_for_sleep_after(lambda: self.create_fill_statement_form("Test name 2", "Component body", 'b', 'status_', "Planned", "Component remarks", num))
         num += 1
-        var_sleep(.5)
-        self.create_fill_statement_form("Test name 3", "Component body", 'c', 'status_', "Planned", "Component remarks", num)
-        var_sleep(1)
-        self.click_components_tab()
-        var_sleep(1)
+        wait_for_sleep_after(lambda: self.create_fill_statement_form("Test name 3", "Component body", 'c', 'status_', "Planned", "Component remarks", num))
+
+        wait_for_sleep_after(lambda: self.click_components_tab())
+
         # Confirm the dropdown sees all components
-        comps_dropdown = self.dropdown_option("selected_producer_element_form_id")
+        comps_dropdown = wait_for_sleep_after(lambda: self.dropdown_option("selected_producer_element_form_id"))
         assert len(comps_dropdown.options) == 6
         # Click on search bar
         search_comps_txtbar = self.browser.find_elements_by_id("producer_element_search")
@@ -826,16 +817,16 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         search_comps_txtbar[-1].click()
         search_comps_txtbar[-1].clear()
         search_comps_txtbar[-1].send_keys("Component")
-        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
-        var_sleep(3)
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()# Ajax request
+        var_sleep(1)
         assert len(comps_dropdown.options) == 3
 
         ## Search for 2
         search_comps_txtbar[-1].click()
         search_comps_txtbar[-1].clear()
         search_comps_txtbar[-1].send_keys("2")
-        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
-        var_sleep(3)
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()# Ajax request
+        var_sleep(1)
         assert len(comps_dropdown.options) == 2
         # Use elements from database to avoid hard-coding element ids expected
         elements = Element.objects.all()
@@ -853,19 +844,16 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         # Open a modal will with component statements related to the select component prototype
         add_related_statements_btn = self.browser.find_elements_by_id("add_related_statements")
         add_related_statements_btn[-1].click()
-        var_sleep(2)
         # Ensure we can't submit no component statements and that the alert pops up.
-        self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button").click()
+        wait_for_sleep_after(lambda: self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button").click())
 
         # Open the first panel
         component_element_btn = self.browser.find_element_by_id("related-panel-1")
         component_element_btn.click()
-        var_sleep(1)
-        select_comp_statement_check = self.browser.find_element_by_name("relatedcomps")
-        select_comp_statement_check.click()
-        var_sleep(1)
+        select_comp_statement_check = wait_for_sleep_after(lambda: self.browser.find_element_by_name("relatedcomps"))
+        select_comp_statement_check_click = wait_for_sleep_after(lambda: select_comp_statement_check.click())
         # Add component statement
-        submit_comp_statement = self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button")
+        submit_comp_statement = wait_for_sleep_after(lambda: self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button"))
         submit_comp_statement.click()
 
         self.click_components_tab()
@@ -990,9 +978,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         project_num = Project.objects.all().count()
         self.assertEqual(project_num, 3)
         # Has the updated name?
-        var_sleep(5)
-        self.assertEqual(Project.objects.all()[project_num-1].title, "New Test Project")
-
+        wait_for_sleep_after(lambda: self.assertEqual(Project.objects.all()[project_num - 1].title, "New Test Project"))
         # Components and their statements?
         self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 1)
         self.assertEqual(Statement.objects.all().count(), 3)

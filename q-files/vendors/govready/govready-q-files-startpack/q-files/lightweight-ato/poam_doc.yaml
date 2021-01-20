@@ -1,0 +1,23 @@
+id: poam_doc
+title: POAM Report
+
+questions:
+- id: q1
+  title: Overview
+  prompt: |
+    Plan of Action and Milestones (POAM) Report
+
+    The Plan of Actions & Milestones (POA&M) is a key document in the security authorization package and for continuous monitoring activities. The POA&M facilitates a disciplined and structured approach to tracking risk mitigation activities. The POA&M includes security findings for the system from continuous monitoring activities and periodic security assessments such as the Annual Assessment.
+    
+    We've prepared a draft POAM Report based on what you've told us about your system.
+  type: interstitial
+- id: poam_date
+  title: Date Completed
+  prompt: |
+    Plan of Action and Milestones (POAM) Report, Date Complete
+
+    What is the date by which you will complete this POAM?
+  type: date
+
+output:
+- templates/poam_report.md
