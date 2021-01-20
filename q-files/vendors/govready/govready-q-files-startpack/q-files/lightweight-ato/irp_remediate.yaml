@@ -1,0 +1,121 @@
+id: irp_remediate
+title: Incident Response Plan (Remediate)
+questions:
+
+- id: intro
+  title: Introduction
+  prompt: |
+    Introduction
+
+    The third step to any Incident Response Plan is the 'Remediate Phase'. The 'Remediate Phase' involves the capture of incident-relevant information, the potential containment of the issue, and the tracking of the investigation efforts. Remediation will always be tailored to the situation dependent on the activity. 
+  type: interstitial
+
+- id: q1
+  title: Developing Situation
+  prompt: |
+    In the case of suspicious activity, how will the team capture information on developing situations before making changes?
+  examples:
+    - example: |
+        The incident response team will continually update the relevant activity ticket with the status of the situation.
+  type: longtext
+
+- id: q2
+  title: Suspicious Activities Tracking
+  prompt: |
+    How are suspicious activities being tracked? 
+
+    How are activities regarding suspicious activities being documented, specifically, so an outside investigator may independently follow the work of the response team to validate the team’s work.
+  examples:
+    - example: |
+        The Incident Response team tracks suspicious activities within the team's shared incident drive. Within the team's shared incident drive, there are detailed common language guides for third party teams.
+  type: longtext
+
+- id: q3
+  title: Lead Tracking
+  prompt: |
+    How does the incident response team track leads?
+
+    Leads are actionable information about breaches, stolen data, etc.
+  examples:
+    - example: |
+        The Incident Response team tracks leads as checklists in the incident's issue ticket.
+  type: longtext
+
+- id: q4
+  title: Remediation Steps
+  prompt: |
+    What steps do the Incident Response team take for remediation?
+
+    The IC teams is typically responsible for tracking remediation steps, making sure they are assigned and follow-up, and verifying them as they are completed.
+  examples:
+    - example: |
+        The IC is likewise responsible for tracking those, making sure they're assigned and followed-up, and verifying them as they're completed. 
+        These may be tracked in the central issue as well. 
+        The IC should distinguish between immediate concerns which should be completed before the incident is considered resolved and long-term improvements/hardening which can be deferred to the Retrospective.
+  type: longtext
+
+- id: q5
+  title: Containment Strategy
+  prompt: |
+    What is the Incident Response team's containment strategy?
+
+    What are the broad strokes of the team's containment strategy regarding compromised machines?
+  examples:
+    - example: |
+        When a system is suspected of being compromised, the Incident Response teams first ...        
+  type: longtext
+
+- id: q6
+  title: Service Disruption
+  prompt: |
+    How do incident response teams remediate service disruption?
+  examples:
+    - example: |
+        The team should proceed in a different way depending on the severity.
+
+        - For High Severity:  the team should take action immediately, even if this causes disruption. A notification about the disruption should be sent out as soon as possible, but the team needs no permission to take action at this level.
+
+        - For Medium Severity: the team should notify the Product Owners and Tech Leads of the planned action, and help them assess the relative risk of disruption vs. security. If the leads are unavailable via Slack, they should be contacted using the phone numbers in their Slack profiles. The team should reach a collaborative decision on action, with a bias towards disruption. If they can't be reached within 1 hour, the team may take action without them.
+
+        - For Low Severity: the team should notify as above, and not take action until a mutually-agreed-on course of action has been determined.
+
+  type: longtext
+
+- id: q7
+  title: Long-term Strategy
+  prompt: |
+    What does a longer remediation look like?
+
+    If the issue progresses for too long without being resolved, the IC should plan for a longer remediation strategy. 
+  examples:
+    - example: |
+          When a system takes longer than a week to resolve the underlying issues, the Incident Response teams will first categorize it as...        
+  type: longtext
+
+- id: q8
+  title: Closing Incidents
+  prompt: |
+    How does the Incident Response team close out an incident?
+
+    Once the incident is no longer active, how does the IC close out an incident?
+  examples:
+    - example: |
+          The Incident Response team closes out an incident by first...        
+  type: longtext
+
+- id: q9
+  title: Communication Strategy
+  prompt: |
+    What is the communications strategy before, during, and after an incident?
+  examples:
+    - example: |
+          At the outset of a significant incident, The Incident Response team will initially notify...
+  type: longtext
+
+
+
+
+
+
+
+

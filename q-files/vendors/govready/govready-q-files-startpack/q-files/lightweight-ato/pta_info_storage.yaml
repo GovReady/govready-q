@@ -1,0 +1,234 @@
+id: pta_info_storage
+title: How Will DOS Store the Collected Information
+output:
+- id: info_storage
+  title: Information Storage
+  format: html
+  filename: templates/info_storage.md
+  template: "\n<style>\n  .dos-pta-form {\n    font-family: TimesNewRoman, Times,\
+    \ serif;\n    width: 650px;\n    margin: auto;\n  }\n\n  .dos-pta-form h2 {\n\
+    \    font-size: 12pt;\n    font-family: TimesNewRoman, Times, serif;\n    background-color:\
+    \ rgb(89, 129, 187);\n    padding: 4px 30px 4px 30px;\n    color: white;\n   \
+    \ font-weight: bold;\n    margin: 0px 0px 0px 0px;\n    margin-top: 2em;\n  }\n\
+    \n  .dos-pta-form .cell-full {\n    border-left: 1px solid rgb(89, 129, 187);\n\
+    \    border-right: 1px solid rgb(89, 129, 187);\n    border-bottom: 1px solid\
+    \ rgb(89, 129, 187);padding: 4px 30px 4px 30px;\n    font-family: TimesNewRoman,\
+    \ Times, serif;\n  }\n\n  .dos-pta-form .cell-left {\n    border-left: 1px solid\
+    \ rgb(89, 129, 187);\n    border-bottom: 1px solid rgb(89, 129, 187);\n    padding:\
+    \ 4px 30px 4px 30px;\n    width: 49.5%;\n    display: table-cell;\n    height:\
+    \ 100%;\n  }\n\n  .dos-pta-form .cell-right {\n    border-left: 1px solid rgb(89,\
+    \ 129, 187);\n    border-right: 1px solid rgb(89, 129, 187);\n    border-bottom:\
+    \ 1px solid rgb(89, 129, 187);\n    padding: 4px 30px 4px 30px;\n    width: 49.5%;\n\
+    \    display: table-cell;\n    height: 100%;\n    vertical-align: top;\n  }\n\n\
+    \  .footer {\n    font-size: .75em; \n    text-align: left;\n    margin:auto;\n\
+    \    margin-top: 2em;\n  }\n</style>\n<!-- Parameters\n- id: info_storage_intro\n\
+    - id: storage_system_type\n- id: storage_system\n- id: electronic_storage_input_type\n\
+    - id: electronic_storage_input\n- id: retrieve\n- id: retrieve_unique_id_description\n\
+    - id: retrieve_non_personal_description\n- id: records_retention_schedule\n- id:\
+    \ records_disposal_verification\n- id: information_shared_agency\n- id: information_shared_agency_description\n\
+    - id: information_shared_external\n- id: information_shared_external_description\n\
+    -->\n\n<div class=\"dos-pta-form\">\n\n  <h2>3. How will DOS store the IC/form\
+    \ responses?</h2>\n  <div class=\"cell-left\">\n   a. How will DOS store the original,\
+    \ completed IC/forms?\n  </div>\n  <div class=\"cell-right\">\n    {{ storage_system_type.text\
+    \ }}\n    <div>\n      {% if storage_system_type == 'paper' %}. Please describe.\n\
+    \      {% elif storage_system_type == 'electronic' %}. Please describe the IT\
+    \ system that will store the data from the form.\n      {% elif storage_system_type\
+    \ == 'scanned_forms' %} (completed forms are scanned into an electronic repository).\
+    \ Please describe the electronic repository.\n      {% endif %}\n    </div>\n\
+    \    {{ storage_system }}\n  </div>\n  <div class=\"cell-full\" style=\"height:0px;\
+    \ border-top: 0px black solid;\"></div>\n\n  <div class=\"cell-left\">\n    b.\
+    \ If electronic, how does DOS input the responses into the IT system?\n  </div>\n\
+    \  <div class=\"cell-right\">\n    {{ electronic_storage_input_type.text }}\n\
+    \    {% if electronic_storage_input_type == 'manually' %} (data elements manually\
+    \ entered). Please describe.\n    {% elif electronic_storage_input_type == 'automatically'\
+    \ %} Please describe.\n    {% endif %}\n    {{ electronic_storage_input }}\n \
+    \ </div>\n  <div class=\"cell-full\" style=\"height:0px; border-top: 0px black\
+    \ solid;\"></div>\n\n  <div class=\"cell-left\">\n   c. How would a user search\
+    \ the information submitted on the forms, <i>i.e.,</i> how is the information\
+    \ retrieved?\n  </div>\n  <div class=\"cell-right\">\n    {{ retrieve.text }}\n\
+    \    <div>\n      {% if retrieve == 'retrieve_unique_id' %}. <i>Please describe.</i>\
+    \ If information is retrieved by personal identifier, please submit a Privacy\
+    \ Act Statement with this PTA.\n\n      {% elif retrieve == 'retrieve_non_personal'\
+    \ %}. Please describe the IT system that will store the data from the form.\n\
+    \      {% endif %}\n    </div>\n    {{ storage_system }}\n  </div>\n  <div class=\"\
+    cell-full\" style=\"height:0px; border-top: 0px black solid;\"></div>\n\n  <div\
+    \ class=\"cell-left\">\n   d. What is the records retention schedule(s)?  <i>Include\
+    \ the records schedule number.</i>\n  </div>\n  <div class=\"cell-right\">\n \
+    \   {{ records_retention_schedule }}\n  </div>\n  <div class=\"cell-full\" style=\"\
+    height:0px; border-top: 0px black solid;\"></div>\n\n  <div class=\"cell-left\"\
+    >\n   e. How do you ensure that records are disposed of or deleted in accordance\
+    \ with the retention schedule?\n  </div>\n  <div class=\"cell-right\">\n    {{\
+    \ records_disposal_verification }}\n  </div>\n\n  <div class=\"cell-full\">\n\
+    \    f. Is any of this information shared outside of the original program/office?\
+    \ <i>If yes, describe where (other offices or DOS components or external entities)\
+    \ and why. What are the authorities of the receiving party?</i>\n  </div>\n  <div\
+    \ class=\"cell-full\">\n    {% if information_shared_agency == 'yes' %}Yes, information\
+    \ is shared with other DOS components or offices. Please describe.\n    <div>{{\
+    \ information_shared_agency_description }}</div>\n    {% endif %}\n    {% if information_shared_external\
+    \ == 'yes' %}Yes, information is shared external to DOS with other federal agencies,\
+    \ state/local partners, international partners, or non-governmental entities.\
+    \ Please describe.\n    <div>{{ information_shared_external_description }}</div>\n\
+    \    {% endif %}\n    {% if information_shared_agency == 'yes' and information_shared_external\
+    \ == 'no' %}No. Information on this form is not shared outside of the collecting\
+    \ office.\n    {% endif %}\n  </div>\n\n  {% if privacy_act_statement %}\n  <h2>Submitted\
+    \ Privacy Act Statement</h2>\n  <div class=\"cell-full\">\n    <p>The following\
+    \ Privact Act Statement has been submitted with this PTA.</p>\n    <p><a href=\"\
+    {{ privacy_act_statement.url }}\">View Privacy Act Statement</a></p>\n  </div>\n\
+    \n  {% endif %}\n\n\n  <div class=\"footer\">\n    <span>Privacy Threshold Analysis\
+    \ – IC/Form</span>\n    <span style=\"margin-left: 200px;\">Version number: 04-2016</span>\n\
+    \  </div>\n\n</div>\n"
+questions:
+- id: info_storage_intro
+  title: Overview
+  prompt: |
+    This section will be about how DOS will store the collected information.
+  type: interstitial
+- id: storage_system_type
+  title: IT System Which Will Store the Information
+  prompt: |
+    How will DOS store the original, completed collections / forms?
+  type: choice
+  choices:
+  - key: paper
+    text: Paper
+  - key: electronic
+    text: Electronic
+  - key: scanned_forms
+    text: Scanned forms
+    help: (completed forms are scanned into an electronic repository)
+- id: storage_system
+  title: System Which Will Store the Information
+  prompt: >
+    Please describe the {% if storage_system_type == 'paper' %}paper filing system{%
+    else %}IT System{% endif %} which will store the collected information.
+  type: longtext
+- id: electronic_storage_input_type
+  title: How is Electonic Information Input
+  prompt: |
+    How does DOS input the responses into the IT system?
+
+    You said information will be stored electronically. Is the information entered _manually_ or _automatically_? {{storage_system_type}}
+  type: choice
+  choices:
+  - key: manually
+    text: Manually
+    help: Data elements manually entered
+  - key: automatically
+    text: Automatically
+  impute:
+  - condition: storage_system_type =='paper'
+    value: ~
+- id: electronic_storage_input
+  title: IT System Which Will Store the Information
+  prompt: |
+    Please describe how the information is {{electronic_storage_input_type}} captured into the IT System.
+  type: longtext
+  impute:
+  - condition: storage_system_type =='paper'
+    value: ~
+- id: retrieve
+  title: How Is the Information Retrieved?
+  prompt: |
+    How is the information retrieved?
+
+    I.e., how would a user search the collected information?
+  type: choice
+  choices:
+  - key: retrieve_unique_id
+    text: By a unique identifier.
+    help: >
+      Generally, a unique identifier is considered any type of "personally identifiable
+      information," meaning any information that permits the identity of an individual
+      to be directly or indirectly inferred, including any other information which
+      is linked or linkable to that individual regardless of whether the individual
+      is a U.S. citizen, lawful permanent resident, visitor to the U.S., or employee
+      or contractor to the Department.
+  - key: retrieve_non_personal
+    text: By a non-personal identifier.
+- id: retrieve_unique_id_description
+  title: Describe the Unique Identifier
+  prompt: |
+    Please describe the unique identifer used to search or retrieve the collected information.
+
+    Since the information is retrieved with a personal identifier, you'll need to submit a copy of the Privacy Act Statement for the app in this PTA.  We'll ask for it later.
+  type: longtext
+  impute:
+  - condition: retrieve != 'retrieve_unique_id'
+    value: ~
+- id: retrieve_non_personal_description
+  title: Describe the Non-personal Identifier
+  prompt: |
+    Please describe the non-personal identifer used to search or retrieve the collected information.
+  type: longtext
+  impute:
+  - condition: retrieve != 'retrieve_non_personal'
+    value: ~
+- id: PAS_upload_generate_choice
+  title: 'Privacy Act Statement: Upload or Generate'
+  prompt: Would you like to upload a completed version of a Privacy Act Statement
+    or generate a PAS here?
+  type: choice
+  choices:
+  - key: PAS_upload
+    text: Upload
+  - key: PAS_generate
+    text: Generate
+- id: privacy_act_statement_upload
+  title: Privacy Act Statement - Upload
+  prompt: >-
+    Please submit a Privacy Act Statement in relation to information retrieval by
+    unique ID.
+
+
+    You said a user could search the collected information by a unique id. Searching
+    by a unique PII identifier requires a Privacy Act Statement.
+  type: file
+  impute:
+  - condition: PAS_upload_generate_choice == 'PAS_generate'
+    value: ~
+- id: privacy_act_statement_generate
+  title: 'Privacy Act Statement: Generate'
+  prompt: A Privacy Act Statement (PAS) Task has been added to the system.
+  type: interstitial
+  impute:
+  - condition: PAS_upload_generate_choice == 'PAS_upload'
+    value: ~
+- id: records_retention_schedule
+  title: Records Retention Schedule
+  prompt: |
+    What is/are the records retention schedule(s)?
+
+    Include the records schedule number in your response.
+  type: longtext
+- id: records_disposal_verification
+  title: Records Disposal Verification
+  prompt: |
+    How do you ensure that records are disposed of or deleted in accordance with the retention schedule?
+  type: longtext
+- prompt: |
+    Is any of the collected information shared with other DOS components or offices?
+  id: information_shared_agency
+  title: Information shared elsewhere in the organization?
+  type: yesno
+- id: information_shared_agency_description
+  title: Describe info shared within the organization
+  prompt: |
+    Please describe the information that is shared with other parts of DOS beyond original program and how it is shared.
+  type: longtext
+  impute:
+  - condition: information_shared_agency == 'no'
+    value: ~
+- prompt: >
+    Is any of the collected information shared external to DOS with other federal
+    agencies, state/local partners, international partners, or non-governmental entities?
+  id: information_shared_external
+  title: Information shared external to the organization?
+  type: yesno
+- id: information_shared_external_description
+  title: Describe info shared outside of the organization
+  prompt: |
+    Please describe the infrormation that is shared to partners outside of DOS and how it is shared.
+  type: longtext
+  impute:
+  - condition: information_shared_agency == 'no'
+    value: ~
