@@ -1,7 +1,6 @@
 GovReady-Q Release Notes
 ========================
 
-
 v.999 (January XX, 2021)
 ------------------------
 
@@ -9,10 +8,11 @@ Add lightweight-ato to default apps so users can get started easier.
 
 **Developer changes**
 
+* Add `.coveragerc` configuration file to ensure we cover and run only tests in locally and in Circleci.
 * Add `pyup.yml` configuration file to have pyup.io pull requests go against `develop` branch.
 * New '%dict' operator for JSON/YAML output templates
 * Pass OSCAL context to JSON/YAML output templates
-
+* Created a recursive method `wait_for_sleep_after` that wraps around other functions allowing for drastically shorter wait times necessary compared to peppering var_sleeps.
 * Update install scripts.
 * Update default and recommended `local/environment.json` file from `first_run` and `install-govready-q.sh`.
 * By default, set organization name to "main".

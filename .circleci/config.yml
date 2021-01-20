@@ -6,7 +6,7 @@ jobs:
   build:
     docker:
     - image: circleci/python:3.8.1-browsers # when upgrading, check that it works with selenium
-
+    parallelism: 4
     steps:
     # Add .local/bin to PATH for utilities install by `pip install --user`.
     - run: echo 'export PATH=~/.local/bin:$PATH' >> $BASH_ENV
@@ -72,11 +72,16 @@ jobs:
     # Run unit and functional tests with code coverage, and store code coverage
     # results. CircleCI commands can't go on forever, so we run the tests
     # separately (with -p) and then combine code coverage results.
-    - run: coverage run --source='.' --branch -p manage.py test controls
-    - run: coverage run --source='.' --branch -p manage.py test discussion
-    - run: coverage run --source='.' --branch -p manage.py test guidedmodules
-    - run: coverage run --source='.' --branch -p manage.py test siteapp
-    - run: coverage run --source='.' --branch -p manage.py test system_settings
+#    - run: coverage run --source='.' --branch -p manage.py test controls
+#    - run: coverage run --source='.' --branch -p manage.py test discussion
+#    - run: coverage run --source='.' --branch -p manage.py test guidedmodules
+#    - run: coverage run --source='.' --branch -p manage.py test siteapp
+#    - run: coverage run --source='.' --branch -p manage.py test system_settings
+    - run:
+        name: All tests run in split
+        command: |
+          TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split --split-by=timings --timings-type=filename)
+          coverage run --source='.' --branch -p manage.py test  --verbosity=2 $TESTFILES -v 2
     # - run: coverage run --source='.' --branch -p manage.py test discussion
     # Commenting out tests until better solution for testing after page loaded
     #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.LandingSiteFunctionalTests
