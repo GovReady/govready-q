@@ -94,8 +94,8 @@
               <div class="row">
                 <div class="col-xs-12">
                     &copy; GovReady {% now "Y" %}.
-                    <a href="/privacy">Privacy Policy</a>.
-                    <a href="/terms-of-service">Terms of Service</a>.
+                    <a href={% url 'privacy_terms_love' 'privacy' %}>Privacy Policy</a>.
+                    <a href={% url 'privacy_terms_love' 'terms-of-service' %}>Terms of Service</a>.
                 </div>
                 <div class="col-xs-12">
                   ver {{APP_VERSION_STRING}}
