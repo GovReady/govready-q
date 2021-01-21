@@ -118,6 +118,13 @@ class AppVersion(models.Model):
     version_number = models.CharField(blank=True, null=True, max_length=128, help_text="The version number of the compliance app.")
     version_name = models.CharField(blank=True, null=True, max_length=128, help_text="The name of this version/release of the compliance app.")
 
+    input_files = models.ManyToManyField('guidedmodules.AppInput', help_text="The inputs linked to this pack.")
+    input_paths = JSONField(
+        help_text="A dictionary mapping file paths to the content_hashes of inputs included in the inputs field of this instance.",
+        null=True)
+    trust_inputs = models.BooleanField(default=False, null=True,
+                                       help_text="Are inputs trusted? Inputs include OSCAL components and statements that will be served on our domain.")
+
     asset_files = models.ManyToManyField('guidedmodules.ModuleAsset', help_text="The assets linked to this pack.")
     asset_paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
     trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
@@ -261,6 +268,30 @@ def recombine_catalog_metadata(app_module):
             del ret[field]
 
     return ret
+
+class AppInput(models.Model):
+    source = models.ForeignKey(AppSource, related_name="inputs", on_delete=models.CASCADE,
+                               help_text="The source of this app input.")
+    app = models.ForeignKey(AppVersion, null=True, related_name="inputs", on_delete=models.CASCADE,
+                            help_text="The AppVersion that this input is a part of.")
+    input_name = models.SlugField(max_length=200,
+                                   help_text="A slug-like identifier for the input that is unique within the AppVersion app.")
+    content_hash = models.CharField(max_length=64, help_text="A hash of the input binary content, as provided by the source.")
+    file = models.FileField(upload_to='guidedmodules/app-inputs', help_text="The input file.")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    class Meta:
+        unique_together = [('source', 'content_hash')]
+
+    def __str__(self):
+        # For the admin.
+        return "%s [%d] (from %s)" % (self.file.name, self.id, self.source)
+
+    def __repr__(self):
+        # For debugging.
+        return "<AppInput [%d] %s from %s>" % (self.id, self.file.name, self.source)
+
 
 class Module(models.Model):
     source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")
