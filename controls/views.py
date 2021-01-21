@@ -347,24 +347,23 @@ class OSCALComponentSerializer(ComponentSerializer):
         control_implementations = []
         of = {
             "component-definition": {
+                "uuid": str(uuid4()),
                 "metadata": {
                     "title": "{} Component-to-Control Narratives".format(self.element.name),
                     "published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": "string",
-                    "oscal-version": "1.0.0-milestone2",
+                    "oscal-version": "1.0.0-rc1"
                 },
                 "components": {
                     uuid: {
-                        "name": self.element.name,
-                        "component-type": self.element.element_type or "software",
-                        "title": self.element.full_name or "",
+                        "title": self.element.full_name or self.element.name,
+                        "type": self.element.element_type or "software",
                         "description": self.element.description,
                         "control-implementations": control_implementations
                     }
                 }
             },
-            "back-matter": []
         }
 
         # create requirements and organize by source (sid_class)
@@ -505,7 +504,8 @@ class ComponentImporter(object):
         try:
             validate(instance=oscal_json, schema=oscal_json_schema)
             return True
-        except (SchemaError, SchemaValidationError):
+        except (SchemaError, SchemaValidationError) as e:
+            logger.info(e)
             return False
 
     def create_components(self, oscal_json, request):
@@ -529,7 +529,7 @@ class ComponentImporter(object):
         @returns: Element object if created, None otherwise
         """
 
-        component_name = component_json['name']
+        component_name = component_json['title']
         while Element.objects.filter(name=component_name).count() > 0:
             component_name = increment_element_name(component_name)
 
@@ -1279,8 +1279,7 @@ def editor(request, system_id, catalog_key, cl_id):
                             }
                         }  #statements
                     },  # implemented-requirements
-                },
-                "back-matter": []
+                }
             }
         }
         by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["statements"][
