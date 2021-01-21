@@ -1,8 +1,10 @@
+from collections import defaultdict
 import os
 import json
 import yaml
 import re
 from pathlib import Path
+import sys
 
 CATALOG_PATH = os.path.join(os.path.dirname(__file__),'data','catalogs')
 
@@ -54,6 +56,11 @@ class Catalogs (object):
         catalog_titles = [item['metadata']['title'] for item in self.index ]
         return catalog_titles
 
+def uhash(obj):
+    """Return a positive hash code"""
+    h = hash(obj)
+    return h + sys.maxsize + 1
+
 class Catalog (object):
     """Represent a catalog"""
 
@@ -61,22 +68,27 @@ class Catalog (object):
     # that singleton instance. Instead of doing 
     # `cg = Catalog(catalog_key=Catalogs.NIST_SP_800_53_rev4)`,
     # do `cg = Catalog.GetInstance(catalog_key=Catalogs.NIST_SP_800_53_rev4')`.
-    @staticmethod
-    def GetInstance(catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
+    @classmethod
+    def GetInstance(cls, catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
         # Create a new instance of Catalog() the first time for each 
         # catalog key / parameter combo
         # this method is called. Keep it in memory indefinitely.
         # Clear cache only if a catalog itself changes
 
+        catalog_instance_key = Catalog._catalog_instance_key(catalog_key, parameter_values)
+        
+        if not hasattr(cls, catalog_instance_key):
+            new_catalog = Catalog(catalog_key=catalog_key, parameter_values=parameter_values)
+            setattr(cls, catalog_instance_key, new_catalog)
+        return getattr(cls, catalog_instance_key)
+
+    @staticmethod
+    def _catalog_instance_key(catalog_key, parameter_values):
         catalog_instance_key = '_cached_instance_' + catalog_key
         if parameter_values:
-            parameter_values_hash = hash(frozenset(parameter_values.items()))
+            parameter_values_hash = uhash(frozenset(parameter_values.items()))
             catalog_instance_key += '_' + str(parameter_values_hash)
-            
-        if not hasattr(Catalog, catalog_instance_key):
-            new_catalog = Catalog(catalog_key=catalog_key, parameter_values=parameter_values)
-            setattr(Catalog, catalog_instance_key, new_catalog)
-        return getattr(Catalog, catalog_instance_key)
+        return catalog_instance_key.replace('-', '_')
 
     def __init__(self, catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
         global CATALOG_PATH
@@ -104,6 +116,7 @@ class Catalog (object):
         # have different organizational defined parameters.
         self.parameter_values = parameter_values
         self.flattened_controls_all_as_dict = self.get_flattened_controls_all_as_dict()
+        self.parameters_by_control = self._cache_parameters_by_control()
 
     def _load_catalog_json(self):
         """Read catalog file - JSON"""
@@ -319,7 +332,8 @@ class Catalog (object):
             "guidance": self.get_control_prose_as_markdown(control, part_types={ "guidance" }),
             "catalog_file": self.catalog_file,
             "catalog_id": self.catalog_id,
-            "sort_id": self.get_control_property_by_name(control, "sort-id")
+            "sort_id": self.get_control_property_by_name(control, "sort-id"),
+            "label": self.get_control_property_by_name(control, "label")
         }
         # cl_dict = {"id": "te-1", "title": "Test Control"}
         return cl_dict
@@ -334,3 +348,18 @@ class Catalog (object):
             cl_dict = self.get_flattened_control_as_dict(cl)
             cl_all_dict[cl_dict['id']] = cl_dict
         return cl_all_dict
+
+    def _cache_parameters_by_control(self):
+        cache = defaultdict(list)
+        if self.oscal:
+            groups = self.oscal["groups"]
+            for family in groups:
+                for control in family["controls"]:
+                    control_id = control["id"]
+                    for parameter in control.get("parameters", []):
+                        cache[control_id].append(parameter["id"])
+        return dict(cache)
+    
+    def get_parameter_ids_for_control(self, control_id):
+        return self.parameters_by_control.get(control_id, [])
+    

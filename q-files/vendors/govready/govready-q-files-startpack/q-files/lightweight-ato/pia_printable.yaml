@@ -1,0 +1,31 @@
+id: pia_printable
+title: Privacy Impact Assessment (Document)
+version: 1
+output:
+- id: pia_complete_form
+  title: PIA Form
+  format: markdown
+  filename: templates/pia_complete_form.html
+  template: |2
+
+    {{project.pia_intro.output_documents.pia_intro|safe}}
+
+    {{project.pia_intro.output_documents.pia_overview_content|safe}}
+
+    {{project.pia_authorities.output_documents.pia_authorities_content|safe}}
+
+    {{project.pia_info_characterization.output_documents.pia_characterization_info|safe}}
+
+    {{project.pia_info_usage.output_documents.pia_info_usage|safe}}
+
+    {{project.pia_notice.output_documents.pia_notice|safe}}
+
+    {{project.pia_retention.output_documents.pia_retention|safe}}
+
+    {{project.pia_info_sharing.output_documents.pia_info_sharing|safe}}
+
+    {{project.pia_redress.output_documents.pia_redress|safe}}
+
+    {{project.pia_auditing_accountability.output_documents.pia_auditing_accountability|safe}}
+
+questions: []

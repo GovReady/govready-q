@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 import json
 from django.db import models
@@ -5,6 +6,8 @@ from django.utils.functional import cached_property
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
+from simple_history.models import HistoricalRecords
+
 from .oscal import Catalogs, Catalog
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
@@ -12,6 +15,26 @@ from copy import deepcopy
 from django.db import transaction
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
+ORGPARAM_PATH = os.path.join(os.path.dirname(__file__),'data','org_defined_parameters')
+
+class ImportRecord(models.Model):
+    name = models.CharField(max_length=100, help_text="File name of the import", unique=False, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier for this Import Record.")
+
+    def get_components_statements(self):
+        components = Element.objects.filter(import_record=self)
+        component_statements = {}
+
+        for component in components:
+            component_statements[component] = Statement.objects.filter(producer_element=component)
+
+        return component_statements
+
+STATEMENT_SYNCHED = 'synched'
+STATEMENT_NOT_SYNCHED = 'not_synched'
+STATEMENT_ORPHANED = 'orphaned'
 
 class SystemException(Exception):
     """Class for raising custom exceptions with Systems"""
@@ -35,18 +58,20 @@ class Statement(models.Model):
     consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
-
+    import_record = models.ForeignKey(ImportRecord, related_name="import_record_statements", on_delete=models.CASCADE,
+                                      unique=False, blank=True, null=True, help_text="The Import Record which created this Statement.")
+    history = HistoricalRecords(cascade_delete_history=True)
     class Meta:
         indexes = [models.Index(fields=['producer_element'], name='producer_element_idx'),]
         permissions = [('can_grant_smt_owner_permission', 'Grant a user statement owner permission'),]
         ordering = ['producer_element__name', 'sid']
 
     def __str__(self):
-        return "'%s %s %s %s id=%d'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
+        return "'%s %s %s %s %s'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
 
     def __repr__(self):
         # For debugging.
-        return "'%s %s %s %s id=%d'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
+        return "'%s %s %s %s %s'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
 
     @cached_property
     def producer_element_name(self):
@@ -115,12 +140,18 @@ class Statement(models.Model):
 
     @property
     def prototype_synched(self):
-        """Return True if statement of type `control_implementation` and its prototype"""
+        """Returns one of STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED for control_implementations"""
 
-        if self.body == self.prototype.body:
-            return True
+        if self.statement_type == "control_implementation":
+            if self.prototype:
+                if self.body == self.prototype.body:
+                    return STATEMENT_SYNCHED
+                else:
+                    return STATEMENT_NOT_SYNCHED
+            else:
+                return STATEMENT_ORPHANED
         else:
-            return False
+            return STATEMENT_NOT_SYNCHED
 
     @property
     def diff_prototype_main(self):
@@ -153,6 +184,19 @@ class Statement(models.Model):
     # TODO:c
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
+
+    @staticmethod
+    def _statement_id_from_control(control_id, part_id):
+        if part_id:
+            return f"{control_id}_smt.{part_id}"
+        else:
+            return f"{control_id}_smt"
+
+    @property
+    def oscal_statement_id(self):
+        return Statement._statement_id_from_control(self.sid, self.pid)
+
+
 class Element(models.Model):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
@@ -161,6 +205,8 @@ class Element(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
+    import_record = models.ForeignKey(ImportRecord, related_name="import_record_elements", on_delete=models.CASCADE,
+                                      unique=False, blank=True, null=True, help_text="The Import Record which created this Element.")
 
     # Notes
     # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)
@@ -589,6 +635,46 @@ class Baselines (object):
     @property
     def body(self):
         return self.legacy_imp_smt
+
+class OrgParams(object):
+    """
+    Represent list of organizational defined parameters. Temporary
+    class to work with default org params.
+    """
+    
+    _singleton = None
+    
+    def __new__(cls):
+        if cls._singleton is None:
+            cls._singleton = super(OrgParams, cls).__new__(cls)
+            cls._singleton.init()
+            
+        return cls._singleton
+    
+    def init(self):
+        global ORGPARAM_PATH
+        self.cache = {}
+
+        path = Path(ORGPARAM_PATH)
+        for f in path.glob("*.json"):
+            name, values = self.load_param_file(f)
+            if name in self.cache:
+                raise Exception("Duplicate default organizational parameters name {} from {}".format(name, f))
+            self.cache[name] = values
+    
+    def load_param_file(self, path):
+        with path.open("r") as json_file:
+            data = json.load(json_file)
+            if 'name' in data and 'values' in data:
+                return (data["name"], data["values"])
+            else:
+                raise Exception("Invalid organizational parameters file {}".format(path))
+                
+    def get_names(self):
+        return self.cache.keys()
+    
+    def get_params(self, name):
+        return self.cache.get(name, {})
 
 class Poam(models.Model):
     statement = models.OneToOneField(Statement, related_name="poam", unique=False, blank=True, null=True, on_delete=models.CASCADE, help_text="The Poam details for this statement. Statement must be type Poam.")

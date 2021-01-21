@@ -19,8 +19,9 @@ termcolor # MIT License
 xxhash # BSD License
 importlib-metadata>=1.7.0,>=0.12 # Apache License
 importlib-resources<2,>=1.0 # Apache License
+pyinstrument==3.2.0 # BSD License
 jsonschema # MIT License
-
+filetype # MIT License
 # Common Django Packages
 # Django==2.2.12 # BSD License
 Django==3.0.11 # BSD License
@@ -32,6 +33,8 @@ jsonfield # MIT License
 dj_database_url # BSD License
 whitenoise # MIT License
 django-guardian # MIT License
+django-simple-history # BSD License
+
 
 # Python Packages Developed by GovReady and/or Josh
 rtyaml # CC0

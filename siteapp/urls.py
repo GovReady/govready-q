@@ -32,8 +32,8 @@ urlpatterns = [
     url(r"^discussion/", include("discussion.urls")),
 
     # Controls and Systems
-    url(r"^controls/", include("controls.urls")),
     url(r"^systems/", include("controls.urls")),
+    url(r"^controls/", include("controls.urls")),
 
     # app store
     url(r'^store$', views.apps_catalog, name="store"),
@@ -48,9 +48,10 @@ urlpatterns = [
     url(r'^projects/(\d+)/__rename$', views.rename_project, name="rename_project"),
     url(r'^projects/(\d+)/__delete$', views.delete_project, name="delete_project"),
     url(r'^projects/(\d+)/__admins$', views.make_revoke_project_admin, name="make_revoke_project_admin"),
-    url(r'^projects/(\d+)/__export$', views.export_project, name="export_project"),
-    url(r'^projects/(\d+)/__import$', views.import_project_data, name="import_project_data"),
+    url(r'^projects/(\d+)/__export$', views.export_project_questionnaire, name="export_project_questionnaire"),
+    url(r'^projects/(\d+)/__import$', views.import_project_questionnaire, name="import_project_questionnaire"),
     url(r'^projects/(\d+)/__upgrade$', views.upgrade_project, name="upgrade_project"),
+    url(r'^projects/(\d+)/__move$', views.move_project, name="move_project"),
     url(r'^projects/(\d+)/(?:[\w\-]+)()$', views.project), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/settings)$', views.project_settings, name="project_settings"),
     url(r'^projects/(\d+)/(?:[\w\-]+)(/startapps)$', views.project_start_apps), # must be last because regex matches some previous URLs
@@ -59,8 +60,10 @@ urlpatterns = [
     url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api), # must be last because regex matches some previous URLs
 
     # portfolios
-    url(r'^portfolios$', views.portfolio_list),
+    url(r'^portfolios$', views.portfolio_list, name="list_portfolios"),
     url(r'^portfolios/new$', views.new_portfolio),
+    url(r'^portfolios/(?P<pk>.*)/delete$', views.delete_portfolio, name="delete_portfolio"),
+    url(r'^portfolios/(?P<pk>.*)/edit$', views.edit_portfolio, name="edit_portfolio"),
     url(r'^portfolios/(?P<pk>.*)/projects$', views.portfolio_projects, name="portfolio_projects"),
     url(r'^portfolio/update_permissions', views.update_permissions, name="update_permissions"),
 

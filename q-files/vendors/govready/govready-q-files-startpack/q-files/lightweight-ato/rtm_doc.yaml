@@ -1,0 +1,19 @@
+id: rtm_doc
+title: RTM Document
+
+questions:
+- id: q1
+  title: Overview
+  prompt: |
+    PLACEHOLDER
+  type: interstitial
+- id: rtm_date
+  title: Date Completed
+  prompt: |
+    Requirements Traceability Matrix, Date Complete
+
+    What is the date by which you will complete this RTM?
+  type: date
+
+output:
+- templates/rtm_report.md

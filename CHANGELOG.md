@@ -1,8 +1,111 @@
 GovReady-Q Release Notes
 ========================
 
-v.999 (December XX, 2020)
--------------------------
+v.999 (January XX, 2021)
+------------------------
+
+Add lightweight-ato to default apps so users can get started easier.
+
+**Developer changes**
+
+* Add `.coveragerc` configuration file to ensure we cover and run only tests in locally and in Circleci.
+* Add `pyup.yml` configuration file to have pyup.io pull requests go against `develop` branch.
+* New '%dict' operator for JSON/YAML output templates
+* Pass OSCAL context to JSON/YAML output templates
+* Created a recursive method `wait_for_sleep_after` that wraps around other functions allowing for drastically shorter wait times necessary compared to peppering var_sleeps.
+* Update install scripts.
+* Update default and recommended `local/environment.json` file from `first_run` and `install-govready-q.sh`.
+* By default, set organization name to "main".
+* Add optional `PIPUSER` parameter to `install-govready-q.sh` to avoid error of running pip install with `--user` flag in virtual environments.
+* Comment out starting GovReady-Q server automatically because too many edge cases exist to execute that well.
+
+**Data changes**
+
+* Add Lightweight-ato apps to default apps.
+
+v0.9.1.49.1 (January 20, 2021)
+------------------------------
+
+Fixes to 0.9.1.49 after merge.
+
+**Bug fixes**
+
+* Remove duplicate appearance of tabs in system selected components
+* Remove OSCAL download link from selected control pages because OSCAL for a single control would rarely be downloaded and would require different handling
+* Hide a discussion test that is failing to address later (not critical)
+* Add notes about testing download OSCAL that on Mac test must be run visible for custom download route to work.
+
+v0.9.1.49 (January 12, 2021)
+-----------------------------
+
+**IMPORTANT**
+
+ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSION may not see any Compliance Apps when starting a project. This bug has been fixed, but ADMINS MUST ADD PERMISSION  "guidedmodules | app source | can view app source" TO EACH USER TO FIX PERMISSIONS FOR EXISTING USERS. SEE DJANGO ADMIN CUSTOMER ACTION "add_viewappsource_permission" TO ADD SELECTIVELY ADD THIS PERMISSION TO USERS.
+
+**Feature changes**
+
+* Add default Organizational Defined Parameter values.
+* Track batch imports of components (via OSCAL) into component library for tracking and management purposes; enable deletes of batch imports.
+* Support defining multiple allowed hosts via the `local/environment.json` file.
+* Allow administrators to change component name and description in Component Library.
+* Existing projects can be moved between existing portfolios.
+* Edit existing portfolio's title and description.
+* Delete existing portfolio.
+* Add default Organizational Defined Parameter values.
+* Add an autocomplete in component library to look up controls across multiple catalogs for writing a control implementation statement.
+
+**UI changes**
+
+* New dialog in Component Library for importing components in OSCAL JSON format
+* New screens for tracking and deleting batch imports of components (via OSCAL) into component library.
+* Add "Edit" button in Component Library for Administrators to rename a component.
+* Add "Move Project" action button on project page to move project to a different portfolio.
+* Add "Edit Portofolio" links on portfolio page for editing portfolio details and deleting portfolio.
+* Conditionally show button to delete portfolio if portfolio is empty and user has permission to change portfolio.
+* Support a Select2 autocomplete dropdown selection box in the component library to assign a control when authoring a new component control implementation statement for a component in the library.
+* You can now click the history button in a given statement's panel in the controls selected implementation statement page or component library.
+* Added error messages for any files that fail validation for Comment Attachment uploads
+
+**Data changes**
+
+* Add default Organizational Defined Parameter values.
+* Add `validators` argument to the `file` field in the Attachment model.
+* Add `history` field in the Statement model. This is the source for the new HistoricalStatement table that captures all Statement history.
+
+**Developer changes**
+
+* New `controls.models.ImportRecord` model for tracking batch imports of components (via OSCAL) into component library.
+* New routes and views related for tracking batch imports of components (via OSCAL) into component library.
+* Fix OSCAL component import to use "statement" JSON property.
+* Support defining multiple allowed hosts via the `local/environment.json` file via new `allowed_hosts` environment parameter.
+* Added route `controls/api/controlsselect/` and view `api_controls_select` to get list of controls.
+* Modified view `save_smt` to just save prototype statement when statement is being created in the component library.
+* Modified template `templates/components/element_detail_tabs.html` to use jQuery select2 for autocomplete and search of catalog of controls to add a control to a component.
+* Update hidden sid_class field with catalog human readable name. Add hidden field `form_source` to identufy to save smt view that we are receiving form submission from component library.
+* Add 'label' value to `oscal.Catalog.cx.get_flattened_controls_all_as_dict`.
+* Introducing model history tracking with django-simple-history.
+* Update various Python libraries.
+* Added file extension, size and type validation for Comment Attachment uploads.
+* Introducing request profiling with pyinstrument.
+* Add default `controls.models.OrgParams` class to support basic, default generation of orgizational defined parameters.
+
+**Bug fixes**
+
+* Fix missing "part" field on Component's component statement form and incorrectly displaying the "remarks" field (#1232)
+* Fix display of OSCAL into correct tab on system's component's page
+* When generating OSCAL component files, emit `statement` elements with ids that correlate with the control catalog.
+* New non-admin users did not have the permission to view appsource. Added permission after the new user is created with the SignupForm from allauth.account.forms.
+
+v.0.9.1.48.1 (December 17, 2020)
+--------------------------------
+
+**Bug fixes**
+
+* Fix handling of static files. Create new `static-root` directory outside of `siteapp` into which to collect static files.
+* Remove bad path reference to select2 javascript libraries in component library page.
+
+v0.9.1.48 (December 15, 2020)
+------------------------------
 
 **Developer changes**
 
@@ -15,6 +118,8 @@ v.999 (December XX, 2020)
 Add Component Library feature pages and improve UI for managing reuse and "certified" component library.
 
 Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML) output template in the compliance app `output` section. The JSON, YAML output documents are first converted to Python data structures and then populated with information in a variant of Jinja2 substitutions.
+
+Fix tests so they execute successfully in CircleCI.
 
 **Feature changes**
 
@@ -43,7 +148,7 @@ Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML
 * Move component implementation statement tab to left of combined statement tab in control editor.
 * Updating certified text also updates the HTML block showing the certified text with updated certified text on edit pages.
 * Add components (system elements) via an autocomplete to a system on system's selected components page.
-* Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement. 
+* Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement.
 * Make statement synchronization status lable/alert clickable to reveal certified statement and diff between local and certified.
 * Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
 * Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
@@ -56,15 +161,18 @@ Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML
 
 * Add `copy` method to `Element` data model to create a new element (e.g. component) as a copy of existing component.
 * Add `statements` method to `Element` data model to produce a list of statements of a particular `statement_type`.
+* Add default Organizational Defined Parameter values in `controls/data/org_defined_parameters`.
 
 **Bug fixes**
 
 * Fix multiple loadings of updated `smt.body` into bootstrap's panel heading section by improved naming of div classes in panel and better targeted update.
 * Fix enable_experimental_oscal control. Model method was set incorrectly requiring both enable_experimental_oscal and enable_experimental_opencontrol had to be enabled for either to show up.
+* Fix testing issues. Fix tests so they execute successfully in CircleCI.
 
 **Developer changes**
 
-* Add `custom-reference.docx` MS Word DOCX document to `/assets` directory to be used by pandoc when generating MS Word output documents in order to provide page numbers, headers, footers, TOC.
+* Default Selenium tests to headless mode. Add new `test_visible` parameter option for `local/environment.json` to force Selenium tests to run in visible or headless mode.
+Add `custom-reference.docx` MS Word DOCX document to `/assets` directory to be used by pandoc when generating MS Word output documents in order to provide page numbers, headers, footers, TOC.
 * Significantly refactored indentations in control edtor pages to make code folding and div analysis easier.
 * Add an ElementForm to create new components (AKA Elements).
 * Modified controls.Statement model to link `control_implementation` statements to
@@ -118,7 +226,7 @@ Example:
       "by-component": {
         "%for": "smt in system.control_implementation_as_dict[control]['control_impl_smts']",
         "%loop": {
-          "key": "{{ smt.producer_element.uuid }}", 
+          "key": "{{ smt.producer_element.uuid }}",
           "value": { "uuid" : "{{ smt.uuid }}",
             "component-name": "{{   smt.producer_element.name|safe }}",
             "description" : "{{ smt.body|safe }}"
@@ -131,6 +239,8 @@ Example:
 ```
 * Update various libraries. See changes in `requirements.txt`.
 * Removed instance of using sys.stderr and replaced with logger for proper logging.
+* Fix tests so they execute successfully in CircleCI.
+* Add default `controls.models.OrgParams` class to support basic, default generation of orgizational defined parameters.
 
 **Other**
 
@@ -142,7 +252,7 @@ v.0.9.1.47.1 (December 02, 2020)
 
 **Developer changes**
 
-* Minor further tweaks to CSS refactoring. 
+* Minor further tweaks to CSS refactoring.
 
 v.0.9.1.47 (December 01, 2020)
 ------------------------------
@@ -204,6 +314,7 @@ v0.9.1.45.1 (November 5, 2020)
 
 * Update various Python libraries (#1052)
 * Update jquery to 3.5.1, quill to 1.3.7, bootstrap to 3.4.1 (#1052)
+
 
 v0.9.1.45 (October 24, 2020)
 ----------------------------

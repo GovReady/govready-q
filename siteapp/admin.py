@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.models import Permission
 from guardian.admin import GuardedModelAdmin
 
 import django.contrib.auth.admin as contribauthadmin
@@ -14,9 +15,20 @@ def all_user_fields_still_exist(fieldlist):
             return False
     return True
 
+def add_viewappsource_permission(modeladmin, request, queryset):
+    """
+    Adds view appsource permission to selected users
+    """
+    for user in queryset:
+        # Adds permission if they dont the permission
+        if 'guidedmodules.view_appsource' not in user.get_user_permissions():
+            user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
+add_viewappsource_permission.short_description = "Add View Appsource permission to selected users."
+
 class UserAdmin(contribauthadmin.UserAdmin):
     ordering = ('username',)
     list_display = ('id', 'email', 'date_joined', 'notifemails_enabled', 'notifemails_last_notif_id') # base has first_name, etc. fields that we don't have on our model
+    actions = [add_viewappsource_permission]
     pass
 
 class OrganizationAdmin(admin.ModelAdmin):
