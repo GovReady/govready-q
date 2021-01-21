@@ -67,6 +67,9 @@ def load_app_into_database(app, update_mode=AppImportUpdateMode.CreateInstance, 
         # Update Modules in this one.
         appinst = update_appinst
 
+    # Load inputs
+    load_app_inputs_into_database(app, appinst)
+
     # Load them all into the database. Each will trigger load_module_into_database
     # for any modules it depends on.
     processed_modules = { }
@@ -487,3 +490,21 @@ def load_module_assets_into_database(app, appinst):
         appinst.asset_paths[file_path] = file_hash
 
     appinst.save()
+
+def load_app_inputs_into_database(app, appinst):
+    # Load all of the static app inputs from the source into the database.
+
+    for input in app.get_inputs():
+        if input["type"] == "oscal":  # Only supporting OSCAL input currently
+            # Load file from path
+            input_file_path = input["path"] if "path" in input else None
+            try:
+                fs = app.get_fs()
+                with fs.open(input_file_path, "rb") as file:
+                    oscal_content = file.read()
+            except OSError:
+                logger.error(event="load_app_input", msg="Failed to find or load an app input.")
+                raise FileNotFoundError
+            else:
+                from controls.views import ComponentImporter
+                ComponentImporter().import_components_as_json(input_file_path, oscal_content)

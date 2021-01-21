@@ -68,6 +68,8 @@ class App(object):
     def __repr__(self):
         return "<App {name} in {store}>".format(name=self.name, store=self.store)
 
+    def get_inputs(self):
+        raise Exception("Not implemented!")
     def get_modules(self):
         raise Exception("Not implemented!")
     def get_assets(self):
@@ -253,6 +255,15 @@ class PyFsApp(App):
     def __init__(self, store, name, fs):
         super().__init__(store, name)
         self.fs = fs
+
+    def get_fs(self):
+        return self.fs
+
+    def get_inputs(self):
+
+        app = read_yaml_file(self.read_file("app.yaml"))
+        input_list = app["input"]
+        return input_list
 
     def get_modules(self):
         # Return a generator over parsed YAML data for modules.
