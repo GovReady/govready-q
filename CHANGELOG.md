@@ -18,6 +18,8 @@ Add lightweight-ato to default apps so users can get started easier.
 * By default, set organization name to "main".
 * Add optional `PIPUSER` parameter to `install-govready-q.sh` to avoid error of running pip install with `--user` flag in virtual environments.
 * Comment out starting GovReady-Q server automatically because too many edge cases exist to execute that well.
+* Refactored use of random package to use secure secrets module
+* Added minor pylint fixes
 
 **Data changes**
 
@@ -104,13 +106,6 @@ v.0.9.1.48.1 (December 17, 2020)
 * Fix handling of static files. Create new `static-root` directory outside of `siteapp` into which to collect static files.
 * Remove bad path reference to select2 javascript libraries in component library page.
 
-v0.9.1.48 (December 15, 2020)
-------------------------------
-
-**Developer changes**
-
-* Refactored use of random package to use secure secrets module
-* Added minor pylint fixes
 
 v.999 (December XX, 2020)
 -------------------------
