@@ -251,12 +251,7 @@ class Comment(models.Model):
     replies_to = models.ForeignKey('self', blank=True, null=True, related_name="replies", on_delete=models.CASCADE, help_text="If this is a reply to a Comment, the Comment that this is in reply to.")
     user = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user making a comment.")
 
-    emojis = models.CharField(
-        max_length=256,
-        blank=True,
-        default="",
-        help_text="A comma-separated list of emoji names that the user is reacting with.",
-    )
+    emojis = models.CharField(max_length=256, blank=True, null=True, help_text="A comma-separated list of emoji names that the user is reacting with.")
     text = models.TextField(blank=True, help_text="The text of the user's comment.")
     proposed_answer = JSONField(blank=True, null=True, help_text="A proposed answer to the question that this discussion is about.")
     draft = models.BooleanField(default=False, help_text="Set to true if the comment is a draft.")
