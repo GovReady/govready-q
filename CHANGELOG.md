@@ -1,7 +1,6 @@
 GovReady-Q Release Notes
 ========================
 
-Add lightweight-ato to default apps so users can get started easier.
 
 v999
 ----
@@ -21,7 +20,7 @@ v999
 
 **Data changes**
 
-* Add lightweight-ato to default apps.
+* Add lightweight-ato to default apps so users can get started easier.
 
 v.0.9.1.49 (January 12, 2021)
 -----------------------------
