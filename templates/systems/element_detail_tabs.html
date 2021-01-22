@@ -87,92 +87,116 @@
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-    <div class="systems-top">
-        <!-- <div class="container"> -->
-        <div class="row">
-            <div id="above-tab-content" class="row">
-                <!-- Page Title-->
-                <div class="systems-title">
-                    <h2 class="control-heading">
-                        <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> &gt; <a href="/systems/{{ system.id }}/components/selected" class="systems-link">Selected Components</a>
-                    </h2>
-                </div>
-                <!-- Control Lookup-->
-                <div class="systems-control-lookup">
-                    <!-- <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
-                    <input type="text" name="id" placeholder="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
-                        <button type="submit" class="btn btn-success">Look up</button>
-                  </form> -->
-                </div>
-            </div><!--/row-->
-            <div id="tab-content" class="row">
-                <!-- Nav tabs -->
-                <ul class="nav nav-tabs" role="tablist">
-                    <li role="presentation" class="active"><a href="#component" aria-controls="component" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Component</a></li>
+  <div class="systems-top">
+      <!-- <div class="container"> -->
+      <div class="row">
+          <div id="above-tab-content" class="row">
+              <!-- Page Title-->
+              <div class="systems-title">
+                  <h2 class="control-heading">
+                      <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> &gt; <a href="/systems/{{system.id}}/components/selected" class="systems-link">Selected Components</a>
+                  </h2>
+              </div>
+          </div>
+      </div><!--/row-->
 
-                    <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div>
-                    </a></li>
-                    {% if enable_experimental_oscal %}
-                        <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
+      <div id="above-tab-content" class="row">
+        <div class="systems-control-heading">
+            <h2 class="control-heading">
+                {{ element.name }}
+            </h2>
+            <h2 class="control-heading" style="">
+                &nbsp;<!-- <small style="color: #888;">{{ catalog.catalog_key_display }}</small> -->
+            </h2>
+        </div>
+      </div>
 
-                    {% endif %}
-                    {% if enable_experimental_opencontrol %}
-                        <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
-                    {% endif %}
-                </ul>
 
-                <!-- Tab panels -->
-                <div class="tab-content">
-                    <!-- Tab panel: component -->
-                    <div role="tabpanel" class="tab-pane active" id="component">
-                        <div class="row">
-                            <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10">
-                                <h3>Description</h3>
-                                {% if element.description %}
-                                    {{ element.description }}
-                                {% else %}
-                                    No description exists for this component.
-                                {% endif %}
-                            </div>
-                            <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                                <div>&nbsp;</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Tab panel: combined -->
-                    <!-- Combined control content does not appear on this page -->
-                    <!-- Tab panel: component_controls -->
-                    <div role="tabpanel" class="tab-pane" id="component_controls">
-                        <div id="control-description" class="control-text"><h3>Component Implementations Statements</h3></div>
-                        <div id="smt-list" class="systems-smt-list">
-                            <!-- Loop through existing component-control statements -->
-                            {% for smt in impl_smts %}
-                                <div id="panel-{{ forloop.counter }}" class="panel panel-default">
-                                    <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
-                                        <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
-                                            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">
-                                                <span id="producer_element-panel_num-control">{{ smt.sid|upper }}</span>&nbsp;
-                                                <div class="panel-heading-smt">Status: {% if smt.status != "" and smt.status is not None %}{{ smt.status }}{% else %}TBD{% endif %}</div>
-                                                {% if smt.pid is not None %}
-                                                    <div class="panel-heading-smt">{{ smt.pid }}.</div>{% endif %}
-                                                <div class="panel-heading-smt-body">{{ smt.body }}</div>
-                                            </a>
-                                        </h4>
-                                    </div>
-                                    <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
-                                        <div class="panel-body">
-                                            <div class="smt_block">
-                                                <form id="smt_{{ forloop.counter }}" class="smt_form">
-                                                    <!-- Never change name of the producer element already associated with a statement -->
-                                                    <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                                                    <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
-                                                    <div class="form-group">
-                                                        <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                                                        <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ smt.producer_element.id }}" class="systems-link">{{ smt.producer_element.name }}</a></label>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
-                                                        <label for="statement">What is the solution and how is it implemented?
+      <div id="tab-content" class="row">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+          <li role="presentation" class="active"><a href="#component" aria-controls="component" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Component</a></li>
+          <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
+          {% if enable_experimental_oscal %}
+            <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
+          {% endif %}
+          {% if enable_experimental_opencontrol %}
+          <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
+          {% endif %}
+        </ul>
+
+            <!-- Tab panels -->
+            <div class="tab-content">
+              <!-- Tab panel: component -->
+              <div role="tabpanel" class="tab-pane active" id="component">
+                  <div class="row">
+                      <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10">
+                          <h3>Description</h3>
+                          {% if element.description %}
+                            {{ element.description }}
+                          {% else %}
+                            No description exists for this component.
+                          {% endif %}
+                      </div>
+                      <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                          <div>&nbsp;</div>
+                      </div>
+                  </div>
+              </div>
+              <!-- Tab panel: combined -->
+              <!-- Combined control content does not appear on this page -->
+              <!-- Tab panel: component_controls -->
+              <div role="tabpanel" class="tab-pane" id="component_controls">
+                  <div id="control-description" class="control-text"><h3>Component Implementations Statements</h3></div>
+                  <div id="smt-list" class="systems-smt-list">
+                      <!-- Loop through existing component-control statements -->
+                      {% for smt in impl_smts %}
+                          <div id="panel-{{ forloop.counter }}" class="panel panel-default">
+                              <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
+                                  <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
+                                      <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">
+                                          <span id="producer_element-panel_num-control">{{ smt.sid|upper }}</span>&nbsp;
+                                          <div class="panel-heading-smt">Status: {% if smt.status != "" and smt.status is not None %}{{ smt.status }}{% else %}TBD{% endif %}</div>
+                                          {% if smt.pid is not None %}<div class="panel-heading-smt">{{ smt.pid }}.</div>{% endif %}
+                                          <div class="panel-heading-smt-body">{{ smt.body }}</div>
+                                      </a>
+                                  </h4>
+                              </div>
+                              <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
+                                  <div class="panel-body">
+                                      <div class="smt_block">
+                                          <form id="smt_{{ forloop.counter }}" class="smt_form">
+                                              <!-- Never change name of the producer element already associated with a statement -->
+                                              <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
+                                              <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
+                                              <div class="form-group">
+                                                  <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
+                                                  <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ smt.producer_element.id }}" class="systems-link">{{ smt.producer_element.name }}</a></label>
+                                              </div>
+                                              <div class="form-group">
+                                                <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
+                                                <label for="statement">What is the solution and how is it implemented?
+                                                    {% if smt.prototype_synched == 'synched'%}
+                                                        <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span
+                                                                class="glyphicon glyphicon-check"></span> Same as certified</a></span>
+                                                    {% elif smt.prototype_synched == 'not_synched' %}
+                                                        <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span
+                                                                class="glyphicon glyphicon-alert"></span> Differs from certified</a></span>
+                                                    {% elif smt.prototype_synched == 'orphaned' %}
+                                                        <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span
+                                                                class="glyphicon glyphicon-alert"></span> No related statement for component in library</a></span>
+                                                    {% endif %}
+                                                    <div id="diff_{{ forloop.counter }}" class="collapse smt_diff" style="font-size:10pt; font-weight: normal; margin-top: 12px;color: #666;">
+                                                        <div style="text-decoration: underline;font-weight: bold;">
+                                                            Certified statement for {{ smt.producer_element.name }} {{ control.id_display|upper }} is:
+                                                        </div>
+                                                        <div id="prototype_body_display_{{ forloop.counter }}">{{ smt.prototype.body|linebreaks }}</div>
+                                                        <div id="prototype_body_{{ forloop.counter }}" style="display: none;">{{ smt.prototype.body }}</div>
+                                                        <br/>
+                                                        <div style="text-decoration: underline;font-weight: bold;">
+                                                            Comparison of current statement to certified statement:
+                                                        </div>
+                                                        <div id="diff_comparison_{{ forloop.counter }}">
                                                             {% if smt.prototype_synched == 'synched' %}
                                                                 <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span
                                                                         class="glyphicon glyphicon-check"></span> Same as certified</a></span>

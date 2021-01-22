@@ -1,0 +1,96 @@
+id: mou_core
+title: Memorandum of Understanding (Core)
+
+questions:
+
+- id: q1
+  title: MOU Core Overview
+  prompt: |
+    Core of MOU
+
+    The purpose of this module is to collect information regarding a variety of topics of agreement concerning the interconnection of {{project.system_info.system_name}} with {{project.mou_intro.q2}}.
+    The following questions are all pre-populated with MOU content from NIST Special Publication 800-47. Feel free to customize to your liking.
+  type: interstitial
+
+- id: q2
+  title: Communications
+  prompt: |
+    How are communications managed between {{project.system_info.system_org}} with {{project.mou_intro.q3}}?
+
+  default: |
+    Frequent formal communications are essential to ensure the successful management
+    and operation of the interconnection. The parties agree to maintain open lines of
+    communication between designated staff at both the managerial and technical levels.
+    All communications described herein must be conducted in writing unless otherwise
+    noted.
+
+    Frequent formal communications are essential to ensure the successful management
+    and operation of the interconnection. The parties agree to maintain open lines of
+    communication between designated staff at both the managerial and technical levels.
+    All communications described herein must be conducted in writing unless otherwise
+    noted.
+
+    The owners of {{project.system_info.system_name}} and {{project.mou_intro.q2}} agree to designate and provide contact
+    information for technical leads for their respective system, and to facilitate direct
+    contacts between technical leads to support the management and operation of the
+    interconnection. To safeguard the confidentiality, integrity, and availability of the
+    connected systems and the data they store, process, and transmit, the parties agree
+    to provide notice of specific events within the time frames indicated below. 
+  type: longtext
+
+- id: q3
+  title: Security Incidents
+  prompt: |
+    How are security incidents communicated between {{project.system_info.system_org}} with {{project.mou_intro.q3}}?
+
+  default: |
+    Technical staff will immediately notify their designated counterparts by telephone or e-mail when a security incident(s)
+    is detected, so the other party may take steps to determine whether its system has been compromised and to 
+    take appropriate security precautions. The system owner will receive formal notification in writing within five (5)
+    business days after detection of the incident(s). 
+  type: longtext
+
+- id: q4
+  title: Disasters and Other Contingencies
+  prompt: |
+    How are disasters and other contingencies communicated between {{project.system_info.system_org}} with {{project.mou_intro.q3}}?
+
+  default: |
+    Technical staff will immediately notify their designated counterparts by telephone or 
+    e-mail in the event of a disaster or other contingency that disrupts the normal 
+    operation of one or both of the connected systems. 
+  type: longtext
+
+- id: q5
+  title: Material Changes to System Configuration
+  prompt: |
+    How are changes to system configuration communicated between {{project.system_info.system_org}} with {{project.mou_intro.q3}}?
+
+  default: |
+    Planned technical changes to the system architecture will be reported to 
+    technical staff before such changes are implemented. The initiating party agrees 
+    to conduct a risk assessment based on the new system architecture and to modify 
+    and re-sign the ISA within one (1) month of implementation.
+  type: longtext
+
+- id: q6
+  title: New Interconnections
+  prompt: |
+    How are new interconnections communicated between {{project.system_info.system_org}} with {{project.mou_intro.q3}}?
+
+  default: |
+    The initiating party will notify the other party at least one (1) month before it connects its IT system with any 
+    other IT system, including systems that are owned and operated by third parties.
+  type: longtext
+
+- id: q7
+  title: Personnel Changes
+  prompt: |
+    How are new interconnections communicated between {{project.system_info.system_org}} with {{project.mou_intro.q3}}?
+
+  default: |
+    The parties agree to provide notification of the separation or long-term absence of their respective system owner or
+     technical lead. In addition, both parties will provide notification of any changes in point of contact information.
+      Both parties also will provide notification of changes to user profiles, including users who resign or change job 
+      responsibilities.
+  type: longtext

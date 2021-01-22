@@ -1,0 +1,106 @@
+
+id: cp_recovery
+title: Contingency Plan Recovery
+internal:
+  snippets:
+  - snippet: |
+      Contingency Plan Activation
+introduction:
+  format: markdown
+  template: |
+    In the following questions, we'll summarize the Recovery Phase of your Contingency Plan.
+questions:
+
+- id: q20_pre
+  title: Sequence of Recovery Operations (pre)
+  prompt: |
+    Will you leverage the template Sequence of Recovery Operations statement used for AWS information systems?
+
+    Agency boilerplate:
+
+    > The following activities occur during recovery of {{project.system_info.system_name}}:
+    > 
+    > Instruction: Modify the following list as appropriate for the system recovery strategy.
+    > Delete this instruction from your final version of this document.
+    > 
+    > 1. Identification of recovery location (if not at original location)
+    > 2. Identification of required resources to perform recovery procedures
+    > 3. Retrieval of backup and system installation media
+    > 4. Recovery of hardware and operating system (if required)
+    > 5. Recovery of system from backup and system installation media
+    > 6. Implementation of transaction recovery for systems that are transaction-based
+  type: choice
+  choices:
+  - key: 'yes'
+    text: 'Yes'
+  - key: yes_edit
+    text: Yes, but I will edit the template language.
+  - key: 'no'
+    text: 'No'
+- id: q20
+  title: Sequence of Recovery Operations
+  prompt: >
+    {% if q20_pre == 'yes_edit' %} Edit your Sequence of Recovery Operations statement.
+    {% endif %} {% if q20_pre == 'no' %} Write your Sequence of Recovery Operations
+    statement. {% endif %}
+  type: longtext
+  default: |
+    {% if q20_pre == 'yes_edit' %}
+    The following activities occur during recovery of {{project.system_info.system_name}}:
+
+    Instruction: Modify the following list as appropriate for the system recovery strategy.
+    Delete this instruction from your final version of this document.
+
+    1. Identification of recovery location (if not at original location)
+    2. Identification of required resources to perform recovery procedures
+    3. Retrieval of backup and system installation media
+    4. Recovery of hardware and operating system (if required)
+    5. Recovery of system from backup and system installation media
+    6. Implementation of transaction recovery for systems that are transaction-based
+    {% endif %}
+  examples:
+  - example: |
+      The following activities occur during recovery of {{project.system_info.system_name}}:
+
+      Instruction: Modify the following list as appropriate for the system recovery strategy.
+      Delete this instruction from your final version of this document.
+
+      1. Identification of recovery location (if not at original location)
+      2. Identification of required resources to perform recovery procedures
+      3. Retrieval of backup and system installation media
+      4. Recovery of hardware and operating system (if required)
+      5. Recovery of system from backup and system installation media
+      6. Implementation of transaction recovery for systems that are transaction-based
+  impute:
+  - condition: q20_pre == 'yes'
+    value: |
+      The following activities occur during recovery of {{project.system_info.system_name}}:
+
+      Instruction: Modify the following list as appropriate for the system recovery strategy.
+      Delete this instruction from your final version of this document.
+
+      1. Identification of recovery location (if not at original location)
+      2. Identification of required resources to perform recovery procedures
+      3. Retrieval of backup and system installation media
+      4. Recovery of hardware and operating system (if required)
+      5. Recovery of system from backup and system installation media
+      6. Implementation of transaction recovery for systems that are transaction-based
+
+- id: q21_recovery_procedures
+  title: Recovery Procedures
+  prompt: |
+    Recovery Operations.
+
+    Provide general procedures for the recovery of the system from backup media.
+    Specific keystroke-level procedures may be provided in an appendix.
+    Teams or persons responsible for each procedure must be identified.
+  type: longtext
+
+- id: q22_escalation_notices
+  title: Recovery Escalation Notices / Awareness
+  prompt: |
+    Recovery Escalation Notices / Awareness.
+
+    Provide appropriate procedures for escalation notices during the recovery efforts.
+    Teams or persons responsible for each escalation/awareness procedure must be identified.
+  type: longtext
