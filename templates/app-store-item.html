@@ -108,7 +108,7 @@
         {% if portfolio %}
           <a href="/store?portfolio={{ portfolio.id }}" class="breadcrumb-link">Compliance Apps</a>
         {% else %}
-          <a href="/store">Compliance Apps</a>
+          <a href="{% url 'store' %}">Compliance Apps</a>
         {% endif %}
         / {{app.title|truncatewords:6}}
       </div>
@@ -152,7 +152,7 @@
           {% if portfolio %}
             <a href="/store?portfolio={{ portfolio.id }}" class="back-to-link">Back to Apps</a>
           {% else %}
-            <a href="/store" class="back-to-link">Back to Apps</a>
+            <a href="{% url 'store' %}" class="back-to-link">Back to Apps</a>
           {% endif %}
       </button>
     </div>

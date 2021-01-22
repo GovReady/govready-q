@@ -41,7 +41,7 @@ Welcome to GovReady Q - {{org.name}}
 <div class="container">
 
 <div class="org-main">
-  <a id="new-project" href="/store" class="btn btn-success">Start a project</a>
+  <a id="new-project" href="{% url 'store' %}" class="btn btn-success">Start a project</a>
   {% if can_invite_to_org %}
   <a href="#" onclick="show_invite_to_org(); return false;" class="btn btn-success"><i class="glyphicon glyphicon-send"></i> Invite colleague </a>
   {% endif %}
