@@ -152,7 +152,7 @@ The security safeguards implemented for the Enter Information System Abbreviatio
       <th class="th-header">Information System Abbreviation</th>
     </tr>
     <tr>
-      <td>{{project.system_info.application_number}}</td>
+      <td>{{project.fisma_level.application_number}}</td>
       <td>{{project.system_info.system_name}}</td>
       <td>{{project.system_info.system_short_name}}</td>
     </tr>
@@ -180,6 +180,7 @@ This section describes how the information types used by the information system 
 The following tables identify the information types that are input, stored, processed and/or output from Enter Information System Abbreviation.  The selection of the information types is based on guidance provided by Office of Management and Budget (OMB) Federal Enterprise Architecture Program Management Office Business Reference Model 2.0 and FIPS Pub 199, Standards for Security Categorization of Federal Information and Information Systems which is based on NIST Special Publication (SP) 800-60, Guide for Mapping Types of Information and Information Systems to Security Categories.
 
 The tables also identify the security impact levels for confidentiality, integrity and availability for each of the information types expressed as low, moderate, or high.  The security impact levels are based on the potential impact definitions for each of the security objectives (i.e., confidentiality, integrity and availability) discussed in NIST SP 800-60 and FIPS Pub 199.
+
 The potential impact is low if—
 
 * The loss of confidentiality, integrity, or availability could be expected to have a limited adverse effect on organizational operations, organizational assets, or individuals.
@@ -187,7 +188,7 @@ The potential impact is low if—
 
 The potential impact is moderate if—
 
-* The loss of confidentiality, integrity, or availability could be expected to have a serious adverse effect on organizational operations, organizational assets, or individuals.
+* The loss of confidentiality, integrity, or availability could be expected to have a serious adverse effect on organizational operations, organizational assets, or individuals. 
 * A serious adverse effect means that, for example, the loss of confidentiality, integrity, or availability might: (i) cause a significant degradation in mission capability to an extent and duration that the organization is able to perform its primary functions, but the effectiveness of the functions is significantly reduced; (ii) result in significant damage to organizational assets; (iii) result in significant financial loss; or (iv) result in significant harm to individuals that does not involve loss of life or serious life threatening injuries.
 
 The potential impact is high if—
@@ -200,6 +201,7 @@ The potential impact is high if—
 {{project.technical_information.info_type_table_01}}
 
 <h2>2.2 Security Objectives Categorization</h2>
+
 Based on the information provided in Table 2 2. Sensitivity Categorization of Information Types, for the Enter Information System Abbreviation, default to the high-water mark for the Information Types as identified in Table 2 3. Security Impact Level below.
 
 <div class="table-caption">Table 2-3. Security Impact Level</div>
@@ -511,6 +513,7 @@ All personnel have their status categorized with a sensitivity level in accordan
 <h3>9.4.  Network Architecture</h3>
 
 The logical network topology is shown in Figure 9 2. Network Diagram mapping the data flow between components.
+
 The following Figure 9 2. Network Diagram(s) provides a visual depiction of the system network components that constitute Enter Information System Abbreviation.
 
 <h2>10. SYSTEM ENVIRONMENT AND INVENTORY</h2>

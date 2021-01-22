@@ -773,7 +773,6 @@ class ComplianceAppTests(TestCaseWithFixtureData):
         self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.user = User.objects.get(pk=self.user.pk)
 
-
     def app_filter(self, role_bool):
 
         app_filter = AppVersion.objects \

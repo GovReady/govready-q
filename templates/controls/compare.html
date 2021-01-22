@@ -77,7 +77,7 @@ Remove contextbar from top of page
       <!-- Page Title-->
       <div style="float: left;">
           <h2 class="control-heading" style="">
-            <a href="{{ project.get_absolute_url }}">{{ system.root_element.name }}</a> > <a href="/systems/{{ system.id }}/controls/selected">Selected Controls</a>
+            <a href="{{ project.get_absolute_url }}">{{ system.root_element.name }}</a> > <a href={% url 'controls_selected'system_id=system.id %}>Selected Controls</a>
           </h2>
       </div>
       <!-- Control Lookup-->

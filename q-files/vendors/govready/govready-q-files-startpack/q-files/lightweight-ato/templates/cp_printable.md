@@ -106,7 +106,7 @@ Table 1‑3 Information System Name and Title
 
 <table border="1">
   <tr><th> Unique Identifier </th><th> Information System Name </th><th> Information System Abbreviation </th></tr>
-  <tr><td> {{project.system_info.application_number}}     </td><td> {{project.system_info.system_name}} </td><td> {{project.system_info.system_short_name}} </td></tr>
+  <tr><td> {{project.fisma_level.application_number}}     </td><td> {{project.system_info.system_name}} </td><td> {{project.system_info.system_short_name}} </td></tr>
 </table>
 
 ## 1.4 Scope

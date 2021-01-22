@@ -347,24 +347,23 @@ class OSCALComponentSerializer(ComponentSerializer):
         control_implementations = []
         of = {
             "component-definition": {
+                "uuid": str(uuid4()),
                 "metadata": {
                     "title": "{} Component-to-Control Narratives".format(self.element.name),
                     "published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": "string",
-                    "oscal-version": "1.0.0-milestone2",
+                    "oscal-version": "1.0.0-rc1"
                 },
                 "components": {
                     uuid: {
-                        "name": self.element.name,
-                        "component-type": self.element.element_type or "software",
-                        "title": self.element.full_name or "",
+                        "title": self.element.full_name or self.element.name,
+                        "type": self.element.element_type or "software",
                         "description": self.element.description,
                         "control-implementations": control_implementations
                     }
                 }
             },
-            "back-matter": []
         }
 
         # create requirements and organize by source (sid_class)
@@ -445,31 +444,37 @@ class OpenControlComponentSerializer(ComponentSerializer):
 
 class ComponentImporter(object):
 
-    def import_components_as_json(self, import_name, json_object, request):
+    def import_components_as_json(self, import_name, json_object, request=None):
         """Imports Components from a JSON object
 
         @type import_name: str
         @param import_name: Name of import file (if it exists)
         @type json_object: dict
         @param json_object: Element attributes from JSON object
-        @rtype: list if success, bool (false) if failure
-        @returns: List of created components (if success) or False is failure
+        @rtype: ImportRecord if success, bool (false) if failure
+        @returns: ImportRecord linked to the created components (if success) or False if failure
         """
 
         # Validates the format of the JSON object
         try:
             oscal_json = json.loads(json_object)
         except ValueError:
-            messages.add_message(request, messages.ERROR, f"Invalid JSON. Component(s) not created.")
+            if request is not None:
+                messages.add_message(request, messages.ERROR, f"Invalid JSON. Component(s) not created.")
+            logger.info(f"Invalid JSON. Component(s) not created.")
             return False
         if self.validate_oscal_json(oscal_json):
             # Returns list of created components
-            created_components = self.create_components(oscal_json, request)
-            messages.add_message(request, messages.INFO, f"Created {len(created_components)} components.")
+            created_components = self.create_components(oscal_json)
+            if request is not None:
+                messages.add_message(request, messages.INFO, f"Created {len(created_components)} components.")
+            logger.info(f"Created {len(created_components)} components.")
             new_import_record = self.create_import_record(import_name, created_components)
             return new_import_record
         else:
-            messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
+            if request is not None:
+                messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
+            logger.info(f"Invalid JSON. Component(s) not created.")
             return False
 
     def create_import_record(self, import_name, components):
@@ -505,22 +510,23 @@ class ComponentImporter(object):
         try:
             validate(instance=oscal_json, schema=oscal_json_schema)
             return True
-        except (SchemaError, SchemaValidationError):
+        except (SchemaError, SchemaValidationError) as e:
+            logger.info(e)
             return False
 
-    def create_components(self, oscal_json, request):
+    def create_components(self, oscal_json):
         """Creates Elements (Components) from valid OSCAL JSON"""
 
         components_created = []
         components = oscal_json['component-definition']['components']
         for component in components:
-            new_component = self.create_component(components[component], request)
+            new_component = self.create_component(components[component])
             if new_component is not None:
                 components_created.append(new_component)
 
         return components_created
 
-    def create_component(self, component_json, request):
+    def create_component(self, component_json):
         """Creates a component from a JSON dict
 
         @type component_json: dict
@@ -529,7 +535,7 @@ class ComponentImporter(object):
         @returns: Element object if created, None otherwise
         """
 
-        component_name = component_json['name']
+        component_name = component_json['title']
         while Element.objects.filter(name=component_name).count() > 0:
             component_name = increment_element_name(component_name)
 
@@ -546,11 +552,10 @@ class ComponentImporter(object):
         for control_element in control_implementation_statements:
             catalog = oscalize_catalog_key(control_element['source']) if 'source' in control_element else None
             implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
-            created_statements = self.create_control_implementation_statements(catalog, implemented_reqs,
-                                                                               new_component, request)
+            created_statements = self.create_control_implementation_statements(catalog, implemented_reqs, new_component)
         return new_component
 
-    def create_control_implementation_statements(self, catalog_key, implemented_reqs, parent_component, request):
+    def create_control_implementation_statements(self, catalog_key, implemented_reqs, parent_component):
         """Creates a Statement from a JSON dictimplemented-requirements
 
         @type catalog_key: str
@@ -1279,8 +1284,7 @@ def editor(request, system_id, catalog_key, cl_id):
                             }
                         }  #statements
                     },  # implemented-requirements
-                },
-                "back-matter": []
+                }
             }
         }
         by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["statements"][

@@ -68,6 +68,8 @@ class App(object):
     def __repr__(self):
         return "<App {name} in {store}>".format(name=self.name, store=self.store)
 
+    def get_inputs(self):
+        raise Exception("Not implemented!")
     def get_modules(self):
         raise Exception("Not implemented!")
     def get_assets(self):
@@ -253,6 +255,42 @@ class PyFsApp(App):
     def __init__(self, store, name, fs):
         super().__init__(store, name)
         self.fs = fs
+
+    def get_fs(self):
+        return self.fs
+
+    def get_inputs(self):
+        app = read_yaml_file(self.read_file("app.yaml"))
+        input_list = app["input"]
+        for input in PyFsApp.iter_inputs(self.fs, input_list):
+            yield input
+
+    @staticmethod
+    def iter_inputs(fs, input_list):
+        import hashlib  # for filesystems that don't provide this info
+
+        for input in input_list:
+            if input["path"] is not None:
+                path = input["path"]
+
+                with fs.open(path, "rb") as input_file:
+                    m = hashlib.sha256()
+                    while True:
+                        data = input_file.read(8192)
+                        if not data:
+                            break
+                        m.update(data)
+                    content_hash = m.hexdigest()
+
+                def make_content_loader(input_file_path):
+                    def content_loader():
+                        with fs.open(input_file_path, "rb") as input_file:
+                            return input_file.read()
+
+                    return content_loader
+
+                yield (path, input, content_hash, make_content_loader(path))
+
 
     def get_modules(self):
         # Return a generator over parsed YAML data for modules.

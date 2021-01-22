@@ -1,16 +1,23 @@
 GovReady-Q Release Notes
 ========================
 
+v.999 (January XX, 2021)
+------------------------
 
-v999
-----
+Add lightweight-ato to default apps so users can get started easier.
 
 **Developer changes**
 
+* Add `.coveragerc` configuration file to ensure we cover and run only tests in locally and in Circleci.
+* Add `pyup.yml` configuration file to have pyup.io pull requests go against `develop` branch.
 * New '%dict' operator for JSON/YAML output templates
-
 * Pass OSCAL context to JSON/YAML output templates
-
+* Created a recursive method `wait_for_sleep_after` that wraps around other functions allowing for drastically shorter wait times necessary compared to peppering var_sleeps.
+* Update install scripts.
+* Update default and recommended `local/environment.json` file from `first_run` and `install-govready-q.sh`.
+* By default, set organization name to "main".
+* Add optional `PIPUSER` parameter to `install-govready-q.sh` to avoid error of running pip install with `--user` flag in virtual environments.
+* Comment out starting GovReady-Q server automatically because too many edge cases exist to execute that well.
 * Update install scripts.
 * Update default and recommended `local/environment.json` file from `first_run` and `install-govready-q.sh`.
 * By default, set organization name to "main".
@@ -22,7 +29,39 @@ v999
 
 * Add lightweight-ato to default apps so users can get started easier.
 
-v.0.9.1.49 (January 12, 2021)
+
+v0.9.1.49.2 (January 22, 2021)
+------------------------------
+
+Adds support for OSCAL component and statement input for Compliance Apps.
+(Currently only supports OSCAL JSON inputs.)
+Adds statements to project upon project creation.
+Keeps track of app inputs by relating them to the app version.
+
+Includes the following schema update to the app.yaml file of Compliance Apps.
+Inputs are supported in the app.yaml file with the following format:
+```
+input:
+- id: <input_id> (string)
+  name: <Input Name> (string)
+  type: oscal (Only oscal currently supported) 
+  path: <dir/filename.json> (relative file path)
+  group: (optional string)
+```
+
+v0.9.1.49.1 (January 20, 2021)
+------------------------------
+
+Fixes to 0.9.1.49 after merge.
+
+**Bug fixes**
+
+* Remove duplicate appearance of tabs in system selected components
+* Remove OSCAL download link from selected control pages because OSCAL for a single control would rarely be downloaded and would require different handling
+* Hide a discussion test that is failing to address later (not critical)
+* Add notes about testing download OSCAL that on Mac test must be run visible for custom download route to work.
+
+v0.9.1.49 (January 12, 2021)
 -----------------------------
 
 **IMPORTANT**
@@ -91,7 +130,7 @@ v.0.9.1.48.1 (December 17, 2020)
 * Fix handling of static files. Create new `static-root` directory outside of `siteapp` into which to collect static files.
 * Remove bad path reference to select2 javascript libraries in component library page.
 
-v.0.9.1.48 (December 15, 2020)
+v0.9.1.48 (December 15, 2020)
 ------------------------------
 
 Add Component Library feature pages and improve UI for managing reuse and "certified" component library.

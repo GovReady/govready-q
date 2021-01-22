@@ -180,11 +180,6 @@ questions:
   impute:
   - condition: operational_system == "no"
     value: ~
-- id: application_number
-  title: FedRAMP Application Number
-  prompt: |
-    To begin, what is your FedRAMP application number?
-  type: text
 - id: system_connection
   title: Connection with another system?
   prompt: >-
