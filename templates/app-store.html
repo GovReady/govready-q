@@ -132,14 +132,15 @@ Compliance Apps
         <form class="form-inline" onsubmit="return false;">
           <div class="form-group">
             {% if authoring_tool_enabled %}
-            <span class="create-new-project">
-              <a id="new-project" href="#" class="btn btn-success" onclick="authoring_tool_create_q_form('argument'); return false;">Create New Project</a>
-            </span>
+{#                commenting out for now until fully implemented#}
+{#            <span class="create-new-project">#}
+{#              <a id="new-project" href="#" class="btn btn-success" onclick="authoring_tool_create_q_form('argument'); return false;">Create App Source</a>#}
+{#            </span>#}
             {% endif %}
             <label class="sr-only" for="app-search">search apps for</label>
             <div class="input-group">
               <div class="input-group-addon">search</div>
-              <input type="text" class="form-control" id="app-search" placeholder="search projects">
+              <input type="text" class="form-control" id="app-search" placeholder="search compliance apps">
             </div>
           </div>
         </form>
