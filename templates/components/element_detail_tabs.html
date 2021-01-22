@@ -94,7 +94,7 @@
         <!-- Page Title-->
         <div style="float: left;">
             <h2 class="control-heading" style="">
-              <a href="/controls/components" style="color: black;">Component Library</a> {% if system.id %}&gt; <a href='{% url 'components_selected' system_id=system.id %}' style="color: black;">Component Detail</a>{% endif %}
+              <a href="{% url 'component_library' %}" style="color: black;">Component Library</a> {% if system.id %}&gt; <a href='{% url 'components_selected' system_id=system.id %}' style="color: black;">Component Detail</a>{% endif %}
             </h2>
         </div>
       </div>
@@ -141,7 +141,7 @@
             {% endif %}
           </div>
           <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-            <div><h3><a id="copy_component" class="btn btn-sm btn-success" href="/controls/components/{{ element.id }}/_copy" role="button" style="color: white;">Copy component</a></h3></div>
+            <div><h3><a id="copy_component" class="btn btn-sm btn-success" href={% url 'component_library_component_copy' element_id=element.id %} role="button" style="color: white;">Copy component</a></h3></div>
           </div>
         </div>
       </div>
@@ -172,7 +172,7 @@
                       <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
                       <div class="form-group">
                         <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                        <label for="component"><a href="/systems/{{ system.id }}/component/{{ smt.producer_element.id }}" style="color: black;">{{ smt.producer_element.name }}</a></label>
+                        <label for="component"><a href="{% url 'system_element_download_oscal_json' system_id=system.id element_id=smt.producer_element.id %}" style="color: black;">{{ smt.producer_element.name }}</a></label>
                       </div>
                       <div class="form-group">
                         <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
@@ -227,7 +227,7 @@
         <p id="oscal_download" class="navbar-text navbar-right">
           <a id="oscal_download_json_link"
              class="navbar-link" 
-             href="/systems/{{ system.id }}/component/{{ element.id }}/download/oscal/json">
+             href={% url 'system_element_download_oscal_json' system_id=system.id element_id=element.id %}>
             <span class="glyphicon glyphicon-download"></span>
             Download ...
           </a>

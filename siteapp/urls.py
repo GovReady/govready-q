@@ -66,7 +66,7 @@ urlpatterns = [
     # org groups
     url(r'^groups$', views_landing.org_groups),
     url(r'^groups/new$', views_landing.new_org_group),
-    url(r"^(?P<org_slug>.*)/projects$", views_landing.org_group_projects),
+    url(r"^(?P<org_slug>.*)/projects$", views_landing.org_group_projects, name='org_projects'),
 
     # api
     url(r'^api-keys$', views.show_api_keys, name="show_api_keys"),

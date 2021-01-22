@@ -228,7 +228,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
     def test_component_import_invalid_oscal(self):
         self._login()
-        url = self.url(f"/controls/components")
+        url = self.url(f"/controls/components")# component library
         self.browser.get(url)
         self.click_element('a#component-import-oscal')
         app_root = os.path.dirname(os.path.realpath(__file__))
@@ -265,7 +265,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
     def test_component_import_oscal_json(self):
         self._login()
-        url = self.url(f"/controls/components")
+        url = self.url(f"/controls/components")# component library
         self.browser.get(url)
 
         element_count_before_import = Element.objects.filter(element_type="system_element").count()
@@ -323,7 +323,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         """Tests that imports are tracked correctly."""
 
         self._login()
-        url = self.url(f"/controls/components")
+        url = self.url(f"/controls/components")# component library
         self.browser.get(url)
 
         # Test initial import of Component(s) and Statement(s)

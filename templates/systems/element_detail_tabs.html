@@ -269,7 +269,7 @@
                             <p id="oscal_download" class="navbar-text navbar-right">
                                 <a id="oscal_download_json_link"
                                    class="navbar-link"
-                                   href="/systems/{{ system.id }}/component/{{ element.id }}/download/oscal/json">
+                                   href={% url 'system_element_download_oscal_json' system_id=system.id element_id=element.id %}>
                                     <span class="glyphicon glyphicon-download"></span>
                                     Download ...
                                 </a>

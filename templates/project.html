@@ -334,7 +334,7 @@ h3.question-group-title {
 
                       {% else %}
                         {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
-                        <form method="get" action="/store" onclick="$(this).submit();" style="cursor: pointer">
+                        <form method="get" action="{% url 'store' %}" onclick="$(this).submit();" style="cursor: pointer">
                           <input type="hidden" name="portfolio" id="id_portfolio" value="{{ project.portfolio.id }}">
                           <input type="hidden" name="q" value="{{project.root_task.id}}/{{q.question.key}}">
                       {% endif %}
