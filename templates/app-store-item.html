@@ -113,101 +113,103 @@
         / {{app.title|truncatewords:6}}
       </div>
 
-<div class="app">
-  <!-- App Header -->
-  <div class="row app-header">
-    <div class="col-sm-2">
-      {% if app.icon %}<img src="{{app.icon}}" class="app-icon" alt= "App Icon">{% endif %}
-    </div>
-    <div class="col-sm-8">
-      <h1>{{app.title}}</h1>
-      <!-- <p>Maintainer: {{app.vendor}}</p> -->
-      {% if error %}
-        <p class="text-danger">{{error}}</p>
-      {% endif %}
-    </div>
-    <div class="col-sm-2">
-      <form method="post" class="text-center">
-        {% csrf_token %}
-        {# If the user is a member of more than one organization that can start this app, the user much choose which organization context to start this app in. #}
-        {% if app.organizations|length == 1 %}
-          {% with app.organizations|first as first_org %}
-            <input type="hidden" name="organization" value="{{first_org.slug}}">
-          {% endwith %}
-        {% else %}
-          <div class="app-margin-bottom">
-            <label for="add-to-org" class="app-add-to-label">Add to:</label>
-            <select id="add-to-org" name="organization" class="form-control">
-              {% for org in app.organizations %}
-                <option value="{{org.slug}}">{{org.name}}</option>
-              {% endfor %}
-            </select>
-          </div>
-        {% endif %}
-        {% if portfolio %}
-          <button id="start-project" type="submit" class="btn btn-success app-button-width">Add ►</button>
-        {% endif %}
-      </form>
-      <button id="start-project" type="submit" class="btn btn-link btn-start-project">
-          {% if portfolio %}
-            <a href="/store?portfolio={{ portfolio.id }}" class="back-to-link">Back to Apps</a>
-          {% else %}
-            <a href="{% url 'store' %}" class="back-to-link">Back to Apps</a>
-          {% endif %}
-      </button>
-    </div>
-  </div>
-  <!-- Divider -->
-  <div class="row" class="app-max-width-row"><hr></div>
-  <!-- App Description -->
-  <div class="row" class="app-max-width-row">
-    <div class="col-sm-12">
-      <div class="body app-description">
-        {{app.description.long|safe}}
-      </div>
-    </div>
-  </div>
-  <!-- App Information -->
-  <div class="row app-max-width-row app-info-height">
-    &nbsp;
-  </div>
-  <div class="row" class="app-max-width-row app-information-row">
-    <div class="col-lg-12 col-sm-12">
-      <div class="meta-heading"><strong>Information</strong></div>
-    </div>
-  </div>
-  <div class="row" class="app-max-width-row">
-    <div class="col-lg-4 col-sm-4">
-      <div><span class="meta-key">Provider</span><br>
-        {% if app.vendor_url is not None %}
-          <a href="{{app.vendor_url}}">{{app.vendor}}</a>
-        {% else %}
-          &mdash;
-        {% endif %}
-      </div>
-    </div>
-    <div class="col-lg4 col-sm-4">
-      <!-- <div><span class="meta-key">Status</span><br>{{app.status}}</div> -->
-      <div><span class="meta-key">Version</span><br>{{app.version}}</div>
-    </div>
-    <div class="col-lg4 col-sm-4">
-      <!-- <div><span class="meta-key">Source</span><br><a href="{{app.source_url}}">{{app.source_url}}</a></div> -->
-      <div><span class="meta-key">AppSource</span><br>{{source_slug}}</span>
-    </div>
-  </div>
-  <div class="row" class="app-max-width-row"><p>&nbsp;</p></div>
-  <div class="row" class="app-max-width-row">
-    <div class="col-lg4 col-sm-4">
-        <div><span class="meta-key">Startable</span><br>
-      {% if app.authz == "none" %}
-        Yes
-      {% else %}
-        Requires Admin
-      {% endif %}
+    <div class="app">
+        <!-- App Header -->
+        <div class="row app-header">
+            <div class="col-sm-2">
+                {% if app.icon %}<img src="{{ app.icon }}" class="app-icon" alt="App Icon">{% endif %}
+            </div>
+            <div class="col-sm-8">
+                <h1>{{ app.title }}</h1>
+                <!-- <p>Maintainer: {{app.vendor}}</p> -->
+                {% if error %}
+                    <p class="text-danger">{{ error }}</p>
+                {% endif %}
+            </div>
+            <div class="col-sm-2">
+                <form method="post" class="text-center">
+                    {% csrf_token %}
+                    {# If the user is a member of more than one organization that can start this app, the user much choose which organization context to start this app in. #}
+                    {% if app.organizations|length == 1 %}
+                        {% with app.organizations|first as first_org %}
+                            <input type="hidden" name="organization" value="{{ first_org.slug }}">
+                        {% endwith %}
+                    {% else %}
+                        <div class="app-margin-bottom">
+                            <label for="add-to-org" class="app-add-to-label">Add to:</label>
+                            <select id="add-to-org" name="organization" class="form-control">
+                                {% for org in app.organizations %}
+                                    <option value="{{ org.slug }}">{{ org.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
+                    {% if portfolio %}
+                        <button id="start-project" type="submit" class="btn btn-success app-button-width">Add ►</button>
+                    {% endif %}
+                </form>
+                <button id="start-project" type="submit" class="btn btn-link btn-start-project">
+                    {% if portfolio %}
+                        <a href="/store?portfolio={{ portfolio.id }}" class="back-to-link">Back to Apps</a>
+                    {% else %}
+                        <a href="/store" class="back-to-link">Back to Apps</a>
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+        <!-- Divider -->
+        <div class="row app-max-width-row">
+            <hr>
+        </div>
+        <!-- App Description -->
+        <div class="row app-max-width-row">
+            <div class="col-sm-12">
+                <div class="body app-description">
+                    {{ app.description.long|safe }}
+                </div>
+            </div>
+        </div>
+        <!-- App Information -->
+        <div class="row app-max-width-row app-info-height">
+            &nbsp;
+        </div>
+        <div class="row app-max-width-row app-information-row">
+            <div class="col-lg-12 col-sm-12">
+                <div class="meta-heading"><strong>Information</strong></div>
+            </div>
+        </div>
+        <div class="row app-max-width-row">
+            <div class="col-lg-4 col-sm-4">
+                <div><span class="meta-key">Provider</span><br>
+                    {% if app.vendor_url is not None %}
+                        <a href="{{ app.vendor_url }}">{{ app.vendor }}</a>
+                    {% else %}
+                        &mdash;
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg4 col-sm-4">
+                <!-- <div><span class="meta-key">Status</span><br>{{app.status}}</div> -->
+                <div><span class="meta-key">Version</span><br>{{ app.version }}</div>
+            </div>
+            <div class="col-lg4 col-sm-4">
+                <!-- <div><span class="meta-key">Source</span><br><a href="{{app.source_url}}">{{app.source_url}}</a></div> -->
+                <div><span class="meta-key">AppSource<br>{{ source_slug }}</span>
+                </div>
+            </div>
+            <div class="col-lg4 col-sm-4">
+                <div><span class="meta-key">Startable</span><br>
+                    {% if app.authz == "none" %}
+                        Yes
+                    {% else %}
+                        Requires Admin
+                    {% endif %}
+                </div>
+            </div>
+
         </div>
     </div>
-  </div>
-</div>
+
 
 <!-- Spacer bottom of page -->
 <div class="app-bottom-spacer">&nbsp;</div>
