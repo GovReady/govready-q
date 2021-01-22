@@ -20,7 +20,7 @@ from controls.forms import ImportProjectForm
 from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
-from controls.models import Element, System
+from controls.models import Element, Statement, System
 
 from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
@@ -551,6 +551,24 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             object={"object": "element", "id": element.id, "name":element.name},
             user={"id": user.id, "username": user.username}
         )
+
+        if user.has_perm('change_system', system):
+            # Get the components from the import records of the app version
+            import_records = appver.input_artifacts.all()
+            for import_record in import_records:
+                producer_elements = Element.objects.filter(import_record=import_record)
+                for producer_element in producer_elements:
+                    smts = Statement.objects.filter(producer_element_id=producer_element.id,
+                                                    statement_type="control_implementation_prototype")
+                    for smt in smts:
+                        # Loop through element's prototype statements and add to control implementation statements
+                        smt.create_instance_from_prototype(system.root_element.id)
+        else:
+            # User does not have write permissions
+            logger.info(
+                event="change_system permission_denied",
+                user={"id": user.id, "username": user.username}
+            )
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
