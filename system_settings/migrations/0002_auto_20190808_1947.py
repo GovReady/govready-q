@@ -14,6 +14,4 @@ class Migration(migrations.Migration):
         ('system_settings', '0001_initial'),
     ]
 
-    operations = [
-        migrations.RunPython(hide_registration),
-    ]
+    operations = [migrations.RunPython(hide_registration, migrations.RunPython.noop)]
