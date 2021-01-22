@@ -1,0 +1,34 @@
+id: se_aws_hosting_environ
+output: []
+title: AWS - Hosting Environment
+questions:
+- id: q1
+  prompt: |-
+    Welcome to the AWS Cloud Services.
+
+     Let's get some information about your Hosting Environment in AWS, and we'll prepare draft controls that you will be inheriting.
+
+     We'll first ask you about AWS hosting in general.
+
+     Then we will ask you to confirm the AWS Services you will be using.
+  title: Overview
+  type: interstitial
+- id: aws_team
+  title: Primary AWS Team
+  prompt: Who is your Primary AWS Team?
+  type: text
+  choices:
+  - key: 'aws_team_option_1 '
+    text: ' AWS Team'
+  - key: 'aws_team_option_2 '
+    text: ' Other'
+- id: aws_facility
+  title: Primary AWS Facility
+  prompt: Where is {{aws_team}} based?
+  type: text
+  help: Think the name of the facility, location, or admin site.
+- id: vendor_datacenter
+  title: Vendor Datacenter
+  prompt: Where is the vendor datacenter?
+  type: text
+  help: US-EAST 1, for example

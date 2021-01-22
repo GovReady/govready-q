@@ -1,0 +1,220 @@
+id: system_info_technical
+title: System Profile - Technical Information
+questions:
+
+#Table 7-1
+- id: system_status
+  title: System Status
+  prompt: |
+    Operational Status
+    What is your system's life cycle phase?
+  type: choice
+  choices:
+  - key: operational
+    text: Operational (System is operating and in production)
+  - key: under_dev
+    text: Under Development (System is being designed, developed, or implemented)
+  - key: major_mod
+    text: Major Modification (System is undergoing major change, development, or transition)
+  - key: other
+    text: Other?
+
+- id: choice_other
+  title: Other System Status
+  prompt: |
+    You selected "Other" as your system status.
+    Could you explain?
+  type: longtext
+  impute:
+  - condition: system_status != 'other'
+    value: ~
+
+#Table 8-11
+- id: cloud_intro
+  title: Cloud Service Model, Intro
+  type: interstitial
+  prompt: |
+    Cloud Service Model
+    Information systems like {{project.system_info.system_name}} are made up of different service layers. This section will help the system owners determine if their system is a
+    cloud followed by more specific questions to help the system owner determine the type of cloud.
+#Table 7-1
+- id: cloud_service_model
+  title: Cloud Service Model
+  prompt: |
+    What kind of cloud service model is used by your system?
+  type: choice
+  choices:
+  - key: saas
+    text: Software as a Service
+    help: |
+      SaaS systems are typically accessed online via a subscription rather than something that is bought and installed
+      on premises. Examples of SaaS are Google Apps, Salesforce, Dropbox, etc.
+      SaaS systems allow for the consumer to build anything other than servers. 
+  - key: paas
+    text: Platform as a Service
+    help: |
+      PaaS systems are typically hardware and saftware tools available over the internet.
+      Examples of PaaS are AWS Elastic Beanstalk, Windows Azure, OpenShift, Force.com, etc.
+      PaaS systems can build non-server things, databases, offers APIs or other developer toolkits.
+  - key: iaas
+    text: Infrastructure as a Service
+    help: |
+      IaaS systems are cloud-based services, pay-as-you-go for services such as storage, networking, and virtualization.
+      Examples of IaaS are AWS EC2, Rackspace, Google Compute Engine (GCE) Digital Ocean, etc.
+      IaaS systems are the only system type that can build servers.
+  - key: other
+    text: Other?
+
+- id: cloud_service_model_other
+  title: Other System
+  prompt: |
+    Does your system fit outside the bounds of SaaS, PaaS, or IaaS?
+    If you feel your system is not any of these types, explain the system below. 
+  type: longtext
+  impute:
+  - condition: cloud_service_model != 'other'
+    value: ~
+
+#Table 8-2
+- id: cloud_model
+  title: Cloud Deployment Model
+  prompt: |
+    Service Provider Cloud Deployment Model
+    What is your system's cloud deployment model?
+  type: choice
+  choices:
+  - key: public
+    text: Public (Cloud services and infrastructure supporting multiple organizations and agency clients)
+  - key: private
+    text: Private (Cloud services and infrastructure dedicated to a specific organization/agency and no other clients)
+  - key: govt_only
+    text: Government Only Community (Cloud services and infrastructure shared by several organizations/agencies with same policy and compliance considerations)
+  - key: hybrid
+    text: Hybrid (Need to explain)
+
+- id: choice_hybrid
+  title: Hybrid Cloud Deployment Model
+  prompt: |
+    You selected "Hybrid" as your system status.
+    Could you explain?
+  type: longtext
+  impute:
+  - condition: cloud_model != 'hybrid'
+    value: ~
+
+#Table 8-3
+- id: leveraged_authorizations
+  title: Leveraged Authorization
+  prompt: |
+    Does your system have any leveraged authorizations?
+    An agency AO can leverage a P-ATO or other Agency ATO, including all supporting documentation, 
+    when making a risk-based decision to grant an Agency ATO. Each Agency that is considering using  
+    the system should review the P-ATO/ATO letter as well as the package itself before deciding  
+    whether or not to use the system. 
+  type: datagrid
+  fields:
+    - key: Leveraged Information System Name
+      text: Leveraged Information System Name
+    - key: Leveraged Service Provider Owner
+      text: Leveraged Service Provider Owner
+    - key: Date Granted
+      text: Date Granted
+  min: 0
+  max: ~
+
+- id: security_impact_users
+  title: Types of Users
+  prompt: |
+    Who are the IT system's users? Their roles? Their authorized privileges? Their functions performed?
+    All personnel have their status categorized with a sensitivity level in accordance with PS-2.  Personnel (employees or contractors) of service providers are considered Internal Users.  All other users are considered External Users.
+  type: datagrid
+  fields:
+    - key: Role
+      text: Role
+    - key: Internal or External
+      text: Internal or External
+    - key: Privileged (P), Non-Privileged (NP), or No Logical Access (NLA)
+      text: Privileged (P), Non-Privileged (NP), or No Logical Access (NLA)
+    - key: Sensitivity Level
+      text: Sensitivity Level
+    - key: Authorized Privileges
+      text: Authorized Privileges
+    - key: Functions Performed
+      text: Functions Performed
+  min: 0
+  max: ~
+
+- id: ports_protocols_services
+  title: Ports, Protocols, and Services
+  prompt: |
+    What are the ports, protocols, and services for the IT system? 
+  type: datagrid
+  fields:
+    - key: Ports(TCP/UDP)
+      text: Ports(TCP/UDP)
+    - key: Protocols
+      text: Protocols
+    - key: Services
+      text: Services
+    - key: Purpose
+      text: Purpose
+    - key: Used By
+      text: Used By
+  min: 0
+  max: ~
+
+- id: system_interconnections
+  title: System Interconnections
+  prompt: |
+    Where does the IT system connect with other systems?
+  type: datagrid
+  fields:
+    - key: SP* IP Address and Interface
+      text: SP* IP Address and Interface
+    - key: External Organization Name and IP Address of System
+      text: External Organization Name and IP Address of System
+    - key: External Point of Conract and Phone Number
+      text: External Point of Conract and Phone Number
+    - key: Connection Security (IPSec, VPN, SSL, Certificates, Secure Files Transfer, etc)
+      text: Connection Security (IPSec, VPN, SSL, Certificates, Secure Files Transfer, etc)
+    - key: Data Direction (incoming, outgoing, or both)
+      text: Data Direction (incoming, outgoing, or both)
+    - key: Information Being Transmitted
+      text: Information Being Transmitted
+    - key: Port of Circuit Numbers
+      text: Port of Circuit Numbers
+  min: 0
+
+- id: laws_regulations
+  title: Laws and Regulations
+  prompt: |
+    What are the laws and regulations pertaining to this IT system?
+  type: datagrid
+  fields:
+    - key: Identification Number
+      text: Identification Number
+    - key: Title
+      text: Title
+    - key: Date
+      text: Date
+    - key: Link
+      text: Link
+  min: 0
+  max: ~
+
+- id: standards_guidance
+  title: Standards and Guidance
+  prompt: |
+    What are the standards and guidance pertaining to this IT system?
+  type: datagrid
+  fields:
+    - key: Identification Number
+      text: Identification Number
+    - key: Title
+      text: Title
+    - key: Date
+      text: Date
+    - key: Link
+      text: Link
+  min: 0
+  max: ~

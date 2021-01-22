@@ -110,11 +110,11 @@
         </div><!--/row-->
 
         <div id="above-tab-content" class="row">
-            <div style="float: left; padding: 0 0 0 0em;">
+            <!-- <div style="float: left; padding: 0 0 0 0em;"> -->
+            <div class="systems-control-heading">
                 <h2 class="control-heading" style="">
                     {{ control.id_display|upper }} {{ control.title }}
                 </h2>
-
                 {% if control.title is not None %}
                     <h2 class="control-heading" style="">
                         <small style="color: #888;">{{ catalog.catalog_key_display }}</small>
@@ -130,6 +130,7 @@
                 {% endif %}
             </div>
         </div>
+
         <div id="tab-content" class="row">
             <!-- Nav tabs -->
             <ul class="nav nav-tabs" role="tablist">
@@ -143,7 +144,6 @@
                 {% if enable_experimental_opencontrol %}
                     <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
                 {% endif %}
-
             </ul>
 
             <!-- Tab panels -->
@@ -329,14 +329,14 @@
               <!-- Tab panel: oscal -->
               {% if enable_experimental_oscal %}
                 <div role="tabpanel" class="tab-pane" id="oscal">
-                  <p id="oscal_download" class="navbar-text navbar-right">
+                  <!-- <p id="oscal_download" class="navbar-text navbar-right">
                     <a id="oscal_download_json_link"
                        class="navbar-link"
                        href={% url 'system_element_download_oscal_json' system_id=system.id element_id=element.id %}>
                       <span class="glyphicon glyphicon-download"></span>
                       Download ...
                     </a>
-                  </p>
+                  </p> -->
                   <div id="combined_smt" class="control-text"><h3>OSCAL</h3></div>
                   <div class="systems-element-oscal">{{ oscal }}</div>
                 </div>
@@ -594,9 +594,6 @@
                 if (result != '') {
                     // loop
                     $.each(result['producer_element_name_value'], function (k, v) {
-                        console.log("k, v");
-                        console.log(k, v);
-
                         dropdown.append("<option value='" + v["id"] + "'>" + v["name"] + "</option>");
                     });
                 }
