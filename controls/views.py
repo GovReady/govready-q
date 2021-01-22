@@ -13,6 +13,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
+from django.db.models.functions import Lower
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
     HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
@@ -25,8 +26,9 @@ from guidedmodules.models import Task, Module, AppVersion, AppSource
 from siteapp.forms import ProjectForm
 from siteapp.models import Project
 from system_settings.models import SystemSettings
-from .forms import ImportOSCALComponentForm
-from .forms import StatementPoamForm, PoamForm, ElementForm
+# from .forms import ImportOSCALComponentForm
+# from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
+from .forms import *
 from .models import *
 from .utilities import *
 from simple_history.utils import update_change_reason
@@ -78,7 +80,7 @@ def catalog(request, catalog_key, system_id=None):
         system = System.objects.get(pk=system_id)
 
     # Get catalog
-    catalog = Catalog.GetInstance(catalog_key)
+    catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
     control_groups = catalog.get_groups()
     context = {
@@ -95,7 +97,7 @@ def group(request, catalog_key, g_id):
     """Temporary index page for catalog control group"""
 
     # Get catalog
-    catalog = Catalog.GetInstance(catalog_key)
+    catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
     control_groups = catalog.get_groups()
     group = None
@@ -121,7 +123,7 @@ def control(request, catalog_key, cl_id):
     catalog_key = oscalize_catalog_key(catalog_key)
 
     # Get catalog
-    catalog = Catalog.GetInstance(catalog_key)
+    catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
 
     # Handle properly formatted control id that does not exist
@@ -236,7 +238,6 @@ def rename_element(request,element_id):
         import sys
         return JsonResponse({ "status": "error", "message": sys.exc_info() })
 
-
 def components_selected(request, system_id):
     """Display System's selected components view"""
 
@@ -260,7 +261,6 @@ def components_selected(request, system_id):
         # User does not have permission to this system
         raise Http404
 
-
 def component_library(request):
     """Display the library of components"""
 
@@ -270,7 +270,6 @@ def component_library(request):
     }
 
     return render(request, "components/component_library.html", context)
-
 
 def import_records(request):
     """Display the records of component imports"""
@@ -287,7 +286,6 @@ def import_records(request):
 
     return render(request, "components/import_records.html", context)
 
-
 def import_record_details(request, import_record_id):
     """Display the records of component imports"""
 
@@ -299,7 +297,6 @@ def import_record_details(request, import_record_id):
         "component_statements": component_statements,
     }
     return render(request, "components/import_record_details.html", context)
-
 
 def confirm_import_record_delete(request, import_record_id):
     """Delete the components and statements imported from a particular import record"""
@@ -318,7 +315,6 @@ def confirm_import_record_delete(request, import_record_id):
     }
     return render(request, "components/confirm_import_record_delete.html", context)
 
-
 def import_record_delete(request, import_record_id):
     """Delete the components and statements imported from a particular import record"""
 
@@ -331,7 +327,6 @@ def import_record_delete(request, import_record_id):
     response = redirect('/controls/components')
     return response
 
-
 class ComponentSerializer(object):
 
     def __init__(self, element, impl_smts):
@@ -339,6 +334,14 @@ class ComponentSerializer(object):
         self.impl_smts = impl_smts
 
 class OSCALComponentSerializer(ComponentSerializer):
+
+    @staticmethod
+    def statement_id_from_control(control_id, part_id):
+        if part_id:
+            return f"{control_id}_smt.{part_id}"
+        else:
+            return f"{control_id}_smt"
+
 
     def as_json(self):
         # Build OSCAL
@@ -395,7 +398,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "description": smt.body,
                     "remarks": smt.remarks
                 }
-                statement_id = smt.oscal_statement_id
+                statement_id = self.statement_id_from_control(control_id, smt.pid)
                 requirement["statements"][statement_id] = statement
                 
             by_class[smt.sid_class].append(requirement)
@@ -440,7 +443,6 @@ class OpenControlComponentSerializer(ComponentSerializer):
             satisfies_smts.append(my_dict)
         opencontrol_string = rtyaml.dump(ocf)
         return opencontrol_string
-
 
 class ComponentImporter(object):
 
@@ -630,7 +632,6 @@ class ComponentImporter(object):
             control = catalog.get_control_by_id(control_id)
             return True if control is not None else False
 
-
 def system_element(request, system_id, element_id):
     """Display System's selected element detail view"""
 
@@ -777,6 +778,7 @@ def api_controls_select(request):
         data = {}
         return JsonResponse({"status": status, "message": message, "data": data})
 
+@login_required
 def component_library_component_copy(request, element_id):
     """Copy a component"""
 
@@ -792,7 +794,6 @@ def component_library_component_copy(request, element_id):
     # Redirect to the new page for the component
     return HttpResponseRedirect("/controls/components/{}".format(e_copy.id))
 
-
 @login_required
 def import_component(request):
     """Import a Component in JSON"""
@@ -802,6 +803,7 @@ def import_component(request):
     result = ComponentImporter().import_components_as_json(import_name, oscal_component_json, request)
     return component_library(request)
 
+@login_required
 def statement_history(request, smt_id=None):
     """Returns the history for the given statement"""
     from controls.models import Statement
@@ -816,6 +818,7 @@ def statement_history(request, smt_id=None):
 
     return render(request, "controls/statement_history.html", context)
 
+@login_required
 def restore_to_history(request, smt_id, history_id):
     """
     Restore the current model instance to a previous version
@@ -898,7 +901,7 @@ def system_element_download_oscal_json(request, system_id, element_id):
 
     return response
 
-
+@login_required
 def controls_selected_export_xacta_xslx(request, system_id):
     """Export System's selected controls compatible with Xacta 360"""
 
@@ -1205,7 +1208,7 @@ def controls_selected_export_xacta_xslx(request, system_id):
         # User does not have permission to this system
         raise Http404
 
-
+@login_required
 def editor(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
@@ -1213,7 +1216,7 @@ def editor(request, system_id, catalog_key, cl_id):
     catalog_key = oscalize_catalog_key(catalog_key)
 
     # Get control catalog
-    catalog = Catalog.GetInstance(catalog_key)
+    catalog = Catalog(catalog_key)
 
     # TODO: maybe catalogs could provide an API that returns a set of 
     # control ids instead?
@@ -1241,7 +1244,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # We need to grab the catalog again.
 
         parameter_values = project.get_parameter_values(catalog_key)
-        catalog = Catalog.GetInstance(catalog_key, parameter_values=parameter_values)
+        catalog = Catalog(catalog_key, parameter_values=parameter_values)
         cg_flat = catalog.get_flattened_controls_all_as_dict()
 
         common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
@@ -1336,13 +1339,14 @@ def editor(request, system_id, catalog_key, cl_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
 def editor_compare(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
     cl_id = oscalize_control_id(cl_id)
 
     # Get control catalog
-    catalog = Catalog.GetInstance(catalog_key)
+    catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
     # If control id does not exist in catalog
     if cl_id.lower() not in cg_flat:
@@ -2223,7 +2227,6 @@ def poams_list(request, system_id):
         # User does not have permission to this system
         raise Http404
 
-
 def new_poam(request, system_id):
     """Form to create new POAM"""
 
@@ -2268,7 +2271,6 @@ def new_poam(request, system_id):
     else:
         # User does not have permission to this system
         raise Http404
-
 
 def edit_poam(request, system_id, poam_id):
     """Form to create new POAM"""
@@ -2327,14 +2329,11 @@ def edit_poam(request, system_id, poam_id):
         # User does not have permission to this system
         raise Http404
 
-
 def poam_export_xlsx(request, system_id):
     return poam_export(request, system_id, 'xlsx')
 
-
 def poam_export_csv(request, system_id):
     return poam_export(request, system_id, 'csv')
-
 
 def poam_export(request, system_id, format='xlsx'):
     """Export POA&M in either xlsx or csv"""
@@ -2597,6 +2596,7 @@ def project_export(request, project_id):
     response['Content-Disposition'] = f'attachment; filename="{quote(filename)}.json"'
     return response
 
+# System OSCAL
 def system_profile_oscal_json(request, system_id):
     """
     Return an OSCAL profile for this system.
@@ -2607,3 +2607,162 @@ def system_profile_oscal_json(request, system_id):
     return JsonResponse(data)
     response['Content-Disposition'] = f'attachment; filename="oscal-profile.json"'
     return response
+
+# System Deployments
+def system_deployments(request, system_id):
+    """List deployments for a system"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve list of deployments for the system
+        deployments = system.deployments.all().order_by(Lower('name'))
+        # controls = system.root_element.controls.all()
+        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+        # Return the controls
+        context = {
+            "system": system,
+            "project": project,
+            "deployments": deployments,
+            # "controls": controls,
+            # "poam_smts": poam_smts,
+            # "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            # "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            # "project_form": ProjectForm(request.user),
+        }
+        return render(request, "systems/deployments_list.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+@login_required
+def manage_system_deployment(request, system_id, deployment_id=None):
+    """Form to create or edit system deployment"""
+
+    # TODO Make sure user has permission on system!
+    di = get_object_or_404(Deployment, pk=deployment_id) if deployment_id else None
+    if request.method == 'POST':
+        form = DeploymentForm(request.POST, instance=di, system_id=system_id)
+        if form.is_valid():
+            form.save()
+            deployment = form.instance
+            # Create message to display to user
+            if di:
+                messages.add_message(request, messages.INFO, f'Deployment "{deployment.name}" edited.')
+                logger.info(
+                    event="edit_deployment",
+                    object={"object": "deployment", "id": deployment.id, "name":deployment.name},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+            else:
+                messages.add_message(request, messages.INFO, f'Deployment "{deployment.name}" created.')
+                logger.info(
+                    event="create_deployment",
+                    object={"object": "deployment", "id": deployment.id, "name":deployment.name},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+            return redirect('system_deployments', system_id=system_id)
+    else:
+        form = DeploymentForm(instance=di, system_id=system_id)
+
+    return render(request, 'systems/deployment_form.html', {
+        'form': form,
+        'deployment': di,
+    })
+
+@login_required
+def deployment_history(request, system_id, deployment_id=None):
+    """Returns the history for the given deployment"""
+
+    # TODO check user permission to view
+    from controls.models import Deployment
+    full_dpt_history = None
+    try:
+        deployments = Deployment.objects.get(id=deployment_id)
+        full_dpt_history = deployments.history.all()
+    except Deployment.DoesNotExist:
+        messages.add_message(request, messages.ERROR, f'The deployment id is not valid. Is this still a deployment in GovReady?')
+    context = {"deployment": full_dpt_history}
+    return render(request, "systems/deployment_history.html", context)
+
+@login_required
+def system_deployment_inventory(request, system_id, deployment_id):
+    """List system deployment inventory"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve list of deployments for the system
+        deployments = system.deployments.all()
+        deployment = get_object_or_404(Deployment, pk=deployment_id)
+        # controls = system.root_element.controls.all()
+        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+        # inventory_items = [item for item in inventory_all if item["deployment_id"] == deployment_id]
+        inventory_items = [item for item in deployment.inventory_items] if deployment.inventory_items != None else []
+
+        # Return the controls
+        context = {
+            "system": system,
+            "project": project,
+            "deployment": deployment,
+            "inventory_items": inventory_items,
+            # "controls": controls,
+            # "poam_smts": poam_smts,
+            # "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            # "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            # "project_form": ProjectForm(request.user),
+        }
+        return render(request, "systems/deployment_inventory.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+@login_required
+def inventory_item_assessment_results_list(request, system_id=None, deployment_id=None):
+    """List PoamS for a system"""
+
+    # Retrieve identified System
+    if system_id:
+        system = System.objects.get(id=system_id)
+        # Retrieve related selected controls if user has permission on system
+        if not request.user.has_perm('view_system', system):
+            # User does not have permission to this system
+            raise Http404
+
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+        controls = system.root_element.controls.all()
+        poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+        # impl_smts_count = {}
+        # ikeys = system.smts_control_implementation_as_dict.keys()
+        # for c in controls:
+        #     impl_smts_count[c.oscal_ctl_id] = 0
+        #     if c.oscal_ctl_id in ikeys:
+        #         impl_smts_count[c.oscal_ctl_id] = len(system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+
+        # Return the controls
+        context = {
+            "system": system,
+            "project": project,
+            "controls": controls,
+            "poam_smts": poam_smts,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            "project_form": ProjectForm(request.user),
+        }
+        return render(request, "systems/poams_list.html", context)
+

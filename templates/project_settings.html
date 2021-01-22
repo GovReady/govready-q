@@ -168,13 +168,13 @@ h3.question-group-title {
       </button>
     {% endif %}
     {% if send_invitation.can_add_invitee_to_team %}
-      <button id="show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
+      <button id="btn-show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
         <em class="glyphicon glyphicon-user"></em><em class="glyphicon glyphicon-plus"></em>
         Invite
       </button>
     {% endif %}
 
-    <button id="review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
+    <button id="btn-review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
       <em class="glyphicon glyphicon-list"></em>
       Review
     </button>
@@ -199,7 +199,7 @@ h3.question-group-title {
     {% endif %}
 
     {% if authoring_tool_enabled %}
-      <button id="open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
+      <button id="btn-open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
         <em class="glyphicon glyphicon-pencil"></em>
         Authoring Tool
       </button>

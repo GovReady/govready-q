@@ -515,7 +515,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Go to project page, then review page.
         # self.click_element("#return-to-project")
-        self.click_element("#review-answers")
+        self.click_element("#btn-review-answers")
 
         # Mark the answer as reviewed then test that it was saved.
         wait_for_sleep_after(lambda: self.click_element(".task-" + str(task.id) + "-answer-q1-review-1"))
@@ -565,7 +565,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # because the element is not clickable -- it reports a coordinate
         # that's above the button in the site header. Not sure what's
         # happening. So load the modal using Javascript.
-        self.click_element("#show-project-invite")
+        self.click_element("#btn-show-project-invite")
         self.browser.execute_script("invite_user_into_project()")
         # Toggle field to invite user by email
         self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
@@ -575,7 +575,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.assertInNodeText("The email address is not valid.", "#global_modal") )# make sure we get a stern message.
         wait_for_sleep_after(lambda: self.click_element("#global_modal button") )# dismiss the warning.
 
-        wait_for_sleep_after(lambda: self.click_element("#show-project-invite") )# Re-open the invite box.
+        wait_for_sleep_after(lambda: self.click_element("#btn-show-project-invite") )# Re-open the invite box.
         self.browser.execute_script("invite_user_into_project()") # See comment above.
         # Toggle field to invite user by email
 
@@ -616,7 +616,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # But now go back to the project page.
         self.browser.get(project_page)
-        wait_for_sleep_after(lambda: self.click_element("#show-project-invite"))
+        wait_for_sleep_after(lambda: self.click_element("#btn-show-project-invite"))
 
         # Select username "me3"
         wait_for_sleep_after(lambda: self.select_option_by_visible_text('#invite-user-select', "me3"))

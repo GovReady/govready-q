@@ -1,15 +1,41 @@
 GovReady-Q Release Notes
 ========================
 
-v.999 (January XX, 2021)
-------------------------
+v0.9.1.50.1 (January 22, 2021)
+------------------------------
 
-Add lightweight-ato to default apps so users can get started easier.
+Add deployments to capture system deployments and the inventory items in each deployment.
+
+One system has multiple deployments (e.g., dev, stage, prod) and each deployment contains an inventory of the actual endpoints/items in a deployment of the system. Systems start with several common default (empty) deployments.
+
+The "design" deployment by convention is a special deployment to represent the system architecture.
+
+Deployments maintain a complete version history.
+
+Deployment inventory-items are represented as JSON data object following a scheme that is similar to OSCAL inventory-item section.
+Data for deployment inventory-items is assumed to be generated outside of GovReady. It is critical that the inventory items have UUIDs prior to import. Inventory item UUIDs for the life of the instantiated inventory item.
+
+Inventory items in an deployment can be associated with an inventory item in the "design" deployment by referencing the "design" inventory item's UUID. This enablea a virtual persistence of an inventory-item across different instances of the "same" assest, such as a virtual database server.
+
+**Feature changes**
+
+* Add system deployments with inventory items to track instantiations of the system in real assets.
+* Add lightweight-ato to default apps so users can get started easier.
+
+**UI changes**
+
+* Add deployment index page for listing deployments associated with a system.
+* Add deployment form page for creating/editing deployments.
+* Add deployment history page.
 
 **Developer changes**
 
 * Add `.coveragerc` configuration file to ensure we cover and run only tests in locally and in Circleci.
 * Add `pyup.yml` configuration file to have pyup.io pull requests go against `develop` branch.
+* Add controls.Deployment object, related routes, views, templates, and admin to track system deployments and deployment inventory items.
+* Add DeploymentForm for Deployment model.
+* New '%dict' operator for JSON/YAML output templates
+* Pass OSCAL context to JSON/YAML output templates
 * New '%dict' operator for JSON/YAML output templates
 * Pass OSCAL context to JSON/YAML output templates
 * Created a recursive method `wait_for_sleep_after` that wraps around other functions allowing for drastically shorter wait times necessary compared to peppering var_sleeps.
@@ -28,7 +54,7 @@ Add lightweight-ato to default apps so users can get started easier.
 **Data changes**
 
 * Add lightweight-ato to default apps so users can get started easier.
-
+* Populate every new system with default deployments design, dev, stage, prod.
 
 v0.9.1.49.2 (January 22, 2021)
 ------------------------------
@@ -111,7 +137,7 @@ ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSIO
 * Add 'label' value to `oscal.Catalog.cx.get_flattened_controls_all_as_dict`.
 * Introducing model history tracking with django-simple-history.
 * Update various Python libraries.
-* Added file extension, size and type validation for Comment Attachment uploads.
+* Add file extension, size and type validation for Comment Attachment uploads.
 * Introducing request profiling with pyinstrument.
 * Add default `controls.models.OrgParams` class to support basic, default generation of orgizational defined parameters.
 

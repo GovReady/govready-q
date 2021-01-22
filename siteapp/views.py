@@ -20,7 +20,10 @@ from controls.forms import ImportProjectForm
 from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
-from controls.models import Element, Statement, System
+
+from controls.models import Element, System, Statement, Poam, Deployment
+from system_settings.models import SystemSettings
+
 
 from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
@@ -551,6 +554,19 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             object={"object": "element", "id": element.id, "name":element.name},
             user={"id": user.id, "username": user.username}
         )
+        # Add deault deployments to system
+        deployment = Deployment(name="Design", description="Reference system archictecture design", system=system)
+        deployment.save()
+        deployment = Deployment(name="Dev", description="Development environment deployment", system=system)
+        deployment.save()
+        deployment = Deployment(name="Stage", description="Stage/Test environment deployment", system=system)
+        deployment.save()
+        deployment = Deployment(name="Prod", description="Production environment deployment", system=system)
+        deployment.save()
+        # Assign default control catalog
+        # Assign default control profile for org systems
+        # Assign default organization components for a system
+        # Assign default org params
 
         if user.has_perm('change_system', system):
             # Get the components from the import records of the app version
@@ -819,6 +835,8 @@ def project(request, project):
         "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
         "has_outputs": has_outputs,
+
+        "enable_experimental_evidence": SystemSettings.enable_experimental_evidence,
 
         "layout_mode": layout_mode,
         "columns": columns,
