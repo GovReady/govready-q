@@ -451,8 +451,8 @@ class ComponentImporter(object):
         @param import_name: Name of import file (if it exists)
         @type json_object: dict
         @param json_object: Element attributes from JSON object
-        @rtype: list if success, bool (false) if failure
-        @returns: List of created components (if success) or False is failure
+        @rtype: ImportRecord if success, bool (false) if failure
+        @returns: ImportRecord linked to the created components (if success) or False if failure
         """
 
         # Validates the format of the JSON object

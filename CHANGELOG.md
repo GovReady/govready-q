@@ -23,6 +23,14 @@ Add lightweight-ato to default apps so users can get started easier.
 
 * Add Lightweight-ato apps to default apps.
 
+v0.9.1.49.2 (January 22, 2021)
+------------------------------
+
+Adds support for OSCAL component and statement input for Compliance Apps.
+(Currently only supports OSCAL JSON inputs.)
+Adds statements to project upon project creation.
+Keeps track of app inputs by relating them to the app version.
+
 v0.9.1.49.1 (January 20, 2021)
 ------------------------------
 

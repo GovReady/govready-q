@@ -524,7 +524,9 @@ def load_app_inputs_into_database(app, appinst):
                 raise FileNotFoundError
             else:
                 from controls.views import ComponentImporter
-                ComponentImporter().import_components_as_json(file_path, oscal_content)
+                import_record = ComponentImporter().import_components_as_json(file_path, oscal_content)
+                if import_record is not None:
+                    appinst.input_artifacts.add(import_record)
 
         # Add to the app.
         appinst.input_files.add(app_input)
