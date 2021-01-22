@@ -36,7 +36,7 @@
         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam">POA&Ms</div>
         <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">&nbsp;</div>
         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-          <a href="/systems/{{ system.id }}/poams/new" class="btn btn-sm btn-success systems-element-button">New POA&M</a>
+          <a href={% url 'new_poam' system_id=system.id %} class="btn btn-sm btn-success systems-element-button">New POA&M</a>
           <span class="glyphicon glyphicon-download-alt pull-right systems-poam-glyphicon"
                 style="cursor: pointer;"
                 onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
@@ -52,7 +52,7 @@
       {% for poam_smt in poam_smts %}
         <div id="tab-content" class="row row-control">
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                <a href="/systems/{{ system.id }}/poams/{{ poam_smt.id }}/edit">V-{{ poam_smt.poam.poam_id }}</a>
+                <a href={% url 'edit_poam' system_id=system.id poam_id=poam_smt.id %}>V-{{ poam_smt.poam.poam_id }}</a>
             </div>
             <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
                 {{ poam_smt.poam.weakness_name }}

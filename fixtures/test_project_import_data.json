@@ -194,6 +194,7 @@
   "component-definitions": [
     {
       "component-definition": {
+        "uuid": "a678cb99-4d06-4d7e-b2d5-02a89f928412",
         "metadata": {
           "title": "AWS Component-to-Control Narratives",
           "published": "2021-01-06T17:39:05+00:00",
@@ -203,9 +204,8 @@
         },
         "components": {
           "b882a10b-8aaf-4059-8611-40a8ad78bb9d": {
-            "name": "AWS",
-            "component-type": "system_element",
-            "title": "",
+            "title": "AWS",
+            "type": "software",
             "description": "",
             "control-implementations": [
               {
@@ -257,8 +257,7 @@
             ]
           }
         }
-      },
-      "back-matter": []
+      }
     }
   ]
 }

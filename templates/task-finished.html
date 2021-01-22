@@ -179,7 +179,7 @@
                         <input type="hidden" name="previous" value="project"/>
                     {% else %}
                       {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
-                      <form method="get" action="/store"
+                      <form method="get" action="{% url 'store' %}"
                         onclick="$(this).submit();" style="cursor: pointer">
                         <input type="hidden" name="q" value="{{task.project.root_task.id}}/{{next_module_spec.id}}">
                     {% endif %}

@@ -423,7 +423,7 @@ Table 5‑2 Event Documentation Responsibility
 
 # 6 Contingency Plan Testing
 
-Contingency Plan operational tests of the {{project.system_info.system_name}} are performed {{project.cp_introduction.q08b_test_frequency}}.  
+Contingency Plan operational tests of the {{project.system_info.system_name}} are performed {{project.cp_introduction.q08b_test_frequency}}.
 
 </br>
 

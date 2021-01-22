@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.50.1 (January 20, 2021)
+v0.9.1.50.1 (January 22, 2021)
 ------------------------------
 
 Add deployments to capture system deployments and the inventory items in each deployment.
@@ -44,11 +44,36 @@ Inventory items in an deployment can be associated with an inventory item in the
 * By default, set organization name to "main".
 * Add optional `PIPUSER` parameter to `install-govready-q.sh` to avoid error of running pip install with `--user` flag in virtual environments.
 * Comment out starting GovReady-Q server automatically because too many edge cases exist to execute that well.
+* Update install scripts.
+* Update default and recommended `local/environment.json` file from `first_run` and `install-govready-q.sh`.
+* By default, set organization name to "main".
+* Add optional `PIPUSER` parameter to `install-govready-q.sh` to avoid error of running pip install with `--user` flag in virtual environments.
+* Comment out starting GovReady-Q server automatically because too many edge cases exist to execute that well.
+* Add method `get_answer` guidedmodules.models.Task to easily return answers from a project tasks answers.
 
 **Data changes**
 
+* Add lightweight-ato to default apps so users can get started easier.
 * Populate every new system with default deployments design, dev, stage, prod.
-* Add Lightweight-ato apps to default apps.
+
+v0.9.1.49.2 (January 22, 2021)
+------------------------------
+
+Adds support for OSCAL component and statement input for Compliance Apps.
+(Currently only supports OSCAL JSON inputs.)
+Adds statements to project upon project creation.
+Keeps track of app inputs by relating them to the app version.
+
+Includes the following schema update to the app.yaml file of Compliance Apps.
+Inputs are supported in the app.yaml file with the following format:
+```
+input:
+- id: <input_id> (string)
+  name: <Input Name> (string)
+  type: oscal (Only oscal currently supported) 
+  path: <dir/filename.json> (relative file path)
+  group: (optional string)
+```
 
 v0.9.1.49.1 (January 20, 2021)
 ------------------------------

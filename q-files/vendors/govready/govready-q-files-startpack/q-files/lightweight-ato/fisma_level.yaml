@@ -34,12 +34,12 @@ introduction:
     about the information in and functions of your system in terms of confidentiality,
     integrity, and availability.
 questions:
+
 - id: application_number
   title: FedRAMP Application Number
   prompt: |
     To begin, what is your FedRAMP application number?
   type: text
-
 - id: information_types_categories
   title: Information Types Categories
   prompt: |
