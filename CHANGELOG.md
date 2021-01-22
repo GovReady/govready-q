@@ -31,6 +31,17 @@ Adds support for OSCAL component and statement input for Compliance Apps.
 Adds statements to project upon project creation.
 Keeps track of app inputs by relating them to the app version.
 
+Includes the following schema update to the app.yaml file of Compliance Apps.
+Inputs are supported in the app.yaml file with the following format:
+```
+input:
+- id: <input_id> (string)
+  name: <Input Name> (string)
+  type: oscal (Only oscal currently supported) 
+  path: <dir/filename.json> (relative file path)
+  group: (optional string)
+```
+
 v0.9.1.49.1 (January 20, 2021)
 ------------------------------
 
