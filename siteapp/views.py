@@ -2094,10 +2094,10 @@ def shared_static_pages(request, page):
 # SUPPORT
 
 def support(request):
-    """Render a supoort page with custom content"""
+    """Render a support page with custom content"""
 
     support_results = Support.objects.all()
-    if len(support_results) > 0:
+    if support_results.exists():
         support = support_results[0]
     else:
         support = {
