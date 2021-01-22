@@ -775,6 +775,17 @@ class Task(models.Model):
             answertuples[q.key] = (q, is_answered, a, value)
         return ModuleAnswers(self.module, self, answertuples)
 
+    def get_answer(self, question_key_path):
+        """Return the answer from for a question from dotted task path"""
+        # p.root_task.get_answers().as_dict()['system_info'].as_dict()['system_name']
+        # becomes
+        # p.root_task.get_answer("system_info.system_name")
+
+        value = self.get_answers()
+        for key in question_key_path.split("."):
+            value = value.with_extended_info().as_dict()[key]
+        return value
+
     def get_last_modification(self):
         ans = TaskAnswerHistory.objects\
                 .filter(taskanswer__task=self)\

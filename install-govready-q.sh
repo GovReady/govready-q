@@ -145,5 +145,3 @@ echo "To start GovReady-Q, run: "
 echo "  python3 manage.py runserver"
 echo "or"
 echo "  python manage.py runserver"
-
-
