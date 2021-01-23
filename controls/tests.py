@@ -203,8 +203,8 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
             self.json_download.unlink()
         elif os.path.isfile(self.json_download.name):
             os.remove(self.json_download.name)
-        self.click_element("a#oscal_download_json_link")
-        var_sleep(1)
+
+        wait_for_sleep_after(lambda: self.click_element("a#oscal_download_json_link"))
         # assert download exists!
         try:
             # The following test FAILS on MacOS when tests run in HEADLESS mode.

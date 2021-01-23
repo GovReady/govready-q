@@ -383,7 +383,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
     def _new_project(self):
         self.browser.get(self.url("/projects"))
-        self.click_element("#new-project")
+
+        wait_for_sleep_after(lambda: self.click_element("#new-project"))
 
         # Select Portfolio
         self.select_option_by_visible_text('#id_portfolio', self.user.username)
