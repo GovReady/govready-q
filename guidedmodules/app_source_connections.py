@@ -261,9 +261,10 @@ class PyFsApp(App):
 
     def get_inputs(self):
         app = read_yaml_file(self.read_file("app.yaml"))
-        input_list = app["input"]
-        for input in PyFsApp.iter_inputs(self.fs, input_list):
-            yield input
+        if 'inputs' in app.keys():
+            input_list = app["input"]
+            for input in PyFsApp.iter_inputs(self.fs, input_list):
+                yield input
 
     @staticmethod
     def iter_inputs(fs, input_list):
