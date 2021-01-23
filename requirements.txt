@@ -578,12 +578,14 @@ pyinstrument-cext==0.2.3 \
     # via pyinstrument
 pyinstrument==3.2.0 \
     --hash=sha256:266a02d874799a8e06889ed9030dcef518b61c7a8e64a3a0ad0754645f901285 \
-    --hash=sha256:ce8fef6ea88349f0060b6d974483fd64d2c061346e6b78bca6357509a5121665 \
+    --hash=sha256:ce8fef6ea88349f0060b6d974483fd64d2c061346e6b78bca6357509a5121665
     # via -r requirements.in
-pyjwt[crypto]==2.0.0 \
-    --hash=sha256:5c2ff2eb27d7e342dfc3cafcc16412781f06db2690fbef81922b0172598f085b \
-    --hash=sha256:7a2b271c6dac2fda9e0c33d176c4253faba2c6c6b3a99c7f28a32c3c97522779 \
-    # via django-allauth, pygithub
+pyjwt[crypto]==1.7.1 \
+    --hash=sha256:5c6eca3c2940464d106b99ba83b00c6add741c9becaec087fb7ccdefea71350e \
+    --hash=sha256:8d59a976fb773f3e6a39c85636357c4f0e242707394cadadd9814f5cbaa20e96
+    # via
+    #   django-allauth
+    #   pygithub
 pynliner==0.8.0 \
     --hash=sha256:32da16ed8ba1fec775909e39f0ffa8e6e02a674b889286c9a2370c3c03f617a5 \
     --hash=sha256:83e7dd4d48001bebbe0a648d7089e94e21ffb74c5af2f582c47d8793ffe8628e \
