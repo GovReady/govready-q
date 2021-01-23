@@ -251,7 +251,7 @@ class PyFsAppSourceConnection(AppSourceConnection):
 class PyFsApp(App):
     """An App whose modules and assets are stored in a directory
        layout rooted at a PyFilesystem2 file system."""
-    
+
     def __init__(self, store, name, fs):
         super().__init__(store, name)
         self.fs = fs
@@ -261,9 +261,11 @@ class PyFsApp(App):
 
     def get_inputs(self):
         app = read_yaml_file(self.read_file("app.yaml"))
-        input_list = app["input"]
-        for input in PyFsApp.iter_inputs(self.fs, input_list):
-            yield input
+        # Read "inputs" if they exist
+        if "input" in app:
+            input_list = app["input"]
+            for input in PyFsApp.iter_inputs(self.fs, input_list):
+                yield input
 
     @staticmethod
     def iter_inputs(fs, input_list):
