@@ -6,7 +6,7 @@ jobs:
   build:
     docker:
     - image: circleci/python:3.8.1-browsers # when upgrading, check that it works with selenium
-    parallelism: 4
+    parallelism: 14
     steps:
     # Add .local/bin to PATH for utilities install by `pip install --user`.
     - run: echo 'export PATH=~/.local/bin:$PATH' >> $BASH_ENV
