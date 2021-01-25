@@ -203,7 +203,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
             self.json_download.unlink()
         elif os.path.isfile(self.json_download.name):
             os.remove(self.json_download.name)
-
+        var_sleep(3)
         wait_for_sleep_after(lambda: self.click_element("a#oscal_download_json_link"))
         # assert download exists!
         try:
@@ -284,7 +284,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         element_count_after_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
 
-        self.assertEqual(element_count_before_import + 2, element_count_after_import)
+        wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 2, element_count_after_import))
 
         statement_count_after_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
         self.assertEqual(statement_count_before_import + 4, statement_count_after_import)
