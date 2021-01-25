@@ -1,0 +1,612 @@
+id: app
+title: General IT System ATO
+type: project
+version: 1.0.1
+icon: app.png
+introduction:
+  format: markdown
+  template: General IT System ATO Questionnaires
+output:
+- id: fisma_ssp_template
+  format: markdown
+  template: |
+    {% if not fisma_level.fisma_level %}
+      The team is currently working on determining the system impact level.
+
+    {% else %}
+      Your system's FISMA Level is **{{fisma_level.fisma_level.text}}**.
+
+      Information Types: {{fisma_level.information_types.text}}
+
+      Impact Level based on Information Types: {{fisma_level.information_types_level.text}}
+
+      PII Types: {{fisma_level.pii_types_collected.text}}
+
+      PII Impact Level: {{fisma_level.pii_impact_level.text}}
+
+      PHI? {{fisma_level.phi_has_any_phi.text}}
+
+    PHI Impact Level: {{fisma_level.phi_impact_level.text}}
+    {% endif %}
+
+catalog:
+  category: IT System Template
+  description:
+    long: |
+      New Compliance App
+      ==================
+
+      Edit this Markdown file to provide a long description of your compliance app. The contents of this file will be displayed in the GovReady-Q Compliance Apps Catalog.
+    short: IT System Questionnaires
+  source_url: https://github.com/GovReady/apps
+  status: stub
+  vendor: none
+  vendor_url: ~
+  version: 1.0.1
+questions:
+
+#System Info
+- id: system_info
+  title: System Profile - Information
+  type: module
+  icon: system_info.png
+  module-id: system_info
+  group: System Info
+- id: system_info_poc
+  title: System Profile - Point of Contact
+  type: module
+  icon: system_info.png
+  module-id: system_info_poc
+  group: System Info
+- id: system_info_technical
+  title: System Profile - Technical
+  type: module
+  icon: system_info.png
+  module-id: system_info_technical
+  group: System Info
+
+#Determine Fisma Level
+- id: fisma_level
+  title: Determine Your FISMA Level
+  type: module
+  icon: fisma_icon.png
+  module-id: fisma_level
+  group: System Categorization
+
+#PTA
+- id: pta_intro
+  title: Privacy Threshold Analysis (PTA) Overview
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pta_intro
+  group: PTA (Privacy Threshold Analysis)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pta_purpose
+  title: Purpose of the Information Collection
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pta_purpose
+  group: PTA (Privacy Threshold Analysis)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pta_poc_details
+  title: PTA POC Details
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pta_poc_details
+  group: PTA (Privacy Threshold Analysis)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pta_ic_forms
+  title: Questions
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pta_ic_forms
+  group: PTA (Privacy Threshold Analysis)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pta_info_description
+  title: Type of Information Collected
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pta_info_description
+  group: PTA (Privacy Threshold Analysis)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pta_info_storage
+  title: How Will DOS Store the Collected Information?
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pta_info_storage
+  group: PTA (Privacy Threshold Analysis)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pta_printable
+  title: Privacy Threshold Analysis Document
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pta_printable
+  group: PTA (Privacy Threshold Analysis)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+
+#PAS
+- id: pas_intro
+  title: Privacy Act Statement
+  type: module
+  icon: app.png
+  module-id: pas_intro
+  group: Privacy Act Statement (PAS)
+  impute:
+  - condition: project.pta_info_storage.PAS_upload_generate_choice != 'PAS_generate'
+    value: ~
+- id: pas_printable
+  title: Privacy Act Statement Document
+  type: module
+  icon: app.png
+  module-id: pas_printable
+  group: Privacy Act Statement (PAS)
+  impute:
+  - condition: project.pta_info_storage.PAS_upload_generate_choice != 'PAS_generate'
+    value: ~
+
+#PIA
+- id: pia_intro
+  title: PIA, Overview
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pia_intro
+  group: Privacy Impact Assessment (PIA)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pia_authorities
+  title: PIA, Authorities & Requirements
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pia_authorities
+  group: Privacy Impact Assessment (PIA)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pia_info_characterization
+  title: PIA, Characterization of Information
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pia_info_characterization
+  group: Privacy Impact Assessment (PIA)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pia_info_usage
+  title: PIA, Information Usage
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pia_info_usage
+  group: Privacy Impact Assessment (PIA)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pia_notice
+  title: PIA, Notice
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pia_notice
+  group: Privacy Impact Assessment (PIA)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pia_retention
+  title: PIA, Retention
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pia_retention
+  group: Privacy Impact Assessment (PIA)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pia_info_sharing
+  title: PIA, Information Sharing
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pia_info_sharing
+  group: Privacy Impact Assessment (PIA)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pia_redress
+  title: PIA, Redress
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pia_redress
+  group: Privacy Impact Assessment (PIA)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pia_auditing_accountability
+  title: PIA, Auditing and Accountability
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pia_auditing_accountability
+  group: Privacy Impact Assessment (PIA)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+- id: pia_printable
+  title: PIA, Document
+  type: module
+  icon: PTA_icon_new.png
+  module-id: pia_printable
+  group: Privacy Impact Assessment (PIA)
+  impute:
+  - condition: project.system_info.system_personal_data != 'yes'
+    value: ~
+
+#POAMS
+- id: poam_description
+  title: Description of the POAM
+  type: module-set
+  icon: poam.png
+  module-id: poam_description
+  group: Plan of Action and Milestones (POAM)
+- id: poam_doc
+  title: POAM Document
+  type: module
+  icon: poam.png
+  module-id: poam_doc
+  group: Plan of Action and Milestones (POAM)
+
+#RTM
+- id: rtm
+  title: RTM Questions
+  type: module
+  icon: PTA_icon_new.png
+  module-id: rtm
+  group: Requirements Traceability Matrix (RTM)
+- id: rtm_doc
+  title: RTM Document
+  type: module
+  icon: PTA_icon_new.png
+  module-id: rtm_doc
+  group: Requirements Traceability Matrix (RTM)
+
+#Risk Assessment Report
+- id: risk_assessment_report
+  title: Risk Assessment Report
+  type: module
+  icon: PTA_icon_new.png
+  module-id: risk_assessment_report
+  group: Risk Assessment Report
+- id: risk_assessment_report_doc
+  title: Risk Assessment Report Document
+  type: module
+  icon: PTA_icon_new.png
+  module-id: risk_assessment_report_doc
+  group: Risk Assessment Report
+
+
+#Test Plan
+- id: tp_introduction
+  title: Test Introduction
+  type: module
+  module-id: tp_introduction
+  icon: test_plan_new.png
+  group: Test Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: tp_project_management
+  title: Test Project Management
+  type: module
+  module-id: tp_project_management
+  icon: test_plan_new.png
+  group: Test Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: tp_test_environment
+  title: Test Environment
+  type: module
+  module-id: tp_test_environment
+  icon: test_plan_new.png
+  group: Test Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: tp_printable
+  title: Test Plan Document
+  type: module
+  module-id: tp_printable
+  icon: test_plan_new.png
+  group: Test Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+
+#Incident Response Plan
+- id: irp_intro
+  title: Incident Response Plan (Intro)
+  type: module
+  module-id: irp_intro
+  icon: irp.png
+  group: Incident Response Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: irp_initiate
+  title: Incident Response Plan (Initiate)
+  type: module
+  module-id: irp_initiate
+  icon: irp.png
+  group: Incident Response Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: irp_assess
+  title: Incident Response Plan (Assess)
+  type: module
+  module-id: irp_assess
+  icon: irp.png
+  group: Incident Response Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: irp_remediate
+  title: Incident Response Plan (Remediate)
+  type: module
+  module-id: irp_remediate
+  icon: irp.png
+  group: Incident Response Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: irp_retro
+  title: Incident Response Plan (Retrospective)
+  type: module
+  module-id: irp_retro
+  icon: irp.png
+  group: Incident Response Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: irp_doc
+  title: Incident Response Plan (Document)
+  type: module
+  module-id: irp_doc
+  icon: irp.png
+  group: Incident Response Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+
+#Contingency Plan
+- id: cp_introduction
+  title: Contingency Plan Introduction
+  type: module
+  module-id: cp_introduction
+  icon: cp_icon_detour.png
+  group: Contingency Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: cp_questionnaire
+  title: Contingency Plan Concept of Operations
+  type: module
+  module-id: cp_questionnaire
+  icon: cp_icon_detour.png
+  group: Contingency Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: cp_activation
+  title: Contingency Plan Activation and Notification
+  type: module
+  module-id: cp_activation
+  icon: cp_icon_detour.png
+  group: Contingency Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: cp_recovery
+  title: Contingency Plan Recovery
+  type: module
+  module-id: cp_recovery
+  icon: cp_icon_detour.png
+  group: Contingency Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: cp_reconstitution
+  title: Contingency Plan Reconstitution
+  type: module
+  module-id: cp_reconstitution
+  icon: cp_icon_detour.png
+  group: Contingency Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: cp_general_info
+  title: General Information
+  type: module
+  module-id: cp_general_info
+  icon: cp_icon_detour.png
+  group: Contingency Plan
+  impute:
+  - condition: 1 == 1
+    value: ~
+- id: cp_fedramp01
+  title: Contingency Plan Document
+  type: module
+  module-id: cp_fedramp01
+  icon: cp_icon_detour.png
+  group: Contingency Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+- id: cp_controls_80053r4
+  title: 800-53r4 Controls
+  type: module
+  module-id: cp_controls_80053r4
+  icon: cp_icon_detour.png
+  group: Contingency Plan
+  impute:
+  - condition: 1 == 1
+    value: ~
+
+#Hosting
+- id: se_aws_hosting_environ
+  title: AWS – Hosting Environment
+  type: module
+  icon: hosting_environment.png
+  module-id: se_aws_hosting_environ
+  group: Hosting Environment
+  impute:
+  - condition: project.system_info.system_hosting != 'org_aws'
+    value: ~
+- id: se_aws_auditing_splunk_elk
+  title: AWS – Auditing (Splunk, ELK)
+  type: module
+  icon: hosting_environment_auditing.png
+  module-id: se_aws_auditing_splunk_elk
+  group: Hosting Environment
+  impute:
+  - condition: project.system_info.system_hosting != 'org_aws'
+    value: ~
+- id: se_aws_ci_cd_jenkins_gitlab_aqua_sonarqube
+  title: AWS - CI/CD (Jenkins, GitLab, Aqua, SonarQube)
+  type: module
+  icon: hosting_environment_cicd.png
+  module-id: se_aws_ci_cd_jenkins_gitlab_aqua_sonarqube
+  group: Hosting Environment
+  impute:
+  - condition: project.system_info.system_hosting != 'org_aws'
+    value: ~
+- id: se_system_level
+  title: System Level Controls
+  type: module
+  icon: hosting_environment_controls.png
+  module-id: se_system_level
+  group: Hosting Environment
+  impute:
+  - condition: project.system_info.system_hosting != 'org_aws'
+    value: ~
+- id: se_ciso_policy_soc_stp
+  title: CISO (Policy, SOC, STP)
+  type: module
+  icon: hosting_environment_policy.png
+  module-id: se_ciso_policy_soc_stp
+  group: Organizational Policy
+  impute:
+  - condition: project.system_info.system_hosting != 'org_aws'
+    value: ~
+
+#MOU
+- id: mou_intro
+  module-id: mou_intro
+  icon: mou.png
+  title: MOU (Intro)
+  type: module
+  group: Memorandum of Understanding
+  impute:
+  - condition: project.system_info.system_connection != 'yes'
+    value: ~
+- id: mou_core
+  module-id: mou_core
+  icon: mou.png
+  title: MOU (Core)
+  type: module
+  group: Memorandum of Understanding
+  impute:
+  - condition: project.system_info.system_connection != 'yes'
+    value: ~
+- id: mou_end
+  module-id: mou_end
+  icon: mou.png
+  title: MOU (Ending)
+  type: module
+  group: Memorandum of Understanding
+  impute:
+  - condition: project.system_info.system_connection != 'yes'
+    value: ~
+- id: mou_doc
+  module-id: mou_doc
+  icon: mou.png
+  title: MOU (Document)
+  type: module
+  group: Memorandum of Understanding
+  impute:
+  - condition: project.system_info.system_connection != 'yes'
+    value: ~
+
+#SSP
+- id: ssp_intro
+  module-id: ssp_intro
+  icon: ssp_icon.png
+  title: System Security Plan
+  type: module
+  group: System Security Plan
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+
+#ato letter
+- id: ato_letter
+  module-id: ato_letter
+  icon: certification.png
+  title: ATO Letter
+  type: module
+  group: ATO Letter
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+
+#security authorization package transmittal letter
+- id: sapt_letter
+  module-id: sapt_letter
+  icon: certification.png
+  title: Security Authorization Package Transmittal Letter
+  type: module
+  group: Security Authorization Package Transmittal Letter
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+
+#certification
+- id: authorization_letter
+  module-id: authorization_letter
+  icon: certification.png
+  title: Authorization Letter
+  type: module
+  group: Authorization Letter
+  impute:
+  - condition: project.system_info.operational_system != 'yes'
+    value: ~
+
+deprecated-to-delete:
+- id: cp_q_set_1
+  module-id: cp_q_set_1
+  icon: cp_icon_detour.png
+  title: Question Set 1
+  type: module
+  group: Contingency Plan
+  # impute:
+  # - condition: project.system_info.operational_system != 'yes'
+  #   value: ~
+- id: cp_q_set_2
+  module-id: cp_q_set_2
+  icon: cp_icon_detour.png
+  title: Question Set 2
+  type: module
+  group: Contingency Plan
+  # impute:
+  # - condition: project.system_info.operational_system != 'yes'
+  #   value: ~
+

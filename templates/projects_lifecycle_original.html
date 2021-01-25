@@ -116,7 +116,7 @@ h1.mini {
 {% if lifecycles|length > 0 %}
 <div class="project-main">
   <!-- <a id="new-system" href="/store?protocol=govready.com/apps/compliance/2018/information-technology-system" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add system </a> -->
-  <a id="new-project" href="/store" class="btn btn-success">Start a project</a>
+  <a id="new-project" href="{% url 'store' %}" class="btn btn-success">Start a project</a>
   {% if can_invite_to_org %}
   <a href="#" onclick="show_invite_to_org(); return false;" class="btn btn-success"><i class="glyphicon glyphicon-send"></i> Invite colleague </a>
   {% endif %}

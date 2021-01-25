@@ -1,13 +1,93 @@
 GovReady-Q Release Notes
 ========================
 
-v.999 (January xx, 2021)
------------------------------
+v0.9.1.50.1 (January 22, 2021)
+------------------------------
 
-* You can now click the history button in a given statement's panel in the controls selected implementation statement page or component library.
-* You can now import and export a project from a project's page or its settings page.
+Add deployments to capture system deployments and the inventory items in each deployment.
 
-v.0.9.1.49 (January 12, 2021)
+One system has multiple deployments (e.g., dev, stage, prod) and each deployment contains an inventory of the actual endpoints/items in a deployment of the system. Systems start with several common default (empty) deployments.
+
+The "design" deployment by convention is a special deployment to represent the system architecture.
+
+Deployments maintain a complete version history.
+
+Deployment inventory-items are represented as JSON data object following a scheme that is similar to OSCAL inventory-item section.
+Data for deployment inventory-items is assumed to be generated outside of GovReady. It is critical that the inventory items have UUIDs prior to import. Inventory item UUIDs for the life of the instantiated inventory item.
+
+Inventory items in an deployment can be associated with an inventory item in the "design" deployment by referencing the "design" inventory item's UUID. This enablea a virtual persistence of an inventory-item across different instances of the "same" assest, such as a virtual database server.
+
+**Feature changes**
+
+* Add system deployments with inventory items to track instantiations of the system in real assets.
+* Add lightweight-ato to default apps so users can get started easier.
+
+**UI changes**
+
+* Add deployment index page for listing deployments associated with a system.
+* Add deployment form page for creating/editing deployments.
+* Add deployment history page.
+
+**Developer changes**
+
+* Add `.coveragerc` configuration file to ensure we cover and run only tests in locally and in Circleci.
+* Add `pyup.yml` configuration file to have pyup.io pull requests go against `develop` branch.
+* Add controls.Deployment object, related routes, views, templates, and admin to track system deployments and deployment inventory items.
+* Add DeploymentForm for Deployment model.
+* New '%dict' operator for JSON/YAML output templates
+* Pass OSCAL context to JSON/YAML output templates
+* New '%dict' operator for JSON/YAML output templates
+* Pass OSCAL context to JSON/YAML output templates
+* Created a recursive method `wait_for_sleep_after` that wraps around other functions allowing for drastically shorter wait times necessary compared to peppering var_sleeps.
+* Update install scripts.
+* Update default and recommended `local/environment.json` file from `first_run` and `install-govready-q.sh`.
+* By default, set organization name to "main".
+* Add optional `PIPUSER` parameter to `install-govready-q.sh` to avoid error of running pip install with `--user` flag in virtual environments.
+* Comment out starting GovReady-Q server automatically because too many edge cases exist to execute that well.
+* Update install scripts.
+* Update default and recommended `local/environment.json` file from `first_run` and `install-govready-q.sh`.
+* By default, set organization name to "main".
+* Add optional `PIPUSER` parameter to `install-govready-q.sh` to avoid error of running pip install with `--user` flag in virtual environments.
+* Comment out starting GovReady-Q server automatically because too many edge cases exist to execute that well.
+* Add method `get_answer` guidedmodules.models.Task to easily return answers from a project tasks answers.
+
+**Data changes**
+
+* Add lightweight-ato to default apps so users can get started easier.
+* Populate every new system with default deployments design, dev, stage, prod.
+
+v0.9.1.49.2 (January 22, 2021)
+------------------------------
+
+Adds support for OSCAL component and statement input for Compliance Apps.
+(Currently only supports OSCAL JSON inputs.)
+Adds statements to project upon project creation.
+Keeps track of app inputs by relating them to the app version.
+
+Includes the following schema update to the app.yaml file of Compliance Apps.
+Inputs are supported in the app.yaml file with the following format:
+```
+input:
+- id: <input_id> (string)
+  name: <Input Name> (string)
+  type: oscal (Only oscal currently supported) 
+  path: <dir/filename.json> (relative file path)
+  group: (optional string)
+```
+
+v0.9.1.49.1 (January 20, 2021)
+------------------------------
+
+Fixes to 0.9.1.49 after merge.
+
+**Bug fixes**
+
+* Remove duplicate appearance of tabs in system selected components
+* Remove OSCAL download link from selected control pages because OSCAL for a single control would rarely be downloaded and would require different handling
+* Hide a discussion test that is failing to address later (not critical)
+* Add notes about testing download OSCAL that on Mac test must be run visible for custom download route to work.
+
+v0.9.1.49 (January 12, 2021)
 -----------------------------
 
 **IMPORTANT**
@@ -57,7 +137,7 @@ ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSIO
 * Add 'label' value to `oscal.Catalog.cx.get_flattened_controls_all_as_dict`.
 * Introducing model history tracking with django-simple-history.
 * Update various Python libraries.
-* Added file extension, size and type validation for Comment Attachment uploads.
+* Add file extension, size and type validation for Comment Attachment uploads.
 * Introducing request profiling with pyinstrument.
 * Add default `controls.models.OrgParams` class to support basic, default generation of orgizational defined parameters.
 
@@ -76,7 +156,7 @@ v.0.9.1.48.1 (December 17, 2020)
 * Fix handling of static files. Create new `static-root` directory outside of `siteapp` into which to collect static files.
 * Remove bad path reference to select2 javascript libraries in component library page.
 
-v.0.9.1.48 (December 15, 2020)
+v0.9.1.48 (December 15, 2020)
 ------------------------------
 
 Add Component Library feature pages and improve UI for managing reuse and "certified" component library.
@@ -112,7 +192,7 @@ Fix tests so they execute successfully in CircleCI.
 * Move component implementation statement tab to left of combined statement tab in control editor.
 * Updating certified text also updates the HTML block showing the certified text with updated certified text on edit pages.
 * Add components (system elements) via an autocomplete to a system on system's selected components page.
-* Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement. 
+* Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement.
 * Make statement synchronization status lable/alert clickable to reveal certified statement and diff between local and certified.
 * Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
 * Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
@@ -190,7 +270,7 @@ Example:
       "by-component": {
         "%for": "smt in system.control_implementation_as_dict[control]['control_impl_smts']",
         "%loop": {
-          "key": "{{ smt.producer_element.uuid }}", 
+          "key": "{{ smt.producer_element.uuid }}",
           "value": { "uuid" : "{{ smt.uuid }}",
             "component-name": "{{   smt.producer_element.name|safe }}",
             "description" : "{{ smt.body|safe }}"
@@ -216,7 +296,7 @@ v.0.9.1.47.1 (December 02, 2020)
 
 **Developer changes**
 
-* Minor further tweaks to CSS refactoring. 
+* Minor further tweaks to CSS refactoring.
 
 v.0.9.1.47 (December 01, 2020)
 ------------------------------

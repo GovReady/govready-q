@@ -1,7 +1,8 @@
 import csv
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import ImportRecord, Statement, Element, ElementControl, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam
+from .models import ImportRecord, Statement, Element, ElementControl, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam, Deployment
+# from .models import InventoryItemAssessmentResults
 from guardian.admin import GuardedModelAdmin
 from simple_history.admin import SimpleHistoryAdmin
 
@@ -69,6 +70,22 @@ class PoamAdmin(admin.ModelAdmin, ExportCsvMixin):
     def consumer_element(self, obj):
         return obj.statement.consumer_element
 
+class DeploymentAdmin(SimpleHistoryAdmin, ExportCsvMixin):
+    list_display = ('id', 'name', 'system')
+    actions = ["export_as_csv"]
+
+    def uuid(self, obj):
+        return obj.deployment.uuid
+
+# class InventoryItemAssessmentResultsAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'statement')
+
+#     # def uuid(self, obj):
+#     #     return obj.statement.uuid
+
+#     # def consumer_element(self, obj):
+#     #     return obj.statement.consumer_element
+
 
 admin.site.register(ImportRecord, ImportRecordAdmin)
 admin.site.register(Statement, StatementAdmin)
@@ -79,3 +96,6 @@ admin.site.register(CommonControlProvider, CommonControlProviderAdmin)
 admin.site.register(CommonControl, CommonControlAdmin)
 admin.site.register(ElementCommonControl, ElementCommonControlAdmin)
 admin.site.register(Poam, PoamAdmin)
+admin.site.register(Deployment, DeploymentAdmin)
+# admin.site.register(InventoryItemAssessmentResults, InventoryItemAssessmentResultsAdmin)
+

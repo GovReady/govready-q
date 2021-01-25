@@ -21,12 +21,7 @@
     font-weight: bold;
   }
 
-  thead tr {
-    border:1px solid black;
-    background-color: rgb(80, 170, 67);
-    color: #fff;
-    font-weight: bold;
-  }
+/* removed thead tr */
 
 </style>
 {% endblock %}
@@ -184,7 +179,7 @@
                         <input type="hidden" name="previous" value="project"/>
                     {% else %}
                       {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
-                      <form method="get" action="/store"
+                      <form method="get" action="{% url 'store' %}"
                         onclick="$(this).submit();" style="cursor: pointer">
                         <input type="hidden" name="q" value="{{task.project.root_task.id}}/{{next_module_spec.id}}">
                     {% endif %}
@@ -226,7 +221,7 @@
       {% endwith %}
 
       {% if can_review %}
-        <p><a id="review-answers" href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">
+        <p><a id="btn-review-answers" href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">
           <em class="glyphicon glyphicon-list"></em>
           Review &raquo;
         </a></p>

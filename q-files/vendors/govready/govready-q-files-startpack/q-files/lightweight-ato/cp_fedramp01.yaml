@@ -1,0 +1,17 @@
+id: cp_fedramp01
+title: Contingency Plan Document
+
+introduction:
+  format: markdown
+  template: |
+    Contingency Plan Document
+
+questions:
+- id: q1
+  title: Overview
+  prompt: |
+    We've prepared a Contingency Plan based on FedRAMP Contingency Plan Template.
+  type: interstitial
+
+output:
+- templates/cp_printable.md

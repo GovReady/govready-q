@@ -1,0 +1,340 @@
+id: lato_test_plan
+title: LATO Test Plan 2
+format: html
+...
+<style>
+
+.app-testplan-artifact {
+    font-family: arial, sans-serif;
+    font-size: 12pt;
+    width: 650px;
+    margin: auto;
+}
+
+.app-doc-title {
+  font-size: 18pt;
+  font-weight: bold;
+  text-transform: upper;
+  text-align: center;
+  width:450px;
+  margin: auto;
+  margin-top:200px;
+  margin-bottom:300px;
+}
+
+.app-doc-toc-title {
+  font-size: 16pt;
+  font-weight: bold;
+  text-align: center;
+  margin: auto;
+  margin-top:100px;
+  margin-bottom:30px;
+}
+
+.app-doc-toc {
+  width: 400px;
+  margin: auto;
+}
+
+section {
+  display: flex;
+  align-items: baseline; 
+}
+
+span {
+  flex: 1;
+  overflow: hidden;
+}
+
+h3 {
+  font-size: 16pt;
+  font-weight: bold;
+  color: rgb(0,2,117);
+}
+
+h4 {
+  font-size: 14pt;
+  font-weight: bold;
+}
+
+.alr {
+  text-align: right;
+}
+
+.table-caption {
+  font-weight: bold;
+  text-align: center;
+}
+
+.app-table {
+  border-collapse:collapse;
+  border-spacing:0;
+  padding: 4px;
+  border-style:solid;
+  border-width:1px;
+  border-color:black;
+  margin: auto;
+}
+
+.app-table thead {
+  background-color: rgb(215,215,215);
+  font-weight: bold;
+}
+
+.app-table th {
+  background-color: rgb(215,215,215);
+ }
+
+.app-table td, th {
+  padding: 4px;
+  border-style:solid;
+  border-width:1px;
+  border-color:black;
+  overflow:hidden;word-break:normal;
+}
+
+</style>
+
+<img src="{{ static_asset_path_for('app.png') }}">
+
+<div class="app-doc-title" style="">
+  Situational Awareness Messaging System (SAMS)
+  Security Test Plan
+</div>
+
+<p class="table-caption">DOCUMENT CHANGE HISTORY</p>
+<p>&nbsp;</p>
+<table class="app-table">
+  <thead>
+  <tr class="header">
+    <th><strong>Version</strong></th>
+    <th><strong>Date</strong></th>
+    <th><strong>Author</strong></th>
+    <th><strong>Description</strong></th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td>1.0</td>
+    <td>4/24/2019</td>
+    <td>Arthur-Gyamfi, Richard</td>
+    <td>Initial Draft</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</tbody>
+</table>
+
+
+<div class="app-doc-toc-title">Table of Contents</div>
+
+<div class="row app-doc-toc">
+	<section>1 Introduction<span>..........................................................................................................................</span>
+	3</section>
+	<section>1.1 Scope<span>..........................................................................................................................</span>
+	3</section>
+	<section>1.2 Background<span>..........................................................................................................................</span>
+	3</section>
+	<section>1.3 Project References<span>..........................................................................................................................</span>
+	3</section>
+	<section>2 Roles and Responsibilities<span>..........................................................................................................................</span>
+	3</section>
+	<section>3 Schedule<span>..........................................................................................................................</span>
+	4</section>
+	<section>4 Scope of Testing<span>..........................................................................................................................</span>
+	4</section>
+	<section>4.1 Controls to be Tested<span>..........................................................................................................................</span>
+	4</section>
+	<section>4.2 Controls not to be Tested<span>..........................................................................................................................</span>
+	4</section>
+	<section>4.3 Assumptions For Test Execution<span>..........................................................................................................................</span>
+	4</section>
+	<section>4.4 Test Completion Criteria<span>..........................................................................................................................</span>
+	5</section>
+	<section>5 Test Strategy<span>..........................................................................................................................</span>
+	5</section>
+	<section>6 Security Test Results<span>..........................................................................................................................</span>
+	5</section>
+</div>
+
+<h3>1 Introduction</h3>
+
+<h4>1.1 Scope</h4>
+
+<p>The scope of the Security Test Plan (STP) is to ensure that there is a complete end-to-end integration testing of SAMS with dependent connections to secured working systems. It is also to ensure that all entities within management, implementation, operational, and oversight responsibilities have a clear understanding of their roles and associated functions with SAMS.</p>
+
+<h4>1.2 Background</h4>
+
+<p>SAMS will provide a mode of communication between Executives, Directors of Field Operations, Port Directors, and Port Officers. The application will allow HQ Executives to send emergency notifications and simple text notifications to Port Officers and get acknowledgements of the messages received. The application will have location targeting abilities as well, which will allow for communications to specific Field Offices and specific Port Director.</p>
+
+<h4>1.3 Project References</h4>
+
+<p>The following table lists the names of the documents utilized in the creation of this test plan. Each reference has a corresponding document version, a date and location used to identify the document.</p>
+
+<p class="table-caption"><strong>Table 2: Project References</strong></p>
+
+<table class="app-table">
+  <thead>
+  <tr>
+    <th>Document Name</th>
+    <th>Document Version/Date</th>
+    <th>Document Location</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td>SAMS Security Plan</td>
+    <td>May 10, 2019</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>SAMS Authority To Test</td>
+    <td>December 19, 2018</td>
+    <td></td>
+  </tr>
+</tbody>
+</table>
+
+
+<h3>2 Roles and Responsibilities</h3>
+
+<p class="table-caption"><strong>Table 3: Organizational Roles and Responsibilities</strong></p>
+
+<table class="app-table">
+  <thead>
+  <tr>
+    <th>Name</th>
+    <th>Team Role</th>
+    <th>Task</th>
+    <th>Length of Project &amp; Percentage of Time Allocated</th>
+    <td>&nbsp;</td>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td>Jalid Ahmad</td>
+    <td>ISSO</td>
+    <td>CSD</td>
+    <td>Life of Project</td>
+    <td>100%</td>
+  </tr>
+  <tr>
+    <td>Richard Arthur-Gyamfi</td>
+    <td>Software Assurance</td>
+    <td>CSD</td>
+    <td>Life of Project</td>
+    <td>100%</td>
+  </tr>
+  <tr>
+    <td>Jahangir Hasan</td>
+    <td>Software Assurance</td>
+    <td>CSD</td>
+    <td>Life of Project</td>
+    <td>100%</td>
+  </tr>
+  <tr>
+    <td>Michael Mather</td>
+    <td>Software Assurance Lead</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Greg Elin</td>
+    <td>System Owner</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</tbody>
+</table>
+
+
+<h3>3 Schedule</h3>
+
+<p class="table-caption">Security Test Schedule</p>
+
+<table class="app-table">
+  <thead>
+  <tr class="header">
+    <th><strong>System Test Step</strong></th>
+    <th><strong>Dates</strong></th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td>Test Case Creation</td>
+    <td>TBD</td>
+  </tr>
+  <tr>
+    <td><em>Test Case Review</em></td>
+    <td>TBD</td>
+  </tr>
+  <tr>
+    <td><em>Testing Case Execution</em></td>
+    <td>TBD</td>
+  </tr>
+  <tr>
+    <td><em>Test Results Report Prep</em></td>
+    <td>TBD</td>
+  </tr>
+  <tr>
+    <td><em>Test Results Report Delivery</em></td>
+    <td>TBD</td>
+  </tr>
+</tbody>
+</table>
+
+
+<h3>4 Scope of Testing</h3>
+
+<p>The following sections define the scope of testing, which include Features to be tested, Features not to be tested, assumptions for test execution, test completion criteria, test completion criteria.</p>
+
+<h4>4.1 Controls to be Tested</h4>
+
+<p>The following section outlines the controls that will be tested which include, AC - Access Controls, AU - Auditing, CA- Security Assessment and Authorization, CM - Configuration Management, CP - Contingency Planning, IA - Identification and Authentication, IR - Incident Response, MP - Media Protection, PL - Security Planning, RA - Risk Assessment, SA - System and Services Acquisition, SC - System and Communications Proftection and SI - System and Information Integrity.</p>
+
+<p>Below is the Test Plan for the controls that will be tested.</p>
+
+<h4>4.2 Controls not to be Tested</h4>
+
+<p>TBD</p>
+
+<h4>4.3 Assumptions For Test Execution</h4>
+
+<p>Before starting to test the following conditions should be met:</p>
+
+<ul>
+  <li>The test environment is ready and configured appropriately.</li>
+  <li>The version to be tested has been successfully deployed to the test environment.</li>
+  <li>All the features planned for the build are ready to be tested.</li>
+  <li>Smoke test has been passed successfully.</li>
+</ul>
+<p>If one of the above mentioned items is not fulfilled the QA Team Lead returns the build to the development team for correction</p>
+
+<h4>4.4 Test Completion Criteria</h4>
+
+<ul>
+  <li>All test cases planned for execution have been run</li>
+  <li>All the found defects have been reported to the bug tracking system.</li>
+  <li>A test result report has been sent to all interested parties.</li>
+</ul>
+
+
+<h3>5 Test Strategy</h3>
+
+<p>This section outlines the type of testing to be conducted.</p>
+
+
+<h3>6 Scanning Authorization</h3>
+
+<p>Any scans performed by the assessment team must be approved in advance by the system owner. The letter in Appendix A must be signed by the system owner and forwarded to the Assessment Team prior to conducting the assessment. This letter will authorize the Assessment team to use the tools indicated to perform scans on SAMS.</p>
+
+
+<h3>7 Security Test Results/Report</h3>
+
+<p>The following section outlines the controls the test results after all the controls have been validated in section 4.1 of this document.</p>

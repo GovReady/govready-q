@@ -14,7 +14,7 @@ from structlog import get_logger
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
 
-from .models import AppSource, AppVersion, ModuleAsset, \
+from .models import AppSource, AppVersion, AppInput, ModuleAsset, \
                     Module, ModuleQuestion, Task, \
                     extract_catalog_metadata
 
@@ -66,6 +66,9 @@ def load_app_into_database(app, update_mode=AppImportUpdateMode.CreateInstance, 
     else:
         # Update Modules in this one.
         appinst = update_appinst
+
+    # Load inputs
+    load_app_inputs_into_database(app, appinst)
 
     # Load them all into the database. Each will trigger load_module_into_database
     # for any modules it depends on.
@@ -485,5 +488,48 @@ def load_module_assets_into_database(app, appinst):
         # Add to the app.
         appinst.asset_files.add(asset)
         appinst.asset_paths[file_path] = file_hash
+
+    appinst.save()
+
+def load_app_inputs_into_database(app, appinst):
+    # Load all of the static app inputs from the source into the database.
+    # If an AppInput already exists for an input, use that.
+
+    source = app.store.source
+
+    # Add the assets.
+    appinst.trust_inputs = source.trust_assets  # remember setting at time of app load
+    appinst.input_paths = {}
+
+    for file_path, input_item, file_hash, content_loader in app.get_inputs():
+        # Get or create the AppInput --- it might already exist in an earlier app.
+        app_input, is_new = AppInput.objects.get_or_create(
+            source=source,
+            content_hash=file_hash,
+        )
+        if is_new:
+            # Set the new file content.
+            from django.core.files.base import ContentFile
+            app_input.file.save(file_path, ContentFile(content_loader()))
+            app_input.save()
+
+        if input_item["type"] == "oscal":  # Only supporting OSCAL input currently
+        # Load file from path
+            try:
+                fs = app.get_fs()
+                with fs.open(file_path, "rb") as file:
+                    oscal_content = file.read()
+            except OSError:
+                logger.error(event="load_app_input", msg="Failed to find or load an app input.")
+                raise FileNotFoundError
+            else:
+                from controls.views import ComponentImporter
+                import_record = ComponentImporter().import_components_as_json(file_path, oscal_content)
+                if import_record is not None:
+                    appinst.input_artifacts.add(import_record)
+
+        # Add to the app.
+        appinst.input_files.add(app_input)
+        appinst.input_paths[file_path] = file_hash
 
     appinst.save()

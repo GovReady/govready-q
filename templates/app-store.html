@@ -7,11 +7,7 @@ Compliance Apps
 
 {% block head %}
 <style>
-  body {
-    padding-left: 20px;
-    padding-right: 20px;
-    background-color: rgb(247,247,247);
-  }
+/* remove body tag because it shouldn't be here. */
 
   h1 {
     margin-bottom: 30px;
@@ -136,14 +132,15 @@ Compliance Apps
         <form class="form-inline" onsubmit="return false;">
           <div class="form-group">
             {% if authoring_tool_enabled %}
-            <span class="create-new-project">
-              <a id="new-project" href="#" class="btn btn-success" onclick="authoring_tool_create_q_form('argument'); return false;">Create New Project</a>
-            </span>
+{#                commenting out for now until fully implemented#}
+{#            <span class="create-new-project">#}
+{#              <a id="new-project" href="#" class="btn btn-success" onclick="authoring_tool_create_q_form('argument'); return false;">Create App Source</a>#}
+{#            </span>#}
             {% endif %}
             <label class="sr-only" for="app-search">search apps for</label>
             <div class="input-group">
               <div class="input-group-addon">search</div>
-              <input type="text" class="form-control" id="app-search" placeholder="search projects">
+              <input type="text" class="form-control" id="app-search" placeholder="search compliance apps">
             </div>
           </div>
         </form>
@@ -182,7 +179,7 @@ Compliance Apps
         <tr valign="top">
         <td>
           <h3>{{app.title}}</h3>
-          <div class="body">
+          <div>
           {{app.description.short|safe|truncatewords_html:18}}
           </div>
           {% if app.authz != "none" %}
@@ -205,9 +202,9 @@ Compliance Apps
                       {% with app.organizations|first as first_org %}
                           <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
                       {% endwith %}
-                      <button type="submit" class="btn btn-success btn-sm start-app">
-                          Add ►
-                      </button>&nbsp;
+                      {% if 'portfolio' in forward_qsargs %}
+                        <button type="submit" class="btn btn-success btn-sm start-app">Add</button>
+                      {% endif %}
                   </form>
               {% endif %}
             <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-default btn-sm view-app">Info</a>

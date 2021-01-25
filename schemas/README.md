@@ -20,6 +20,11 @@ the XML Schema "source of truth".)  Basically, the JSON schema
 included many "minItems: 1" and "minProperties: 1" which should be
 "minItems: 0" and "minProperties: 0".
 
+* `oscal_ssp_schema.json`
 
+The source for our copy of `oscal_component_schema.json` came from
+[JSON Schema for
+OSCAL](https://github.com/usnistgov/OSCAL/tree/master/json/schema),
+tagged v1.0.0-rc-1.
 
 
