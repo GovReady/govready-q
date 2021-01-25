@@ -851,7 +851,9 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         component_element_btn = self.browser.find_element_by_id("related-panel-1")
         component_element_btn.click()
         select_comp_statement_check = wait_for_sleep_after(lambda: self.browser.find_element_by_name("relatedcomps"))
-        select_comp_statement_check_click = wait_for_sleep_after(lambda: select_comp_statement_check.click())
+        var_sleep(1)
+        wait_for_sleep_after(lambda: select_comp_statement_check.click())
+        var_sleep(1)
         # Add component statement
         submit_comp_statement = wait_for_sleep_after(lambda: self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button"))
         submit_comp_statement.click()
