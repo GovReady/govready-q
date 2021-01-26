@@ -18,7 +18,7 @@ urlpatterns = [
     url(r'^media/users/(\d+)/photo/(\w+)', views_landing.user_profile_photo),
 
     # incoming email hook for responses to notifications
-    url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook),
+    url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook, name='notifications'),
 
     # Django admin site
     url(r'^admin/', admin.site.urls),

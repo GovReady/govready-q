@@ -184,7 +184,7 @@ Compliance Apps
           </div>
           {% if app.authz != "none" %}
           <div class="app-metadata">
-            Admin approval required</div>
+            Admin approval required
           </div>
           {% endif %}
           <div class="app-quick-start-form">
@@ -203,7 +203,7 @@ Compliance Apps
                           <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
                       {% endwith %}
                       {% if 'portfolio' in forward_qsargs %}
-                        <button type="submit" class="btn btn-success btn-sm start-app">Add</button>
+                        <button type="submit" class="btn btn-success btn-md btn-justified start-app">Add</button>
                       {% endif %}
                   </form>
               {% endif %}

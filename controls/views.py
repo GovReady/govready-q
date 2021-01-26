@@ -632,6 +632,23 @@ class ComponentImporter(object):
             control = catalog.get_control_by_id(control_id)
             return True if control is not None else False
 
+
+def add_selected_components(system, import_record):
+        """Add a component from the library to the project and its statements using the import record"""
+
+        # Get components from import record
+        imported_components = Element.objects.filter(import_record=import_record)
+        for imported_component in imported_components:
+            # Loop through element's prototype statements and add to control implementation statements
+            for smt in Statement.objects.filter(producer_element_id=imported_component.id,
+                                                statement_type="control_implementation_prototype"):
+                # Add all existing control statements for a component to a system even if system does not use controls.
+                # This guarantees that control statements are associated.
+                # The selected controls will serve as the primary filter on what content to display.
+                smt.create_instance_from_prototype(system.root_element.id)
+
+
+
 def system_element(request, system_id, element_id):
     """Display System's selected element detail view"""
 
@@ -2486,6 +2503,9 @@ def project_import(request, project_id):
     Import an entire project's components and control content
     """
     project = Project.objects.get(id=project_id)
+    system_id = project.system.id
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
     # Retrieve identified System
     if request.method == 'POST':
         project_data = request.POST['json_content']
@@ -2561,7 +2581,9 @@ def project_import(request, project_id):
             for k, val in enumerate(loaded_imported_jsondata.get('component-definitions')):
                 oscal_component_json = json.dumps(loaded_imported_jsondata.get('component-definitions')[k])
                 import_name = request.POST.get('import_name', '')
-                result = ComponentImporter().import_components_as_json(import_name, oscal_component_json, request)
+                import_record = ComponentImporter().import_components_as_json(import_name, oscal_component_json, request)
+                if import_record != None:
+                    add_selected_components(system, import_record)
 
         return HttpResponseRedirect("/projects")
 

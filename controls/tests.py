@@ -203,8 +203,8 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
             self.json_download.unlink()
         elif os.path.isfile(self.json_download.name):
             os.remove(self.json_download.name)
-        self.click_element("a#oscal_download_json_link")
-        var_sleep(1)
+        wait_for_sleep_after(lambda: self.click_element("a#oscal_download_json_link"))
+        var_sleep(2)
         # assert download exists!
         try:
             # The following test FAILS on MacOS when tests run in HEADLESS mode.
@@ -284,7 +284,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         element_count_after_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
 
-        self.assertEqual(element_count_before_import + 2, element_count_after_import)
+        wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 2, element_count_after_import))
 
         statement_count_after_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
         self.assertEqual(statement_count_before_import + 4, statement_count_after_import)
@@ -851,7 +851,9 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         component_element_btn = self.browser.find_element_by_id("related-panel-1")
         component_element_btn.click()
         select_comp_statement_check = wait_for_sleep_after(lambda: self.browser.find_element_by_name("relatedcomps"))
-        select_comp_statement_check_click = wait_for_sleep_after(lambda: select_comp_statement_check.click())
+        var_sleep(1)
+        wait_for_sleep_after(lambda: select_comp_statement_check.click())
+        var_sleep(1)
         # Add component statement
         submit_comp_statement = wait_for_sleep_after(lambda: self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button"))
         submit_comp_statement.click()

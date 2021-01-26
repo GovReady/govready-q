@@ -12,6 +12,9 @@ from siteapp.settings import *
 urlpatterns = [
     url(r'^test$', views.test),
 
+    # Docs
+    url('doc/', include('django.contrib.admindocs.urls')),
+
     # Catalogs
     url(r'^$', views.catalogs),
     url(r'^catalogs$', views.catalogs),
