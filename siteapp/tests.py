@@ -39,7 +39,7 @@ def var_sleep(duration):
     sleep(duration*2)
 
 def wait_for_sleep_after(fn):
-    MAX_WAIT = 10
+    MAX_WAIT = 20
     start_time = time.time()
     while True:
         try:
