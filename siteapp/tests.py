@@ -78,6 +78,7 @@ class SeleniumTest(StaticLiveServerTestCase):
         # Start a headless browser.
 
         options = selenium.webdriver.ChromeOptions()
+        options.add_argument("--disable-dev-shm-usage")  #overcome limited resource problems
         options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
             options.add_argument("start-maximized") # too small screens make clicking some things difficult
