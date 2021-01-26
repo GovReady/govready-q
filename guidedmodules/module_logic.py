@@ -392,9 +392,10 @@ def oscal_context(answers):
     ]
 
     # generate a URL to reference this system's OSCAL profile (baseline)
-    profile_path = reverse('profile_oscal_json', kwargs=dict(system_id=system.id))
+    # TODO: fix url pattern matching for backward compatibility, figure out profile usage
+   # profile_path = reverse('profile_oscal_json', kwargs=dict(system_id=system.id))
     profile = urlunparse((GOVREADY_URL.scheme, GOVREADY_URL.netloc,
-                          profile_path,
+                          "profile_path",
                           None, None, None))
     return {
         "uuid": str(uuid.uuid4()), # SSP UUID
