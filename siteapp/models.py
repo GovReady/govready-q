@@ -302,6 +302,18 @@ class User(AbstractUser):
         portfolios = Portfolio.objects.filter(id__in=portfolio_list)
         return portfolios
 
+#import factory
+#from siteapp.models import User
+
+# class UserFactory(factory.Factory):
+#     class Meta:
+#         model = User
+#
+#     first_name = "firstme"
+#     last_name = "Doe"
+#     username = "me",
+#     email = "test+user@q.govready.com"
+
 from django.contrib.auth.backends import ModelBackend
 class DirectLoginBackend(ModelBackend):
     # Register in settings.py!

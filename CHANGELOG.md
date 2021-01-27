@@ -1,26 +1,38 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.50.1 (January 22, 2021)
+v0.9.1.50.2 (January 26, 2021)
 ------------------------------
 
+Adds support for OSCAL component and statement input for Compliance Apps.
+(Currently only supports OSCAL JSON inputs.)
+Adds statements to project upon project creation.
+Keeps track of app inputs by relating them to the app version.
+
+Includes the following schema update to the app.yaml file of Compliance Apps.
+Inputs are supported in the app.yaml file with the following format:
+```
+input:
+- id: <input_id> (string)
+  name: <Input Name> (string)
+  type: oscal (Only oscal currently supported) 
+  path: <dir/filename.json> (relative file path)
+  group: (optional string)
+```
+
 Add deployments to capture system deployments and the inventory items in each deployment.
-
 One system has multiple deployments (e.g., dev, stage, prod) and each deployment contains an inventory of the actual endpoints/items in a deployment of the system. Systems start with several common default (empty) deployments.
-
 The "design" deployment by convention is a special deployment to represent the system architecture.
-
 Deployments maintain a complete version history.
-
 Deployment inventory-items are represented as JSON data object following a scheme that is similar to OSCAL inventory-item section.
 Data for deployment inventory-items is assumed to be generated outside of GovReady. It is critical that the inventory items have UUIDs prior to import. Inventory item UUIDs for the life of the instantiated inventory item.
-
 Inventory items in an deployment can be associated with an inventory item in the "design" deployment by referencing the "design" inventory item's UUID. This enablea a virtual persistence of an inventory-item across different instances of the "same" assest, such as a virtual database server.
 
 **Feature changes**
 
 * Add system deployments with inventory items to track instantiations of the system in real assets.
 * Add lightweight-ato to default apps so users can get started easier.
+* Add the Django admin documentation generator to provide useful documentation for developers.
 
 **UI changes**
 
@@ -55,25 +67,6 @@ Inventory items in an deployment can be associated with an inventory item in the
 
 * Add lightweight-ato to default apps so users can get started easier.
 * Populate every new system with default deployments design, dev, stage, prod.
-
-v0.9.1.49.2 (January 22, 2021)
-------------------------------
-
-Adds support for OSCAL component and statement input for Compliance Apps.
-(Currently only supports OSCAL JSON inputs.)
-Adds statements to project upon project creation.
-Keeps track of app inputs by relating them to the app version.
-
-Includes the following schema update to the app.yaml file of Compliance Apps.
-Inputs are supported in the app.yaml file with the following format:
-```
-input:
-- id: <input_id> (string)
-  name: <Input Name> (string)
-  type: oscal (Only oscal currently supported) 
-  path: <dir/filename.json> (relative file path)
-  group: (optional string)
-```
 
 v0.9.1.49.1 (January 20, 2021)
 ------------------------------

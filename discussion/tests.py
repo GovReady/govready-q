@@ -221,9 +221,11 @@ class DiscussionTests(SeleniumTest):
         wait_for_sleep_after(lambda: self.click_element("#discussion .comment-input button.btn-primary"))
         wait_for_sleep_after(lambda: self.assertInNodeText("¥", '.comment[data-id="3"] .comment-text p'))
 
-        # # Test file attachments upload successfully
-        #
-        # # We need to upload a file that we know exists.
+        # Test file attachments upload successfully
+
+        # We need to upload a file that we know exists.
+
+        # Test that we can upload files of the same name
         # test_file_name = "".join([TEST_FILENAME, ".png"])
         # test_file_path = os.path.join(
         #     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -241,6 +243,21 @@ class DiscussionTests(SeleniumTest):
         # # self.assertIsNotNone(img)
         #
         # # Test that valid PNG image actually exists with valid content type.
+        # on_disk_contents = None
+        # with open(test_file_path, "rb") as filep:
+        #     on_disk_contents = filep.read()
+
+        # self.filepath_conversion("#discussion-attach-file", test_file_path, "fill")
+
+        # var_sleep(1)
+        # self.click_element("#discussion .comment-input button.btn-primary")
+        # var_sleep(1)  # Give time for the image to upload.
+
+        # # Test that we still have an image.
+        # img = self.browser.find_element_by_css_selector('.comment[data-id="5"] .comment-text p img')
+        # self.assertIsNotNone(img)
+
+        # # Getting content at url
         # image_url = img.get_attribute('src')
         # cookies = self._get_browser_cookies()
         # response = requests.get(image_url, cookies=cookies)
@@ -250,6 +267,12 @@ class DiscussionTests(SeleniumTest):
         # image_file_valid = validate_file_extension(file_model)
         # self.assertIsNone(image_file_valid)
         #
+
+        # # Test that file is the same as on disk contents
+        # self.assertEqual(image_contents, on_disk_contents)
+
+        # # Test that image is at attachment #2
+        # self.assertIn("attachment/2", image_url)
         # result = self.browser.execute_script("""var http = new XMLHttpRequest();
         #     http.open('HEAD', '{}', false);
         #     http.send();
@@ -297,4 +320,3 @@ class DiscussionTests(SeleniumTest):
         # #     return http.status!=404;""".format(image_url))
         #
         # # self.assertTrue(result)
-
