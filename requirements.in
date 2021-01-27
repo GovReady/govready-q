@@ -72,6 +72,3 @@ markupsafe==1.1.1 # BSD 3
 
 # Excel exports
 openpyxl # MIT License
-
-# Typing extensions for Python 3.6
-typing-extensions # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2

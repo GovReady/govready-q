@@ -122,8 +122,8 @@ class Command(BaseCommand):
             print("\n[WARNING] Superuser(s) already exist, not creating default admin superuser. Did you specify 'govready_admins' in 'local/environment.json'? Are you connecting to a persistent database?\n")
 
         # Create the default organization.
-        if len(Organization.objects.all()) == 0:
-            org, result = Organization.objects.get_or_create(name="Main", slug="Main")
+        if not Organization.objects.all().exists() and not Organization.objects.filter(name="main").exists():
+            org, result = Organization.objects.get_or_create(name="main", slug="main")
 
         # Add the user to the org's help squad and reviewers lists.
         try:

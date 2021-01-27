@@ -39,7 +39,7 @@ def var_sleep(duration):
     sleep(duration*2)
 
 def wait_for_sleep_after(fn):
-    MAX_WAIT = 10
+    MAX_WAIT = 20
     start_time = time.time()
     while True:
         try:
@@ -78,6 +78,7 @@ class SeleniumTest(StaticLiveServerTestCase):
         # Start a headless browser.
 
         options = selenium.webdriver.ChromeOptions()
+        options.add_argument("--disable-dev-shm-usage")  #overcome limited resource problems
         options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
             options.add_argument("start-maximized") # too small screens make clicking some things difficult
@@ -383,7 +384,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
     def _new_project(self):
         self.browser.get(self.url("/projects"))
-        self.click_element("#new-project")
+
+        wait_for_sleep_after(lambda: self.click_element("#new-project"))
 
         # Select Portfolio
         self.select_option_by_visible_text('#id_portfolio', self.user.username)
@@ -781,11 +783,8 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
         wait_for_sleep_after(lambda:  self.assertRegex(self.browser.title, "Security Projects"))
-    
-    @skip
-    def test_create_project_without_portfolio(self):
-        self._login()
-        self.browser.get(self.url("/store"))
+
+
 
     def test_grant_portfolio_access(self):
         # Grant another member access to portfolio
