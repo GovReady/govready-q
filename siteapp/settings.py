@@ -95,6 +95,7 @@ DJANGO_APPS = [
 	'django.contrib.sites', # required by allauth
 	'django.contrib.messages',
 	'django.contrib.humanize',
+	'django.contrib.admindocs',
 
 ]
 THIRD_PARTY_APPS = [
