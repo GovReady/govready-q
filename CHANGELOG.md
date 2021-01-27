@@ -32,6 +32,7 @@ Inventory items in an deployment can be associated with an inventory item in the
 
 * Add system deployments with inventory items to track instantiations of the system in real assets.
 * Add lightweight-ato to default apps so users can get started easier.
+* Add the Django admin documentation generator to provide useful documentation for developers.
 
 **UI changes**
 
