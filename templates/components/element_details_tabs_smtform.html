@@ -1,5 +1,5 @@
 <div id="panel-panel_num" class="panel panel-default">
-<div class="panel-heading" role="tabx" id="document-panel_num-title">
+    <div class="panel-heading" role="tabx" id="document-panel_num-title">
         <h4 id="panel-panel_num-title" class="panel-title">
             <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-panel_num-body">
                 <span id="producer_element-panel_num-title">{{ element.name }}</span>
@@ -7,9 +7,11 @@
             </a>
         </h4>
     </div>
-<div id="document-panel_num-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %} output-document" role="tabpanel" aria-labelledby="document-panel_num-title">
+    <div id="document-panel_num-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %} output-document" role="tabpanel" aria-labelledby="document-panel_num-title">
         <div class="panel-body output-document">
-<form id="smt_panel_num" class="smt_form">
+
+            <div>
+                <form id="smt_panel_num" class="smt_form">
                     <div class="form-group">
                         <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ element.id }}">
                         <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ element.id }}" class="systems-link">{{ element.name }}</a></label>
@@ -117,5 +119,5 @@
                             </div>
                         </div><!-- end div class="panel-body"-->
                     </div>
-            </form></div>
-
+                </form>
+            </div>
