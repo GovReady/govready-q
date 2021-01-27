@@ -1,27 +1,17 @@
 import os
-import requests
 
-from django.utils.crypto import get_random_string
+import requests
 from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils.crypto import get_random_string
 from selenium.common.exceptions import NoSuchElementException
 
 from discussion.validators import VALID_EXTS, validate_file_extension
-from guidedmodules.models import AppSource
 from guidedmodules.management.commands.load_modules import Command as load_modules
+from guidedmodules.models import AppSource
 from siteapp.models import User, Organization, Portfolio
 from siteapp.tests import SeleniumTest, var_sleep
-
-from selenium.common.exceptions import NoSuchElementException
-from tools.utils.linux_to_dos import convert_w
-
-from django.contrib.auth.models import Permission
-from django.utils.crypto import get_random_string
-from selenium.common.exceptions import NoSuchElementException
-
-from siteapp.models import User, Organization, Portfolio
-from siteapp.tests import SeleniumTest, var_sleep
-
+from siteapp.tests import wait_for_sleep_after
 
 FIXTURE_DIR = "fixtures"
 TEST_FILENAME = "test"
@@ -34,7 +24,11 @@ class DiscussionTests(SeleniumTest):
         # Load modules from the fixtures directory so that we have the required
         # modules as well as a test project.
 
-        AppSource.objects.all().delete()
+        try:
+            AppSource.objects.all().delete()
+        except Exception as ex:
+            print(f"Exception: {ex}")
+            print(f"App Sources:{AppSource.objects.all()}")
         AppSource.objects.get_or_create(
               # this one exists on first db load because it's created by
               # migrations, but because the testing framework seems to
@@ -96,13 +90,15 @@ class DiscussionTests(SeleniumTest):
         # Select Portfolio
         self.select_option_by_visible_text('#id_portfolio', self.user.username)
         self.click_element("#select_portfolio_submit")
-        var_sleep(1)
 
-        self.click_element(".app[data-app='project/simple_project'] .view-app")
+        # Start a project
+        wait_for_sleep_after(lambda: self.click_element(".app[data-app='project/simple_project'] .view-app"))
+        # var_sleep(10.5)
         self.click_element("#start-project")
-        var_sleep(1)
-        self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
-        var_sleep(2.0)
+        # wait_for_sleep_after(lambda: self.click_element("#start-project"))
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "I want to answer some questions on Q."))
+
+
 
     def _start_task(self):
         # Assumes _new_project() just finished.
@@ -117,6 +113,17 @@ class DiscussionTests(SeleniumTest):
         for browser_cookie in browser_cookies:
             cookies[browser_cookie["name"]] = browser_cookie["value"]
         return cookies
+
+    # Method appears in commit ceb1214f
+    def _upload_discussion_image(self, img_css_selector):
+        """
+        Upload an image in a discussion section
+        """
+        var_sleep(.5)
+        self.click_element("#discussion .comment-input button.btn-primary")
+        var_sleep(1.5)# Give time for the image to upload.
+        img = wait_for_sleep_after(lambda: self.browser.find_element_by_css_selector(img_css_selector) )
+        return img
 
     def test_validate_file_extension(self):
         # Load test file paths
@@ -178,34 +185,28 @@ class DiscussionTests(SeleniumTest):
         # Log in and create a new project.
         self._login()
         self._new_project()
-        var_sleep(.5) # wait for page to reload
-        self._start_task()
+        wait_for_sleep_after(lambda: self._start_task())# wait for page to reload
 
         # Move past the introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
         var_sleep(.8) # wait for page to reload
 
-        # Click interstital "Got it" button
+        # Click interstitial "Got it" button
         self.click_element("#save-button")
         var_sleep(.5)
 
         # We're now on the first actual question.
         # Start a team conversation.
-        self.click_element("#start-a-discussion")
-        var_sleep(1)
-        self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
-        var_sleep(.5)
-        self.click_element("#discussion .comment-input button.btn-primary")
-        var_sleep(.5)
+        wait_for_sleep_after(lambda: self.click_element("#start-a-discussion"))
+        wait_for_sleep_after(lambda: self.fill_field("#discussion-your-comment", "Hello is anyone *here*?"))
+        wait_for_sleep_after(lambda: self.click_element("#discussion .comment-input button.btn-primary"))
 
         # Test Script injection
         script = "<script id='injectiontest2'>document.getElementsByTagName('body')[0]" \
                  ".appendChild('<div id=\\'injectiontest1\\'></div>');</script>"
-        self.fill_field("#discussion-your-comment", script)
-        var_sleep(.5)
-        self.click_element("#discussion .comment-input button.btn-primary")
-        var_sleep(.5)
+        wait_for_sleep_after(lambda: self.fill_field("#discussion-your-comment", script))
+        wait_for_sleep_after(lambda: self.click_element("#discussion .comment-input button.btn-primary"))
 
         # Check that the element was *not* added to the page.
         with self.assertRaises(NoSuchElementException):
@@ -216,58 +217,32 @@ class DiscussionTests(SeleniumTest):
             self.browser.find_element_by_css_selector('#injectiontest2')
 
         # Test some special characters
-        self.fill_field("#discussion-your-comment", "¥")
-        var_sleep(.5)
-        self.click_element("#discussion .comment-input button.btn-primary")
-        var_sleep(.5)
-
-        self.assertInNodeText("¥", '.comment[data-id="3"] .comment-text p')
+        wait_for_sleep_after(lambda: self.fill_field("#discussion-your-comment", "¥"))
+        wait_for_sleep_after(lambda: self.click_element("#discussion .comment-input button.btn-primary"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("¥", '.comment[data-id="3"] .comment-text p'))
 
         # Test file attachments upload successfully
 
         # We need to upload a file that we know exists.
-        test_file_name = "".join([TEST_FILENAME, ".png"])
-        test_file_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            FIXTURE_DIR,
-            test_file_name
-        )
-
-        self.filepath_conversion("#discussion-attach-file", test_file_path, "fill")
-
-        var_sleep(.5)
-        self.click_element("#discussion .comment-input button.btn-primary")
-
-        var_sleep(.5)# Give time for the image to upload.
-        # Test that we have an image.
-        img = self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img')
-        # self.assertIsNotNone(img)
-
-        # Test that valid PNG image actually exists with valid content type.
-        image_url = img.get_attribute('src')
-        cookies = self._get_browser_cookies()
-        response = requests.get(image_url, cookies=cookies)
-        image_contents = response.content
-
-        file_model = SimpleUploadedFile(test_file_name, image_contents, content_type="image/png")
-        image_file_valid = validate_file_extension(file_model)
-        self.assertIsNone(image_file_valid)
-
-        result = self.browser.execute_script("""var http = new XMLHttpRequest();
-            http.open('HEAD', '{}', false);
-            http.send();
-            return http.status!=404;""".format(image_url))
-
-        self.assertTrue(result)
 
         # Test that we can upload files of the same name
-
         # test_file_name = "".join([TEST_FILENAME, ".png"])
         # test_file_path = os.path.join(
         #     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
         #     FIXTURE_DIR,
         #     test_file_name
         # )
+        # self.filepath_conversion("#discussion-attach-file", test_file_path, "fill")
+        #
+        # var_sleep(.5)
+        # self.click_element("#discussion .comment-input button.btn-primary")
+
+        # var_sleep(.5)# Give time for the image to upload.
+        # # Test that we have an image.
+        # img = self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img')
+        # # self.assertIsNotNone(img)
+        #
+        # # Test that valid PNG image actually exists with valid content type.
         # on_disk_contents = None
         # with open(test_file_path, "rb") as filep:
         #     on_disk_contents = filep.read()
@@ -287,16 +262,61 @@ class DiscussionTests(SeleniumTest):
         # cookies = self._get_browser_cookies()
         # response = requests.get(image_url, cookies=cookies)
         # image_contents = response.content
+        #
+        # file_model = SimpleUploadedFile(test_file_name, image_contents, content_type="image/png")
+        # image_file_valid = validate_file_extension(file_model)
+        # self.assertIsNone(image_file_valid)
+        #
 
         # # Test that file is the same as on disk contents
         # self.assertEqual(image_contents, on_disk_contents)
 
         # # Test that image is at attachment #2
         # self.assertIn("attachment/2", image_url)
-
         # result = self.browser.execute_script("""var http = new XMLHttpRequest();
         #     http.open('HEAD', '{}', false);
         #     http.send();
         #     return http.status!=404;""".format(image_url))
-
+        #
         # self.assertTrue(result)
+        #
+        # # Test that we can upload files of the same name
+        #
+        # # test_file_name = "".join([TEST_FILENAME, ".png"])
+        # # test_file_path = os.path.join(
+        # #     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        # #     FIXTURE_DIR,
+        # #     test_file_name
+        # # )
+        # # on_disk_contents = None
+        # # with open(test_file_path, "rb") as filep:
+        # #     on_disk_contents = filep.read()
+        #
+        # # self.filepath_conversion("#discussion-attach-file", test_file_path, "fill")
+        #
+        # # var_sleep(1)
+        # # self.click_element("#discussion .comment-input button.btn-primary")
+        # # var_sleep(1)  # Give time for the image to upload.
+        #
+        # # # Test that we still have an image.
+        # # img = self.browser.find_element_by_css_selector('.comment[data-id="5"] .comment-text p img')
+        # # self.assertIsNotNone(img)
+        #
+        # # # Getting content at url
+        # # image_url = img.get_attribute('src')
+        # # cookies = self._get_browser_cookies()
+        # # response = requests.get(image_url, cookies=cookies)
+        # # image_contents = response.content
+        #
+        # # # Test that file is the same as on disk contents
+        # # self.assertEqual(image_contents, on_disk_contents)
+        #
+        # # # Test that image is at attachment #2
+        # # self.assertIn("attachment/2", image_url)
+        #
+        # # result = self.browser.execute_script("""var http = new XMLHttpRequest();
+        # #     http.open('HEAD', '{}', false);
+        # #     http.send();
+        # #     return http.status!=404;""".format(image_url))
+        #
+        # # self.assertTrue(result)

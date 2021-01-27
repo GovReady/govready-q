@@ -45,18 +45,18 @@ class Discussion(models.Model):
         # for the admin, notification strings
         return self.title
 
+    def get_absolute_url(self):
+        if self.attached_to_obj is None:
+            # Dangling!
+            return ""
+        return self.attached_to_obj.get_absolute_url() + "#discussion"
+
     @property
     def attached_to_obj(self):
         # Cache .attached_to.
         if not hasattr(self, '_attached_to'):
             self._attached_to = self.attached_to
         return self._attached_to
-
-    def get_absolute_url(self):
-        if self.attached_to_obj is None:
-            # Dangling!
-            return ""
-        return self.attached_to_obj.get_absolute_url() + "#discussion"
 
     @property
     def title(self):

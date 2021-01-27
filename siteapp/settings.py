@@ -37,10 +37,10 @@ if os.path.exists(local("environment.json")):
 else:
 	# Make some defaults and show the user.
 	environment = {
-		"secret-key": make_secret_key(),
+		"govready-url": "http://localhost:8000",
+		"static": "static_root",
 		"debug": True,
-		"https": False,
-		"host": "localhost:8000",
+		"secret-key": make_secret_key()
 	}
 
 	# Show the defaults.
@@ -95,6 +95,7 @@ DJANGO_APPS = [
 	'django.contrib.sites', # required by allauth
 	'django.contrib.messages',
 	'django.contrib.humanize',
+	'django.contrib.admindocs',
 
 ]
 THIRD_PARTY_APPS = [
@@ -231,6 +232,7 @@ DATABASES = {
 		'ENGINE': 'django.db.backends.sqlite3',
 		'NAME': local('db.sqlite3'),
 		'CONN_MAX_AGE': 60*5, # 5 min
+		'timeout': 30,
 	}
 }
 if not environment.get('db'):
@@ -401,7 +403,7 @@ X_FRAME_OPTIONS = 'DENY' # don't allow site to be embedded in iframes
 # STATIC_ROOT path.
 #
 # A duplication of files can occur in production deployments when SITE_ROOT
-# is defined as `siteapp/static`. Collectstatic does post-processing on files and 
+# is defined as `siteapp/static`. Collectstatic does post-processing on files and
 # appends a hash and then builds a manifest for static files. As `collectstatic` command
 # repeatedly is run, the result is reading and aggregating static files from and into
 # the same directory. This will eventually cause an errors as file names grow too long
