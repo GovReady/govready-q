@@ -70,7 +70,7 @@ def walk_module_questions(module, callback):
         # question, then return its state dict from last time.
         if q.key in processed_questions:
             return processed_questions[q.key]
-        
+
         # Prevent infinite recursion.
         if q.key in stack:
             raise ValueError("Cyclical dependency in questions: " + "->".join(stack + [q.key]))
@@ -157,7 +157,7 @@ def evaluate_module_state(current_answers, parent_context=None):
 
         # Before running impute conditions below, we need a TemplateContext
         # which provides the functionality of resolving variables mentioned
-        # in the impute condition. The TemplateContext that we use here is 
+        # in the impute condition. The TemplateContext that we use here is
         # different from the one we normally use to render output documents
         # because an impute condition in a question should not be able to see
         # the answers to questions that come later in the module. The purpose
@@ -300,15 +300,15 @@ def oscal_context(answers):
 
     # sometimes we run into answers w/o a task, in which case
     # there is not much we can do
-    
+
     if not hasattr(answers, 'task'):
         return dict()
-    
+
     project = answers.task.project
     system = project.system
 
     # TODO: where do we get the catalog key from?
-    
+
     catalog_key = Catalogs.NIST_SP_800_53_rev4
     catalog = Catalog.GetInstance(catalog_key)
 
@@ -349,7 +349,7 @@ def oscal_context(answers):
             for param_id in param_ids
             if params.get(param_id)
         ]
-        
+
         # loop over all the statements for this control, grouped by
         # "part id".  I.e., "ac-1.a", "ac-1.b", etc.
         for pid, group in groupby(sorted(group, key=lambda s: s.pid),
@@ -378,23 +378,24 @@ def oscal_context(answers):
             ir['statements'].append(statement)
         implemented_requirements.append(ir)
 
-        # TODO: placeholder for information types -- should be able to pull this out
-        # from questionnaire
-        
-        information_types = [
-            {
-                "title": "UNKNOWN information type title",
-                "description": "information type description",
-                "confidentiality_impact": "information type confidentiality impact",
-                "integrity_impact": "information type integrity impact",
-                "availability_impact": "information type availability impact"
-            }
-        ]
+    # TODO: placeholder for information types -- should be able to pull this out
+    # from questionnaire
+
+    information_types = [
+        {
+            "title": "UNKNOWN information type title",
+            "description": "information type description",
+            "confidentiality_impact": "information type confidentiality impact",
+            "integrity_impact": "information type integrity impact",
+            "availability_impact": "information type availability impact"
+        }
+    ]
 
     # generate a URL to reference this system's OSCAL profile (baseline)
-    profile_path = reverse('profile_oscal_json', kwargs=dict(system_id=system.id))
+    # TODO: fix url pattern matching for backward compatibility, figure out profile usage
+   # profile_path = reverse('profile_oscal_json', kwargs=dict(system_id=system.id))
     profile = urlunparse((GOVREADY_URL.scheme, GOVREADY_URL.netloc,
-                          profile_path,
+                          "profile_path",
                           None, None, None))
     return {
         "uuid": str(uuid.uuid4()), # SSP UUID
@@ -451,7 +452,7 @@ def render_content(content, answers, output_format, source,
             # Convert the template first to HTML using CommonMark.
 
             if not isinstance(template_body, str): raise ValueError("Template %s has incorrect type: %s" % (source, type(template_body)))
-            
+
             # We don't want CommonMark to mess up template tags, however. If
             # there are symbols which have meaning both to Jinaj2 and CommonMark,
             # then they may get ruined by CommonMark because they may be escaped.
@@ -667,7 +668,7 @@ def render_content(content, answers, output_format, source,
                 #             "author": "{{ book.author }}"
                 #          }
                 #      }
-                # }    
+                # }
                 # will render to:
                 # {
                 #     "books": {
@@ -686,7 +687,7 @@ def render_content(content, answers, output_format, source,
                 if "%value" not in value:
                     raise ValueError("%dict directive missing %value")
                 item_value = value["%value"]
-                
+
                 for i, item in enumerate(seq):
                     obj = walk(
                         item_value,
@@ -700,7 +701,7 @@ def render_content(content, answers, output_format, source,
                     retval[dict_key] = obj
 
                 return retval
-            
+
             elif isinstance(value, dict) and isinstance(value.get("%if"), str):
                 # The value of the "%if" key is an expression.
                 condition_func = compile_jinja2_expression(value["%if"])
@@ -924,7 +925,7 @@ def render_content(content, answers, output_format, source,
                     # Check final URL.
                     import urllib.parse
                     u = urllib.parse.urlparse(url)
-                    
+
                     # Allow data URLs in some cases.
                     if use_data_urls and allow_dataurl and u.scheme == "data":
                         return url
@@ -1186,7 +1187,7 @@ def get_question_dependencies_with_type(question, get_from_question_id=None):
     # Returns a set of ModuleQuestion instances that this question is dependent on
     # as a list of edges that are tuples of (edge_type, question obj).
     ret = []
-    
+
     # All questions mentioned in prompt text become dependencies.
     for qid in get_jinja2_template_vars(question.spec.get("prompt", "")):
         ret.append(("prompt", qid))
@@ -1353,7 +1354,7 @@ class ModuleAnswers(object):
                 # Use the template rendering system to produce a human-readable
                 # HTML rendering of the value.
                 value_display = RenderedAnswer(self.task, q, is_answered, a, value, tc)
-                
+
                 # For question types whose primary value is machine-readable,
                 # show a nice display form if possible using the .text attribute,
                 # if possible. It probably returns a SafeString which needs __html__()
@@ -1439,7 +1440,7 @@ class ModuleAnswers(object):
                     return self.document[entry]
 
                 raise KeyError(entry)
-                
+
             def get(self, entry, default=None):
                 if entry in self.output_formats or entry in self.document:
                     return self[entry]
@@ -1503,7 +1504,7 @@ class TemplateContext(Mapping):
 
     def getitem(self, item):
         self._execute_lazy_module_answers()
-        
+
         # If 'item' matches a question ID, wrap the internal Pythonic/JSON-able value
         # with a RenderedAnswer instance which take care of converting raw data values
         # into how they are rendered in templates (escaping, iteration, property accessors)
@@ -1543,7 +1544,7 @@ class TemplateContext(Mapping):
                 try:
                     catalog_key = self.module_answers.task.project.system.root_element.controls.first().oscal_catalog_key
                     parameter_values = self.module_answers.task.project.get_parameter_values(catalog_key)
-                    sca = Catalog.GetInstance(catalog_key=catalog_key, 
+                    sca = Catalog.GetInstance(catalog_key=catalog_key,
                                               parameter_values=parameter_values)
                     control_catalog = sca.flattened_controls_all_as_dict
                 except:
@@ -1875,7 +1876,7 @@ class RenderedAnswer:
     def skipped(self):
         # The question has a null answer either because it was imputed null
         # or the user skipped it.
-        return self.is_answered and (self.answer is None) 
+        return self.is_answered and (self.answer is None)
 
     @property
     def skipped_by_user(self):
@@ -1901,7 +1902,7 @@ class RenderedAnswer:
         if not self.answerobj:
             return None
         return self.answerobj.unsure
-    
+
     @property
     def date_answered(self):
         # Date question was answered.

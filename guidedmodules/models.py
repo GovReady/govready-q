@@ -118,6 +118,15 @@ class AppVersion(models.Model):
     version_number = models.CharField(blank=True, null=True, max_length=128, help_text="The version number of the compliance app.")
     version_name = models.CharField(blank=True, null=True, max_length=128, help_text="The name of this version/release of the compliance app.")
 
+    input_files = models.ManyToManyField('guidedmodules.AppInput', help_text="The inputs linked to this pack.")
+    input_paths = JSONField(
+        help_text="A dictionary mapping file paths to the content_hashes of inputs included in the inputs field of this instance.",
+        blank=True, null=True)
+    input_artifacts = models.ManyToManyField('controls.ImportRecord', related_name="import_records",
+                                             help_text="The objects created from this input.")
+    trust_inputs = models.BooleanField(default=False, null=True,
+                                       help_text="Are inputs trusted? Inputs include OSCAL components and statements that will be served on our domain.")
+
     asset_files = models.ManyToManyField('guidedmodules.ModuleAsset', help_text="The assets linked to this pack.")
     asset_paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
     trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
@@ -261,6 +270,30 @@ def recombine_catalog_metadata(app_module):
             del ret[field]
 
     return ret
+
+class AppInput(models.Model):
+    source = models.ForeignKey(AppSource, related_name="inputs", on_delete=models.CASCADE,
+                               help_text="The source of this app input.")
+    app = models.ForeignKey(AppVersion, null=True, related_name="inputs", on_delete=models.CASCADE,
+                            help_text="The AppVersion that this input is a part of.")
+    input_name = models.SlugField(max_length=200,
+                                   help_text="A slug-like identifier for the input that is unique within the AppVersion app.")
+    content_hash = models.CharField(max_length=64, help_text="A hash of the input binary content, as provided by the source.")
+    file = models.FileField(upload_to='guidedmodules/app-inputs', help_text="The input file.")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    class Meta:
+        unique_together = [('source', 'content_hash')]
+
+    def __str__(self):
+        # For the admin.
+        return "%s [%d] (from %s)" % (self.file.name, self.id, self.source)
+
+    def __repr__(self):
+        # For debugging.
+        return "<AppInput [%d] %s from %s>" % (self.id, self.file.name, self.source)
+
 
 class Module(models.Model):
     source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")
@@ -741,6 +774,17 @@ class Task(models.Model):
                 value = None
             answertuples[q.key] = (q, is_answered, a, value)
         return ModuleAnswers(self.module, self, answertuples)
+
+    def get_answer(self, question_key_path):
+        """Return the answer from for a question from dotted task path"""
+        # p.root_task.get_answers().as_dict()['system_info'].as_dict()['system_name']
+        # becomes
+        # p.root_task.get_answer("system_info.system_name")
+
+        value = self.get_answers()
+        for key in question_key_path.split("."):
+            value = value.with_extended_info().as_dict()[key]
+        return value
 
     def get_last_modification(self):
         ans = TaskAnswerHistory.objects\

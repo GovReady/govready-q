@@ -9,7 +9,7 @@
   <div class="col-md-5">
     <div>
       <span class="glyphicon glyphicon-folder-close"></span>&nbsp;&nbsp;&nbsp;
-      <a href="/{{org_group.slug}}/projects" class="org-group">{{org_group.name}}</a>
+      <a href={% url 'org_projects' org_slug=org_group.slug %} class="org-group">{{org_group.name}}</a>
     </div>
     <!-- <div><small>This is the group description</small></div> -->
   </div>

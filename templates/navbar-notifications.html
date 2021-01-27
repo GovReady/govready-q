@@ -9,7 +9,7 @@
         <div style="display: block; padding: 3px 20px; clear: both; font-weight: 400; line-height: 1.42857143; white-space: nowrap;"> {# copied bootstrap's .dropdown-menu>li>a styles so we can have an drop-down entry that isn't a link #}
             <div style="font-size: 90%; text-align: right; color: #444;">
                 {% if request.user.notifications.all.count > 0 %}
-                    <a href="/user/notifications">View All</a>
+                    <a href={% url 'notifications' %}>View All</a>
                     {% if unread_count > 0 %}
                     |
                     <a href="#"

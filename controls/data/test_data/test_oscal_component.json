@@ -1,5 +1,6 @@
 {
   "component-definition": {
+    "uuid": "098040f9-a453-4854-ad88-f093bb683dae",
     "metadata": {
       "title": "Sample OSCAL for Testing",
       "published": "2020-12-01T20:38:51+00:00",
@@ -9,9 +10,8 @@
     },
     "components": {
       "098040f9-a453-4854-ad88-f093bb683dab": {
-        "name": "Test OSCAL Component1",
-        "component-type": "software",
-        "title": "",
+        "type": "software",
+        "title": "Test OSCAL Component1",
         "description": "This is a sample OSCAL component.",
         "control-implementations": [
           {
@@ -34,7 +34,7 @@
                     "description": "Part b description"
                   }
                 },
-                "properties": [
+                "props": [
                   {
                   "name": "n/a",
                   "value": "test"
@@ -77,9 +77,8 @@
         ]
       },
       "198040f9-a453-4854-ad88-f093bb683dab": {
-        "name": "Test OSCAL Component2",
-        "component-type": "software",
-        "title": "",
+        "title": "Test OSCAL Component2",
+        "type": "software",
         "description": "Sample Component #2 with invalid statements",
         "control-implementations": [
           {
@@ -98,7 +97,7 @@
                     "description": "Part d description"
                   }
                 },
-                "properties": [
+                "props": [
                   {
                   "name": "unused",
                   "value": "x"
@@ -123,7 +122,7 @@
                     "description": "Part d description"
                   }
                 },
-                "properties": [
+                "props": [
                   {
                   "name": "unused",
                   "value": "x"
@@ -135,6 +134,5 @@
         ]
       }
     }
-  },
-  "back-matter": []
+  }
 }

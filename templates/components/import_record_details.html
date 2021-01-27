@@ -42,7 +42,7 @@
   {% for component, statements in component_statements.items %}
     <div id="tab-content" class="row row-control" style="">
       <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
-        <a href="/controls/components/{{ component.id }}">{{ component.name }}</a>
+        <a href={% url 'component_library_component' element_id=component.id %}>{{ component.name }}</a>
       </div>
       <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">{{ statements|length }} statement{{ statements|pluralize }}</div>
     </div>

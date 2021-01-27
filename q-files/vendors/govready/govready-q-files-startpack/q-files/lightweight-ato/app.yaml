@@ -1,7 +1,7 @@
 id: app
 title: General IT System ATO
 type: project
-version: 1.0.0
+version: 1.0.1
 icon: app.png
 introduction:
   format: markdown
@@ -42,7 +42,7 @@ catalog:
   status: stub
   vendor: none
   vendor_url: ~
-  version: 1.0.0
+  version: 1.0.1
 questions:
 
 #System Info

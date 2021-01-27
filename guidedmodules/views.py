@@ -1216,7 +1216,7 @@ def authoring_create_q(request):
     from django.contrib import messages
     messages.add_message(request, messages.INFO, 'New Project "{}" added into the catalog.'.format(new_q["title"]))
 
-    return JsonResponse({ "status": "ok", "redirect": "/store" })
+    return JsonResponse({ "status": "ok", "redirect": "{% url 'store' %}" })
 
 @login_required
 def refresh_output_doc(request):
