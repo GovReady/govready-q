@@ -3,6 +3,7 @@ from django.forms import ModelForm
 from django.core.exceptions import ValidationError
 from django.forms.widgets import HiddenInput
 from django.db.models import Exists
+import json
 
 from guidedmodules.models import AppSource, AppVersion
 from .models import Statement, Poam, Element, Deployment
@@ -112,10 +113,11 @@ class ImportProjectForm(forms.Form):
 class DeploymentForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
-        self._system_id = kwargs.pop('system_id', None)
         super().__init__(*args, **kwargs)
-        self.initial['system'] = self._system_id
+        self.initial['system'] = self.instance.system_id
         self.fields['system'].widget = forms.HiddenInput()
+        # Display pretty JSON in JSONfield's text area
+        self.initial['inventory_items'] = json.dumps(self.instance.inventory_items, indent=4, sort_keys=True)
 
     class Meta:
         model = Deployment

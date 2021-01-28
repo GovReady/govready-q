@@ -220,7 +220,7 @@ def rename_element(request,element_id):
         request ([HttpRequest]): The network request
     component_id ([int|str]): The id of the component
     Returns:
-        [JsonResponse]: Either a ok status or an error 
+        [JsonResponse]: Either a ok status or an error
     """
     try:
         new_name = request.POST.get("name", "").strip() or None
@@ -233,7 +233,7 @@ def rename_element(request,element_id):
             event="rename_element",
             element={"id": element.id, "new_name": new_name, "new_description": new_description}
         )
-        return JsonResponse({ "status": "ok" }) 
+        return JsonResponse({ "status": "ok" })
     except:
         import sys
         return JsonResponse({ "status": "error", "message": sys.exc_info() })
@@ -372,7 +372,7 @@ class OSCALComponentSerializer(ComponentSerializer):
         # create requirements and organize by source (sid_class)
 
         by_class = defaultdict(list)
-        
+
         # work:
         # group stmts by control-id
         # emit an requirement for the control-id
@@ -400,7 +400,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                 }
                 statement_id = self.statement_id_from_control(control_id, smt.pid)
                 requirement["statements"][statement_id] = statement
-                
+
             by_class[smt.sid_class].append(requirement)
 
         for sid_class, requirements in by_class.items():
@@ -724,7 +724,7 @@ def component_library_component(request, element_id):
     # Retrieve impl_smts produced by element and consumed by system
     # Get the impl_smts contributed by this component to system
     impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
-    
+
     if len(impl_smts) < 1:
         context = {
             "element": element,
@@ -1235,7 +1235,7 @@ def editor(request, system_id, catalog_key, cl_id):
     # Get control catalog
     catalog = Catalog(catalog_key)
 
-    # TODO: maybe catalogs could provide an API that returns a set of 
+    # TODO: maybe catalogs could provide an API that returns a set of
     # control ids instead?
 
     cg_flat = catalog.get_flattened_controls_all_as_dict()
@@ -2670,7 +2670,7 @@ def manage_system_deployment(request, system_id, deployment_id=None):
     # TODO Make sure user has permission on system!
     di = get_object_or_404(Deployment, pk=deployment_id) if deployment_id else None
     if request.method == 'POST':
-        form = DeploymentForm(request.POST, instance=di, system_id=system_id)
+        form = DeploymentForm(request.POST, instance=di)
         if form.is_valid():
             form.save()
             deployment = form.instance
@@ -2691,7 +2691,7 @@ def manage_system_deployment(request, system_id, deployment_id=None):
                 )
             return redirect('system_deployments', system_id=system_id)
     else:
-        form = DeploymentForm(instance=di, system_id=system_id)
+        form = DeploymentForm(instance=di)
 
     return render(request, 'systems/deployment_form.html', {
         'form': form,
