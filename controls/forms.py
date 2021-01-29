@@ -5,7 +5,9 @@ from django.forms.widgets import HiddenInput
 from django.db.models import Exists
 
 from guidedmodules.models import AppSource, AppVersion
-from .models import Statement, Poam, Element
+from .models import Statement, Poam, Element, Deployment
+# from jsonfield import JSONField
+
 
 class StatementPoamForm(ModelForm):
     def __init__(self, *args, **kwargs):
@@ -91,7 +93,6 @@ class ImportOSCALComponentForm(forms.Form):
     json_content = forms.CharField(label='OSCAL (JSON)', widget=forms.Textarea())
     import_name = forms.CharField(label='Import File Name', widget=forms.HiddenInput(), required=False)
 
-
 class ImportProjectForm(forms.Form):
 
     file = forms.FileField(label="Select project file (.json)",
@@ -108,4 +109,24 @@ class ImportProjectForm(forms.Form):
     appsource_version_id = forms.ModelMultipleChoiceField(queryset=AppVersion.objects.all(),label="Select the app name of the App Source", help_text="An app name is assigned to each app version")
     appsource_compapp = forms.ModelMultipleChoiceField(queryset=AppSource.objects.all(),label="Choose the compliance app from your App Source", help_text="Need the App Source compliance app.")
 
+class DeploymentForm(ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        self._system_id = kwargs.pop('system_id', None)
+        super().__init__(*args, **kwargs)
+        self.initial['system'] = self._system_id
+        self.fields['system'].widget = forms.HiddenInput()
+
+    class Meta:
+        model = Deployment
+        fields = ['name', 'description', 'system', 'inventory_items']
+
+    def clean(self):
+        """Validate data."""
+
+        cd = self.cleaned_data
+        return cd
+
+    inventory_items = forms.CharField(label='Inventory items (JSON)', required=False, widget=forms.Textarea(),
+            help_text="Listing of inventory items in JSON")
 

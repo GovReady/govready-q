@@ -94,7 +94,7 @@
                 <!-- Page Title-->
                 <div style="float: left;">
                     <h2 class="control-heading" style="">
-                        <a href="{{ project.get_absolute_url }}">{{ system.root_element.name }}</a> > <a href="/systems/{{ system.id }}/controls/selected">Selected Controls</a>
+                        <a href="{{ project.get_absolute_url }}">{{ system.root_element.name }}</a> > <a href={% url 'controls_selected' system_id=system.id %}>Selected Controls</a>
                     </h2>
                 </div>
                 <!-- Control Lookup-->
@@ -332,7 +332,7 @@
                   <!-- <p id="oscal_download" class="navbar-text navbar-right">
                     <a id="oscal_download_json_link"
                        class="navbar-link"
-                       href="/systems/{{ system.id }}/component/{{ element.id }}/download/oscal/json">
+                       href={% url 'system_element_download_oscal_json' system_id=system.id element_id=element.id %}>
                       <span class="glyphicon glyphicon-download"></span>
                       Download ...
                     </a>

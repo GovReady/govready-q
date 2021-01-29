@@ -6,7 +6,7 @@
 {% load q %}
 
 {% block title %}
-{{ portfolio.title }} POA&Ms
+{{ portfolio.title }} System Inventory
 {% endblock %}
 
 {% block head %}
@@ -25,7 +25,9 @@
       <!-- Page Title-->
       <div class="systems-title">
           <h2 class="control-heading">
-            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> > POA&Ms
+            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a>
+            > <a href="{{ deployment.get_absolute_url }}" class="systems-link">Deployments</a>
+            > {{ deployment.name }}
           </h2>
       </div>
     </div>
@@ -33,35 +35,39 @@
     <p>&nbsp;</p>
 
     <div id="tab-content" class="row rows-header">
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam">POA&Ms</div>
-        <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">&nbsp;</div>
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-          <a href={% url 'new_poam' system_id=system.id %} class="btn btn-sm btn-success systems-element-button">New POA&M</a>
+        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam">Inventory Items</div>
+        <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">&nbsp;</div>
+        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+          <!-- <a href="/systems/{{ system.id }}/deployment/new" class="btn btn-sm btn-success systems-element-button">New Deployment</a> -->
           <span class="glyphicon glyphicon-download-alt pull-right systems-poam-glyphicon"
                 style="cursor: pointer;"
                 onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
         </div>
     </div>
-    {% if poam_smts|length < 1 %}
+    {% if inventory_items|length < 1 %}
       <div id="tab-content" class="row row-control">
         <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-          <p>No POA&Ms are currently identified for this system.</p>
+          <p>No inventory items are currently identified for this deployment.</p>
         </div>
       </div>
     {% else %}
-      {% for poam_smt in poam_smts %}
+      {% for item in inventory_items %}
         <div id="tab-content" class="row row-control">
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                <a href={% url 'edit_poam' system_id=system.id poam_id=poam_smt.id %}>V-{{ poam_smt.poam.poam_id }}</a>
-            </div>
-            <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
-                {{ poam_smt.poam.weakness_name }}
+                <a href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/inventory">{{ item.id }}</a>
             </div>
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-              {{ poam_smt.status }}
+                {{ item.name }}
             </div>
-            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                {{ poam_smt.updated|timesince}} ago
+            <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
+                {{ item.description }}
+            </div>
+            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                {% if item.scan.time %}
+                scanned: {{ item.scan.time }}
+                {% else %}
+                scanned: not available
+                {% endif %}
             </div>
         </div>
       {% endfor %}
@@ -87,10 +93,10 @@
       var format = dom.find("select").val();
       switch(format) {
         case "xlsx":
-          window.location = "/systems/" + system_id + "/poams/export/xlsx";
+          window.location = "/systems/" + system_id + "/deployments/export/xlsx";
           break;
         case "csv":
-          window.location = "/systems/" + system_id + "/poams/export/csv";
+          window.location = "/systems/" + system_id + "/deployments/export/csv";
           break;
       }
     });

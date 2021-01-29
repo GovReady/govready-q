@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block body %}
+
+    <div class="container">
+        <h1 class="text-center"><u>{{ deployment.0.name }} Version History</u></h1>
+        <h3 class="text-center"> (This deployment comes from the {{ deployment.0.system.name }} system)</h3><br>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Version id</th>
+                <th>Changed By</th>
+                <th>Date created</th>
+                <th>Deployment inventory</th>
+                <th>Change Reason</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% if deployment %}
+                {% for dpt_record in deployment %}
+                    <tr>
+                        <td class="col-xs-1 col-sm-1 col-md-1">{{ dpt_record.history_id }}</td>
+                        <td class="col-xs-2 col-sm-2 col-md-2">{{ dpt_record.history_user }}</td>
+                        <td class="col-xs-2 col-sm-2 col-md-2">{{ dpt_record.history_date }}</td>
+                        <td>{{ dpt_record.inventory_items|truncatewords:50 }}</td>
+                         <td class="col-xs-2 col-sm-2 col-md-2">{{ dpt_record.history_change_reason }}</td>
+                    </tr>
+                {% endfor %}
+             {% else %}
+            <div>Somehow there is no deployment history for this deployment. Please contact your GovReady administrator.</div>
+             {% endif %}
+
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function change_reason_update(restore_id, text_input) {
+        // update reason value with text input value
+    document.getElementById(restore_id).value = text_input;
+    }
+
+</script>}
+{% endblock %}

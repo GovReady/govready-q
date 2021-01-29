@@ -39,7 +39,7 @@ def var_sleep(duration):
     sleep(duration*2)
 
 def wait_for_sleep_after(fn):
-    MAX_WAIT = 10
+    MAX_WAIT = 20
     start_time = time.time()
     while True:
         try:
@@ -78,6 +78,7 @@ class SeleniumTest(StaticLiveServerTestCase):
         # Start a headless browser.
 
         options = selenium.webdriver.ChromeOptions()
+        options.add_argument("--disable-dev-shm-usage")  #overcome limited resource problems
         options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
             options.add_argument("start-maximized") # too small screens make clicking some things difficult
@@ -383,7 +384,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
     def _new_project(self):
         self.browser.get(self.url("/projects"))
-        self.click_element("#new-project")
+
+        wait_for_sleep_after(lambda: self.click_element("#new-project"))
 
         # Select Portfolio
         self.select_option_by_visible_text('#id_portfolio', self.user.username)
@@ -515,7 +517,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Go to project page, then review page.
         # self.click_element("#return-to-project")
-        self.click_element("#review-answers")
+        self.click_element("#btn-review-answers")
 
         # Mark the answer as reviewed then test that it was saved.
         wait_for_sleep_after(lambda: self.click_element(".task-" + str(task.id) + "-answer-q1-review-1"))
@@ -565,7 +567,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # because the element is not clickable -- it reports a coordinate
         # that's above the button in the site header. Not sure what's
         # happening. So load the modal using Javascript.
-        self.click_element("#show-project-invite")
+        self.click_element("#btn-show-project-invite")
         self.browser.execute_script("invite_user_into_project()")
         # Toggle field to invite user by email
         self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
@@ -575,7 +577,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.assertInNodeText("The email address is not valid.", "#global_modal") )# make sure we get a stern message.
         wait_for_sleep_after(lambda: self.click_element("#global_modal button") )# dismiss the warning.
 
-        wait_for_sleep_after(lambda: self.click_element("#show-project-invite") )# Re-open the invite box.
+        wait_for_sleep_after(lambda: self.click_element("#btn-show-project-invite") )# Re-open the invite box.
         self.browser.execute_script("invite_user_into_project()") # See comment above.
         # Toggle field to invite user by email
 
@@ -616,7 +618,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # But now go back to the project page.
         self.browser.get(project_page)
-        wait_for_sleep_after(lambda: self.click_element("#show-project-invite"))
+        wait_for_sleep_after(lambda: self.click_element("#btn-show-project-invite"))
 
         # Select username "me3"
         wait_for_sleep_after(lambda: self.select_option_by_visible_text('#invite-user-select', "me3"))
@@ -781,11 +783,8 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
         wait_for_sleep_after(lambda:  self.assertRegex(self.browser.title, "Security Projects"))
-    
-    @skip
-    def test_create_project_without_portfolio(self):
-        self._login()
-        self.browser.get(self.url("/store"))
+
+
 
     def test_grant_portfolio_access(self):
         # Grant another member access to portfolio
