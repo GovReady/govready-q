@@ -137,7 +137,7 @@ class SystemAssessmentResultForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.initial['system'] = self.instance.system_id
-        # self.fields['system'].widget = forms.HiddenInput()
+        self.fields['system'].widget = forms.HiddenInput()
         # Display pretty JSON in JSONfield's text area
         self.initial['assessment_results'] = json.dumps(self.instance.assessment_results, indent=4, sort_keys=True)
 

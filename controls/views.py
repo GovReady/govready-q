@@ -2693,7 +2693,7 @@ def manage_system_deployment(request, system_id, deployment_id=None):
             return redirect('system_deployments', system_id=system_id)
     else:
         if di is None:
-            di = Deployment.objects.create(system_id=system_id)
+            di = Deployment(system_id=system_id)
         form = DeploymentForm(instance=di)
 
     return render(request, 'systems/deployment_form.html', {
@@ -2831,7 +2831,7 @@ def view_system_assessment_result_summary(request, system_id, sar_id=None):
 def manage_system_assessment_result(request, system_id, sar_id=None):
     """Form to create or edit system assessment result"""
 
-    # Can user view this sytem?
+    # Can user view this system?
     system = System.objects.get(id=system_id)
     if not request.user.has_perm('view_system', system):
         # User does not have permission to this system
@@ -2861,7 +2861,7 @@ def manage_system_assessment_result(request, system_id, sar_id=None):
             return redirect('system_assessment_results_list', system_id=system_id)
     else:
         if sari is None:
-            sari = SystemAssessmentResult.objects.create(system_id=system_id)
+            sari = SystemAssessmentResult(system_id=system_id)
         form = SystemAssessmentResultForm(instance=sari)
 
     return render(request, 'systems/sar_form.html', {
