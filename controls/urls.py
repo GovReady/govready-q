@@ -1,8 +1,14 @@
 from django.conf.urls import include, url
 
+# from django.conf.urls import patterns, include
+# urlpatterns = urlpatterns + patterns('', (r'^', include('urls_api')))
+
 from django.contrib import admin
 from django.conf import settings
 admin.autodiscover()
+
+from django.views.decorators.csrf import csrf_exempt
+from . import urls_api
 
 import controls.views
 from . import views
@@ -34,15 +40,14 @@ urlpatterns = [
     url(r'^restore_to/(?P<smt_id>.*)/(?P<history_id>.*)/$', views.restore_to_history, name="restore_to"),
 
     # Systems Assessment Results
-
     url(r'^(?P<system_id>.*)/assessments$', views.system_assessment_results_list, name="system_assessment_results_list"),
+    url(r'^(?P<system_id>.*)/assessment/new$', views.manage_system_assessment_result, name="new_system_assessment_result"),
     url(r'^(?P<system_id>.*)/assessment/new$', views.manage_system_assessment_result, name="new_system_assessment_result"),
     url(r'^(?P<system_id>.*)/sar/(?P<sar_id>.*)/view$', views.view_system_assessment_result_summary, name="view_system_assessment_result_summary"),
     url(r'^(?P<system_id>.*)/sar/(?P<sar_id>.*)/edit$', views.manage_system_assessment_result, name="manage_system_assessment_result"),
     url(r'^(?P<system_id>.*)/sar/(?P<sar_id>.*)/history$', views.system_assessment_result_history, name="system_assessment_result_history"),
 
     # Systems Inventory and Deployments
-
     url(r'^(?P<system_id>.*)/deployments$', views.system_deployments, name="system_deployments"),
     url(r'^(?P<system_id>.*)/deployment/new$', views.manage_system_deployment, name="new_system_deployment"),
     url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/edit$', views.manage_system_deployment, name="manage_system_deployment"),
