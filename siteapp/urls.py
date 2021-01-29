@@ -4,6 +4,7 @@ from django.conf import settings
 
 admin.autodiscover()
 
+import controls.views_api
 import siteapp.views as views
 import siteapp.views_landing as views_landing
 import siteapp.views_health as views_health
@@ -29,6 +30,8 @@ urlpatterns = [
 
     # Controls and Systems
     url(r"^systems/", include("controls.urls")),
+    url(r"^api/v1/systems/", include("controls.urls_api")),
+
     url(r"^controls/", include("controls.urls")),
 
     # app store
