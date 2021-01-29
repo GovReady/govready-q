@@ -6,7 +6,7 @@ from django.db.models import Exists
 import json
 
 from guidedmodules.models import AppSource, AppVersion
-from .models import Statement, Poam, Element, Deployment
+from .models import Statement, Poam, Element, Deployment, SystemAssessmentResult
 # from jsonfield import JSONField
 
 
@@ -132,3 +132,24 @@ class DeploymentForm(ModelForm):
     inventory_items = forms.CharField(label='Inventory items (JSON)', required=False, widget=forms.Textarea(),
             help_text="Listing of inventory items in JSON")
 
+class SystemAssessmentResultForm(ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.initial['system'] = self.instance.system_id
+        # self.fields['system'].widget = forms.HiddenInput()
+        # Display pretty JSON in JSONfield's text area
+        self.initial['assessment_results'] = json.dumps(self.instance.assessment_results, indent=4, sort_keys=True)
+
+    class Meta:
+        model = SystemAssessmentResult
+        fields = ['name', 'system', 'deployment', 'assessment_results']
+
+    def clean(self):
+        """Validate data."""
+
+        cd = self.cleaned_data
+        return cd
+
+    assessment_results = forms.CharField(label='System assessment result items (JSON)', required=False, widget=forms.Textarea(),
+            help_text="Listing of assessment items in JSON")

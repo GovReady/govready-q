@@ -36,9 +36,8 @@
 
     <div id="tab-content" class="row rows-header">
         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam">Inventory Items</div>
-        <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">&nbsp;</div>
-        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-          <!-- <a href="/systems/{{ system.id }}/deployment/new" class="btn btn-sm btn-success systems-element-button">New Deployment</a> -->
+        <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">&nbsp;</div>
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
           <span class="glyphicon glyphicon-download-alt pull-right systems-poam-glyphicon"
                 style="cursor: pointer;"
                 onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
@@ -54,7 +53,7 @@
       {% for item in inventory_items %}
         <div id="tab-content" class="row row-control">
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                <a href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/inventory">{{ item.id }}</a>
+                {{ item.id }}
             </div>
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
                 {{ item.name }}
@@ -63,11 +62,11 @@
                 {{ item.description }}
             </div>
             <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                {% if item.scan.time %}
-                scanned: {{ item.scan.time }}
+                <!-- {% if item.scan.time %}
+                assessment: {{ item.scan.time }}
                 {% else %}
-                scanned: not available
-                {% endif %}
+                assessment: not available
+                {% endif %} -->
             </div>
         </div>
       {% endfor %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block body %}
+
+    <div class="container">
+        <h2 class="text-center">System Assessment Result for {{ sar.system.root_element.name }} - {{ sar.name }}</h2>
+        <h3 class="text-center"> {{ sar.updated|timesince }} ago</h3><br>
+
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+</script>
+{% endblock %}

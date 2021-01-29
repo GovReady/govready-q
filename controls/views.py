@@ -2652,11 +2652,7 @@ def system_deployments(request, system_id):
             "system": system,
             "project": project,
             "deployments": deployments,
-            # "controls": controls,
-            # "poam_smts": poam_smts,
-            # "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            # "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
-            # "project_form": ProjectForm(request.user),
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/deployments_list.html", context)
     else:
@@ -2667,7 +2663,12 @@ def system_deployments(request, system_id):
 def manage_system_deployment(request, system_id, deployment_id=None):
     """Form to create or edit system deployment"""
 
-    # TODO Make sure user has permission on system!
+    # Can user view this sytem?
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        # User does not have permission to this system
+        raise Http404
+
     di = get_object_or_404(Deployment, pk=deployment_id) if deployment_id else None
     if request.method == 'POST':
         form = DeploymentForm(request.POST, instance=di)
@@ -2691,18 +2692,26 @@ def manage_system_deployment(request, system_id, deployment_id=None):
                 )
             return redirect('system_deployments', system_id=system_id)
     else:
+        if di is None:
+            di = Deployment.objects.create(system_id=system_id)
         form = DeploymentForm(instance=di)
 
     return render(request, 'systems/deployment_form.html', {
-        'form': form,
-        'deployment': di,
+        "form": form,
+        "deployment": di,
+        "project_form": ProjectForm(request.user),
     })
 
 @login_required
 def deployment_history(request, system_id, deployment_id=None):
     """Returns the history for the given deployment"""
 
-    # TODO check user permission to view
+    # Can user view this sytem?
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        # User does not have permission to this system
+        raise Http404
+
     from controls.models import Deployment
     full_dpt_history = None
     try:
@@ -2710,7 +2719,10 @@ def deployment_history(request, system_id, deployment_id=None):
         full_dpt_history = deployments.history.all()
     except Deployment.DoesNotExist:
         messages.add_message(request, messages.ERROR, f'The deployment id is not valid. Is this still a deployment in GovReady?')
-    context = {"deployment": full_dpt_history}
+    context = {
+        "deployment": full_dpt_history,
+        "project_form": ProjectForm(request.user),
+        }
     return render(request, "systems/deployment_history.html", context)
 
 @login_required
@@ -2752,11 +2764,17 @@ def system_deployment_inventory(request, system_id, deployment_id):
         raise Http404
 
 @login_required
-def inventory_item_assessment_results_list(request, system_id=None, deployment_id=None):
+def system_assessment_results_list(request, system_id=None):
     """List PoamS for a system"""
 
     # Retrieve identified System
     if system_id:
+        # Can user view this sytem?
+        system = System.objects.get(id=system_id)
+        if not request.user.has_perm('view_system', system):
+            # User does not have permission to this system
+            raise Http404
+
         system = System.objects.get(id=system_id)
         # Retrieve related selected controls if user has permission on system
         if not request.user.has_perm('view_system', system):
@@ -2766,25 +2784,91 @@ def inventory_item_assessment_results_list(request, system_id=None, deployment_i
         # Retrieve primary system Project
         # Temporarily assume only one project and get first project
         project = system.projects.all()[0]
-        controls = system.root_element.controls.all()
-        poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
-
-        # impl_smts_count = {}
-        # ikeys = system.smts_control_implementation_as_dict.keys()
-        # for c in controls:
-        #     impl_smts_count[c.oscal_ctl_id] = 0
-        #     if c.oscal_ctl_id in ikeys:
-        #         impl_smts_count[c.oscal_ctl_id] = len(system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+        sars = system.system_assessment_result.all().order_by(Lower('name'))
 
         # Return the controls
         context = {
             "system": system,
             "project": project,
-            "controls": controls,
-            "poam_smts": poam_smts,
-            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
-            "project_form": ProjectForm(request.user),
+            "sars": sars,
+            # "project_form": ProjectForm(request.user),
         }
-        return render(request, "systems/poams_list.html", context)
+        return render(request, "systems/sar_list.html", context)
+
+@login_required
+def view_system_assessment_result_summary(request, system_id, sar_id=None):
+    """View Summary of System Assessment Results"""
+
+    # Can user view this sytem?
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        # User does not have permission to this system
+        raise Http404
+
+    sar = get_object_or_404(SystemAssessmentResult, pk=sar_id) if sar_id else None
+
+    return render(request, 'systems/sar_summary.html', {
+        'sar': sar,
+        "project_form": ProjectForm(request.user),
+    })
+
+@login_required
+def manage_system_assessment_result(request, system_id, sar_id=None):
+    """Form to create or edit system assessment result"""
+
+    # Can user view this sytem?
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        # User does not have permission to this system
+        raise Http404
+
+    sari = get_object_or_404(SystemAssessmentResult, pk=sar_id) if sar_id else None
+    if request.method == 'POST':
+        form = SystemAssessmentResultForm(request.POST, instance=sari)
+        if form.is_valid():
+            form.save()
+            sar = form.instance
+            # Create message to display to user
+            if sari:
+                messages.add_message(request, messages.INFO, f'System assessment result "{sar.name}" edited.')
+                logger.info(
+                    event="edit_system_assessment_result",
+                    object={"object": "system_assessment_result", "id": sar.id, "name":sar.name},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+            else:
+                messages.add_message(request, messages.INFO, f'System assessment result "{sar.name}" created.')
+                logger.info(
+                    event="create_system_assessment_result",
+                    object={"object": "system_assessment_result", "id": sar.id, "name":sar.name},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+            return redirect('system_assessment_results_list', system_id=system_id)
+    else:
+        if sari is None:
+            sari = SystemAssessmentResult.objects.create(system_id=system_id)
+        form = SystemAssessmentResultForm(instance=sari)
+
+    return render(request, 'systems/sar_form.html', {
+        'form': form,
+        'system_id': system_id,
+        "project_form": ProjectForm(request.user),
+    })
+
+@login_required
+def system_assessment_result_history(request, system_id, sar_id=None):
+    """Returns the history for the given deployment system assessment result"""
+
+    # TODO check user permission to view
+    full_sar_history = None
+    try:
+        sar = SystemAssessmentResult.objects.get(id=sar_id)
+        full_sar_history = sar.history.all()
+    except SystemAssessmentResult.DoesNotExist:
+        messages.add_message(request, messages.ERROR, f'The system assessment result id is not valid. Is this still a system assessment result in GovReady?')
+    context = {
+        "deployment": full_sar_history,
+        "project_form": ProjectForm(request.user),
+    }
+    return render(request, "systems/sar_history.html", context)
 
