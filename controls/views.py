@@ -2805,10 +2805,25 @@ def view_system_assessment_result_summary(request, system_id, sar_id=None):
         # User does not have permission to this system
         raise Http404
 
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
     sar = get_object_or_404(SystemAssessmentResult, pk=sar_id) if sar_id else None
 
+    sar_items = [item for item in sar.assessment_results] if sar.assessment_results != None else []
+
+    # Get summary pass fail across all assessment results included collection
+    # TODO: note high/low category
+    summary = {}
+    for param in ["pass", "fail", "other", "unknown", "error"]:
+        summary[param] = sum(d[param] for d in sar_items if d and param in d)
+
     return render(request, 'systems/sar_summary.html', {
-        'sar': sar,
+        "project": project,
+        "sar": sar,
+        "sar_items": sar_items,
+        "assessment_results_json": json.dumps(sar.assessment_results, indent=4, sort_keys=True),
+        "summary": summary,
         "project_form": ProjectForm(request.user),
     })
 

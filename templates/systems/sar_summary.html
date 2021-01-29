@@ -4,13 +4,99 @@
 {% load static %}
 {% load q %}
 
+{% block title %}
+System Assessment Results
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+<style>
+  /* New styles for project dashboard elements */
+  .last-login { font-size:.8em;}
+
+  .status { font-size:3em; color:#2D3337;}
+  .status-success { font-size:3em; color:green;}
+  .status-warning { font-size:3em; color:red;}
+  .status-welcome { font-size:2em; margin:0 0 1em 0; }
+  .status-box { border:1px solid #C1C1C1; padding:5px; text-align:center; background: #F6F7F7;}
+  .status-small { font-size: .8em;}
+
+  .input-todo { padding-left:5px; }
+  .alert-changed { font-size: 1.2em; margin:0; padding:1em 0 0 0}
+  .status-section-header { display:block; border-bottom:1px solid #ccc; margin-bottom:1em; font-size:1.3em; }
+  .piechart {
+          display: block;
+          margin:3em auto 0 auto;
+          width: 300px;
+          height: 300px;
+          border-radius: 50%;
+          background-image: conic-gradient(
+              #E1F8E2  70deg,
+              #B2E0B2 0 235deg);
+      }
+  .vuln-table { width:100%;}
+  .vuln-table-head { font-size: .9em; }
+  .vuln-table-component { font-size: 1.2em; font-weight:bold; padding:0; margin:0;}
+  .vuln-table-component-desc { font-size: .8em; }
+  .vuln-table-bad { color: red;}
+  .vuln-table-medium { color: orange;}
+
+  .portfolio-table { width:100%;}
+  .portfolio-table-component { font-size: 1.2em; font-weight:bold; padding:0; margin:0;}
+  .portfolio-table-component-desc { font-size: .8em; }
+</style>
+{% endblock %}
+
 {% block body %}
 
-    <div class="container">
-        <h2 class="text-center">System Assessment Result for {{ sar.system.root_element.name }} - {{ sar.name }}</h2>
-        <h3 class="text-center"> {{ sar.updated|timesince }} ago</h3><br>
+<div  class="systems-top">
+  <div class="container">
 
+  <div class="row">
+    <div id="above-tab-content" class="row">
+      <!-- Page Title-->
+      <div class="systems-title">
+          <h2 class="control-heading">
+            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ sar.system.root_element.name }}</a> &gt; System Assessment Results > {{ sar.name }} Summary
+          </h2>
+      </div>
     </div>
+  </div><!--/row-->
+    <p>&nbsp;</p>
+
+<!--     <div class="row">
+        <div class="col-md-12">
+            <span class="last-login">Update: {{ sar.updated|timesince }} </span>
+        </div>
+    </div>
+ -->
+    <!-- <div class="row">
+        <div class="col-md-3"><div class="status-box"><h2 class="status">{{ project.system.get_producer_elements|length }}</h2> <span class="status-small">total components in this project</span></div></div>
+        <div class="col-md-3"><div class="status-box"><h2 class="status">4</h2> <span class="status-small">total inventory-items in production</span></div></div>
+        <div class="col-md-3"><div class="status-box"><h2 class="status">{{ project.system.control_implementation_as_dict|length }}</h2> <span class="status-small">total controls selected</span></div></div>
+        <div class="col-md-3"><div class="status-box"><h2 class="status">100</h2> <span class="status-small">controls partially or fully implemented</span></div></div>
+    </div> -->
+    <p>&nbsp</p>
+    <div class="row">
+        <div class="col-md-3"><div class="status-box"><h2 class="status">{{ sar_items|length }}</h2> <span class="status-small">total assessments</span></div></div>
+        <div class="col-md-3"><div class="status-box"><h2 class="status-success">{{ summary.pass }}</h2> <span class="status-small">total tests passed</span></div></div>
+        <div class="col-md-3"><div class="status-box"><h2 class="status-warning">{{ summary.fail }}</h2> <span class="status-small">total tests failed</span></div></div>
+        <div class="col-md-3"><div class="status-box"><h2 class="status">{{ summary.error }}</h2> <span class="status-small">total errors</span></div></div>
+        <!-- <div class="col-md-3"><div class="status-box"><h2 class="status">100</h2> <span class="status-small">controls partially or fully implemented</span></div></div> -->
+    </div>
+    <p>&nbsp;</p>
+
+    {% for item in sar_items %}
+        <pre>{{ item.id }} {{ item.name }} <a href="http://google.com" target="_blank">view</a></pre>
+    {% endfor %}
+    <div class="row">
+        <div class="col-md-12">
+            <h2>System Assessment Results JSON file</h2>
+            <pre>{{ assessment_results_json }}</pre>
+        </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
