@@ -112,7 +112,6 @@ def manage_system_assessment_result_api(request, system_id, sar_id=None, methods
             sari = SystemAssessmentResult(system_id=system_id)
         form = SystemAssessmentResultForm(instance=sari)
 
-
     # Send simple response
     # TODO: Improve the response
     ok = True
