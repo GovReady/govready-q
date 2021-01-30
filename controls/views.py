@@ -468,9 +468,6 @@ class ComponentImporter(object):
         if self.validate_oscal_json(oscal_json):
             # Returns list of created components
             created_components = self.create_components(oscal_json)
-            if request is not None:
-                messages.add_message(request, messages.INFO, f"Created {len(created_components)} components.")
-            logger.info(f"Created {len(created_components)} components.")
             new_import_record = self.create_import_record(import_name, created_components)
             return new_import_record
         else:
@@ -646,6 +643,7 @@ def add_selected_components(system, import_record):
                 # This guarantees that control statements are associated.
                 # The selected controls will serve as the primary filter on what content to display.
                 smt.create_instance_from_prototype(system.root_element.id)
+        return imported_components
 
 
 
@@ -2554,7 +2552,6 @@ def project_import(request, project_id):
             project = new_project
             project.save()
             messages.add_message(request, messages.INFO, f'Created a new project with id: {project.id}.')
-
         #Import questionnaire data
         log_output = []
         try:
@@ -2578,12 +2575,15 @@ def project_import(request, project_id):
         loaded_imported_jsondata = json.loads(project_data)
         if loaded_imported_jsondata.get('component-definitions') != None:
             # Load and get the components then dump
+            comp_num = 0
             for k, val in enumerate(loaded_imported_jsondata.get('component-definitions')):
                 oscal_component_json = json.dumps(loaded_imported_jsondata.get('component-definitions')[k])
                 import_name = request.POST.get('import_name', '')
                 import_record = ComponentImporter().import_components_as_json(import_name, oscal_component_json, request)
                 if import_record != None:
-                    add_selected_components(system, import_record)
+                    comps = add_selected_components(system, import_record)
+                    comp_num = comp_num + len(comps)
+            messages.add_message(request, messages.INFO, f"Created {comp_num} components.")
 
         return HttpResponseRedirect("/projects")
 
