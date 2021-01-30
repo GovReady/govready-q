@@ -1,6 +1,22 @@
 GovReady-Q Release Notes
 ========================
 
+v999 (January XX, 2021)
+-----------------------
+
+Add System Assessment Report tracking to associate assessments and evidence with the system.
+Add initial dynamic status information to the project page.
+
+**Feature changes**
+
+* Add System Assessment Report tracking to associate assessments and evidence with the system.
+* Add initial dynamic status information to the project page.
+
+**UI changes**
+
+* New pages for System Assessment Report
+* Updates to project page for status information and other project information.
+
 v0.9.1.50.2 (January 26, 2021)
 ------------------------------
 
@@ -15,7 +31,11 @@ Inputs are supported in the app.yaml file with the following format:
 input:
 - id: <input_id> (string)
   name: <Input Name> (string)
+<<<<<<< HEAD
   type: oscal (Only oscal currently supported) 
+=======
+  type: oscal (Only oscal currently supported)
+>>>>>>> develop
   path: <dir/filename.json> (relative file path)
   group: (optional string)
 ```
