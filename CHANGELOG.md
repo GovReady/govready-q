@@ -9,10 +9,16 @@ v999 (January XX, 2021)
 **UI changes**
 
 * Remove "Upgrade Project" button from project page action buttons. Upgrade is now in settings page.
+* Improve styling of app store items.
 
 **Compliance app changes**
 
 * Lightweight-ato compliance app (installed by default) now displays SSP button below action buttons.
+* Display "Unknown" when app vendor is set to "None" instead of "none".
+
+**Developer changes**
+
+* Format clean up of style sheets in project, app-store templates.
 
 v0.9.1.50.2 (January 26, 2021)
 ------------------------------

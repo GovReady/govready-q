@@ -7,19 +7,14 @@ Compliance Apps
 
 {% block head %}
 <style>
-/* remove body tag because it shouldn't be here. */
+  /* remove body tag because it shouldn't be here. */
 
-  h1 {
-    margin-bottom: 30px;
-  }
-
+  h1 { margin-bottom: 30px; }
   h2 {
-    width: 40%;
     margin: 2.5em auto 24px auto;
     padding: 8px;
     border-bottom: 1px solid #ccc;
     background-color: #fff;
-    border-radius: 10px;
     font-size: 24px;
     color: #666;
     text-align: center;
@@ -37,19 +32,13 @@ Compliance Apps
     white-space: nowrap;
   }
 
-  .app-category-nav *[data-category] {
-    margin-left: 20px;
-  }
-
-  .app-category-nav *[data-category].first {
-    margin-left: 0;
-  }
+  .app-category-nav *[data-category] { margin-left: 20px; }
+  .app-category-nav *[data-category].first { margin-left: 0; }
 
   .app {
-    border-radius: 10px;
-    border-bottom: 1px solid rgb(204, 204, 204);
+    border: 3px solid #D9D9D9;
     padding: 12px;
-    background-color: white;
+    background-color: #F2F2F2;
     margin-bottom: 24px;
     cursor: default;
     overflow: hidden;
@@ -63,32 +52,25 @@ Compliance Apps
     margin-bottom: 5px;
   }
 
+  .app-description {min-height: 4em;}
+  .app-version-info div { color: #888;margin: 1px 0 1px 0;}
+  .app-version-info small { color: #888;}
+  .start-app { width: 60px;}
+  .view-app { width: 60px;}
+
   @media screen and (max-width: 1200px) {
-    .app h3 {
-      font-size: 17px;
-    }
+    .app h3 { font-size: 17px; }
   }
 
-  .app .app-icon {
-    width: 20%;
-    max-width: 128px;
-  }
+  .app .app-icon { width: 20%; max-width: 128px; }
 
   @media screen and (max-width: 768px) {
-    .app .app-icon {
-      width: 20%;
-    }
+    .app .app-icon { width: 20%; }
   }
 
-  .app .body {
-  }
-
-  .app .body p {
-  }
-
-  .app .body p:last-child {
-    margin: 0;
-  }
+  .app .body {  }
+  .app .body p { }
+  .app .body p:last-child { margin: 0; }
 
   .app-metadata {
     font-size: 0.7em;
@@ -96,9 +78,7 @@ Compliance Apps
     color: #666;
   }
 
-  .body {
-    font-size: 0.8em;
-  }
+  .body { font-size: 0.8em; }
 
   .if-has-more-apps {
     display: none;
@@ -110,7 +90,6 @@ Compliance Apps
   .has-more-apps .if-has-more-apps { display: block; }
   .show-more-apps .if-has-more-apps .show-more { display: none; }
   .show-more-apps .if-has-more-apps .show-less { display: inline; }
-
 </style>
 {% endblock %}
 
@@ -146,7 +125,6 @@ Compliance Apps
         </form>
       </div>
 
-
 {% if filter_description %}
 <p class="app-bottom-margin">These apps can help you with <em>{{filter_description}}</em>.</p>
 {% endif %}
@@ -171,25 +149,24 @@ Compliance Apps
 <div class="row">
   {% for app in app_category.apps %}
     <div class="col-sm-4">
-      <div class="app"
-        data-app="{{app.key}}"
-        data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}"
-        >
-        <table>
-        <tr valign="top">
-        <td>
-          <h3>{{app.title}}</h3>
-          <div>
-          {{app.description.short|safe|truncatewords_html:18}}
-          </div>
-          {% if app.authz != "none" %}
-          <div class="app-metadata">
-            Admin approval required
-          </div>
-          {% endif %}
+      <div class="app" data-app="{{app.key}}" data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}">
           <div class="app-quick-start-form">
-            {# If the user can only start the app in a single organization context, we can offer a quick start button. #}
+              {# If the user can only start the app in a single organization context, we can offer a quick start button. #}
               {% if app.organizations|length >= 1 %}
+                  {% if app.icon %}
+                      <div class="app-icon app-icon-appstore" style="float:right; padding-left:1em; width:120px; min-height: 60px;">
+                          <img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">
+                      </div>
+                  {% endif %}
+                  <div>
+                      <span style="font-size:.7em; padding:0; margin:0;">{%  if app.vendor != "none" %}{{ app.vendor }}{% else %}Unknown{% endif %}</span><br />
+                      <h3 style="font-weight:bold; font-size:1.5em; padding-top:0; margin:0;">{{ app.title }}</h3>
+                      <div class="app-description">{{app.description.short|safe|truncatewords_html:20}}</div>
+                      {% if app.authz != "none" %}<div class="app-metadata">Admin approval required</div>{% endif %}
+                  </div>
+            <div class="app-version-info">
+              <span><small>version {{ app.version }}</small></span> <span id="{{ app.key }}"><small>(appsource {{ app.source_slug }})</small></span>
+            </div>
                   <form action="/store/{{ app.key|urlencode }}{{ forward_qsargs }}" method="post" style="display: inline-block;">
                       {% csrf_token %}
                       {% if app.organizations|length > 1 %}
@@ -203,25 +180,12 @@ Compliance Apps
                           <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
                       {% endwith %}
                       {% if 'portfolio' in forward_qsargs %}
-                        <button type="submit" class="btn btn-success btn-md btn-justified start-app">Add</button>
+                        <button type="submit" class="btn btn-success btn-sm btn-justified start-app">Add ►</button>
                       {% endif %}
                   </form>
               {% endif %}
-            <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-default btn-sm view-app">Info</a>
-
+              <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-info btn-sm view-app">Info</a>
           </div>
-        </td>
-        {% if app.icon %}
-            <td class="app-icon app-icon-appstore">
-                <img src="{{ app.icon }}" class="img-responsive" alt="App Icon">
-                                <label>AppSource: </label>
-                <div style="text-align: center;" id="{{ app.key }}"><small>{{ app.source_slug }}</small></div>
-                <label>AppVersion: </label>
-                <div class="center-text"><small>{{ app.version }}</small></div>
-            </td>
-        {% endif %}
-        </tr>
-        </table>
       </div>
     </div>
     {% if forloop.counter|divisibleby:3 %} {# breaks dont play well with client-side search --- they are re-generated when search results are displayed #}

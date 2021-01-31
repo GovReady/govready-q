@@ -197,7 +197,7 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 
 .app-category { }/* TBD */
 .app-bottom-margin { margin-bottom: 30px; }
-.app-quick-start-form { margin-top: .5em; }
+.app-quick-start-form { margin-top: .5em;}
 
 .control-label { font-size:.8em;} /* within modal, the word description was breaking */
 
@@ -224,7 +224,7 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 .action-button-box { margin-top: 1em; }
 .action-button { background: white; }
 .authoring-tool-box { font-size: 90%; }
-.action-button-app-title {text-align: center; font-size: 0.8em; width:200px; font-weight: bold; margin-bottom: 8px;}
+.action-button-app-title {text-align: center; font-size: 0.8em; max-width:200px; font-weight: bold; margin-bottom: 8px;}
 
 .project-row-style { margin-bottom:1em; }
 .action-row { margin-bottom: 1em; }
