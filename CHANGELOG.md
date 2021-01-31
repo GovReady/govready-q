@@ -10,6 +10,10 @@ v999 (January XX, 2021)
 
 * Remove "Upgrade Project" button from project page action buttons. Upgrade is now in settings page.
 * Improve styling of app store items.
+* Tweek general styling of project page question page:
+    * Remove light gray background from project page, question page, task finished page.
+    * Reduce corner radius in focus area blocks.
+    * Widen question area.
 
 **Compliance app changes**
 
