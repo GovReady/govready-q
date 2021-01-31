@@ -6,6 +6,14 @@ v999 (January XX, 2021)
 
 [Add updates here]
 
+**UI changes**
+
+* Remove "Upgrade Project" button from project page action buttons. Upgrade is now in settings page.
+
+**Compliance app changes**
+
+* Lightweight-ato compliance app (installed by default) now displays SSP button below action buttons.
+
 v0.9.1.50.2 (January 26, 2021)
 ------------------------------
 

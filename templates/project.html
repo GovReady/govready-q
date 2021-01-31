@@ -226,13 +226,6 @@ h3.question-group-title {
       API Docs
     </button>
 
-    {% if can_upgrade_app %}
-      <button id="btn-upgrade-app" class="btn btn-sm btn-default" onclick="upgrade_app({{project.root_task.module.app.id}});">
-        <em class="glyphicon glyphicon-upload"></em>
-        Upgrade Project
-      </button>
-    {% endif %}
-
     {% if authoring_tool_enabled %}
       <button id="btn-open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
         <em class="glyphicon glyphicon-pencil"></em>
@@ -246,31 +239,34 @@ h3.question-group-title {
     </button>
   </div>
 
-    {# action buttons #}
-    {% if action_buttons %}
-      {% for q in action_buttons %}
-        <div class="action-button-box">
-          {% if can_start_task and q.can_start_new_task %}
-            <form id="question-{{q.question.key}}" class="start-task" method="post" action="/tasks/start" style="display:inline;">
-              {% csrf_token %}
-              <input type="hidden" name="project" value="{{project.id}}"/>
-              <input type="hidden" name="question" value="{{q.question.key}}"/>
-              <input type="hidden" name="previous" value="project"/>
-              <a class="btn btn-default" class="action-button"
-                href="#" onclick="$(this).parent('form').submit(); return false;">
-                {{q.question.spec.title}} &raquo;
-              </a>
-            </form>
-          {% else %}
-          <a id="question-{{q.question.key}}"
-            class="btn btn-default" class="action-button"
-            href="{{q.task.get_absolute_url}}?previous=project">
-            {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
-          </a>
-          {% endif %}
-        </div>
-      {% endfor %}
-    {% endif %}
+  {# action buttons for compliance app tasks/modules #}
+  {% if action_buttons %}
+    {% for q in action_buttons %}
+      <div class="action-button-box">
+        <div class="action-button-app-title">{{project.root_task.module.spec.title}}</div>
+        {# Display for started tasks #}
+        {% if can_start_task and q.can_start_new_task %}
+          <form id="question-{{q.question.key}}" class="start-task" method="post" action="/tasks/start" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="project" value="{{project.id}}"/>
+            <input type="hidden" name="question" value="{{q.question.key}}"/>
+            <input type="hidden" name="previous" value="project"/>
+            <a class="btn btn-sm btn-default" class="action-button"
+              href="#" onclick="$(this).parent('form').submit(); return false;">
+              {{q.question.spec.title}} &raquo;
+            </a>
+          </form>
+        {% else %}
+        {# Display for not yet started tasks #}
+        <a id="question-{{q.question.key}}"
+          class="btn btn-sm btn-default" class="action-button"
+          href="{{q.task.get_absolute_url}}?previous=project">
+          {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
+        </a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% endif %}
 {% endblock %}
 
 {% block above_title %}
