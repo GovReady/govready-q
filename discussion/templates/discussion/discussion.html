@@ -4,115 +4,39 @@
 <script src="{% static "vendor/push.js" %}"> </script>
 
 <style>
-#discussion-your-comment-tips {
-  margin-top: 4px;
-  padding: 2px;
-  font-size: 65%;
-  color: #555;
-  text-align: right;
-}
-  #discussion-your-comment-tips label {
-    color: inherit;
-    font-weight: normal;
-    cursor: pointer;
-  }
+  #discussion-your-comment-tips { margin-top: 4px; padding: 2px; font-size: 65%; color: #555; text-align: right;}
+  #discussion-your-comment-tips label { color: inherit; font-weight: normal; cursor: pointer;}
+  #discussion-your-comment-preview-container { border: 1px solid #DDD; border-radius: .25em; background-color: white; padding: .5em; }
+  #discussion-your-comment-preview-container p:last-child { margin: 0; }
+  #discussion .comment-thread { margin-bottom: 1.5em; }
+  #discussion .comment { margin-bottom: 15px; }
+  #discussion .avatar { border-radius: 10px; border: 1px solid #CCC; }
+  #discussion .comment .comment-meta { margin: -15px -15px 15px -15px; padding: 10px 15px; border-bottom: 1px solid #EEE; }
+  #discussion .comment .comment-commands { text-align: right; }
+  #discussion .comment .comment-commands > a:link { margin-left: 8px; color: #AAA; font-size: 85%;}
+  #discussion .comment .comment-commands > a:hover { color: #5A5; }
+  #discussion .comment .comment-author {  }
+  #discussion .comment.author-is-self .comment-author { font-weight: bold; }
+  #discussion .comment .comment-author-role {  }
+  #discussion .comment .ifeditpriv { display: none; }
+  #discussion .comment.has-edit-priv .ifeditpriv { display: inline; }
+  #discussion .comment .ifdeletepriv { display: none; }
+  #discussion .comment.has-delete-priv .ifdeletepriv { display: inline; }
+  #discussion .comment.author-is-self .ifnotauthor { display: none; }
+  #discussion .comment .replies { margin: 15px -15px -15px -15px; padding: 0 15px; border-top: 1px solid #EEE; font-size: 95%;}
+  #discussion .comment .replies .reply { margin: 15px 0; }
+  #discussion .comment .comment-text { overflow-wrap: break-word; }
+  #discussion .comment .comment-text p:last-child { margin-bottom: 0; }
+  #discussion .event { margin-bottom: 20px; /* comments look like they have a margin-bottom of 15px but the panel within it has a margin-bottom of 20px */ }
+  #discussion .event-body { margin-left: .5em; }
+  #discussion .event .event-text {  }
+  #discussion .event .event-info { font-size: 85%; color: #555; margin: 4px 0; }
 
-  #discussion-your-comment-preview-container {
-    border: 1px solid #DDD;
-    border-radius: .25em;
-    background-color: white;
-    padding: .5em;
-  }
-  #discussion-your-comment-preview-container p:last-child {
-    margin: 0;
-  }
-
-#discussion .comment-thread {
-  margin-bottom: 1.5em;
-}
-
-#discussion .comment {
-  margin-bottom: 15px;
-}
-#discussion .avatar {
-  border-radius: 10px;
-  border: 1px solid #CCC;
-}
-#discussion .comment .comment-meta {
-  margin: -15px -15px 15px -15px;
-  padding: 10px 15px;
-  border-bottom: 1px solid #EEE;
-}
-#discussion .comment .comment-commands {
-  text-align: right;
-}
-  #discussion .comment .comment-commands > a:link {
-    margin-left: 8px;
-    color: #AAA;
-    font-size: 85%;
-  }
-    #discussion .comment .comment-commands > a:hover {
-      color: #5A5;
-    }
-  #discussion .comment .comment-author {
-  }
-    #discussion .comment.author-is-self .comment-author {
-      font-weight: bold;
-    }
-  #discussion .comment .comment-author-role {
-  }
-#discussion .comment .ifeditpriv { display: none; }
-#discussion .comment.has-edit-priv .ifeditpriv { display: inline; }
-#discussion .comment .ifdeletepriv { display: none; }
-#discussion .comment.has-delete-priv .ifdeletepriv { display: inline; }
-#discussion .comment.author-is-self .ifnotauthor { display: none; }
-#discussion .comment .replies {
-  margin: 15px -15px -15px -15px;
-  padding: 0 15px;
-  border-top: 1px solid #EEE;
-  font-size: 95%;
-}
-  #discussion .comment .replies .reply {
-    margin: 15px 0;
-  }
-#discussion .comment .comment-text {
-  overflow-wrap: break-word;
-}
-  #discussion .comment .comment-text p:last-child {
-    margin-bottom: 0;
-  }
-#discussion .event {
-  margin-bottom: 20px; /* comments look like they have a margin-bottom of 15px but the panel within it has a margin-bottom of 20px */
-}
-  #discussion .event-body {
-    margin-left: .5em;
-  }
-  #discussion .event .event-text {
-  }
-  #discussion .event .event-info {
-    font-size: 85%;
-    color: #555;
-    margin: 4px 0;
-  }
-
-#emoji-selector .emoji {
-  display: inline-block;
-  margin-right: 1px;
-  cursor: pointer;
-  padding: 3px;
-}
+  #emoji-selector .emoji { display: inline-block; margin-right: 1px; cursor: pointer; padding: 3px; }
   .emojione { margin: 0; }
-  #emoji-selector .emoji.active {
-    padding: 2px;
-    border: 1px solid #DDE;
-    background-color: #EEF;
-  }
+  #emoji-selector .emoji.active { padding: 2px; border: 1px solid #DDE; background-color: #EEF;}
 
-#preview_comment_toggle {
-  color: #999;
-  font-size: 85%;
-}
-
+  #preview_comment_toggle { color: #999; font-size: 85%; }
 </style>
 
 <div id="discussion" style="display: none;">
