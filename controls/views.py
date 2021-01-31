@@ -32,7 +32,7 @@ from .forms import *
 from .models import *
 from .utilities import *
 from simple_history.utils import update_change_reason
-
+import functools
 logging.basicConfig()
 import structlog
 from structlog import get_logger
@@ -137,6 +137,7 @@ def control(request, catalog_key, cl_id):
     }
     return render(request, "controls/detail.html", context)
 
+@functools.lru_cache()
 def controls_selected(request, system_id):
     """Display System's selected controls view"""
 
@@ -178,6 +179,7 @@ def controls_selected(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+@functools.lru_cache()
 def controls_updated(request, system_id):
     """Display System's statements by updated date in reverse chronological order"""
 
@@ -238,6 +240,7 @@ def rename_element(request,element_id):
         import sys
         return JsonResponse({ "status": "error", "message": sys.exc_info() })
 
+@functools.lru_cache()
 def components_selected(request, system_id):
     """Display System's selected components view"""
 
