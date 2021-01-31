@@ -16,12 +16,6 @@ Next Question: {{q.spec.title}} | {{task.title}}
 {{block.super}}
 
 <style>
-#focus-area-wrapper {
-  /* on mobile, space between columns */
-  margin-bottom: 30px;
-}
-
-
 
 h1 {
   margin: 4px 0 18px 0;
@@ -124,6 +118,20 @@ label:hover .onhover { display: inline; }
   /*border-top: 1px solid #DDD;*/
   padding-top: 1em;
 }
+
+/* Legacy background and focus area styling for question pages */
+body {
+    background-color: rgb(247,247,247);
+}
+#focus-area-wrapper {
+  border-radius: 3px;
+  border: 1px solid rgb(204, 204, 204);
+  padding: 2em 2em 3em 2em;
+  background-color: white;
+  /* on mobile, space between columns */
+  margin-bottom: 30px;
+}
+
 </style>
 {% endblock %}
 
@@ -133,7 +141,7 @@ label:hover .onhover { display: inline; }
 
 <div class="row">
 
-  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-6 col-xl-5 ">
+  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-7 col-xl-6 ">
     {% if source_invitation %}
       <div class="question-source-invitation">
         <div id="source-invitation-show" class="question-source-invitation-show" style="{% if not task.is_started %}display: none;{% endif %}">
@@ -361,7 +369,6 @@ label:hover .onhover { display: inline; }
               {% endif %}
               </div>
 
-
             {% elif q.spec.type == "integer" or q.spec.type == "real" %}
               <div class="form-group">
                 {% comment %}
@@ -563,12 +570,11 @@ label:hover .onhover { display: inline; }
     </div> <!-- /question -->
 
     <div>
-      <hr>
       {% include "discussion/discussion.html" %}
     </div>
   </div> <!-- /focus-area-wrapper -->
 
-  <div id="col-spacer" class="col-spacer hidden-xs col-sm-1 col-md-1 col-lg-3 col-xl-2">
+  <div id="col-spacer" class="col-spacer hidden-xs col-sm-1 col-md-1 col-lg-2 col-xl-1">
     &nbsp;
   </div>
 
