@@ -2507,9 +2507,15 @@ def project_import(request, project_id):
     system_id = project.system.id
     # Retrieve identified System
     system = System.objects.get(id=system_id)
+    src = AppSource.objects.get(id=request.POST["appsource_compapp"])
+    app = AppVersion.objects.get(source=src, id=request.POST["appsource_version_id"])
     # Retrieve identified System
     if request.method == 'POST':
         project_data = request.POST['json_content']
+        # Need to get or create the app source by the id of the given app source
+        module_name = json.loads(project_data).get('project').get('module').get('key')
+        title = json.loads(project_data).get('project').get('title')
+        system.root_element.name = title
         importcheck = False
         if "importcheck" in request.POST:
             importcheck = request.POST["importcheck"]
@@ -2522,17 +2528,15 @@ def project_import(request, project_id):
                 user={"id": request.user.id, "username": request.user.username}
             )
             messages.add_message(request, messages.INFO, 'The current project was updated.')
+            # Need to change system and element title
+            project.system = system
         else:
             # Creating a new project
             new_project = Project.objects.create(organization=project.organization)
-            # Need to get or create the app source by the id of the given app source
-            src = AppSource.objects.get(id=request.POST["appsource_compapp"])
-            app = AppVersion.objects.get(source=src, id=request.POST["appsource_version_id"])
-            module_name = json.loads(project_data).get('project').get('module').get('key')
             root_task = Task.objects.create(
                 module=Module.objects.get(app=app, module_name=module_name),
-                project=project, editor=request.user)# TODO: Make sure the root task created here is saved
-            new_project.root_task = root_task
+                project=new_project, editor=request.user)
+            new_project.root_task =  project.root_task
             # Need new element to for the new System
             element = Element()
             project_names = Element.objects.filter(element_type="system").values_list('name', flat=True)
@@ -2552,8 +2556,7 @@ def project_import(request, project_id):
             system.save()
             new_project.system = system
             new_project.portfolio = project.portfolio
-            project = new_project
-            project.save()
+
             messages.add_message(request, messages.INFO, f'Created a new project with id: {project.id}.')
         #Import questionnaire data
         log_output = []
