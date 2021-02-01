@@ -9,139 +9,139 @@
 {% block head %}
 {{block.super}}
 <style>
-.question-column {
-  margin: 0 -10px;
-  padding: 10px;
-  background-color: rgb(247,247,247);
-  border-radius: 5px;
-  max-width:66vw;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
-}
-{% if layout_mode == "rows" %}
   .question-column {
-    padding: 0px 30px 0px 30px;
-}
-{% endif %}
-{% if layout_mode == "columns" %}
-  .question-column h2 {
-    color: black;
-    margin: 5px 0 10px 0;
-    text-align: center;
+    margin: 0 -10px;
+    padding: 10px;
+    background-color: rgb(247,247,247);
+    border-radius: 5px;
+    max-width:66vw;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
   }
-
-.question-group {
-
-}
-  .question-group h3 {
-    font-size: inherit;
-    font-weight: bold;
+  {% if layout_mode == "rows" %}
+    .question-column {
+      padding: 0px 30px 0px 30px;
   }
-  .question-group > .row {
-    margin: 5px 0;
-  }
-
-.question {
-  background-color: white;
-  padding-top: 10px; /* can't mess with side padding because it is a bootstrap column */
-  padding-bottom: 10px; /* can't mess with side padding because it is a bootstrap column */
-  margin-bottom: 15px;
-  border-radius: 3px;
-  border-bottom: 1px solid rgb(204, 204, 204);
-  /*border: 1px solid #D0D0D0;*/
-}
-
-.question-icon {
-  width: 30px;
-  float: right;
-  margin: 4px 0 5px 8px;
-}
-
-{% else %}
-.question-group {
-  margin: 10px 0 20px 0;
-  padding-top: 16px;
-}
-
-h2.question-column-title {
-}
-
-h3.question-group-title {
-  color: black;
-  font-weight: bold;
-  padding: 0 18px 14px 0;
-  margin: 0;
-}
-
-.question {
-  background-color: white;
-  border-bottom: 1px solid rgb(204, 204, 204);
-  margin-bottom: 15px;
-  padding-top: .75em;
-  padding-bottom: .75em;
-  {% if layout_mode == "grid" %}
-    text-align: center;
-    margin-top: 10px;
   {% endif %}
-  border-radius: 15px; /* good for highlighting */
+  {% if layout_mode == "columns" %}
+    .question-column h2 {
+      color: black;
+      margin: 5px 0 10px 0;
+      text-align: center;
+    }
 
-}
-  .question:hover {
-    background-color: rgb(246,250,249);
+  .question-group {
+
   }
-  .question .question-icon {
-    margin: 0 auto;
-    width: 96px;
-    height: 96px;
-    border: 1px solid #DDD;
-    padding:12px;
-    border-radius: 10px;
-    background-color: #DDD;
+    .question-group h3 {
+      font-size: inherit;
+      font-weight: bold;
+    }
+    .question-group > .row {
+      margin: 5px 0;
+    }
+
+  .question {
+    background-color: white;
+    padding-top: 10px; /* can't mess with side padding because it is a bootstrap column */
+    padding-bottom: 10px; /* can't mess with side padding because it is a bootstrap column */
+    margin-bottom: 15px;
+    border-radius: 3px;
+    border-bottom: 1px solid rgb(204, 204, 204);
+    /*border: 1px solid #D0D0D0;*/
   }
+
+  .question-icon {
+    width: 30px;
+    float: right;
+    margin: 4px 0 5px 8px;
+  }
+
+  {% else %}
+  .question-group {
+    margin: 10px 0 20px 0;
+    padding-top: 16px;
+  }
+
+  h2.question-column-title {
+  }
+
+  h3.question-group-title {
+    color: black;
+    font-weight: bold;
+    padding: 0 18px 14px 0;
+    margin: 0;
+  }
+
+  .question {
+    background-color: white;
+    border-bottom: 1px solid rgb(204, 204, 204);
+    margin-bottom: 15px;
+    padding-top: .75em;
+    padding-bottom: .75em;
+    {% if layout_mode == "grid" %}
+      text-align: center;
+      margin-top: 10px;
+    {% endif %}
+    border-radius: 15px; /* good for highlighting */
+
+  }
+    .question:hover {
+      background-color: rgb(246,250,249);
+    }
+    .question .question-icon {
+      margin: 0 auto;
+      width: 96px;
+      height: 96px;
+      border: 1px solid #DDD;
+      padding:12px;
+      border-radius: 10px;
+      background-color: #DDD;
+    }
+    .question .question-title {
+      margin-top: .5em;
+      color: #222;
+    }
+
+    .question-title > .btn {
+      margin: 8px 0 0 0;
+    }
+    .question .invitation {
+      font-size: 14px;
+      line-height: 128%;
+    }
+  {% endif %}
+
   .question .question-title {
-    margin-top: .5em;
-    color: #222;
+    line-height: 124%;
   }
 
-  .question-title > .btn {
-    margin: 8px 0 0 0;
+  #project-members {
+  	margin-top: 1em;
   }
-  .question .invitation {
-    font-size: 14px;
-    line-height: 128%;
+  #project-members .role {
+    font-style: italic;
+    /*font-size: 85%;*/
   }
-{% endif %}
+  #project-members .action {
+    font-size: 85%;
+  }
 
-.question .question-title {
-  line-height: 124%;
-}
+  .authoring-tool-hidden {
+    display: none; /* hidden by default */
+  }
+  .authoring-tool-edit-question {
+    position: absolute;
+    right: 0;
+    color: #31708f;
+  }
+  #action-buttons button {
+    width: 140px;
+  }
+  #action-buttons a {
+    margin: .25em 0;
+  }
 
-#project-members {
-	margin-top: 1em;
-}
-#project-members .role {
-  font-style: italic;
-  /*font-size: 85%;*/
-}
-#project-members .action {
-  font-size: 85%;
-}
-
-.authoring-tool-hidden {
-  display: none; /* hidden by default */
-}
-.authoring-tool-edit-question {
-  position: absolute;
-  right: 0;
-  color: #31708f;
-}
-#action-buttons button {
-  width: 140px;
-}
-#action-buttons a {
-  margin: .25em 0;
-}
-
-/* New styles for project dashboard elements */
+  /* New styles for project dashboard elements */
   .last-login { font-size:.8em;}
 
   .status { font-size:3em; color:#2D3337;}

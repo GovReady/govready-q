@@ -40,7 +40,7 @@ catalog:
     short: IT System Questionnaires
   source_url: https://github.com/GovReady/apps
   status: stub
-  vendor: none
+  vendor: GovReady®
   vendor_url: ~
   version: 1.1.0
 questions:
