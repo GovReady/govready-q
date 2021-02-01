@@ -2507,8 +2507,9 @@ def project_import(request, project_id):
     system_id = project.system.id
     # Retrieve identified System
     system = System.objects.get(id=system_id)
-    src = AppSource.objects.get(id=request.POST["appsource_compapp"])
-    app = AppVersion.objects.get(source=src, id=request.POST["appsource_version_id"])
+    # TODO: deprecated need. Should consider removing throughout
+    #src = AppSource.objects.get(id=request.POST["appsource_compapp"])
+   # app = AppVersion.objects.get(source=src, id=request.POST["appsource_version_id"])
     # Retrieve identified System
     if request.method == 'POST':
         project_data = request.POST['json_content']
@@ -2527,37 +2528,8 @@ def project_import(request, project_id):
                 object={"object": "project", "id": project.id, "title": project.title},
                 user={"id": request.user.id, "username": request.user.username}
             )
-            messages.add_message(request, messages.INFO, 'The current project was updated.')
-            # Need to change system and element title
-            project.system = system
-        else:
-            # Creating a new project
-            new_project = Project.objects.create(organization=project.organization)
-            root_task = Task.objects.create(
-                module=Module.objects.get(app=app, module_name=module_name),
-                project=new_project, editor=request.user)
-            new_project.root_task =  project.root_task
-            # Need new element to for the new System
-            element = Element()
-            project_names = Element.objects.filter(element_type="system").values_list('name', flat=True)
-            # If it is a new title just make that the new system name otherwise increment
-            new_title = new_project.title
-            if new_title not in project_names:
-                new_title = new_project.title
-            else:
-                while new_title in project_names:
-                    new_title = increment_element_name(new_title)
+        messages.add_message(request, messages.INFO, f'Updated project with id : {project.id}.')
 
-            element.name = new_title
-            element.element_type = "system"
-            element.save()
-            # Create system
-            system = System(root_element=element)
-            system.save()
-            new_project.system = system
-            new_project.portfolio = project.portfolio
-
-            messages.add_message(request, messages.INFO, f'Created a new project with id: {project.id}.')
         #Import questionnaire data
         log_output = []
         try:
