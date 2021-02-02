@@ -4,8 +4,12 @@
 # for local testing, from a freshly-cloned repository.
 
 # Usage:
-#	$ ./install-govready-q.sh
+#	  $ ./install-govready-q.sh
 #   $ ./install-govready-q.sh --non-interactive
+#
+#   NOTE: VERY IMPORTANT TO INCLUDE --pip-user WHEN INSTALLING IN
+#         VIRTUAL PYTHON ENVIRONMENT ASSOCIATED WITH THE USER.
+#   $ ./install-govready-q.sh --pip-user
 
 # note that this script DOES NOT install libraries from a package manager,
 # and does not edit /etc/hosts. those will have to be done manually
@@ -79,6 +83,7 @@ else
 fi
 
 # install basic as local user?
+
 if [ $PIPUSER ];
 then
 	pip3 install --user -r requirements.txt;
