@@ -16,114 +16,120 @@ Next Question: {{q.spec.title}} | {{task.title}}
 {{block.super}}
 
 <style>
-#focus-area-wrapper {
-  /* on mobile, space between columns */
-  margin-bottom: 30px;
-}
 
-
-
-h1 {
-  margin: 4px 0 18px 0;
-  font-size: 22px;
-  font-weight: bold;
-}
-
-.form-control {
-  font-size: 14pt;
-  height: 34pt;
-}
-
-#question {
-  font-size: 14pt;
-}
-  #question form.disabled label {
-    color: #777;
-    cursor: not-allowed;
+  h1 {
+    margin: 4px 0 18px 0;
+    font-size: 22px;
+    font-weight: bold;
   }
 
-#question-prompt blockquote {
-  font-size: inherit;
-}
-
-/* since prompts will likely use Markdown ##'s to delimit sections,
-    which we render as h3 because we demote all levels, re-adjust
-    styles */
-#question-prompt h3 {
-  font-size: 110%;
-  font-weight: bold;
-}
-
-{% if q.spec.type == "module" %}
-#question .radio label {
-  margin: .25em 0;
-}
-{% endif %}
-
-{% if q.spec.type == "interstitial" %}
-  #question img {
-    display: block; /* so that horizontal auto margin centers */
-    margin: 30px auto;
+  .form-control {
+    font-size: 14pt;
+    height: 34pt;
   }
-{% endif %}
 
-{% if q.spec.type == "longtext" %}
-#question .ql-container {
-  font-size: 10pt !important; /* override default quill style */
-  /*font-family: trebuchet ms;*/
-}
-#question .ql-container p {
-  margin-bottom: .75em;
-}
-  #question .ql-container p:last-child {
-    margin-bottom: 0;
+  #question {
+    font-size: 14pt;
   }
-{% endif %}
-
-label .onhover { display: none; }
-label:hover .onhover { display: inline; }
-
-#confidence-buttons {
-  margin: 12px 0 0 0;
-}
-
-    #confidence-buttons button {
-        border: 1px solid rgba(255,255,255,0); /* same width as .active but no color */
-        border-radius: 4px;
-        padding: 6px 6px 4px 4px;
-        font-size: 80%;
-        background: none;
-        opacity: .6;
+    #question form.disabled label {
+      color: #777;
+      cursor: not-allowed;
     }
 
-        #confidence-buttons button img {
-            height: 1.25em;
-            margin-right: .25em;
-        }
+  #question-prompt blockquote {
+    font-size: inherit;
+  }
 
-        #confidence-buttons button.active {
-            border: 1px solid #AAA;
-            color: black;
-            background: #EEE;
-            opacity: 1;
-        }
+  /* since prompts will likely use Markdown ##'s to delimit sections,
+      which we render as h3 because we demote all levels, re-adjust
+      styles */
+  #question-prompt h3 {
+    font-size: 110%;
+    font-weight: bold;
+  }
 
-        #no-idea-button:hover, #not-applicable-button:hover, #start-a-discussion:hover, #transfer-editorship:hover {
-          border: 1px solid #AAA;
-          opacity: 1;
-        }
+  {% if q.spec.type == "module" %}
+  #question .radio label {
+    margin: .25em 0;
+  }
+  {% endif %}
 
-#action-buttons {
-  margin: 12px 0 0 12px;
-}
+  {% if q.spec.type == "interstitial" %}
+    #question img {
+      display: block; /* so that horizontal auto margin centers */
+      margin: 30px auto;
+    }
+  {% endif %}
 
-#reference-text-wrapper *:first-child { margin-top: 0; }
+  {% if q.spec.type == "longtext" %}
+  #question .ql-container {
+    font-size: 10pt !important; /* override default quill style */
+    /*font-family: trebuchet ms;*/
+  }
+  #question .ql-container p {
+    margin-bottom: .75em;
+  }
+    #question .ql-container p:last-child {
+      margin-bottom: 0;
+    }
+  {% endif %}
 
-#discussion {
-  margin-top: 1em;
-  /*border-top: 1px solid #DDD;*/
-  padding-top: 1em;
-}
+  label .onhover { display: none; }
+  label:hover .onhover { display: inline; }
+
+  #confidence-buttons {
+    margin: 12px 0 0 0;
+  }
+
+  #confidence-buttons button {
+      border: 1px solid rgba(255,255,255,0); /* same width as .active but no color */
+      border-radius: 4px;
+      padding: 6px 6px 4px 4px;
+      font-size: 80%;
+      background: none;
+      opacity: .6;
+  }
+
+  #confidence-buttons button img {
+      height: 1.25em;
+      margin-right: .25em;
+  }
+
+  #confidence-buttons button.active {
+      border: 1px solid #AAA;
+      color: black;
+      background: #EEE;
+      opacity: 1;
+  }
+
+  #no-idea-button:hover, #not-applicable-button:hover, #start-a-discussion:hover, #transfer-editorship:hover {
+    border: 1px solid #AAA;
+    opacity: 1;
+  }
+
+  #action-buttons {
+    margin: 12px 0 0 12px;
+  }
+
+  #reference-text-wrapper *:first-child { margin-top: 0; }
+
+  #discussion {
+    margin-top: 1em;
+    /*border-top: 1px solid #DDD;*/
+    padding-top: 1em;
+  }
+
+  /* Legacy background and focus area styling for question pages */
+  body { /*background-color: rgb(247,247,247);*/ }
+  #focus-area-wrapper {
+    border-radius: 3px;
+    border: 3px solid rgb(204, 204, 204);
+    padding: 2em 2em 3em 2em;
+    background-color: white;
+    /*background-color: rgba(253,253,253,1);*/
+    /* on mobile, space between columns */
+    margin-bottom: 30px;
+  }
 </style>
 {% endblock %}
 
@@ -131,9 +137,9 @@ label:hover .onhover { display: inline; }
 
 {{block.super}}
 
-<div class="row">
+<div class="row" style="padding-left: 22px;">
 
-  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-6 col-xl-5 ">
+  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-7 col-xl-6">
     {% if source_invitation %}
       <div class="question-source-invitation">
         <div id="source-invitation-show" class="question-source-invitation-show" style="{% if not task.is_started %}display: none;{% endif %}">
@@ -361,7 +367,6 @@ label:hover .onhover { display: inline; }
               {% endif %}
               </div>
 
-
             {% elif q.spec.type == "integer" or q.spec.type == "real" %}
               <div class="form-group">
                 {% comment %}
@@ -563,12 +568,11 @@ label:hover .onhover { display: inline; }
     </div> <!-- /question -->
 
     <div>
-      <hr>
       {% include "discussion/discussion.html" %}
     </div>
   </div> <!-- /focus-area-wrapper -->
 
-  <div id="col-spacer" class="col-spacer hidden-xs col-sm-1 col-md-1 col-lg-3 col-xl-2">
+  <div id="col-spacer" class="col-spacer hidden-xs col-sm-1 col-md-1 col-lg-2 col-xl-1">
     &nbsp;
   </div>
 

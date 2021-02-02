@@ -14,7 +14,7 @@ catalog:
       Prepare a re-usable, basic system descriptions
   source_url: https://github.com/GovReady/govready-q-files-starterpack/apps/Basic-System-Description
   status: Operational
-  vendor: GovReady PBC
+  vendor: GovReady®
   vendor_url: http://www.govready.com
   version: 1.0.5
 interstitial:

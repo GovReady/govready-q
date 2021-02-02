@@ -17,6 +17,29 @@ Add initial dynamic status information to the project page.
 * New pages for System Assessment Report
 * Updates to project page for status information and other project information.
 
+**Bug fix**
+
+* Fix importing project to just update the project started.
+
+**UI changes**
+
+* Remove "Upgrade Project" button from project page action buttons. Upgrade is now in settings page.
+* Improve styling of app store items.
+* Tweek general styling of project page question page:
+    * Remove light gray background from project page, question page, task finished page.
+    * Reduce corner radius in focus area blocks.
+    * Widen question area.
+
+**Compliance app changes**
+
+* Lightweight-ato compliance app (installed by default) now displays SSP button below action buttons.
+* Display "Unknown" when app vendor is set to "None" instead of "none".
+
+**Developer changes**
+
+* Format clean up of style sheets in project, app-store templates.
+* added functools.lru_cache() decorator to speed a couple funcs.
+
 v0.9.1.50.2 (January 26, 2021)
 ------------------------------
 
@@ -27,15 +50,12 @@ Keeps track of app inputs by relating them to the app version.
 
 Includes the following schema update to the app.yaml file of Compliance Apps.
 Inputs are supported in the app.yaml file with the following format:
+
 ```
 input:
 - id: <input_id> (string)
   name: <Input Name> (string)
-<<<<<<< HEAD
-  type: oscal (Only oscal currently supported) 
-=======
   type: oscal (Only oscal currently supported)
->>>>>>> develop
   path: <dir/filename.json> (relative file path)
   group: (optional string)
 ```
