@@ -935,8 +935,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         self.browser.find_element_by_id("import_component_submit").click()
         # Should be incremented by one compared to earlier
         project_count_after_import = Project.objects.all().count()
-        # Check the new number of projects, and validate that it's 1 more than the previous count.
-        self.assertEqual(Project.objects.all().count(), project_count_before_import + 1)
+
         # Has the correct name?
         self.assertEqual(Project.objects.all()[project_count_after_import -1 ].title, "New Test Project")
 
