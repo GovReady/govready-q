@@ -6,6 +6,10 @@ v999 (January XX, 2021)
 
 [Add updates here]
 
+**Bug fix**
+
+* Fix importing project to just update the project started.
+
 **UI changes**
 
 * Remove "Upgrade Project" button from project page action buttons. Upgrade is now in settings page.
@@ -23,6 +27,7 @@ v999 (January XX, 2021)
 **Developer changes**
 
 * Format clean up of style sheets in project, app-store templates.
+* added functools.lru_cache() decorator to speed a couple funcs.
 
 v0.9.1.50.2 (January 26, 2021)
 ------------------------------
