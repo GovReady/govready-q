@@ -1,7 +1,7 @@
 id: app
 title: General IT System ATO
 type: project
-version: 1.0.1
+version: 1.1.0
 icon: app.png
 introduction:
   format: markdown
@@ -40,9 +40,9 @@ catalog:
     short: IT System Questionnaires
   source_url: https://github.com/GovReady/apps
   status: stub
-  vendor: none
+  vendor: GovReady®
   vendor_url: ~
-  version: 1.0.1
+  version: 1.1.0
 questions:
 
 #System Info
@@ -552,10 +552,7 @@ questions:
   icon: ssp_icon.png
   title: System Security Plan
   type: module
-  group: System Security Plan
-  impute:
-  - condition: project.system_info.operational_system != 'yes'
-    value: ~
+  placement: action-buttons
 
 #ato letter
 - id: ato_letter
