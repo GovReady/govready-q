@@ -1,8 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
-v999        (February XX, 2021)
--------------------------------
+v999 (February XX, 2021)
+------------------------
+
+[Add development changes here]
+
+v0.9.1.51 (February 03, 2021)
+-----------------------------
 
 Add System Assessment Report tracking to associate assessments and evidence with the system.
 Add initial dynamic status information to the project page.
@@ -31,12 +36,15 @@ Add initial dynamic status information to the project page.
 
 * Fix erroneous control statement save error message.
 
-v0.9.1.50.3 (Feburary 1, 2021)
+v0.9.1.50.4 (February 03, 2021)
 ------------------------------
 
 **Bug fix**
 
 * Fix importing project to just update the project started.
+
+v0.9.1.50.3 (Feburary 01, 2021)
+------------------------------
 
 **UI changes**
 
