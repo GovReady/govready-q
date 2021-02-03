@@ -122,6 +122,8 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
   text-overflow: ellipsis;
 }
 
+.not-provided {color: #888; font-style: italic;}
+
 /* New CSS based on removing inline CSS */
 .btn-sm { width:95%; max-width:200px;  } /* this makes the action buttons all the same width.
 
