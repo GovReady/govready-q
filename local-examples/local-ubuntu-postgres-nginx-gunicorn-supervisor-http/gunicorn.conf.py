@@ -1,6 +1,7 @@
 import multiprocessing
 command = 'gunicorn'
 pythonpath = '/home/govready-q/govready-q'
+timeout = 240
 # serve GovReady-Q locally on server to use nginx as a reverse proxy
 bind = 'localhost:8000'
 # Only set workers higher than 1 if `secret-key` is defined in local/environment.json
