@@ -15,6 +15,7 @@ v999        (February XX, 2021)
 * Set statements to delete (CASCADE) when producer_element deleted.
 * Set statements to delete (CASCADE) when consumer_element deleted.
 * Add methods to Element to `get_statements`
+* Refactor project deletion to properly delete related System (e.g., project.system.root_element), Statements, ElementControls, POAMS, Deployments.
 
 **Bug fix**
 
