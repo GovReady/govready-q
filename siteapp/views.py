@@ -1282,16 +1282,24 @@ def upgrade_project(request, project):
         return JsonResponse({ "status": "error", "message": message })
 
 @project_admin_login_post_required
+@transaction.atomic
 def delete_project(request, project):
     if not project.is_deletable():
         return JsonResponse({ "status": "error", "message": "This project cannot be deleted." })
 
     # Get the project's parents for redirect.
     parents = project.get_parent_projects()
-    project.delete()
+
+    if project.system is not None:
+        # When project has a system, deleting the system deletes project
+        project.system.root_element.delete()
+    else:
+        # Just delete the project
+        project.delete()
 
     # Only choose parents the user can see.
     parents = [parent for parent in parents if parent.has_read_priv(request.user)]
+    print("parents", parents)
     if len(parents) > 0:
         redirect = parents[0].get_absolute_url()
     else:
