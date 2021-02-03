@@ -1,13 +1,16 @@
 GovReady-Q Release Notes
 ========================
 
-
-v0.9.1.50.3 (Feburary 1st, 2021)
------------------------
+v0.9.1.50.4 (February 03, 2021)
+-------------------------------
 
 **Bug fix**
 
 * Fix importing project to just update the project started.
+
+
+v0.9.1.50.3 (Feburary 1, 2021)
+------------------------------
 
 **UI changes**
 
@@ -27,7 +30,6 @@ v0.9.1.50.3 (Feburary 1st, 2021)
 
 * Format clean up of style sheets in project, app-store templates.
 * added functools.lru_cache() decorator to speed a couple funcs.
-
 
 v0.9.1.50.2 (January 26, 2021)
 ------------------------------
