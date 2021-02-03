@@ -1,14 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
-v999        (February XX, 2021)
--------------------------------
+v0.9.1.51 (February 03, 2021)
+-----------------------------
 
 **UI changes**
 
 * Display components alphabetically in component library text listing and in selected components text listing.
 * Include a component description and statement count in component library text listing and in selected components text listing.
-* Remove admin's "update certified text" option from editing control implmentation statements. 
+* Remove admin's "update certified text" option from editing control implmentation statements.
 
 **Developer changes**
 
@@ -21,7 +21,14 @@ v999        (February XX, 2021)
 
 * Fix erroneous control statement save error message.
 
-v0.9.1.50.3 (Feburary 1, 2021)
+v0.9.1.50.4 (February 03, 2021)
+------------------------------
+
+**Bug fix**
+
+* Fix importing project to just update the project started.
+
+v0.9.1.50.3 (Feburary 01, 2021)
 ------------------------------
 
 **Bug fix**
