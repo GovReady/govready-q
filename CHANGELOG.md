@@ -7,7 +7,7 @@ v999        (February XX, 2021)
 **UI changes**
 
 * Display components alphabetically in component library text listing and in selected components text listing.
-* Include component description and statement count in component library text listingvand in selected components text listing.
+* Include a component description and statement count in component library text listing and in selected components text listing.
 * Remove admin's "update certified text" option from editing control implmentation statements. 
 
 **Developer changes**
