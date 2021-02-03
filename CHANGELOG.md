@@ -31,10 +31,6 @@ v0.9.1.50.4 (February 03, 2021)
 v0.9.1.50.3 (Feburary 01, 2021)
 ------------------------------
 
-**Bug fix**
-
-* Fix importing project to just update the project started.
-
 **UI changes**
 
 * Remove "Upgrade Project" button from project page action buttons. Upgrade is now in settings page.
