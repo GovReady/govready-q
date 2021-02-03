@@ -8,12 +8,17 @@ v999        (February XX, 2021)
 
 * Display components alphabetically in component library text listing and in selected components text listing.
 * Include component description and statement count in component library text listingvand in selected components text listing.
+* Remove admin's "update certified text" option from editing control implmentation statements. 
 
 **Developer changes**
 
 * Set statements to delete (CASCADE) when producer_element deleted.
 * Set statements to delete (CASCADE) when consumer_element deleted.
 * Add methods to Element to `get_statements`
+
+**Bug fix**
+
+* Fix erroneous control statement save error message.
 
 v0.9.1.50.3 (Feburary 1, 2021)
 ------------------------------

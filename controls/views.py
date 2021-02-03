@@ -1562,21 +1562,6 @@ def save_smt(request):
                     return JsonResponse(
                         {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_consumer_msg})
 
-            # If we are updating a smt of type control_implementation_prototype from a system
-            # then update ElementControl smts_updated to know when control element on system was recently updated
-            statement_element_msg = ""
-            if statement.statement_type == "control_implementation":
-                try:
-                    ec = ElementControl.objects.get(element=statement.consumer_element, oscal_ctl_id=statement.sid,
-                                                    oscal_catalog_key=statement.sid_class)
-                    ec.smts_updated = statement.updated
-                    ec.save()
-                except Exception as e:
-                    statement_element_status = "error"
-                    statement_element_msg = "Failed to update ControlElement smt_updated {}".format(e)
-                    return JsonResponse(
-                        {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg})
-
             # Serialize saved data object(s) to send back to update web page
             # The submitted form needs to be updated with the object primary keys (ids)
             # in order that future saves will be treated as updates.
@@ -1585,7 +1570,7 @@ def save_smt(request):
 
     # Return successful save result to web page's Ajax request
     return JsonResponse(
-        {"status": "success", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg + statement_del_msg,
+        {"status": "success", "message": statement_msg + " " + producer_element_msg + " " + statement_del_msg,
          "statement": serialized_obj})
 
 def update_smt_prototype(request):
@@ -1709,7 +1694,7 @@ def delete_smt(request):
 
         # TODO Record fact statement deleted
         # Below will not work because statement is deleted
-        # and need to show in racird that a statement was recently deleted
+        # and need to show in record that a statement was recently deleted
         # Update ElementControl smts_updated to know when control element on system was recently updated
         # try:
         #     print("Updating ElementControl smts_updated")

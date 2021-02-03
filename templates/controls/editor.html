@@ -235,9 +235,6 @@
                                                             <div>
                                                                 {% if smt.prototype_synched == 'not_synched' %}
                                                                     <button type="button" name="overwrite" value="overwrite" class="btn btn-xs btn-primary" onclick="copy_smt_prototype('{{ forloop.counter }}');return false;">Overwrite current statement</button>
-                                                                    {% if user.is_superuser %}
-                                                                        <button type="button" name="update_certified" value="update_certified" class="btn btn-xs btn-danger" onclick="update_smt_prototype('{{ forloop.counter }}');return false;">Update certified text</button>
-                                                                    {% endif %}
                                                                 {% endif %}
                                                             </div>
                                                         </div>
@@ -545,36 +542,6 @@
             $('#diff_comparison_' + smt_panel_num).text('Texts are identical.');
         }
 
-        function update_smt_prototype(smt_panel_num) {
-            var data = $('#smt_' + smt_panel_num).serialize();
-            data = data + "&smt_panel_num=" + smt_panel_num;
-            // console.log(data);
-            show_modal_confirm(
-                "Warning!",
-                "Are you sure you want to update the certified statement?",
-                "Update",
-                function () {
-                    ajax_with_indicator({
-                        url: "/controls/smt/_update_smt_prototype/",
-                        method: "POST",
-                        data: data,
-                        success: function (res) {
-                            // console.log(res);
-                            // Update comparison label
-                            $('#diff_alert_' + smt_panel_num).html('<span id="diff_alert_' + smt_panel_num + '"><a href="#diff_' + smt_panel_num + '" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span class="glyphicon glyphicon-check"></span> Same as certified</a></span>');
-                            // Update comparison
-                            $('#diff_comparison_' + smt_panel_num).text('Texts are identical.');
-                            // Update certified text
-                            // TODO: improve translating `smt_body` to clean html
-                            $('#prototype_body_display_' + smt_panel_num).html(res["data"]["smt_body"].replace(/\n/g, "<br/>"));
-                            // $( '#diff_'+smt_panel_num.replace("smt_","") ).hide();
-                            // $( '#diff_alert_'+smt_panel_num.replace("smt_","") ).hide();
-                        }
-                    });
-                }
-            );
-            return false;
-        }
     </script>
 
     <script>
