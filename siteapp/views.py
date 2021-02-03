@@ -1299,7 +1299,6 @@ def delete_project(request, project):
 
     # Only choose parents the user can see.
     parents = [parent for parent in parents if parent.has_read_priv(request.user)]
-    print("parents", parents)
     if len(parents) > 0:
         redirect = parents[0].get_absolute_url()
     else:
