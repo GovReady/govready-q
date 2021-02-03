@@ -4,8 +4,16 @@ GovReady-Q Release Notes
 v999        (February XX, 2021)
 -------------------------------
 
-[Add updates here]
+**UI changes**
 
+* Display components alphabetically in component library text listing and in selected components text listing.
+* Include component description and statement count in component library text listingvand in selected components text listing.
+
+**Developer changes**
+
+* Set statements to delete (CASCADE) when producer_element deleted.
+* Set statements to delete (CASCADE) when consumer_element deleted.
+* Add methods to Element to `get_statements`
 
 v0.9.1.50.3 (Feburary 1, 2021)
 ------------------------------

@@ -171,11 +171,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.component = producer_element
 
-        # enable experimental OSCAL -and- OpenControl support
-        enable_experimental_oscal, _ = SystemSettings.objects.get_or_create(setting='enable_experimental_oscal')
-        enable_experimental_oscal.active = True
-        enable_experimental_oscal.save()
-
+        # enable experimental OpenControl support
         enable_experimental_opencontrol, _  = SystemSettings.objects.get_or_create(setting='enable_experimental_opencontrol')
         enable_experimental_opencontrol.active = True
         enable_experimental_opencontrol.save()

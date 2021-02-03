@@ -171,7 +171,6 @@ def controls_selected(request, system_id):
             "controls": controls,
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/controls_selected.html", context)
@@ -208,7 +207,6 @@ def controls_updated(request, system_id):
             "controls": controls,
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/controls_updated.html", context)
@@ -268,7 +266,7 @@ def component_library(request):
     """Display the library of components"""
 
     context = {
-        "elements": Element.objects.all().exclude(element_type='system'),
+        "elements": Element.objects.all().exclude(element_type='system').order_by('name'),
         "import_form": ImportOSCALComponentForm(),
     }
 
@@ -688,7 +686,6 @@ def system_element(request, system_id, element_id):
             "catalog_key": catalog_key,
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "opencontrol": opencontrol_string,
             "project_form": ProjectForm(request.user),
         }
@@ -732,7 +729,6 @@ def component_library_component(request, element_id):
             "impl_smts": impl_smts,
             "is_admin": request.user.is_superuser,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         }
         return render(request, "components/element_detail_tabs.html", context)
 
@@ -1347,7 +1343,6 @@ def editor(request, system_id, catalog_key, cl_id):
             "combined_smt": combined_smt,
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "opencontrol": "opencontrol_string",
             "project_form": ProjectForm(request.user),
             "elements": elements,
@@ -2237,7 +2232,6 @@ def poams_list(request, system_id):
             "controls": controls,
             "poam_smts": poam_smts,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/poams_list.html", context)
@@ -2761,7 +2755,6 @@ def inventory_item_assessment_results_list(request, system_id=None, deployment_i
             "controls": controls,
             "poam_smts": poam_smts,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/poams_list.html", context)

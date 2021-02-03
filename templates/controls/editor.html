@@ -138,9 +138,7 @@
                 <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div>
                 </a></li>
                 <li role="presentation"><a href="#combined" aria-controls="combined" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> Combined Statement </a></li>
-                {% if enable_experimental_oscal %}
                     <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
-                {% endif %}
                 {% if enable_experimental_opencontrol %}
                     <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
                 {% endif %}
@@ -327,7 +325,6 @@
                 </div>
 
               <!-- Tab panel: oscal -->
-              {% if enable_experimental_oscal %}
                 <div role="tabpanel" class="tab-pane" id="oscal">
                   <!-- <p id="oscal_download" class="navbar-text navbar-right">
                     <a id="oscal_download_json_link"
@@ -340,7 +337,6 @@
                   <div id="combined_smt" class="control-text"><h3>OSCAL</h3></div>
                   <div class="systems-element-oscal">{{ oscal }}</div>
                 </div>
-              {% endif %}
 
               <!-- Tab panel: opencontrol -->
               {% if enable_experimental_opencontrol %}
