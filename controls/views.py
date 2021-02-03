@@ -171,7 +171,6 @@ def controls_selected(request, system_id):
             "controls": controls,
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/controls_selected.html", context)
@@ -208,7 +207,6 @@ def controls_updated(request, system_id):
             "controls": controls,
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/controls_updated.html", context)
@@ -268,7 +266,7 @@ def component_library(request):
     """Display the library of components"""
 
     context = {
-        "elements": Element.objects.all().exclude(element_type='system'),
+        "elements": Element.objects.all().exclude(element_type='system').order_by('name'),
         "import_form": ImportOSCALComponentForm(),
     }
 
@@ -688,7 +686,6 @@ def system_element(request, system_id, element_id):
             "catalog_key": catalog_key,
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "opencontrol": opencontrol_string,
             "project_form": ProjectForm(request.user),
         }
@@ -732,7 +729,6 @@ def component_library_component(request, element_id):
             "impl_smts": impl_smts,
             "is_admin": request.user.is_superuser,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         }
         return render(request, "components/element_detail_tabs.html", context)
 
@@ -1347,7 +1343,6 @@ def editor(request, system_id, catalog_key, cl_id):
             "combined_smt": combined_smt,
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "opencontrol": "opencontrol_string",
             "project_form": ProjectForm(request.user),
             "elements": elements,
@@ -1567,21 +1562,6 @@ def save_smt(request):
                     return JsonResponse(
                         {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_consumer_msg})
 
-            # If we are updating a smt of type control_implementation_prototype from a system
-            # then update ElementControl smts_updated to know when control element on system was recently updated
-            statement_element_msg = ""
-            if statement.statement_type == "control_implementation":
-                try:
-                    ec = ElementControl.objects.get(element=statement.consumer_element, oscal_ctl_id=statement.sid,
-                                                    oscal_catalog_key=statement.sid_class)
-                    ec.smts_updated = statement.updated
-                    ec.save()
-                except Exception as e:
-                    statement_element_status = "error"
-                    statement_element_msg = "Failed to update ControlElement smt_updated {}".format(e)
-                    return JsonResponse(
-                        {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg})
-
             # Serialize saved data object(s) to send back to update web page
             # The submitted form needs to be updated with the object primary keys (ids)
             # in order that future saves will be treated as updates.
@@ -1590,7 +1570,7 @@ def save_smt(request):
 
     # Return successful save result to web page's Ajax request
     return JsonResponse(
-        {"status": "success", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg + statement_del_msg,
+        {"status": "success", "message": statement_msg + " " + producer_element_msg + " " + statement_del_msg,
          "statement": serialized_obj})
 
 def update_smt_prototype(request):
@@ -1714,7 +1694,7 @@ def delete_smt(request):
 
         # TODO Record fact statement deleted
         # Below will not work because statement is deleted
-        # and need to show in racird that a statement was recently deleted
+        # and need to show in record that a statement was recently deleted
         # Update ElementControl smts_updated to know when control element on system was recently updated
         # try:
         #     print("Updating ElementControl smts_updated")
@@ -2237,7 +2217,6 @@ def poams_list(request, system_id):
             "controls": controls,
             "poam_smts": poam_smts,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/poams_list.html", context)
@@ -2769,7 +2748,10 @@ def system_assessment_results_list(request, system_id=None):
             "system": system,
             "project": project,
             "sars": sars,
-            # "project_form": ProjectForm(request.user),
+            "controls": controls,
+            "poam_smts": poam_smts,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/sar_list.html", context)
 

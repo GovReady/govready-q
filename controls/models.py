@@ -55,8 +55,8 @@ class Statement(models.Model):
 
     parent = models.ForeignKey('self', help_text="Parent statement", related_name="children", on_delete=models.SET_NULL, blank=True, null=True)
     prototype = models.ForeignKey('self', help_text="Prototype statement", related_name="instances", on_delete=models.SET_NULL, blank=True, null=True)
-    producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element producing this statement.")
-    consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about.")
+    producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.CASCADE, blank=True, null=True, help_text="The element producing this statement.")
+    consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.CASCADE, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
     import_record = models.ForeignKey(ImportRecord, related_name="import_record_statements", on_delete=models.CASCADE,
@@ -281,6 +281,14 @@ class Element(models.Model):
         """Return on the statements of statement_type produced by this element"""
         smts = Statement.objects.filter(producer_element = self, statement_type = statement_type)
         return smts
+
+    @property
+    def get_control_impl_smts_prototype_count(self):
+        """Return count of statements with this element as producer_element"""
+
+        smt_count = Statement.objects.filter(producer_element=self, statement_type="control_implementation_prototype").count()
+
+        return smt_count
 
     @transaction.atomic
     def copy(self, name=None):
