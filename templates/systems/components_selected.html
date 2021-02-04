@@ -35,7 +35,7 @@
             <div id="tab-content" class="row rows-header">
                 <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span class="systems-selected-components">Selected Components</span></div>
             </div>
-                {#        PAGINATION START #}
+
             {% for component in elements %}
                 {# Each "component" is a Element model object. #}
                     <div id="tab-content" class="row row-control">
@@ -50,8 +50,6 @@
                         </div>
                     </div>
             {% endfor %}
-
-{#        PAGINATION END #}
 
             <div id="tab-content" class="row row-control" style="">
                 <form id="add_component" class="form-inline" method="post" action="/systems/{{ system.id }}/components/add_system_component">

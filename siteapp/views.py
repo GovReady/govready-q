@@ -13,6 +13,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
+from django.views.generic import ListView
 from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model
 
@@ -113,45 +114,62 @@ def assign_project_lifecycle_stage(projects):
             # No matching output document with a non-empty value.
             project.lifecycle_stage = lifecycle_stage_code_mapping["none_none"]
 
-def project_list(request):
-    # Get all of the projects that the user can see *and* that are in a folder,
-    # which indicates it is top-level.
-    projects = Project.get_projects_with_read_priv(
-        request.user,
-        excludes={ "contained_in_folders": None })
-
+class ProjectList(ListView):
+    """
+    Get all of the projects that the user can see *and* that are in a folder, which indicates it is top-level.
+    """
+    model = Project
+    template_name = 'projects.html'
+    context_object_name = 'projects'
     # Sort the projects by their creation date. The projects
     # won't always appear in that order, but it will determine
     # the overall order of the page in a stable way.
-    projects = sorted(projects, key = lambda project : project.created)
+    ordering = ['created']
+    paginate_by = 10
 
-    # Load each project's lifecycle stage, which is computed by each project's
-    # root task's app's output document named govready_lifecycle_stage_code.
-    # That output document yields a string identifying a lifecycle stage.
-    assign_project_lifecycle_stage(projects)
+    def get_queryset(self):
+        """
+        Return the projects after assigning lifecycles
+        """
+        projects = Project.get_projects_with_read_priv(
+            self.request.user,
+            excludes={"contained_in_folders": None})
 
-    # Group projects into lifecyle types, and then lifecycle stages. The lifecycle
-    # types are arranged in the order they first appear across the projects.
-    lifecycles = []
-    for project in projects:
-        # On the first occurrence of this lifecycle type, add it to the output.
-        if project.lifecycle_stage[0] not in lifecycles:
-            lifecycles.append(project.lifecycle_stage[0])
+        # Sort the projects by their creation date. The projects
+        # won't always appear in that order, but it will determine
+        # the overall order of the page in a stable way.
+       # projects = sorted(projects, key=lambda project: project.created)
 
-        # Put the project into the lifecycle's appropriate stage.
-        project.lifecycle_stage[1].setdefault("projects", []).append(project)
+        # Load each project's lifecycle stage, which is computed by each project's
+        # root task's app's output document named govready_lifecycle_stage_code.
+        # That output document yields a string identifying a lifecycle stage.
+        assign_project_lifecycle_stage(projects)
 
-    # Log listing
-    logger.info(
-        event="project_list",
-        user={"id": request.user.id, "username": request.user.username}
-    )
+        # Log listing
+        logger.info(
+            event="project_list",
+            user={"id": self.request.user.id, "username": self.request.user.username}
+        )
+        return projects
 
-    return render(request, "projects.html", {
-        "lifecycles": lifecycles,
-        "projects": projects,
-        "project_form": ProjectForm(request.user),
-    })
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Group projects into lifecyle types, and then lifecycle stages. The lifecycle
+        # types are arranged in the order they first appear across the projects.
+        projects_lifecycles = context['projects']
+
+        lifecycles = []
+        for project in projects_lifecycles:
+            # On the first occurrence of this lifecycle type, add it to the output.
+            if project.lifecycle_stage[0] not in lifecycles:
+                lifecycles.append(project.lifecycle_stage[0])
+
+            # Put the project into the lifecycle's appropriate stage.
+            project.lifecycle_stage[1].setdefault("projects", []).append(project)
+
+        context['lifecycles'] = lifecycles,
+        context['project_form'] = ProjectForm(self.request.user)
+        return context
 
 def project_list_lifecycle(request):
     # Get all of the projects that the user can see *and* that are in a folder,
