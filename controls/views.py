@@ -19,6 +19,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views import View
+from django.views.generic import ListView
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from urllib.parse import quote
@@ -238,29 +239,41 @@ def rename_element(request,element_id):
         import sys
         return JsonResponse({ "status": "error", "message": sys.exc_info() })
 
-@functools.lru_cache()
-def components_selected(request, system_id):
-    """Display System's selected components view"""
+class SelectedComponentsList(ListView):
+    """
+    Display System's selected components view
+    """
+    model = Element
+    template_name = 'systems/components_selected.html'
+    context_object_name = 'elements'
+    ordering = ['name']
+    paginate_by = 5
 
-    # Retrieve identified System
-    system = System.objects.get(id=system_id)
-    # Retrieve related selected controls if user has permission on system
-    if request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
+    def get_queryset(self):
+        """
+        Return the systems producer elements.
+        """
+        system = System.objects.get(id=self.kwargs['system_id'])
+        return system.producer_elements
 
-        # Return the components
-        context = {
-            "system": system,
-            "project": project,
-            "elements": Element.objects.all().exclude(element_type='system'),
-            "project_form": ProjectForm(request.user),
-        }
-        return render(request, "systems/components_selected.html", context)
-    else:
-        # User does not have permission to this system
-        raise Http404
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Retrieve identified System
+        system = System.objects.get(id=self.kwargs['system_id'])
+
+        # Retrieve related selected controls if user has permission on system
+        if self.request.user.has_perm('view_system', system):
+            # Retrieve primary system Project
+            # Temporarily assume only one project and get first project
+            project = system.projects.all()[0]
+            context['project'] = project
+            context['system'] = system
+            context['project'] = Element.objects.all().exclude(element_type='system')
+            context['project_form'] = ProjectForm(self.request.user)
+            return context
+        else:
+            # User does not have permission to this system
+            raise Http404
 
 def component_library(request):
     """Display the library of components"""
