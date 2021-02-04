@@ -125,7 +125,7 @@ class ProjectList(ListView):
     # won't always appear in that order, but it will determine
     # the overall order of the page in a stable way.
     ordering = ['created']
-    paginate_by = 10
+    paginate_by = 15
 
     def get_queryset(self):
         """
@@ -134,11 +134,6 @@ class ProjectList(ListView):
         projects = Project.get_projects_with_read_priv(
             self.request.user,
             excludes={"contained_in_folders": None})
-
-        # Sort the projects by their creation date. The projects
-        # won't always appear in that order, but it will determine
-        # the overall order of the page in a stable way.
-       # projects = sorted(projects, key=lambda project: project.created)
 
         # Load each project's lifecycle stage, which is computed by each project's
         # root task's app's output document named govready_lifecycle_stage_code.
