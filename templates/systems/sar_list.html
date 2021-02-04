@@ -49,13 +49,10 @@
       {% for item in sars %}
         <div id="tab-content" class="row row-control">
             <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                <a class="portfolio-project-link" href="/systems/{{ system.id }}/sar/{{ item.id }}/view">{{ item.id }}</a>
                 <a class="portfolio-project-link" href="/systems/{{ system.id }}/sar/{{ item.id }}/view">{{ item.name }}</a>
             </div>
-            <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
-                {%  if item.description is not None %}
-                    {{ item.description }}
-                {%  endif %}
+            <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
+                {% if item.description %}{{ item.description }}{% else %}<span class="not-provided">No description provided.</span>{% endif %}
             </div>
             <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                 {{ item.updated|timesince}} ago

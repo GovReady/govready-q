@@ -143,7 +143,7 @@ class SystemAssessmentResultForm(ModelForm):
 
     class Meta:
         model = SystemAssessmentResult
-        fields = ['name', 'system', 'deployment', 'assessment_results']
+        fields = ['name', 'description', 'system', 'deployment', 'assessment_results']
 
     def clean(self):
         """Validate data."""

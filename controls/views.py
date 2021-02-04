@@ -2748,9 +2748,6 @@ def system_assessment_results_list(request, system_id=None):
             "system": system,
             "project": project,
             "sars": sars,
-            "controls": controls,
-            "poam_smts": poam_smts,
-            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/sar_list.html", context)

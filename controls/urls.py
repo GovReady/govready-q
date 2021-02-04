@@ -42,7 +42,6 @@ urlpatterns = [
     # Systems Assessment Results
     url(r'^(?P<system_id>.*)/assessments$', views.system_assessment_results_list, name="system_assessment_results_list"),
     url(r'^(?P<system_id>.*)/assessment/new$', views.manage_system_assessment_result, name="new_system_assessment_result"),
-    url(r'^(?P<system_id>.*)/assessment/new$', views.manage_system_assessment_result, name="new_system_assessment_result"),
     url(r'^(?P<system_id>.*)/sar/(?P<sar_id>.*)/view$', views.view_system_assessment_result_summary, name="view_system_assessment_result_summary"),
     url(r'^(?P<system_id>.*)/sar/(?P<sar_id>.*)/edit$', views.manage_system_assessment_result, name="manage_system_assessment_result"),
     url(r'^(?P<system_id>.*)/sar/(?P<sar_id>.*)/history$', views.system_assessment_result_history, name="system_assessment_result_history"),
