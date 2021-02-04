@@ -135,11 +135,6 @@ class ProjectList(ListView):
             self.request.user,
             excludes={"contained_in_folders": None})
 
-        # Load each project's lifecycle stage, which is computed by each project's
-        # root task's app's output document named govready_lifecycle_stage_code.
-        # That output document yields a string identifying a lifecycle stage.
-        assign_project_lifecycle_stage(projects)
-
         # Log listing
         logger.info(
             event="project_list",
@@ -152,17 +147,6 @@ class ProjectList(ListView):
         # Group projects into lifecyle types, and then lifecycle stages. The lifecycle
         # types are arranged in the order they first appear across the projects.
         projects_lifecycles = context['projects']
-
-        lifecycles = []
-        for project in projects_lifecycles:
-            # On the first occurrence of this lifecycle type, add it to the output.
-            if project.lifecycle_stage[0] not in lifecycles:
-                lifecycles.append(project.lifecycle_stage[0])
-
-            # Put the project into the lifecycle's appropriate stage.
-            project.lifecycle_stage[1].setdefault("projects", []).append(project)
-
-        context['lifecycles'] = lifecycles,
         context['project_form'] = ProjectForm(self.request.user)
         return context
 
