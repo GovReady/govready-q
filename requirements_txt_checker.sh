@@ -20,7 +20,9 @@ function run_checks() {
 	# a temporary file.
 	FN=$(mktemp)
 	echo "Flattening transitive dependencies of '$FILE_BASE.txt' to a temporary file '$FN'"
-	pip-compile --generate-hashes --output-file $FN --no-header --no-annotate ${FILE_BASE}.in > /dev/null
+	pip-compile --generate-hashes --allow-unsafe  --upgrade --output-file $FN --no-header --no-annotate ${FILE_BASE}.in > /dev/null
+        # like requirements_txt_updater.sh
+        #   except added --no-annotate (see below)
 
 	# The reverse-dependency metadata doesn't seem to be entirely
 	# accurate and changes nondeterministically? We omit it above
