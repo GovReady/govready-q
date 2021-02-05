@@ -42,7 +42,12 @@ email-validator # CC0
 exclusiveprocess # CC0
 django-html-emailer # MIT License
 django-database-storage-backend # CC0, requires libmagic (libmagic1 in Debian)
-commonmarkextensions # BSD 3
+commonmarkextensions@https://github.com/GovReady/CommonMark-py-Extensions/archive/72992208a2ddcb686e5a5a678dfeb04ee0440585.zip#egg=commonmarkextensions # BSD 3
+# commonmarkextensions>0.0.5  for Python 3.9  pending >0.0.5 release ...
+#   'commonmarkextensions@' prefix is dropped by `pip-compile`
+#       & isn't conveyed to requirements.txt
+#     so '#egg=commonmarkextensions' suffix, which isn't, added
+#     so `pip3 install -r requirements.txt` knows which package this is
 structlog # Apache License
 
 # Only needed in common production deployment configurations
@@ -50,7 +55,10 @@ structlog # Apache License
 gunicorn # MIT License
 # Pin gevent to avoid Docker build errors with gevent==20.5.0
 # gevent==20.5.0 requires c compiler and build tools
-gevent==1.4.0 # MIT License
+gevent>=20.6.0 # MIT License
+# gevent>=20.6.0 (e.g., 21.1.2)  for Python 3.9
+#   Note: >=20.5.0 has required building from source at `pip3 install`-time
+#                    requiring Python dev, C compiler, & other build tool packages
 psycopg2-binary # LGPL
 rfc5424-logging-handler # BSD License
 
