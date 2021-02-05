@@ -798,14 +798,18 @@ def component_library_component_copy(request, element_id):
 
     # Retrieve element
     element = Element.objects.get(id=element_id)
-
-    e_copy = element.copy()
+    count = Element.objects.filter(uuid=element.uuid).count()
+    
+    if count > 0:
+        e_copy = element.copy(name=element.name + " copy ("+str(count+1)+')') 
+    else:
+        e_copy = element.copy()
 
     # Create message to display to user
     messages.add_message(request, messages.INFO,
                          'Component "{}" copied to "{}".'.format(element.name, e_copy.name))
 
-    # Redirect to the new page for the component
+    # # Redirect to the new page for the component
     return HttpResponseRedirect("/controls/components/{}".format(e_copy.id))
 
 @login_required
