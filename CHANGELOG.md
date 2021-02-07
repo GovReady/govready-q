@@ -6,6 +6,10 @@ v999 (February XX, 2021)
 
 [Add development changes here]
 
+**Developer changes**
+
+* Properly restrict access to statement history to users with system access, staff, admins.
+
 v0.9.1.51 (February 03, 2021)
 -----------------------------
 
