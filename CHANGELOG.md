@@ -6,6 +6,10 @@ v999 (February XX, 2021)
 
 [Add development changes here]
 
+**Developer changes**
+
+* Avoid name collissions when cloning a component.
+
 v0.9.1.51 (February 03, 2021)
 -----------------------------
 
