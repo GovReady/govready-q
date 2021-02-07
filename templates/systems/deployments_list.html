@@ -34,8 +34,8 @@
 
     <div id="tab-content" class="row rows-header">
         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam">Deployments</div>
-        <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">&nbsp;</div>
-        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+        <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">&nbsp;</div>
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
           <a href="/systems/{{ system.id }}/deployment/new" class="btn btn-sm btn-success systems-element-button">New Deployment</a>
           <span class="glyphicon glyphicon-download-alt pull-right systems-poam-glyphicon"
                 style="cursor: pointer;"
@@ -52,18 +52,21 @@
       {% for deployment in deployments %}
         <div id="tab-content" class="row row-control">
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/inventory"><span class="glyphicon glyphicon-th"></span> {{ deployment.name }}</a>
+                <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/inventory">{{ deployment.name }}</a>
             </div>
-            <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
+            <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
                 {{ deployment.description }}
             </div>
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/edit" title="Edit deployment" aria-label="Edit deployment" ><span class="glyphicon glyphicon-pencil"></span></a>
-                &nbsp;
-                <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/history" title="View deployment history" aria-label="View deployment history" ><span class="glyphicon glyphicon-calendar"></span></a>
+              &nbsp;
             </div>
             <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                 {{ deployment.updated|timesince}} ago
+            </div>
+            <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+                <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/edit" title="Edit deployment" aria-label="Edit deployment" ><span class="glyphicon glyphicon-pencil"></span></a>
+                &nbsp;
+                <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/history" title="View deployment history" aria-label="View deployment history" ><span class="glyphicon glyphicon-calendar"></span></a>
             </div>
         </div>
       {% endfor %}

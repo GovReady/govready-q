@@ -9,15 +9,26 @@ v999 (February XX, 2021)
 **Developer changes**
 
 * Avoid name collissions when cloning a component.
+* Add controls.models.Statement.delegate field to allow statements to delegate their content to other statements. This supports controls from one catalog to be mapped to controls in another catalog. A statement must exist for each delegate. One control delegating to 3 controls in another catalog must do that through 3 statements.
 
 v0.9.1.51 (February 03, 2021)
 -----------------------------
+
+Add System Assessment Report tracking to associate assessments and evidence with the system.
+Add initial dynamic status information to the project page.
+
+**Feature changes**
+
+* Add System Assessment Report tracking to associate assessments and evidence with the system.
+* Add initial dynamic status information to the project page.
 
 **UI changes**
 
 * Display components alphabetically in component library text listing and in selected components text listing.
 * Include a component description and statement count in component library text listing and in selected components text listing.
 * Remove admin's "update certified text" option from editing control implmentation statements.
+* New pages for System Assessment Report
+* Updates to project page for status information and other project information.
 
 **Developer changes**
 
@@ -69,6 +80,7 @@ Keeps track of app inputs by relating them to the app version.
 
 Includes the following schema update to the app.yaml file of Compliance Apps.
 Inputs are supported in the app.yaml file with the following format:
+
 ```
 input:
 - id: <input_id> (string)
