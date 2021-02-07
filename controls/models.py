@@ -55,6 +55,8 @@ class Statement(models.Model):
 
     parent = models.ForeignKey('self', help_text="Parent statement", related_name="children", on_delete=models.SET_NULL, blank=True, null=True)
     prototype = models.ForeignKey('self', help_text="Prototype statement", related_name="instances", on_delete=models.SET_NULL, blank=True, null=True)
+    delegate = models.ForeignKey('self', help_text="Delegate statement", related_name="delegators", on_delete=models.SET_NULL, blank=True, null=True)
+
     producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.CASCADE, blank=True, null=True, help_text="The element producing this statement.")
     consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.CASCADE, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
@@ -659,16 +661,16 @@ class OrgParams(object):
     Represent list of organizational defined parameters. Temporary
     class to work with default org params.
     """
-    
+
     _singleton = None
-    
+
     def __new__(cls):
         if cls._singleton is None:
             cls._singleton = super(OrgParams, cls).__new__(cls)
             cls._singleton.init()
-            
+
         return cls._singleton
-    
+
     def init(self):
         global ORGPARAM_PATH
         self.cache = {}
@@ -679,7 +681,7 @@ class OrgParams(object):
             if name in self.cache:
                 raise Exception("Duplicate default organizational parameters name {} from {}".format(name, f))
             self.cache[name] = values
-    
+
     def load_param_file(self, path):
         with path.open("r") as json_file:
             data = json.load(json_file)
@@ -687,10 +689,10 @@ class OrgParams(object):
                 return (data["name"], data["values"])
             else:
                 raise Exception("Invalid organizational parameters file {}".format(path))
-                
+
     def get_names(self):
         return self.cache.keys()
-    
+
     def get_params(self, name):
         return self.cache.get(name, {})
 
