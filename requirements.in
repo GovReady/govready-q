@@ -24,7 +24,7 @@ jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages
 # Django==2.2.12 # BSD License
-Django==3.0.12 # BSD License
+Django==3.1.6 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # Apache License 2.0
@@ -40,7 +40,12 @@ django-simple-history # BSD License
 rtyaml # CC0
 email-validator # CC0
 exclusiveprocess # CC0
-django-html-emailer # MIT License
+django-html-emailer@https://github.com/govtrack/django-html-emailer/archive/51c604090b8ab082fe79b4e35702eed0f0e3c367.zip#egg=django-html-emailer # MIT License
+# django-html-emailer>0.0.8.1  for Django 3.1  pending >0.0.8.1 release ...
+#   'django-html-emailer@' prefix is dropped by `pip-compile`
+#       & isn't conveyed to requirements.txt
+#     so '#egg=django-html-emailer' suffix, which isn't, added
+#     so `pip3 install -r requirements.txt` knows which package this is
 django-database-storage-backend # CC0, requires libmagic (libmagic1 in Debian)
 commonmarkextensions # BSD 3
 structlog # Apache License
