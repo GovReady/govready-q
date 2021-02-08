@@ -551,7 +551,7 @@ class System(models.Model):
         components.sort(key = lambda component:component.name)
         return components
 
-    producer_elements = property(get_producer_elements)
+    producer_elements = cached_property(get_producer_elements)
 
 class CommonControlProvider(models.Model):
     name = models.CharField(max_length=150, help_text="Name of the CommonControlProvider", unique=False)
