@@ -245,7 +245,7 @@ class SelectedComponentsList(ListView):
     """
     model = Element
     template_name = 'systems/components_selected.html'
-    context_object_name = 'elements'
+    context_object_name = 'system_elements'
     ordering = ['name']
     paginate_by = 5
 
@@ -268,7 +268,7 @@ class SelectedComponentsList(ListView):
             project = system.projects.all()[0]
             context['project'] = project
             context['system'] = system
-            context['project'] = Element.objects.all().exclude(element_type='system')
+            context['elements'] = Element.objects.all().exclude(element_type='system')
             context['project_form'] = ProjectForm(self.request.user)
             return context
         else:
