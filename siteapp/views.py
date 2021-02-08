@@ -125,7 +125,7 @@ class ProjectList(ListView):
     # won't always appear in that order, but it will determine
     # the overall order of the page in a stable way.
     ordering = ['created']
-    paginate_by = 15
+    paginate_by = 10
 
     def get_queryset(self):
         """
@@ -641,17 +641,18 @@ def project_read_required(f):
 @project_read_required
 def project(request, project):
 
+    # TODO: Lifecycles is part of the kaban style version of presenting projects that hasn't been optimized & fully implemented
     # Get this project's lifecycle stage, which is shown below the project title.
-    assign_project_lifecycle_stage([project])
-    if project.lifecycle_stage[0]["id"] == "none":
-        # Kill it if it's the default lifecycle.
-        project.lifecycle_stage = None
-    else:
-        # Mark the stages up to the active one as completed.
-        for stage in project.lifecycle_stage[0]["stages"]:
-            stage["complete"] = True
-            if stage == project.lifecycle_stage[1]:
-                break
+    # assign_project_lifecycle_stage([project])
+    # if project.lifecycle_stage[0]["id"] == "none":
+    #     # Kill it if it's the default lifecycle.
+    #     project.lifecycle_stage = None
+    # else:
+    #     # Mark the stages up to the active one as completed.
+    #     for stage in project.lifecycle_stage[0]["stages"]:
+    #         stage["complete"] = True
+    #         if stage == project.lifecycle_stage[1]:
+    #             break
 
     # Get all of the discussions the user is participating in as a guest in this project.
     # Meaning, I'm not a member, but I still need access to certain tasks and
