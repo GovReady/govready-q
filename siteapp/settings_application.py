@@ -4,7 +4,7 @@ import re
 from .settings import *
 
 INSTALLED_APPS += [
-    #'debug_toolbar',
+    'debug_toolbar',
 
     'htmlemailer',
     'notifications',
@@ -67,7 +67,7 @@ else:
     print("INFO: GR_IMG_GENERATOR set to {}".format(GR_IMG_GENERATOR))
 
 MIDDLEWARE += [
-    #'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'siteapp.middleware.ContentSecurityPolicyMiddleware',
     'guidedmodules.middleware.InstrumentQuestionPageLoadTimes',
 ]
