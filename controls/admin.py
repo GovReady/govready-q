@@ -30,7 +30,7 @@ class ImportRecordAdmin(admin.ModelAdmin, ExportCsvMixin):
     actions = ["export_as_csv"]
 
 class StatementAdmin(SimpleHistoryAdmin, ExportCsvMixin):
-    list_display = ('id', 'sid', 'sid_class', 'producer_element', 'statement_type', 'uuid')
+    list_display = ('id', 'sid', 'sid_class', 'producer_element', 'statement_type', 'delegate', 'uuid')
     actions = ["export_as_csv"]
     readonly_fields = ('created', 'updated', 'uuid')
 

@@ -28,9 +28,11 @@
   }
 
   #above-tab-content, #tab-content {
-    max-width: 950px;
+    max-width: 1250px;
     margin: auto;
   }
+
+  .container { width:90%;}
 
   .control-text {
     white-space: pre-wrap;
@@ -81,20 +83,26 @@
     color: #000;
   }
 
+  .statement-text, .description-text { font-size: 0.8em; }
+
+  .statement-text-block { border-left: 1px solid #ccc; }
+
+  .control-id-text { font-weight: bold; }
+
 </style>
 {% endblock %}
 
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-<div style="margin-top: 30px">
+<div style="margin-top: 30px;" >
   <div class="container">
-    <div class="row" style="">
+    <div class="row">
       <div id="above-tab-content" class="row">
         <!-- Page Title-->
         <div style="float: left;">
             <h2 class="control-heading" style="">
-              <a href="{% url 'component_library' %}" style="color: black;">Component Library</a> {% if system.id %}&gt; <a href='{% url 'components_selected' system_id=system.id %}' style="color: black;">Component Detail</a>{% endif %}
+              <a href="{% url 'component_library' %}">Component Library</a> {% if system.id %}&gt; <a href='{% url 'components_selected' system_id=system.id %}' style="color: black;">Component Detail</a>{% endif %}
             </h2>
         </div>
       </div>
@@ -117,8 +125,7 @@
   <div id="tab-content" class="row">
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="active"><a href="#component" aria-controls="component" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Component</a></li>
-      <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Implementation Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
+      <li role="presentation" class="active"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Control Implementation Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
       {% if enable_experimental_opencontrol %}
       <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
       {% endif %}
@@ -129,11 +136,12 @@
 
     <!-- Tab panels -->
     <div class="tab-content">
-      <!-- Tab panel: component -->
-      <div role="tabpanel" class="tab-pane active" id="component">
+      <!-- Tab panel: component_controls -->
+      <div role="tabpanel" class="tab-pane active" id="component_controls">
+
         <div class="row">
-          <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10">
-            <h3>Description</h3>
+          <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10 description-text">
+            <h3>Component Description</h3>
             {% if element.description %}
               {{ element.description }}
             {% else %}
@@ -144,74 +152,110 @@
             <div><h3><a id="copy_component" class="btn btn-sm btn-success" href={% url 'component_library_component_copy' element_id=element.id %} role="button" style="color: white;">Copy component</a></h3></div>
           </div>
         </div>
-      </div>
 
-      <!-- Tab panel: component_controls -->
-      <div role="tabpanel" class="tab-pane" id="component_controls">
-        <div id="control-description" class="control-text"><h3>Component Implementation Statements</h3></div>
-          <div id="smt-list" class="" style="width: 90%">
+        <div id="control-description" class="control-text"><h3>Control Implementation Statements</h3></div>
+
+          <div id="smt-list" class="" style="width: 100%">
             <!-- Loop through existing component-control statements -->
             {% for smt in impl_smts %}
-            <div id="panel-{{ forloop.counter }}" class="panel panel-default">
+            <div id="panel-{{ forloop.counter }}" class="">
               <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
+
+                <div class="row statement-text">
+                  <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                    <span id="producer_element-panel_num-control" class="control-id-text">{{ smt.sid|upper }} {% if smt.delegate %} ({{ smt.delegate.sid|upper }}){% endif %} {% if smt.pid %}{{ smt.pid }}.{% endif %}</span>
+                  </div>
+                  <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
+                    {% if smt.delegate %}{{ smt.delegate.body }}<br />(via {{ smt.delegate.sid|upper }}){% else %}{{ smt.body }}{% endif %}
+                    <br />
+                    <a role="button" class="pull-right" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">edit</a>
+                  </div>
+                  <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                    {{ smt.remarks }}
+                  </div>
+                </div>
+
                 <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
                   <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">
-                    <span id="producer_element-panel_num-control">{{ smt.sid|upper }}</span>&nbsp;
-                    <div class="panel-heading-smt">Status: {% if smt.status != "" and smt.status is not None %}{{ smt.status }}{% else %}TBD{% endif %}</div>
-                    {% if smt.pid is not None %}<div class="panel-heading-smt">{{ smt.pid }}.</div>{% endif %}
-                    <div class="panel-heading-smt-body">{{ smt.body }}</div>
+                    <!-- <span id="producer_element-panel_num-control">{{ smt.sid|upper }} {% if smt.delegate %} ({{ smt.delegate.sid|upper }}){% endif %}</span>&nbsp; -->
+                    <!-- {% if smt.pid %}<div class="panel-heading-smt">{{ smt.pid }}.</div>{% endif %} -->
+                    <!-- <div class="panel-heading-smt-body">{% if smt.delegate %}{{ smt.delegate.body }} (via {{ smt.delegate.sid|upper }}){% else %}{{ smt.body }}{% endif %}</div> -->
                   </a>
                 </h4>
               </div>
               <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
                 <div class="panel-body">
                   <div class="smt_block">
-                    <form id="smt_{{ forloop.counter }}" class="smt_form">
-                      <!-- Never change name of the producer element already associated with a statement -->
-                      <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                      <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
-                      <div class="form-group">
-                        <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                        <label for="component"><a href="{% url 'system_element_download_oscal_json' system_id=system.id element_id=smt.producer_element.id %}" style="color: black;">{{ smt.producer_element.name }}</a></label>
+
+                    <div class="row statement-text">
+                      <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                        &nbsp;
                       </div>
-                      <div class="form-group">
-                        <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
-                        <label for="statement">Statement
-                        </label>
-                        <textarea style="min-height:130px;overflow-y: scroll;" class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control"  cols="50">{{ smt.body }}</textarea>
+                      <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
+
+                        <form id="smt_{{ forloop.counter }}" class="smt_form">
+                          <!-- Never change name of the producer element already associated with a statement -->
+                          <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
+                          <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
+                          <div class="form-group">
+                            <label for="component">Edit</label>
+                            <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
+                            <!-- <label for="component"><a href="{% url 'system_element_download_oscal_json' system_id=system.id element_id=smt.producer_element.id %}" style="color: black;">{{ smt.producer_element.name }}</a></label> -->
+                          </div>
+                          <div class="form-group">
+                            <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
+                            <label for="statement">Statement
+                            </label>
+                            {% if smt.delegate %}
+                              <p>
+                                  {{smt.delegate.body}}
+                                  <br/>
+                                  <small style="color: #888;">Delegated to {{ smt.delegate.sid }}</small>
+                              </p>
+                            {% else %}
+                              <textarea style="min-height:130px;overflow-y: scroll;" class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control"  cols="50">{{ smt.body }}</textarea>
+                            {% endif %}
+                          </div>
+                          <div class="form-group">
+                            <label for="statement">Part</label>
+                            <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="{{smt.pid}}" style="width:180px;">
+                          </div>
+                          <div class="form-group">
+                            <label class="hidden" for="status">Status</label>
+                            <select class="form-control hidden" id="status_{{ forloop.counter }}" name="status" style="width:180px;">
+                            <option value='' {% if '' == smt.status %}selected="selected"{% endif %}></option>
+                            <option value='Not Implemented' {% if 'Not Implemented' == smt.status %}selected="selected"{% endif %}>Not Implemented</option>
+                            <option value='Planned' {% if 'Planned' == smt.status %}selected="selected"{% endif %}>Planned</option>
+                            <option value='Partially Implemented' {% if 'Partially Implemented' == smt.status %}selected="selected"{% endif %}>Partially Implemented</option>
+                            <option value='Implemented' {% if 'Implemented' == smt.status %}selected="selected"{% endif %}>Implemented</option>
+                            <option value='Unknown' {% if 'Unknown' == smt.status %}selected="selected"{% endif %}>Unknown</option>
+                            </select>
+                          </div>
+                          <div class="form-group">
+                            <label for="remarks">Remarks</label>
+                            <textarea style="min-height:70px; overflow-y: scroll;" class="form-control" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
+                          </div>
+                          <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
+                          <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
+                          <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
+                          <input type="hidden" id="sid_class" name="sid_class" value="{{ smt.sid_class }}">
+                          <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
+                          <div class="pull-right">
+                            <div id="success-msg-smt_{{ forloop.counter }}" style="display: inline; margin-right: 20px; color: gray;"></div>
+                            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">Close</a>&nbsp;
+                            <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_{{ forloop.counter }}');return false;">Delete</button>
+                            <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_{{ forloop.counter }}');return false;">Save</button>
+                            <button type="button" name="history" value="history" class="btn btn-xs btn-primary" onclick="location.href='{% url 'statement_history' smt_id=smt.id %}'">History</button>
+                          </div>
+                        </form>
+
                       </div>
-                      <div class="form-group">
-                        <label for="statement">Part</label>
-                        <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="{{smt.pid}}" style="width:180px;">
+                      <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                        &nbsp;
                       </div>
-                      <div class="form-group">
-                        <label for="status">Status</label>
-                        <select class=form-control id="status_{{ forloop.counter }}" name="status" style="width:180px;">
-                        <option value='' {% if '' == smt.status %}selected="selected"{% endif %}></option>
-                        <option value='Not Implemented' {% if 'Not Implemented' == smt.status %}selected="selected"{% endif %}>Not Implemented</option>
-                        <option value='Planned' {% if 'Planned' == smt.status %}selected="selected"{% endif %}>Planned</option>
-                        <option value='Partially Implemented' {% if 'Partially Implemented' == smt.status %}selected="selected"{% endif %}>Partially Implemented</option>
-                        <option value='Implemented' {% if 'Implemented' == smt.status %}selected="selected"{% endif %}>Implemented</option>
-                        <option value='Unknown' {% if 'Unknown' == smt.status %}selected="selected"{% endif %}>Unknown</option>
-                        </select>
-                      </div>
-                      <div class="form-group">
-                        <label for="remarks">Remarks</label>
-                        <textarea style="min-height:70px; overflow-y: scroll;" class="form-control" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
-                      </div>
-                      <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
-                      <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
-                      <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
-                      <input type="hidden" id="sid_class" name="sid_class" value="{{ smt.sid_class }}">
-                      <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
-                      <div class="modal-footer">
-                        <div id="success-msg-smt_{{ forloop.counter }}" style="display: inline; margin-right: 20px; color: gray;"></div>
-                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">Close</a>&nbsp;
-                        <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_{{ forloop.counter }}');return false;">Delete</button>
-                        <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_{{ forloop.counter }}');return false;">Save</button>
-                        <button type="button" name="history" value="history" class="btn btn-xs btn-primary" onclick="location.href='{% url 'statement_history' smt_id=smt.id %}'">History</button>
-                      </div>
-                    </form>
+                    </div>
+
+
                   </div>
                 </div>
               </div>
@@ -225,7 +269,7 @@
       <div role="tabpanel" class="tab-pane" id="oscal">
         <p id="oscal_download" class="navbar-text navbar-right">
           <a id="oscal_download_json_link"
-             class="navbar-link" 
+             class="navbar-link"
              href={% url 'system_element_download_oscal_json' system_id=system.id element_id=element.id %}>
             <span class="glyphicon glyphicon-download"></span>
             Download ...
@@ -414,7 +458,7 @@
                 $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
                 $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
                 // Update combined statement
-                if (typeof update_combined_smt === "function") { 
+                if (typeof update_combined_smt === "function") {
                   update_combined_smt();
                 }
               } else {
