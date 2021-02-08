@@ -1,6 +1,5 @@
-# nothing here
-
 import re
+import sys
 from .settings import *
 
 INSTALLED_APPS += [
@@ -82,6 +81,10 @@ INTERNAL_IPS = ['127.0.0.1'] # for django_debug_toolbar
 
 # Allow run-time disabling of the Django Debug Toolbar.
 DISABLE_DJANGO_DEBUG_TOOLBAR = False
+TESTING_MODE = 'test' in sys.argv # Are we run tests?
+if TESTING_MODE:
+    DISABLE_DJANGO_DEBUG_TOOLBAR = True
+
 def DEBUG_TOOLBAR_SHOW_TOOLBAR_CALLBACK(r):
     # return True # Force debug toolbar to be true regardless of INTERNAL_IPS settings
     import debug_toolbar.middleware
