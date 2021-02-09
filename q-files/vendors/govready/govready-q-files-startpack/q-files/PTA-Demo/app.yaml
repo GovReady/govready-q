@@ -6,7 +6,7 @@ icon: app.png
 protocol: dos.gov/policy/pta
 catalog:
   category: Privacy
-  vendor: GovReady PBC
+  vendor: GovReady®
   vendor_url: http://www.govready.com
   status: published
   version: 0.8.1.1

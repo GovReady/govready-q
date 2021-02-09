@@ -4,8 +4,62 @@ GovReady-Q Release Notes
 v999 (February XX, 2021)
 ------------------------
 
+[Add development changes here]
+
+**Developer changes**
+
+* Avoid name collissions when cloning a component.
 * Refactored use of random package to use secure secrets module.
 * Added minor pylint fixes.
+
+v0.9.1.51 (February 03, 2021)
+-----------------------------
+
+**UI changes**
+
+* Display components alphabetically in component library text listing and in selected components text listing.
+* Include a component description and statement count in component library text listing and in selected components text listing.
+* Remove admin's "update certified text" option from editing control implmentation statements.
+
+**Developer changes**
+
+* Set statements to delete (CASCADE) when producer_element deleted.
+* Set statements to delete (CASCADE) when consumer_element deleted.
+* Add methods to Element to `get_statements`
+* Refactor project deletion to properly delete related System (e.g., project.system.root_element), Statements, ElementControls, POAMS, Deployments.
+
+**Bug fix**
+
+* Fix erroneous control statement save error message.
+
+v0.9.1.50.4 (February 03, 2021)
+------------------------------
+
+**Bug fix**
+
+* Fix importing project to just update the project started.
+
+v0.9.1.50.3 (Feburary 01, 2021)
+------------------------------
+
+**UI changes**
+
+* Remove "Upgrade Project" button from project page action buttons. Upgrade is now in settings page.
+* Improve styling of app store items.
+* Tweek general styling of project page question page:
+    * Remove light gray background from project page, question page, task finished page.
+    * Reduce corner radius in focus area blocks.
+    * Widen question area.
+
+**Compliance app changes**
+
+* Lightweight-ato compliance app (installed by default) now displays SSP button below action buttons.
+* Display "Unknown" when app vendor is set to "None" instead of "none".
+
+**Developer changes**
+
+* Format clean up of style sheets in project, app-store templates.
+* added functools.lru_cache() decorator to speed a couple funcs.
 
 v0.9.1.50.2 (January 26, 2021)
 ------------------------------
@@ -155,9 +209,8 @@ v.0.9.1.48.1 (December 17, 2020)
 * Fix handling of static files. Create new `static-root` directory outside of `siteapp` into which to collect static files.
 * Remove bad path reference to select2 javascript libraries in component library page.
 
-
-v.999 (December XX, 2020)
--------------------------
+v0.9.1.48 (December 15, 2020)
+------------------------------
 
 Add Component Library feature pages and improve UI for managing reuse and "certified" component library.
 
