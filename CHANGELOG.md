@@ -4,7 +4,7 @@ GovReady-Q Release Notes
 v999 (February XX, 2021)
 ------------------------
 
-[Add development changes here
+[Add development changes here]
 
 **UI changes**
 
