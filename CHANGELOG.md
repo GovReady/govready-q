@@ -1,11 +1,11 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (January XX, 2021)
------------------------
+v999 (February XX, 2021)
+------------------------
 
-* Refactored use of random package to use secure secrets module
-* Added minor pylint fixes
+* Refactored use of random package to use secure secrets module.
+* Added minor pylint fixes.
 
 v0.9.1.50.2 (January 26, 2021)
 ------------------------------
