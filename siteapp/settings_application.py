@@ -82,7 +82,7 @@ INTERNAL_IPS = ['127.0.0.1'] # for django_debug_toolbar
 # Allow run-time disabling of the Django Debug Toolbar.
 DISABLE_DJANGO_DEBUG_TOOLBAR = False# Note profiling by pyinstrument will be replaced by django debug toolbar
 TESTING_MODE = 'test' in sys.argv # Are we running tests with test mode and debugging?
-if TESTING_MODE or DEBUG:
+if TESTING_MODE or DISABLE_TOOLBAR == True:
     DISABLE_DJANGO_DEBUG_TOOLBAR = True
 
 def DEBUG_TOOLBAR_SHOW_TOOLBAR_CALLBACK(r):

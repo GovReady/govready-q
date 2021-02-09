@@ -62,6 +62,8 @@ SECRET_KEY = environment.get("secret-key") or make_secret_key()
 # The DEBUG flag must be set in the environment.
 DEBUG = bool(environment.get("debug"))
 ADMINS = environment.get("admins") or []
+# Do you want to use django debug toolbar
+DISABLE_TOOLBAR = bool(environment.get("disable_tool_bar"))
 
 # Set GOVREADY_URL if 'govready-url' set in environment.json.
 from urllib.parse import urlparse
@@ -136,9 +138,6 @@ MIDDLEWARE = [
 	'simple_history.middleware.HistoryRequestMiddleware',
 	'pyinstrument.middleware.ProfilerMiddleware',
 ]
-CACHE_MIDDLEWARE_ALIAS='default'
-CACHE_MIDDLEWARE_SECONDS=604800
-CACHE_MIDDLEWARE_KEY_PREFIX=''
 
 if environment["debug"] and os.path.exists(os.path.join(os.path.dirname(__file__), 'helper_middleware.py')):
 	MIDDLEWARE.append(primary_app+'.helper_middleware.DumpErrorsToConsole')
