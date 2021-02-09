@@ -4,7 +4,15 @@ GovReady-Q Release Notes
 v999 (February XX, 2021)
 ------------------------
 
-[Add development changes here]
+[Add development changes here
+
+**UI changes**
+
+* Improve page load times for listings with pagination and ordering for project listing and selected component listing.
+
+**Developer changes**
+
+* Replaced function-based views with class-based listview for SelectedComponentsList, ProjectList.
 
 v0.9.1.51 (February 03, 2021)
 -----------------------------
