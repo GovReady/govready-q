@@ -63,7 +63,7 @@ SECRET_KEY = environment.get("secret-key") or make_secret_key()
 DEBUG = bool(environment.get("debug"))
 ADMINS = environment.get("admins") or []
 # Do you want to use django debug toolbar
-DISABLE_TOOLBAR = bool(environment.get("disable_tool_bar"))
+ENABLE_TOOLBAR = bool(environment.get("enable_tool_bar"))
 
 # Set GOVREADY_URL if 'govready-url' set in environment.json.
 from urllib.parse import urlparse
