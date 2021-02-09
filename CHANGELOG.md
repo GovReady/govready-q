@@ -9,6 +9,7 @@ v999 (February XX, 2021)
 **Developer changes**
 
 * Properly restrict access to statement history to users with system access, staff, admins.
+* Avoid name collissions when cloning a component.
 
 v0.9.1.51 (February 03, 2021)
 -----------------------------
