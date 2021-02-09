@@ -125,7 +125,6 @@ if DEBUG:
 
 # Add standard middleware.
 MIDDLEWARE = [
-	'django.middleware.cache.UpdateCacheMiddleware',
 	'django.middleware.security.SecurityMiddleware',
 	'whitenoise.middleware.WhiteNoiseMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
@@ -136,7 +135,6 @@ MIDDLEWARE = [
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'simple_history.middleware.HistoryRequestMiddleware',
 	'pyinstrument.middleware.ProfilerMiddleware',
-	'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 CACHE_MIDDLEWARE_ALIAS='default'
 CACHE_MIDDLEWARE_SECONDS=604800
