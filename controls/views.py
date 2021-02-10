@@ -645,7 +645,7 @@ class ComponentImporter(object):
 
 
 def add_selected_components(system, import_record):
-        """Add a component from the library to the project and its statements using the import record"""
+        """Add a component from the library or a compliance app to the project and its statements using the import record"""
 
         # Get components from import record
         imported_components = Element.objects.filter(import_record=import_record)
@@ -1788,14 +1788,14 @@ def add_system_component(request, system_id):
 
     # Loop through element's prototype statements and add to control implementation statements
     for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
-        # Add all existsing control statements for a component to a system even if system does not use controls.
+        # Add all existing control statements for a component to a system even if system does not use controls.
         # This guarantees that control statements are associated.
         # The selected controls will serve as the primary filter on what content to display.
         smt.create_instance_from_prototype(system.root_element.id)
 
     # Make sure some controls were added to the system. Report error otherwise.
     smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation")
-    print("DEBUG smts_added ", smts_added)
+
     smts_added_count = len(smts_added)
     if smts_added_count > 0:
         messages.add_message(request, messages.INFO,
