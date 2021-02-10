@@ -836,60 +836,49 @@ def import_component(request):
     result = ComponentImporter().import_components_as_json(import_name, oscal_component_json, request)
     return component_library(request)
 
+
+def raise_404_if_not_permitted_to_statement(request, statement, system_permission='view_system'):
+    """Raises a 404 if the user doesn't have the statement system permission"""
+    while True:
+        if request.user.is_superuser or request.user.is_staff:
+            # Allow access if the user has superuser or staff member permissions respectively
+            break
+        else:
+            # Allow access if the user has the statement system permission
+            try:
+                system = System.objects.get(root_element=statement.consumer_element)
+                if request.user.has_perm(system_permission, system):
+                    break
+            except System.DoesNotExist:
+                pass
+
+        raise Http404
+
+def raise_404_if_not_permitted_to_change_statement(request, statement):
+    """Raises a 404 if the user doesn't have permission to change the statement"""
+    raise_404_if_not_permitted_to_statement(request, statement, 'change_system')
+
 @login_required
 def statement_history(request, smt_id=None):
-    """Returns the history for the given statement"""
+    """Returns the history for the specified statement"""
 
-    from controls.models import Statement
     # Get statement if exists else 404
-    smt = Statement.objects.get_object_or_404(id=smt_id)
+    smt = get_object_or_404(Statement, id=smt_id)
 
-    # Check permission block
-    permission = False
-    if request.user.is_superuser or request.user.is_staff:
-        # Grant permission to superusers and staff users
-        permission = True
-    elif System.objects.filter(root_element=smt.consumer_element).exists():
-        # Grant permission to user with edit access on system
-        system = System.objects.get(root_element=smt.consumer_element)
-        permission = True if request.user.has_perm('view_system', system) else False
-    # 404 if user does not have permission
-    if not permission:
-        raise Http404
-    # Check permission block end
+    # Check permission
+    raise_404_if_not_permitted_to_statement(request, smt)
 
-    full_smt_history = None
-    try:
-        full_smt_history = smt.history.all()
-    except Statement.DoesNotExist:
-        messages.add_message(request, messages.ERROR, f'The statement id is not valid. Is this still a statement in GovReady?')
-
-    context = {"statement": full_smt_history}
-
-    return render(request, "controls/statement_history.html", context)
+    return render(request, "controls/statement_history.html", {"statement": smt.history.all()})
 
 @login_required
 def restore_to_history(request, smt_id, history_id):
-    """
-    Restore the current model instance to a previous version
-    """
+    """Restores the specified statement version"""
 
-    # Check permission block
-    permission = False
-    if request.user.is_superuser:
-        # Grant superuser permission
-        permission = True
-    elif request.user.is_staff:
-        # Grant member of staff permission
-        permission = True
-    elif System.objects.filter(root_element=smt.consumer_element).exists():
-        # Grant permission to user with edit access on system
-        system = System.objects.get(root_element=smt.consumer_element)
-        permission = True if request.user.has_perm('change_system', system) else False
-    # 404 if user does not have permission
-    if not permission:
-        raise Http404
-    # Check permission block end
+    # Get statement if exists else 404
+    smt = get_object_or_404(Statement, id=smt_id)
+
+    # Check permission
+    raise_404_if_not_permitted_to_change_statement(request, smt)
 
     full_smt_history = None
     for query_key in request.POST:
@@ -897,19 +886,15 @@ def restore_to_history(request, smt_id, history_id):
             change_reason = request.POST.get(query_key, "")
         else:
             change_reason = None
-    try:
-        smt = Statement.objects.get(id=smt_id)
-        recent_smt = smt.history.first()
-
-    except ObjectDoesNotExist as ex:
-        messages.add_message(request, messages.ERROR, f'{ex} The statement id is not valid. Is this still a statement in GovReady?')
 
     try:
+        # Save historical statement as a new instance
         historical_smt = smt.history.get(history_id=history_id)
-        # saving historical statement as a new instance
         historical_smt.instance.save()
+
         # Update the reason for the new statement record
-        update_change_reason(smt.history.first().instance, change_reason)
+        recent_smt     = smt.history.first()
+        update_change_reason(recent_smt.instance, change_reason)
 
         logger.info( f"Change reason: {change_reason}")
 
@@ -1634,37 +1619,29 @@ def update_smt_prototype(request):
         return HttpResponseNotAllowed(["POST"])
 
     else:
-        form_dict = dict(request.POST)
+        # Get statement if exists else 404
+        form_dict   = dict(request.POST)
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
 
-        statement = Statement.objects.get(pk=form_values['smt_id'])
+        statement = get_object_or_404(Statement, pk=form_values['smt_id'])
 
-        # Check permission block
-        permission = False
-        if request.user.is_superuser:
-            # Grant superuser permission
-            permission = True
-        elif request.user.is_staff:
-            # Grant member of staff permission
-            permission = True
-        elif System.objects.filter(root_element=smt.consumer_element).exists():
-            # Grant permission to user with edit access on system
-            system = System.objects.get(root_element=smt.consumer_element)
-            permission = True if request.user.has_perm('change_system', system) else False
-        # 404 if user does not have permission
-        if not permission:
-            # User is not Admin or Staff  and does not have permission to update statement prototype
+
+        # Check permission
+        try:
+            raise_404_if_not_permitted_to_modify_statement(request, statement)
+        except Http404:
             # Log permission update statement prototype answer denied
             logger.info(
                 event="update_smt_permission permission_denied",
                 object={"object": "statement", "id": statement.id},
                 user={"id": request.user.id, "username": request.user.username}
             )
-            # raise Http404
-            return HttpResponseForbidden("Permission denied. {} does not have change privileges to update statement prototype.".format(request.user.username))
-        # Check permission block end
+
+            # Raise 404
+            raise
+
 
         if statement is None:
             statement_msg = "The id for this statement is no longer valid in the database."
