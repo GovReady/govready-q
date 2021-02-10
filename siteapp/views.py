@@ -145,9 +145,10 @@ class ProjectList(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Group projects into lifecyle types, and then lifecycle stages. The lifecycle
-        # types are arranged in the order they first appear across the projects.
-        projects_lifecycles = context['projects']
+
+        context['projects_access'] = Project.get_projects_with_read_priv(
+            self.request.user,
+            excludes={"contained_in_folders": None})
         context['project_form'] = ProjectForm(self.request.user)
         return context
 
