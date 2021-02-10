@@ -108,7 +108,7 @@ Your Compliance Projects
   <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#" class=" btn btn-success">Start a project</a>
 </div>
 
-{% if projects|length > 0 %}
+{% if projects_access|length > 0 %}
 <h2 class="">Projects</h2>
 {% else %}
 <h2>Welcome to GovReady-Q</h2>
@@ -116,8 +116,8 @@ Your Compliance Projects
 <p>Assess, test, and authorize together</p>
 {% endif %}
 
-{% if projects|length > 0 %}
-<p>You have access to {{ projects|length }} project{{ projects|pluralize }}</p>
+{% if projects_access|length > 0 %}
+<p>You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}</p>
 
 <div class="container">
 <div class="row">
