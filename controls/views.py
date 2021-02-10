@@ -1599,7 +1599,6 @@ def update_smt_prototype(request):
             form_values[key] = form_dict[key][0]
 
         statement = Statement.objects.get(pk=form_values['smt_id'])
-        system = statement.consumer_element
 
         # Test if user is admin
         if not request.user.is_superuser:
@@ -1613,7 +1612,6 @@ def update_smt_prototype(request):
             return HttpResponseForbidden("Permission denied. {} does not have change privileges to update statement prototype.".format(request.user.username))
 
         if statement is None:
-            statement_status = "error"
             statement_msg = "The id for this statement is no longer valid in the database."
             return JsonResponse({ "status": "error", "message": statement_msg })
 
@@ -1626,7 +1624,6 @@ def update_smt_prototype(request):
             statement_status = "ok"
             statement_msg = f"Update to statement prototype {proto_statement.prototype_id} succeeded."
         except Exception as e:
-            statement_status = "error"
             statement_msg = "Update to statement prototype failed. Error reported {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg })
 
