@@ -635,9 +635,9 @@ pyinstrument==3.2.0 \
     --hash=sha256:266a02d874799a8e06889ed9030dcef518b61c7a8e64a3a0ad0754645f901285 \
     --hash=sha256:ce8fef6ea88349f0060b6d974483fd64d2c061346e6b78bca6357509a5121665
     # via -r requirements.in
-pyjwt[crypto]==1.7.1 \
-    --hash=sha256:5c6eca3c2940464d106b99ba83b00c6add741c9becaec087fb7ccdefea71350e \
-    --hash=sha256:8d59a976fb773f3e6a39c85636357c4f0e242707394cadadd9814f5cbaa20e96
+pyjwt[crypto]==2.0.1 \
+    --hash=sha256:a5c70a06e1f33d81ef25eecd50d50bd30e34de1ca8b2b9fa3fe0daaabcf69bf7 \
+    --hash=sha256:b70b15f89dc69b993d8a8d32c299032d5355c82f9b5b7e851d1a6d706dffe847
     # via
     #   django-allauth
     #   pygithub
