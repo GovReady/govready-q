@@ -569,7 +569,7 @@ class ComponentImporter(object):
         return new_component
 
     def create_control_implementation_statements(self, catalog_key, implemented_reqs, parent_component):
-        """Creates a Statement from a JSON dictimplemented-requirements
+        """Creates a Statement from a JSON dict implemented-requirements
 
         @type catalog_key: str
         @param catalog_key: Catalog of the control statements
@@ -616,7 +616,7 @@ class ComponentImporter(object):
                         status=implemented_control['status'] if 'status' in implemented_control else None,
                         producer_element=parent_component,
                     )
-                    new_statement.save()
+
                     logger.info(f"New statement with UUID {new_statement.uuid} created.")
                     statements_created.append(new_statement)
 
