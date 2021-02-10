@@ -9,6 +9,8 @@ v999 (February XX, 2021)
 **Developer changes**
 
 * Avoid name collissions when cloning a component.
+* Refactored use of random package to use secure secrets module.
+* Added minor pylint fixes.
 
 v0.9.1.51 (February 03, 2021)
 -----------------------------
@@ -361,7 +363,7 @@ v.0.9.1.47 (December 01, 2020)
 * Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
 
 v0.9.1.46.4 (November 25, 2020)
------------------------------
+-----------------------------	
 
 **UI changes**
 
