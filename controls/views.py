@@ -226,6 +226,10 @@ def rename_element(request,element_id):
     try:
         new_name = request.POST.get("name", "").strip() or None
         new_description = request.POST.get("description", "").strip() or None
+
+        if Element.objects.filter(name=new_name).exists() is True:
+            return JsonResponse({ "status": "err", "message": "Name already in use"})
+            
         element = get_object_or_404(Element, id=element_id)
         element.name = new_name
         element.description = new_description
@@ -235,9 +239,10 @@ def rename_element(request,element_id):
             element={"id": element.id, "new_name": new_name, "new_description": new_description}
         )
         return JsonResponse({ "status": "ok" }) 
+           
     except:
         import sys
-        return JsonResponse({ "status": "error", "message": sys.exc_info() })
+        return JsonResponse({ "status": "err", "message": sys.exc_info() })
 
 class SelectedComponentsList(ListView):
     """
@@ -811,14 +816,18 @@ def component_library_component_copy(request, element_id):
 
     # Retrieve element
     element = Element.objects.get(id=element_id)
-
-    e_copy = element.copy()
+    count = Element.objects.filter(uuid=element.uuid).count()
+    
+    if count > 0:
+        e_copy = element.copy(name=element.name + " copy ("+str(count+1)+')') 
+    else:
+        e_copy = element.copy()
 
     # Create message to display to user
     messages.add_message(request, messages.INFO,
                          'Component "{}" copied to "{}".'.format(element.name, e_copy.name))
 
-    # Redirect to the new page for the component
+    # # Redirect to the new page for the component
     return HttpResponseRedirect("/controls/components/{}".format(e_copy.id))
 
 @login_required

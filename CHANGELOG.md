@@ -13,6 +13,7 @@ v999 (February XX, 2021)
 **Developer changes**
 
 * Replaced function-based views with class-based listview for SelectedComponentsList, ProjectList.
+* Avoid name collissions when cloning a component.
 
 v0.9.1.51 (February 03, 2021)
 -----------------------------
