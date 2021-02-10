@@ -631,9 +631,9 @@ pyinstrument-cext==0.2.3 \
     --hash=sha256:e99a7108a8704340d76386c4cc3c961358a33d5fef1687d42b7f43f4820d5f71 \
     --hash=sha256:ead51ff20664e587a1a1c56c12e0f99ae4ed2b8846793d233a30dbb7c355015e
     # via pyinstrument
-pyinstrument==3.2.0 \
-    --hash=sha256:266a02d874799a8e06889ed9030dcef518b61c7a8e64a3a0ad0754645f901285 \
-    --hash=sha256:ce8fef6ea88349f0060b6d974483fd64d2c061346e6b78bca6357509a5121665
+pyinstrument==3.3.0 \
+    --hash=sha256:1cb0c9900a7ce75f8a64c10b7f11c1cdce1f7ff7e02fed687d35f8e95876cb5b \
+    --hash=sha256:9a6e1645acc2a66e078386fc580937c30ab384c828ac3e28d1037bca1ea59562
     # via -r requirements.in
 pyjwt[crypto]==1.7.1 \
     --hash=sha256:5c6eca3c2940464d106b99ba83b00c6add741c9becaec087fb7ccdefea71350e \
