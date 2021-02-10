@@ -559,7 +559,7 @@ class ComponentImporter(object):
             # TODO: When components can be uploaded by project, set element_type from component-type OSCAL property
             element_type="system_element"
         )
-        new_component.save()
+
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
         control_implementation_statements = component_json['control-implementations']
         for control_element in control_implementation_statements:
