@@ -18,6 +18,7 @@ from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model
 
 from controls.forms import ImportProjectForm
+from controls.views import add_selected_components
 from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
@@ -569,13 +570,8 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             # Get the components from the import records of the app version
             import_records = appver.input_artifacts.all()
             for import_record in import_records:
-                producer_elements = Element.objects.filter(import_record=import_record)
-                for producer_element in producer_elements:
-                    smts = Statement.objects.filter(producer_element_id=producer_element.id,
-                                                    statement_type="control_implementation_prototype")
-                    for smt in smts:
-                        # Loop through element's prototype statements and add to control implementation statements
-                        smt.create_instance_from_prototype(system.root_element.id)
+                add_selected_components(system, import_record)
+
         else:
             # User does not have write permissions
             logger.info(
