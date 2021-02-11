@@ -638,7 +638,7 @@ def project_read_required(f):
 @project_read_required
 def project(request, project):
 
-    # TODO: Lifecycles is part of the kaban style version of presenting projects that hasn't been optimized & fully implemented
+    # TODO: Lifecycles is part of the kanban style version of presenting projects that hasn't been optimized & fully implemented
     # Get this project's lifecycle stage, which is shown below the project title.
     # assign_project_lifecycle_stage([project])
     # if project.lifecycle_stage[0]["id"] == "none":
