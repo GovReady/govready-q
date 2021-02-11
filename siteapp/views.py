@@ -293,7 +293,7 @@ def render_app_catalog_entry(appversion, appversions, organization):
         "icon": None if "icon" not in catalog
                     else image_to_dataurl(appversion.get_asset(catalog["icon"]), 128),
         "protocol": app_module.spec.get("protocol", []) if app_module else [],
-        
+
         # catalog detail page metadata
         "vendor": catalog.get("vendor"),
         "vendor_url": catalog.get("vendor_url"),
@@ -563,11 +563,26 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         deployment.save()
         deployment = Deployment(name="Prod", description="Production environment deployment", system=system)
         deployment.save()
-        # Assign default control catalog
-        # Assign default control profile for org systems
-        # Assign default organization components for a system
-        # Assign default org params
 
+        # Assign default control catalog
+        # Temporarily hardcode
+        catalog_key = "NIST_SP-800-171_rev1"
+
+        # Assign default control profile for org systems
+        # Temporarily hardcode
+        baseline_name = "cui"
+        assign_results = system.root_element.assign_baseline_controls(user, catalog_key, baseline_name)
+        # Log result if successful
+        if assign_results:
+            # Log start app / new project
+            logger.info(
+                event="assign_baseline",
+                object={"object": "system", "id": system.root_element.id, "title": system.root_element.name},
+                baseline={"catalog_key": catalog_key, "baseline_name": baseline_name},
+                user={"id": user.id, "username": user.username}
+            )
+
+        # Assign default organization components for a system
         if user.has_perm('change_system', system):
             # Get the components from the import records of the app version
             import_records = appver.input_artifacts.all()
@@ -585,6 +600,8 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
                 event="change_system permission_denied",
                 user={"id": user.id, "username": user.username}
             )
+
+        # TODO: Assign default org params
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
@@ -871,7 +888,7 @@ def project_settings(request, project):
                     continue
 
         # If the invitation didn't get put elsewhere, display in the
-        # other list.                
+        # other list.
         other_open_invitations.append(inv)
 
     # Gather version upgrade information
@@ -1089,7 +1106,7 @@ def project_api(request, project):
             items = list(task.get_current_answer_records())
         else:
             items = [(q, None) for q in module.questions.order_by('definition_order')]
-        
+
         def add_filter_field(q, suffix, title):
             from guidedmodules.models import ModuleQuestion
             schema.append( (path, module, ModuleQuestion(
@@ -1205,7 +1222,7 @@ def move_project(request, project_id):
     request ([HttpRequest]): The network request
     project_id ([int|str]): The id of the project
     Returns:
-        [JsonResponse]: Either a ok status or an error 
+        [JsonResponse]: Either a ok status or an error
     """
     try:
         new_portfolio_id = request.POST.get("new_portfolio", "").strip() or None
