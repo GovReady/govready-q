@@ -19,8 +19,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='appsource',
             name='is_system_source',
-            field=models.BooleanField(default=False, help_text='This field is set to True for a single AppSource that holds the system modules such as user profiles.'),
+            field=models.BooleanField(
+                default=False,
+                help_text=(
+                    'This field is set to True for a single AppSource that holds the system'
+                    ' modules such as user profiles.'
+                ),
+            ),
         ),
-
-        migrations.RunPython(mark_system_source),
+        migrations.RunPython(mark_system_source, migrations.RunPython.noop),
     ]
