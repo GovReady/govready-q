@@ -1704,7 +1704,7 @@ class TaskAnswer(models.Model):
     def get_absolute_url(self):
         from urllib.parse import quote
         return self.task.get_absolute_url_to_question(self.question)
-    @cached_property
+
     def get_current_answer(self):
         # The current answer is the one with the highest primary key.
         return self.answer_history\

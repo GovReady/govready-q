@@ -84,6 +84,12 @@ DISABLE_DJANGO_DEBUG_TOOLBAR = False# Note profiling by pyinstrument will be rep
 TESTING_MODE = 'test' in sys.argv # Are we running tests with test mode and debugging?
 if TESTING_MODE or ENABLE_TOOLBAR == False:
     DISABLE_DJANGO_DEBUG_TOOLBAR = True
+    # Prevent caching when we are testing
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
+    }
 
 def DEBUG_TOOLBAR_SHOW_TOOLBAR_CALLBACK(r):
     # return True # Force debug toolbar to be true regardless of INTERNAL_IPS settings
