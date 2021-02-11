@@ -377,8 +377,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # with other credentials.
         self.browser.get(self.url("/"))
         self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
-        var_sleep(2)
-        wait_for_sleep_after(lambda: self.click_element("li#tab-signin"))
+        self.click_element("li#tab-signin")
         self.fill_field("#id_login", username or self.user.username)
         self.fill_field("#id_password", password or self.user.clear_password)
         self.click_element("form#login_form button[type=submit]")
@@ -446,12 +445,10 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
     def test_login(self):
         # Test that a wrong pwd doesn't log us in.
-        var_sleep(1)
         self._login(password=get_random_string(4))
         self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
 
         # Test that a wrong username doesn't log us in.
-        var_sleep(1)
         self._login(username="notme")
         self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
 
@@ -464,7 +461,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
     def test_new_user_account_settings(self):
         # Log in as the user, who is new. Complete the account settings.
-        var_sleep(1)
+
         self._login()
 
         self.click_element('#user-menu-dropdown')
@@ -498,7 +495,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
     def test_simple_module(self):
         # Log in and create a new project and start its task.
-        var_sleep(1)
         self._login()
         self._new_project()
         task = self._start_task()
@@ -535,7 +531,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Test a bunch of invitations.
 
         # Log in and create a new project.
-        var_sleep(1)
         self._login()
         self._new_project()
         project_page = self.browser.current_url
@@ -778,7 +773,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
     def test_create_portfolio_project(self):
         # Create new project within portfolio
-        var_sleep(1)
         self._login()
         self._new_project()
 
@@ -794,7 +788,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
     def test_grant_portfolio_access(self):
         # Grant another member access to portfolio
-        var_sleep(1)
         self._login()
         self.browser.get(self.url("/portfolios"))
         self.click_element("#portfolio_{}".format(self.user.username))
@@ -841,7 +834,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         Editing a portfolio's title and/or description provides appropriate validation and messaging
         """
         # journey to portfolios and ensure i have multiple portfolios if not then create new portfolios
-        var_sleep(1)
         self._login()
         self.browser.get(self.url("/portfolios"))
         # Navigate to the portfolio form
@@ -885,7 +877,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         """
         portfolio = Portfolio.objects.all().first()
         # Login and journey to portfolios
-        var_sleep(1)
         self._login()
         self.browser.get(self.url("/portfolios"))
         # Hit deletion pattern
@@ -911,7 +902,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def test_questions_text(self):
         # Log in and create a new project.
-        var_sleep(1)
         self._login()
         self._new_project()
         wait_for_sleep_after(lambda: self.click_element('#question-question_types_text'))
@@ -1021,7 +1011,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def test_questions_choice(self):
         # Log in and create a new project.
-        var_sleep(1)
         self._login()
         self._new_project()
         self.click_element('#question-question_types_choice')
@@ -1075,7 +1064,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def test_questions_numeric(self):
         # Log in and create a new project.
-        var_sleep(1)
         self._login()
         self._new_project()
         self.click_element('#question-question_types_numeric')
@@ -1228,7 +1216,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def test_questions_media(self):
         # Log in and create a new project.
-        var_sleep(1)
         self._login()
         self._new_project()
         self.click_element('#question-question_types_media')
@@ -1276,7 +1263,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def test_questions_module(self):
         # Log in and create a new project.
-        var_sleep(1)
         self._login()
         self._new_project()
         # start "Test The Module Question Types"
@@ -1357,7 +1343,6 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
 
     def test_settings_page(self):
         # Log in
-        var_sleep(1)
         self._login()
         # test navigating to settings page not logged in
         self.browser.get(self.url("/settings"))
@@ -1378,7 +1363,6 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         self.browser.get(self.url("/accounts/logout/"))
 
         # login as user with admin privileges access settings page
-        var_sleep(1)
         self._login()
         self.browser.get(self.url("/settings"))
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "GovReady-Q Setup"))
