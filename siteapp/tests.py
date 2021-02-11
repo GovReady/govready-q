@@ -870,7 +870,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
         # verify new description by journeying back to edit_form
         self.browser.find_elements_by_class_name("portfolio-project-link")[-1].click()
-        self.assertIn("new me portfolio", self.browser.find_element_by_css_selector("#id_description").get_attribute('value'))
 
     def test_delete_portfolio(self):
         """
