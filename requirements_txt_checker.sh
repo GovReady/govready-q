@@ -20,7 +20,9 @@ function run_checks() {
 	# a temporary file.
 	FN=$(mktemp)
 	echo "Flattening transitive dependencies of '$FILE_BASE.txt' to a temporary file '$FN'"
-	pip-compile --generate-hashes --output-file $FN --no-header --no-annotate ${FILE_BASE}.in > /dev/null
+	pip-compile --generate-hashes --allow-unsafe  --upgrade --output-file $FN --no-header --no-annotate ${FILE_BASE}.in > /dev/null
+	# like requirements_txt_updater.sh
+	#   except added --no-annotate (see below)
 
 	# The reverse-dependency metadata doesn't seem to be entirely
 	# accurate and changes nondeterministically? We omit it above
@@ -29,8 +31,37 @@ function run_checks() {
 	FN2=$(mktemp)
 	echo "Clean up of temporary requirements file for comparisons"
 	cat ${FILE_BASE}.txt \
-		| python3 -c "import sys, re; print(re.sub(r'[\s\\\\]+# via .*', '', sys.stdin.read()));" \
+		| python3 -c "import sys, re; print(re.sub(r'\n[ \t]+\# .*', '', sys.stdin.read()));" \
 		> $FN2
+	# e.g.,
+	#   Reduce
+	#
+	#   > zipp==3.4.0 \
+	#   >     --hash=sha256:102c24ef8f171fd729d46599845e95c7ab894a4cf45f5de11a44cc7444fb1108 \
+	#   >     --hash=sha256:ed5eee1974372595f9e416cc7bbeeb12335201d8081ca8a0743c954d4446e5cb
+	#   >     # via
+	#   >     #   importlib-metadata
+	#   >     #   importlib-resources
+	#   >
+	#   > # The following packages are considered to be unsafe in a requirements file:
+	#   > setuptools==53.0.0 \
+	#   >     --hash=sha256:0e86620d658c5ca87a71a283bd308fcaeb4c33e17792ef6f081aec17c171347f \
+	#   >     --hash=sha256:1b18ef17d74ba97ac9c0e4b4265f123f07a8ae85d9cd093949fa056d3eeeead5
+	#   >     # via
+	#   >     #   fs
+	#
+	#   to
+	#
+	#   > zipp==3.4.0 \
+	#   >     --hash=sha256:102c24ef8f171fd729d46599845e95c7ab894a4cf45f5de11a44cc7444fb1108 \
+	#   >     --hash=sha256:ed5eee1974372595f9e416cc7bbeeb12335201d8081ca8a0743c954d4446e5cb
+	#   >
+	#   > # The following packages are considered to be unsafe in a requirements file:
+	#   > setuptools==53.0.0 \
+	#   >     --hash=sha256:0e86620d658c5ca87a71a283bd308fcaeb4c33e17792ef6f081aec17c171347f \
+	#   >     --hash=sha256:1b18ef17d74ba97ac9c0e4b4265f123f07a8ae85d9cd093949fa056d3eeeead5
+
+	# Note:  sys.stdin.read() appends a '\n',  but leaving since ignoring whitespace below
 
 	# Compare the requirements.txt in the repository to the one found by
 	# generating it from requirements.in.
