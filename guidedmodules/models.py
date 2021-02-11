@@ -118,7 +118,7 @@ class AppVersion(models.Model):
     version_number = models.CharField(blank=True, null=True, max_length=128, help_text="The version number of the compliance app.")
     version_name = models.CharField(blank=True, null=True, max_length=128, help_text="The name of this version/release of the compliance app.")
 
-    input_files = models.ManyToManyField('guidedmodules.AppInput', help_text="The inputs linked to this pack.")
+    input_files = models.ManyToManyField('guidedmodules.AppInput', blank=True, null=True, help_text="The inputs linked to this pack.")
     input_paths = JSONField(
         help_text="A dictionary mapping file paths to the content_hashes of inputs included in the inputs field of this instance.",
         blank=True, null=True)
