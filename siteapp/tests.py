@@ -851,19 +851,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q"))
         # Navigate to portfolios
         self.browser.get(self.url("/portfolios"))
-        # Assert we have the new portfolio
-        self.assertIn("Test 1", self._getNodeText("#portfolio_Test\ 1"))
-
-        # Click on the pencil anchor tag to edit the newly created portfolio
-        self.browser.find_elements_by_class_name("portfolio-project-link")[-1].click()
-
-        # test editing the title to be the same as another portfolio title. Check for validation error message Portfolio with this Title already exists.
-        # Fill in form
-        self.clear_and_fill_field("#id_title", "me")
-        # Submit form
-        self.click_element("#edit_portfolio_submit")
-        # We should get an error
-        wait_for_sleep_after(lambda: self.assertIn("Portfolio name me not available.", self._getNodeText("div.alert.fade.in.alert-danger")))
 
         # Navigate to portfolios
         self.browser.get(self.url("/portfolios"))
