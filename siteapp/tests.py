@@ -377,6 +377,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # with other credentials.
         self.browser.get(self.url("/"))
         self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
+        var_sleep(2)
         wait_for_sleep_after(lambda: self.click_element("li#tab-signin"))
         self.fill_field("#id_login", username or self.user.username)
         self.fill_field("#id_password", password or self.user.clear_password)
@@ -445,10 +446,12 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
     def test_login(self):
         # Test that a wrong pwd doesn't log us in.
+        var_sleep(1)
         self._login(password=get_random_string(4))
         self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
 
         # Test that a wrong username doesn't log us in.
+        var_sleep(1)
         self._login(username="notme")
         self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
 
@@ -461,7 +464,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
     def test_new_user_account_settings(self):
         # Log in as the user, who is new. Complete the account settings.
-
         var_sleep(1)
         self._login()
 
