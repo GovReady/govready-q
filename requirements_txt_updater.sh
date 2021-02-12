@@ -29,7 +29,11 @@ function run_update() {
 	# generate a requirements.txt file from scratch, and any unpinned
 	# packages will be pinned to the latest upstream version, and if we
 	# don't do the same here, the files won't match and the check will fail.)
-	pip-compile --generate-hashes --upgrade --output-file ${FILE_BASE}.txt --no-header ${FILE_BASE}.in
+	pip-compile --generate-hashes --allow-unsafe  --upgrade --output-file ${FILE_BASE}.txt --no-header ${FILE_BASE}.in
+	# --allow-unsafe
+	#   prevents errors during `pip3 install -r requirements.txt`
+	#     by enabling pinning setuptools etc. dependencies
+	#                   e.g., via --generate-hashes
 
 	# Check packages for known vulnerabilities.
 	safety check -r ${FILE_BASE}.txt

@@ -250,20 +250,6 @@ questions:
   - condition: project.system_info.system_personal_data != 'yes'
     value: ~
 
-#POAMS
-- id: poam_description
-  title: Description of the POAM
-  type: module-set
-  icon: poam.png
-  module-id: poam_description
-  group: Plan of Action and Milestones (POAM)
-- id: poam_doc
-  title: POAM Document
-  type: module
-  icon: poam.png
-  module-id: poam_doc
-  group: Plan of Action and Milestones (POAM)
-
 #RTM
 - id: rtm
   title: RTM Questions

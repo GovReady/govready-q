@@ -19,6 +19,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views import View
+from django.views.generic import ListView
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from urllib.parse import quote
@@ -243,29 +244,41 @@ def rename_element(request,element_id):
         import sys
         return JsonResponse({ "status": "err", "message": sys.exc_info() })
 
-@functools.lru_cache()
-def components_selected(request, system_id):
-    """Display System's selected components view"""
+class SelectedComponentsList(ListView):
+    """
+    Display System's selected components view
+    """
+    model = Element
+    template_name = 'systems/components_selected.html'
+    context_object_name = 'system_elements'
+    ordering = ['name']
+    paginate_by = 5
 
-    # Retrieve identified System
-    system = System.objects.get(id=system_id)
-    # Retrieve related selected controls if user has permission on system
-    if request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
+    def get_queryset(self):
+        """
+        Return the systems producer elements.
+        """
+        system = System.objects.get(id=self.kwargs['system_id'])
+        return system.producer_elements
 
-        # Return the components
-        context = {
-            "system": system,
-            "project": project,
-            "elements": Element.objects.all().exclude(element_type='system'),
-            "project_form": ProjectForm(request.user),
-        }
-        return render(request, "systems/components_selected.html", context)
-    else:
-        # User does not have permission to this system
-        raise Http404
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Retrieve identified System
+        system = System.objects.get(id=self.kwargs['system_id'])
+
+        # Retrieve related selected controls if user has permission on system
+        if self.request.user.has_perm('view_system', system):
+            # Retrieve primary system Project
+            # Temporarily assume only one project and get first project
+            project = system.projects.all()[0]
+            context['project'] = project
+            context['system'] = system
+            context['elements'] = Element.objects.all().exclude(element_type='system')
+            context['project_form'] = ProjectForm(self.request.user)
+            return context
+        else:
+            # User does not have permission to this system
+            raise Http404
 
 def component_library(request):
     """Display the library of components"""
@@ -551,7 +564,7 @@ class ComponentImporter(object):
             # TODO: When components can be uploaded by project, set element_type from component-type OSCAL property
             element_type="system_element"
         )
-        new_component.save()
+
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
         control_implementation_statements = component_json['control-implementations']
         for control_element in control_implementation_statements:
@@ -561,7 +574,7 @@ class ComponentImporter(object):
         return new_component
 
     def create_control_implementation_statements(self, catalog_key, implemented_reqs, parent_component):
-        """Creates a Statement from a JSON dictimplemented-requirements
+        """Creates a Statement from a JSON dict implemented-requirements
 
         @type catalog_key: str
         @param catalog_key: Catalog of the control statements
@@ -608,7 +621,7 @@ class ComponentImporter(object):
                         status=implemented_control['status'] if 'status' in implemented_control else None,
                         producer_element=parent_component,
                     )
-                    new_statement.save()
+
                     logger.info(f"New statement with UUID {new_statement.uuid} created.")
                     statements_created.append(new_statement)
 
@@ -635,9 +648,8 @@ class ComponentImporter(object):
             control = catalog.get_control_by_id(control_id)
             return True if control is not None else False
 
-
 def add_selected_components(system, import_record):
-        """Add a component from the library to the project and its statements using the import record"""
+        """Add a component from the library or a compliance app to the project and its statements using the import record"""
 
         # Get components from import record
         imported_components = Element.objects.filter(import_record=import_record)
@@ -650,8 +662,6 @@ def add_selected_components(system, import_record):
                 # The selected controls will serve as the primary filter on what content to display.
                 smt.create_instance_from_prototype(system.root_element.id)
         return imported_components
-
-
 
 def system_element(request, system_id, element_id):
     """Display System's selected element detail view"""
@@ -829,10 +839,27 @@ def import_component(request):
 @login_required
 def statement_history(request, smt_id=None):
     """Returns the history for the given statement"""
+
     from controls.models import Statement
+    # Get statement if exists else 404
+    smt = Statement.objects.get_object_or_404(id=smt_id)
+
+    # Check permission block
+    permission = False
+    if request.user.is_superuser or request.user.is_staff:
+        # Grant permission to superusers and staff users
+        permission = True
+    elif System.objects.filter(root_element=smt.consumer_element).exists():
+        # Grant permission to user with edit access on system
+        system = System.objects.get(root_element=smt.consumer_element)
+        permission = True if request.user.has_perm('view_system', system) else False
+    # 404 if user does not have permission
+    if not permission:
+        raise Http404
+    # Check permission block end
+
     full_smt_history = None
     try:
-        smt = Statement.objects.get(id=smt_id)
         full_smt_history = smt.history.all()
     except Statement.DoesNotExist:
         messages.add_message(request, messages.ERROR, f'The statement id is not valid. Is this still a statement in GovReady?')
@@ -846,6 +873,24 @@ def restore_to_history(request, smt_id, history_id):
     """
     Restore the current model instance to a previous version
     """
+
+    # Check permission block
+    permission = False
+    if request.user.is_superuser:
+        # Grant superuser permission
+        permission = True
+    elif request.user.is_staff:
+        # Grant member of staff permission
+        permission = True
+    elif System.objects.filter(root_element=smt.consumer_element).exists():
+        # Grant permission to user with edit access on system
+        system = System.objects.get(root_element=smt.consumer_element)
+        permission = True if request.user.has_perm('change_system', system) else False
+    # 404 if user does not have permission
+    if not permission:
+        raise Http404
+    # Check permission block end
+
     full_smt_history = None
     for query_key in request.POST:
         if "restore" in query_key:
@@ -1595,21 +1640,33 @@ def update_smt_prototype(request):
             form_values[key] = form_dict[key][0]
 
         statement = Statement.objects.get(pk=form_values['smt_id'])
-        system = statement.consumer_element
 
-        # Test if user is admin
-        if not request.user.is_superuser:
-            # User is not Admin and does not have permission to update statement prototype
+        # Check permission block
+        permission = False
+        if request.user.is_superuser:
+            # Grant superuser permission
+            permission = True
+        elif request.user.is_staff:
+            # Grant member of staff permission
+            permission = True
+        elif System.objects.filter(root_element=smt.consumer_element).exists():
+            # Grant permission to user with edit access on system
+            system = System.objects.get(root_element=smt.consumer_element)
+            permission = True if request.user.has_perm('change_system', system) else False
+        # 404 if user does not have permission
+        if not permission:
+            # User is not Admin or Staff  and does not have permission to update statement prototype
             # Log permission update statement prototype answer denied
             logger.info(
                 event="update_smt_permission permission_denied",
                 object={"object": "statement", "id": statement.id},
                 user={"id": request.user.id, "username": request.user.username}
             )
+            # raise Http404
             return HttpResponseForbidden("Permission denied. {} does not have change privileges to update statement prototype.".format(request.user.username))
+        # Check permission block end
 
         if statement is None:
-            statement_status = "error"
             statement_msg = "The id for this statement is no longer valid in the database."
             return JsonResponse({ "status": "error", "message": statement_msg })
 
@@ -1622,7 +1679,6 @@ def update_smt_prototype(request):
             statement_status = "ok"
             statement_msg = f"Update to statement prototype {proto_statement.prototype_id} succeeded."
         except Exception as e:
-            statement_status = "error"
             statement_msg = "Update to statement prototype failed. Error reported {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg })
 
@@ -1784,14 +1840,14 @@ def add_system_component(request, system_id):
 
     # Loop through element's prototype statements and add to control implementation statements
     for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
-        # Add all existsing control statements for a component to a system even if system does not use controls.
+        # Add all existing control statements for a component to a system even if system does not use controls.
         # This guarantees that control statements are associated.
         # The selected controls will serve as the primary filter on what content to display.
         smt.create_instance_from_prototype(system.root_element.id)
 
     # Make sure some controls were added to the system. Report error otherwise.
     smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation")
-    print("DEBUG smts_added ", smts_added)
+
     smts_added_count = len(smts_added)
     if smts_added_count > 0:
         messages.add_message(request, messages.INFO,
@@ -2752,4 +2808,3 @@ def inventory_item_assessment_results_list(request, system_id=None, deployment_i
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/poams_list.html", context)
-
