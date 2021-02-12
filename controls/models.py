@@ -540,6 +540,38 @@ class System(models.Model):
         # Return the dictionary
         return smts_as_dict
 
+    @cached_property
+    def controls_status_count(self):
+        """Retrieve counts of control status"""
+
+        status_list = ['Not Implemented', 'Planned', 'Partially Implemented', 'Implemented', 'Unknown']
+        status_stats = {}
+        # Fetch all selected controls
+        elm = self.root_element
+        for status in status_list:
+            # Get the smts_control_implementations ordered by part, e.g. pid
+            status_stats[status] = elm.statements_consumed.filter(statement_type="control_implementation", status=status).count()
+        # TODO add index on statement status
+        return status_stats
+
+    @cached_property
+    def poam_status_count(self):
+        """Retrieve counts of poam status"""
+
+        # Temporarily hard code status list
+        status_list = ['Open', 'Closed', "In Progress"]
+        # TODO
+        # Get a unique filter of status list and gather on that...
+        status_stats = {}
+        # Fetch all selected controls
+        elm = self.root_element
+        for status in status_list:
+            # Get the smts_control_implementations ordered by part, e.g. pid
+            status_stats[status] = elm.statements_consumed.filter(statement_type="POAM",
+                                                                  status__iexact=status).count()
+        # TODO add index on statement status
+        return status_stats
+
     # @property (See below for creation of property from method)
     def get_producer_elements(self):
         smts = self.root_element.statements_consumed.all()
@@ -659,16 +691,16 @@ class OrgParams(object):
     Represent list of organizational defined parameters. Temporary
     class to work with default org params.
     """
-    
+
     _singleton = None
-    
+
     def __new__(cls):
         if cls._singleton is None:
             cls._singleton = super(OrgParams, cls).__new__(cls)
             cls._singleton.init()
-            
+
         return cls._singleton
-    
+
     def init(self):
         global ORGPARAM_PATH
         self.cache = {}
@@ -679,7 +711,7 @@ class OrgParams(object):
             if name in self.cache:
                 raise Exception("Duplicate default organizational parameters name {} from {}".format(name, f))
             self.cache[name] = values
-    
+
     def load_param_file(self, path):
         with path.open("r") as json_file:
             data = json.load(json_file)
@@ -687,10 +719,10 @@ class OrgParams(object):
                 return (data["name"], data["values"])
             else:
                 raise Exception("Invalid organizational parameters file {}".format(path))
-                
+
     def get_names(self):
         return self.cache.keys()
-    
+
     def get_params(self, name):
         return self.cache.get(name, {})
 
@@ -759,44 +791,50 @@ class Deployment(models.Model):
     def get_absolute_url(self):
         return "/systems/%d/deployments" % (self.system.id)
 
-# class InventoryItemAssessmentResults(models.Model):
-#     statement = models.OneToOneField(Statement, related_name="assessment_results",
+class SystemAssessmentResult(models.Model):
+    name = models.CharField(max_length=250, help_text="Name of the system assessment result", unique=False, blank=False, null=False)
+    description = models.CharField(max_length=255, help_text="Brief description of the system assessment result", unique=False, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for the system assessment result.")
+    system = models.ForeignKey('System', related_name='system_assessment_result', on_delete=models.CASCADE, blank=True, null=True, help_text="The system associated with the system assessment result")
+    deployment = models.ForeignKey(Deployment, related_name="assessment_results",
+        unique=False, blank=True, null=True, on_delete=models.SET_NULL,
+        help_text="The deployment associated with the assessment result.")
+    assessment_results = JSONField(blank=True, null=True,
+        help_text="JSON object representing the system assessment results associated with a deployment.")
+    history = HistoricalRecords(cascade_delete_history=True)
+
+    def __str__(self):
+        return "<SystemAssesmentResult %s id=%d>" % (self.system, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "<SystemAssesmentResult %s id=%d>" % (self.system, self.id)
+
+# Individual statement Model
+# class AssessmentResult(models.Model):
+#     statement = models.OneToOneField(Statement, related_name="assessment_result",
 #         unique=False, blank=True, null=True, on_delete=models.CASCADE,
-#         help_text="The assessment results details for this statement. Statement must be type 'assessment_results'.")
-#     deployment = models.OneToOneField(Deployment, related_name="assessment_results",
+#         help_text="The assessment results details for this statement. Statement must be type 'assessment_result'.")
+#     deployment = models.ForeignKey(Deployment, related_name="assessment_results",
 #         unique=False, blank=True, null=True, on_delete=models.SET_NULL,
-#         help_text="The deployment associated with the inventory item's assessment results.")
-#     inventory_item_uuid = models.UUIDField(default=None, editable=True, unique=False, blank=True, null=True,
-#         help_text="UUID of the inventory item.")
-#     data = JSONField(blank=True, null=True,
-#         help_text="JSON object representing the inventory item's assessment results.")
+#         help_text="The deployment associated with the assessment result.")
+#     # reporter = models.ForeignKey(Reporter, on_delete=models.CASCADE)
+#     # inventory_item_uuid = models.UUIDField(default=None, editable=True, unique=False, blank=True, null=True,
+#         # help_text="UUID of the inventory item.")
+#     # data = JSONField(blank=True, null=True,
+#     #     help_text="JSON object representing the inventory item's assessment results.")
 #     ar_type = models.CharField(max_length=150, unique=False, blank=True, null=True,
 #         help_text="Assessment results type.")
 #     generated = models.DateTimeField(db_index=True)
-#     history = HistoricalRecords(cascade_delete_history=True)
+#     # history = HistoricalRecords(cascade_delete_history=True)
 
-#     # Notes
-#     #
-#     # IMPORTANT
-#     #
-#     # JSON data must follow a scheme that is similar to OSCAL.
-#     # Data is assumed to be generated fropm outside of GovReady.
-#     # Data should either be in `data` or `data_binary` field.
-#     # `data_binary` field can hold PDF report or other machine readable format
-#     # Inventory-items must have UUIDs. A UUIDs persits for the life of the instantiaded inventory-item.
-#     #
-#     # The inventory-items in an assessment report can be related to
-#     # UUID of the related inventory-item in the `reference` deployment
-#     # to create a virtual persistence across different instances of
-#     # the "same" assest, such as a virtual database server.
-#     #
-#     # Retrieve System Deployment Inventory
-#     #
 
 #     def __str__(self):
-#         return "<Inventory %s id=%d>" % (self.statement, self.id)
+#         return "<AssesmentResult %s id=%d>" % (self.statement, self.id)
 
 #     def __repr__(self):
 #         # For debugging.
-#         return "<Inventory %s id=%d>" % (self.statement, self.id)
+#         return "<AssesmentResult %s id=%d>" % (self.statement, self.id)
 

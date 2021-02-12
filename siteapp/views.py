@@ -843,10 +843,23 @@ def project(request, project):
         # other list.
         other_open_invitations.append(inv)
 
+    # Calculate approximate compliance as degrees to display
+    percent_compliant = project.system.controls_status_count['Implemented'] / len(project.system.control_implementation_as_dict)
+    # Need to reverse calculation for displaying as per styles in .piechart class
+    approx_compliance_degrees = 365 - ( 365 * percent_compliant )
+    if approx_compliance_degrees > 358:
+        approx_compliance_degrees = 358
+
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
+
+        "controls_status_count": project.system.controls_status_count,
+        "poam_status_count": project.system.poam_status_count,
+        "percent_compliant": percent_compliant,
+        "percent_compliant_100": percent_compliant * 100,
+        "approx_compliance_degrees": approx_compliance_degrees,
 
         "is_admin": request.user in project.get_admins(),
         "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
