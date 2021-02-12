@@ -835,9 +835,8 @@ def import_component(request):
 def statement_history(request, smt_id=None):
     """Returns the history for the given statement"""
 
-    from controls.models import Statement
     # Get statement if exists else 404
-    smt = Statement.objects.get_object_or_404(id=smt_id)
+    smt = get_object_or_404(Statement, id=smt_id)
 
     # Check permission block
     permission = False
