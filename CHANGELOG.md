@@ -6,9 +6,6 @@ v999 (February XX, 2021)
 
 [Add development changes here]
 
-v0.9.1.51 (February 03, 2021)
------------------------------
-
 Add System Assessment Report tracking to associate assessments and evidence with the system.
 Add initial dynamic status information to the project page.
 
@@ -16,6 +13,10 @@ Add initial dynamic status information to the project page.
 
 * Add System Assessment Report tracking to associate assessments and evidence with the system.
 * Add initial dynamic status information to the project page.
+
+
+v0.9.1.51 (February 03, 2021)
+-----------------------------
 
 **UI changes**
 
