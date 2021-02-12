@@ -540,6 +540,38 @@ class System(models.Model):
         # Return the dictionary
         return smts_as_dict
 
+    @cached_property
+    def controls_status_count(self):
+        """Retrieve counts of control status"""
+
+        status_list = ['Not Implemented', 'Planned', 'Partially Implemented', 'Implemented', 'Unknown']
+        status_stats = {}
+        # Fetch all selected controls
+        elm = self.root_element
+        for status in status_list:
+            # Get the smts_control_implementations ordered by part, e.g. pid
+            status_stats[status] = elm.statements_consumed.filter(statement_type="control_implementation", status=status).count()
+        # TODO add index on statement status
+        return status_stats
+
+    @cached_property
+    def poam_status_count(self):
+        """Retrieve counts of poam status"""
+
+        # Temporarily hard code status list
+        status_list = ['Open', 'Closed', "In Progress"]
+        # TODO
+        # Get a unique filter of status list and gather on that...
+        status_stats = {}
+        # Fetch all selected controls
+        elm = self.root_element
+        for status in status_list:
+            # Get the smts_control_implementations ordered by part, e.g. pid
+            status_stats[status] = elm.statements_consumed.filter(statement_type="POAM",
+                                                                  status__iexact=status).count()
+        # TODO add index on statement status
+        return status_stats
+
     # @property (See below for creation of property from method)
     def get_producer_elements(self):
         smts = self.root_element.statements_consumed.all()

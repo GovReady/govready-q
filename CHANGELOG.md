@@ -6,6 +6,7 @@ v999 (February XX, 2021)
 
 Add System Assessment Report tracking to associate assessments and evidence with the system.
 Add initial dynamic status information to the project page.
+Project page displays mini-dashboard of compliance stats.
 
 **Feature changes**
 
@@ -16,6 +17,11 @@ Add initial dynamic status information to the project page.
 
 * Improve page load times for listings with pagination and ordering for project listing and selected component listing. 
 * Display projects in pages of 10 and selected components by 5.
+* Project page displays mini-dashboard of compliance stats.
+    * Number of controls implemented out of count of controls.
+    * Number of POA&Ms.
+    * Count of system components.
+    * Approximate overall compliance based on controls implemented / count of controls.
 
 **Developer changes**
 
