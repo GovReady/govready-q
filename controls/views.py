@@ -842,9 +842,7 @@ def statement_history(request, smt_id=None):
 
     from controls.models import Statement
     # Get statement if exists else 404
-    try:
-        smt = Statement.objects.get(id=smt_id)
-  smt = Statement.objects.get_object_or_404(id=smt_id)
+    smt = Statement.objects.get_object_or_404(id=smt_id)
 
     # Check permission block
     permission = False
