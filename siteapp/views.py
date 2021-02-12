@@ -817,7 +817,9 @@ def project(request, project):
         other_open_invitations.append(inv)
 
     # Calculate approximate compliance as degrees to display
-    percent_compliant = project.system.controls_status_count['Implemented'] / len(project.system.control_implementation_as_dict)
+    percent_compliant = 0
+    if len(project.system.control_implementation_as_dict) > 0:
+        percent_compliant = project.system.controls_status_count['Implemented'] / len(project.system.control_implementation_as_dict)
     # Need to reverse calculation for displaying as per styles in .piechart class
     approx_compliance_degrees = 365 - ( 365 * percent_compliant )
     if approx_compliance_degrees > 358:
