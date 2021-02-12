@@ -42,12 +42,6 @@ structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
 
-def test(request):
-    # Simple test page of routing for controls
-    output = "Test works."
-    html = "<html><body><p>{}</p></body></html>".format(output)
-    return HttpResponse(html)
-
 def index(request):
     """Index page for controls"""
 
@@ -2253,10 +2247,9 @@ certifications:
         # User does not have permission to this system
         raise Http404
 
-
 # PoamS
 def poams_list(request, system_id):
-    """List PoamS for a system"""
+    """List Poams for a system"""
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
@@ -2543,6 +2536,7 @@ def poam_export(request, system_id, format='xlsx'):
         # User does not have permission to this system
         raise Http404
 
+# Project
 def project_import(request, project_id):
     """
     Import an entire project's components and control content
@@ -2551,6 +2545,7 @@ def project_import(request, project_id):
     system_id = project.system.id
     # Retrieve identified System
     system = System.objects.get(id=system_id)
+    system_root_element = system.root_element
     # TODO: deprecated need. Should consider removing throughout
     #src = AppSource.objects.get(id=request.POST["appsource_compapp"])
    # app = AppVersion.objects.get(source=src, id=request.POST["appsource_version_id"])
@@ -2560,7 +2555,7 @@ def project_import(request, project_id):
         # Need to get or create the app source by the id of the given app source
         module_name = json.loads(project_data).get('project').get('module').get('key')
         title = json.loads(project_data).get('project').get('title')
-        system.root_element.name = title
+        system_root_element.name = title
         importcheck = False
         if "importcheck" in request.POST:
             importcheck = request.POST["importcheck"]
@@ -2594,6 +2589,8 @@ def project_import(request, project_id):
             object={"object": "project", "id": project.id, "title": project.title, "log_output": log_output},
             user={"id": request.user.id, "username": request.user.username}
         )
+
+        # Import components and their statements
         loaded_imported_jsondata = json.loads(project_data)
         if loaded_imported_jsondata.get('component-definitions') != None:
             # Load and get the components then dump
@@ -2606,6 +2603,37 @@ def project_import(request, project_id):
                     comps = add_selected_components(system, import_record)
                     comp_num = comp_num + len(comps)
             messages.add_message(request, messages.INFO, f"Created {comp_num} components.")
+        # Import Poams
+        if loaded_imported_jsondata.get('poams') != None:
+            # Load and get the poams then dump
+            poam_num = 0
+            for k, poam in enumerate(loaded_imported_jsondata.get('poams')):
+                # Create a Poam for the system
+                ## Statement linked to the poam
+                poamsmt_data = poam.get('statement')
+                poam_smt = Statement.objects.create(
+                    sid=None,
+                    sid_class=None,
+                    pid=None,
+                    body= poamsmt_data.get('body'),
+                    statement_type="POAM",
+                    status=poamsmt_data.get('status') or "New",
+                    consumer_element= system_root_element
+                )
+                # Create Poam with statement and imported data
+                poam = Poam.objects.create(statement = poam_smt, controls= poam.get('controls'), milestones = poam.get('milestones'), poam_id = Poam.objects.order_by('-poam_id')[0] + 1 if poam.get('poam_id') == None else poam.get('poam_id'),
+                                           remediation_plan = poam.get('remediation_plan'), risk_rating_adjusted = poam.get('risk_rating_adjusted'),
+                                           risk_rating_original = poam.get('risk_rating_original'), scheduled_completion_date = poam.get('scheduled_completion_date'),
+                                           weakness_detection_source = poam.get('weakness_detection_source'), weakness_name = poam.get('weakness_name'),
+                                           weakness_source_identifier = poam.get('weakness_source_identifier'), poam_group = poam.get('poam_group'))
+                poam.save()
+                poam_num += 1
+                logger.info(
+                    event="Poam import",
+                    object={"object": "poam", "id": poam.poam_id, "controls": poam.poam_group},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+            messages.add_message(request, messages.INFO, f"Created {poam_num} Poams.")
 
         return HttpResponseRedirect("/projects")
 
