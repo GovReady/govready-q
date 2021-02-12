@@ -848,11 +848,8 @@ def statement_history(request, smt_id=None):
 
     # Check permission block
     permission = False
-    if request.user.is_superuser:
-        # Grant superuser permission
-        permission = True
-    elif request.user.is_staff:
-        # Grant member of staff permission
+    if request.user.is_superuser or request.user.is_staff:
+        # Grant permission to superusers and staff users
         permission = True
     elif System.objects.filter(root_element=smt.consumer_element).exists():
         # Grant permission to user with edit access on system
