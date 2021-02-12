@@ -844,10 +844,7 @@ def statement_history(request, smt_id=None):
     # Get statement if exists else 404
     try:
         smt = Statement.objects.get(id=smt_id)
-    except Statement.DoesNotExist:
-        # Statement does not exist
-        smt = None
-        raise Http404
+  smt = Statement.objects.get_object_or_404(id=smt_id)
 
     # Check permission block
     permission = False
@@ -2816,4 +2813,3 @@ def inventory_item_assessment_results_list(request, system_id=None, deployment_i
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/poams_list.html", context)
-
