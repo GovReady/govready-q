@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError
 from django.db.models.functions import Lower
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
@@ -2589,7 +2590,7 @@ def project_import(request, project_id):
             object={"object": "project", "id": project.id, "title": project.title, "log_output": log_output},
             user={"id": request.user.id, "username": request.user.username}
         )
-
+        # TODO: Flags to avoid import any part of the project json (e.g. components, poams, questionnaire)
         # Import components and their statements
         loaded_imported_jsondata = json.loads(project_data)
         if loaded_imported_jsondata.get('component-definitions') != None:
@@ -2603,7 +2604,8 @@ def project_import(request, project_id):
                     comps = add_selected_components(system, import_record)
                     comp_num = comp_num + len(comps)
             messages.add_message(request, messages.INFO, f"Created {comp_num} components.")
-        # Import Poams
+
+            # Import Poams
         if loaded_imported_jsondata.get('poams') != None:
             # Load and get the poams then dump
             poam_num = 0
@@ -2616,8 +2618,13 @@ def project_import(request, project_id):
                     sid_class=None,
                     pid=None,
                     body= poamsmt_data.get('body'),
+                    remarks= poamsmt_data.get('remarks'),
+                    version= poamsmt_data.get('version'),
+                    created= poamsmt_data.get('created'),
+                    updated= poamsmt_data.get('updated'),
                     statement_type="POAM",
-                    status=poamsmt_data.get('status') or "New",
+                    status= poamsmt_data.get('status') or "New",
+                    uuid= poamsmt_data.get('uuid'),
                     consumer_element= system_root_element
                 )
                 # Create Poam with statement and imported data
@@ -2646,23 +2653,52 @@ def project_export(request, project_id):
     system_id = project.system.id
     # Retrieve identified System
     system = System.objects.get(id=system_id)
+    system_root_element = system.root_element
 
-    # Retrieve related selected controls if user has permission on system
+    # Retrieve related selected controls and Poams if user has permission on system
     if request.user.has_perm('view_system', system):
 
         # Iterate through the elements associated with the system get all statements produced for each
         oscal_comps = []
         for element in system.producer_elements:
             # Implementation statement OSCAL JSON
-            impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+            impl_smts = element.statements_produced.filter(consumer_element=system_root_element)
             component = OSCALComponentSerializer(element, impl_smts).as_json()
             oscal_comps.append(component)
 
-    # TODO: multiple export types
 
+            # poam_smts = system_root_element.statements_consumed.filter(statement_type="POAM").order_by('id')
+        poams = []
+        poam_smts = system_root_element.statements_consumed.filter(statement_type="POAM").order_by('id')
+        for smt in poam_smts:
+            poam = {
+                'controls': smt.poam.controls,
+                'milestones': smt.poam.milestones,
+                "poam_id": smt.poam.poam_id,
+                'remediation_plan': smt.poam.remediation_plan,
+                'risk_rating_original': smt.poam.risk_rating_original,
+                'risk_rating_adjusted': smt.poam.risk_rating_adjusted,
+                'scheduled_completion_date': smt.poam.scheduled_completion_date,
+                'weakness_detection_source': smt.poam.weakness_detection_source,
+                'weakness_name': smt.poam.weakness_name,
+                "weakness_source_identifier": smt.poam.weakness_source_identifier,
+                'poam_group': smt.poam.poam_group,
+                "statement": {
+                    "body": smt.body,
+                    "remarks": smt.remarks,
+                    "version": smt.remarks,
+                    "created": smt.created,
+                    "updated": smt.updated,
+                    "status": smt.status,
+                    "uuid": smt.uuid,
+                }
+            }
+            # Add json version as an element in the poams list
+            poams.append(json.dumps(poam,  indent=2, cls=DjangoJSONEncoder))# encoder is to serialize datetime into JSON
     questionnaire_data = json.dumps(project.export_json(include_metadata=True, include_file_content=True))
     data = json.loads(questionnaire_data)
     data['component-definitions'] = [json.loads(oscal_comp) for oscal_comp in oscal_comps]
+    data['poams'] = [json.loads(poam) for poam in poams]
     response = JsonResponse(data, json_dumps_params={"indent": 2})
     filename = project.title.replace(" ", "_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
     response['Content-Disposition'] = f'attachment; filename="{quote(filename)}.json"'
