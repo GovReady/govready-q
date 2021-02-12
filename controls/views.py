@@ -2618,13 +2618,13 @@ def project_import(request, project_id):
                     sid_class=None,
                     pid=None,
                     body= poamsmt_data.get('body'),
-                    remarks= poamsmt_data.get('remarks'),
-                    version= poamsmt_data.get('version'),
-                    created= poamsmt_data.get('created'),
-                    updated= poamsmt_data.get('updated'),
+                    remarks= poam.get('remarks'),
+                    version= poam.get('version'),
+                    created= poam.get('created'),
+                    updated= poam.get('updated'),
                     statement_type="POAM",
                     status= poamsmt_data.get('status') or "New",
-                    uuid= poamsmt_data.get('uuid'),
+                    uuid= poam.get('uuid'),
                     consumer_element= system_root_element
                 )
                 # Create Poam with statement and imported data
@@ -2667,7 +2667,6 @@ def project_export(request, project_id):
             oscal_comps.append(component)
 
 
-            # poam_smts = system_root_element.statements_consumed.filter(statement_type="POAM").order_by('id')
         poams = []
         poam_smts = system_root_element.statements_consumed.filter(statement_type="POAM").order_by('id')
         for smt in poam_smts:
@@ -2687,14 +2686,12 @@ def project_export(request, project_id):
                     "body": smt.body,
                     "remarks": smt.remarks,
                     "version": smt.remarks,
-                    "created": smt.created,
-                    "updated": smt.updated,
                     "status": smt.status,
                     "uuid": smt.uuid,
                 }
             }
             # Add json version as an element in the poams list
-            poams.append(json.dumps(poam,  indent=2, cls=DjangoJSONEncoder))# encoder is to serialize datetime into JSON
+            poams.append(json.dumps(poam))
     questionnaire_data = json.dumps(project.export_json(include_metadata=True, include_file_content=True))
     data = json.loads(questionnaire_data)
     data['component-definitions'] = [json.loads(oscal_comp) for oscal_comp in oscal_comps]
