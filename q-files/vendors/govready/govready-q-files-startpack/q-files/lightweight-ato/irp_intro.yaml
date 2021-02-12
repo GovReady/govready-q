@@ -1,0 +1,15 @@
+id: irp_intro
+title: Incident Response Plan (Intro)
+questions:
+
+- id: intro
+  title: Introduction
+  prompt: |
+    Introduction
+
+    This Incident Reponse Plan provides baseline guidance for the {{project.system_info.system_org}} team's process for responding
+    to security incidents and other disruptions of a {{project.system_info.system_org}}-managed system, product or service ("system"). It
+    outlines roles and responsibilities during and after incidents, and it lays out the steps {{project.system_info.system_org}} takes to resolve
+    them.
+  type: interstitial
+

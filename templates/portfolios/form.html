@@ -9,17 +9,17 @@ Welcome to Compliance Automation
 
 <div class="container">
     <div class="row">
-        <div class="col-md-3" style="margin: 40px 0px 30px 0px;">
+        <div class="col-md-3 portfolio-org-col ">
             <h2>New Portfolio</h2>
             <p>Portfolios allow you to organize and manage related projects. Members of a portfolio can access all of
                 its unrestricted projects.</p>
         </div>
 
-        <div class="col-md-9" style="margin: 40px 0px 30px 0px;">
+        <div class="col-md-9 portfolio-org-col ">
             <div class="well">
                 <form method="post">
                     {% csrf_token %}
-                    <input type=hidden name=action value=neworg>
+                    <input type=hidden name=action value=newportfolio>
                     {% bootstrap_form form %}
                     <p><button type="submit" id="create-portfolio-button" class="btn btn-success">Next &raquo;</button></p>
                 </form>

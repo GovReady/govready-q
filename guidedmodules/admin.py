@@ -140,11 +140,11 @@ class AppSourceSpecWidget(forms.Widget):
     	value = rtyaml.load(data[name + "__remaining_"]) or collections.OrderedDict()
 
     	# Add other values.
-    	for key, label, widget, help_text, show_for_types in self.fields:
-    		if key == "_remaining_": continue # already got this
-    		val = data.get(name + "_" + key)
+    	for entry, label, widget, help_text, show_for_types in self.fields:
+    		if entry == "_remaining_": continue # already got this
+    		val = data.get(name + "_" + entry)
     		if val:
-    			value[key] = val
+    			value[entry] = val
 
     	# Map some data.
     	if value is None:
@@ -164,7 +164,8 @@ class AppSourceSpecWidget(forms.Widget):
 class AppSourceAdminForm(forms.ModelForm):
 	class Meta:
 		labels = {
-			"available_to_all": "Apps from this source are available to all organizations"
+			"available_to_all": "Apps from this source are available to all organizations",
+			"available_to_all_individuals": "Apps from this source are available to all individual users"
 		}
 
 	def __init__(self, *args, **kwargs):
@@ -191,8 +192,8 @@ class AppSourceAdminForm(forms.ModelForm):
 class AppSourceAdmin(admin.ModelAdmin):
 	form = AppSourceAdminForm # customize spec widget
 	list_display = ('id', 'slug', 'source', 'flags')
-	filter_horizontal = ('available_to_orgs',)
-	readonly_fields = ('is_system_source',)
+	filter_horizontal = ('available_to_orgs', "available_to_individual")
+	readonly_fields = ('is_system_source', "available_to_role",)
 	ordering = ('id',)
 	def source(self, obj):
 		return obj.get_description()

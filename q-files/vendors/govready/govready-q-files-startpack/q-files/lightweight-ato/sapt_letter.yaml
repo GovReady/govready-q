@@ -1,0 +1,18 @@
+id: sapt_letter
+title: Security Authorization Package Transmittal Letter
+questions:
+
+- id: sapt_letter_date
+  title: SAPT Letter Delivery Date
+  prompt: |
+    When will this SAPT letter be delivered?
+  type: date
+
+- id: sapt_letter_assessor
+  title: SAPT Letter Security Control Assessor or Company
+  prompt: |
+    What security control assessor or company assessed the security controls listed in the SSP?
+  type: text
+
+output:
+- templates/sapt_letter.md

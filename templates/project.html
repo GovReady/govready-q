@@ -9,242 +9,285 @@
 {% block head %}
 {{block.super}}
 <style>
-.question-column {
-  margin: 0 -10px;
-  padding: 10px;
-  background-color: rgb(247,247,247);
-  border-radius: 5px;
-  max-width:66vw;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
-}
-{% if layout_mode == "rows" %}
   .question-column {
-    padding: 0px 30px 0px 30px;
-}
-{% endif %}
-{% if layout_mode == "columns" %}
-  .question-column h2 {
-    color: black;
-    margin: 5px 0 10px 0;
-    text-align: center;
+    margin: 0 -10px;
+    padding: 10px;
+    background-color: rgb(247,247,247);
+    border-radius: 5px;
+    max-width:66vw;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
   }
-
-.question-group {
-
-}
-  .question-group h3 {
-    font-size: inherit;
-    font-weight: bold;    
+  {% if layout_mode == "rows" %}
+    .question-column {
+      padding: 0px 30px 0px 30px;
   }
-  .question-group > .row {
-    margin: 5px 0;
-  }
-
-.question {
-  background-color: white;
-  padding-top: 10px; /* can't mess with side padding because it is a bootstrap column */
-  padding-bottom: 10px; /* can't mess with side padding because it is a bootstrap column */
-  margin-bottom: 15px;
-  border-radius: 3px;
-  border-bottom: 1px solid rgb(204, 204, 204);
-  /*border: 1px solid #D0D0D0;*/
-}
-
-.question-icon {
-  width: 30px;
-  float: right;
-  margin: 4px 0 5px 8px;
-}
-
-{% else %}
-.question-group {
-  margin: 10px 0 20px 0;
-  padding-top: 16px;
-}
-
-h2.question-column-title {
-}
-
-h3.question-group-title {
-  color: black;
-  font-weight: bold;
-  padding: 0 18px 14px 0;
-  margin: 0;
-}
-
-.question {
-  background-color: white;
-  border-bottom: 1px solid rgb(204, 204, 204);
-  margin-bottom: 15px;
-  padding-top: .75em;
-  padding-bottom: .75em;
-  {% if layout_mode == "grid" %}
-    text-align: center;
-    margin-top: 10px;
   {% endif %}
-  border-radius: 15px; /* good for highlighting */
+  {% if layout_mode == "columns" %}
+    .question-column h2 {
+      color: black;
+      margin: 5px 0 10px 0;
+      text-align: center;
+    }
 
-}
-  .question:hover {
-    background-color: rgb(246,250,249);
+  .question-group {
+
   }
-  .question .question-icon {
-    margin: 0 auto;
-    width: 96px;
-    height: 96px;
-    border: 1px solid #DDD;
-    padding:12px;
-    border-radius: 10px;
-    background-color: #DDD;
+    .question-group h3 {
+      font-size: inherit;
+      font-weight: bold;
+    }
+    .question-group > .row {
+      margin: 5px 0;
+    }
+
+  .question {
+    background-color: white;
+    padding-top: 10px; /* can't mess with side padding because it is a bootstrap column */
+    padding-bottom: 10px; /* can't mess with side padding because it is a bootstrap column */
+    margin-bottom: 15px;
+    border-radius: 3px;
+    border-bottom: 1px solid rgb(204, 204, 204);
+    /*border: 1px solid #D0D0D0;*/
   }
+
+  .question-icon {
+    width: 30px;
+    float: right;
+    margin: 4px 0 5px 8px;
+  }
+
+  {% else %}
+  .question-group {
+    margin: 10px 0 20px 0;
+    padding-top: 16px;
+  }
+
+  h2.question-column-title {
+  }
+
+  h3.question-group-title {
+    color: black;
+    font-weight: bold;
+    padding: 0 18px 14px 0;
+    margin: 0;
+  }
+
+  .question {
+    background-color: white;
+    border-bottom: 1px solid rgb(204, 204, 204);
+    margin-bottom: 15px;
+    padding-top: .75em;
+    padding-bottom: .75em;
+    {% if layout_mode == "grid" %}
+      text-align: center;
+      margin-top: 10px;
+    {% endif %}
+    border-radius: 15px; /* good for highlighting */
+
+  }
+    .question:hover {
+      background-color: rgb(246,250,249);
+    }
+    .question .question-icon {
+      margin: 0 auto;
+      width: 96px;
+      height: 96px;
+      border: 1px solid #DDD;
+      padding:12px;
+      border-radius: 10px;
+      background-color: #DDD;
+    }
+    .question .question-title {
+      margin-top: .5em;
+      color: #222;
+    }
+
+    .question-title > .btn {
+      margin: 8px 0 0 0;
+    }
+    .question .invitation {
+      font-size: 14px;
+      line-height: 128%;
+    }
+  {% endif %}
+
   .question .question-title {
-    margin-top: .5em;
-    color: #222;
+    line-height: 124%;
   }
 
-  .question-title > .btn {
-    margin: 8px 0 0 0;
+  #project-members {
+  	margin-top: 1em;
   }
-  .question .invitation {
-    font-size: 14px;
-    line-height: 128%;
+  #project-members .role {
+    font-style: italic;
+    /*font-size: 85%;*/
   }
-{% endif %}
+  #project-members .action {
+    font-size: 85%;
+  }
 
-.question .question-title {
-  line-height: 124%;
-}
+  .authoring-tool-hidden {
+    display: none; /* hidden by default */
+  }
+  .authoring-tool-edit-question {
+    position: absolute;
+    right: 0;
+    color: #31708f;
+  }
+  #action-buttons button {
+    width: 140px;
+  }
+  #action-buttons a {
+    margin: .25em 0;
+  }
 
-#project-members {
-	margin-top: 1em;
-}
-#project-members .role {
-  font-style: italic;
-  /*font-size: 85%;*/
-}
-#project-members .action {
-  font-size: 85%;
-}
+  /* New styles for project dashboard elements */
+  .last-login { font-size:.8em;}
 
-.authoring-tool-hidden {
-  display: none; /* hidden by default */
-}
-.authoring-tool-edit-question {
-  position: absolute;
-  right: 0;
-  color: #31708f;
-}
-#action-buttons button {
-  width: 140px;
-}
-#action-buttons a {
-  margin: .25em 0;
-}
+  .status { font-size:3em; color:#2D3337;}
+  .status-welcome { font-size:2em; margin:0 0 1em 0; }
+  .status-box { border:1px solid #C1C1C1; padding:5px; text-align:center; background: #F6F7F7;}
+  .status-small { font-size: .8em;}
+
+  .input-todo { padding-left:5px; }
+  .alert-changed { font-size: 1.2em; margin:0; padding:1em 0 0 0}
+  .status-section-header { display:block; border-bottom:1px solid #ccc; margin-bottom:1em; font-size:1.3em; }
+  .piechart {
+          display: block;
+          margin:3em auto 0 auto;
+          width: 300px;
+          height: 300px;
+          border-radius: 50%;
+          background-image: conic-gradient(
+              #E1F8E2  70deg,
+              #B2E0B2 0 235deg);
+      }
+  .vuln-table { width:100%;}
+  .vuln-table-head { font-size: .9em; }
+  .vuln-table-component { font-size: 1.2em; font-weight:bold; padding:0; margin:0;}
+  .vuln-table-component-desc { font-size: .8em; }
+  .vuln-table-bad { color: red;}
+  .vuln-table-medium { color: orange;}
+
+  .portfolio-table { width:100%;}
+  .portfolio-table-component { font-size: 1.2em; font-weight:bold; padding:0; margin:0;}
+  .portfolio-table-component-desc { font-size: .8em; }
 </style>
 {% endblock %}
 
 {% block action_buttons %}
   <div class="btn-group" role="group" aria-label="action buttons group">
     {% if project.system is not None %}
-      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
+      <button id="btn-deployments" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/deployments';">
+        <em class="glyphicon glyphicon-th"></em>&nbsp; Deployments</a>
+      </button>
+      <button id="btn-components" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
+        <em class="glyphicon glyphicon-tags"></em>&nbsp; Components</a>
+      </button>
+      <button id="btn-controls" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
         <em class="glyphicon glyphicon-book"></em> Controls</a>
       </button>
-    {% endif %}
-    {% if project.system is not None %}
-      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
-        <em class="glyphicon glyphicon-tags"></em>&nbsp; Components</a>
+      <button id="btn-poams" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/poams';">
+        <em class="glyphicon glyphicon-check"></em>&nbsp; POA&Ms</a>
+      </button>
+      <button id="btn-import-project" class="btn btn-sm btn-default" onclick="show_import_project_modal('{{ portfolio.id }}'); return false;" href="#">
+        <em class="glyphicon glyphicon-arrow-up"></em>&nbsp; Import Project</a>
+      </button>
+      <button id="btn-export-project" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.id}}/export';">
+        <em class="glyphicon glyphicon-arrow-down"></em>&nbsp; Export project</a>
       </button>
     {% endif %}
     {% if not project.is_account_project or project.is_deletable %}
-      <button class="btn btn-sm btn-default" onclick="$('#project_settings').modal();">
+      <button id="btn-project-settings" class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/settings';">
         <em class="glyphicon glyphicon-cog"></em> Settings</a>
       </button>
     {% endif %}
     {% if send_invitation.can_add_invitee_to_team %}
-      <button id="show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
+      <button id="btn-show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
         <em class="glyphicon glyphicon-user"></em><em class="glyphicon glyphicon-plus"></em>
         Invite
       </button>
     {% endif %}
 
-    <button id="review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
+    <button id="btn-review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
       <em class="glyphicon glyphicon-list"></em>
       Review
     </button>
 
     {% if has_outputs %}
-      <button id="related-controls" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
+      <button id="btn-related-controls" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
         <em class="glyphicon glyphicon-th"></em>
         Documents
       </button>
     {% endif %}
 
-    <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/api';">
+    <button id="btn-api" class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/api';">
       <em class="glyphicon glyphicon-sort"></em>
       API Docs
     </button>
 
-    {% if can_upgrade_app %}
-      <button class="btn btn-sm btn-default" onclick="upgrade_app({{project.root_task.module.app.id}});">
-        <em class="glyphicon glyphicon-upload"></em>
-        Upgrade Project
-      </button>
-    {% endif %}
-
     {% if authoring_tool_enabled %}
-      <button id="open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
+      <button id="btn-open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
         <em class="glyphicon glyphicon-pencil"></em>
         Authoring Tool
       </button>
     {% endif %}
+
+    <button id="btn-move-project" class="btn btn-sm btn-default"  onclick='move_project()'>
+      <em class="glyphicon glyphicon-sort"></em>
+      Move Project
+    </button>
   </div>
 
-    {# action buttons #}
-    {% if action_buttons %}
-      {% for q in action_buttons %}
-        <div style="margin-top: 1em">
-          {% if can_start_task and q.can_start_new_task %}
-            <form id="question-{{q.question.key}}" class="start-task" method="post" action="/tasks/start" style="display:inline;">
-              {% csrf_token %}
-              <input type="hidden" name="project" value="{{project.id}}"/>
-              <input type="hidden" name="question" value="{{q.question.key}}"/>
-              <input type="hidden" name="previous" value="project"/>
-              <a class="btn btn-default" style="background: white"
-                href="#" onclick="$(this).parent('form').submit(); return false;">
-                {{q.question.spec.title}} &raquo;
-              </a>
-            </form>
-          {% else %}
-          <a id="question-{{q.question.key}}"
-            class="btn btn-default" style="background: white"
-            href="{{q.task.get_absolute_url}}?previous=project">
-            {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
-          </a>
-          {% endif %}
-        </div>
-      {% endfor %}
-    {% endif %}
+  {# action buttons for compliance app tasks/modules #}
+  {% if action_buttons %}
+    {% for q in action_buttons %}
+      <div class="action-button-box">
+        <div class="action-button-app-title">{{project.root_task.module.spec.title}}</div>
+        {# Display for started tasks #}
+        {% if can_start_task and q.can_start_new_task %}
+          <form id="question-{{q.question.key}}" class="start-task" method="post" action="/tasks/start" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="project" value="{{project.id}}"/>
+            <input type="hidden" name="question" value="{{q.question.key}}"/>
+            <input type="hidden" name="previous" value="project"/>
+            <a class="btn btn-sm btn-default" class="action-button"
+              href="#" onclick="$(this).parent('form').submit(); return false;">
+              {{q.question.spec.title}} &raquo;
+            </a>
+          </form>
+        {% else %}
+        {# Display for not yet started tasks #}
+        <a id="question-{{q.question.key}}"
+          class="btn btn-sm btn-default" class="action-button"
+          href="{{q.task.get_absolute_url}}?previous=project">
+          {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
+        </a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% endif %}
 {% endblock %}
 
 {% block above_title %}
     {% if authoring_tool_enabled %}
-      <center style="font-size: 90%;" class="authoring-tool-hidden"><p class="text-info">
+      <center class="authoring-tool-hidden authoring-tool-box"><p class="text-info">
         You are in author mode. Authoring tools have been enabled for this module.
       </p></center>
 
-      <center style="font-size: 90%;" class="authoring-tool-hidden">
+      <center class="authoring-tool-hidden authoring-tool-box">
       <p>
-      <a href="#" onclick="show_authoring_tool_module_editor(); return false;" style="margin: 0 1em;">
+      <a href="#" onclick="show_authoring_tool_module_editor(); return false;" class="authoring-tool-style">
         <span class="glyphicon glyphicon-pencil"></span>
         Edit App
       </a>
 
-      <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" style="margin: 0 1em;">
+      <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" class="authoring-tool-style">
       <span class="glyphicon glyphicon-plus"></span>
       Add Question
       </a>
 
-      <a href="#" onclick="authoring_tool_download_app_project({{project.root_task.id}}, true); return false;" style="margin: 0 1em;">
+      <a href="#" onclick="authoring_tool_download_app_project({{project.root_task.id}}, true); return false;" class="authoring-tool-style">
       <span class="glyphicon glyphicon-download"></span>
       Download Source
       </a>
@@ -254,10 +297,174 @@ h3.question-group-title {
 {% endblock %}
 
 {% block body_content %}
+
+  {% if enable_experimental_evidence %}
+    <!--
     <div class="row">
-      <div class="col-sm-12">
+      <div class="col-md-12" style="margin-bottom:2em;">
+        <div style="border:1px solid #FACE8F; background: #FAEEC6; padding:5px 20px 5px 20px; border-radius: 15px;">
+          <div style="margin-left: 2em; margin-bottom:1em;">
+            <h3 class="alert-changed">Something has changed</h3><span style="font-size:.8em;">Here's some information that is alert-like and can be dismissed.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    -->
+
+    <div class="row">
+      <div class="col-md-12">
+        <span class="last-login">Last visit: {{request.user.last_login}}</span>
+        <h2 class="status-welcome">Welcome back, {{request.user}}</h2>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-3"><div class="status-box"><h2 class="status">{{ project.system.get_producer_elements|length }}</h2> <span class="status-small">total components in this project</span></div></div>
+      <div class="col-md-3"><div class="status-box"><h2 class="status">4</h2> <span class="status-small">total inventory-items in production</span></div></div>
+      <div class="col-md-3"><div class="status-box"><h2 class="status">{{ project.system.control_implementation_as_dict|length }}</h2> <span class="status-small">total controls selected</span></div></div>
+      <div class="col-md-3"><div class="status-box"><h2 class="status">100</h2> <span class="status-small">controls partially or fully implemented</span></div></div>
+    </div>
+
+    <div class="row" style="margin-top:2em;">
+      <div class="col-md-6">
+        <div style="padding:10px 0 40px 0;">
+          <span class="status-section-header">Here's what has changed since your last visit</span>
+            <ul>
+              <li>Tiffany edited CISCO ASA Firewall component</li>
+              <li>5 components were updated. (<a href="#">view changes</a>)</li>
+              <li>2 components were added to this project. (<a href="#">view additions</a>)</li>
+              <li>John left <a href="#">a comment</a> on your Project. </li>
+            </ul>
+          <br />
+          <span class="status-section-header">To Do (as of 12/18/20)</span>
+            <ul style="list-style-type: none;">
+              <li><input type="checkbox"></input> <span class="input-todo">Review OSCAL import</span></li>
+              <li><input type="checkbox"></input><span class="input-todo">Approve CISCO ASA Firewall component</span></li>
+              <li><input type="checkbox"></input><span class="input-todo">Export OSCAL for Jeff at InitTech</span></li>
+              <li><input type="checkbox"></input><span class="input-todo">Submit SSP</span></li>
+            </ul>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div style="background: #F2F9F2; border: 1px solid #B2E0B2; padding: 2em; text-align:center;">
+          <span style="font-size:1.5em;">Overall Compliance Progress</span>
+            <div class="piechart"></div>
+        </div>
+      </div>
+    </div>
+    <br /><br />
+    <div class="row">
+      <div class="col-md-12">
+        <div>
+          <table style="width:100%;">
+            <tr style="border-bottom:1px solid #ccc;">
+              <td>
+                <span style="font-size:1.3em;">Project Timeline</span>
+              </td>
+              <td>
+                <span style="display:block; text-align: right; font-size:1em; color:#262626;"><strong>Start:</strong> 10/14/20&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<strong>Status:</strong> 65% @  12/18/20&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<strong>Projected Completion:</strong> 01/22/21</span>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" style="width:100%;">
+                <table style="background:#E1F8E2; width:100%; margin-top:1em;">
+                  <tr>
+                    <td style="background:#B2E0B2; border-right:2px solid #fff; padding:5px; ">&nbsp;</td>
+                    <td style="background:#B2E0B2; border-right:2px solid #fff; padding:5px;">&nbsp;</td>
+                    <td style="background:#B2E0B2; border-right:2px solid #fff; padding:5px;">&nbsp;</td>
+                    <td style="background:#E1F8E2; border-right:2px solid #fff; padding:5px;">&nbsp;</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <br /><br />
+    <div class="row">
+      <div class="col-md-12">
+        <div>
+          <span class="status-section-header">Portfolio Component Progress</span>
+          <div>
+            <table class="portfolio-table">
+              <tr style="background:#D9D9D9; border-top:1px solid #ccc; ">
+                <td style="width:40%; ">&nbsp;</td>
+                <td style="width:15%; text-align:right; font-size:.8em; font-weight:thin; padding:5px;">25%</td>
+                <td style="width:15%; text-align:right; font-size:.8em; font-weight:thin; padding:5px;">50%</td>
+                <td style="width:15%; text-align:right; font-size:.8em; font-weight:thin; padding:5px;">75%</td>
+                <td style="width:15%; text-align:right; font-size:.8em; font-weight:thin; padding:5px;">100%</td>
+              </tr>
+              <tr style="background:#F2F2F2; border-bottom:1px solid #D9D9D9;">
+                <td style="width:40%; padding:.5em 0 .5em 1em;">
+                  <span class="portfolio-table-component">CISCO ASA Firewall</span>
+                  <br /><span class="portfolio-table-component-desc">An advanced network router and firewall</span>
+                </td>
+                <td style="width:15%; "> <div style="width:100%; height: 80%; background:#1D919B; border-right:1px solid #fff;">&nbsp;</div></td>
+                <td style="width:15%;"> <div style="width:100%; height: 80%; background:#1D919B; border-right:1px solid #fff;">&nbsp;</div></td>
+                <td style="width:15%;"><div style="width:100%; height: 80%; background:#1D919B; border-right:1px solid #fff;">&nbsp;</div></td>
+                <td style="width:15%;"></td>
+              </tr>
+              <tr style="background:#F2F2F2;">
+                <td style="width:40%; padding:.5em 0 .5em 1em;">
+                  <span class="portfolio-table-component">Generic File Server</span>
+                  <br /><span class="portfolio-table-component-desc">NIST SP 800-171 compliance for a file server</span>
+                </td>
+                <td style="width:15%;"> <div style="width:100%; height: 80%; background:#1D919B; border-right:1px solid #fff;">&nbsp;</div></td>
+                <td style="width:15%;"> <div style="width:100%; height: 80%; background:#1D919B; border-right:1px solid #fff;">&nbsp;</div></td>
+                <td style="width:15%;"></td>
+                <td style="width:15%;"></td>
+              </tr>
+              <tr style="background:#F2F2F2;">
+                <td style="width:40%; padding:.5em 0 .5em 1em;">
+                  <span class="portfolio-table-component">Microsoft SQL Server</span>
+                  <br /><span class="portfolio-table-component-desc">Relational database server for managing structured data</span> 
+               </td>
+                <td style="width:15%;"> <div style="width:100%; height: 80%; background:#1D919B; border-right:1px solid #fff;">&nbsp;</div></td>
+                <td style="width:15%;"> <div style="width:100%; height: 80%; background:#1D919B; border-right:1px solid #fff;">&nbsp;</div></td>
+                <td style="width:15%;"></td>
+                <td style="width:15%;"></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br />
+    <div class="row">
+      <div class="col-md-12">
+        <div>
+          <span class="status-section-header">Vulnerabilities Detected</span>
+          <div>
+            <table class="vuln-table">
+              <tr style="background:#E6E6E6; ">
+                <td style="width:50%; padding:.5em 0 .5em 1em; "><span class="vuln-table-head">COMPONENT</span></td>
+                <td style="width:30%;"><span class="vuln-table-head">STATUS</span></td>
+                <td style="width:20%;"><span class="vuln-table-head">SOURCE</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid #ccc;">
+                <td style="width:50%; padding:.5em;"><span class="vuln-table-component">Microsoft SQL Server</span><br /><span class="vuln-table-component-desc">Relational database server for managing structured data</span></td>
+                <td style="width:30%;"><span class="vuln-table-bad">NOT RUNNING</span></td>
+                <td style="width:20%;">Wazuh</td>
+              </tr>
+              <tr style="border-bottom:1px solid #ccc;">
+                <td style="width:50%; padding:.5em;"><span class="vuln-table-component">Generic File Server</span><br /><span class="vuln-table-component-desc">NIST SP 800-171 compliance for a file server</span></td>
+                <td style="width:30%;"><span class="vuln-table-medium">NO PING RESPONSE</span></td>
+                <td style="width:20%;">Wazuh</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br /><br />
+  {% endif %}
+
+    <div class="row">
+      <div class="col-sm-12" class="project-row-style">
+        <span class="status-section-header">Questionnaires / Compliance App</span>
         {% if project.root_task.module.spec.introduction %}
-          <p style="margin: 1em 0;">
+          <p class="project-text">
           {{project.root_task.render_introduction|safe}}
           </p>
         {% endif %}
@@ -319,11 +526,11 @@ h3.question-group-title {
                           <input type="hidden" name="project" value="{{project.id}}"/>
                           <input type="hidden" name="question" value="{{q.question.key}}"/>
                           <input type="hidden" name="previous" value="project"/>
-                      
+
                       {% else %}
                         {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
-                        <form method="get" action="/store"
-                          onclick="$(this).submit();" style="cursor: pointer">
+                        <form method="get" action="{% url 'store' %}" onclick="$(this).submit();" style="cursor: pointer">
+                          <input type="hidden" name="portfolio" id="id_portfolio" value="{{ project.portfolio.id }}">
                           <input type="hidden" name="q" value="{{project.root_task.id}}/{{q.question.key}}">
                       {% endif %}
                     {% endif %}
@@ -342,11 +549,11 @@ h3.question-group-title {
                     {% endif %}
 
                     {% if not q.hide_icon %}
-                    <div class="question-icon" style="position: relative;">
+                    <div class="question-icon project-question-icon">
                         {# Show a checkmark if the question has been answered, can only be answered once (i.e. is a module-type question), and its Task has been completed. #}
-                        <div style="position: absolute; left: -1px; top: -1px;">
+                        <div class="project-new-task">
                           {% if not q.can_start_new_task and q.task.is_finished %}
-                            <span class="glyphicon glyphicon-ok" style="color: #96B"></span>
+                            <span class="glyphicon glyphicon-ok project-glyphicon-ok"></span>
                           {% endif %}
                         </div>
 
@@ -396,12 +603,12 @@ h3.question-group-title {
                         {# In the rows layout mode, indicate the question's progress and show a button to start or continue the task #}
                         {% if layout_mode != "grid" %}
                           {% with task=q.task %}
-                            <div class="progress" style="width:80%; height: 5px;margin: 8px 0 0 0;">
+                            <div class="progress project-progress">
                               <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{task.get_progress_percent}}%" aria-valuenow="{{task.get_progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
                             {% if layout_mode == "rows" %}
                             {% if task.is_finished %}
-                            <div class="btn btn-sm btn-default" style="color: rgb(57, 139, 37);">Finished</div>
+                            <div class="btn btn-sm btn-default project-button-finished">Finished</div>
                             {% elif task.is_started %}
                             <div class="btn btn-sm btn-default">In progress</div>
                             {% else %}
@@ -426,7 +633,7 @@ h3.question-group-title {
                         </form>
                       {% endif %}
                     {% endif %}
-                    
+
                   {# Show invitations and discussions for this question below the icon and label. #}
 
                   <div class="question-body">
@@ -456,7 +663,7 @@ h3.question-group-title {
 
             {% comment %}
             {% if columns|length > 0 and column.groups|length == 0 %}
-              <p style="line-height: 122%; font-size: italic; font-size: 95%;">
+              <p class="project-question-comment">
                 {% if column.has_tasks_on_left %}
                   There are no tasks in this column yet.
                 {% else %}
@@ -478,154 +685,7 @@ h3.question-group-title {
 {% endblock %}
 
 {% block modals %}
-
-{# SETTINGS MODAL #}
-{% if not project.is_account_project or project.is_deletable %}
-<div id="project_settings" class="modal" tabindex="-1" role="dialog" aria-labelledby="project_settings_title" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="project_settings_title">Project Settings</h4>
-      </div>
-      <div class="modal-body">
-      {% if project.is_deletable and is_admin %}
-        <div class="row">
-          <div class="col-sm-2">
-            <span style="font-weight: bold;">Project</span>
-          </div>
-          <div class="col-sm-6" style="font-size: 1.1em;">
-            {{project.title}}
-          </div>
-          <div class="col-sm-1">
-            <button class="btn btn-default btn-small" onclick="return rename_project();">Edit</button>
-          </div>
-        </div>
-
-        {% if can_start_any_apps %}
-        <div class="row">
-          <div class="col-sm-6">
-              <a class="btn btn-default" href="{{project.get_absolute_url}}/startapps">Start Apps</a>
-          </div>
-        </div>
-        {% endif %}
-
-
-      {% endif %}
-
-        <div class="row" style="margin-top:12px;">
-          <div class="col-sm-2">
-            <span style="font-weight: bold;">Participants</span>
-          </div>
-          <div class="col-sm-10">
-              {% for user, authz in project.get_all_participants %}
-                <div class="clearfix" style="margin-bottom: 2px;">
-                  <div style="width: 28px; height: 24px; border: 1px solid #444; margin-right: .5em; float: left; margin-top: -2px; border-radius: 2px;">
-                  {% if authz.user_details.picture %}
-                    <img src="{{authz.user_details.picture.url}}" alt="{{authz.user_details.name}} Profile Picture"
-                      style="display:block; width: 100%; height: 100%;">
-                  {% else %}
-                  <div class="avatar" style="font-size:1.0em; text-align: center; font-weight: bold; {{user.get_avatar_fallback_css.css}}">
-                    {{user.get_avatar_fallback_css.text}}
-                  </div>
-                  {% endif %}
-                  </div>
-                  <span {% if authz.user_details.name != user.email %}title="{{user.email}}"{% endif %}>
-                    <!-- {{authz.user_details.name}} -->
-                    {{user}}
-                  </span>&nbsp;&nbsp;&nbsp;
-                  <span>
-                    {% load guardian_tags %}
-                    {% get_obj_perms user for project as "user_perms" %}
-                    {% if 'project_owner' in user_perms %}
-                    Project Editor
-                    {% elif 'change_project' in user_perms %}
-                    Project Editor
-                    {% elif 'view_project' in user_perms %}
-                    Project Viewer
-                    {% endif %}
-                  </span>
-                  <div class="role">{{authz.role}}</div>
-                  {% if is_admin %} {# user loading page is an admin #}
-                    {% if authz.is_member %} {# user in the list is an explicit member of the project (e.g. not a discussion guest) #}
-                      {% if not authz.is_admin %}
-                        <span class="action">(<a href="#" onclick="make_admin(true, {{user.id}}, '{{authz.user_details.name|escapejs}}')">make admin</a>)</span>
-                    {% elif user != request.user %}
-                        <span class="action">(<a href="#" onclick="make_admin(false, {{user.id}}, '{{authz.user_details.name|escapejs}}')">make regular member</a>)</span>
-                      {% endif %}
-                  {% endif %}
-                  {% endif %}
-              {% endfor %}
-              {% if send_invitation.can_add_invitee_to_team %}
-                <div style="margin: 1em 0">
-                  <button id="invite-user-to-project" class="btn btn-default" onclick="return invite_user_into_project();"><span class="glyphicon glyphicon-plus"></span>&nbsp; Grant access to member</button>
-                </div>
-              {% endif %}
-
-              {% if open_invitations %}
-                <div id="open-invitations-container">
-                  <h3>Invitations waiting for a response...</h3>
-                  <div class="invitation-list">
-                  {% for inv in open_invitations %}
-                    <p data-invitation-id="{{inv.id}}">
-                      You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
-                      (<a href="#" onclick="return cancel_invitation(this, function() { if ($('#open-invitations-container .invitation-list p').length == 0) { $('#open-invitations-container').remove(); } });">cancel</a>)
-                    </p>
-                  {% endfor %}
-                  </div>
-                </div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:12px;">
-          <div class="col-sm-2">
-            <span style="font-weight: bold;">Share Data</span>
-          </div>
-          <div class="col-sm-10">
-            {# export #}
-              <form method="post" action="{% url "export_project" project.id %}" style="display: inline-block; margin: 0; padding: 0;">{% csrf_token %}
-                <button class="btn btn-default">
-                  <span class="glyphicon glyphicon-share" style="margin-right: .25em"></span>
-                  Export Project Data
-                </button>
-              </form>
-              {# import #}
-              <button class="btn btn-default" onclick="$('#import-file-input').click()" style="margin-left: 12px;">
-                <span class="glyphicon glyphicon-cloud-upload" style="margin-right: .25em"> </span> Import Answers From File
-              </button>
-              <form id="import-form" style="display: none;"
-                method="post" enctype="multipart/form-data" action="{% url "import_project_data" project.id %}">{% csrf_token %}
-                <input name="value" type="file" id="import-file-input" class="form-control"
-                  style="width: auto; border:  none; padding: 0; display: inline-block"
-                  onchange="$('#import-form').submit()" />
-              </form>
-          </div>
-        </div>
-        <div>
-          {% include "permissions.html" with users=users portfolios=portfolios project=project %}
-        </div>
-
-      {% if project.is_deletable and is_admin %}
-        <hr>
-        <div class="row" style="margin-top: 12px;">
-          <div class="col-sm-2">
-            <span style="font-weight: bold;">DANGER</span>
-          </div>
-          <div class="col-sm-10">
-            <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button>
-          </div>
-        </div>
-      {% endif %}
-
-      </div> {# modal-body #}
-    </div> {# modal-content #}
-  </div> {# /modal #}
-</div> {# /project-settings #}
-{% endif %}
-
-
+{% include "controls/import_project_modal.html" %}
 {% if authoring_tool_enabled %}
 {# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
 {% include "authoring-tool-modal.html" %}
@@ -670,6 +730,21 @@ function invite_user_into_project() {
     function() { window.location.reload() }
   );
 
+  return false;
+}
+
+function move_project() {
+  show_move_project_modal((selectedPortfolioId)=>{
+    ajax_with_indicator({
+      url: '{% url "move_project" project.id %}',
+      method: "POST",
+      data: {new_portfolio: selectedPortfolioId},
+      keep_indicator_forever: true,
+      success: function() {
+        window.location.reload();
+      }
+    });
+  });
   return false;
 }
 

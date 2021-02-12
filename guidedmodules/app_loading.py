@@ -5,19 +5,25 @@
 
 import enum
 import json
+import logging
+import structlog
 import sys
 from collections import OrderedDict
+from structlog import get_logger
 
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
 
-from .models import AppSource, AppVersion, ModuleAsset, \
+from .models import AppSource, AppVersion, AppInput, ModuleAsset, \
                     Module, ModuleQuestion, Task, \
                     extract_catalog_metadata
 
 from .validate_module_specification import \
     validate_module, \
     ValidationError as ModuleValidationError
+
+logging.basicConfig()
+logger = get_logger()
 
 class AppImportUpdateMode(enum.Enum):
     CreateInstance = 1
@@ -61,6 +67,9 @@ def load_app_into_database(app, update_mode=AppImportUpdateMode.CreateInstance, 
         # Update Modules in this one.
         appinst = update_appinst
 
+    # Load inputs
+    load_app_inputs_into_database(app, appinst)
+
     # Load them all into the database. Each will trigger load_module_into_database
     # for any modules it depends on.
     processed_modules = { }
@@ -96,7 +105,7 @@ def load_app_into_database(app, update_mode=AppImportUpdateMode.CreateInstance, 
         appinst.catalog_metadata\
             .setdefault("description", {})["long"] = readme
     except fs.errors.ResourceNotFound:
-        pass
+        logger.error(event="read_from_readme.md", msg="Failed to read README.md")
 
     # Update appinst. It may have been modified by extract_catalog_metadata
     # and by the loading of a README.md file.
@@ -163,7 +172,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
             m = Module.objects.get(app=appinst, module_name=spec['id'])
         except Module.DoesNotExist:
             # If it doesn't exist yet in the previous app, we'll just create it.
-            pass
+            logger.info(event="load_module_into_database", msg="module does not exist in database yet")
     if m:
         # What is the difference between the app's module and the module in the database?
         change = is_module_changed(m, app.store.source, spec)
@@ -284,8 +293,7 @@ def update_question(m, definition_order, spec, log_status):
 
     return q
 
-
-def is_module_changed(m, source, spec):
+def is_module_changed(m, source, spec, module_id_map=None):
     # Returns whether a module specification has changed since
     # it was loaded into a Module object (and its questions).
     # Returns:
@@ -303,11 +311,6 @@ def is_module_changed(m, source, spec):
 
     # Now we're just checking if the change is compatible or not with
     # the existing database record.
-
-    if m.spec.get("version") != spec.get("version"):
-        # The module writer can force a bump by changing the version
-        # field.
-        return "The module version number changed, forcing a reload."
 
     # If there are no Tasks started for this Module, then the change is
     # compatible because there is no data consistency to worry about.
@@ -330,7 +333,7 @@ def is_module_changed(m, source, spec):
         # Is there an incompatible change in the question? (If there
         # is a change that is compatible, we will return that the
         # module is changed anyway at the end of this method.)
-        qchg = is_question_changed(mq, definition_order, q)
+        qchg = is_question_changed(mq, definition_order, q, module_id_map=module_id_map)
         if isinstance(qchg, str):
             return "In question %s: %s" % (q["id"], qchg)
 
@@ -349,10 +352,16 @@ def is_module_changed(m, source, spec):
         # The removal of this question is an incompatible change.
         return "Question %s was removed." % mq.key
 
+    # Stop marking version changes as a blocker to upgrades
+    # if m.spec.get("version") != spec.get("version"):
+    #     # The module writer can force a bump by changing the version
+    #     # field.
+    #     return "The module version number changed, forcing a reload."
+
     # The changes will not create any data inconsistency.
     return False
 
-def is_question_changed(mq, definition_order, spec):
+def is_question_changed(mq, definition_order, spec, module_id_map=None):
     # Returns whether a question specification has changed since
     # it was loaded into a ModuleQuestion object.
     # Returns:
@@ -422,9 +431,19 @@ def is_question_changed(mq, definition_order, spec):
     # rather than the string module ID in the YAML files.
     if mq.spec["type"] in ("module", "module-set"):
         if mq.spec.get("module-id") != spec.get("module-id"):
-            return "The answer type module changed from %s to %s." %(
-                repr(mq.spec.get("module-id")), repr(spec.get("module-id"))
-            )
+            # The ID of the module that is a valid answer for this question
+            # has changed. But when upgrade an app, we expect the IDs of
+            # modules defined within the app to change, so we check if
+            # the ID change is expected or not. module_map, if set, has
+            # a mapping of old Module instances to new Module instances
+            # that will be upgraded as a part of the upgrade.
+            if module_id_map is not None and module_id_map.get(mq.spec.get("module-id")) == spec.get("module-id"):
+                # The module change is expected.
+                pass
+            else:
+                return "The answer type module changed from %s to %s." %(
+                    repr(mq.spec.get("module-id")), repr(spec.get("module-id"))
+                )
         if set(mq.spec.get("protocol", [])) != set(spec.get("protocol", [])):
             return "The answer type protocol changed (%s to %s)." % (
                 set(mq.spec.get("protocol")),
@@ -469,5 +488,48 @@ def load_module_assets_into_database(app, appinst):
         # Add to the app.
         appinst.asset_files.add(asset)
         appinst.asset_paths[file_path] = file_hash
+
+    appinst.save()
+
+def load_app_inputs_into_database(app, appinst):
+    # Load all of the static app inputs from the source into the database.
+    # If an AppInput already exists for an input, use that.
+
+    source = app.store.source
+
+    # Add the assets.
+    appinst.trust_inputs = source.trust_assets  # remember setting at time of app load
+    appinst.input_paths = {}
+
+    for file_path, input_item, file_hash, content_loader in app.get_inputs():
+        # Get or create the AppInput --- it might already exist in an earlier app.
+        app_input, is_new = AppInput.objects.get_or_create(
+            source=source,
+            content_hash=file_hash,
+        )
+        if is_new:
+            # Set the new file content.
+            from django.core.files.base import ContentFile
+            app_input.file.save(file_path, ContentFile(content_loader()))
+            app_input.save()
+
+        if input_item["type"] == "oscal":  # Only supporting OSCAL input currently
+        # Load file from path
+            try:
+                fs = app.get_fs()
+                with fs.open(file_path, "rb") as file:
+                    oscal_content = file.read()
+            except OSError:
+                logger.error(event="load_app_input", msg="Failed to find or load an app input.")
+                raise FileNotFoundError
+            else:
+                from controls.views import ComponentImporter
+                import_record = ComponentImporter().import_components_as_json(file_path, oscal_content)
+                if import_record is not None:
+                    appinst.input_artifacts.add(import_record)
+
+        # Add to the app.
+        appinst.input_files.add(app_input)
+        appinst.input_paths[file_path] = file_hash
 
     appinst.save()

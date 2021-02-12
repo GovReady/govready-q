@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+Support
+{% endblock %}
+
+{% block breadcrumbs %}
+<li class="active">Support</li>
+{% endblock %}
+
+<!-- Remove contextbar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div class="support-top">
+  <div class="container">
+
+    <h2 class="">Support</h2>
+
+    <div id="support_content" class="row support-row">
+        {% if support.text %}<p>{{ support.text|safe }}</p>{% endif %}
+        {% if support.email %}<p><a href="mailto:{{ support.email }}">{{ support.email }}</a></p>{% endif %}
+        {% if support.url %}<p><a href="{{ support.url }}">{{ support.url }}</a></p>{% endif %}
+        {% if support.phone %}<p>{{ support.phone }}</p>{% endif %}
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

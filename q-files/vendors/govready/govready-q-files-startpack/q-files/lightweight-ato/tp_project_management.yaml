@@ -1,0 +1,91 @@
+id: tp_project_management
+title: Test Project Management
+internal:
+  snippets:
+  - snippet: |
+      Update the Test Project Management snippet
+introduction:
+  format: markdown
+  template: Update the Test Project Management introduction content.
+output: []
+questions:
+- id: roles_and_responsibilities
+  title: Roles and Responsibilities
+  prompt: |-
+    What are the Roles and Responsibilities?
+
+    With every test plan there should be a Roles and Responsibilities policies and procedures for all staff.
+  type: longtext
+  examples:
+  - example: Test Lead oversees other testers.
+  - example: Tester creates test cases and execute test cases.
+  group: Roles and Responsibilities
+- id: test_schedule_introduction
+  title: Introduction to Schedule
+  prompt: This section will cover the Security Test Schedule.
+  type: interstitial
+- id: test_schedule_description
+  type: longtext
+  title: Test schedule
+  prompt: |
+    Describe the test type, testing date, and who will recording test results.
+  group: Schedule
+- id: test_case_creation_start
+  title: Test Case Creation
+  prompt: When are you scheduled to begin Test Case Creation?
+  type: date
+  group: Schedule
+- id: teset_case_review_start
+  title: Test Case Review
+  prompt: When are you scheduled to begin Test Case Review?
+  type: date
+  group: Schedule
+- id: test_case_execution_start
+  title: Test Case Execution
+  prompt: When are you scheduled to begin Test Case Execution?
+  type: date
+  group: schedule
+- id: test_result_report_start
+  title: Test Results Report Prep
+  prompt: When are you scheduled to begin Test Results Report Prep?
+  type: date
+  group: Schedule
+- id: test_result_report_delivery
+  title: Test Results Report Delivery
+  prompt: When are you scheduled to begin Test Results Report Delivery?
+  type: date
+- id: q1
+  title: Test Completion Criteria
+  prompt: |-
+    What is the Test Completion Criteria?
+
+    The project team should determine the definition of a successful test
+    in advance of testing. Once all critical bugs are remediated, the system
+    should move into production.
+  type: longtext
+- id: potential_risks
+  title: Potential Risks
+  prompt: |
+    What are the potential risks?
+
+    An example of a risk, is not being able to deploy the information
+    system on time because of lack of access to the environment. A risk
+    is something that will hinder the progress of the test or create a security
+    or mission issue because of the testing that is being done.
+  type: longtext
+  group: Risk Management
+- id: contingency_plans
+  title: Contingency Plans
+  prompt: |-
+    What are the contingency plan(s) for the test?
+
+    Describe your contingency plan(s) if something goes wrong during the
+    test. For each risk that could go wrong, what is the mitigation plan?
+  type: longtext
+  group: Risk Management
+- id: training
+  type: longtext
+  title: Training
+  prompt: |
+    Describe the training necessary for the test.
+  group: Training

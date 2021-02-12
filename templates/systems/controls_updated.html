@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load system_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} Controls Updated
+{% endblock %}
+
+{% block head %}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div class="systems-top">
+  <div class="container">
+
+  <div class="row">
+    <div id="above-tab-content" class="row">
+      <!-- Page Title-->
+      <div class="systems-title">
+          <h2 class="control-heading">
+            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> > Updated Controls
+          </h2>
+      </div>
+      <!-- Control Lookup-->
+      <div class="systems-control-lookup">
+          <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
+            <input type="text" name="id" placeholder="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
+                <button type="submit" class="btn btn-success">Look up</button>
+                <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="/">families</a> -->
+          </form>
+      </div>
+    </div>
+  </div><!--/row-->
+    <p>&nbsp;</p>
+
+    <div id="tab-content" class="row rows-header">
+        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">Updated controls</div>
+        <div id="" class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9">&nbsp;</div>
+        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+          <!--a href="selected/export/xacta/xlsx">export</a-->
+          <span class="glyphicon glyphicon-download-alt pull-right"
+                style="cursor: pointer;"
+                onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
+        </div>
+    </div>
+    {% if controls|length < 1 %}
+      <div id="tab-content" class="row row-control">
+        <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+          <p>No controls are currently selected for this system.</p>
+          <p>FEATURE NOTE: We are automating the assigning of control baselines by system categorization.
+          Prior to feature completion, we humbly ask you manually select the desired control baseline...</p>
+          <ul>
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='low' %}>Assign 800-53 rev4 Low Impact Baseline</a></li>
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='moderate' %}>Assign 800-53 rev4 Moderate Impact Baseline</a></li>
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='high' %}>Assign 800-53 rev4 High Impact Baseline</a></li>
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-171_rev1' baseline_name='cui' %}>Assign 800-171 rev1 Baseline</a></li>
+          </ul>
+        </div>
+      </div>
+    {% else %}
+      {% for control in controls %}
+        <div id="tab-content" class="row row-control">
+            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                <a href= {% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}>{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}</a>
+            </div>
+            <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
+                {{ control.get_flattened_oscal_control_as_dict.title }}
+            </div>
+            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+              {% with total=impl_smts_count|get_item:control.oscal_ctl_id %}
+                {% if total > 0%}
+                  {{ total }} component statement{{ total|pluralize }}
+                {% else %}
+                  <div class="center-text">
+                    &mdash;
+                  </div>
+                {% endif %}
+              {% endwith %}
+            </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+  </div>
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function show_control_by_id() {
+    var control_id = $('#control-lookup').find('input[name="id"]').val();
+    var url = "/systems/{{ system.id }}/controls/catalogs/{{ control_id.oscal_catalog_key }}/control/" + control_id;
+    window.location.href = url;
+  }
+
+  // The download button shows a modal to ask what file format to download in.
+  function download_document(document_id, system_id) {
+    var dom = $("<div><p>Select download format:</p>"
+      + "<select class=form-control>"
+      {% if enable_experimental_opencontrol %}
+      + "<option value='opencontrol'>OpenControl Repository</option>"
+      {% endif %}
+      + "<option value='xacta'>Xacta Import Spreadsheet</option>"
+      + "</select>"
+      + "</div>");
+    show_modal_confirm("Download Document", dom, "Download", function() {
+      var format = dom.find("select").val();
+      switch(format) {
+        case "opencontrol":
+          window.location = "/systems/" + system_id + "/components/selected/export/opencontrol";
+          break;
+        case "xacta":
+          window.location = "selected/export/" + format + "/xlsx";
+          break;
+      }
+    });
+  }
+</script>
+
+{% endblock %}

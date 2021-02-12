@@ -1,0 +1,7 @@
+id: pas_printable
+title: Privacy Act Statement Document
+
+questions: []
+
+output:
+- templates/pas_printable.html

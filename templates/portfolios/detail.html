@@ -28,19 +28,21 @@ Remove contextbar from top of page
 % block body-wide %
 {% block body %}
 
-<div style="margin-top: 30px">
-  <div class="container">
-    <div style="float: right; margin: 0 0.5em 0em 5em;">
-      <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#"" class=" btn
-        btn-success">Start a project</a>
-      {% if can_invite_to_portfolio %}
-      <a href="#" onclick="invite_user_into_portfolio(); return false;" id="grant-portfolio-access"
-        class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Grant access to member</a>
-      {% endif %}
+    <div class="portfolio-top">
+    <div class="container">
+    <div class="portfolio-main">
+        {% if can_edit_portfolio %}
+            <a id="edit-portfolio" href='{% url "edit_portfolio" portfolio.id %}' class="btn btn-success" aria-label="Edit portfolio">Edit Portfolio</a>
+        {% endif %}
+        <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#" class=" btn btn-success">Start a project</a>
+        {% if can_invite_to_portfolio %}
+            <a href="#" onclick="invite_user_into_portfolio(); return false;" id="grant-portfolio-access"
+               class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Grant access to member</a>
+        {% endif %}
     </div>
 
     <h2 class="">{{ portfolio.title }}</h2>
-    <small style="color: #888;">Portfolio ID: {{ portfolio.id }}</small>
+    <small class="portfolio-small">Portfolio ID: {{ portfolio.id }}</small>
 
     {% if projects|length > 0 %}
     <p>This portfolio has {{ projects|length }} project{{ projects|pluralize }}</p>
@@ -57,7 +59,7 @@ Remove contextbar from top of page
     {% endif %}
 
       {% for project in projects %}
-      <div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
+      <div class="row portfolio-row">
 
         <div class="col-sm-1">
           {% if project.root_task.get_app_icon_url %}
@@ -70,13 +72,13 @@ Remove contextbar from top of page
         </div>
 
         <div class="col-xs-10 col-md-4">
-          <a href="{{project.get_absolute_url}}" style="color: black;">{{project.title}}</a>
+          <a href="{{project.get_absolute_url}}" class="portfolio-project-link">{{project.title}}</a>
         </div>
 
-        <div class="col-xs-6 col-sm-1"><small style="color: #888;">{{project.id}}</small></div>
-        <div class="col-xs-6 col-sm-2"><small style="color: #888;">{{project.portfolio.title}}</small></div>
+        <div class="col-xs-6 col-sm-1">{{project.id}}</div>
+        <div class="col-xs-6 col-sm-2">{{project.portfolio.title}}</div>
 
-        {% get_obj_perms request.user for project as "project_perms" %}
+<!--         {% get_obj_perms request.user for project as "project_perms" %}
         {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
         <div class="col-xs-6 col-sm-2">
           <small style="color: #888;">
@@ -87,12 +89,20 @@ Remove contextbar from top of page
                 Permissions through project portfolio
               {% endif %}
           </small>
-        </div>
+        </div> -->
+        {% get_obj_perms request.user for project as "perms" %}
+        {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
+        {% if "delete_project" in perms %}
+        <div class="col-xs-6 col-sm-2">Owner</div>
+        {% elif "change_project" in perms%}
+        <div class="col-xs-6 col-sm-2">Project Member</div>
+        {% elif "portfolio_perms"%}
+        <div class="col-xs-6 col-sm-2">Portfolio Member</div>
+        {% endif %}
+
 
         <div class="col-md-2">
-          <small style="color: #888;">
             {{project.root_task.updated|naturaltime}}
-          </small>
         </div>
 
       </div>
@@ -101,7 +111,7 @@ Remove contextbar from top of page
 
       {% if projects|length < 2 %}
       <div class="container">
-        <div class="row" style="margin-top: 60px;">
+        <div class="row portfolio-project-top">
           <div class="col-md-2"></div>
           <div class="col-md-5">
             <h2>A portfolio is a collection of projects.</h2>
@@ -111,7 +121,7 @@ Remove contextbar from top of page
             <p>The owners of the portfolio can manage portfolio members.</p>
           </div>
           <div class="col-md-3">
-            <div class="glyphicon glyphicon-folder-open" style="font-size: 8em; color: rgb(160, 210, 160);"></div>
+            <div class="glyphicon glyphicon-folder-open portfolio-glyphicons"></div>
           </div>
           <div class="col-md-2"></div>
         </div>
@@ -120,7 +130,7 @@ Remove contextbar from top of page
 
       {% if display_users_with_perms %}
       <div id="portfolio-members" class="container">
-        <div class="row" style="margin-top: 60px;">
+        <div class="row portfolio-project-top">
           <p id="portfolio-members"></p>
           <p> <b>Users With Access:</b></p>
           {% for user in users_with_perms %}
@@ -138,7 +148,7 @@ Remove contextbar from top of page
                 <input type="submit" value="Remove Ownership" class="btn btn-sm btn-danger" />
             </form>
             {%endif%}
-          </p>
+        </p>
           {% elif can_invite_to_portfolio %}
           <form id="{{user.name}}_remove_permissions" name="assign_owner_permissions" method="post" action="{% url 'update_permissions' %}" class="inline">
             {% csrf_token %}

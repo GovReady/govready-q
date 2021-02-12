@@ -1,9 +1,10 @@
 from django.contrib import admin
+from django.contrib.auth.models import Permission
 from guardian.admin import GuardedModelAdmin
 
 import django.contrib.auth.admin as contribauthadmin
 
-from .models import User, Organization, Folder, Project, ProjectMembership, Portfolio
+from .models import User, Organization, OrganizationalSetting, Folder, Project, ProjectMembership, Portfolio, Support
 from notifications.models import Notification
 
 def all_user_fields_still_exist(fieldlist):
@@ -14,13 +15,20 @@ def all_user_fields_still_exist(fieldlist):
             return False
     return True
 
+def add_viewappsource_permission(modeladmin, request, queryset):
+    """
+    Adds view appsource permission to selected users
+    """
+    for user in queryset:
+        # Adds permission if they dont the permission
+        if 'guidedmodules.view_appsource' not in user.get_user_permissions():
+            user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
+add_viewappsource_permission.short_description = "Add View Appsource permission to selected users."
+
 class UserAdmin(contribauthadmin.UserAdmin):
     ordering = ('username',)
     list_display = ('id', 'email', 'date_joined', 'notifemails_enabled', 'notifemails_last_notif_id') # base has first_name, etc. fields that we don't have on our model
-    # fieldsets = [
-    #     (None, {'fields': ('email', 'password')}),
-    # ] + [fs for fs in contribauthadmin.UserAdmin.fieldsets if all_user_fields_still_exist(fs[1]['fields'])] + [("Notifications", {'fields': ('notifemails_last_notif_id', 'notifemails_last_at')}),]
-
+    actions = [add_viewappsource_permission]
     pass
 
 class OrganizationAdmin(admin.ModelAdmin):
@@ -65,8 +73,8 @@ class OrganizationAdmin(admin.ModelAdmin):
         from django.contrib import messages
         from django.utils.crypto import get_random_string
 
-        # Create a random password for any new test accounts that are
-        # created. Use the same password for all.
+        # Create a random pwd for any new test accounts that are
+        # created. Use the same pwd for all.
         pw = get_random_string(12, 'abcdefghkmnpqrstuvwxyz23456789')
 
         for org in queryset:
@@ -99,6 +107,10 @@ class OrganizationAdmin(admin.ModelAdmin):
 
     actions = [add_me_as_admin, populate_test_organization]
 
+class OrganizationalSettingAdmin(admin.ModelAdmin):
+    list_display = ('id', 'organization', 'catalog_key', 'parameter_key', 'value')
+    readonly_fields = ('id',)
+
 class FolderAdmin(admin.ModelAdmin):
     list_display = ('title', 'created')
     raw_id_fields = ('organization','admin_users')
@@ -109,8 +121,8 @@ class NotificationAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
 
 class ProjectAdmin(GuardedModelAdmin):
-    list_display = ('id', 'portfolio_name', 'title', 'root_task', 'created')
-    raw_id_fields = ('organization', 'root_task',)
+    list_display = ('id', 'portfolio_name', 'organization_name', 'title', 'root_task', 'created')
+    raw_id_fields = ('root_task',)
     readonly_fields = ('id', 'extra',)
 
     def portfolio_name(self, obj):
@@ -118,6 +130,12 @@ class ProjectAdmin(GuardedModelAdmin):
             return obj.portfolio.title
 
     portfolio_name.admin_order_field = 'portfolio'
+
+    def organization_name(self, obj):
+        if obj.organization:
+            return obj.organization.name
+
+    organization_name.admin_order_field = 'organization'
 
 class ProjectMembershipAdmin(admin.ModelAdmin):
     list_display = ('project', 'organization', 'user', 'is_admin', 'created')
@@ -129,12 +147,21 @@ class PortfolioAdmin(GuardedModelAdmin):
     list_display = ('title', 'description')
     fields = ('title', 'description')
 
+class SupportAdmin(admin.ModelAdmin):
+  list_display = ('id', 'email',)
+  fields = ('text', 'email', 'phone', 'url')
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Organization, OrganizationAdmin)
+admin.site.register(OrganizationalSetting, OrganizationalSettingAdmin)
+
 admin.site.register(Folder, FolderAdmin)
+
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(ProjectMembership, ProjectMembershipAdmin)
 admin.site.register(Portfolio, PortfolioAdmin)
 # Notification is an external library and registers itself. So we need to unregister and re-register it.
 admin.site.unregister(Notification)
 admin.site.register(Notification, NotificationAdmin)
+admin.site.register(Support, SupportAdmin)
+

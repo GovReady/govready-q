@@ -1,0 +1,41 @@
+<div id="related-panel-loopcount" class="panel panel-default">
+    <div class="panel-heading" role="tab" id="document-loopcount-title">
+        <h4 id="related-panel-loopcount-title" class="panel-title">
+            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#related-document-loopcount-body" aria-expanded="false" aria-controls="related-document-loopcount-body">
+                <span id="producer_element-panel_num-title">producer_element_name</span>
+            </a>
+        </h4>
+    </div>
+    <div id="related-document-loopcount-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="related-document-loopcount-title">
+        <div class="panel-body">
+            <div class="smt_block">
+                    <div class="form-group">
+                        <ul>
+                            statement id : smt_id
+                        </ul>
+                        <ul>
+                            statement sid : smt_sid
+                        </ul>
+                        <ul>
+                            statement sid class : smt_sid_class
+                        </ul>
+                        <ul>
+                            statement body : smt_body
+                        </ul>
+                        <ul>
+                            statement pid :
+                        </ul>
+                        <ul>
+                            statement status : {% if smt_status != "" and smt_status is not None %}{{ smt_status }}{% else %}TBD{% endif %}
+                        </ul>
+                    </div>
+
+                    <div class="modal-footer">
+                        <div id="related-success-msg-smt_loopcount" style="display: inline; margin-right: 20px; color: gray;"></div>
+                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#related-document-loopcount-body" aria-expanded="false" aria-controls="related-document-loopcount-body">Close</a>&nbsp;
+                        Select this implementation statement: <input type='checkbox' name='relatedcomps' value='smt_id'>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>

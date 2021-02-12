@@ -1,9 +1,13 @@
+import logging
+import structlog
+from structlog import get_logger
+
 from django.db import models, transaction
 from django.utils import timezone
 from django.conf import settings
 
 from jsonfield import JSONField
-
+from copy import deepcopy
 from collections import OrderedDict
 import uuid
 
@@ -14,6 +18,8 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
 
+logging.basicConfig()
+logger = get_logger()
 
 class AppSource(models.Model):
     is_system_source = models.BooleanField(default=False, help_text="This field is set to True for a single AppSource that holds the system modules such as user profiles.")
@@ -22,7 +28,10 @@ class AppSource(models.Model):
 
     trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
     available_to_all = models.BooleanField(default=True, help_text="Turn off to restrict the Modules loaded from this source to particular organizations.")
+    available_to_all_individuals = models.BooleanField(default=True, help_text="Turn off to restrict the Modules loaded from this source to particular individuals.")
     available_to_orgs = models.ManyToManyField(Organization, blank=True, help_text="If available_to_all is False, list the Organizations that can start projects defined by Modules provided by this AppSource.")
+    available_to_individual = models.ManyToManyField(User, blank=True, related_name="individual", help_text="If available_to_all_individuals is False, list the individuals who can start projects defined by Modules provided by this AppSource.")
+    available_to_role = models.BooleanField(default=True, help_text="Turn off to restrict the ability to start projects defined by Modules provided by this AppSource.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -109,6 +118,15 @@ class AppVersion(models.Model):
     version_number = models.CharField(blank=True, null=True, max_length=128, help_text="The version number of the compliance app.")
     version_name = models.CharField(blank=True, null=True, max_length=128, help_text="The name of this version/release of the compliance app.")
 
+    input_files = models.ManyToManyField('guidedmodules.AppInput', help_text="The inputs linked to this pack.")
+    input_paths = JSONField(
+        help_text="A dictionary mapping file paths to the content_hashes of inputs included in the inputs field of this instance.",
+        blank=True, null=True)
+    input_artifacts = models.ManyToManyField('controls.ImportRecord', related_name="import_records",
+                                             help_text="The objects created from this input.")
+    trust_inputs = models.BooleanField(default=False, null=True,
+                                       help_text="Are inputs trusted? Inputs include OSCAL components and statements that will be served on our domain.")
+
     asset_files = models.ManyToManyField('guidedmodules.ModuleAsset', help_text="The assets linked to this pack.")
     asset_paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
     trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
@@ -173,15 +191,23 @@ class AppVersion(models.Model):
         return True
 
     @staticmethod
-    def get_startable_apps(organization):
+    def get_startable_apps(organization, userid):
         # Load all of the startable AppVersions. An AppVersion is startable
         # if its show_in_catalog field is True and its AppSource is available
         # to the organization the request is for, which is true if the AppSoure
         # is available to all organizations or the organization has been whitelisted.
         from django.db.models import Q
+        # Get user permissions and they have the right one then return boolean
+        #     ['guidedmodules.add_appsource', 'guidedmodules.delete_appsource', 'guidedmodules.change_appsource',
+        #      'guidedmodules.view_appsource']
+        user = User.objects.filter(id=userid).first()
+        role_bool = user.has_perm("guidedmodules.view_appsource")
+
         return AppVersion.objects\
             .filter(show_in_catalog=True)\
-            .filter(source__is_system_source=False)\
+            .filter(source__is_system_source=False) \
+            .filter(Q(source__available_to_role=role_bool))\
+            .filter(Q(source__available_to_all_individuals=True) | Q(source__available_to_individual=userid))\
             .filter(Q(source__available_to_all=True) | Q(source__available_to_orgs=organization))
 
 def extract_catalog_metadata(app_module, migration=None):
@@ -224,7 +250,7 @@ def recombine_catalog_metadata(app_module):
     # A new dict is returned which should replace app_module.spec['catalog'].
 
     # Move the data into a 'catalog' key.
-    from copy import deepcopy
+
     ret = deepcopy(app_module.app.catalog_metadata)
 
     # Move the version_number and version_name fields back.
@@ -244,6 +270,30 @@ def recombine_catalog_metadata(app_module):
             del ret[field]
 
     return ret
+
+class AppInput(models.Model):
+    source = models.ForeignKey(AppSource, related_name="inputs", on_delete=models.CASCADE,
+                               help_text="The source of this app input.")
+    app = models.ForeignKey(AppVersion, null=True, related_name="inputs", on_delete=models.CASCADE,
+                            help_text="The AppVersion that this input is a part of.")
+    input_name = models.SlugField(max_length=200,
+                                   help_text="A slug-like identifier for the input that is unique within the AppVersion app.")
+    content_hash = models.CharField(max_length=64, help_text="A hash of the input binary content, as provided by the source.")
+    file = models.FileField(upload_to='guidedmodules/app-inputs', help_text="The input file.")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    class Meta:
+        unique_together = [('source', 'content_hash')]
+
+    def __str__(self):
+        # For the admin.
+        return "%s [%d] (from %s)" % (self.file.name, self.id, self.source)
+
+    def __repr__(self):
+        # For debugging.
+        return "<AppInput [%d] %s from %s>" % (self.id, self.file.name, self.source)
+
 
 class Module(models.Model):
     source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")
@@ -725,6 +775,17 @@ class Task(models.Model):
             answertuples[q.key] = (q, is_answered, a, value)
         return ModuleAnswers(self.module, self, answertuples)
 
+    def get_answer(self, question_key_path):
+        """Return the answer from for a question from dotted task path"""
+        # p.root_task.get_answers().as_dict()['system_info'].as_dict()['system_name']
+        # becomes
+        # p.root_task.get_answer("system_info.system_name")
+
+        value = self.get_answers()
+        for key in question_key_path.split("."):
+            value = value.with_extended_info().as_dict()[key]
+        return value
+
     def get_last_modification(self):
         ans = TaskAnswerHistory.objects\
                 .filter(taskanswer__task=self)\
@@ -744,6 +805,7 @@ class Task(models.Model):
 
         # Handle a cache miss --- call refresh_func() and
         # then save it to cached_state (and save to the db).
+
         if key not in self.cached_state:
             self.cached_state[key] = refresh_func()
             self.save(update_fields=["cached_state"])
@@ -948,6 +1010,13 @@ class Task(models.Model):
         return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) in ("READ", "WRITE") or self.project.has_read_priv(user)
 
     def has_write_priv(self, user, allow_access_to_deleted=False):
+        """Return True if user has write privilege on task"""
+
+        # Deny write privilege to users with ONLY view_project permission
+        project_user_permissions = get_user_perms(user, self.project)
+        if len(project_user_permissions) == 1 and user.has_perm('view_project', self.project):
+            # User only has view_project permission
+            return False
         return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) == "WRITE" or self.project.has_write_priv(user)
 
     def has_review_priv(self, user):
@@ -1115,10 +1184,16 @@ class Task(models.Model):
             # these two don't use pandoc
             "html": (None, "html", "text/html"),
             "pdf": (None, "pdf", "application/pdf"),
+            "json": (None, "json", "application/x-json"),
+            "yaml": (None, "yaml", "application/x-yaml"),
+            "xml": (None, "xml", "application/x-xml"),
 
             # the rest use pandoc
             "plain": ("plain", "txt", "text/plain"),
             "markdown": ("markdown_github", "md", "text/plain"),
+            "oscal_json": ("markdown_github", "md", "text/plain"),
+            "oscal_yaml": ("markdown_github", "md", "text/plain"),
+            "oscal_xml": ("markdown_github", "md", "text/plain"),
             "docx": ("docx", "docx", "application/octet-stream"),
             "odt": ("odt", "odt", "application/octet-stream"),
         }
@@ -1130,7 +1205,9 @@ class Task(models.Model):
 
         # Lazy-render the output documents. Use data: URLs so all
         # assets are embedded.
-        documents = self.render_output_documents(answers=answers, use_data_urls=True)
+
+        documents = self.render_output_documents(answers=answers,
+                                                 use_data_urls=True)
 
         # Find the document with the named id, if id is a string, or
         # by index if id is an integer.
@@ -1160,6 +1237,24 @@ class Task(models.Model):
             # authored in markdown, we can render directly to markdown.
             blob = doc["markdown"].encode("utf8")
 
+        elif download_format in ("json", "yaml", "xml") and doc["format"] in download_format:
+            # When JSON YAML, or XML output is requested for a template that is
+            # authored in the same format, then it is available in the "text"
+            # format for the document output.
+            blob = doc["text"].encode("utf8")
+
+        # DEPRECATING oscal_json, ocal_yaml, and oscal_xml as December 2020
+        # REMOVE THIS COMMENTED OUT CODE IN FUTURE VERSIONS
+        # elif download_format == "oscal_yaml" and doc["format"] == "oscal_yaml":
+        #     # When Markdown output is requested for a template that is
+        #     # authored in markdown, we can render directly to markdown.
+        #     blob = doc["markdown"].encode("utf8")
+
+        # elif download_format == "oscal_xml" and doc["format"] == "oscal_xml":
+        #     # When Markdown output is requested for a template that is
+        #     # authored in markdown, we can render directly to markdown.
+        #     blob = doc["markdown"].encode("utf8")
+
         elif download_format == "html":
             # When HTML output is requested, render to HTML.
             blob = doc["html"].encode("utf8")
@@ -1182,7 +1277,7 @@ class Task(models.Model):
                 with subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
                     stdout, stderr = proc.communicate(
                         html.encode("utf8"),
-                        timeout=10)
+                        timeout=30)
                     if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
 
                 blob = stdout
@@ -1198,6 +1293,11 @@ class Task(models.Model):
         else:
             # Render to HTML and convert using pandoc.
 
+            # TODO: Currently this works with only one reference file;
+            # /assets/custom-reference.docx. We should be able to point to a
+            # reference file in a Compliance App.
+            template = "assets/custom-reference.docx"
+
             # odt and some other formats cannot pipe to stdout, so we always
             # generate a temporary file.
             import tempfile, os.path, subprocess # nosec
@@ -1207,17 +1307,18 @@ class Task(models.Model):
                 # Append '# nosec' to line below to tell Bandit to ignore the low risk problem
                 # with not specifying the entire path to pandoc.
                 with subprocess.Popen(# nosec
-                    ["pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
+                    ["pandoc", "-f", "html", "--toc", "--toc-depth=4", "-s", "--reference-doc", template, "-t", pandoc_format, "-o", outfn],
                     stdin=subprocess.PIPE
                     ) as proc:
                     proc.communicate(
                         doc["html"].encode("utf8"),
-                        timeout=10)
+                        timeout=30)
                     if proc.returncode != 0: raise subprocess.CalledProcessError(0, '')
 
                 # return the content of the temporary file
                 with open(outfn, "rb") as f:
                     blob = f.read()
+
         return blob, filename, mime_type
 
     def render_snippet(self):
@@ -1240,7 +1341,7 @@ class Task(models.Model):
                     self.get_app_icon_url = self.get_static_asset_image_data_url(icon_img, 75)
                 except ValueError:
                     # no asset or image error
-                    pass
+                    logger.error(event="get_app_icon_url", msg="No asset or image error")
         return self.get_app_icon_url
 
     def get_subtask(self, question_id):
@@ -1881,7 +1982,7 @@ class TaskAnswer(models.Model):
                 self.save()
 
 class TaskAnswerHistory(models.Model):
-    taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE, help_text="The TaskAnswer that this is an aswer to.")
+    taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE, help_text="The TaskAnswer that this is an answer to.")
 
     answered_by = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that provided this answer.")
     answered_by_method = models.CharField(max_length=3, choices=[("web", "Web"), ("imp", "Import"), ("api", "API"), ("del", ("Task Deletion"))], help_text="How this answer was submitted, via the website by a user, via the Export/Import mechanism, or via an API programmatically.")

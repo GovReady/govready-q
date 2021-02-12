@@ -102,7 +102,7 @@ h1.mini {
 
 {% block body %}
 
-<div style="margin-top: 15px">
+<div class="project-top">
 
 {% if lifecycles|length == 0 %}
 <div class="container">
@@ -114,15 +114,15 @@ h1.mini {
 
 
 {% if lifecycles|length > 0 %}
-<div style="float: right; margin: 0 0.5em 0em 5em;">
+<div class="project-main">
   <!-- <a id="new-system" href="/store?protocol=govready.com/apps/compliance/2018/information-technology-system" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add system </a> -->
-  <a id="new-project" href="/store" class="btn btn-success">Start a project</a>
+  <a id="new-project" href="{% url 'store' %}" class="btn btn-success">Start a project</a>
   {% if can_invite_to_org %}
   <a href="#" onclick="show_invite_to_org(); return false;" class="btn btn-success"><i class="glyphicon glyphicon-send"></i> Invite colleague </a>
   {% endif %}
 </div>
 
-<h1 class="mini"><span class="glyphicon glyphicon-home" style="margin-right: .25em"></span> Projects</h1>
+<h1 class="mini"><span class="glyphicon glyphicon-home smidge-right"></span> Projects</h1>
 {% endif %}
 
 </div>

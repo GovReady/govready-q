@@ -1,0 +1,53 @@
+{% load static %}
+<div id="import_component_modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="invitation_modal_title" aria-hidden="true">
+
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="invitation_modal_title">Import OSCAL Component</h4>
+      </div>
+      <form id="component_import_form" action="{% url 'import_component' %}" onsubmit="show_spinner();" role="form" method="POST">{% csrf_token %}
+        <div class="modal-body">
+          <label for="{{import_form.file.id_auto}}">{{ import_form.file.label }}:</label>
+          {{ import_form.file }}
+          <br>
+          <label for="{{import_form.json_content.id_auto}}">{{ import_form.json_content.label }}:</label>
+          <br>
+          {{ import_form.json_content }}
+          {{ import_form.import_name }}
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <input id="import_component_submit" class="btn btn-success btn-submit" type="submit" value="Import" />
+            <img id="import_loading_spinner" src="{% static "img/icons/spinner.gif" %}" />
+          </div>
+             </div>
+        </form>
+
+      </div>
+    </div>
+
+{% block scripts %}
+
+<script>
+  function show_import_component_modal(callback) {
+    var m = $('#import_component_modal');
+    $("#import_loading_spinner").hide();
+    m.modal();
+  }
+
+  function fillJSONContent(file) {
+    filecontents = $('#{{import_form.file.auto_id}}').prop('files')[0];
+    $('#{{import_form.import_name.auto_id}}').val(filecontents.name);
+    var reader = new FileReader();
+    reader.readAsText(filecontents);
+    reader.onload = function(e) {
+        $('#{{import_form.json_content.auto_id}}').val(e.target.result);
+    };
+  }
+
+        function show_spinner() {
+            $("#import_loading_spinner").show();
+        }
+    </script>
+{% endblock %}

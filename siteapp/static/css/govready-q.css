@@ -35,6 +35,9 @@ body, blockquote {
 
 .glyphicon-globe { color: #888; }
 
+
+
+
 h1, h2 {
   font-family: 'Lato', sans-serif;
   font-weight: bold;
@@ -46,6 +49,10 @@ h3 { font-size: 18px; }
 
 .btn { white-space: normal; font-size: inherit; }
 .btn.btn-sm { font-size: 12px; }
+.btn.btn-xs { font-size: 12px; }
+
+
+
 
 footer { margin-top:60px;
   font-size: .75em;
@@ -114,3 +121,229 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* New CSS based on removing inline CSS */
+.btn-sm { width:95%; max-width:200px;  } /* this makes the action buttons all the same width.
+
+/* misc templates */
+.task-progress-project-truncate { margin: 12px 0 12px 6px; text-align: left;  }
+.task-progress-project-url { color:#444; }
+.task-progress-project-group { margin: 0 0 6px 0; padding: 2px; font-size: 1.0em;text-align:left; }
+.task-progress-project-question { font-size: 10px; line-height: 120%; padding-left: 2em; color: #222; }
+.task-progress-project-title { color: black; font-size: 1.0em; text-align: left; }
+.task-progress-project-truncate-link { color: black; }
+
+.task-question-debug-links { color: #999; font-size: 80%; margin-top: 20px; }
+
+.question-source-invitation { margin-bottom: 2em; }
+.question-source-invitation-show { text-align: right; margin-bottom: -1.5em; }
+.question-source-invitation-link { color: #448; font-size: 85%; }
+.question-example-answer { margin: 35px 0; font-size: 80%; border-left: 2px solid #CCC; padding-left: 8px; }
+.question-example-answer-expand { max-height: 4.25em; overflow: hidden; }
+.question-example-small { color: #666; }
+.question-toggle { text-align: left; font-style: italic; font-size: 90%; }
+.question-reference-text { font-size: 80%; color: #666; }
+.question-reference-well { display: none; font-size: 80%; }
+.question-form-style { width: auto; display: inline-block; }
+.question-choice { margin: 1em 0 1.5em 0; }
+.question-yesno { margin: 1em 0 1.5em 0; }
+.question-multiple-choice { margin: 1em 0 1.5em 0; }
+.question-datagrid { margin: 1em 0 1.5em 0; }
+.question-file { margin: 1em 0; }
+.question-current-answer { color: #666; }
+.question-absolute-url { color: #999; margin-left: 3px; font-size: 90%;}
+
+.question-radio { margin-bottom: 1.5em; }
+.question-button { color: #999; font-size: 0.9em; }
+.question-can-review { margin-top: -10px; }
+.question-select-review { display: block; margin: 1em 0; font-size: 80%; background-color: white; padding: .2em .2em .15em .2em; }
+.question-review-status { margin-top: 1em; font-size: 85%; color: #666; }
+.question-progress-project { background-color: rgba(247,247,247,1); border-radius: 3px; border: 1px solid rgb(204, 204, 204); }
+.question-form-group { width: auto; border:  none; padding: 0; display: inline-block; }
+.question-input-font { font-size: 14px; }
+.question-glyphicon-comment { color: #56A; }
+
+/* within navbar and base.html */
+.navbar-brand img { margin: -2px 20px; width:110px; }
+.dropdown-menu { width: 300px; }
+.nav-dropdown-item-text { margin: 0px 12px 8px 20px; }
+.nav-profile { margin: -5px 5px; }
+.message-margin { margin-top: 1em; }
+.footer-row { width: 768px; margin: auto; border-top: 1px solid #eee; padding-top: 24px; }
+
+.invite-message-size { width: 100%; height: 4em; }
+.invite-message-container { margin-top: 1em; }
+
+.center-text { text-align: center; }
+.right-text { text-align: right;}
+.left-text { text-align: left; }
+
+.form-by-email { margin-right: 1em; display: none; }
+.form-group-margin { margin-right: 1em; }
+.form-checkbox { margin-top: 1em; }
+.modal-text { margin: 1em 0 2em 0; }
+.form-email-width { width: 25em; }
+
+.no-display { display: none; }
+
+/* within app-store */
+a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none; }
+.create-nav { margin-bottom: 1em; }
+.create-new-project { margin: 0 0.5em 0em 0; }
+.app-icon-appstore { padding-top: 1px; padding-right: 12px; }
+
+.app-category { }/* TBD */
+.app-bottom-margin { margin-bottom: 30px; }
+.app-quick-start-form { margin-top: .5em;}
+
+.control-label { font-size:.8em;} /* within modal, the word description was breaking */
+
+
+/* app-store-item */
+.breadcrumb-link { color: black; }
+.app-header { max-width:968px; margin: auto; padding-top: 30px;}
+.btn-start-project { width:100%;}
+.back-to-link { color: #888; }
+.app-max-width-row { max-width:968px; margin: auto; }
+.app-information-row { border-top: 1px solid #eee; padding-top: 0px; }
+.app-form-margin { margin: 1em; }
+.app-margin-bottom { margin-bottom: 1em; }
+.app-add-to-label { font-weight: normal; margin: 0; font-size: 90%; }
+.app-button-width { width: 100%; }
+.app-description { margin-top:20px; }
+.app-info-height { height: 24px; }
+.app-bottom-spacer { height:40px; }
+
+/* project */
+/* leaving display tags within the html to prevent issues */
+
+.authoring-tool-style { margin: 0 1em; }
+.action-button-box { margin-top: 1em; }
+.action-button { background: white; }
+.authoring-tool-box { font-size: 90%; }
+.action-button-app-title {text-align: center; font-size: 0.8em; max-width:200px; font-weight: bold; margin-bottom: 8px;}
+
+.project-row-style { margin-bottom:1em; }
+.action-row { margin-bottom: 1em; }
+.project-body-block { margin-top: 1em; }
+
+.project-text { margin: 1em 0; }
+.project-glyphicon-ok { color: #96B; } /* this is not good */
+.project-new-task { position: absolute; left: -1px; top: -1px; }
+.project-progress { width:80%; height: 5px;margin: 8px 0 0 0; }
+.project-question-comment { line-height: 122%; font-size: italic; font-size: 95%; }
+.project-question-icon { position: relative;}
+.project-button-finished { color: rgb(57, 139, 37); }
+
+.smidge-right { margin-right: .25em } /* spaces words from glyphicon */
+.smidge-left { margin-left: .25em }
+
+.project-settings-glyphicons { margin: 0 1em; }
+.project-settings-header { border-bottom:1px solid #ccc; }
+.project-settings-row { margin: 8px 0 20px 0;}
+.project-settings-description { margin-bottom:8px; }
+.project-settings-rows { margin-top:12px;  }
+.project-settings-all-participants { margin-bottom: 2px; }
+.project-settings-user-details { width: 28px; height: 24px; border: 1px solid #444; margin-right: .5em; float: left; margin-top: -2px; border-radius: 2px; }
+.project-settings-invite { margin: 1em 0; }
+.project-settings-table-head { width:200px; }
+
+.project-api-sample { max-height: 20em; overflow: auto; border: 1px solid #555; margin: 1.5em 0; }
+.project-api-text { font-size: 90%; font-weight: 400; }
+.project-api-title { font-weight: bold; }
+
+.project-main { float: right; margin: 0 0.5em 0em 5em; }
+.project-top { margin-top: 15px; }
+
+.project-list-text { font-size: 90%; font-weight: 400; margin: 2em 0 .5em -2px; }
+.project-list-text-item { color: #666; }
+.project-list-section-task-link { color: #224; }
+.project-list-app-icon {  height: 1em; }
+.project-list-section-task { margin: 0 0 .5em 0; }
+.project-list-section-task-text { margin: 0 0 .25em 0}
+.project-list-section-task-id { margin-top: 0; }
+
+.interstitial-success { text-align: center; margin: 1.5em 0 .5em 0; }
+.interstitial-link { margin-right: 3em; }
+
+/* projects */
+.projects-top { margin-top: 30px; }
+.projects-row { border-top: 1px solid #aaa;padding: 8px 0px 8px 0px; }
+.projects-link { color: black; }
+
+/* TASK */
+.task-authortools { font-size: 80%; margin-right: 8px; }
+.task-glyphicons { color: #aaa; }
+.task-invitation { margin-bottom: 1em; }
+.task-imputed { float: right; margin: 0 0 .5em .25em; }
+.task-answers { margin: 2em 0; }
+.task-panel-heading-height { height: 50px; }
+.task-bottom-margin { margin-bottom: 30px; }
+.task-done { margin:0.5em 0 1em 0; }
+.task-project-progress { background-color: rgb(230, 230, 230); border-radius: 6px; }
+
+/* controls */
+.index-catalog-top { margin-top: 30px; }
+
+/* Component Library */
+#component-new, #component-import-oscal { margin-top: 0em; }
+#component_import_form #import_loading_spinner { width: 10em; }
+a#delete-import.btn {float: right; margin-top: 1em;}
+
+form #id_json_content { width: 100%; overflow: auto !important; } /* The !important is to fix a bug with textareas not allowing scrolling. */
+
+
+/* Import Form fields */
+form #id_appsource_version_id { width: 100%; overflow: auto !important; }
+form #id_appsource_compapp { width: 100%; overflow: auto !important; }
+
+/* org groups */
+
+.new-org-col { margin: 40px 0px 30px 0px; }
+.org-main { float: right; margin: 0 0.5em 0em 5em; }
+.org-top { margin-top: 30px; }
+.org-row { border-top: 1px solid #aaa;padding: 8px 0px 8px 0px; }
+.org-project-link { color: black; }
+.org-small { color: #888;}
+.org-group { color: black; }
+
+.org-glyphicons { font-size: 8em; color: rgb(160, 210, 160); }
+
+/* portfolios */
+.portfolio-top { margin-top: 30px; }
+.portfolio-main { float: right; margin: 0 0.5em 0em 5em; }
+.portfolio-small { color: #888; }
+.portfolio-row { border-top: 1px solid #aaa;padding: 8px 0px 8px 0px; }
+.portfolio-project-link { color: black; }
+.portfolio-project-top { margin-top: 60px; }
+.portfolio-glyphicons { font-size: 8em; color: rgb(160, 210, 160); }
+.portfolio-org-col { margin: 40px 0px 30px 0px; }
+
+/* Support */
+.support-top { margin-top: 30px; }
+.support-row { margin: auto; padding-top: 24px; margin: auto; }
+
+
+/* MISC */
+.love-assessments { max-width: 650px; }
+
+/* systems */
+.systems-top { margin-top: 30px; }
+.systems-title { float: left;}
+.systems-link { color: black; }
+.systems-control-lookup { float: right; }
+.systems-selected-components { font-size: 14pt; font-weight: bold;}
+.systems-control-heading { float: left; padding: 0 0 0 0em; }
+.systems-smt-list { width: 90%; }
+
+.systems-element-form-status { width:180px; }
+.systems-element-statement { min-height:130px; overflow-y: scroll; }
+.systems-element-form-remarks { min-height:70px; overflow-y: scroll; }
+.systems-element-modal-footer { display: inline; margin-right: 20px; color: gray; }
+.systems-element-button { color: white; }
+.systems-element-oscal { font-family: monospace; font-size:12px; white-space: pre; }
+.systems-element-opencontrol { font-family: monospace; font-size:12px; white-space: pre; }
+
+.systems-element-name { font-size: 14pt; font-weight: bold;}
+.systems-poam { margin-top: 4px; }
+.systems-poam-glyphicon {  margin-top: 6px; }

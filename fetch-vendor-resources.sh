@@ -46,6 +46,9 @@ rm -rf $VENDOR
 
 # Create the directory.
 mkdir -p $VENDOR
+mkdir -p $VENDOR/css
+mkdir -p $VENDOR/js
+
 
 # Fetch resources.
 
@@ -66,17 +69,33 @@ fi
 
 # jQuery (MIT License)
 download \
-  https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js \
+  https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js \
   $VENDOR/jquery.js \
-  '0925e8ad7bd971391a8b1e98be8e87a6971919eb5b60c196485941c3c1df089a'
+  'f7f6a5894f1d19ddad6fa392b2ece2c5e578cbf7da4ea805b6885eb6985b6e3d'
+
+download \
+  https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js \
+  $VENDOR/jquery-ui.js \
+  '55accff7b642c2d7a402cbe03c1494c0f14a76bc03dee9d47d219562b6a152a5'
+
+# jQuery-based select2.js
+download \
+  https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js \
+  $VENDOR/js/select2.min.js \
+  '00501810e93307a8882a74d864e7547fd1458deea539361dc1124ac133799a4b'
+
+download \
+  https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css \
+  $VENDOR/css/select2.min.css \
+  '15d6ad4dfdb43d0affad683e70029f97a8f8fc8637a28845009ee0542dccdf81'
 
 # Bootstrap (MIT License)
 download \
-  https://github.com/twbs/bootstrap/releases/download/v3.3.7/bootstrap-3.3.7-dist.zip \
+  https://github.com/twbs/bootstrap/releases/download/v3.4.1/bootstrap-3.4.1-dist.zip \
   /tmp/bootstrap.zip \
-  'f498a8ff2dd007e29c2074f5e4b01a9a01775c3ff3aeaf6906ea503bc5791b7b'
+  'd49793cf773cbd393ac2cf340c3b4ddab5365fa7c292098ac07e12eab3efd92e'
 unzip -d /tmp /tmp/bootstrap.zip
-mv /tmp/bootstrap-3.3.7-dist $VENDOR/bootstrap
+mv /tmp/bootstrap-3.4.1-dist $VENDOR/bootstrap
 rm -f /tmp/bootstrap.zip
 
 # jsGrid (MIT License)
@@ -170,9 +189,9 @@ done
 
 # quill rich text editor (BSD License)
 download \
-  https://github.com/quilljs/quill/releases/download/v1.3.6/quill.tar.gz \
+  https://github.com/quilljs/quill/releases/download/v1.3.7/quill.tar.gz \
   /tmp/quill.tar.gz \
-  'a7e8b79ace3f620725d4fb543795a4cf0349db1202624c4b16304954745c3890'
+  'ca784fe3b83f3b2b93b443a953e0b34a27a2178618501b0841eebcd62c9785c2'
 tar -zx -C $VENDOR -f /tmp/quill.tar.gz
 rm -f /tmp/quill.tar.gz
 
@@ -187,14 +206,14 @@ download \
 # first download a helper (note: we're about to run a foreign script locally)
 # TODO: Requires bash v4 not available on macOS.
 download \
-  https://raw.githubusercontent.com/neverpanic/google-font-download/ba0f7fd6de0933c8e5217fd62d3c1c08578b6ea7/google-font-download \
+  https://raw.githubusercontent.com/neverpanic/google-font-download/d7bb34e0c5fa01d9411213fd1a1363317d3ceb11/google-font-download \
   /tmp/google-font-download \
-  '1f9b2cefcda45d4ee5aac3ff1255770ba193c2aa0775df62a57aa90c27d47db5'
+  '95195992a6bb551755e8871e7570a544b047f46bcc253f0f3691f0d657a5a620'
 (cd $VENDOR; bash /tmp/google-font-download -f woff,woff2 -o google-fonts.css Hind:400 Hind:700 Lato:900)
 rm -f /tmp/google-font-download
 # generated with: $SHACMD $VENDOR/{google-fonts.css,Hind*,Lato*}
 $SHACMD_CHECK << EOF
-990e7373d100faee6fa7d92c1277695520e3c502f726bb28ce03d2b6d2cd3e6c  siteapp/static/vendor/google-fonts.css
+faf874b09bc8220042ee61d072a5a5de49eac3275b5fe4917ed336461e35080a  siteapp/static/vendor/google-fonts.css
 6375a7ecbb77ba42e2de22c99aab9fea1fea125d6d857512360a3a555ff74161  siteapp/static/vendor/Hind_400.woff
 d7a3280717b1f82f46bee459863720a03de43b16dc8097ba1b133440e5fe0edc  siteapp/static/vendor/Hind_400.woff2
 a3ef4f13a191d01ecca06b8b997a666b28d4c614d6de256753fa9f4fbe15b726  siteapp/static/vendor/Hind_700.woff

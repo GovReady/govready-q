@@ -126,7 +126,7 @@ class Command(BaseCommand):
         # We use a randomly generated password so that even if the script is
         # run on a non-test system and the test database creation somehow
         # fails, we haven't left a User in the database with insecure
-        # credentials. The password will be thrown away when this process
+        # credentials. The pwd will be thrown away when this process
         # terminates.
         self.temporary_user_random_password = get_random_string(24)
         self.user = User.objects.create(

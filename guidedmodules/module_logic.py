@@ -1,5 +1,13 @@
+import uuid
+from itertools import groupby
+from urllib.parse import urlunparse
+
 from django.conf import settings
+from django.urls import reverse
+
 from jinja2.sandbox import SandboxedEnvironment
+from controls.oscal import Catalogs, Catalog
+from siteapp.settings import GOVREADY_URL
 
 def get_jinja2_template_vars(template):
     from jinja2 import meta, TemplateSyntaxError
@@ -62,7 +70,7 @@ def walk_module_questions(module, callback):
         # question, then return its state dict from last time.
         if q.key in processed_questions:
             return processed_questions[q.key]
-        
+
         # Prevent infinite recursion.
         if q.key in stack:
             raise ValueError("Cyclical dependency in questions: " + "->".join(stack + [q.key]))
@@ -149,7 +157,7 @@ def evaluate_module_state(current_answers, parent_context=None):
 
         # Before running impute conditions below, we need a TemplateContext
         # which provides the functionality of resolving variables mentioned
-        # in the impute condition. The TemplateContext that we use here is 
+        # in the impute condition. The TemplateContext that we use here is
         # different from the one we normally use to render output documents
         # because an impute condition in a question should not be able to see
         # the answers to questions that come later in the module. The purpose
@@ -283,8 +291,136 @@ def get_question_context(answers, question):
     return context_sorted
 
 
-def render_content(content, answers, output_format, source, additional_context={},
-    demote_headings=True, show_answer_metadata=False, use_data_urls=False, is_computing_title=False):
+def oscal_context(answers):
+    """
+    Generate a dictionary of values useful for rendering OSCAL.
+
+    Lots of work in progress here!
+    """
+
+    # sometimes we run into answers w/o a task, in which case
+    # there is not much we can do
+
+    if not hasattr(answers, 'task'):
+        return dict()
+
+    project = answers.task.project
+    system = project.system
+
+    # TODO: where do we get the catalog key from?
+
+    catalog_key = Catalogs.NIST_SP_800_53_rev4
+    catalog = Catalog.GetInstance(catalog_key)
+
+    # build a component from an Element
+    def _component(e):
+        return {
+            'uuid': e.uuid,
+            'title': e.name,
+            'description': e.description,
+            'state': "operational",         # TODO: OSCAL asks for individual component state
+            'type': "software"              # TODO: OSCAL components have a type
+        }
+    components = [_component(e) for e in system.producer_elements]
+
+    # collect all the control implementation statements
+    statements = system.root_element.statements_consumed \
+                                    .filter(statement_type="control_implementation") \
+                                    .order_by('sid')
+
+    # and all the project's organizational parameters
+    params = project.get_parameter_values(catalog_key)
+
+
+    # loop over all statements, grouped by control id and
+    # build a list of implemented_requirements
+
+    implemented_requirements = []
+    for control_id, group in groupby(statements, lambda s: s.sid):
+        ir = {
+            "control_id": control_id,
+            "uuid": str(uuid.uuid4()),
+            "statements": []
+        }
+
+        param_ids = catalog.get_parameter_ids_for_control(control_id)
+        ir["parameter_settings"] = [
+            dict(param_id=param_id, value=params.get(param_id))
+            for param_id in param_ids
+            if params.get(param_id)
+        ]
+
+        # loop over all the statements for this control, grouped by
+        # "part id".  I.e., "ac-1.a", "ac-1.b", etc.
+        for pid, group in groupby(sorted(group, key=lambda s: s.pid),
+                                 lambda s: s.pid):
+            # useful to extract the statement id from the first statement
+            # (should be the same for all the statements in this group)
+            group = list(group)
+            first_statement = group[0]
+            statement = {
+                "id": first_statement.oscal_statement_id,
+                "uuid": str(uuid.uuid4()),
+                "by_components": []
+            }
+            # assumption: at this point, each statement in the group
+            # has been contributed by a different component. if
+            # assumption is not valid, we'll have to fix this code a
+            # bit, since OSCAL doesn't obiviously support multiple
+            # contributions to a statement from the same component
+            for s in group:
+                by_component = {
+                    "uuid": str(s.uuid),
+                    "component_uuid": s.producer_element.uuid,
+                    "description": s.body
+                }
+                statement["by_components"].append(by_component)
+            ir['statements'].append(statement)
+        implemented_requirements.append(ir)
+
+    # TODO: placeholder for information types -- should be able to pull this out
+    # from questionnaire
+
+    information_types = [
+        {
+            "title": "UNKNOWN information type title",
+            "description": "information type description",
+            "confidentiality_impact": "information type confidentiality impact",
+            "integrity_impact": "information type integrity impact",
+            "availability_impact": "information type availability impact"
+        }
+    ]
+
+    # generate a URL to reference this system's OSCAL profile (baseline)
+    # TODO: fix url pattern matching for backward compatibility, figure out profile usage
+   # profile_path = reverse('profile_oscal_json', kwargs=dict(system_id=system.id))
+    profile = urlunparse((GOVREADY_URL.scheme, GOVREADY_URL.netloc,
+                          "profile_path",
+                          None, None, None))
+    return {
+        "uuid": str(uuid.uuid4()), # SSP UUID
+        "make_uuid": uuid.uuid4, # so we can gen UUIDS if needed in the templates
+        "version": project.version,
+        "profile": profile,
+        "oscal_version": "1.0.0rc1",
+        "last_modified": str(project.updated),
+        "system_id": f"govready-{system.id}",
+        "system_authorization_boundary": "System authorization boundary, TBD", # TODO
+        "system_information_types": information_types,
+        "system_security_impact_level_confidentiality": "UNKNOWN", # TODO
+        "system_security_impact_level_integrity": "UNKNOWN",       # TODO
+        "system_security_impact_level_availability": "UNKNOWN",    # TODO
+        "system_operating_status": "operational", # TODO: need from questionnaire, but wrong format
+        "components": components,
+        "implemented_requirements": implemented_requirements,
+        "information_types": information_types
+    }
+
+
+def render_content(content, answers, output_format, source,
+                   additional_context={}, demote_headings=True,
+                   show_answer_metadata=False, use_data_urls=False,
+                   is_computing_title=False):
 
     # Renders content (which is a dict with keys "format" and "template")
     # into the requested output format, using the ModuleAnswers in answers
@@ -310,12 +446,13 @@ def render_content(content, answers, output_format, source, additional_context={
     # If the output format is plain-text, treat the Markdown as if it is plain text.
     #
     # No other output formats are supported.
+
     if template_format == "markdown":
         if output_format == "html" or output_format == "PARSE_ONLY":
             # Convert the template first to HTML using CommonMark.
 
             if not isinstance(template_body, str): raise ValueError("Template %s has incorrect type: %s" % (source, type(template_body)))
-            
+
             # We don't want CommonMark to mess up template tags, however. If
             # there are symbols which have meaning both to Jinaj2 and CommonMark,
             # then they may get ruined by CommonMark because they may be escaped.
@@ -423,9 +560,32 @@ def render_content(content, answers, output_format, source, additional_context={
         # dict keys) with what we get by calling render_content recursively
         # on the string value, assuming it is a template of plain-text type.
 
+        import re
         from collections import OrderedDict
 
-        def walk(value, path):
+        import jinja2
+        env = Jinja2Environment(
+            autoescape=True,
+            undefined=jinja2.StrictUndefined) # see below - we defined any undefined variables
+        context = dict(additional_context) # clone
+        if answers:
+            def escapefunc(question, task, has_answer, answerobj, value):
+                # Don't perform any escaping. The caller will wrap the
+                # result in jinja2.Markup().
+                return str(value)
+            def errorfunc(message, short_message, long_message, **format_vars):
+                # Wrap in jinja2.Markup to prevent auto-escaping.
+                return jinja2.Markup("<" + message.format(**format_vars) + ">")
+            tc = TemplateContext(answers, escapefunc,
+                root=True,
+                errorfunc=errorfunc,
+                source=source,
+                show_answer_metadata=show_answer_metadata,
+                is_computing_title=is_computing_title)
+            context.update(tc)
+
+        def walk(value, path, additional_context_2 = {}):
+            # Render string values through the templating logic.
             if isinstance(value, str):
                 return render_content(
                     {
@@ -433,20 +593,160 @@ def render_content(content, answers, output_format, source, additional_context={
                         "template": value
                     },
                     answers,
-                    output_format,
+                    "text",
                     source + " " + "->".join(path),
-                    additional_context,
+                    { **additional_context, **additional_context_2 }
                 )
+
+            # Process objects with a special "%___" key specially.
+            # If it has a %for key with a string value, then interpret the string value as
+            # an expression in Jinja2 which we assume evaluates to a sequence-like object
+            # and loop over the items in the sequence. For each item, the "%loop" key
+            # of this object is rendered with the context amended with variable name
+            # assigned the sequence item.
+
+            elif isinstance(value, dict) and isinstance(value.get("%for"), str):
+                # The value of the "%for" key is "variable in expression". Parse that
+                # first.
+                m = re.match(r"^(\w+) in (.*)", value.get("%for"), re.I)
+                if not m:
+                    raise ValueError("%for directive needs 'variable in expression' value")
+                varname = m.group(1)
+                expr = m.group(2)
+
+                # print("%for: expr = ", expr)
+                condition_func = compile_jinja2_expression(expr)
+                if output_format == "PARSE_ONLY":
+                    return value
+
+                # Evaluate the expression.
+                context.update(additional_context_2)
+                seq = condition_func(context)
+
+                # print("%for: seq = ", seq)
+                # Render the %loop key for each item in sequence.
+                return [
+                    walk(
+                        value.get("%loop"),
+                        path+[str(i)],
+                        { **additional_context_2, **{ varname: item } })
+                    for i, item in enumerate(seq)
+                ]
+
+            # For a %dict key, we will add a dictionary for each element in the
+            # sequence.  The key for the dictionary is specified by value of %key
+            # item, and the value of the item itself is specified by the %value
+            elif isinstance(value, dict) and isinstance(value.get("%dict"), str):
+                # The value of the "%dict" key is "variable in expression". Parse that
+                # first.
+                m = re.match(r"^(\w+) in (.*)", value.get("%dict"), re.I)
+                if not m:
+                    raise ValueError("%dict directive needs 'variable in expression' value")
+                varname = m.group(1)
+                expr = m.group(2)
+
+                condition_func = compile_jinja2_expression(expr)
+                if output_format == "PARSE_ONLY":
+                    return value
+
+                # Evaluate the expression.
+                context.update(additional_context_2)
+                seq = condition_func(context)
+
+                # Render the %value key for each item in sequence,
+                # producing a dict of dicts.  Each rendered dict
+                # must contain a special item with the key "%key".
+                # The value of "%key" is used to key a dictionary
+                # containing the remainder of the rendered items.
+                # E.g.,
+                # {
+                #     "books": {
+                #         "%dict": "book in books",
+                #         "%value": {
+                #             "%key": "{{ book.id }}",
+                #             "title": "{{ book.title }}",
+                #             "author": "{{ book.author }}"
+                #          }
+                #      }
+                # }
+                # will render to:
+                # {
+                #     "books": {
+                #         "100": {
+                #             "title": "Harry Potter and the Chamber of Secrets",
+                #             "author": "JK"
+                #         },
+                #         "101": {
+                #             "title": "Harry Potter and the Goblet of Fire",
+                #             "author": "JK"
+                #         }
+                #     }
+                # }
+
+                retval = dict()
+                if "%value" not in value:
+                    raise ValueError("%dict directive missing %value")
+                item_value = value["%value"]
+
+                for i, item in enumerate(seq):
+                    obj = walk(
+                        item_value,
+                        path+[str(i)],
+                        { **additional_context_2, **{ varname: item } })
+                    if not isinstance(obj, dict):
+                        raise ValueError("%value did not produce a dict")
+                    if "%key" not in obj:
+                        raise ValueError("dict returned by %value had no %key")
+                    dict_key = obj.pop('%key')
+                    retval[dict_key] = obj
+
+                return retval
+
+            elif isinstance(value, dict) and isinstance(value.get("%if"), str):
+                # The value of the "%if" key is an expression.
+                condition_func = compile_jinja2_expression(value["%if"])
+                if output_format == "PARSE_ONLY":
+                    return value
+
+                # Evaluate the expression.
+                context.update(additional_context_2)
+                test = condition_func(context)
+
+                # If the expression is true, then we render the "%then" key.
+                if test:
+                    return walk(
+                            value.get("%then"),
+                            path+["%then"],
+                            additional_context_2)
+                else:
+                    return None
+
+            # All other JSON data passes through unchanged.
             elif isinstance(value, list):
-                return [walk(i, path+[str(i)]) for i in value]
+                # Recursively enter each value in the list and re-assemble a new list with
+                # the return value of this function on each item in the list.
+                return [
+                    walk(i, path+[str(i)], additional_context_2)
+                    for i in value]
             elif isinstance(value, dict):
-                return OrderedDict([ (k, walk(v, path+[k])) for k, v in value.items() ])
+                # Recursively enter each value in each key-value pair in the JSON object.
+                # Return a new JSON object with the same keys but with the return value
+                # of this function applied to the value.
+                return OrderedDict([
+                    ( k,
+                      walk(v, path+[k], additional_context_2)
+                    )
+                    for k, v in value.items()
+                    ])
             else:
                 # Leave unchanged.
                 return value
 
-        # Render strings within the data structure.
-        value = walk(template_body, [])
+        # Render the template. Recursively walk the JSON data structure and apply the walk()
+        # function to each value in it.
+
+        oscal = oscal_context(answers)
+        value = walk(template_body, [], dict(oscal=oscal) if oscal else {})
 
         # If we're just testing parsing the template, return
         # any output now. Since the inner templates may have
@@ -479,7 +779,7 @@ def render_content(content, answers, output_format, source, additional_context={
         else:
             raise ValueError("Cannot render %s to %s in %s." % (template_format, output_format, source))
 
-    elif template_format in ("text", "markdown", "html"):
+    elif template_format in ("text", "markdown", "html", "xml"):
         # The plain-text and HTML template types are rendered using Jinja2.
         #
         # The only difference is in how escaping of substituted variables works.
@@ -487,10 +787,9 @@ def render_content(content, answers, output_format, source, additional_context={
         # anwers as if the user was typing Markdown. That makes sure that
         # paragraphs aren't collapsed in HTML, and gives us other benefits.
         # For other values we perform standard HTML escaping.
-
         import jinja2
 
-        if template_format in ("text", "markdown"):
+        if template_format in ("text", "markdown", "xml"):
             def escapefunc(question, task, has_answer, answerobj, value):
                 # Don't perform any escaping. The caller will wrap the
                 # result in jinja2.Markup().
@@ -568,12 +867,12 @@ def render_content(content, answers, output_format, source, additional_context={
             for varname in get_jinja2_template_vars(template_body):
                 context.setdefault(varname, UndefinedReference(varname, errorfunc, [source]))
             # Now really render.
+
             output = template.render(context)
         except Exception as e:
             raise ValueError("There was an error executing the template %s: %s" % (source, str(e)))
 
         # Convert the output to the desired output format.
-
         if template_format == "text":
             if output_format == "text":
                 # text => text (nothing to do)
@@ -584,6 +883,13 @@ def render_content(content, answers, output_format, source, additional_context={
                 import html
                 return "<pre>" + html.escape(output) + "</pre>"
         elif template_format == "markdown":
+            if output_format == "text":
+                # TODO: markdown => text, for now just return the Markdown markup
+                return output
+            elif output_format == "markdown":
+                # markdown => markdown -- nothing to do
+                return output
+        elif template_format == "xml":
             if output_format == "text":
                 # TODO: markdown => text, for now just return the Markdown markup
                 return output
@@ -619,7 +925,7 @@ def render_content(content, answers, output_format, source, additional_context={
                     # Check final URL.
                     import urllib.parse
                     u = urllib.parse.urlparse(url)
-                    
+
                     # Allow data URLs in some cases.
                     if use_data_urls and allow_dataurl and u.scheme == "data":
                         return url
@@ -643,7 +949,7 @@ def render_content(content, answers, output_format, source, additional_context={
                 return output
 
         raise ValueError("Cannot render %s to %s." % (template_format, output_format))
-         
+
     else:
         raise ValueError("Invalid template format encountered: %s." % template_format)
 
@@ -774,7 +1080,23 @@ class HtmlAnswerRenderer:
 
         # Wrap the output in a tag that holds metadata.
 
-        # If the question is unanswered or imputed...
+        # If the question is imputed...
+        if has_answer and not answerobj:
+            return """<{tag} class='question-answer'
+              data-module='{module}'
+              data-question='{question}'
+              data-answer-type='{answer_type}'
+              {edit_link}
+              >{value}</{tag}>""".format(
+                tag=wrappertag,
+                module=html.escape(question.module.spec['title']),
+                question=html.escape(question.spec["title"]),
+                answer_type="skipped" if not has_answer else "imputed",
+                edit_link="",
+                value=value,
+            )
+
+        # If the question is unanswered...
         if not answerobj:
             return """<{tag} class='question-answer'
               data-module='{module}'
@@ -865,7 +1187,7 @@ def get_question_dependencies_with_type(question, get_from_question_id=None):
     # Returns a set of ModuleQuestion instances that this question is dependent on
     # as a list of edges that are tuples of (edge_type, question obj).
     ret = []
-    
+
     # All questions mentioned in prompt text become dependencies.
     for qid in get_jinja2_template_vars(question.spec.get("prompt", "")):
         ret.append(("prompt", qid))
@@ -1032,7 +1354,7 @@ class ModuleAnswers(object):
                 # Use the template rendering system to produce a human-readable
                 # HTML rendering of the value.
                 value_display = RenderedAnswer(self.task, q, is_answered, a, value, tc)
-                
+
                 # For question types whose primary value is machine-readable,
                 # show a nice display form if possible using the .text attribute,
                 # if possible. It probably returns a SafeString which needs __html__()
@@ -1055,9 +1377,10 @@ class ModuleAnswers(object):
         # module's output. The output is a set of documents. The
         # documents are lazy-rendered because not all of them may
         # be used by the caller.
-        output_formats = ("html", "text", "markdown")
 
-        class LazyRenderedDocument:
+        class LazyRenderedDocument(object):
+            output_formats = ("html", "text", "markdown")
+
             def __init__(self, module_answers, document, index, use_data_urls):
                 self.module_answers = module_answers
                 self.document = document
@@ -1066,19 +1389,19 @@ class ModuleAnswers(object):
                 self.use_data_urls = use_data_urls
 
             def __iter__(self):
-                # Yield all of the keys that are in the output document
+                # Yield all of the keys (entry) that are in the output document
                 # specification, plus all of the output formats which are
-                # keys in our returned dict that lazily render the document.
-                for key, value in self.document.items():
-                    if key not in output_formats:
-                        yield key
-                for key in output_formats:
-                    yield key
-            def __getitem__(self, key):
-                if key in output_formats:
-                    # key is an output format -> lazy render.
+                # keys (entry) in our returned dict that lazily render the document.
+                for entry, value in self.document.items():
+                    if entry not in self.output_formats:
+                        yield entry
+                for entry in self.output_formats:
+                    yield entry
+            def __getitem__(self, entry):
+                if entry in self.output_formats:
+                    # entry is an output format -> lazy render.
 
-                    if key not in self.rendered_content:
+                    if entry not in self.rendered_content:
                         # Cache miss.
 
                         # For errors, what is the name of this document?
@@ -1091,36 +1414,36 @@ class ModuleAnswers(object):
                         doc_name = "'%s' output document '%s'" % (self.module_answers.module.module_name, doc_name)
 
                         # Try to render it.
-                        task_cache_key = "output_r1_{}_{}_{}".format(
+                        task_cache_entry = "output_r1_{}_{}_{}".format(
                             self.index,
-                            key,
-                            1 if use_data_urls else 0,
+                            entry,
+                            1 if self.use_data_urls else 0,
                         )
                         def do_render():
                             try:
-                                return render_content(self.document, self.module_answers, key, doc_name, show_answer_metadata=True, use_data_urls=use_data_urls)
+                                return render_content(self.document, self.module_answers, entry, doc_name, show_answer_metadata=True, use_data_urls=self.use_data_urls)
                             except Exception as e:
                                 # Put errors into the output. Errors should not occur if the
                                 # template is designed correctly.
                                 ret = str(e)
-                                if key == "html":
+                                if entry == "html":
                                     import html
                                     ret = "<p class=text-danger>" + html.escape(ret) + "</p>"
                                 return ret
-                        self.rendered_content[key] = self.module_answers.task._get_cached_state(task_cache_key, do_render)
+                        self.rendered_content[entry] = self.module_answers.task._get_cached_state(task_cache_entry, do_render)
 
-                    return self.rendered_content[key]
+                    return self.rendered_content[entry]
 
-                elif key in self.document:
-                    # key is a key in the specification for the document.
+                elif entry in self.document:
+                    # entry is a entry in the specification for the document.
                     # Return it unchanged.
-                    return self.document[key]
+                    return self.document[entry]
 
-                raise KeyError(key)
-                
-            def get(self, key, default=None):
-                if key in output_formats or key in self.document:
-                    return self[key]
+                raise KeyError(entry)
+
+            def get(self, entry, default=None):
+                if entry in self.output_formats or entry in self.document:
+                    return self[entry]
 
         return [ LazyRenderedDocument(self, d, i, use_data_urls) for i, d in enumerate(self.module.spec.get("output", [])) ]
 
@@ -1210,12 +1533,29 @@ class TemplateContext(Mapping):
                 return RenderedOrganization(self.module_answers.task, parent_context=self)
             if item == "control_catalog":
                 # Retrieve control catalog(s) for project
-                # Temporarily assume controls are 800-53 for the moment
+                # Temporarily retrieve a single catalog
+                # TODO: Retrieve multiple catalogs because we could have catalogs plus overlays
+                #       Will need a better way to determine the catalogs on a system so we can retrieve at once
+                #       Maybe get the catalogs as a property of the system
                 # Retrieve a Django dictionary of dictionaries object of full control catalog
+
                 from controls.oscal import Catalog
-                sca = Catalog.GetInstance()
-                control_catalog = sca.flattended_controls_all_as_dict
+                # Detect single control catalog from first control
+                try:
+                    catalog_key = self.module_answers.task.project.system.root_element.controls.first().oscal_catalog_key
+                    parameter_values = self.module_answers.task.project.get_parameter_values(catalog_key)
+                    sca = Catalog.GetInstance(catalog_key=catalog_key,
+                                              parameter_values=parameter_values)
+                    control_catalog = sca.flattened_controls_all_as_dict
+                except:
+                    control_catalog = None
                 return control_catalog
+            if item == "system":
+                # Retrieve the system object associated with this project
+                # Returned value must be a python dictionary
+                return self.module_answers.task.project.system
+            if item == "oscal":
+                return oscal_context(self.module_answers.task.project.system)
             if item in ("is_started", "is_finished"):
                 # These are methods on the Task instance. Don't
                 # call the method here because that leads to infinite
@@ -1272,7 +1612,7 @@ class TemplateContext(Mapping):
                 # 'title' isn't available if we're in the process of
                 # computing it
                 yield "title"
-            for attribute in ("task_link", "project", "organization", "control_catalog"):
+            for attribute in ("task_link", "project", "organization", "control_catalog", "system"):
                 if attribute not in seen_keys:
                     yield attribute
 
@@ -1536,7 +1876,7 @@ class RenderedAnswer:
     def skipped(self):
         # The question has a null answer either because it was imputed null
         # or the user skipped it.
-        return self.is_answered and (self.answer is None) 
+        return self.is_answered and (self.answer is None)
 
     @property
     def skipped_by_user(self):
@@ -1562,7 +1902,7 @@ class RenderedAnswer:
         if not self.answerobj:
             return None
         return self.answerobj.unsure
-    
+
     @property
     def date_answered(self):
         # Date question was answered.

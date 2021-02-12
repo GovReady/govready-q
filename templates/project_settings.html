@@ -1,0 +1,618 @@
+{% extends "project-base.html" %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+<style>
+.question-column {
+  margin: 0 -10px;
+  padding: 10px;
+  background-color: rgb(247,247,247);
+  border-radius: 5px;
+  max-width:66vw;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
+}
+{% if layout_mode == "rows" %}
+  .question-column {
+    padding: 0px 30px 0px 30px;
+}
+{% endif %}
+{% if layout_mode == "columns" %}
+  .question-column h2 {
+    color: black;
+    margin: 5px 0 10px 0;
+    text-align: center;
+  }
+
+.question-group {
+
+}
+  .question-group h3 {
+    font-size: inherit;
+    font-weight: bold;
+  }
+  .question-group > .row {
+    margin: 5px 0;
+  }
+
+.question {
+  background-color: white;
+  padding-top: 10px; /* can't mess with side padding because it is a bootstrap column */
+  padding-bottom: 10px; /* can't mess with side padding because it is a bootstrap column */
+  margin-bottom: 15px;
+  border-radius: 3px;
+  border-bottom: 1px solid rgb(204, 204, 204);
+  /*border: 1px solid #D0D0D0;*/
+}
+
+.question-icon {
+  width: 30px;
+  float: right;
+  margin: 4px 0 5px 8px;
+}
+
+{% else %}
+.question-group {
+  margin: 10px 0 20px 0;
+  padding-top: 16px;
+}
+
+h2.question-column-title {
+}
+
+h3.question-group-title {
+  color: black;
+  font-weight: bold;
+  padding: 0 18px 14px 0;
+  margin: 0;
+}
+
+.question {
+  background-color: white;
+  border-bottom: 1px solid rgb(204, 204, 204);
+  margin-bottom: 15px;
+  padding-top: .75em;
+  padding-bottom: .75em;
+  {% if layout_mode == "grid" %}
+    text-align: center;
+    margin-top: 10px;
+  {% endif %}
+  border-radius: 15px; /* good for highlighting */
+
+}
+  .question:hover {
+    background-color: rgb(246,250,249);
+  }
+  .question .question-icon {
+    margin: 0 auto;
+    width: 96px;
+    height: 96px;
+    border: 1px solid #DDD;
+    padding:12px;
+    border-radius: 10px;
+    background-color: #DDD;
+  }
+  .question .question-title {
+    margin-top: .5em;
+    color: #222;
+  }
+
+  .question-title > .btn {
+    margin: 8px 0 0 0;
+  }
+  .question .invitation {
+    font-size: 14px;
+    line-height: 128%;
+  }
+{% endif %}
+
+.question .question-title {
+  line-height: 124%;
+}
+
+#project-members {
+	margin-top: 1em;
+}
+#project-members .role {
+  font-style: italic;
+  /*font-size: 85%;*/
+}
+#project-members .action {
+  font-size: 85%;
+}
+
+.authoring-tool-hidden {
+  display: none; /* hidden by default */
+}
+.authoring-tool-edit-question {
+  position: absolute;
+  right: 0;
+  color: #31708f;
+}
+#action-buttons button {
+  width: 140px;
+}
+#action-buttons a {
+  margin: .25em 0;
+}
+</style>
+{% endblock %}
+
+{% block action_buttons %}
+  <div class="btn-group" role="group" aria-label="action buttons group">
+    {% if project.system is not None %}
+      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
+        <em class="glyphicon glyphicon-book"></em> Controls</a>
+      </button>
+      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
+        <em class="glyphicon glyphicon-tags"></em>&nbsp; Components</a>
+      </button>
+      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/poams';">
+        <em class="glyphicon glyphicon-check"></em>&nbsp; POA&Ms</a>
+      </button>
+      <button class="btn btn-sm btn-default" onclick="show_import_project_modal('{{ portfolio.id }}'); return false;" href="#">
+        <em class="glyphicon glyphicon-arrow-up"></em>&nbsp; Import Project</a>
+      </button>
+      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.id}}/export';">
+        <em class="glyphicon glyphicon-arrow-down"></em>&nbsp; Export project</a>
+      </button>
+    {% endif %}
+    {% if not project.is_account_project or project.is_deletable %}
+      <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/settings';">
+        <em class="glyphicon glyphicon-cog"></em> Settings</a>
+      </button>
+    {% endif %}
+    {% if send_invitation.can_add_invitee_to_team %}
+      <button id="btn-show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
+        <em class="glyphicon glyphicon-user"></em><em class="glyphicon glyphicon-plus"></em>
+        Invite
+      </button>
+    {% endif %}
+
+    <button id="btn-review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
+      <em class="glyphicon glyphicon-list"></em>
+      Review
+    </button>
+
+    {% if has_outputs %}
+      <button id="related-controls" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
+        <em class="glyphicon glyphicon-th"></em>
+        Documents
+      </button>
+    {% endif %}
+
+    <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/api';">
+      <em class="glyphicon glyphicon-sort"></em>
+      API Docs
+    </button>
+
+    {% if can_upgrade_app %}
+      <button class="btn btn-sm btn-default" onclick="upgrade_app({{project.root_task.module.app.id}});">
+        <em class="glyphicon glyphicon-upload"></em>
+        Upgrade Project
+      </button>
+    {% endif %}
+
+    {% if authoring_tool_enabled %}
+      <button id="btn-open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
+        <em class="glyphicon glyphicon-pencil"></em>
+        Authoring Tool
+      </button>
+    {% endif %}
+  </div>
+
+    {# action buttons #}
+    {% if action_buttons %}
+      {% for q in action_buttons %}
+        <div style="margin-top: 1em">
+          {% if can_start_task and q.can_start_new_task %}
+            <form id="question-{{q.question.key}}" class="start-task" method="post" action="/tasks/start" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="project" value="{{project.id}}"/>
+              <input type="hidden" name="question" value="{{q.question.key}}"/>
+              <input type="hidden" name="previous" value="project"/>
+              <a class="btn btn-default" style="background: white"
+                href="#" onclick="$(this).parent('form').submit(); return false;">
+                {{q.question.spec.title}} &raquo;
+              </a>
+            </form>
+          {% else %}
+          <a id="question-{{q.question.key}}"
+            class="btn btn-default" style="background: white"
+            href="{{q.task.get_absolute_url}}?previous=project">
+            {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
+          </a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% endif %}
+{% endblock %}
+
+{% block above_title %}
+    {% if authoring_tool_enabled %}
+      <center style="font-size: 90%;" class="authoring-tool-hidden"><p class="text-info">
+        You are in author mode. Authoring tools have been enabled for this module.
+      </p></center>
+
+      <center style="font-size: 90%;" class="authoring-tool-hidden">
+      <p>
+      <a href="#" onclick="show_authoring_tool_module_editor(); return false;" class="project-settings-glyphicons">
+        <span class="glyphicon glyphicon-pencil"></span>
+        Edit App
+      </a>
+
+      <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" class="project-settings-glyphicons">
+      <span class="glyphicon glyphicon-plus"></span>
+      Add Question
+      </a>
+
+      <a href="#" onclick="authoring_tool_download_app_project({{project.root_task.id}}, true); return false;" class="project-settings-glyphicons">
+      <span class="glyphicon glyphicon-download"></span>
+      Download Source
+      </a>
+      </p>
+    </center>
+    {% endif %}
+{% endblock %}
+
+{% block body_content %}
+    <div class="row">
+      <h2>Project Settings</h2>
+    </div>
+    <div class="row">
+
+{% if project.is_deletable and is_admin %}
+
+        <div>
+          <div class="row">
+            <div class="col-sm-12">
+              <h2 class="project-settings-header">About</h2>
+            </div>
+          </div>
+          <div class="row project-settings-row">
+            <div class="col-sm-12 project-settings-description"><small>{{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}</small></div>
+            <div class="col-sm-3"><small><span class="text-muted">App Source:</span><br>{{project.root_task.module.app.source.slug|safe}}</small></div>
+            <div class="col-sm-3"><small><span class="text-muted">Compliance App:</span><br>{{project.root_task.module.spec.title}}</small></div>
+            <div class="col-sm-3"><small><span class="text-muted">Project ID:</span><br>{{project.id}}</small></div>
+            <div class="col-sm-3"><small><span class="text-muted">Started:</span><br>{{project.created}}</small></div>
+          </div>
+          <div class="row project-settings-row">
+            <div class="col-sm-3"><small><span class="text-muted">App Version:</span><br>{{project.root_task.module.app.version_number|safe}}</small></div>
+          </div>
+        </div>
+
+        {% if can_start_any_apps %}
+        <div class="row">
+          <div class="col-sm-6">
+              <a class="btn btn-default" href="{{project.get_absolute_url}}/startapps">Start Apps</a>
+          </div>
+        </div>
+        {% endif %}
+
+      {% endif %}
+
+        <div class="row project-settings-rows">
+          <div class="col-sm-12">
+            <h2 class="project-settings-header">Participants</h2>
+          </div>
+          <div class="col-sm-12">
+              {% for user, authz in project.get_all_participants %}
+                <div class="clearfix project-settings-all-participants">
+                  <div class="project-settings-user-details">
+                  {% if authz.user_details.picture %}
+                    <img src="{{authz.user_details.picture.url}}" alt="{{authz.user_details.name}} Profile Picture"
+                      style="display:block; width: 100%; height: 100%;">
+                  {% else %}
+                  <div class="avatar" style="font-size:1.0em; text-align: center; font-weight: bold; {{user.get_avatar_fallback_css.css}}">
+                    {{user.get_avatar_fallback_css.text}}
+                  </div>
+                  {% endif %}
+                  </div>
+                  <span {% if authz.user_details.name != user.email %}title="{{user.email}}"{% endif %}>
+                    <!-- {{authz.user_details.name}} -->
+                    {{user}}
+                  </span>&nbsp;&nbsp;&nbsp;
+                  <span>
+                    {% load guardian_tags %}
+                    {% get_obj_perms user for project as "user_perms" %}
+                    {% if 'project_owner' in user_perms %}
+                    Project Editor
+                    {% elif 'change_project' in user_perms %}
+                    Project Editor
+                    {% elif 'view_project' in user_perms %}
+                    Project Viewer
+                    {% endif %}
+                  </span>
+                  <div class="role">{{authz.role}}</div>
+                  {% if is_admin %} {# user loading page is an admin #}
+                    {% if authz.is_member %} {# user in the list is an explicit member of the project (e.g. not a discussion guest) #}
+                      {% if not authz.is_admin %}
+                        <span class="action">(<a href="#" onclick="make_admin(true, {{user.id}}, '{{authz.user_details.name|escapejs}}')">make admin</a>)</span>
+                    {% elif user != request.user %}
+                        <span class="action">(<a href="#" onclick="make_admin(false, {{user.id}}, '{{authz.user_details.name|escapejs}}')">make regular member</a>)</span>
+                      {% endif %}
+                  {% endif %}
+                  {% endif %}
+              {% endfor %}
+              {% if send_invitation.can_add_invitee_to_team %}
+                <div class="project-settings-invite">
+                  <button id="invite-user-to-project" class="btn btn-default" onclick="return invite_user_into_project();"><span class="glyphicon glyphicon-plus"></span>&nbsp; Grant access to member</button>
+                </div>
+              {% endif %}
+
+              {% if open_invitations %}
+                <div id="open-invitations-container">
+                  <h3>Invitations waiting for a response...</h3>
+                  <div class="invitation-list">
+                  {% for inv in open_invitations %}
+                    <p data-invitation-id="{{inv.id}}">
+                      You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
+                      (<a href="#" onclick="return cancel_invitation(this, function() { if ($('#open-invitations-container .invitation-list p').length == 0) { $('#open-invitations-container').remove(); } });">cancel</a>)
+                    </p>
+                  {% endfor %}
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="row" style="">
+          <div class="col-sm-12">
+            <h2 style="border-bottom:1px solid #ccc;">Permissions</h2>
+          </div>
+          <div class="col-sm-12">
+            {% include "permissions.html" with users=users portfolios=portfolios project=project %}
+          </div>
+        </div>
+
+        {% if is_admin or can_upgrade_app %}
+        <div class="row project-settings-rows">
+          <div class="col-sm-12">
+            <h2 class="project-settings-header">Upgrade Project</h2>
+          </div>
+          <div class="col-sm-12">Available versions</div>
+            <div class="col-sm-12">
+              <table class="table" style="width: auto;">
+              <thead>
+                <tr>
+                  <th class="project-settings-table-head">AppName</th>
+                  <th class="project-settings-table-head">Version</th>
+                  <th class="project-settings-table-head">Compatibility</th>
+                  <th class="project-settings-table-head">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+            {% for av in available_versions %}
+                <tr>
+                  <td>{{ av.appname }}</td>
+                  <td>{{ av.version_number }}</td>
+                  <td>{% if av.version_number == project.root_task.module.app.version_number %}current version{% else %}{{av.is_safe_upgrade}}{% endif %}</td>
+                  <td>
+                    <button class="btn btn-default" onclick="return upgrade_project('{{ av.version_number }}');">Upgrade</button>
+                  </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+            </div>
+          </div>
+          {% endif %}
+
+        <div class="row project-settings-rows>
+          <div class="col-sm-12">
+            <h2 class="project-settings-header">Share Data</h2>
+          </div>
+          <div class="col-sm-12">
+            {# export #}
+              <form method="post" action="{% url "export_project_questionnaire" project.id %}" style="display: inline-block; margin: 0; padding: 0;">{% csrf_token %}
+                <button class="btn btn-default">
+                  <span class="glyphicon glyphicon-share" style="margin-right: .25em"></span>
+                  Export Project Data
+                </button>
+              </form>
+              {# import #}
+              <button class="btn btn-default" onclick="$('#import-file-input').click()" style="margin-left: 12px;">
+                <span class="glyphicon glyphicon-cloud-upload" style="margin-right: .25em"> </span> Import Answers From File
+              </button>
+              <form id="import-form" style="display: none;"
+                method="post" enctype="multipart/form-data" action="{% url "import_project_questionnaire" project.id %}">{% csrf_token %}
+                <input name="value" type="file" id="import-file-input" class="form-control"
+                  style="width: auto; border:  none; padding: 0; display: inline-block"
+                  onchange="$('#import-form').submit()" />
+              </form>
+            </div>
+          </div>
+
+      {% if project.is_deletable and is_admin %}
+        <div class="row project-settings-rows">
+          <div class="col-sm-12">
+            <h2 class="project-settings-header">DANGER</h2>
+          </div>
+          <div class="col-sm-12">
+            <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button>
+          </div>
+        </div>
+      {% endif %}
+
+    </div> <!-- /row for columns -->
+  </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+var project_invitation_info = {{send_invitation|json}};
+
+$(function() {
+  set_state_from_url_fragment();
+  $(window).on('hashchange', set_state_from_url_fragment);
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    var tabid = e.target.getAttribute('href').substring(1); // old IE might return absolute URL here?
+    window.location.hash = "#tab=" + encodeURIComponent(tabid);
+  })
+
+  {% if layout_mode == "grid" %}
+  // Resize questions so they all have the same height, to the max height of any.
+  var max_height = 0;
+  $('.question').each(function() {
+    var h = $(this).outerHeight();
+    if (h > max_height) max_height = h;
+  });
+  $('.question').css({ height: max_height });
+  {% endif %}
+})
+
+function invite_user_into_project() {
+  var info = project_invitation_info;
+  show_invite_modal(
+    'Invite To Project Team (' + info.model_title + ')',
+    'Invite a colleague to join this project team.',
+    info,
+    'Please join the project team for ' + info.model_title + '.',
+    {
+      project: info.model_id,
+      add_to_team: "1"
+    },
+    function() { window.location.reload() }
+  );
+
+  return false;
+}
+
+function invite_user_to_start_module(module_title, question_id) {
+  var info = project_invitation_info;
+  show_invite_modal(
+    'Start a Module (' + info.model_title + ')',
+    'Invite a colleague to answer the module ' + module_title + '.',
+    info,
+    'Can you give me a hand completing the module ' + module_title + ' for ' + info.model_title + '?',
+    {
+      project: info.model_id,
+      into_new_task_question_id: question_id
+    },
+    function() { window.location.reload() }
+  );
+
+  return false;
+}
+
+function set_state_from_url_fragment() {
+  var fragment = window.location.hash.substring(1); // chop off the "#"
+
+  // The GovReady Dashboard React app appends a random code like `?_k=h9zm95` to the
+  // fragment, so we need to strip that out.
+  fragment = fragment.split('?').shift();
+
+  var fragment = parse_qs(fragment);
+
+  // Highlight the question.
+  if (fragment.q && fragment.t) {
+    $('.question').each(function() {
+      if (this.id == "question-" + fragment.q && this.getAttribute("data-task-id") == fragment.t) {
+        var elem = $(this);
+        elem.css({ backgroundColor: "#FFA" });
+        smooth_scroll_to(elem);
+        setTimeout(function() { elem.css({ backgroundColor: "#FFF" }); }, 2000);
+      }
+    });
+  }
+}
+
+function rename_project() {
+  // Allow setting the title to the empty string, which clears the override if set.
+  // If the user is renaming it to what we already have, or cancelled the dialog,
+  // then ignore the change.
+  var new_title = prompt("Rename this project?", "{{project.title|escapejs}}");
+  if (new_title === null || new_title == "{{project.title|escapejs}}") return;
+  ajax_with_indicator({
+   url: '{% url "rename_project" project.id %}',
+   method: "POST",
+   data: {
+    title: new_title
+   },
+   keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the reload
+   success: function() {
+     window.location.reload();
+   }
+  });
+}
+
+function upgrade_project(version_number) {
+  show_modal_confirm(
+    "Upgrade Project",
+    "Are you sure you want to upgrade this project to version version_number?".replace("version_number", version_number),
+    "Upgrade",
+    function() {
+      ajax_with_indicator({
+       url: '{% url "upgrade_project" project.id %}',
+       method: "POST",
+       data: {
+        version_number: version_number
+       },
+       success: function(res) {
+         // redirect to main project page after successful upgrade
+         window.location = res.redirect;
+       }
+      });
+    }
+  )
+}
+
+function delete_project() {
+  show_modal_confirm(
+    "Delete Project",
+    "Are you sure you want to delete this project? All information will be permanently deleted.",
+    "Delete",
+    function() {
+      ajax_with_indicator({
+       url: '{% url "delete_project" project.id %}',
+       method: "POST",
+       success: function(res) {
+         // redirect to home to see other projects
+         window.location = res.redirect;
+       }
+      });
+    }
+  )
+}
+
+function make_admin(is_admin, user_id, user_name) {
+  show_modal_confirm(
+    (is_admin ? "Make Project Administrator" : "Revoke Administrator Privilege"),
+    "Do you want to "
+		+ (is_admin ? "make" : "revoke the administrator privilege from")
+		+ " "
+		+ user_name
+		+ (is_admin ? " an administrator" : "")
+		+ " for this project?",
+    (is_admin ? "Make Admin" : "Revoke Privilege"),
+    function() {
+      ajax_with_indicator({
+       url: '{% url "make_revoke_project_admin" project.id %}',
+       method: "POST",
+       data: {
+       	 user: user_id,
+       	 is_admin: is_admin ? "true" : false
+       },
+       success: function(res) {
+         // reload page to show changes in UI
+         window.location.reload();
+       }
+      });
+    }
+  )
+  return false;
+}
+</script>
+
+{% endblock %}

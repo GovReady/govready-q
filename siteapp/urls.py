@@ -11,17 +11,14 @@ from .good_settings_helpers import signup_wrapper
 from .settings import *
 
 urlpatterns = [
-    url(r"^$", views.homepage, name="homepage"),
-    url(r"^(privacy|terms-of-service|love-assessments)$", views.shared_static_pages),
+    url(r"^(?![\s\S]|login)$", views.homepage, name="homepage"),
+    url(r"^(privacy|terms-of-service|love-assessments)$", views.shared_static_pages, name="privacy_terms_love"),
 
     url(r'^api/v1/projects/(?P<project_id>\d+)/answers$', views_landing.project_api),
     url(r'^media/users/(\d+)/photo/(\w+)', views_landing.user_profile_photo),
 
     # incoming email hook for responses to notifications
-    url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook),
-
-    # Enterprise Single Sign On
-    url(r'^sso-logout$', views.sso_logout, name="sso-logout"),
+    url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook, name='notifications'),
 
     # Django admin site
     url(r'^admin/', admin.site.urls),
@@ -31,8 +28,8 @@ urlpatterns = [
     url(r"^discussion/", include("discussion.urls")),
 
     # Controls and Systems
-    url(r"^controls/", include("controls.urls")),
     url(r"^systems/", include("controls.urls")),
+    url(r"^controls/", include("controls.urls")),
 
     # app store
     url(r'^store$', views.apps_catalog, name="store"),
@@ -43,27 +40,33 @@ urlpatterns = [
 
     # projects
     url(r"^projects$", views.project_list, name="projects"),
+    url(r"^projects/lifecycle$", views.project_list_lifecycle, name="projects_lifecycle"),
     url(r'^projects/(\d+)/__rename$', views.rename_project, name="rename_project"),
     url(r'^projects/(\d+)/__delete$', views.delete_project, name="delete_project"),
     url(r'^projects/(\d+)/__admins$', views.make_revoke_project_admin, name="make_revoke_project_admin"),
-    url(r'^projects/(\d+)/__export$', views.export_project, name="export_project"),
-    url(r'^projects/(\d+)/__import$', views.import_project_data, name="import_project_data"),
+    url(r'^projects/(\d+)/__export$', views.export_project_questionnaire, name="export_project_questionnaire"),
+    url(r'^projects/(\d+)/__import$', views.import_project_questionnaire, name="import_project_questionnaire"),
+    url(r'^projects/(\d+)/__upgrade$', views.upgrade_project, name="upgrade_project"),
+    url(r'^projects/(\d+)/__move$', views.move_project, name="move_project"),
     url(r'^projects/(\d+)/(?:[\w\-]+)()$', views.project), # must be last because regex matches some previous URLs
+    url(r'^projects/(\d+)/(?:[\w\-]+)(/settings)$', views.project_settings, name="project_settings"),
     url(r'^projects/(\d+)/(?:[\w\-]+)(/startapps)$', views.project_start_apps), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/list)$', views.project_list_all_answers), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/outputs)$', views.project_outputs), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api), # must be last because regex matches some previous URLs
 
     # portfolios
-    url(r'^portfolios$', views.portfolio_list),
-    url(r'^portfolios/new$', views.new_portfolio),
+    url(r'^portfolios$', views.portfolio_list, name="list_portfolios"),
+    url(r'^portfolios/new$', views.new_portfolio, name='new_portfolio'),
+    url(r'^portfolios/(?P<pk>.*)/delete$', views.delete_portfolio, name="delete_portfolio"),
+    url(r'^portfolios/(?P<pk>.*)/edit$', views.edit_portfolio, name="edit_portfolio"),
     url(r'^portfolios/(?P<pk>.*)/projects$', views.portfolio_projects, name="portfolio_projects"),
     url(r'^portfolio/update_permissions', views.update_permissions, name="update_permissions"),
 
     # org groups
     url(r'^groups$', views_landing.org_groups),
     url(r'^groups/new$', views_landing.new_org_group),
-    url(r"^(?P<org_slug>.*)/projects$", views_landing.org_group_projects),
+    url(r"^(?P<org_slug>.*)/projects$", views_landing.org_group_projects, name='org_projects'),
 
     # api
     url(r'^api-keys$', views.show_api_keys, name="show_api_keys"),
@@ -72,6 +75,9 @@ urlpatterns = [
     url(r'^invitation/_send$', views.send_invitation, name="send_invitation"),
     url(r'^invitation/_cancel$', views.cancel_invitation, name="cancel_invitation"),
     url(r'^invitation/accept/(?P<code>.+)$', views.accept_invitation, name="accept_invitation"),
+
+    # support
+    url(r'^support$', views.support, name="support"),
 
     # administration
     url(r'^settings$', views.organization_settings),
@@ -89,11 +95,15 @@ urlpatterns = [
 ]
 
 if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS:
-    # If username/password logins are enabled, add the login pages.
+    # If username/pwd logins are enabled, add the login pages.
     urlpatterns += [
         # auth
         # next line overrides signup with our own view so we can monitor signup attempts, can comment out to go back to allauth's functionality
         url(r'^accounts/signup/', signup_wrapper, name="account_signup"),
+        # Disregard re-routing login to home page. Instead, use custom templates to style aullauth templates
+        # Necessary to keep existing routing in place to support links from invitation acceptance page
+        # and proper routing of "NEXT" url to project after after accepting invitation
+        # login button will redirect to the homepage with a login form
         url(r'^accounts/', include('allauth.urls')),
     ]
 

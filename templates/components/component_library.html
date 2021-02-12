@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} Components Selected
+{% endblock %}
+
+{% block head %}
+{% include "controls/_style-controls.html" %}
+
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+
+<div class="portfolio-top">
+  <div class="container">
+    <div class="portfolio-main">
+      <a id="import_records_link" href="{% url 'import_records' %}" class="btn btn-success">Manage Import Records</a>
+      <a id="component-new" href="{% url 'new_element' %}" class="btn btn-success">Create a Component</a>
+      <a id="component-import-oscal" class="btn btn-success" onclick="show_import_component_modal(); return false;" href="#">Import OSCAL Component</a>
+    </div>
+
+    <h2 class="">Component Library</h2>
+
+    {% if elements|length > 0 %}
+    <p>You have access to {{ elements|length }} components{{ component|pluralize }}.</p>
+    {% else %}
+    <p>You do not have access to any components.</p>
+    {% endif %}
+
+    <p>&nbsp;</p>
+
+  <div id="tab-content" class="row rows-header" style="">
+    <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span style="font-size: 14pt; font-weight: bold;">Available Components</div>
+  </div>
+  {% for component in elements %}
+    <div id="tab-content" class="row row-control" style="">
+      <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+        <a href={% url 'component_library_component' element_id=component.id %}>{{ component.name }}</a>
+      </div>
+      <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
+        {{ component.description }}
+      </div>
+    </div>
+  {% endfor %}
+
+  {% include "components/import-component-modal.html" %}
+
+  {{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

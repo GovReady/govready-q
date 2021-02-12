@@ -7,7 +7,7 @@
 #   docker run -it -d -p 8000:8000 --name govready-q-0.9.0 --rm govready/govready-q-0.9.0
 
 # Build on Docker's official CentOS 7 image.
-FROM centos:7
+FROM centos:centos7.8.2003
 
 # Default to gunicorn instead of uwsgi
 ARG SUPERVISORD_INI=deployment/docker/supervisord_gunicorn.ini
@@ -31,17 +31,20 @@ ENV LC_ALL en_US.UTF-8
 ENV LANGUAGE en_US:en
 
 # Install required system packages.
-# git2u: git 2 or later is required for our use of GIT_SSH_COMMAND in AppSourceConnection
+# git222: git 2 or later is required for our use of GIT_SSH_COMMAND in AppSourceConnection
 # jq: we use it to assemble the local/environment.json file
 RUN \
    yum -y install https://repo.ius.io/ius-release-el7.rpm \
 && yum -y update \
 && yum -y install \
     python36u python36u-pip \
-    unzip git2u jq nmap-ncat \
+    unzip git222 jq nmap-ncat \
     graphviz pandoc \
     supervisor \
     && yum clean all && rm -rf /var/cache/yum
+
+# Upgrade pip to version 20.1+ - IMPORTANT
+RUN python3.6 -m pip install --upgrade pip
 
 # install wkhtmltopdf for generating PDFs, thumbnails
 # TAKE CAUTION WITH wkhtmltopdf security issues where crafted content renders server-side information
@@ -56,7 +59,7 @@ RUN pip3.6 install --no-cache-dir -r requirements.txt
 # Install database drivers which aren't in our requirements.
 RUN \
    yum -y install \
-   python36u-devel.x86_64 gcc-c++.x86_64 \
+   python36u-devel gcc-c++.x86_64 \
    mysql-devel \
    && yum clean all && rm -rf /var/cache/yum
 COPY requirements_mysql.txt ./
@@ -99,7 +102,7 @@ COPY siteapp ./siteapp
 COPY templates ./templates
 COPY fixtures ./fixtures
 COPY q-files ./q-files
-COPY testmocking ./testmocking
+COPY loadtesting ./loadtesting
 COPY system_settings ./system_settings
 COPY manage.py .
 COPY install-govready-q.sh .
@@ -161,12 +164,18 @@ RUN chown -R application:application local
 # working environment.json file for the remainder of this Dockerfile, downstream
 # packagers using 'FROM govready/govready-q' might want to run additional
 # management commands, so we'll keep it working.
+
 RUN cp local/environment.json /tmp
 RUN chown -R application:application /tmp/environment.json
-RUN ln -sf /tmp/environment.json local/environment.json
 
 # Run the container's process zero as this user.
 USER application
+
+# Change file permissions to secure file
+RUN chmod 0600 /tmp/environment.json
+
+# Create symbolic link
+RUN ln -sf /tmp/environment.json local/environment.json
 
 # Test.
 RUN python3.6 manage.py check

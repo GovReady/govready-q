@@ -20,6 +20,21 @@
     font-size: 22px;
     font-weight: bold;
   }
+
+  /* removed thead tr */
+
+  /* Legacy background and focus area styling for question pages */
+  body { /*background-color: rgb(247,247,247);*/ }
+  #focus-area-wrapper {
+    border-radius: 3px;
+    border: 0px solid rgb(204, 204, 204);
+    padding: 2em 2em 3em 2em;
+    background-color: white;
+    /*background-color: rgba(253,253,253,1);*/
+    /* on mobile, space between columns */
+    margin-bottom: 30px;
+  }
+
 </style>
 {% endblock %}
 
@@ -28,9 +43,9 @@
 
 <div class="row">
   <div id="focus-area-wrapper" class="col-xs-12 col-sm-12 col-md-9 col-lg-8">
-    <h1 style="margin:0.5em 0 1em 0;">...and we&rsquo;re done</h1>
+    <h1 class="task-done">...and we&rsquo;re done</h1>
     {% if top_of_page_output %}
-      <div style="margin-bottom: 30px;">
+      <div class="task-bottom-margin">
         {{top_of_page_output.html|safe}}
       </div>
     {% elif had_any_questions %}
@@ -45,6 +60,57 @@
 
     <div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">
       {# output documents #}
+
+      {% if outputs|length > 0 %}
+        <div class="panel panel-default">
+          <div class="panel-heading task-panel-heading-height" rol="tab" id="your-answers-title-2">
+            <h4 class="panel-title">
+              <a role="button" data-toggle="collapse" data-parent="#accordion" href="#your-answers-body-2" aria-expanded="true" aria-controls="your-answers-body-2">
+                Available documents
+              </a>
+              <div class="pull-right">
+                <button type="button" id="force-refresh" class="btn btn-warning btn-xs" onclick="refresh_output_doc({{project.root_task.module.app.id}});return false;"> Refresh documents <span class="glyphicon glyphicon-refresh"></span></button>
+              </div>
+            </h4>
+          </div>
+          <div id="your-answers-body-2" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="your-answers-title-2">
+            <div class="panel-body output-document">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <td width="40%">Document</td>
+                    <td>Downloads</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for document in outputs %}
+                    <tr>
+                        <td>{{document.title}}</td>
+                        <td>
+                          {% if document.format == "json" %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/json">OSCAL (json)</a>&nbsp;&nbsp;
+                            <!-- <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/plain">View as text</a>&nbsp;&nbsp; -->
+                          {% elif document.format == "yaml" %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/yaml">Download OSCAL (yaml)</a>&nbsp;&nbsp;
+                          {% elif document.format == "xml" %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/xml">OSCAL (xml)</a>&nbsp;&nbsp;
+                          {% else %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (docx)</a>&nbsp;&nbsp;
+                            {% if gr_pdf_generator == 'wkhtmltopdf' %}<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/pdf">PDF</a>&nbsp;&nbsp;{% endif %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/odt">Open Office (odt)</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/html">HTML</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/markdown">Markdown</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/plain">Plain Text</a>&nbsp;&nbsp;
+                          {% endif %}
+                        </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      {% endif %}
 
       {% if had_any_questions %}
         <div class="panel panel-default">
@@ -73,7 +139,7 @@
                           {{q.spec.title}}
                         </a>
                       {% elif authoring_tool_enabled %}
-                        <a href="{{task.get_absolute_url}}/questions/{{q.key}}">
+                        <a href="{{task.get_absolute_url}}/question/{{q.key}}">
                           {{q.spec.title}}
                         </a>
                       {% else %}
@@ -81,7 +147,7 @@
                       {% endif %}
                     </td>
                     <td>
-                      <div style="float: right; margin: 0 0 .5em .25em;">
+                      <div class="task-imputed">
                         {% if not a %}
                           <span class="label label-warning">Imputed</span>
                         {% endif %}
@@ -100,31 +166,8 @@
         </div>
       {% endif %}
 
-      {% for document in outputs %}
-        <div class="panel panel-default">
-          <div class="panel-heading" role="tabx" id="document-{{forloop.counter}}-title">
-            <h4 class="panel-title">
-              <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{forloop.counter}}-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-{{forloop.counter}}-body">
-                {{document.title}}
-              </a>
-              {% if document.id %}
-                <div class="pull-right">
-                  <span class="glyphicon glyphicon-download-alt"
-                    style="cursor: pointer"
-                    onclick="download_document('{{document.id|escapejs}}')"> </span>
-                </div>
-              {% endif %}
-            </h4>
-          </div>
-          <div id="document-{{forloop.counter}}-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %} output-document" role="tabpanel" aria-labelledby="document-{{forloop.counter}}-title">
-            <div class="panel-body output-document">
-              {{document.html|safe}}
-            </div>
-          </div>
-        </div>
-      {% endfor %}
     </div> <!-- /accordion -->
-    <div id="continue-nav "style="margin: 2em 0">
+    <div id="continue-nav" class="task-answers">
       {% with answers_question=task.is_answer_to_unique %}
         {% if answers_question and answers_question.task.editor == request.user %}
           {% if task.project.is_account_project %}
@@ -148,7 +191,7 @@
                         <input type="hidden" name="previous" value="project"/>
                     {% else %}
                       {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
-                      <form method="get" action="/store"
+                      <form method="get" action="{% url 'store' %}"
                         onclick="$(this).submit();" style="cursor: pointer">
                         <input type="hidden" name="q" value="{{task.project.root_task.id}}/{{next_module_spec.id}}">
                     {% endif %}
@@ -190,7 +233,7 @@
       {% endwith %}
 
       {% if can_review %}
-        <p><a id="review-answers" href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">
+        <p><a id="btn-review-answers" href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">
           <em class="glyphicon glyphicon-list"></em>
           Review &raquo;
         </a></p>
@@ -202,8 +245,7 @@
     &nbsp;
   </div>
 
-  <div id="progress-project-area-wrapper" class="col-xs-6 col-sm-6 col-md-3 col-lg-3"
-       style="background-color: rgb(230, 230, 230); border-radius: 6px;">
+  <div id="progress-project-area-wrapper" class="col-xs-6 col-sm-6 col-md-3 col-lg-3 task-progress-project">
     {% include "task-progress-project-list.html" with previous="question" %}
   </div>
 </div>
@@ -243,48 +285,70 @@
     });
   }
 
-  $(function() {
-    // Poll for changes to the answers in the project, which would mean
-    // this document may be out of date.
-    var initial_timestamp = {{task.project.root_task.updated.timestamp|json}};
-    var interval = setInterval(check_for_update, 2500);
-    var is_checking_for_update = false;
-    function check_for_update() {
-      if (is_checking_for_update) return;
-      is_checking_for_update = true;
-      $.ajax({
-        method: 'POST',
-        url: '/tasks/_get_task_timetamp',
-        data: {
-          id: {{task.project.root_task.id}},
-          get_changes_since: initial_timestamp
-        },
-        success: function(res) {
-          // Do nothing if the timestamp matches the timestamp
-          // when the page was generated.
-          if (res.timestamp == initial_timestamp)
-            return;
+  //$(function() {
+  //  // Poll for changes to the answers in the project, which would mean
+  //  // this document may be out of date.
+  //  var initial_timestamp = {{task.project.root_task.updated.timestamp|json}};
+  //  var interval = setInterval(check_for_update, 2500);
+  //  var is_checking_for_update = false;
+  //  function check_for_update() {
+  //    if (is_checking_for_update) return;
+  //    is_checking_for_update = true;
+  //    $.ajax({
+  //      method: 'POST',
+  //      url: '/tasks/_get_task_timetamp',
+  //      data: {
+  //        id: {{task.project.root_task.id}},
+  //        get_changes_since: initial_timestamp
+  //      },
+  //      success: function(res) {
+  //        // Do nothing if the timestamp matches the timestamp
+  //        // when the page was generated.
+  //        if (res.timestamp == initial_timestamp)
+  //          return;
 
-          // Don't poll for any further changes.
-          clearInterval(interval);
+  //        // Don't poll for any further changes.
+  //        clearInterval(interval);
 
-          // Show a desktop notification.
-          Push.create("Project Information Changed", {
-            body: res.changes,
-            timeout: 5000
-          });
+  //        // Show a desktop notification.
+  //        Push.create("Project Information Changed", {
+  //          body: res.changes,
+  //          timeout: 5000
+  //        });
 
-          // Dim the page and reload.
-          var modal = $('<div style="display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 100000; text-align: center; background-color: rgba(255,255,255,.75)"><div style="margin: 20% auto"><div><span class="fas fa-spinner fa-pulse"></span></div><div class="message">Loading...</div></div></div>');
-          $('body').append(modal);
-          modal.fadeIn();
-          window.location.reload();
-        },
-        complete: function() {
-          is_checking_for_update = false;
-        }
+  //        // Dim the page and reload.
+  //        var modal = $('<div style="display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 100000; text-align: center; background-color: rgba(255,255,255,.75)"><div style="margin: 20% auto"><div><span class="fas fa-spinner fa-pulse"></span></div><div class="message">Loading...</div></div></div>');
+  //        $('body').append(modal);
+  //        modal.fadeIn();
+  //        window.location.reload();
+  //      },
+  //      complete: function() {
+  //        is_checking_for_update = false;
+  //      }
+  //    })
+  //  }
+  //});
+
+  function refresh_output_doc(app_id) {
+      if (upgrade_app_option_confirm
+         {% if is_question_page %}
+         && !confirm("All instances of '{{task.project.root_task.title}}' will be updated.\n\nAre you sure you want to upgrade?"))
+         {% else %}
+         && !confirm("Force refresh of output document(s) in '{{project.root_task.title}}'?"))
+         {% endif %}
+        return;
+      ajax_with_indicator({
+          url: "/tasks/_refresh-output-doc",
+          method: "POST",
+          data: {
+            app: app_id,
+            force: upgrade_app_option_force ? "true" : "false"
+          },
+          keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect or reload
+          success: function(res) {
+            location.reload();
+          }
       })
     }
-  });
   </script>
 {% endblock %}

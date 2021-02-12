@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load bootstrap3 %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load system_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} New POA&M
+{% endblock %}
+
+{% block head %}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div class="systems-top">
+  <div class="container">
+
+  <div class="row">
+    <div id="above-tab-content" class="row">
+      <!-- Page Title-->
+      <div class="systems-title">
+          <h2 class="control-heading">
+            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> > New POA&M
+          </h2>
+      </div>
+    </div>
+  </div><!--/row-->
+    <p>&nbsp;</p>
+
+    <div id="tab-content" class="row rows-header">
+        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">Create POA&M</div>
+        <div id="" class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9">&nbsp;</div>
+        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+          <!--a href="selected/export/xacta/xlsx">export</a-->
+          <!-- <span class="glyphicon glyphicon-download-alt pull-right"
+                style="cursor: pointer;"
+                onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span> -->
+        </div>
+    </div>
+      <div id="tab-content" class="row row-control">
+        <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+          <form method="post">
+            {% csrf_token %}
+            {% bootstrap_form statement_form %}
+            {% bootstrap_form poam_form %}
+
+            <input type="submit" value="Submit">
+          </form>
+        </div>
+      </div>
+  </div>
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+</script>
+
+{% endblock %}

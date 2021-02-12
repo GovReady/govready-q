@@ -1,5 +1,6 @@
 import random
-
+from django.db import IntegrityError
+from datetime import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -15,18 +16,23 @@ from django.views.decorators.http import require_http_methods
 from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model
 
+from controls.forms import ImportProjectForm
 from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
-from controls.models import Element, System
+
+from controls.models import Element, System, Statement, Poam, Deployment
+from system_settings.models import SystemSettings
+
 
 from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
-from .models import Folder, Invitation, Portfolio, Project, User, Organization
+from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support
 from .notifications_helpers import *
 
-import logging
+import sys
+import structlog
 logging.basicConfig()
 import structlog
 from structlog import get_logger
@@ -34,7 +40,7 @@ from structlog.stdlib import LoggerFactory
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
-# logger = logging.getLogger(__name__)
+
 
 def homepage(request):
     # If the user is logged in, then redirect them to the projects page.
@@ -139,7 +145,42 @@ def project_list(request):
         event="project_list",
         user={"id": request.user.id, "username": request.user.username}
     )
+
     return render(request, "projects.html", {
+        "lifecycles": lifecycles,
+        "projects": projects,
+        "project_form": ProjectForm(request.user),
+    })
+
+def project_list_lifecycle(request):
+    # Get all of the projects that the user can see *and* that are in a folder,
+    # which indicates it is top-level.
+    projects = Project.get_projects_with_read_priv(
+        request.user,
+        excludes={ "contained_in_folders": None })
+
+    # Sort the projects by their creation date. The projects
+    # won't always appear in that order, but it will determine
+    # the overall order of the page in a stable way.
+    projects = sorted(projects, key = lambda project : project.created)
+
+    # Load each project's lifecycle stage, which is computed by each project's
+    # root task's app's output document named govready_lifecycle_stage_code.
+    # That output document yields a string identifying a lifecycle stage.
+    assign_project_lifecycle_stage(projects)
+
+    # Group projects into lifecyle types, and then lifecycle stages. The lifecycle
+    # types are arranged in the order they first appear across the projects.
+    lifecycles = []
+    for project in projects:
+        # On the first occurrence of this lifecycle type, add it to the output.
+        if project.lifecycle_stage[0] not in lifecycles:
+            lifecycles.append(project.lifecycle_stage[0])
+
+        # Put the project into the lifecycle's appropriate stage.
+        project.lifecycle_stage[1].setdefault("projects", []).append(project)
+
+    return render(request, "projects_lifecycle_original.html", {
         "lifecycles": lifecycles,
         "projects": projects,
         "project_form": ProjectForm(request.user),
@@ -153,7 +194,7 @@ def get_compliance_apps_catalog_for_user(user):
     from siteapp.models import Organization
     catalog = { }
     for org in Organization.get_all_readable_by(user):
-        apps = get_compliance_apps_catalog(org)
+        apps = get_compliance_apps_catalog(org, user.id)
         for app in apps:
             # Add to merged catalog.
             catalog.setdefault(app['key'], app)
@@ -168,13 +209,13 @@ def get_compliance_apps_catalog_for_user(user):
 
     return catalog
 
-def get_compliance_apps_catalog(organization):
+def get_compliance_apps_catalog(organization, userid):
     # Load the compliance apps available to the given organization.
 
     from guidedmodules.models import AppVersion
     from collections import defaultdict
 
-    appvers = AppVersion.get_startable_apps(organization)
+    appvers = AppVersion.get_startable_apps(organization, userid)
 
     # Group the AppVersions into apps. An app is a unique source+appname pair.
     # For each app, one or more versions may be available.
@@ -326,11 +367,8 @@ def apps_catalog(request):
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
     # Add the portfolio id the user is creating the project from to the args
-    if "portfolio" not in request.POST:
-        messages.add_message(request, messages.ERROR, "Please select 'Start a project' to continue.")
-        return redirect('projects')
-    else:
-        forward_qsargs["portfolio"] = request.POST["portfolio"]
+    if "portfolio" in request.GET:
+        forward_qsargs["portfolio"] = request.GET["portfolio"]
 
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
@@ -340,6 +378,8 @@ def apps_catalog(request):
     from collections import defaultdict
     catalog_by_category = defaultdict(lambda : { "title": None, "apps": [] })
     for app in catalog:
+        source_slug, _ = app["key"].split('/')
+        app['source_slug'] = source_slug
         for category in app["categories"]:
             catalog_by_category[category]["title"] = (category or "Uncategorized")
             catalog_by_category[category]["apps"].append(app)
@@ -360,7 +400,7 @@ def apps_catalog(request):
 
     # If user is superuser, enable creating new apps
     authoring_tool_enabled = request.user.has_perm('guidedmodules.change_module')
-    
+
     return render(request, "app-store.html", {
         "apps": catalog_by_category,
         "filter_description": filter_description,
@@ -381,6 +421,12 @@ def apps_catalog_item(request, source_slug, app_name):
             break
     else:
         raise Http404()
+
+    # Get portfolio project should be included in.
+    if request.GET.get("portfolio"):
+      portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+    else:
+      portfolio = None
 
     error = None
 
@@ -452,6 +498,8 @@ def apps_catalog_item(request, source_slug, app_name):
         "app": app_catalog_info,
         "error": error,
         "project_form": ProjectForm(request.user),
+        "source_slug": source_slug,
+        "portfolio": portfolio
     })
 
 def start_app(appver, organization, user, folder, task, q, portfolio):
@@ -473,28 +521,90 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         if folder:
             folder.projects.add(project)
 
+        # Log start app / new project
+        logger.info(
+            event="start_app",
+            object={"task": "project", "id": project.root_task.id, "title": project.root_task.title_override},
+            user={"id": user.id, "username": user.username}
+        )
+        logger.info(
+            event="new_project",
+            object={"object": "project", "id": project.id, "title":project.title},
+            user={"id": user.id, "username": user.username}
+        )
+
         # Create a new System element and link to project?
         # Top level apps should be linked to a system
-        # Repeat folder test so we can easily refactor this code later
-        if folder:
-            # Create element to serve as system's root_element
-            # Element names must be unique. Use unique project title set above.
-            element = Element()
-            element.name = project.title
-            element.element_type = "system"
-            element.save()
-            # Create system
-            system = System(root_element=element)
-            system.save()
-            # Link system to project
-            project.system = system
-            project.save()
+        # Create element to serve as system's root_element
+        # Element names must be unique. Use unique project title set above.
+        element = Element()
+        element.name = project.title
+        element.element_type = "system"
+        element.save()
+        # Create system
+        system = System(root_element=element)
+        system.save()
+        # Link system to project
+        project.system = system
+        project.save()
+        # Log start app / new project
+        logger.info(
+            event="new_element new_system",
+            object={"object": "element", "id": element.id, "name":element.name},
+            user={"id": user.id, "username": user.username}
+        )
+        # Add deault deployments to system
+        deployment = Deployment(name="Design", description="Reference system archictecture design", system=system)
+        deployment.save()
+        deployment = Deployment(name="Dev", description="Development environment deployment", system=system)
+        deployment.save()
+        deployment = Deployment(name="Stage", description="Stage/Test environment deployment", system=system)
+        deployment.save()
+        deployment = Deployment(name="Prod", description="Production environment deployment", system=system)
+        deployment.save()
+        # Assign default control catalog
+        # Assign default control profile for org systems
+        # Assign default organization components for a system
+        # Assign default org params
+
+        if user.has_perm('change_system', system):
+            # Get the components from the import records of the app version
+            import_records = appver.input_artifacts.all()
+            for import_record in import_records:
+                producer_elements = Element.objects.filter(import_record=import_record)
+                for producer_element in producer_elements:
+                    smts = Statement.objects.filter(producer_element_id=producer_element.id,
+                                                    statement_type="control_implementation_prototype")
+                    for smt in smts:
+                        # Loop through element's prototype statements and add to control implementation statements
+                        smt.create_instance_from_prototype(system.root_element.id)
+        else:
+            # User does not have write permissions
+            logger.info(
+                event="change_system permission_denied",
+                user={"id": user.id, "username": user.username}
+            )
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
             project=project,
             user=user,
             is_admin=True)
+        # Grant owner permissions on root_element to user
+        element.assign_owner_permissions(user)
+        # Log ownership assignment
+        logger.info(
+                event="new_element new_system assign_owner_permissions",
+                object={"object": "element", "id": element.id, "name":element.name},
+                user={"id": user.id, "username": user.username}
+            )
+        system.assign_owner_permissions(user)
+        # Log ownership assignment
+        logger.info(
+                event="new_system assign_owner_permissions",
+                object={"object": "system", "id": system.root_element.id, "name":system.root_element.name},
+                user={"id": user.id, "username": user.username}
+            )
 
         # Log app starting
         logger.info(
@@ -540,6 +650,7 @@ def project_read_required(f):
 
 @project_read_required
 def project(request, project):
+
     # Get this project's lifecycle stage, which is shown below the project title.
     assign_project_lifecycle_stage([project])
     if project.lifecycle_stage[0]["id"] == "none":
@@ -714,7 +825,7 @@ def project(request, project):
                     continue
 
         # If the invitation didn't get put elsewhere, display in the
-        # other list.                
+        # other list.
         other_open_invitations.append(inv)
 
     # Render.
@@ -732,6 +843,8 @@ def project(request, project):
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
         "has_outputs": has_outputs,
 
+        "enable_experimental_evidence": SystemSettings.enable_experimental_evidence,
+
         "layout_mode": layout_mode,
         "columns": columns,
         "action_buttons": action_buttons,
@@ -742,6 +855,70 @@ def project(request, project):
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
         "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
+        "import_project_form": ImportProjectForm()
+    })
+
+@project_read_required
+def project_settings(request, project):
+    """Display settings for project"""
+
+    # Assign questions to the main area or to the "action buttons" panel on the side of the page.
+    main_area_questions = []
+    action_buttons = []
+
+    other_open_invitations = []
+    for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created'):
+        if inv.is_expired():
+            continue
+        if inv.target == project:
+            into_new_task_question_id = inv.target_info.get("into_new_task_question_id")
+            if into_new_task_question_id:
+                if into_new_task_question_id in questions: # should always be True
+                    questions[into_new_task_question_id]["invitations"].append(inv)
+                    continue
+
+        # If the invitation didn't get put elsewhere, display in the
+        # other list.                
+        other_open_invitations.append(inv)
+
+    # Gather version upgrade information
+    available_versions = []
+    avs = project.available_root_task_versions_for_upgrade
+    for av in avs:
+        av_info = {
+            "appname": av.appname,
+            "version_number": av.version_number
+        }
+        # print("project.is_safe_upgrade(av)", project.is_safe_upgrade(av))
+        if project.is_safe_upgrade(av) == True:
+            av_info["is_safe_upgrade"] = True
+            av_info["reason"] = "Compatible"
+        else:
+            av_info["is_safe_upgrade"] = "Incompatible"
+            av_info["reason"] = project.is_safe_upgrade(av)
+        available_versions.append(av_info)
+
+    # Render.
+    return render(request, "project_settings.html", {
+        "is_project_page": True,
+        "project": project,
+
+        "is_admin": request.user in project.get_admins(),
+        "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
+        "available_versions": available_versions,
+
+        "title": project.title,
+        "open_invitations": other_open_invitations,
+        "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
+
+        "action_buttons": action_buttons,
+
+        "projects": Project.objects.all(),
+        "portfolios": Portfolio.objects.all(),
+        "users": User.objects.all(),
+
+        "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
+        "import_project_form": ImportProjectForm()
     })
 
 @project_read_required
@@ -887,9 +1064,9 @@ def project_api(request, project):
                 # This looks like a file field.
                 flatten_json(path, "<binary file content>", output)
             else:
-                for key, value in node.items():
-                    if "." in key: continue # a read-only field
-                    flatten_json(path+[key], value, output)
+                for entry, value in node.items():
+                    if "." in entry: continue # a read-only field
+                    flatten_json(path+[entry], value, output)
         elif isinstance(node, list):
             for item in node:
                 flatten_json(path, item, output)
@@ -1035,11 +1212,93 @@ def rename_project(request, project):
     )
     return JsonResponse({ "status": "ok" })
 
+def move_project(request, project_id):
+    """Move project to a new portfolio
+    Args:
+    request ([HttpRequest]): The network request
+    project_id ([int|str]): The id of the project
+    Returns:
+        [JsonResponse]: Either a ok status or an error 
+    """
+    try:
+        new_portfolio_id = request.POST.get("new_portfolio", "").strip() or None
+        project = get_object_or_404(Project, id=int(project_id))
+        cur_portfolio = project.portfolio
+        new_portfolio = get_object_or_404(Portfolio, id=int(new_portfolio_id))
+        project.portfolio = new_portfolio
+        project.save()
+        # Log successful project move to a different portfolio
+        logger.info(
+            event="move_project_different_portfolio successful",
+            object={"project_id": project.id,"new_portfolio_id": new_portfolio.id},
+            from_portfolio={"portfolio_title": cur_portfolio.title, "id": cur_portfolio.id},
+            to_portfolio={"portfolio_title": new_portfolio.title, "id": new_portfolio.id}
+        )
+        # message = "Project {} successfully moved to portfolio {}".format(project, new_portfolio.title)
+        # messages.add_message(request, messages.INFO, message)
+        return JsonResponse({ "status": "ok" })
+    except:
+        # Log unsuccessful project move to a different portfolio
+        logger.info(
+            event="move_project_different_portfolio successful",
+            object={"project_id": project.id,"new_portfolio_id": new_portfolio.id},
+            from_portfolio={"portfolio_title": cur_portfolio.title, "id": cur_portfolio.id},
+            to_portfolio={"portfolio_title": new_portfolio.title, "id": new_portfolio.id}
+        )
+        # message = "Project {} failed moved to portfolio {}".format(project, new_portfolio.title)
+        # messages.add_message(request, messages.ERROR, message)
+        return JsonResponse({ "status": "error", "message": sys.exc_info() })
+
+@project_admin_login_post_required
+def upgrade_project(request, project):
+    """Upgrade root task of project to newer version"""
+
+    available_versions = project.available_root_task_versions_for_upgrade
+    current_app = project.root_task.module.app
+
+    # Determine new version of app to upgrade from version_number
+    version_number = request.POST.get("version_number", "").strip() or None
+    new_app = None
+    for av in available_versions:
+        if av.version_number == version_number:
+            new_app = av
+
+    # Attempt upgrade
+    result = project.upgrade_root_task_app(new_app)
+    # Was upgrade successful?
+    if result == True:
+        # Upgrade successful
+        # Log successful project root task upgrade
+        logger.info(
+            event="upgrade_project root_task successful",
+            object={"id": project.id, "title":project.title},
+            from_app={"appsource_slug": project.root_task.module.source.slug, "id": new_app.id, "version_number": version_number},
+            to_app={"appsource_slug": project.root_task.module.source.slug, "id": new_app.id, "version_number": new_app.version_number},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        message = "Project {} upgraded successfully to {}".format(project, new_app.version_number)
+        messages.add_message(request, messages.INFO, message)
+        redirect = project.get_absolute_url()
+        return JsonResponse({ "status": "ok", "redirect": redirect })
+    else:
+        # Upgrade failure
+        # Log failed project root task upgrade
+        logger.info(
+            event="upgrade_project root_task failure",
+            object={"id": project.id, "title":project.title},
+            from_app={"appsource_slug": project.root_task.module.source.slug, "id": new_app.id, "version_number": version_number},
+            to_app={"appsource_slug": project.root_task.module.source.slug, "id": new_app.id, "version_number": new_app.version_number},
+            detail={"reason": result},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        message = "Project {} failed to upgrade to {}. {}".format(project, new_app.version_number, result)
+        return JsonResponse({ "status": "error", "message": message })
+
 @project_admin_login_post_required
 def delete_project(request, project):
     if not project.is_deletable():
         return JsonResponse({ "status": "error", "message": "This project cannot be deleted." })
-    
+
     # Get the project's parents for redirect.
     parents = project.get_parent_projects()
     project.delete()
@@ -1072,15 +1331,16 @@ def make_revoke_project_admin(request, project):
     return JsonResponse({ "status": "ok" })
 
 @project_admin_login_post_required
-def export_project(request, project):
+def export_project_questionnaire(request, project):
     from urllib.parse import quote
     data = project.export_json(include_metadata=True, include_file_content=True)
     resp = JsonResponse(data, json_dumps_params={"indent": 2})
-    resp["content-disposition"] = "attachment; filename=%s.json" % quote(project.title)
+    filename = project.title.replace(" ","_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
+    resp["content-disposition"] = "attachment; filename=%s.json" % quote(filename)
     return resp
 
 @project_admin_login_post_required
-def import_project_data(request, project):
+def import_project_questionnaire(request, project):
     # Deserialize the JSON from request.FILES. Assume the JSON data is
     # UTF-8 encoded and ensure dicts are parsed as OrderedDict so that
     # key order is preserved, since key order matters because deserialization
@@ -1176,9 +1436,49 @@ def project_start_apps(request, *args):
 
 # PORTFOLIOS
 
+<<<<<<< HEAD
+=======
+def update_permissions(request):
+    permission = request.POST.get('permission')
+    portfolio_id = request.POST.get('portfolio_id')
+    user_id = request.POST.get('user_id')
+    portfolio = Portfolio.objects.get(id=portfolio_id)
+    user = User.objects.get(id=user_id)
+    # TODO check if this check on request.user can be moved to decorator
+    if request.user.has_perm('can_grant_portfolio_owner_permission', portfolio):
+      if permission == 'remove_permissions':
+        portfolio.remove_permissions(user)
+      elif permission == 'grant_owner_permission':
+        portfolio.assign_owner_permissions(user)
+        # Log permission escalation
+        logger.info(
+            event="update_permissions portfolio assign_owner_permissions",
+            object={"id": portfolio.id, "title":portfolio.title},
+            receiving_user={"id": user.id, "username": user.username},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+      elif permission == 'remove_owner_permissions':
+        portfolio.remove_owner_permissions(user)
+        # Log permission removal
+        logger.info(
+            event="update_permissions portfolio remove_owner_permissions",
+            object={"id": portfolio.id, "title":portfolio.title},
+            receiving_user={"id": user.id, "username": user.username},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+    next = request.POST.get('next', '/')
+    return HttpResponseRedirect(next)
+
+>>>>>>> master
 @login_required
 def portfolio_list(request):
     """List portfolios"""
+
+    logger.info(
+        event="portfolio_list",
+        user={"id": request.user.id, "username": request.user.username}
+    )
+
     return render(request, "portfolios/index.html", {
         "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None,
         "project_form": ProjectForm(request.user),
@@ -1188,30 +1488,132 @@ def portfolio_list(request):
 def new_portfolio(request):
     """Form to create new portfolios"""
     if request.method == 'POST':
-      form = PortfolioForm(request.POST)
-      if form.is_valid():
-        form.save()
-        portfolio = form.instance
-        logger.info(
-            event="new_portfolio",
-            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
-            user={"id": request.user.id, "username": request.user.username}
-        )
-
-        portfolio.assign_owner_permissions(request.user)
-        logger.info(
-            event="new_portfolio assign_owner_permissions",
-            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
-            receiving_user={"id": request.user.id, "username": request.user.username},
-            user={"id": request.user.id, "username": request.user.username}
-        )
-        return redirect('portfolio_projects', pk=portfolio.pk)
+        form = PortfolioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            portfolio = form.instance
+            logger.info(
+                event="new_portfolio",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            portfolio.assign_owner_permissions(request.user)
+            logger.info(
+                event="new_portfolio assign_owner_permissions",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                receiving_user={"id": request.user.id, "username": request.user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return redirect('portfolio_projects', pk=portfolio.pk)
     else:
         form = PortfolioForm()
-
     return render(request, 'portfolios/form.html', {
         'form': form,
         "project_form": ProjectForm(request.user),
+    })
+
+@login_required
+def delete_portfolio(request, pk):
+    """Form to delete portfolios"""
+
+    if request.method == 'GET':
+        portfolio = Portfolio.objects.get(pk=pk)
+
+        # Confirm user has permission to delete portfolio
+        CAN_DELETE_PORTFOLIO = False
+        if request.user.is_superuser or request.user.has_perm('delete_portfolio', portfolio):
+            CAN_DELETE_PORTFOLIO = True
+
+        if not CAN_DELETE_PORTFOLIO:
+            logger.info(
+                event="delete_portfolio_failed",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "USER IS SUPER USER"}
+            )
+            messages.add_message(request, messages.ERROR, f"You do not have permission to delete portfolio '{portfolio.title}.'")
+            return redirect("list_portfolios")
+
+        # Only delete a portfolio with no projects
+        if len(portfolio.projects.all()) > 0:
+            logger.info(
+                event="delete_portfolio_failed",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "Portfolio not empty"}
+            )
+            messages.add_message(request, messages.ERROR, f"Failed to delete portfolio '{portfolio.title}.' The portfolio is not empty.")
+            return redirect("list_portfolios")
+        # TODO: It will delete everything related to the portfolio as well with a summary of the deletion
+        # Delete portfolio
+        try:
+            Portfolio.objects.get(pk=pk).delete()
+            logger.info(
+                event="delete_portfolio",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            messages.add_message(request, messages.INFO, f"The portfolio '{portfolio.title}' has been deleted.")
+            return redirect("list_portfolios")
+        except:
+            logger.info(
+                event="delete_portfolio_failed",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "Other error when running delete on portfolio object."}
+            )
+
+@login_required
+def edit_portfolio(request, pk):
+    """Form to edit portfolios"""
+    portfolio = Portfolio.objects.get(pk=pk)
+    form = PortfolioForm(request.POST or None, instance=portfolio, initial={'portfolio': portfolio.id})
+    # Confirm user has permission to edit portfolio
+    CAN_EDIT_PORTFOLIO = False
+    if request.user.is_superuser or request.user.has_perm('change_portfolio', portfolio):
+        CAN_EDIT_PORTFOLIO = True
+    if request.method == 'GET':
+        if not CAN_EDIT_PORTFOLIO:
+            logger.info(
+                event="delete_portfolio_failed",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "USER IS SUPER USER"}
+            )
+            messages.add_message(request, messages.ERROR, f"You do not have permission to delete portfolio '{portfolio.title}.'")
+            return redirect("list_portfolios")
+
+        if form.is_valid():
+            form.save()
+
+            logger.info(
+                event="edit_portfolio",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            portfolio.assign_owner_permissions(request.user)
+            logger.info(
+                event="new_portfolio assign_owner_permissions",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                receiving_user={"id": request.user.id, "username": request.user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return redirect('portfolio_projects', pk=portfolio.pk)
+    if request.method == 'POST':
+        try:
+            form = PortfolioForm(request.POST, instance=portfolio)
+            if form.is_valid():
+                form.save()
+                # Log portfolio update
+                messages.add_message(request, messages.INFO, f"The portfolio '{portfolio.title}' has been updated.")
+                return redirect("list_portfolios")
+        except IntegrityError:
+            messages.add_message(request, messages.ERROR, "Portfolio name {} not available.".format(request.POST['title']))
+
+    return render(request, 'portfolios/edit_form.html', {
+        'form': form,
+        'portfolio': portfolio,
+        "can_edit_portfolio": CAN_EDIT_PORTFOLIO,
     })
 
 def portfolio_read_required(f):
@@ -1245,6 +1647,7 @@ def portfolio_projects(request, pk):
       "projects": projects if request.user.has_perm('view_portfolio', portfolio) else user_projects,
       "project_form": project_form,
       "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
+      "can_edit_portfolio": request.user.has_perm('change_portfolio', portfolio),
       "send_invitation": Invitation.form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
       "users_with_perms": portfolio.users_with_perms(),
       "display_users_with_perms": len(portfolio.users_with_perms()),
@@ -1311,12 +1714,12 @@ def send_invitation(request):
           from_portfolio = Portfolio.objects.filter(id=request.POST["portfolio"]).first()
           if len(request.POST.get("user_id")) > 0:
             from_portfolio.assign_edit_permissions(to_user)
-            # logger.info(
-            #     event="send_invitation portfolio assign_edit_permissions",
-            #     object={"object": "portfolio", "id": from_portfolio.id, "title": from_portfolio.title},
-            #     receiving_user={"id": to_user.id, "username": to_user.username},
-            #     user={"id": request.user.id, "username": request.user.username}
-            # )
+            logger.info(
+                event="send_invitation portfolio assign_edit_permissions",
+                object={"object": "portfolio", "id": from_portfolio.id, "title": from_portfolio.title},
+                receiving_user={"id": to_user.id, "username": to_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
 
         # Validate that the user is a member of from_project. Is None
         # if user is not a project member.
@@ -1324,12 +1727,28 @@ def send_invitation(request):
           from_project = Project.objects.filter(id=request.POST["project"]).first()
           if len(request.POST.get("user_id")) > 0:
             from_project.assign_edit_permissions(to_user)
-            # logger.info(
-            #     event="send_invitation project assign_edit_permissions",
-            #     object={"object": "project", "id": from_project.id, "title":from_project.title},
-            #     receiving_user={"id": to_user.user.id, "username": to_user.user.username},
-            #     user={"id": request.user.id, "username": request.user.username}
-            # )
+            logger.info(
+                event="send_invitation project assign_edit_permissions",
+                object={"object": "project", "id": from_project.id, "title":from_project.title},
+                receiving_user={"id": to_user.id, "username": to_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            # Assign permissions to view system, root_element
+            from_project.system.assign_edit_permissions(to_user)
+            logger.info(
+                event="send_invitation system assign_edit_permissions",
+                object={"object": "system", "id": from_project.system.root_element.id, "name": from_project.system.root_element.name},
+                receiving_user={"id": to_user.id, "username": to_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            from_project.system.root_element.assign_edit_permissions(to_user)
+            logger.info(
+                event="send_invitation element assign_edit_permissions",
+                object={"object": "element", "id": from_project.system.root_element.id, "name": from_project.system.root_element.name},
+                receiving_user={"id": to_user.id, "username": to_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            messages.add_message(request, messages.INFO, "{} granted edit permission to project.".format(to_user.username))
 
         # Authorization for adding invitee to the project team.
         if not from_project:
@@ -1402,8 +1821,12 @@ def send_invitation(request):
     except ValueError as e:
         return JsonResponse({ "status": "error", "message": str(e) })
     except Exception as e:
-        import sys
-        sys.stderr.write(str(e) + "\n")
+        logger.error(
+            event="send invitation",
+            object={"status": "error",
+                    "message": " ".join(["There was a problem -- sorry!", str(e)])},
+            user={"id": request.user.id, "username": request.user.username}
+        )
         return JsonResponse({ "status": "error", "message": "There was a problem -- sorry!" })
 
 @login_required
@@ -1411,11 +1834,11 @@ def cancel_invitation(request):
     inv = get_object_or_404(Invitation, id=request.POST['id'], from_user=request.user)
     inv.revoked_at = timezone.now()
     inv.save(update_fields=['revoked_at'])
-    # logger.info(
-    #     event="cancel_invitation",
-    #     object={"object": "invitation", "id": inv.id, "to_email": inv.to_email},
-    #     user={"id": request.user.id, "username": request.user.username}
-    # )
+    logger.info(
+        event="cancel_invitation",
+        object={"object": "invitation", "id": inv.id, "to_email": inv.to_email},
+        user={"id": request.user.id, "username": request.user.username}
+    )
     return JsonResponse({ "status": "ok" })
 
 def accept_invitation(request, code=None):
@@ -1427,11 +1850,15 @@ def accept_invitation(request, code=None):
         return response
 
     # The invitation has been accepted by a logged in user.
-    # logger.info(
-    #     event="accept_invitation",
-    #     object={"object": "invitation", "id": inv.id, "to_email": inv.to_email},
-    #     user={"id": request.user.id, "username": request.user.username}
-    # )
+    logger.info(
+        event="accept_invitation",
+        object={"object": "invitation", "id": inv.id, "to_email": inv.to_email},
+        user={"id": request.user.id, "username": request.user.username}
+    )
+
+    # Make sure user has a default portfolio
+    if len(request.user.portfolio_list()) == 0:
+        portfolio = request.user.create_default_portfolio_if_missing()
 
     # Some invitations create an interstitial before redirecting.
     inv.from_user.preload_profile()
@@ -1504,7 +1931,7 @@ def accept_invitation_do_accept(request, inv):
         # under the account they are logged in as.
         from urllib.parse import urlencode
 
-        # In the event the user was already logged into an account, and if username/password
+        # In the event the user was already logged into an account, and if username/pwd
         # logins are enabled, then log them out now --- we make them log in again or sign
         # up next.
         username_pw_logins_emailed = ('django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS)
@@ -1538,6 +1965,30 @@ def accept_invitation_do_accept(request, inv):
                 user=request.user,
                 )
             add_message('You have joined the team %s.' % inv.from_project.title)
+            # Add user to system and root element
+            # Grant user permissions to system and root element
+            inv.from_project.assign_edit_permissions(request.user)
+            logger.info(
+                event="accept_invitation project assign_edit_permissions",
+                object={"object": "project", "id": inv.from_project.id, "title":inv.from_project.title},
+                sending_user={"id": inv.from_user.id, "username": inv.from_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            # Assign permissions to view system, root_element
+            inv.from_project.system.assign_edit_permissions(request.user)
+            logger.info(
+                event="accept_invitation system assign_edit_permissions",
+                object={"object": "system", "id": inv.from_project.system.root_element.id, "name":inv.from_project.system.root_element.name},
+                sending_user={"id": inv.from_user.id, "username": inv.from_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            inv.from_project.system.root_element.assign_edit_permissions(request.user)
+            logger.info(
+                event="accept_invitation element assign_edit_permissions",
+                object={"object": "element", "id": inv.from_project.system.root_element.id, "name":inv.from_project.system.root_element.name},
+                sending_user={"id": inv.from_user.id, "username": inv.from_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
 
         # Run the target's invitation accept function.
         inv.target.accept_invitation(inv, add_message)
@@ -1705,8 +2156,28 @@ def shared_static_pages(request, page):
         "base_template": "base.html",
         "SITE_ROOT_URL": request.build_absolute_uri("/"),
         "password_hash_method": password_hash_method,
-        "project_form": ProjectForm(request.user),
+        # "project_form": ProjectForm(request.user),
+        "project_form": None,
     })
+
+# SUPPORT
+
+def support(request):
+    """Render a support page with custom content"""
+
+    support_results = Support.objects.all()
+    if support_results.exists():
+        support = support_results[0]
+    else:
+        support = {
+            "text": "This page has not be set up. Please have admin set up page in Djano admin.",
+            "email": None,
+            "phone": None,
+            "url": None
+        }
+    return render(request, "support.html", {
+        "support": support,
+        })
 
 # SINGLE SIGN ON
 

@@ -1,14 +1,23 @@
+from collections import defaultdict
 import os
 import json
 import yaml
 import re
 from pathlib import Path
+import sys
 
 CATALOG_PATH = os.path.join(os.path.dirname(__file__),'data','catalogs')
 
 
 class Catalogs (object):
     """Represent list of catalogs"""
+
+    # well known catalog identifiers
+
+    NIST_SP_800_53_rev4 = 'NIST_SP-800-53_rev4'
+    NIST_SP_800_53_rev5 = 'NIST_SP-800-53_rev5'
+    NIST_SP_800_171_rev1 = 'NIST_SP-800-171_rev1'
+
     def __init__(self):
         global CATALOG_PATH
         self.catalog_path = CATALOG_PATH
@@ -25,9 +34,9 @@ class Catalogs (object):
 
     def _list_catalog_keys(self):
         return [
-            'NIST_SP-800-53_rev4',
-            'NIST_SP-800-53_rev5',
-            'NIST_SP-800-171_rev1'
+            Catalogs.NIST_SP_800_53_rev4,
+            Catalogs.NIST_SP_800_53_rev5,
+            Catalogs.NIST_SP_800_171_rev1
         ]
 
     def _load_catalog_json(self, catalog_key):
@@ -47,22 +56,41 @@ class Catalogs (object):
         catalog_titles = [item['metadata']['title'] for item in self.index ]
         return catalog_titles
 
+def uhash(obj):
+    """Return a positive hash code"""
+    h = hash(obj)
+    return h + sys.maxsize + 1
+
 class Catalog (object):
     """Represent a catalog"""
 
     # Create a singleton instance of this class per catalog. GetInstance returns
-    # that singleton instance. Instead of doing `cg = Catalog(catalog_key='NIST_SP-800-53_rev4')`,
-    # do `cg = Catalog.GetInstance(catalog_key='NIST_SP-800-53_rev4')`.
-    @staticmethod
-    def GetInstance(catalog_key='NIST_SP-800-53_rev4'):
-        # Create a new instance of Catalog() the first time for each catalog key
+    # that singleton instance. Instead of doing 
+    # `cg = Catalog(catalog_key=Catalogs.NIST_SP_800_53_rev4)`,
+    # do `cg = Catalog.GetInstance(catalog_key=Catalogs.NIST_SP_800_53_rev4')`.
+    @classmethod
+    def GetInstance(cls, catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
+        # Create a new instance of Catalog() the first time for each 
+        # catalog key / parameter combo
         # this method is called. Keep it in memory indefinitely.
         # Clear cache only if a catalog itself changes
-        if not hasattr(Catalog, '_cached_instance_' + catalog_key):
-            setattr(Catalog, '_cached_instance_' + catalog_key, Catalog(catalog_key=catalog_key))
-        return getattr(Catalog, '_cached_instance_' + catalog_key)
 
-    def __init__(self, catalog_key='NIST_SP-800-53_rev4'):
+        catalog_instance_key = Catalog._catalog_instance_key(catalog_key, parameter_values)
+        
+        if not hasattr(cls, catalog_instance_key):
+            new_catalog = Catalog(catalog_key=catalog_key, parameter_values=parameter_values)
+            setattr(cls, catalog_instance_key, new_catalog)
+        return getattr(cls, catalog_instance_key)
+
+    @staticmethod
+    def _catalog_instance_key(catalog_key, parameter_values):
+        catalog_instance_key = '_cached_instance_' + catalog_key
+        if parameter_values:
+            parameter_values_hash = uhash(frozenset(parameter_values.items()))
+            catalog_instance_key += '_' + str(parameter_values_hash)
+        return catalog_instance_key.replace('-', '_')
+
+    def __init__(self, catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
         global CATALOG_PATH
         self.catalog_key = catalog_key
         self.catalog_key_display = catalog_key.replace("_", " ")
@@ -86,14 +114,16 @@ class Catalog (object):
         # WARNING TODO: This precalculation along with instance caching of controls
         # may cause a problem in multi-tenant environment where different tenants have
         # have different organizational defined parameters.
-        self.flattended_controls_all_as_dict = self.get_flattended_controls_all_as_dict()
+        self.parameter_values = parameter_values
+        self.flattened_controls_all_as_dict = self.get_flattened_controls_all_as_dict()
+        self.parameters_by_control = self._cache_parameters_by_control()
 
     def _load_catalog_json(self):
         """Read catalog file - JSON"""
         catalog_file = os.path.join(self.catalog_path, self.catalog_file)
         # Does file exist?
         if not os.path.isfile(catalog_file):
-            print("ERROR: {} does not exist".format(catalog_file))
+            print(f"ERROR: {catalog_file} does not exist")
             return False
         # Load file as json
         with open(catalog_file, 'r') as json_file:
@@ -167,7 +197,7 @@ class Catalog (object):
         return result_dict
 
     def get_control_property_by_name(self, control, property_name):
-        """Return value of a propery of a control by name of property"""
+        """Return value of a property of a control by name of property"""
         prop = self.find_dict_by_value(control['properties'], "name", property_name)
         if prop is None:
             return None
@@ -178,7 +208,7 @@ class Catalog (object):
         param = self.find_dict_by_value(control['parameters'], "id", param_id)
         return param['label']
 
-    def get_control_prose_as_markdown(self, control_data, part_types={ "statement" }):
+    def get_control_prose_as_markdown(self, control_data, part_types={ "statement" }, parameter_values=dict()):
         # Concatenate the prose text of all of the 'parts' of this control
         # in Markdown. Filter out the parts that are not wanted.
         # Example 'statement'
@@ -192,7 +222,7 @@ class Catalog (object):
             return "Withdrawn"
 
         text = self.format_part_as_markdown(control_data, filter_name=part_types)
-        parameter_values = {} # Eventually replace with organizational defined parameters when we have them
+
         text_params_replaced = self.substitute_parameter_text(control_data, text, parameter_values)
 
         return text_params_replaced
@@ -270,17 +300,25 @@ class Catalog (object):
         # Fill in parameter_values with control parameter labels for any
         # parameters that are not specified.
         parameter_values = dict(parameter_values) # clone so that we don't modify the caller's dict
+
         if "parameters" not in control:
             return text
+
         for parameter in control['parameters']:
             if parameter["id"] not in parameter_values:
-                parameter_values[parameter["id"]] = "[" + parameter.get("label", parameter["id"]) + "]"
+                parameter_values[parameter["id"]] = f"[{parameter.get('label', parameter['id'])}]"
+
         for parameter_key, parameter_value in parameter_values.items():
             text = re.sub(r"{{ " + re.escape(parameter_key) + " }}", parameter_value, text)
+
         return text
 
     def get_flattened_control_as_dict(self, control):
-        """Return a control as a simplified, flattened Python dictionary"""
+        """
+        Return a control as a simplified, flattened Python dictionary.
+        If parameter_values is supplied, it will override any paramters set
+        in the catalog.
+        """
         family_id = self.get_group_id_by_control_id(control['id'])
         cl_dict = {
             "id": control['id'],
@@ -289,21 +327,39 @@ class Catalog (object):
             "family_id": family_id,
             "family_title": self.get_group_title_by_id(family_id),
             "class": control['class'],
-            "description": self.get_control_prose_as_markdown(control, part_types={ "statement" }),
+            "description": self.get_control_prose_as_markdown(control, part_types={ "statement" },
+                                                              parameter_values=self.parameter_values),
             "guidance": self.get_control_prose_as_markdown(control, part_types={ "guidance" }),
             "catalog_file": self.catalog_file,
-            "catalog_id": self.catalog_id
+            "catalog_id": self.catalog_id,
+            "sort_id": self.get_control_property_by_name(control, "sort-id"),
+            "label": self.get_control_property_by_name(control, "label")
         }
         # cl_dict = {"id": "te-1", "title": "Test Control"}
         return cl_dict
 
-    def get_flattended_controls_all_as_dict(self):
+    def get_flattened_controls_all_as_dict(self):
         """Return all controls as a simplified flattened Python dictionary indexed by control ids"""
         # Create an empty dictionary
-        cl_all_dict = {'ac-1': {}}
+        cl_all_dict = {}
         # Get all the controls
         for cl in self.get_controls_all():
             # Get flattened control and add to dictionary of controls
             cl_dict = self.get_flattened_control_as_dict(cl)
             cl_all_dict[cl_dict['id']] = cl_dict
         return cl_all_dict
+
+    def _cache_parameters_by_control(self):
+        cache = defaultdict(list)
+        if self.oscal:
+            groups = self.oscal["groups"]
+            for family in groups:
+                for control in family["controls"]:
+                    control_id = control["id"]
+                    for parameter in control.get("parameters", []):
+                        cache[control_id].append(parameter["id"])
+        return dict(cache)
+    
+    def get_parameter_ids_for_control(self, control_id):
+        return self.parameters_by_control.get(control_id, [])
+    

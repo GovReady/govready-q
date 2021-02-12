@@ -1,4 +1,0 @@
-gunicorn==20.0.4
-whitenoise==5.1.0
-newrelic==5.14.0.142
-dj_database_url==0.5.0

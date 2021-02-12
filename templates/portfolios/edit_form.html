@@ -1,0 +1,39 @@
+{% extends "../base.html" %}
+{% load bootstrap3 %}
+
+{% block title %}
+    Edit Portfolio
+{% endblock %}
+
+{% block body-wide %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 portfolio-org-col ">
+                <h2>Edit Portfolio</h2>
+                <p>Portfolios allow you to organize and manage related projects. Members of a portfolio can access all of
+                    its unrestricted projects.</p>
+            </div>
+            <div class="col-md-9 portfolio-org-col ">
+                <div class="well">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type=hidden name=action value=manageportfolio>
+                        {% bootstrap_form form %}
+                        <p>
+                            <button type="submit" id="edit_portfolio_submit" class="btn btn-success" href="{% url "edit_portfolio" portfolio.id %}" aria-label="Update portfolio">Update</button>
+                            <a type="button" class="btn btn-default" href={% url "list_portfolios" %}>Cancel</a>
+                            {# Show delete button if portfolio is empty and user can change portfolio #}
+                            {% if can_edit_portfolio and portfolio.projects.all|length == 0 %}
+                                <a href='{% url "delete_portfolio" portfolio.id %}' id="delete_portfolio_submit" class="btn btn-danger btn-submit confirm-delete" type="submit" onclick="return confirm('Are you sure you want to delete portfolio \'{{ portfolio.title }}\'?\n\nThis cannot be undone.')">Delete</a>
+                            {% endif %}
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{ block.super }}
+{% endblock %}
+

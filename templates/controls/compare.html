@@ -77,13 +77,13 @@ Remove contextbar from top of page
       <!-- Page Title-->
       <div style="float: left;">
           <h2 class="control-heading" style="">
-            <a href="{{ project.get_absolute_url }}">{{ system.root_element.name }}</a> > <a href="/systems/{{ system.id }}/controls/selected">Selected Controls</a>
+            <a href="{{ project.get_absolute_url }}">{{ system.root_element.name }}</a> > <a href={% url 'controls_selected' system_id=system.id %}>Selected Controls</a>
           </h2>
       </div>
       <!-- Control Lookup-->
       <div style="float: right;">
           <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
-            <input type="text" name="id" placeholder="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
+            <input type="text" name="id" placeholder="Enter control id" title="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
                 <button type="submit" class="btn btn-success">Look up</button>
                 <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <a href="/">families</a> -->
@@ -185,7 +185,7 @@ Remove contextbar from top of page
                       <div>
                         <form>
                           <div class="form-group">
-                            <label for="compoment">Component</label>
+                            <label for="component">Component</label>
                             <input type="text" class="form-control" id="component" placeholder="Name of component" value="{{control.name}}">
                           </div>
                           <div class="form-group">
@@ -226,7 +226,7 @@ Remove contextbar from top of page
                       <div>
                         <form>
                           <div class="form-group">
-                            <label for="compoment">Component</label>
+                            <label for="component">Component</label>
                             <input type="text" class="form-control" id="component" placeholder="Name of component" value="{{control.name}}">
                           </div>
                           <div class="form-group">
@@ -297,6 +297,7 @@ Remove contextbar from top of page
                   <div id="success-msg-smt_{{ forloop.counter }}" style="display: inline; margin-right: 20px; color: gray;"></div>
                   <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_{{ forloop.counter }}');return false;">Delete</button>
                   <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_{{ forloop.counter }}');return false;">Save</button>
+                  <button type="button" name="history" value="history" class="btn btn-xs btn-primary" onclick="location.href='{% url 'statement_history' smt_id=smt.id %}'">History</button>
                 </div>
 
                 </form>
@@ -361,9 +362,8 @@ Remove contextbar from top of page
 
             {% endfor %}
           </div><!--/smt-list-->
-          <div><h3><button type="submit" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
-
-      </div>
+          <div><h3><button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
+</div>
 
     </div>
   </div>
@@ -420,7 +420,7 @@ Remove contextbar from top of page
               <form id="smt_panel_num" class="smt_form">
                 <div class="form-group">
                   <input type="hidden" id="producer_element_id" name="producer_element_id" value="">
-                  <label for="compoment">Producer Component</label>
+                  <label for="component">Producer Component</label>
                   <input type="text" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
                     onchange="$('#producer_element-panel_num-title').text($(this).val());">
                 </div>

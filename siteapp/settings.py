@@ -1,12 +1,13 @@
 # from https://raw.githubusercontent.com/if-then-fund/django-good-settings/master/settings.py
 
 ################################################################
-# Good defaults for a setttings.py, plus logic for bringing    #
+# Good defaults for a settings.py, plus logic for bringing    #
 # in settings from various normal places you might store them. #
 ################################################################
 
 import os, os.path, json
-
+from platform import uname, system
+from django.core.exceptions import ValidationError
 # What's the name of the app containing this file? That determines
 # the module for the main URLconf etc.
 primary_app = os.path.basename(os.path.dirname(__file__))
@@ -36,17 +37,17 @@ if os.path.exists(local("environment.json")):
 else:
 	# Make some defaults and show the user.
 	environment = {
-		"secret-key": make_secret_key(),
+		"govready-url": "http://localhost:8000",
+		"static": "static_root",
 		"debug": True,
-		"https": False,
-		"host": "localhost:8000",
+		"secret-key": make_secret_key()
 	}
 
 	# Show the defaults.
 	print("\nCouldn't find `local/environment.json` file. Generating default environment params.")
 	print("Please create a '%s' file containing something like this:" % local("environment.json"))
+	environment["secret-key"] = make_secret_key() # Generate a new key since the initial one was printed for the user for edification
 	print(json.dumps(environment, sort_keys=True, indent=2))
-	print()
 
 # Load pre-specified admin users
 # Example: "govready_admins":[{"username": "username", "email":"first.last@example.com", "password": "REPLACEME"}]
@@ -72,16 +73,20 @@ GOVREADY_URL = urlparse(environment.get("govready-url",""))
 ALLOWED_HOSTS = []
 if "host" in environment:
 	ALLOWED_HOSTS = [environment["host"].split(':')[0]]
-	print("WARNING: Use of 'host' environment paramenter deprecated. Please use 'govready-url' environment parameter in future.")
-if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
+	print("WARNING: Use of 'host' environment parameter deprecated. Please use 'govready-url' environment parameter in future.")
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
 	ALLOWED_HOSTS.append(GOVREADY_URL.hostname)
 print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)
+# Support multiple hosts if set
+# `allowed_hosts` must be an ARRAY
+if "allowed_hosts" in environment:
+	ALLOWED_HOSTS.extend(environment["allowed_hosts"])
 
 # allauth requires the use of the sites framework.
 SITE_ID = 1
 
 # Add standard apps to INSTALLED_APPS.
-INSTALLED_APPS = [
+DJANGO_APPS = [
 	'django.contrib.admin',
 	'django.contrib.auth',
 	'django.contrib.contenttypes',
@@ -90,13 +95,20 @@ INSTALLED_APPS = [
 	'django.contrib.sites', # required by allauth
 	'django.contrib.messages',
 	'django.contrib.humanize',
+	'django.contrib.admindocs',
 
+]
+THIRD_PARTY_APPS = [
 	'bootstrap3',
 	'allauth',
 	'allauth.account',
 	'allauth.socialaccount',
+	'simple_history',
 	# add any allauth social providers as you like
 ]
+
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS
 
 # Add test_without_migrations if it is installed. This provides --nomigrations
 # to the test management command.
@@ -104,7 +116,12 @@ try:
 	import test_without_migrations
 	INSTALLED_APPS.append('test_without_migrations')
 except ImportError:
-	pass
+	print("WARNING: 'test_without_migrations' could not be imported")
+
+
+# profile every request and save the HTML output to the folder profiles
+if DEBUG:
+	PYINSTRUMENT_PROFILE_DIR = 'profiles'
 
 # Add standard middleware.
 MIDDLEWARE = [
@@ -116,9 +133,11 @@ MIDDLEWARE = [
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'simple_history.middleware.HistoryRequestMiddleware',
+	'pyinstrument.middleware.ProfilerMiddleware',
 ]
 if environment["debug"] and os.path.exists(os.path.join(os.path.dirname(__file__), 'helper_middleware.py')):
-	MIDDLEWARE_CLASSES.append(primary_app+'.helper_middleware.DumpErrorsToConsole')
+	MIDDLEWARE.append(primary_app+'.helper_middleware.DumpErrorsToConsole')
 
 # Load templates for app directories and from a main `templates` directory located
 # at the project root. Add standard context processors.
@@ -174,12 +193,12 @@ ACCOUNT_ADAPTER = primary_app + '.good_settings_helpers.AllauthAccountAdapter'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_UNIQUE_EMAIL = False # otherwise unconfirmed addresses may block real users
-ACCOUNT_EMAIL_REQUIRED = True # otherwise password resets are not possible
+ACCOUNT_EMAIL_REQUIRED = True # otherwise pwd resets are not possible
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 15 # default of 5 is too low!
 ACCOUNT_LOGOUT_ON_GET = True # allow simplified logout link
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
-ACCOUNT_PASSWORD_MIN_LENGTH = (4 if DEBUG else 6) # in debugging, allow simple passwords
+ACCOUNT_PASSWORD_MIN_LENGTH = (4 if DEBUG else 6) # in debugging, allow simple pwds
 
 # improve how the allauth forms are rendered using django-bootstrap forms,
 # in combination with a monkeypatch run elsewhere
@@ -213,6 +232,7 @@ DATABASES = {
 		'ENGINE': 'django.db.backends.sqlite3',
 		'NAME': local('db.sqlite3'),
 		'CONN_MAX_AGE': 60*5, # 5 min
+		'timeout': 30,
 	}
 }
 if not environment.get('db'):
@@ -286,7 +306,7 @@ if environment.get("syslog"):
 	}
 
 SILENCED_SYSTEM_CHECKS = []
-
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440
 # Settings that have normal values based on the primary app
 # (the app this file resides in).
 
@@ -317,7 +337,7 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 # always turned on.
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not ""):
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != ""):
 	EMAIL_SUBJECT_PREFIX = '[' + GOVREADY_URL.hostname + '] '
 elif "host" in environment:
 	EMAIL_SUBJECT_PREFIX = '[' + environment['host'] + '] '
@@ -344,9 +364,16 @@ if (GOVREADY_URL.scheme == "https") or (GOVREADY_URL.scheme == "" and "https" in
 	SESSION_COOKIE_SECURE = True
 	CSRF_COOKIE_HTTPONLY = True
 	CSRF_COOKIE_SECURE = True
-	SECURE_SSL_REDIRECT = True
 	SECURE_HSTS_SECONDS = 31536000
 	SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+	if environment.get("secure_ssl_redirect", False):
+		# Force Django to redirect non-secure SSL connections to secure SSL connections
+		# NOTE: Setting to True while simultaneously using a http proxy like NGINX
+		#       that is also redirecting can lead to infinite redirects.
+		#       See: https://docs.djangoproject.com/en/3.0/ref/settings/#secure-ssl-redirect
+		#       SECURE_SSL_REDIRECT is False by default.
+		SECURE_SSL_REDIRECT = True
+		print("INFO: SECURE_SSL_REDIRECT is set to 'True'. May cause infinite redirects behind reverse proxies.")
 else:
 	print("INFO: Connection scheme is 'http'.")
 	# Silence some checks about HTTPS.
@@ -364,24 +391,49 @@ X_FRAME_OPTIONS = 'DENY' # don't allow site to be embedded in iframes
 
 # Put static files in the virtual path "/static/". When the "static"
 # environment setting is present, then it's a local directory path
-# where "collectstatic" will put static files. The ManifestStaticFilesStorage
-# is activated.
+# where "collectstatic" will put static files.
+#
+# Uncollected static files that ship with GovReady are located in `siteapp/static`.
+# In development (e.g. debug = true), Django will *ignore* the STATIC_ROOT setting and
+# search installed application paths when resolving STATIC_URL to find actual files.
+#
+# In production (e.g. debug = false), Django will use the STATIC_ROOT setting
+# when resolving STATIC_URL to find the path to actual files.
+# Also, the `manage.py collectstatic` will copy found static files into the
+# STATIC_ROOT path.
+#
+# A duplication of files can occur in production deployments when SITE_ROOT
+# is defined as `siteapp/static`. Collectstatic does post-processing on files and
+# appends a hash and then builds a manifest for static files. As `collectstatic` command
+# repeatedly is run, the result is reading and aggregating static files from and into
+# the same directory. This will eventually cause an errors as file names grow too long
+# and the static file manifest and actual file names break.
+#
+# The ManifestStaticFilesStorage is activated, too, for alternaye storing/serving of static assets.
+#
+uncollected_static_files = "siteapp/static"
 STATIC_URL = '/static/'
-STATIC_ROOT = 'siteapp/static/'
+STATIC_ROOT = 'static_root/'
 if environment.get("static"):
 	STATIC_ROOT = environment["static"]
 	STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+# Check to make sure STATIC_ROOT is not `siteapp/static`
+siteapp_path = os.getcwd()
+if os.path.join(siteapp_path, STATIC_ROOT) == os.path.join(siteapp_path, "siteapp/static"):
+	raise ValidationError('STATIC_ROOT directory for collecting static files should never be set to source of uncollected static files (e.g. `siteapp/static`). Please fix environment `static` setting.')
 
 # Add a convenience setting "SITE_ROOT_URL" that stores the root URL of the website.
 # Construct value from preferred "govready-url" environment parameter and temporarily
 # support the deprecated "https" and "host" environment settings.
-if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not ""):
+SITE_ROOT_URL = None
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != ""):
 	SITE_ROOT_URL = "{}://{}".format(GOVREADY_URL.scheme, GOVREADY_URL.netloc)
-elif environment["host"]:
+	print("INFO: 'SITE_ROOT_URL' set to {} ".format(SITE_ROOT_URL))
+elif "host" in environment and "https" in environment:
 	SITE_ROOT_URL = "%s://%s" % (("http" if not environment["https"] else "https"), environment["host"])
+	print("INFO: 'SITE_ROOT_URL' set to {} ".format(SITE_ROOT_URL))
 else:
-	"CRITICAL: No parameters set to determine SITE_ROOT_URL."
-print("INFO: 'SITE_ROOT_URL' set to {} ".format(SITE_ROOT_URL))
+	print("CRITICAL: No parameters set to determine SITE_ROOT_URL.")
 
 # Enable custom branding. If "branding" is set, it's the name of an
 # app to add and whose templates supersede the built-in templates.
@@ -393,5 +445,10 @@ if environment.get("branding"):
 # Load logging configuration from settings_logging.py.
 from .settings_logging import *
 
+HEADLESS = False if environment.get("test_visible") else True
+DOS = True if system() == "Windows" or 'Microsoft' in uname().release else False
 # Load all additional settings from settings_application.py.
 from .settings_application import *
+
+# Load logging configuration from settings_logging.py.
+from .settings_logging import *
