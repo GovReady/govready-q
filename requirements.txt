@@ -888,6 +888,13 @@ zipp==3.4.0 \
     --hash=sha256:ed5eee1974372595f9e416cc7bbeeb12335201d8081ca8a0743c954d4446e5cb
     # via importlib-metadata
 
-# WARNING: The following packages were not pinned, but pip requires them to be
-# pinned when the requirements file includes hashes. Consider using the --allow-unsafe flag.
-# setuptools
+# The following packages are considered to be unsafe in a requirements file:
+setuptools==53.0.0 \
+    --hash=sha256:0e86620d658c5ca87a71a283bd308fcaeb4c33e17792ef6f081aec17c171347f \
+    --hash=sha256:1b18ef17d74ba97ac9c0e4b4265f123f07a8ae85d9cd093949fa056d3eeeead5
+    # via
+    #   fs
+    #   gunicorn
+    #   jsonschema
+    #   safety
+    #   sphinx

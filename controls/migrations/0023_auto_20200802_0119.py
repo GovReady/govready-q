@@ -21,19 +21,24 @@ class Migration(migrations.Migration):
             obj.save()
 
     operations = [
-        migrations.RemoveField(
-            model_name='poam',
-            name='uuid',
-        ),
+        migrations.RemoveField(model_name='poam', name='uuid'),
         migrations.AddField(
             model_name='element',
             name='uuid',
-            field=models.UUIDField(default=uuid.uuid4, editable=True, help_text='A UUID (a unique identifier) for this Element.'),
+            field=models.UUIDField(
+                default=uuid.uuid4,
+                editable=True,
+                help_text='A UUID (a unique identifier) for this Element.',
+            ),
         ),
         migrations.AddField(
             model_name='statement',
             name='uuid',
-            field=models.UUIDField(default=uuid.uuid4, editable=True, help_text='A UUID (a unique identifier) for this Statement.'),
+            field=models.UUIDField(
+                default=uuid.uuid4,
+                editable=True,
+                help_text='A UUID (a unique identifier) for this Statement.',
+            ),
         ),
-        migrations.RunPython(create_uuids),
+        migrations.RunPython(create_uuids, migrations.RunPython.noop),
     ]
