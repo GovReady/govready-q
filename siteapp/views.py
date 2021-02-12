@@ -564,23 +564,33 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         deployment = Deployment(name="Prod", description="Production environment deployment", system=system)
         deployment.save()
 
-        # Assign default control catalog
-        # Temporarily hardcode
-        catalog_key = "NIST_SP-800-171_rev1"
-
-        # Assign default control profile for org systems
-        # Temporarily hardcode
-        baseline_name = "cui"
-        assign_results = system.root_element.assign_baseline_controls(user, catalog_key, baseline_name)
-        # Log result if successful
-        if assign_results:
-            # Log start app / new project
-            logger.info(
-                event="assign_baseline",
-                object={"object": "system", "id": system.root_element.id, "title": system.root_element.name},
-                baseline={"catalog_key": catalog_key, "baseline_name": baseline_name},
-                user={"id": user.id, "username": user.username}
-            )
+        # Assign default control catalog and control profile
+        # Use from App catalog settings
+        try:
+            from pprint import pprint
+            pprint(project.root_task.module.app.catalog_metadata['params'])
+            # Get default catalog key
+            params = project.root_task.module.app.catalog_metadata['params']
+            catalog_key = [p for p in params if p['id'] == 'default_catalog_key'][0]['value']
+            print("catalog_key", catalog_key)
+            # Get default profile/baseline
+            # params = project.root_task.module.app.catalog_metadata['params']
+            baseline_name = [p for p in params if p['id'] == 'default_baseline'][0]['value']
+            print("baseline_name", baseline_name)
+            # Assign profile/baseline
+            assign_results = system.root_element.assign_baseline_controls(user, catalog_key, baseline_name)
+            # Log result if successful
+            if assign_results:
+                # Log start app / new project
+                logger.info(
+                    event="assign_baseline",
+                    object={"object": "system", "id": system.root_element.id, "title": system.root_element.name},
+                    baseline={"catalog_key": catalog_key, "baseline_name": baseline_name},
+                    user={"id": user.id, "username": user.username}
+                )
+        except:
+            # TODO catch error and return error message
+            pprint("[INFO] App could not assign catalog_key or profile/baseline.\n")
 
         # Assign default organization components for a system
         if user.has_perm('change_system', system):
