@@ -4,8 +4,6 @@ GovReady-Q Release Notes
 v999 (February XX, 2021)
 ------------------------
 
-[Add development changes here]
-
 Add System Assessment Report tracking to associate assessments and evidence with the system.
 Add initial dynamic status information to the project page.
 
@@ -14,6 +12,22 @@ Add initial dynamic status information to the project page.
 * Add System Assessment Report tracking to associate assessments and evidence with the system.
 * Add initial dynamic status information to the project page.
 
+**UI changes**
+
+* Improve page load times for listings with pagination and ordering for project listing and selected component listing. 
+* Display projects in pages of 10 and selected components by 5.
+
+**Developer changes**
+
+* Properly restrict access to statement history to users with system access, staff, admins.
+* Avoid name collissions when cloning a component.
+* Replaced function-based views with class-based listview for SelectedComponentsList, ProjectList.
+* Avoid name collisions when cloning a component.
+* Default to not use Django Debug Toolbar. Added new `enable_tool_bar` parameter option for `local/environment.json` to allow users to enable(True) or disable(False) the Django Debug Toolbar.
+* Added site-wide caching through django.middleware.cache.UpdateCacheMiddleware and django.middleware.cache.FetchFromCacheMiddleware as well as a few cache middleware settings in `siteapp/settings.py`
+* Adding DummyCache to prevent real caching while running automated tests.
+* Refactored use of random package to use secure secrets module.
+* Added minor pylint fixes.
 
 v0.9.1.51 (February 03, 2021)
 -----------------------------
@@ -369,7 +383,7 @@ v.0.9.1.47 (December 01, 2020)
 * Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
 
 v0.9.1.46.4 (November 25, 2020)
------------------------------
+-----------------------------	
 
 **UI changes**
 

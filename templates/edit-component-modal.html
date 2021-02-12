@@ -17,6 +17,8 @@
                 <input type="text" name="name" maxlength="250" class="form-control" placeholder="Description" title="Common name or acronym of the element" required="" id="description-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0">
                 <div class="help-block">Brief description of the Element</div>
             </div>
+            <div class="alert alert-danger" role="alert" id="error-alert">
+            </div>
            </div>
            <div class="modal-footer">
              <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -33,8 +35,19 @@
     function show_edit_component_modal(name,description,callback) {
       document.getElementById("name-input").value = name;
       document.getElementById("description-input").value = description;
+      $('#error-alert').hide();
       $('#edit-component-modal').modal();
-      $('#submit-btn').on('click', () => callback(document.getElementById("name-input").value,document.getElementById("description-input").value));
+      $('#submit-btn').on('click', (e) =>{
+        e.preventDefault();
+        callback(document.getElementById("name-input").value,document.getElementById("description-input").value);
+      });
+    }
+    function hide_edit_component_modal(){
+      $('#edit-component-modal').modal('hide');
+    }
+    function show_edit_component_modal_error(errorMessage){
+      $("#error-alert").html(errorMessage); 
+      $('#error-alert').fadeIn();
     }
   </script>
   {% endblock %}

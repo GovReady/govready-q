@@ -20,6 +20,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(enable_experimental_opencontrol),
-        migrations.RunPython(enable_experimental_oscal),
+        migrations.RunPython(enable_experimental_opencontrol, migrations.RunPython.noop),
+        migrations.RunPython(enable_experimental_oscal, migrations.RunPython.noop),
     ]

@@ -98,6 +98,8 @@ def increment_element_name(component_name):
 
     if re.search("\((\d+)\)$", component_name):
         new_component_name = re.sub("\((\d+)\)$", lambda m: " (" + str(int(m.groups()[0])+1) + ")", component_name)
+        # Also remove any extra spaces
+        new_component_name = re.sub("\s\s+", " ", new_component_name)
     else:
         new_component_name = component_name + " (1)"
 
