@@ -1,46 +1,25 @@
-{% extends "base.html" %}
+{% extends "project-base.html" %}
 {% load humanize %}
 {% load guardian_tags %}
-{% load system_tags %}
 {% load static %}
 {% load q %}
+{% load system_tags %}
 
 {% block title %}
-{{ portfolio.title }} Controls Selected
+  Controls Selected
 {% endblock %}
 
 {% block head %}
+{{block.super}}
 {% include "controls/_style-controls.html" %}
 {% endblock %}
 
-{% block contextbar %}{% endblock %}
+<!-- action buttons included from project-base.html -->
+<!-- authoring_tool_enabled included from project-base.html -->
 
-{% block body %}
-
-<div class="systems-top">
-  <div class="container">
-
-  <div class="row">
-    <div id="above-tab-content" class="row">
-      <!-- Page Title-->
-      <div class="systems-title">
-          <h2 class="control-heading">
-            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> > Selected Controls
-          </h2>
-      </div>
-      <!-- Control Lookup-->
-      <div class="systems-control-lookup">
-          <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
-            <input type="text" name="id" placeholder="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
-                <button type="submit" class="btn btn-success">Look up</button>
-                <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="/">families</a> -->
-          </form>
-      </div>
-    </div>
-  </div><!--/row-->
-    <p>&nbsp;</p>
-
+{% block body_content %}
+  <div class="systems-top">
+    <div class="container">
     <div id="tab-content" class="row rows-header">
         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">Selected controls</div>
         <div id="" class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9">&nbsp;</div>
@@ -99,7 +78,7 @@
   </div>
 </div>
 
-{{ block.super }}
+
 {% endblock %}
 
 {% block scripts %}

@@ -1,36 +1,26 @@
-{% extends "base.html" %}
+{% extends "project-base.html" %}
 {% load humanize %}
 {% load guardian_tags %}
 {% load static %}
 {% load q %}
 
+
 {% block title %}
-{{ portfolio.title }} Components Selected
+  Components Selected
 {% endblock %}
 
 {% block head %}
+{{block.super}}
 {% include "controls/_style-controls.html" %}
-
 {% endblock %}
 
-{% block contextbar %}{% endblock %}
+<!-- action buttons included from project-base.html -->
 
-{% block body %}
+<!-- authoring_tool_enabled included from project-base.html -->
 
+{% block body_content %}
     <div class="systems-top">
         <div class="container">
-
-            <div class="row" style="">
-                <div id="above-tab-content" class="row">
-                    <!-- Page Title-->
-                    <div class="systems-title">
-                        <h2 class="control-heading">
-                            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> > Selected Components
-                        </h2>
-                    </div>
-                </div>
-            </div><!--/row-->
-            <p>&nbsp;</p>
 
             <div id="tab-content" class="row rows-header">
                 <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span class="systems-selected-components">Selected Components</span></div>
@@ -70,27 +60,24 @@
                     </div>
 
                 </form>
+                <div class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1">&laquo; first</a>
+                        <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                    {% endif %}
 
-            <div class="step-links">
-                {% if page_obj.has_previous %}
-                    <a href="?page=1">&laquo; first</a>
-                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-                {% endif %}
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
 
-                <span class="current">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                </span>
-
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}">next</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-                {% endif %}
-            </div>
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}">next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
-
-    {{ block.super }}
 {% endblock %}
 
 {% block scripts %}

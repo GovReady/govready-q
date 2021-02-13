@@ -1,31 +1,30 @@
 {% extends "project-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
 {% load static %}
 {% load q %}
 
 {% block title %}
-{{title}}
+  {{title}}
 {% endblock %}
 
 {% block head %}
 {{block.super}}
 <style>
+
+  #focus-area-wrapper {
+    padding: 2em 2em 3em 2em;
+  }
+
   .question-column {
     padding: 0px 30px 0px 30px;
-}
-
-{% if layout_mode == "columns" %}
-  .question-column h2 {
-    color: black;
-    margin: 5px 0 px 0;
-    text-align: center;
-    margin: 0 -10px;
     padding: 10px;
-    background-color: rgb(247,247,247);
-    border-radius: 5px;
+    /*background-color: rgb(247,247,247);*/
+    /*border-radius: 5px;*/
     max-width:66vw;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
+    /*box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);*/
   }
-  {% endif %}
+
   {% if layout_mode == "rows" %}
     .question-column {
       padding: 0px 30px 0px 30px;
@@ -38,37 +37,27 @@
       text-align: center;
     }
 
-  .question-group {
+  .question-group {}
 
-  }
     .question-group h3 {
       font-size: inherit;
       font-weight: bold;
     }
+
     .question-group > .row {
       margin: 5px 0;
     }
 
-  .question {
-    background-color: white;
-    padding-top: 10px; /* can't mess with side padding because it is a bootstrap column */
-    padding-bottom: 10px; /* can't mess with side padding because it is a bootstrap column */
-    margin-bottom: 15px;
-    border-radius: 3px;
-    border-bottom: 1px solid rgb(204, 204, 204);
-    /*border: 1px solid #D0D0D0;*/
-  }
-
   .question-icon {
     width: 30px;
-    float: right;
+    float: left !important;
     margin: 4px 0 5px 8px;
   }
 
   {% else %}
   .question-group {
-    margin: 10px 0 20px 0;
-    padding-top: 16px;
+    margin: 0px 0 20px 0;
+    padding-top: 0px;
   }
 
   h2.question-column-title {
@@ -82,16 +71,16 @@
   }
 
   .question {
-    background-color: white;
-    border-bottom: 1px solid rgb(204, 204, 204);
+    background-color: #F6F7F7;
+    border: 1px solid #C1C1C1;
     margin-bottom: 15px;
-    padding-top: .75em;
-    padding-bottom: .75em;
+    padding-top: .5em;
     {% if layout_mode == "grid" %}
       text-align: center;
       margin-top: 10px;
     {% endif %}
-    border-radius: 15px; /* good for highlighting */
+    border-radius: 2px; /* good for highlighting */
+    /*box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);*/
 
   }
     .question:hover {
@@ -101,10 +90,7 @@
       margin: 0 auto;
       width: 96px;
       height: 96px;
-      border: 1px solid #DDD;
       padding:12px;
-      border-radius: 10px;
-      background-color: #DDD;
     }
     .question .question-title {
       margin-top: .5em;
@@ -184,132 +170,10 @@
 </style>
 {% endblock %}
 
-{% block action_buttons %}
-  <div class="btn-group" role="group" aria-label="action buttons group">
-    {% if project.system is not None %}
-      <button id="btn-components" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
-        <em class="glyphicon glyphicon-tags"></em>&nbsp; Components</a>
-      </button>
-      <button id="btn-controls" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
-        <em class="glyphicon glyphicon-book"></em> Controls</a>
-      </button>
-      <button id="btn-poams" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/poams';">
-        <em class="glyphicon glyphicon-check"></em>&nbsp; POA&Ms</a>
-      </button>
-      <button id="btn-deployments" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/deployments';">
-        <em class="glyphicon glyphicon-th"></em>&nbsp; Deployments</a>
-      </button>
-      <button id="btn-sar" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/assessments';">
-        <em class="glyphicon glyphicon-th"></em>&nbsp; Assessments</a>
-      </button>
-      <button id="btn-import-project" class="btn btn-sm btn-default" onclick="show_import_project_modal('{{ portfolio.id }}'); return false;" href="#">
-        <em class="glyphicon glyphicon-arrow-up"></em>&nbsp; Import Project</a>
-      </button>
-      <button id="btn-export-project" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.id}}/export';">
-        <em class="glyphicon glyphicon-arrow-down"></em>&nbsp; Export project</a>
-      </button>
-    {% endif %}
-    {% if not project.is_account_project or project.is_deletable %}
-      <button id="btn-project-settings" class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/settings';">
-        <em class="glyphicon glyphicon-cog"></em> Settings</a>
-      </button>
-    {% endif %}
-    {% if send_invitation.can_add_invitee_to_team %}
-      <button id="btn-show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
-        <em class="glyphicon glyphicon-user"></em><em class="glyphicon glyphicon-plus"></em>
-        Invite
-      </button>
-    {% endif %}
-
-    <button id="btn-review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
-      <em class="glyphicon glyphicon-list"></em>
-      Review
-    </button>
-
-    {% if has_outputs %}
-      <button id="btn-related-controls" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
-        <em class="glyphicon glyphicon-th"></em>
-        Documents
-      </button>
-    {% endif %}
-
-    <button id="btn-api" class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/api';">
-      <em class="glyphicon glyphicon-sort"></em>
-      API Docs
-    </button>
-
-    {% if authoring_tool_enabled %}
-      <button id="btn-open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
-        <em class="glyphicon glyphicon-pencil"></em>
-        Authoring Tool
-      </button>
-    {% endif %}
-
-    <button id="btn-move-project" class="btn btn-sm btn-default"  onclick='move_project()'>
-      <em class="glyphicon glyphicon-sort"></em>
-      Move Project
-    </button>
-  </div>
-
-  {# action buttons for compliance app tasks/modules #}
-  {% if action_buttons %}
-    {% for q in action_buttons %}
-      <div class="action-button-box">
-        <div class="action-button-app-title">{{project.root_task.module.spec.title}}</div>
-        {# Display for started tasks #}
-        {% if can_start_task and q.can_start_new_task %}
-          <form id="question-{{q.question.key}}" class="start-task" method="post" action="/tasks/start" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="project" value="{{project.id}}"/>
-            <input type="hidden" name="question" value="{{q.question.key}}"/>
-            <input type="hidden" name="previous" value="project"/>
-            <a class="btn btn-sm btn-default" class="action-button"
-              href="#" onclick="$(this).parent('form').submit(); return false;">
-              {{q.question.spec.title}} &raquo;
-            </a>
-          </form>
-        {% else %}
-        {# Display for not yet started tasks #}
-        <a id="question-{{q.question.key}}"
-          class="btn btn-sm btn-default" class="action-button"
-          href="{{q.task.get_absolute_url}}?previous=project">
-          {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
-        </a>
-        {% endif %}
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endblock %}
-
-{% block above_title %}
-    {% if authoring_tool_enabled %}
-      <center class="authoring-tool-hidden authoring-tool-box"><p class="text-info">
-        You are in author mode. Authoring tools have been enabled for this module.
-      </p></center>
-
-      <center class="authoring-tool-hidden authoring-tool-box">
-      <p>
-      <a href="#" onclick="show_authoring_tool_module_editor(); return false;" class="authoring-tool-style">
-        <span class="glyphicon glyphicon-pencil"></span>
-        Edit App
-      </a>
-
-      <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" class="authoring-tool-style">
-      <span class="glyphicon glyphicon-plus"></span>
-      Add Question
-      </a>
-
-      <a href="#" onclick="authoring_tool_download_app_project({{project.root_task.id}}, true); return false;" class="authoring-tool-style">
-      <span class="glyphicon glyphicon-download"></span>
-      Download Source
-      </a>
-      </p>
-    </center>
-    {% endif %}
-{% endblock %}
+<!-- action buttons included from project-base.html -->
+<!-- authoring_tool_enabled included from project-base.html -->
 
 {% block body_content %}
-
   {% if enable_experimental_evidence %}
     <div class="row">
       <div class="col-md-3">
@@ -386,7 +250,7 @@
               <li><input type="checkbox"></input><span class="input-todo">Review OSCAL import</span></li>
               <li><input type="checkbox"></input><span class="input-todo">Approve CISCO ASA Firewall component</span></li>
               <li><input type="checkbox"></input><span class="input-todo">Export OSCAL for Jeff at InitTech</span></li>
-{#              <li><input type="checkbox"></input><span class="input-todo">Submit SSP</span></li>#}
+                {# <li><input type="checkbox"></input><span class="input-todo">Submit SSP</span></li>#}
             </ul>
         </div>
       </div>
@@ -408,9 +272,9 @@
       <div class="col-sm-12" class="project-row-style">
         <span class="status-section-header">Questionnaires / Compliance App</span>
         {% if project.root_task.module.spec.introduction %}
-{#          <p class="project-text">#}
-{#          {{project.root_task.render_introduction|safe}}#}
-{#          </p>#}
+            {#<p class="project-text">#}
+              {#{{project.root_task.render_introduction|safe}}#}
+            {#</p>#}
         {% endif %}
 
         {% if project.root_task.module.spec.is_app_stub %}
@@ -431,7 +295,7 @@
 
             {% for group in column.groups %}
             {% if group.title %}<div><a id="{{group.title}}"></a>&nbsp;</div>{% endif %}
-            <div class="question-group" style="border: 0px solid blue;margin-top:0px;margin-bottom: 0px;">
+            <div class="question-group">
 
               {% if group.title %}
               <h3 class="question-group-title">{{group.title}}</h3>
@@ -482,7 +346,7 @@
                     {# Once again, different HTML depending on the layout mode being used. For rows, start a new Bootstrap row and put the icon in the first column div. #}
                     {% if layout_mode == "rows" %}
                       <div class="row">
-                      <div class="col-sm-3">
+                      <div class="col-sm-2">
                     {% endif %}
 
                     {% if authoring_tool_enabled %}
@@ -547,9 +411,7 @@
                         {# In the rows layout mode, indicate the question's progress and show a button to start or continue the task #}
                         {% if layout_mode != "grid" %}
                           {% with task=q.task %}
-                            <div class="progress project-progress">
-                              <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{task.get_progress_percent}}%" aria-valuenow="{{task.get_progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
+                            <div class=""></div>
                             {% if layout_mode == "rows" %}
                             {% if task.is_finished %}
                             <div class="btn btn-sm btn-default project-button-finished">Finished</div>
@@ -602,7 +464,7 @@
                 </div> <!-- /#question-__.question -->
               {% endfor %} {# question #}
               </div> <!-- /row -->
-              </div> <!-- /question-group -->
+            </div> <!-- /question-group -->
             {% endfor %} {# group #}
 
             {% comment %}
@@ -616,16 +478,13 @@
               </p>
             {% endif %}
             {% endcomment %}
-
         </div> <!-- /question-column -->
       </div> <!-- /col -->
     {% endfor %} {# column #}
     {% endwith %}
-
-
     </div> <!-- /row for columns -->
-  </div>
-</div>
+  <!-- </div> -->
+<!-- </div> -->
 {% endblock %}
 
 {% block modals %}
