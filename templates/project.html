@@ -11,21 +11,13 @@
 <style>
   .question-column {
     padding: 0px 30px 0px 30px;
-}
-
-{% if layout_mode == "columns" %}
-  .question-column h2 {
-    color: black;
-    margin: 5px 0 px 0;
-    text-align: center;
-    margin: 0 -10px;
     padding: 10px;
     background-color: rgb(247,247,247);
     border-radius: 5px;
     max-width:66vw;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
   }
-  {% endif %}
+
   {% if layout_mode == "rows" %}
     .question-column {
       padding: 0px 30px 0px 30px;
@@ -431,7 +423,7 @@
 
             {% for group in column.groups %}
             {% if group.title %}<div><a id="{{group.title}}"></a>&nbsp;</div>{% endif %}
-            <div class="question-group" style="border: 0px solid blue;margin-top:0px;margin-bottom: 0px;">
+            <div class="question-group">
 
               {% if group.title %}
               <h3 class="question-group-title">{{group.title}}</h3>
