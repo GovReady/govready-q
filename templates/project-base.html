@@ -4,34 +4,41 @@
 
 {% block head %}
 <style>
-{% include "focus-area-styles.css" %}
 
-#project-icon {
-  float: left;
-  margin: 0 1.5em 1em 0;
-  {% if title == project.root_task.module.spec.title %}
-   /* if there's no subhead, match icon size to font size */
-    width: 50px;
-    height: 50px;
-  {% else %}
-    width: 80px;
-    height: 80px;
-  {% endif %}
-}
+  #project-icon {
+    float: left;
+    margin: 0 1.5em 1em 0;
+    {% if title == project.root_task.module.spec.title %}
+     /* if there's no subhead, match icon size to font size */
+      width: 50px;
+      height: 50px;
+    {% else %}
+      width: 80px;
+      height: 80px;
+    {% endif %}
+  }
 
-h1 {
-  margin: 0;
-  font-size: 32px;
-}
+  h1 {
+    margin: 0;
+    font-size: 32px;
+  }
 
-div.subtitle {
-  margin: .2em 0 .75em 0;
-  font-weight: bold;
-}
+  div.subtitle {
+    margin: .2em 0 .75em 0;
+    font-weight: bold;
+  }
 
-.breadcrumb {
-  font-size: 1.0em;
-}
+  .breadcrumb {
+    font-size: 1.0em;
+  }
+
+  #focus-area-wrapper {
+    padding: 2em 2em 3em 2em;
+  }
+
+  .link-black { color: black; }
+  .link-black:hover { color: black; }
+
 </style>
 {% endblock %}
 
@@ -64,65 +71,191 @@ div.subtitle {
 {% block body %}
 {{block.super}}
 <div class="row">
-  {% if is_project_page %}
   <div class="col-md-push-10 col-md-2">
     <div id="action-buttons action-row">
       {% block action_buttons %}
+        <div class="btn-group" role="group" aria-label="action buttons group">
+          {% if project.system is not None %}
+            <button id="btn-components" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
+              <em class="glyphicon glyphicon-tags"></em>&nbsp; Components</a>
+            </button>
+            <button id="btn-controls" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
+              <em class="glyphicon glyphicon-book"></em> Controls</a>
+            </button>
+            <button id="btn-poams" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/poams';">
+              <em class="glyphicon glyphicon-check"></em>&nbsp; POA&Ms</a>
+            </button>
+            <button id="btn-deployments" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/deployments';">
+              <em class="glyphicon glyphicon-th"></em>&nbsp; Deployments</a>
+            </button>
+            <button id="btn-sar" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/assessments';">
+              <em class="glyphicon glyphicon-th"></em>&nbsp; Assessments</a>
+            </button>
+            {% if is_project_page %}
+              <button id="btn-import-project" class="btn btn-sm btn-default" onclick="show_import_project_modal('{{ portfolio.id }}'); return false;" href="#">
+                <em class="glyphicon glyphicon-arrow-up"></em>&nbsp; Import Project</a>
+              </button>
+              <button id="btn-export-project" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.id}}/export';">
+                <em class="glyphicon glyphicon-arrow-down"></em>&nbsp; Export project</a>
+              </button>
+            {% endif %}
+          {% endif %}
+          {% if not project.is_account_project or project.is_deletable %}
+            <button id="btn-project-settings" class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/settings';">
+              <em class="glyphicon glyphicon-cog"></em> Settings</a>
+            </button>
+          {% endif %}
+          {% if is_project_page and send_invitation.can_add_invitee_to_team %}
+            <button id="btn-show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
+              <em class="glyphicon glyphicon-user"></em><em class="glyphicon glyphicon-plus"></em>
+              Invite
+            </button>
+          {% endif %}
+
+          <button id="btn-review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
+            <em class="glyphicon glyphicon-list"></em>
+            Review
+          </button>
+
+          {% if has_outputs %}
+            <button id="btn-related-controls" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
+              <em class="glyphicon glyphicon-th"></em>
+              Documents
+            </button>
+          {% endif %}
+
+          <button id="btn-api" class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/api';">
+            <em class="glyphicon glyphicon-sort"></em>
+            API Docs
+          </button>
+
+          {% if is_project_page and authoring_tool_enabled %}
+            <button id="btn-open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
+              <em class="glyphicon glyphicon-pencil"></em>
+              Authoring Tool
+            </button>
+          {% endif %}
+
+          {% if is_project_page %}
+            <button id="btn-move-project" class="btn btn-sm btn-default"  onclick='move_project()'>
+              <em class="glyphicon glyphicon-sort"></em>
+              Move Project
+            </button>
+          {% endif %}
+        </div>
+
+        {# action buttons for compliance app tasks/modules #}
+        {% if action_buttons %}
+          {% for q in action_buttons %}
+            <div class="action-button-box">
+              <div class="action-button-app-title">{{project.root_task.module.spec.title}}</div>
+              {# Display for started tasks #}
+              {% if can_start_task and q.can_start_new_task %}
+                <form id="question-{{q.question.key}}" class="start-task" method="post" action="/tasks/start" style="display:inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="project" value="{{project.id}}"/>
+                  <input type="hidden" name="question" value="{{q.question.key}}"/>
+                  <input type="hidden" name="previous" value="project"/>
+                  <a class="btn btn-sm btn-default" class="action-button"
+                    href="#" onclick="$(this).parent('form').submit(); return false;">
+                    {{q.question.spec.title}} &raquo;
+                  </a>
+                </form>
+              {% else %}
+              {# Display for not yet started tasks #}
+              <a id="question-{{q.question.key}}"
+                class="btn btn-sm btn-default" class="action-button"
+                href="{{q.task.get_absolute_url}}?previous=project">
+                {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
+              </a>
+              {% endif %}
+            </div>
+          {% endfor %}
+        {% endif %}
       {% endblock %}
     </div>
   </div>
-  {% endif %}
 
-  <div class="{% if is_project_page %}col-md-pull-2{% endif %} col-md-9">
+  <div class="col-md-pull-2 col-md-9">
+
     <div id="focus-area-wrapper">
       {% block above_title %}
+        {% if authoring_tool_enabled %}
+          <center class="authoring-tool-hidden authoring-tool-box">
+            <p class="text-info">
+              You are in author mode. Authoring tools have been enabled for this module.
+            </p>
+          </center>
+
+          <center class="authoring-tool-hidden authoring-tool-box">
+            <p>
+              <a href="#" onclick="show_authoring_tool_module_editor(); return false;" class="authoring-tool-style">
+                <span class="glyphicon glyphicon-pencil"></span>
+                Edit App
+              </a>
+
+              <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" class="authoring-tool-style">
+              <span class="glyphicon glyphicon-plus"></span>
+              Add Question
+              </a>
+
+              <a href="#" onclick="authoring_tool_download_app_project({{project.root_task.id}}, true); return false;" class="authoring-tool-style">
+              <span class="glyphicon glyphicon-download"></span>
+              Download Source
+              </a>
+            </p>
+          </center>
+        {% endif %}
       {% endblock %}
 
-    <div id="project-title-info" class="row">
-      <div class="col-sm-10">
-        {% if project.root_task.get_app_icon_url %}
-          <img id="project-icon" src="{{project.root_task.get_app_icon_url}}" alt="Project Icon">
-        {% endif %}
-
-        {% if project.organization %}
-        <h1 id="project-title">
-          {{project.title}}
-          {% block title_suffix_text %}
-          {% endblock %}
-        </h1>
-
-        {% if title != project.root_task.module.spec.title %}
-        <div class="">
-        <br>
-          {{project.root_task.module.spec.title}} (ver {{project.root_task.module.spec.version}}) -
-          {{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}
-
-        </div>
-        {% endif %}
-        {% endif %}
-        <div class="clearfix"></div>
-      </div>
-      <div class="col-sm-2">
-        <div id="btn-edit-title" class="center-text">
-          {% if not project.is_account_project or project.is_deletable %}
-            {% if project.is_deletable and is_admin %}
-              <button class="btn btn-default btn-small" onclick="return rename_project();">Edit</button>
-            {% endif %}
+      {# if is_project_page #}
+      <div id="project-title-info" class="row">
+        <div class="col-sm-10">
+          {% if project.root_task.get_app_icon_url %}
+            <img id="project-icon" src="{{project.root_task.get_app_icon_url}}" alt="Project Icon">
           {% endif %}
-        </div>
-      </div>
-    </div><!-- /project-title-info -->
 
-      {% if project.lifecycle_stage %}
-      {% with nstages=project.lifecycle_stage.0.stages|length %}
-      <div class="progress" style="cursor: default;">
-        {% for stage in project.lifecycle_stage.0.stages %}
-          <div class="progress-bar progress-bar-success" style="{% if stage.complete %}width: {{100|div:nstages|floatformat:0|add:-1}}%;{% else %}display: none;{% endif %}">
-            {{stage.label}}
+          {% if project.organization %}
+          <h1 id="project-title">
+            <a href="{{project.get_absolute_url}}" class="link-black">{{project.title}}</a>
+            {% block title_suffix_text %}
+            {% endblock %}
+          </h1>
+
+          {% if title != project.root_task.module.spec.title %}
+          <div class="">
+          <br>
+            {{project.root_task.module.spec.title}} (ver {{project.root_task.module.spec.version}}) -
+            {{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}
+
           </div>
-        {% endfor %}
-      </div>
-      {% endwith %}
+          {% endif %}
+          {% endif %}
+          <div class="clearfix"></div>
+        </div>
+        <div class="col-sm-2">
+          <div id="btn-edit-title" class="center-text">
+            {% if not project.is_account_project or project.is_deletable %}
+              {% if project.is_deletable and is_admin %}
+                <button class="btn btn-default btn-small" onclick="return rename_project();">Edit</button>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div><!-- /project-title-info -->
+      {# endif #}
+      {% if is_project_page %}
+        {% if project.lifecycle_stage %}
+          {% with nstages=project.lifecycle_stage.0.stages|length %}
+          <div class="progress" style="cursor: default;">
+            {% for stage in project.lifecycle_stage.0.stages %}
+              <div class="progress-bar progress-bar-success" style="{% if stage.complete %}width: {{100|div:nstages|floatformat:0|add:-1}}%;{% else %}display: none;{% endif %}">
+                {{stage.label}}
+              </div>
+            {% endfor %}
+          </div>
+          {% endwith %}
+        {% endif %}
       {% endif %}
 
       <div class="project-body-block">
