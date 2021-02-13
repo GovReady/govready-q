@@ -510,7 +510,8 @@ class System(models.Model):
             # TODO
             # Poor performance, at least in some instances, appears to being caused by `smt.prouder_element.name`
             # parameter in the below statement.
-            smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i>\n{status_str}\n\n{smt.body}\n\n"
+            if smt.producer_element:
+                smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i>\n{status_str}\n\n{smt.body}\n\n"
             # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
             # for testing purposes, the loop runs 3x faster
             # The reference `smt.prouder_element.name` appears to be calling the database and creating poor performance
