@@ -564,29 +564,29 @@ class SystemUnitTests(TestCase):
         self.assertIn('delete_system', perms)
         self.assertIn('view_system', perms)
 
-class SystemUITests(SeleniumTest):
+class SystemUITests(OrganizationSiteFunctionalTests):
 
     def test_deployments_page_exists(self):
-        # Create system
-        e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
-        s = System(root_element=e)
-        s.save()
-        # Create user and assign ownership
-        u2 = User.objects.create(username="Jane2", email="jane@example.com")
-        s.assign_owner_permissions(u2)
 
-        # Add deault deployments to system
-        deployment = Deployment(name="Design", description="Reference system archictecture design", system=s)
-        deployment.save()
-        deployment = Deployment(name="Dev", description="Development environment deployment", system=s)
-        deployment.save()
-        deployment = Deployment(name="Stage", description="Stage/Test environment deployment", system=s)
-        deployment.save()
-        deployment = Deployment(name="Prod", description="Production environment deployment", system=s)
+        # login as the first user and create a new project
+        self._login()
+        self._new_project()
+
+        # systemid = System.objects.all().first()
+        project = Project.objects.all().last()
+        system = project.system
+
+        self.navigateToPage(f"/systems/{system.id}/deployments")
+        wait_for_sleep_after(lambda: self.assertInNodeText("New Deployment", ".systems-element-button"))
+
+        # # Add deault deployments to system
+        deployment = Deployment(name="Training", description="Training environment", system=system)
         deployment.save()
 
-        self.browser.get(self.url(f"/systems/{s.id}/deployments"))
-        wait_for_sleep_after(lambda: self.assertInNodeText("Deployments", "#control-heading"))
+        # Does new deployment appear on deployments list?
+        self.navigateToPage(f"/systems/{system.id}/deployments")
+        var_sleep(3) # wait for page to open
+        wait_for_sleep_after(lambda: self.assertInNodeText("New Deployment", ".systems-element-button"))
 
 class PoamUnitTests(TestCase):
     """Class for Poam Unit Tests"""

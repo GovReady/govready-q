@@ -39,7 +39,7 @@
       </div>
     {% else %}
       {% for deployment in deployments %}
-        <div id="tab-content" class="row row-control">
+        <div id="deployment-{{deployment.id}}" class="row row-control">
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
                 <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/inventory">{{ deployment.name }}</a>
             </div>
