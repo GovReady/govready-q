@@ -34,7 +34,7 @@ from .models import Folder, Invitation, Portfolio, Project, User, Organization, 
 from .notifications_helpers import *
 
 import sys
-import structlog
+import logging
 logging.basicConfig()
 import structlog
 from structlog import get_logger
