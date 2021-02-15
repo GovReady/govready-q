@@ -291,7 +291,7 @@ def render_app_catalog_entry(appversion, appversions, organization):
         "icon": None if "icon" not in catalog
                     else image_to_dataurl(appversion.get_asset(catalog["icon"]), 128),
         "protocol": app_module.spec.get("protocol", []) if app_module else [],
-        
+
         # catalog detail page metadata
         "vendor": catalog.get("vendor"),
         "vendor_url": catalog.get("vendor_url"),
@@ -553,7 +553,7 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             user={"id": user.id, "username": user.username}
         )
         # Add deault deployments to system
-        deployment = Deployment(name="Design", description="Reference system archictecture design", system=system)
+        deployment = Deployment(name="Blueprint", description="Reference system archictecture design", system=system)
         deployment.save()
         deployment = Deployment(name="Dev", description="Development environment deployment", system=system)
         deployment.save()
@@ -873,7 +873,7 @@ def project_settings(request, project):
                     continue
 
         # If the invitation didn't get put elsewhere, display in the
-        # other list.                
+        # other list.
         other_open_invitations.append(inv)
 
     # Gather version upgrade information
@@ -1091,7 +1091,7 @@ def project_api(request, project):
             items = list(task.get_current_answer_records())
         else:
             items = [(q, None) for q in module.questions.order_by('definition_order')]
-        
+
         def add_filter_field(q, suffix, title):
             from guidedmodules.models import ModuleQuestion
             schema.append( (path, module, ModuleQuestion(
@@ -1213,7 +1213,7 @@ def move_project(request, project_id):
     request ([HttpRequest]): The network request
     project_id ([int|str]): The id of the project
     Returns:
-        [JsonResponse]: Either a ok status or an error 
+        [JsonResponse]: Either a ok status or an error
     """
     try:
         new_portfolio_id = request.POST.get("new_portfolio", "").strip() or None
