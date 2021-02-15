@@ -174,7 +174,6 @@
 <!-- authoring_tool_enabled included from project-base.html -->
 
 {% block body_content %}
-  {% if enable_experimental_evidence %}
     <div class="row">
       <div class="col-md-3">
         <div class="status-box">
@@ -201,6 +200,7 @@
         </div>
       </div>
     </div>
+  {% if enable_experimental_evidence %}
     <!-- <div style="text-align: right;"><a href="#">view more</a></div> -->
     <!--
     <div class="row">
