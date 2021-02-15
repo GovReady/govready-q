@@ -1,41 +1,30 @@
-{% extends "base.html" %}
+{% extends "project-base.html" %}
 {% load humanize %}
 {% load guardian_tags %}
-{% load system_tags %}
 {% load static %}
 {% load q %}
+{% load system_tags %}
 
 {% block title %}
-{{ portfolio.title }} POA&Ms
+  POA&Ms
 {% endblock %}
 
 {% block head %}
+{{block.super}}
 {% include "controls/_style-controls.html" %}
 {% endblock %}
 
-{% block contextbar %}{% endblock %}
+<!-- action buttons included from project-base.html -->
+<!-- authoring_tool_enabled included from project-base.html -->
 
-{% block body %}
-
+{% block body_content %}
 <div  class="systems-top">
   <div class="container">
 
-  <div class="row">
-    <div id="above-tab-content" class="row">
-      <!-- Page Title-->
-      <div class="systems-title">
-          <h2 class="control-heading">
-            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> > POA&Ms
-          </h2>
-      </div>
-    </div>
-  </div><!--/row-->
-    <p>&nbsp;</p>
-
     <div id="tab-content" class="row rows-header">
         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam">POA&Ms</div>
-        <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">&nbsp;</div>
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+        <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">&nbsp;</div>
+        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
           <a href={% url 'new_poam' system_id=system.id %} class="btn btn-sm btn-success systems-element-button">New POA&M</a>
           <span class="glyphicon glyphicon-download-alt pull-right systems-poam-glyphicon"
                 style="cursor: pointer;"
@@ -70,7 +59,6 @@
   </div>
 </div>
 
-{{ block.super }}
 {% endblock %}
 
 {% block scripts %}

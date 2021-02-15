@@ -1,5 +1,6 @@
 id: fisma_level
 title: Determine Your FISMA Level
+version: 1.1.1
 introduction:
   format: markdown
   template: |
@@ -35,11 +36,6 @@ introduction:
     integrity, and availability.
 questions:
 
-- id: application_number
-  title: FedRAMP Application Number
-  prompt: |
-    To begin, what is your FedRAMP application number?
-  type: text
 - id: information_types_categories
   title: Information Types Categories
   prompt: |
@@ -16806,6 +16802,48 @@ questions:
     have a **{{information_types_level}}** impact.
 
     If the impact levels for confidentiality, integrity, or availability differed, we chose the high water mark.
+- id: fisma_level
+  title: FISMA Level
+  prompt: '[not used, always imputed]'
+  type: choice
+  choices:
+  - key: Low
+    text: Low
+  - key: Moderate
+    text: Moderate
+  - key: High
+    text: High
+  impute:
+  - condition: information_types_level == "High"
+    value: High
+  - condition: information_types_level == "Moderate"
+    value: Moderate
+  - condition: 'True'
+    value: Low
+- id: fisma_level_review
+  title: Review the FISMA Level
+  type: interstitial
+  prompt: |
+    Your system's FISMA Level is **{{fisma_level.text}}**.
+
+    The FISMA level was determined from the following information:
+
+    Information types contained in the system: {{information_types.text}}
+
+    Impact Level based on Information Types: {{information_types_level.text}}
+
+- id: module_complete
+  title: Module Complete?
+  prompt: |
+    Congratulations on reaching the end of this module!
+
+    Selecting "Yes" will mark the module as finished."
+  type: choice
+  choices:
+  - key: complete
+    text: 'Yes'
+
+deprecated:
 - id: pii_types_collected
   title: Types of Personally Identifiable Information.
   type: multiple-choice
@@ -17006,52 +17044,3 @@ questions:
     Based on your answers about the Protected Health Information contained within
     the information system, the loss of confidentiality, integrity, or availability would
     have a {{phi_impact_level}} impact.
-- id: fisma_level
-  title: FISMA Level
-  prompt: '[not used, always imputed]'
-  type: choice
-  choices:
-  - key: Low
-    text: Low
-  - key: Moderate
-    text: Moderate
-  - key: High
-    text: High
-  impute:
-  - condition: information_types_level == "High" or pii_impact_level == "High" or
-      phi_impact_level == "High"
-    value: High
-  - condition: information_types_level == "Moderate" or pii_impact_level == "Moderate"
-      or phi_impact_level == "Moderate"
-    value: Moderate
-  - condition: 'True'
-    value: Low
-- id: fisma_level_review
-  title: Review the FISMA Level
-  type: interstitial
-  prompt: |
-    Your system's FISMA Level is **{{fisma_level.text}}**.
-
-    The FISMA level was determined from the following information:
-
-    Information types contained in the system: {{information_types.text}}
-
-    Impact Level based on Information Types: {{information_types_level.text}}
-
-    Personally Identifiable Information Types: {{pii_types_collected.text}}
-
-    Personally Identifiable Information Impact Level: {{pii_impact_level.text}}
-
-    Protected Health Information: {{phi_has_any_phi.text}}
-
-    Protected Health Information Impact Level: {{phi_impact_level.text}}
-- id: module_complete
-  title: Module Complete?
-  prompt: |
-    Congratulations on reaching the end of this module!
-
-    Selecting "Yes" will mark the module as finished."
-  type: choice
-  choices:
-  - key: complete
-    text: 'Yes'

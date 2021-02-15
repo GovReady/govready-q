@@ -12,6 +12,7 @@ Project page displays mini-dashboard of compliance stats.
 
 * Add System Assessment Report tracking to associate assessments and evidence with the system.
 * Add initial dynamic status information to the project page.
+* Use default catalog parameters to set default control catalog and baseline.
 
 **UI changes**
 
@@ -34,6 +35,8 @@ Project page displays mini-dashboard of compliance stats.
 * Adding DummyCache to prevent real caching while running automated tests.
 * Refactored use of random package to use secure secrets module.
 * Added minor pylint fixes.
+* Added the ability to import and export Poams along with the project import/export.
+* GovReady will now read compliance app catalog.parameters.catalog_key and catalog.parameters.baseline values to set the selected controls for a system.
 
 v0.9.1.51 (February 03, 2021)
 -----------------------------

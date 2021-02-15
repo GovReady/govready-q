@@ -16,8 +16,6 @@ from . import views
 from siteapp.settings import *
 
 urlpatterns = [
-    url(r'^test$', views.test),
-
     # Docs
     url('doc/', include('django.contrib.admindocs.urls')),
 

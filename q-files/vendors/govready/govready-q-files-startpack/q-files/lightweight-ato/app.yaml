@@ -1,7 +1,7 @@
 id: app
 title: General IT System ATO
 type: project
-version: 1.1.2.1
+version: 1.1.3
 icon: app.png
 introduction:
   format: markdown
@@ -19,14 +19,6 @@ output:
       Information Types: {{fisma_level.information_types.text}}
 
       Impact Level based on Information Types: {{fisma_level.information_types_level.text}}
-
-      PII Types: {{fisma_level.pii_types_collected.text}}
-
-      PII Impact Level: {{fisma_level.pii_impact_level.text}}
-
-      PHI? {{fisma_level.phi_has_any_phi.text}}
-
-    PHI Impact Level: {{fisma_level.phi_impact_level.text}}
     {% endif %}
 
 catalog:
@@ -38,15 +30,15 @@ catalog:
 
       Edit this Markdown file to provide a long description of your compliance app. The contents of this file will be displayed in the GovReady-Q Compliance Apps Catalog.
     short: IT System Questionnaires
-  source_url: https://github.com/GovReady/apps
-  status: stub
+  source_url: https://github.com/GovReady/govready-q/tree/master/q-files/vendors/govready/govready-q-files-startpack/q-files/lightweight-ato
+  status: production
   vendor: GovReady®
   vendor_url: ~
-  version: 1.1.2.1
-  params:
-    - id: default_catalog_key
+  version: 1.1.3
+  parameters:
+    - id: catalog_key
       value: NIST_SP-800-53_rev4
-    - id: default_baseline
+    - id: baseline
       value: low
 questions:
 

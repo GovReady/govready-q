@@ -1,36 +1,25 @@
-{% extends "base.html" %}
+{% extends "project-base.html" %}
 {% load humanize %}
 {% load guardian_tags %}
-{% load system_tags %}
 {% load static %}
 {% load q %}
+{% load system_tags %}
 
 {% block title %}
-{{ portfolio.title }} Deployments
+  Deployments
 {% endblock %}
 
 {% block head %}
+{{block.super}}
 {% include "controls/_style-controls.html" %}
 {% endblock %}
 
-{% block contextbar %}{% endblock %}
+<!-- action buttons included from project-base.html -->
+<!-- authoring_tool_enabled included from project-base.html -->
 
-{% block body %}
-
+{% block body_content %}
 <div  class="systems-top">
   <div class="container">
-
-  <div class="row">
-    <div id="above-tab-content" class="row">
-      <!-- Page Title-->
-      <div class="systems-title">
-          <h2 class="control-heading">
-            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> > Deployments
-          </h2>
-      </div>
-    </div>
-  </div><!--/row-->
-    <p>&nbsp;</p>
 
     <div id="tab-content" class="row rows-header">
         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam">Deployments</div>
@@ -50,7 +39,7 @@
       </div>
     {% else %}
       {% for deployment in deployments %}
-        <div id="tab-content" class="row row-control">
+        <div id="deployment-{{deployment.id}}" class="row row-control">
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
                 <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/inventory">{{ deployment.name }}</a>
             </div>
@@ -75,7 +64,6 @@
   </div>
 </div>
 
-{{ block.super }}
 {% endblock %}
 
 {% block scripts %}
