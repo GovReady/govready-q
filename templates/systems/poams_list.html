@@ -19,12 +19,10 @@
 
 {% block body_content %}
 <div  class="systems-top">
-  <div class="container">
-
     <div id="tab-content" class="row rows-header">
         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam">POA&Ms</div>
-        <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">&nbsp;</div>
-        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+        <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">&nbsp;</div>
+        <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
           <a href={% url 'new_poam' system_id=system.id %} class="btn btn-sm btn-success systems-element-button">New POA&M</a>
           <span class="glyphicon glyphicon-download-alt pull-right systems-poam-glyphicon"
                 style="cursor: pointer;"
@@ -55,8 +53,6 @@
         </div>
       {% endfor %}
     {% endif %}
-
-  </div>
 </div>
 
 {% endblock %}
