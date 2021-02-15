@@ -35,16 +35,20 @@
             <div id="tab-content" class="row rows-header">
                 <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span class="systems-selected-components">Selected Components</span></div>
             </div>
-            {% for component in system.producer_elements %}
-                <div id="tab-content" class="row row-control">
-                    <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
-                        <a href={% url 'system_element' system_id=system.id element_id=component.id %}>{{ component.name }}</a>
-                    </div>
-                    <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-                        {{ component.description }}
-                    </div>
 
-                </div>
+            {% for component in system_elements %}
+                {# Each "component" is a Element model object. #}
+                    <div id="tab-content" class="row row-control">
+                        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                            <a href={% url 'system_element' system_id=system.id element_id=component.id %}>{{ component.name }}</a>
+                        </div>
+                        <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                            {% if component.description %}{{ component.description }}{% else %}<span class="not-provided">No description provided.</span>{% endif %}
+                        </div>
+                        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                            <span class="pull-right">{% if component.get_control_impl_smts_prototype_count > 0 %}{{ component.get_control_impl_smts_prototype_count }} control{{ component.get_control_impl_smts_prototype_count|pluralize }}</span>{% else %}None{% endif %}
+                        </div>
+                    </div>
             {% endfor %}
 
             <div id="tab-content" class="row row-control" style="">
@@ -52,12 +56,12 @@
                     {% csrf_token %}
                     <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
                         <div class="form-group">
-                            <label for="compoment">Add component</label>&nbsp;&nbsp;
+                            <label for="component">Add component</label>&nbsp;&nbsp;
                             <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
                             <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onchange="$(form).submit();" style="width:340px;">
                                 <option value="None" selected disabled hidden>Select a Component</option>
                                 {% for component in elements %}
-                                    {% if component not in system.producer_elements %}
+                                    {% if component not in system_elements %}
                                         <option value="{{ component.id }}">{{ component.name }}</option>
                                     {% endif %}
                                 {% endfor %}
@@ -66,8 +70,23 @@
                     </div>
 
                 </form>
-            </div>
 
+            <div class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </div>
+            </div>
         </div>
     </div>
 

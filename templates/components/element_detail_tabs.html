@@ -222,7 +222,6 @@
       </div>
 
       <!-- Tab panel: combined -->
-      {% if enable_experimental_oscal %}
       <div role="tabpanel" class="tab-pane" id="oscal">
         <p id="oscal_download" class="navbar-text navbar-right">
           <a id="oscal_download_json_link"
@@ -235,7 +234,6 @@
         <div id="combined_smt" class="control-text"><h3>OSCAL (under development)</h3></div>
         <div style="font-family: monospace; font-size:12px; white-space: pre;">{{ oscal }}</div>
       </div>
-      {% endif %}
 
       <!-- Tab panel: opencontrol -->
       {% if enable_experimental_opencontrol %}
@@ -477,8 +475,14 @@
               method: "POST",
               data: {name: newName,description: newDescription},
               keep_indicator_forever: true,
-              success: function() {
-                window.location.reload();
+              success: function(res) {
+                if(res["status"]=="ok"){
+                  hide_edit_component_modal();
+                  window.location.reload();
+                }
+                if(res["status"]=="err"){
+                  show_edit_component_modal_error(res["message"])
+                }
               }
             });
           });

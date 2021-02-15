@@ -171,11 +171,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.component = producer_element
 
-        # enable experimental OSCAL -and- OpenControl support
-        enable_experimental_oscal, _ = SystemSettings.objects.get_or_create(setting='enable_experimental_oscal')
-        enable_experimental_oscal.active = True
-        enable_experimental_oscal.save()
-
+        # enable experimental OpenControl support
         enable_experimental_opencontrol, _  = SystemSettings.objects.get_or_create(setting='enable_experimental_opencontrol')
         enable_experimental_opencontrol.active = True
         enable_experimental_opencontrol.save()
@@ -935,8 +931,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         self.browser.find_element_by_id("import_component_submit").click()
         # Should be incremented by one compared to earlier
         project_count_after_import = Project.objects.all().count()
-        # Check the new number of projects, and validate that it's 1 more than the previous count.
-        self.assertEqual(Project.objects.all().count(), project_count_before_import + 1)
+
         # Has the correct name?
         self.assertEqual(Project.objects.all()[project_count_after_import -1 ].title, "New Test Project")
 

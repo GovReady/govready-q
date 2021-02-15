@@ -1,13 +1,58 @@
 GovReady-Q Release Notes
 ========================
 
+v999 (February XX, 2021)
+------------------------
 
-v0.9.1.50.3 (Feburary 1st, 2021)
------------------------
+[Add development changes here]
+
+**UI changes**
+
+* Improve page load times for listings with pagination and ordering for project listing and selected component listing. 
+* Display projects in pages of 10 and selected components by 5.
+
+**Developer changes**
+
+* Properly restrict access to statement history to users with system access, staff, admins.
+* Avoid name collissions when cloning a component.
+* Replaced function-based views with class-based listview for SelectedComponentsList, ProjectList.
+* Avoid name collisions when cloning a component.
+* Default to not use Django Debug Toolbar. Added new `enable_tool_bar` parameter option for `local/environment.json` to allow users to enable(True) or disable(False) the Django Debug Toolbar.
+* Added site-wide caching through django.middleware.cache.UpdateCacheMiddleware and django.middleware.cache.FetchFromCacheMiddleware as well as a few cache middleware settings in `siteapp/settings.py`
+* Adding DummyCache to prevent real caching while running automated tests.
+* Refactored use of random package to use secure secrets module.
+* Added minor pylint fixes.
+* Added the ability to import and export Poams along with the project import/export.
+
+v0.9.1.51 (February 03, 2021)
+-----------------------------
+
+**UI changes**
+
+* Display components alphabetically in component library text listing and in selected components text listing.
+* Include a component description and statement count in component library text listing and in selected components text listing.
+* Remove admin's "update certified text" option from editing control implmentation statements.
+
+**Developer changes**
+
+* Set statements to delete (CASCADE) when producer_element deleted.
+* Set statements to delete (CASCADE) when consumer_element deleted.
+* Add methods to Element to `get_statements`
+* Refactor project deletion to properly delete related System (e.g., project.system.root_element), Statements, ElementControls, POAMS, Deployments.
+
+**Bug fix**
+
+* Fix erroneous control statement save error message.
+
+v0.9.1.50.4 (February 03, 2021)
+------------------------------
 
 **Bug fix**
 
 * Fix importing project to just update the project started.
+
+v0.9.1.50.3 (Feburary 01, 2021)
+------------------------------
 
 **UI changes**
 
@@ -27,7 +72,6 @@ v0.9.1.50.3 (Feburary 1st, 2021)
 
 * Format clean up of style sheets in project, app-store templates.
 * added functools.lru_cache() decorator to speed a couple funcs.
-
 
 v0.9.1.50.2 (January 26, 2021)
 ------------------------------
@@ -331,7 +375,7 @@ v.0.9.1.47 (December 01, 2020)
 * Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
 
 v0.9.1.46.4 (November 25, 2020)
------------------------------
+-----------------------------	
 
 **UI changes**
 
