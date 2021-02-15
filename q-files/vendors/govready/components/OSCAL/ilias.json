@@ -1,0 +1,131 @@
+{
+  "component-definition": {
+    "uuid": "cd85235a-fb97-456f-8ce7-a629aff0c958",
+    "metadata": {
+      "title": "ILIAS Component-to-Control Narratives",
+      "published": "2021-02-15T10:11:51+00:00",
+      "last-modified": "2021-01-14T20:17:57+00:00",
+      "version": "string",
+      "oscal-version": "1.0.0-rc1"
+    },
+    "components": {
+      "2408c133-dbca-4354-98c7-356cf29fd376": {
+        "title": "ILIAS",
+        "type": "system_element",
+        "description": "ILIAS is an open-source web-based learning management system. It supports learning content management and tools for collaboration, communication, evaluation and assessment.",
+        "control-implementations": [
+          {
+            "uuid": "9964ade5-64a3-49e0-860e-280b4fe51061",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "Partial implementation of NIST_SP-800-53_rev4",
+            "implemented-requirements": [
+              {
+                "uuid": "38928627-01e7-4bdd-8e2a-57d5063814d8",
+                "control-id": "ac-14",
+                "description": "",
+                "remarks": "",
+                "statements": {
+                  "ac-14_smt": {
+                    "uuid": "98c0285e-424e-4e01-bbd7-e5fc0c038d98",
+                    "description": "The anonymous user role has the least access to the site of all roles. The website does not allow anonymous users to register an account for themselves.",
+                    "remarks": ""
+                  }
+                }
+              },
+              {
+                "uuid": "43d0f753-aeb7-413a-b004-200586586636",
+                "control-id": "ac-2",
+                "description": "",
+                "remarks": "",
+                "statements": {
+                  "ac-2_smt.a": {
+                    "uuid": "eba06f28-03d4-47be-9e3d-5ec0c26cf403",
+                    "description": "Ilias provides user accounts for individuals who participate in visiting, contributing to and administering the site with the following roles:\r\n\r\n- Anonymous user \u2013 Readers of the site who either do not have an account or are not logged in.\r\n\r\n- Guest \u2013 This role has limited visibility and read permissions\r\n\r\n- User - Standard role for registered users. This role grants read access to most objects.\r\n\r\n- Administrator - This role has all permissions enabled by default.",
+                    "remarks": ""
+                  },
+                  "ac-2_smt.d": {
+                    "uuid": "48fec236-3eb3-4b4c-9cbb-2e9caa4c0ccf",
+                    "description": "Ilias' permissions and role-based access controls are built-in. Each role within Ilias can only access the pages and controls for which their privilege allows.",
+                    "remarks": ""
+                  },
+                  "ac-2_smt.g": {
+                    "uuid": "eaa9459c-dcf1-4d16-a2a2-653ef594cb0c",
+                    "description": "Ilias monitors the usage of information accounts in a log on the server.",
+                    "remarks": ""
+                  }
+                }
+              },
+              {
+                "uuid": "7e82ac55-ace2-44ac-a148-c51ff44a526f",
+                "control-id": "ac-3",
+                "description": "",
+                "remarks": "",
+                "statements": {
+                  "ac-3_smt": {
+                    "uuid": "102aab65-79f2-491f-a70c-38f9d8ff1264",
+                    "description": "Access control in Ilias is enforced by authentication via Shibboleth single sing on (SSO) for every type of user except Anonymous user. The user\u2019s privileges, permissions, and access are provided on the principle of least privilege.\r\n\r\nThe anonymous user role has the least access to the site of all roles. The website does not allow anonymous users to register an account for themselves. Project Administrators, HR Managers, and Org Managers are the only roles that can create new user accounts.",
+                    "remarks": ""
+                  }
+                }
+              },
+              {
+                "uuid": "ddc4fd5a-2513-4f96-bca7-54804a3317d4",
+                "control-id": "ac-8",
+                "description": "",
+                "remarks": "",
+                "statements": {
+                  "ac-8_smt": {
+                    "uuid": "e55c6f41-b3a8-4307-bca9-7b0ed2343357",
+                    "description": "System Use Notification is inherited from the Project.",
+                    "remarks": ""
+                  }
+                }
+              },
+              {
+                "uuid": "df1c055d-ac05-4fee-9e3d-192ce93c111d",
+                "control-id": "au-2",
+                "description": "",
+                "remarks": "",
+                "statements": {
+                  "au-2_smt.a": {
+                    "uuid": "36cffd7f-cbaa-4dc5-8192-714cbaad84ac",
+                    "description": "Transaction logs are generated by the Apache web server, Ilias CMS, MySQL database and PHP page processing. Specifically, the following server, application, database and network device audit log events are captured:\r\n\r\n- Apache access log: Contains a list of requests for your website that have bypassed Varnish. These requests include pages, theme files, and static media files.\r\n\r\n- Apache error log: Records any Apache-level issues. The issues reported here are usually caused by general server issues, including capacity problems, .htaccess problems, and missing files.\r\n\r\n- Ilias page request log: Records all Ilias page loads on your website.\r\n\r\n- Ilias log: Records Ilias-related actions on your website. The log is recorded on your server.\r\n\r\n- MySQL slow query log: Contains a list of MySQL queries that have taken longer than one second to complete.\r\n\r\n- PHP error log: Records any issues that occur during the PHP processing portion of a page load. Issues reported here are usually caused by a website\u2019s code, configuration, or content.",
+                    "remarks": ""
+                  },
+                  "au-2_smt.b": {
+                    "uuid": "37fdf156-e3bb-450a-9d16-f83ea1c251a6",
+                    "description": "All security-related issues and events, including requests for server log analysis, are recorded in CivicActions' JIRA tracking system.",
+                    "remarks": ""
+                  },
+                  "au-2_smt.c": {
+                    "uuid": "c42f3ad0-35f7-4a72-abcf-625e338b0bad",
+                    "description": "CivicActions has extensive experience and specialization as a host of websites that are built using the Ilias web learning platform. Should the need for additional logging become evident, we have the ability to do so by modifying the website's source code to insert additional Ilias logging hooks.",
+                    "remarks": ""
+                  },
+                  "au-2_smt.d": {
+                    "uuid": "141d07ff-d89f-4928-9716-7f7d07d9e9ca",
+                    "description": "Information captured in the transaction logs includes, but is not limited to, the following auditable events:\r\n- Failed login attempts\r\n- Successful login attempts\r\n- New user account creation\r\n- Password reset instructions mailed\r\n- User logins via a one-time login link\r\n- Content creation\r\n- Content publishing\r\n- Web page not found\r\n- Website configuration changes\r\n- System administration activities\r\n- Slow query logs.\r\n- PHP error logs: Captures any errors logged during execution of the PHP programming language. implementation_status: \r\n",
+                    "remarks": ""
+                  }
+                }
+              },
+              {
+                "uuid": "ac993eb7-6b53-4d24-a94d-9d70daf82af7",
+                "control-id": "au-3",
+                "description": "",
+                "remarks": "",
+                "statements": {
+                  "au-3_smt": {
+                    "uuid": "8fff922a-897c-45f1-b36f-c58cc65af92c",
+                    "description": "The logs collected for Ilias sites include the following types of information:\r\n\r\n- IP number of the request originator\r\n\r\n- Timestamp\r\n\r\n- Username\r\n\r\n- Ilias log message (if applicable)\r\n\r\n- Unique numerical ID of the content being modified (for content creation, modification and deletion events)\r\n\r\nWhen auditing an Ilias incident, CivicActions' developers aggregate log sources from multiple servers into the Graylog dashboard so that all log entries for a single managed security incident can be analyzed in a single document. Log sources are sorted, filtered and reviewed. Application logs are maintained primarily for an after-the-fact investigation of critical systems or security events.\r\n",
+                    "remarks": ""
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
