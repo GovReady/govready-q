@@ -1,0 +1,84 @@
+id: pia_redress
+title: Privacy Impact Assessment (Redress)
+
+questions:
+
+- id: q1
+  title: Redress Procedures
+  prompt: |
+    What are the procedures that allow individuals to access their
+    information?
+
+    Describe any procedures or regulations your component has in place that
+    allow access to information collected by the system or project and/or to an
+    accounting of disclosures of that information. Generally speaking, these
+    procedures should include the Department’s FOIA/Privacy Act practices. If the
+    Privacy Act does not apply, state why this is the case. If additional mechanisms
+    exist, include those in this section. For example, if your component has a
+    customer satisfaction unit, that information, along with phone and email contact
+    information, should be listed in this section in addition to the Department’s
+    procedures.
+
+    If the system is exempt from the access provisions of the Privacy Act,
+    explain the basis for the exemption and cite the Final Rule published in the Code
+    of Federal Regulations (CFR) that explains this exemption. If the project is not a
+    Privacy Act system, explain what procedures and/or regulations are in place that
+    cover an individual gaining access to his/her own information.
+  type: longtext
+
+- id: q2
+  title: Correction Procedures
+  prompt: |
+    What procedures are in place to allow the subject individual to
+    correct inaccurate or erroneous information?
+
+    Discuss the procedures for individuals to address possibly inaccurate or
+    erroneous information. 
+
+    If the correction procedures are the same as those given in the previous
+    question, state as much. If the system has exempted itself from the provisions
+    of the Privacy Act, explain why individuals may not access their records. 
+  type: longtext
+
+- id: q3
+  title: Notification Procedures
+  prompt: |
+    How does the project notify individuals about the procedures for
+    correcting their information? 
+
+    Individuals may be made aware of redress procedures through the notices
+    described above or through some other mechanism. This question is
+    meant to address the risk that even if procedures exist to correct information, if an
+    individual is not made fully aware of the existence of those procedures, then the
+    benefits of the procedures are weakened significantly.
+  examples:
+    - example: |
+        Some programs provide the information related to redress in a
+        letter when an individual is given an initial negative determination regarding
+        receiving a particular benefit. This would give the individual clear notice of how
+        to address possible problems with the information the Department holds on him.
+        Other programs depend upon a notice in the workplace rather than direct notice
+        to the individual, so redress may be more difficult for the individual.
+
+  type: longtext
+
+- id: q4
+  title: PIA, Related to Redress
+  prompt: |
+    Discuss what, if any, redress program the project provides beyond the
+    access and correction afforded under the Privacy Act and FOIA. 
+  examples:
+    - example: |
+        Some projects allow users to directly access and correct/update
+        their information online. This helps ensures data accuracy. 
+    - example: |
+        If a project does not allow individual access, the risk of
+        inaccurate data needs to be discussed in light of the purpose of the project. For
+        example, providing access to ongoing law enforcement activities could negatively
+        impact the program’s effectiveness because the individuals involved might change
+        their behavior. 
+
+  type: longtext
+
+output:
+- templates/pia_redress.md

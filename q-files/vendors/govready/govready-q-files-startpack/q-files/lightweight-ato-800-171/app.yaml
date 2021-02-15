@@ -1,11 +1,11 @@
 id: app
-title: General IT System ATO for 800-53 (low)
+title: General IT System ATO for 800-171
 type: project
 version: 1.1.4
 icon: app.png
 introduction:
   format: markdown
-  template: General IT System ATO Questionnaires for 800-53 (low
+  template: General IT System ATO Questionnaires for 800-171
 output:
 - id: fisma_ssp_template
   format: markdown
@@ -37,9 +37,9 @@ catalog:
   version: 1.1.4
   parameters:
     - id: catalog_key
-      value: NIST_SP-800-53_rev4
+      value: NIST_SP-800-171_rev1
     - id: baseline
-      value: low
+      value: cui
 questions:
 
 #System Info

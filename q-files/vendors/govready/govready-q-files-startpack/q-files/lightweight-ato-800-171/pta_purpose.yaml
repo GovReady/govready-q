@@ -1,0 +1,146 @@
+id: pta_purpose
+title: Purpose of the Information Collection
+output:
+- id: ptr_purpose_01
+  title: Purpose 1
+  format: html
+  filename: templates/tp_purpose1.md
+  template: |2
+
+    <style>
+      .dos-pta-form {
+        font-family: TimesNewRoman, Times, serif;
+        width: 650px;
+        margin: auto;
+      }
+
+      .dos-pta-form h2 {
+        font-size: 12pt;
+        font-family: TimesNewRoman, Times, serif;
+        background-color: rgb(89, 129, 187);
+        padding: 4px 30px 4px 30px;
+        color: white;
+        font-weight: bold;
+        margin: 0px 0px 0px 0px;
+        margin-top: 2em;
+      }
+
+      .dos-pta-form .cell-full {
+        border-left: 1px solid rgb(89, 129, 187);
+        border-right: 1px solid rgb(89, 129, 187);
+        border-bottom: 1px solid rgb(89, 129, 187);padding: 4px 30px 4px 30px;
+        font-family: TimesNewRoman, Times, serif;
+      }
+
+      .dos-pta-form .cell-left {
+        border-left: 1px solid rgb(89, 129, 187);
+        border-bottom: 1px solid rgb(89, 129, 187);
+        padding: 4px 30px 4px 30px;
+        width: 49.5%;
+        display: table-cell;
+        height: 100%;
+      }
+
+      .dos-pta-form .cell-right {
+        border-left: 1px solid rgb(89, 129, 187);
+        border-right: 1px solid rgb(89, 129, 187);
+        border-bottom: 1px solid rgb(89, 129, 187);
+        padding: 4px 30px 4px 30px;
+        width: 49.5%;
+        display: table-cell;
+        height: 100%;
+        vertical-align: top;
+      }
+    </style>
+
+    <div class="dos-pta-form">
+
+      <h2>1. The purpose of this information collection is:</h2>
+
+      <div class="cell-full">
+        a. Describe the purpose of the information collection or form. <i>Please provide a general description of the project and its purpose, including how it supports the DOS mission, in a way a non-technical person could understand (you may use information from the Supporting Statement).</i>
+        <div style="margin-left: -18px;">
+        <i>If this is an updated PTA, please specifically describe what changes or upgrades are triggering the update to this PTA.</i>
+        </div>
+      </div>
+      <div class="cell-full">
+        {{ collection_purpose|safe }}
+      </div>
+
+      <div class="cell-full">
+        b. List the DOS (or component) authorities to collect, store, and use this information. <i>If this information will be stored and used by a specific DOS component, list the component-specific authorities.</i>
+      </div>
+      <div class="cell-full">
+        {% if statutes_agency_policies == "yes" %}
+        <pre style="background-color: white; border: 0px solid black; font-family: TimesNewRoman, Times, serif;">{{statutes_agency_policies_list}}</pre>
+        {% endif %}
+        {% if component_policies == "yes" %}
+        <pre style="background-color: white; border: 0px solid black; font-family: TimesNewRoman, Times, serif;">{{component_policies_list}}</pre>
+        {% endif %}
+      </div>
+
+    </div>
+questions:
+- id: purpose_intro
+  title: Intro
+  prompt: "Purpose of the Information Collection or Form \n\nThe next few questions
+    will ask about the purpose of the information collection or form.\nInclude how
+    it supports the DOS mission, in a way a non-technical person can understand. You
+    may use information from the Supporting Statement.\n"
+  type: interstitial
+- id: collection_purpose
+  title: Purpose of the Information Collection or Form
+  prompt: |
+    Describe the purpose of the information being collected by the application, in way a non-technical person can understand.
+
+    Describe the system’s direct contribution to a particular aspect of the organization’s mission. Describe the problem or issue the system addresses and how the system solves it. Describe who the users of the system are and what information these users access or manage in the system.
+  type: longtext
+- id: updated_pta
+  title: Update to Existing PTA?
+  prompt: |
+    Is this an update to an existing PTA?
+  type: yesno
+- id: changes_to_pta
+  title: Changes to Existing PTA
+  prompt: |
+    Please specifically describe what changes or upgrades are triggering the update to this PTA.
+  type: longtext
+  impute:
+  - condition: updated_pta == 'no'
+    value: ~
+- id: authority_intro
+  title: Authorities Intro
+  prompt: >-
+    Statutory authority or departmental authority is required for all information
+    collections.
+
+
+    Your Privacy Threshold Analysis needs a complete listing of the statutes, DOS
+    policies, or DOS policies authorizing the information collection.
+  type: interstitial
+- id: statutes_agency_policies
+  title: Statutes and/or DOS Policies
+  prompt: |
+    Are there statutes and/or DOS policies authorizing collection, storage, and use of this information?
+  type: yesno
+- id: statutes_agency_policies_list
+  title: List Statutes and/or DOS Policies
+  prompt: |
+    List the statutes and/or DOS policies which authorize collection, storage, and use of this information.
+  type: longtext
+  impute:
+  - condition: statutes_agency_policies == 'no'
+    value: ~
+- id: component_policies
+  title: DOS Policies
+  prompt: |
+    Are there DOS policies authorizing collection, storage, and use of this information?
+  type: yesno
+- id: component_policies_list
+  title: List DOS Policies
+  prompt: |
+    List the DOS policies which authorize collection, storage, and use of this information.
+  type: longtext
+  impute:
+  - condition: component_policies == 'no'
+    value: ~

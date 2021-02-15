@@ -1,0 +1,625 @@
+id: cp_questionnaire
+title: Contingency Plan Concept of Operations
+internal:
+  snippets:
+  - snippet: |
+      Contingency Plan questionnaire (snippet)
+introduction:
+  format: markdown
+  template: |
+    Next we'll gather information regarding the Concept of Operations for your Contingency Plan.
+questions:
+- id: q09_pre
+  title: Three Phases (pre)
+  prompt: "Will you leverage the template Three Phases (Activation and Notification,\
+    \ Recovery, and Reconstitution) statement used for AWS information systems?\n\
+    \nAgency boilerplate:\n\n> This plan has been developed to recover and reconstitute\
+    \ the {{project.system_info.system_name}}; using a three-phased approach.  The\
+    \ approach ensures that system recovery and reconstitution efforts are performed\
+    \ in a methodical sequence to maximize the effectiveness of the recovery and reconstitution\
+    \ efforts and minimize system outage time due to errors and omissions.  The three\
+    \ system recovery phases consist of activation and notification, recovery, and\
+    \ reconstitution.\n> \n> 1. **Activation and Notification Phase**.  Activation\
+    \ of the ISCP occurs after a disruption, outage, or disaster that may reasonably\
+    \ extend beyond the RTO established for a system.  The outage event may result\
+    \ in severe damage to the facility that houses the system, severe damage or loss\
+    \ of equipment, or other damage that typically results in long-term loss.\n> Once\
+    \ the ISCP is activated, the information system stakeholders are notified of a\
+    \ possible long-term outage, and a thorough outage assessment is performed for\
+    \ the information system.  Information from the outage assessment is analyzed\
+    \ and may be used to modify recovery procedures specific to the cause of the outage.\n\
+    > 2. **Recovery Phase.**  The Recovery phase details the activities and procedures\
+    \ for recovery of the affected system.  Activities and procedures are written\
+    \ at a level such that an appropriately skilled technician can recover the system\
+    \ without intimate system knowledge.  This phase includes notification and awareness\
+    \ escalation procedures for communication of recovery status to system stakeholders.\n\
+    > 3. **Reconstitution.**  The Reconstitution phase defines the actions taken to\
+    \ test and validate system capability and functionality at the original or new\
+    \ permanent location.  This phase consists of two major activities: validating\
+    \ data and operational functionality followed by deactivation of the plan.\n>\
+    \ \n> During validation, the system is tested and validated as operational prior\
+    \ to returning operation to its normal state.  Validation procedures include functionality\
+    \ or regression testing, concurrent processing, and/or data validation.  The system\
+    \ is declared recovered and operational upon successful completion of validation\
+    \ testing.\n> \n> Deactivation includes activities to notify users of system operational\
+    \ status.  This phase also addresses recovery effort documentation, activity log\
+    \ finalization, incorporation of lessons learned into plan updates, and readying\
+    \ resources for any future events."
+  type: choice
+  choices:
+  - key: 'yes'
+    text: 'Yes'
+  - key: yes_edit
+    text: Yes, but I will edit the template language.
+  - key: 'no'
+    text: 'No'
+- id: q09
+  title: Phases
+  prompt: |
+    {% if q09_pre == 'yes_edit' %} Edit your Phases statement. {% endif %} {% if q09_pre == 'no' %} Write your Phases statement. {% endif %}
+  type: longtext
+  default: >
+    {% if q09_pre == 'yes_edit' %}
+
+    This plan has been developed to recover and reconstitute the [[Information System
+    Name]]; using a three-phased approach.  The approach ensures that system recovery
+    and reconstitution efforts are performed in a methodical sequence to maximize
+    the effectiveness of the recovery and reconstitution efforts and minimize system
+    outage time due to errors and omissions.  The three system recovery phases consist
+    of activation and notification, recovery, and reconstitution.
+
+
+    1. **Activation and Notification Phase**.  Activation of the ISCP occurs after
+    a disruption, outage, or disaster that may reasonably extend beyond the RTO established
+    for a system.  The outage event may result in severe damage to the facility that
+    houses the system, severe damage or loss of equipment, or other damage that typically
+    results in long-term loss.
+
+    Once the ISCP is activated, the information system stakeholders are notified of
+    a possible long-term outage, and a thorough outage assessment is performed for
+    the information system.  Information from the outage assessment is analyzed and
+    may be used to modify recovery procedures specific to the cause of the outage.
+
+    2. **Recovery Phase.**  The Recovery phase details the activities and procedures
+    for recovery of the affected system.  Activities and procedures are written at
+    a level such that an appropriately skilled technician can recover the system without
+    intimate system knowledge.  This phase includes notification and awareness escalation
+    procedures for communication of recovery status to system stakeholders.
+
+    3. **Reconstitution.**  The Reconstitution phase defines the actions taken to
+    test and validate system capability and functionality at the original or new permanent
+    location.  This phase consists of two major activities: validating data and operational
+    functionality followed by deactivation of the plan.
+
+
+    During validation, the system is tested and validated as operational prior to
+    returning operation to its normal state.  Validation procedures include functionality
+    or regression testing, concurrent processing, and/or data validation.  The system
+    is declared recovered and operational by upon successful completion of validation
+    testing.
+
+
+    Deactivation includes activities to notify users of system operational status.  This
+    phase also addresses recovery effort documentation, activity log finalization,
+    incorporation of lessons learned into plan updates, and readying resources for
+    any future events.
+
+    {% endif %}
+  examples:
+  - example: >
+      This plan has been developed to recover and reconstitute the [[Information System
+      Name]]; using a three-phased approach.  The approach ensures that system recovery
+      and reconstitution efforts are performed in a methodical sequence to maximize
+      the effectiveness of the recovery and reconstitution efforts and minimize system
+      outage time due to errors and omissions.  The three system recovery phases consist
+      of activation and notification, recovery, and reconstitution.
+
+
+      1. **Activation and Notification Phase**.  Activation of the ISCP occurs after
+      a disruption, outage, or disaster that may reasonably extend beyond the RTO
+      established for a system.  The outage event may result in severe damage to the
+      facility that houses the system, severe damage or loss of equipment, or other
+      damage that typically results in long-term loss.
+
+      Once the ISCP is activated, the information system stakeholders are notified
+      of a possible long-term outage, and a thorough outage assessment is performed
+      for the information system.  Information from the outage assessment is analyzed
+      and may be used to modify recovery procedures specific to the cause of the outage.
+
+      2. **Recovery Phase.**  The Recovery phase details the activities and procedures
+      for recovery of the affected system.  Activities and procedures are written
+      at a level such that an appropriately skilled technician can recover the system
+      without intimate system knowledge.  This phase includes notification and awareness
+      escalation procedures for communication of recovery status to system stakeholders.
+
+      3. **Reconstitution.**  The Reconstitution phase defines the actions taken to
+      test and validate system capability and functionality at the original or new
+      permanent location.  This phase consists of two major activities: validating
+      data and operational functionality followed by deactivation of the plan.
+
+
+      During validation, the system is tested and validated as operational prior to
+      returning operation to its normal state.  Validation procedures include functionality
+      or regression testing, concurrent processing, and/or data validation.  The system
+      is declared recovered and operational by upon successful completion of validation
+      testing.
+
+
+      Deactivation includes activities to notify users of system operational status.  This
+      phase also addresses recovery effort documentation, activity log finalization,
+      incorporation of lessons learned into plan updates, and readying resources for
+      any future events.
+  impute:
+  - condition: q09_pre == 'yes'
+    value: >
+      This plan has been developed to recover and reconstitute the [[Information System
+      Name]]; using a three-phased approach.  The approach ensures that system recovery
+      and reconstitution efforts are performed in a methodical sequence to maximize
+      the effectiveness of the recovery and reconstitution efforts and minimize system
+      outage time due to errors and omissions.  The three system recovery phases consist
+      of activation and notification, recovery, and reconstitution.
+
+
+      1. **Activation and Notification Phase**.  Activation of the ISCP occurs after
+      a disruption, outage, or disaster that may reasonably extend beyond the RTO
+      established for a system.  The outage event may result in severe damage to the
+      facility that houses the system, severe damage or loss of equipment, or other
+      damage that typically results in long-term loss.
+
+      Once the ISCP is activated, the information system stakeholders are notified
+      of a possible long-term outage, and a thorough outage assessment is performed
+      for the information system.  Information from the outage assessment is analyzed
+      and may be used to modify recovery procedures specific to the cause of the outage.
+
+      2. **Recovery Phase.**  The Recovery phase details the activities and procedures
+      for recovery of the affected system.  Activities and procedures are written
+      at a level such that an appropriately skilled technician can recover the system
+      without intimate system knowledge.  This phase includes notification and awareness
+      escalation procedures for communication of recovery status to system stakeholders.
+
+      3. **Reconstitution.**  The Reconstitution phase defines the actions taken to
+      test and validate system capability and functionality at the original or new
+      permanent location.  This phase consists of two major activities: validating
+      data and operational functionality followed by deactivation of the plan.
+
+
+      During validation, the system is tested and validated as operational prior to
+      returning operation to its normal state.  Validation procedures include functionality
+      or regression testing, concurrent processing, and/or data validation.  The system
+      is declared recovered and operational by upon successful completion of validation
+      testing.
+
+
+      Deactivation includes activities to notify users of system operational status.  This
+      phase also addresses recovery effort documentation, activity log finalization,
+      incorporation of lessons learned into plan updates, and readying resources for
+      any future events.
+
+- id: q10_backup_system_components
+  title: Backup System Components
+  prompt: |
+    Describe the hardware and software used to create backups.
+
+    Briefly outline the major hardware and software components used to back up the {{project.system_info.system_short_name}} IT System.
+
+    You do not need to describe how backups of any sub-systems or general service systems used by {{project.system_info.system_short_name}}.
+  type: datagrid
+  fields:
+    - key: System/Component
+      text: System/Component
+    - key: Software Used
+      text: Software Used
+    - key: Hardware Used
+      text: Hardware Used
+    - key: Frequency
+      text: Frequency
+    - key: Backup Type
+      text: Backup Type
+    - key: Retention Period
+      text: Retention Period
+  min: 0
+  max: ~
+
+- id: q10_backup_storage_location
+  title: Backup System Components
+  prompt: |
+    Enter information on back-up storage locations.
+
+    Back-Up Storage Location shows the offsite storage facility location of current backups of the {{project.system_info.system_short_name}} system software and data.
+  type: datagrid
+  fields:
+    - key: Site Name
+      text: Site Name
+    - key: Street Adress
+      text: Street Adress
+    - key: City, State, Zip Code
+      text: City, State, Zip Code
+  min: 0
+  max: ~
+
+- id: q10_primary_alternate_site
+  title: Primary and Alternative Site Locations
+  prompt: |
+    Enter information on Primary and Alternative Site Locations.
+
+    The site names should be either Primary Site or Alternate Site.
+  type: datagrid
+  fields:
+    - key: Site Name
+      text: Site Name
+    - key: Site Type
+      text: Site Type
+    - key: Address
+      text: Address
+  min: 0
+  max: ~
+
+
+- id: q10_pre
+  title: Data Backup Readines Information (pre)
+  prompt: "Will you leverage the template Data Backup Readines Information statement\
+    \ used for AWS information systems?  Have all backup system components, and authorized-personnel\
+    \ been identified?\n\nAgency boilerplate:\n\n> A common understanding of data\
+    \ backup definitions is necessary in order to ensure that data restoration is\
+    \ successful.  CSP Name recognizes different types of backups, which have different\
+    \ purposes, and those definitions are found in Table 2‑1 Backup Types.\n> \n>\
+    \ Table 2‑1 Backup System Components\n> \n>      Backup Type:\n>        Description\n\
+    >      \n>      Full Backup:\n>        A full backup is the starting point for\
+    \ all other types of backup and contains\n>        all the data in the folders\
+    \ and files that are selected to be backed up.\n>        Because full backup stores\
+    \ all files and folders, frequent full backups result in\n>        faster and\
+    \ simpler restore operations.\n>      \n>      Differential Backup:\n>       \
+    \ Differential backup contains all files that have changed since the last FULL\
+    \ backup.\n>        The advantage of a differential backup is that it shortens\
+    \ restore time compared\n>        to a full back up or an incremental backup.\
+    \  However, if the differential backup\n>        is performed too many times,\
+    \ the size of the differential backup might grow to be\n>        larger than the\
+    \ baseline full backup.\n>      \n>      Incremental Backup:\n>        Incremental\
+    \ backup stores all files that have changed since the last FULL,\n>        DIFFERENTIAL\
+    \ OR INCREMENTAL backup.  The advantage of an incremental backup\n>        is\
+    \ that it takes the least time to complete.  However, during a restore operation,\n\
+    >        each incremental backup must be processed, which may result in a lengthy\
+    \ restore job.\n>      \n>      Mirror Backup:\n>        Mirror backup is identical\
+    \ to a full backup, with the exception that the files are\n>        not compressed\
+    \ in zip files and they cannot be protected with a password.  A mirror\n>    \
+    \    backup is most frequently used to create an exact copy of the source data.\n\
+    > \n> The hardware and software components used to create the {{project.system_info.system_name}}\
+    \ backups are noted in Table 2‑2 Backup System Components.\n> \n> Table 2‑2 Backup\
+    \ System Components\n> \n>      {{q10_backup_system_components}}\n> \n> Table\
+    \ 2‑3 Back-Up Storage Location shows the offsite storage facility location of\
+    \ current backups of the {{project.system_info.system_name}} system software and\
+    \ data.\n> \n> Table 2‑3 Back-Up Storage Location\n> \n>      Site Name:\n>  \
+    \      Click here to enter text.\n>      Street Address:\n>        Click here\
+    \ to enter text.\n>      City, State, Zip Code:\n>        Click here to enter\
+    \ text.\n> \n> Personnel who are authorized to retrieve backups from the offsite\
+    \ storage location, and may authorize the delivery of backups, are noted in D.1Appendix\
+    \ – Alternate Storage Site Information.\n"
+  type: choice
+  choices:
+  - key: 'yes'
+    text: 'Yes'
+  - key: yes_edit
+    text: Yes, but I will edit the template language.
+  - key: 'no'
+    text: 'No'
+- id: q10
+  title: Backup Readines Information
+  prompt: >
+    {% if q10_pre == 'yes_edit' %} Edit your Backup Readines Information statement.
+    {% endif %} {% if q10_pre == 'no' %} Write your Backup Readines Information statement.
+    {% endif %}
+  type: longtext
+  default: "{% if q10_pre == 'yes_edit' %}\nA common understanding of data backup\
+    \ definitions is necessary in order to ensure that data restoration is successful.\
+    \  CSP Name recognizes different types of backups, which have different purposes,\
+    \ and those definitions are found in Table 2‑1 Backup Types.\n\nTable 2‑1 Backup\
+    \ System Components\n    \nThe hardware and software components used to create\
+    \ the {{project.system_info.system_name}} backups are noted in Table 2‑2 Backup\
+    \ System Components.\n\nTable 2‑2 Backup System Components\n\n     {{q10_backup_system_components}}\n\
+    \nTable 2‑3 Back-Up Storage Location shows the offsite storage facility location\
+    \ of current backups of the {{project.system_info.system_name}} system software\
+    \ and data.\n\nTable 2‑3 Back-Up Storage Location\n\n     Site Name:\n       Click\
+    \ here to enter text.\n     Street Address:\n       Click here to enter text.\n\
+    \     City, State, Zip Code:\n       Click here to enter text.\n\nPersonnel who\
+    \ are authorized to retrieve backups from the offsite storage location, and may\
+    \ authorize the delivery of backups, are noted in D.1Appendix – Alternate Storage\
+    \ Site Information.\n\n{% endif %}\n"
+  examples:
+  - example: "Table 2‑1 Backup System Components\n\n     Backup Type:\n       Description\n\
+      \     \n     Full Backup:\n       A full backup is the starting point for all\
+      \ other types of backup and contains\n       all the data in the folders and\
+      \ files that are selected to be backed up.\n       Because full backup stores\
+      \ all files and folders, frequent full backups result in\n       faster and\
+      \ simpler restore operations.\n     \n     Differential Backup:\n       Differential\
+      \ backup contains all files that have changed since the last FULL backup.\n\
+      \       The advantage of a differential backup is that it shortens restore time\
+      \ compared\n       to a full back up or an incremental backup.  However, if\
+      \ the differential backup\n       is performed too many times, the size of the\
+      \ differential backup might grow to be\n       larger than the baseline full\
+      \ backup.\n     \n     Incremental Backup:\n       Incremental backup stores\
+      \ all files that have changed since the last FULL,\n       DIFFERENTIAL OR INCREMENTAL\
+      \ backup.  The advantage of an incremental backup\n       is that it takes the\
+      \ least time to complete.  However, during a restore operation,\n       each\
+      \ incremental backup must be processed, which may result in a lengthy restore\
+      \ job.\n     \n     Mirror Backup:\n       Mirror backup is identical to a full\
+      \ backup, with the exception that the files are\n       not compressed in zip\
+      \ files and they cannot be protected with a password.  A mirror\n       backup\
+      \ is most frequently used to create an exact copy of the source data.\n\nThe\
+      \ hardware and software components used to create the {{project.system_info.system_name}}\
+      \ backups are noted in Table 2‑2 Backup System Components.\n\nTable 2‑2 Backup\
+      \ System Components\n\n     {{q10_backup_system_components}}\n\nTable 2‑3 Back-Up\
+      \ Storage Location shows the offsite storage facility location of current backups\
+      \ of the {{project.system_info.system_name}} system software and data.\n\nTable\
+      \ 2‑3 Back-Up Storage Location\n\n     Site Name:\n       Click here to enter\
+      \ text.\n     Street Address:\n       Click here to enter text.\n     City,\
+      \ State, Zip Code:\n       Click here to enter text.\n\nPersonnel who are authorized\
+      \ to retrieve backups from the offsite storage location, and may authorize the\
+      \ delivery of backups, are noted in D.1Appendix – Alternate Storage Site Information.\n"
+  impute:
+  - condition: q10_pre == 'yes'
+    value: "Table 2‑1 Backup System Components\n\n     Backup Type:\n       Description\n\
+      \     \n     Full Backup:\n       A full backup is the starting point for all\
+      \ other types of backup and contains\n       all the data in the folders and\
+      \ files that are selected to be backed up.\n       Because full backup stores\
+      \ all files and folders, frequent full backups result in\n       faster and\
+      \ simpler restore operations.\n     \n     Differential Backup:\n       Differential\
+      \ backup contains all files that have changed since the last FULL backup.\n\
+      \       The advantage of a differential backup is that it shortens restore time\
+      \ compared\n       to a full back up or an incremental backup.  However, if\
+      \ the differential backup\n       is performed too many times, the size of the\
+      \ differential backup might grow to be\n       larger than the baseline full\
+      \ backup.\n     \n     Incremental Backup:\n       Incremental backup stores\
+      \ all files that have changed since the last FULL,\n       DIFFERENTIAL OR INCREMENTAL\
+      \ backup.  The advantage of an incremental backup\n       is that it takes the\
+      \ least time to complete.  However, during a restore operation,\n       each\
+      \ incremental backup must be processed, which may result in a lengthy restore\
+      \ job.\n     \n     Mirror Backup:\n       Mirror backup is identical to a full\
+      \ backup, with the exception that the files are\n       not compressed in zip\
+      \ files and they cannot be protected with a password.  A mirror\n       backup\
+      \ is most frequently used to create an exact copy of the source data.\n\nThe\
+      \ hardware and software components used to create the {{project.system_info.system_name}}\
+      \ backups are noted in Table 2‑2 Backup System Components.\n\nTable 2‑2 Backup\
+      \ System Components\n\n     System/Component:\n       Description\n\n     Software\
+      \ Used:\n       Click here to enter text.\n\n     Hardware Used:\n       Click\
+      \ here to enter text.\n\n     Frequency:\n       Click here to enter text.\n\
+      \n     Backup Type:\n       Click here to enter text.\n\n     Retention Period:\n\
+      \       Click here to enter text.\n\nTable 2‑3 Back-Up Storage Location shows\
+      \ the offsite storage facility location of current backups of the [[Information\
+      \ System Name]] system software and data.\n\nTable 2‑3 Back-Up Storage Location\n\
+      \n     Site Name:\n       Click here to enter text.\n     Street Address:\n\
+      \       Click here to enter text.\n     City, State, Zip Code:\n       Click\
+      \ here to enter text.\n\nPersonnel who are authorized to retrieve backups from\
+      \ the offsite storage location, and may authorize the delivery of backups, are\
+      \ noted in D.1Appendix – Alternate Storage Site Information.\n"
+- id: q12_pre
+  title: CP Director (pre)
+  prompt: "Will you leverage the template Contingency Plan Director statement used\
+    \ for AWS information systems?  Have personnel been trained in accordance with\
+    \ their assigned roles and responsibilities?\n\nAgency boilerplate:\n\n> The Contingency\
+    \ Planning Director (CPD) is a member of senior management and owns the responsibility\
+    \ for all facets of contingency and disaster recovery planning and execution.\n\
+    > \n> The CPD performs the following duties:\n> \n> - Makes the decision on whether\
+    \ or not to activate the ISCP\n> - Provides the initial notification to activate\
+    \ the ISCP\n> - Reviews and approves the ISCP\n> - Reviews and approves the Business\
+    \ Impact Analysis (BIA)\n> - Notifies the Contingency Plan Team leads and members\
+    \ as necessary\n> - Advises other Contingency Plan Team leads and members as appropriate\n\
+    > - Issues a recovery declaration statement after the system has returned to normal\
+    \ operations\n> - Designates key personnel\n"
+  type: choice
+  choices:
+  - key: 'yes'
+    text: 'Yes'
+  - key: yes_edit
+    text: Yes, but I will edit the template language.
+  - key: 'no'
+    text: 'No'
+- id: q12
+  title: CP Director
+  prompt: >
+    {% if q12_pre == 'yes_edit' %} Edit your Contingency Plan Director statement.
+    {% endif %} {% if q12_pre == 'no' %} Write your Contingency Plan Director statement.
+    {% endif %}
+  type: longtext
+  default: |
+    {% if q12_pre == 'yes_edit' %}
+    The Contingency Planning Director (CPD) is a member of senior management and owns the responsibility for all facets of contingency and disaster recovery planning and execution.
+
+    The CPD performs the following duties:
+
+    - Makes the decision on whether or not to activate the ISCP
+    - Provides the initial notification to activate the ISCP
+    - Reviews and approves the ISCP
+    - Reviews and approves the Business Impact Analysis (BIA)
+    - Notifies the Contingency Plan Team leads and members as necessary
+    - Advises other Contingency Plan Team leads and members as appropriate
+    - Issues a recovery declaration statement after the system has returned to normal operations
+    - Designates key personnel
+    {% endif %}
+  examples:
+  - example: |
+      The Contingency Planning Director (CPD) is a member of senior management and owns the responsibility for all facets of contingency and disaster recovery planning and execution.
+
+      The CPD performs the following duties:
+
+      - Makes the decision on whether or not to activate the ISCP
+      - Provides the initial notification to activate the ISCP
+      - Reviews and approves the ISCP
+      - Reviews and approves the Business Impact Analysis (BIA)
+      - Notifies the Contingency Plan Team leads and members as necessary
+      - Advises other Contingency Plan Team leads and members as appropriate
+      - Issues a recovery declaration statement after the system has returned to normal operations
+      - Designates key personnel
+  impute:
+  - condition: q12_pre == 'yes'
+    value: |
+      The Contingency Planning Director (CPD) is a member of senior management and owns the responsibility for all facets of contingency and disaster recovery planning and execution.
+
+      The CPD performs the following duties:
+
+      - Makes the decision on whether or not to activate the ISCP
+      - Provides the initial notification to activate the ISCP
+      - Reviews and approves the ISCP
+      - Reviews and approves the Business Impact Analysis (BIA)
+      - Notifies the Contingency Plan Team leads and members as necessary
+      - Advises other Contingency Plan Team leads and members as appropriate
+      - Issues a recovery declaration statement after the system has returned to normal operations
+      - Designates key personnel
+- id: q12cpc_pre
+  title: CP Coordinator (pre)
+  prompt: "Will you leverage the template Contingency Plan Coordinator statement used\
+    \ for AWS information systems?  Have personnel been trained in accordance with\
+    \ their assigned roles and responsibilities?\n\nAgency boilerplate:\n\n> The CPC\
+    \ performs the following duties:\n> \n> - Develops and documents the ISCP under\
+    \ direction of the CPD\n> - Uses the BIA to prioritize recovery of components\n\
+    > - Updates the ISCP annually\n> - Ensures that annual ISCP training is conducted\n\
+    > - Facilitates periodic ISCP testing exercises\n> - Distributes copies of the\
+    \ plan to team members\n> - Authorizes travel and housing arrangements for team\
+    \ members\n> - Manages and monitors the overall recovery process\n> - Leads the\
+    \ contingency response effort once the plan has been activated\n> - Advises the\
+    \ Procurement and Logistics Coordinator on whether to order new equipment\n> -\
+    \ Receives updates and status reports from team members\n> - Sends out communications\
+    \ about the recovery\n> - Advises the CPD on status as necessary\n> - Designates\
+    \ key personnel\n"
+  type: choice
+  choices:
+  - key: 'yes'
+    text: 'Yes'
+  - key: yes_edit
+    text: Yes, but I will edit the template language.
+  - key: 'no'
+    text: 'No'
+- id: q12cpc
+  title: CP Coordinator
+  prompt: >
+    {% if q12cpc_pre == 'yes_edit' %} Edit your Contingency Plan Coordinator statement.
+    {% endif %} {% if q12cpc_pre == 'no' %} Write your Contingency Plan Coordinator
+    statement. {% endif %}
+  type: longtext
+  default: |
+    {% if q12cpc_pre == 'yes_edit' %}
+    The CPC performs the following duties:
+
+    - Develops and documents the ISCP under direction of the CPD
+    - Uses the BIA to prioritize recovery of components
+    - Updates the ISCP annually
+    - Ensures that annual ISCP training is conducted
+    - Facilitates periodic ISCP testing exercises
+    - Distributes copies of the plan to team members
+    - Authorizes travel and housing arrangements for team members
+    - Manages and monitors the overall recovery process
+    - Leads the contingency response effort once the plan has been activated
+    - Advises the Procurement and Logistics Coordinator on whether to order new equipment
+    - Receives updates and status reports from team members
+    - Sends out communications about the recovery
+    - Advises the CPD on status as necessary
+    - Designates key personnel
+    {% endif %}
+  examples:
+  - example: |
+      The CPC performs the following duties:
+
+      - Develops and documents the ISCP under direction of the CPD
+      - Uses the BIA to prioritize recovery of components
+      - Updates the ISCP annually
+      - Ensures that annual ISCP training is conducted
+      - Facilitates periodic ISCP testing exercises
+      - Distributes copies of the plan to team members
+      - Authorizes travel and housing arrangements for team members
+      - Manages and monitors the overall recovery process
+      - Leads the contingency response effort once the plan has been activated
+      - Advises the Procurement and Logistics Coordinator on whether to order new equipment
+      - Receives updates and status reports from team members
+      - Sends out communications about the recovery
+      - Advises the CPD on status as necessary
+      - Designates key personnel
+  impute:
+  - condition: q12cpc_pre == 'yes'
+    value: |
+      The CPC performs the following duties:
+
+      - Develops and documents the ISCP under direction of the CPD
+      - Uses the BIA to prioritize recovery of components
+      - Updates the ISCP annually
+      - Ensures that annual ISCP training is conducted
+      - Facilitates periodic ISCP testing exercises
+      - Distributes copies of the plan to team members
+      - Authorizes travel and housing arrangements for team members
+      - Manages and monitors the overall recovery process
+      - Leads the contingency response effort once the plan has been activated
+      - Advises the Procurement and Logistics Coordinator on whether to order new equipment
+      - Receives updates and status reports from team members
+      - Sends out communications about the recovery
+      - Advises the CPD on status as necessary
+      - Designates key personnel
+- id: q12sc_pre
+  title: CP Security Coordinator (pre)
+  prompt: "Will you leverage the template Contingency Plan Security Coordinator statement\
+    \ used for AWS information systems?  Have personnel been trained in accordance\
+    \ with their assigned roles and responsibilities?\n\nAgency boilerplate:\n\n>\
+    \ The Security Coordinator performs the following duties:\n> \n> - Provides training\
+    \ for employees in facility emergency procedures and measures\n> - Provides physical\
+    \ security, access control, and safety measures to support recovery effort\n>\
+    \ - Cordons off the facility including offices to restrict unauthorized access\n\
+    > - Coordinates with the building management and the CPC for authorized personnel\
+    \ access\n> - Coordinates and manages additional physical security/guards as needed\n\
+    > - Acts as a liaison with emergency personnel, such as fire and police departments\n\
+    > - Provides assistance to officials in investigating the damaged facility/site\n\
+    > - Ensures that data room/center at alternate site has locks (access controls)\
+    \ on the doors\n> - Coordinates and secures the transportation of files, reports,\
+    \ and equipment in coordination with the CPC\n"
+  type: choice
+  choices:
+  - key: 'yes'
+    text: 'Yes'
+  - key: yes_edit
+    text: Yes, but I will edit the template language.
+  - key: 'no'
+    text: 'No'
+- id: q12sc
+  title: CP Security Coordinator
+  prompt: >
+    {% if q12sc_pre == 'yes_edit' %} Edit your Contingency Plan Security Coordinator
+    statement. {% endif %} {% if q12sc_pre == 'no' %} Write your Contingency Plan
+    Security Coordinator statement. {% endif %}
+  type: longtext
+  default: |
+    {% if q12sc_pre == 'yes_edit' %}
+    The Security Coordinator performs the following duties:
+
+    - Provides training for employees in facility emergency procedures and measures
+    - Provides physical security, access control, and safety measures to support recovery effort
+    - Cordons off the facility including offices to restrict unauthorized access
+    - Coordinates with the building management and the CPC for authorized personnel access
+    - Coordinates and manages additional physical security/guards as needed
+    - Acts as a liaison with emergency personnel, such as fire and police departments
+    - Provides assistance to officials in investigating the damaged facility/site
+    - Ensures that data room/center at alternate site has locks (access controls) on the doors
+    - Coordinates and secures the transportation of files, reports, and equipment in coordination with the CPC
+    {% endif %}
+  examples:
+  - example: |
+      The Security Coordinator performs the following duties:
+
+      - Provides training for employees in facility emergency procedures and measures
+      - Provides physical security, access control, and safety measures to support recovery effort
+      - Cordons off the facility including offices to restrict unauthorized access
+      - Coordinates with the building management and the CPC for authorized personnel access
+      - Coordinates and manages additional physical security/guards as needed
+      - Acts as a liaison with emergency personnel, such as fire and police departments
+      - Provides assistance to officials in investigating the damaged facility/site
+      - Ensures that data room/center at alternate site has locks (access controls) on the doors
+      - Coordinates and secures the transportation of files, reports, and equipment in coordination with the CPC
+  impute:
+  - condition: q12sc_pre == 'yes'
+    value: |
+      The Security Coordinator performs the following duties:
+
+      - Provides training for employees in facility emergency procedures and measures
+      - Provides physical security, access control, and safety measures to support recovery effort
+      - Cordons off the facility including offices to restrict unauthorized access
+      - Coordinates with the building management and the CPC for authorized personnel access
+      - Coordinates and manages additional physical security/guards as needed
+      - Acts as a liaison with emergency personnel, such as fire and police departments
+      - Provides assistance to officials in investigating the damaged facility/site
+      - Ensures that data room/center at alternate site has locks (access controls) on the doors
+      - Coordinates and secures the transportation of files, reports, and equipment in coordination with the CPC

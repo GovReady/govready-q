@@ -1,0 +1,20 @@
+id: pta_printable
+title: Privacy Threshold Analysis Document
+version: 1
+output:
+- id: pta_complete_form
+  title: PTA Form
+  format: markdown
+  filename: templates/pta_complete_form.html
+  template: |2
+
+    {{project.pta_intro.output_documents.pta_intro|safe}}
+
+    {{project.pta_poc_details.output_documents.poc_details|safe}}
+
+    {{project.pta_purpose.output_documents.ptr_purpose_01|safe}}
+
+    {{project.pta_ic_forms.output_documents.ic_forms_pta|safe}}
+
+    {{project.pta_info_storage.output_documents.info_storage|safe}}
+questions: []
