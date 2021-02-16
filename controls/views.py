@@ -850,9 +850,12 @@ def raise_404_if_not_permitted_to_statement(request, statement, system_permissio
                 if request.user.has_perm(system_permission, system):
                     break
             except System.DoesNotExist:
-                pass
-
-        raise Http404
+                logger.info(
+                event="update_smt_permission permission_denied",
+                object={"object": "statement", "id": statement.id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+                raise Http404
 
 @login_required
 def statement_history(request, smt_id=None):
@@ -1623,21 +1626,8 @@ def update_smt_prototype(request):
 
         statement = get_object_or_404(Statement, pk=form_values['smt_id'])
 
-
         # Check permission
-        try:
-            raise_404_if_not_permitted_to_modify_statement(request, statement)
-        except Http404:
-            # Log permission update statement prototype answer denied
-            logger.info(
-                event="update_smt_permission permission_denied",
-                object={"object": "statement", "id": statement.id},
-                user={"id": request.user.id, "username": request.user.username}
-            )
-
-            # Raise 404
-            raise
-
+        raise_404_if_not_permitted_to_modify_statement(request, statement)
 
         if statement is None:
             statement_msg = "The id for this statement is no longer valid in the database."
