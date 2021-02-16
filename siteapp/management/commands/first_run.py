@@ -75,7 +75,6 @@ class Command(BaseCommand):
                     with open(os.path.join(path, component_file)) as f:
                         oscal_component_json = f.read()
                         result = ComponentImporter().import_components_as_json(import_name, oscal_component_json)
-                        print("Imported OSCAL component file", component_file)
 
         # Finally, for authoring, create an AppSource to the stub file
         qfiles_path = 'guidedmodules/stubs/q-files'
