@@ -532,7 +532,6 @@ class ElementUnitTests(TestCase):
         self.assertIsNotNone(e.id)
         self.assertEqual(e.name, "Element A")
         self.assertEqual(e.description, "Element A Description")
-        e.save()
         e.name = "Renamed Element A"
         e.description = "Renamed Element A Description"
         e.save()
