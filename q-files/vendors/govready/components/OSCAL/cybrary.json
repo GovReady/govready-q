@@ -1,0 +1,74 @@
+{
+  "component-definition": {
+    "uuid": "e7b37ba4-ce0d-46bb-8900-231003dba10c",
+    "metadata": {
+      "title": "Cybrary Component-to-Control Narratives",
+      "published": "2021-02-15T10:10:57+00:00",
+      "last-modified": "2021-01-05T03:40:57+00:00",
+      "version": "string",
+      "oscal-version": "1.0.0-rc1"
+    },
+    "components": {
+      "a42932ab-7aa9-4c34-a643-2840b6630a19": {
+        "title": "Cybrary",
+        "type": "system_element",
+        "description": "Training course",
+        "control-implementations": [
+          {
+            "uuid": "8a8f9643-2c68-4f87-a47d-70d8af924e73",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "Partial implementation of NIST_SP-800-53_rev4",
+            "implemented-requirements": [
+              {
+                "uuid": "8a9856df-69b4-4b5c-9709-169b34ef06b9",
+                "control-id": "at-2",
+                "description": "",
+                "remarks": "",
+                "statements": {
+                  "at-2_smt": {
+                    "uuid": "3d9091a6-1315-4fb9-94c7-f138e0d93191",
+                    "description": "Cybrary provides a complete catalog of security awareness and role-based security training. Cybrary also tracks the training completed by each user. Cybrary content can be tailored for annual security awareness.",
+                    "remarks": ""
+                  }
+                }
+              },
+              {
+                "uuid": "a25c123b-b78d-4833-b7f9-7826676699be",
+                "control-id": "at-3",
+                "description": "",
+                "remarks": "",
+                "statements": {
+                  "at-3_smt": {
+                    "uuid": "08a5bcb1-80ff-4c44-8f5f-28d24c796e63",
+                    "description": "Role base training implementation narrative.",
+                    "remarks": ""
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "uuid": "ed191423-96b6-4a8f-98b9-de07b953d36d",
+            "source": "NIST_SP-800-53_rev5",
+            "description": "Partial implementation of NIST_SP-800-53_rev5",
+            "implemented-requirements": [
+              {
+                "uuid": "28383ff1-8870-484e-b31b-3d00bfd6fbae",
+                "control-id": "at-2.2",
+                "description": "",
+                "remarks": "",
+                "statements": {
+                  "at-2.2_smt": {
+                    "uuid": "ddba3705-efbd-446f-8ac1-2c68f1b28e55",
+                    "description": "THis is how Cybrary helps with Insider Threat.",
+                    "remarks": ""
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

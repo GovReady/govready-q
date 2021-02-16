@@ -64,6 +64,18 @@ class Command(BaseCommand):
                 except Exception as e:
                     raise
 
+        # Install default example components
+        from controls.views import ComponentImporter
+        path = 'q-files/vendors/govready/components/OSCAL'
+        import_name = "Default components"
+        if os.path.exists(path):
+            for component_file in os.listdir(path):
+                # Read component json file as text
+                if component_file.endswith(".json"):
+                    with open(os.path.join(path, component_file)) as f:
+                        oscal_component_json = f.read()
+                        result = ComponentImporter().import_components_as_json(import_name, oscal_component_json)
+
         # Finally, for authoring, create an AppSource to the stub file
         qfiles_path = 'guidedmodules/stubs/q-files'
         if os.path.exists(qfiles_path):
