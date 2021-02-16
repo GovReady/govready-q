@@ -5,10 +5,10 @@ from django.conf import settings
 admin.autodiscover()
 
 from django.views.decorators.csrf import csrf_exempt
-from . import urls_api
+from controls import urls_api
 
 import controls.views
-from . import views
+from controls import views
 
 from siteapp.settings import *
 
