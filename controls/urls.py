@@ -1,8 +1,5 @@
 from django.conf.urls import include, url
 
-# from django.conf.urls import patterns, include
-# urlpatterns = urlpatterns + patterns('', (r'^', include('urls_api')))
-
 from django.contrib import admin
 from django.conf import settings
 admin.autodiscover()
