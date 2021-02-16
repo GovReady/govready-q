@@ -651,11 +651,6 @@ def project(request, project):
     #         if stage == project.lifecycle_stage[1]:
     #             break
 
-    # Get all of the discussions the user is participating in as a guest in this project.
-    # Meaning, I'm not a member, but I still need access to certain tasks and
-    # certain questions within those tasks.
-    discussions = list(project.get_discussions_in_project_as_guest(request.user))
-
     # Pre-load the answers to project root task questions and impute answers so
     # that we know which questions are suppressed by imputed values.
     root_task_answers = project.root_task.get_answers().with_extended_info()
@@ -711,7 +706,7 @@ def project(request, project):
                 "invitations": [], # filled in below
                 "task": module_answers.task,
                 "can_start_new_task": False,
-                "discussions": [d for d in discussions if d.attached_to.task == module_answers.task],
+                "discussions": [] # no longer tracking discussions per question,
             }
 
         # Create a "question" record for the question itself it is is unanswered or if
@@ -799,27 +794,25 @@ def project(request, project):
         if "id" in doc:
             has_outputs = True
 
-    # Find any open invitations and if they are for particular modules,
-    # display them with the module.
-    other_open_invitations = []
-    for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created'):
-        if inv.is_expired():
-            continue
-        if inv.target == project:
-            into_new_task_question_id = inv.target_info.get("into_new_task_question_id")
-            if into_new_task_question_id:
-                if into_new_task_question_id in questions: # should always be True
-                    questions[into_new_task_question_id]["invitations"].append(inv)
-                    continue
-
-        # If the invitation didn't get put elsewhere, display in the
-        # other list.
-        other_open_invitations.append(inv)
+    # Calculate approximate compliance as degrees to display
+    percent_compliant = 0
+    if len(project.system.control_implementation_as_dict) > 0:
+        percent_compliant = project.system.controls_status_count['Implemented'] / len(project.system.control_implementation_as_dict)
+    # Need to reverse calculation for displaying as per styles in .piechart class
+    approx_compliance_degrees = 365 - ( 365 * percent_compliant )
+    if approx_compliance_degrees > 358:
+        approx_compliance_degrees = 358
 
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
+
+        "controls_status_count": project.system.controls_status_count,
+        "poam_status_count": project.system.poam_status_count,
+        "percent_compliant": percent_compliant,
+        "percent_compliant_100": percent_compliant * 100,
+        "approx_compliance_degrees": approx_compliance_degrees,
 
         "is_admin": request.user in project.get_admins(),
         "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
@@ -827,7 +820,7 @@ def project(request, project):
         "can_start_any_apps": can_start_any_apps,
 
         "title": project.title,
-        "open_invitations": other_open_invitations,
+        # "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
         "has_outputs": has_outputs,
 
