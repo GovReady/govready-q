@@ -68,7 +68,7 @@ class Command(BaseCommand):
         from controls.views import ComponentImporter
         path = 'q-files/vendors/govready/components/OSCAL'
         import_name = "Default components"
-        if os.path.exists(qfiles_path):
+        if os.path.exists(path):
             for component_file in os.listdir(path):
                 # Read component json file as text
                 if component_file.endswith(".json"):
