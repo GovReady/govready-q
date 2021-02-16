@@ -854,10 +854,6 @@ def raise_404_if_not_permitted_to_statement(request, statement, system_permissio
 
         raise Http404
 
-def raise_404_if_not_permitted_to_change_statement(request, statement):
-    """Raises a 404 if the user doesn't have permission to change the statement"""
-    raise_404_if_not_permitted_to_statement(request, statement, 'change_system')
-
 @login_required
 def statement_history(request, smt_id=None):
     """Returns the history for the specified statement"""
@@ -878,8 +874,8 @@ def restore_to_history(request, smt_id, history_id):
     smt = get_object_or_404(Statement, id=smt_id)
 
     # Check permission
-    raise_404_if_not_permitted_to_change_statement(request, smt)
-
+    raise_404_if_not_permitted_to_statement(request, smt, 'change_system')
+                        
     full_smt_history = None
     for query_key in request.POST:
         if "restore" in query_key:
