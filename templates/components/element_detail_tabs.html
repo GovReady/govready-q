@@ -475,8 +475,14 @@
               method: "POST",
               data: {name: newName,description: newDescription},
               keep_indicator_forever: true,
-              success: function() {
-                window.location.reload();
+              success: function(res) {
+                if(res["status"]=="ok"){
+                  hide_edit_component_modal();
+                  window.location.reload();
+                }
+                if(res["status"]=="err"){
+                  show_edit_component_modal_error(res["message"])
+                }
               }
             });
           });

@@ -1,0 +1,24 @@
+[
+    {
+        "id": "23432",
+        "name": "oscap-scan",
+        "description": "SCAP scan Results",
+        "ip": "10.10.0.11",
+        "deployment_id": "1",
+        "uuid": "8e1f1131-2a28-4b85-b0c3-069f49399112",
+        "pass": 800,
+        "fail": 15,
+        "error": 3
+    },
+    {
+        "id": "23470",
+        "name": "oscap-scan",
+        "description": "SCAP scan Results",
+        "ip": "10.10.0.12",
+        "deployment_id": "1",
+        "uuid": "ce625f39-cfd0-433d-8ab5-83fe5563a62a",
+        "pass": 810,
+        "fail": 5,
+        "error": 3
+    }
+]

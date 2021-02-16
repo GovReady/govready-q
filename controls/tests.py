@@ -104,7 +104,7 @@ class Oscal80053Tests(TestCase):
                         description)
 
 class StatementTests(TestCase):
-    
+
     def test_statement_id_from_control(self):
         cases = (
             ('ac-1', 'a', 'ac-1_smt.a'),
@@ -113,7 +113,7 @@ class StatementTests(TestCase):
             ('1.1.1', '', '1.1.1_smt')
         )
         test_func = Statement._statement_id_from_control
-        
+
         for control_id, part, expected in cases:
             self.assertEqual(test_func(control_id, part), expected)
 
@@ -523,7 +523,7 @@ class ElementUnitTests(TestCase):
         # Test statements copied
         smts = e_copy.statements("control_implementation_prototype")
         self.assertEqual(len(smts), 2)
-        
+
     def test_element_rename(self):
         """Test renaming an element"""
 
@@ -532,7 +532,6 @@ class ElementUnitTests(TestCase):
         self.assertIsNotNone(e.id)
         self.assertEqual(e.name, "Element A")
         self.assertEqual(e.description, "Element A Description")
-        e.save() 
         e.name = "Renamed Element A"
         e.description = "Renamed Element A Description"
         e.save()
@@ -563,6 +562,30 @@ class SystemUnitTests(TestCase):
         self.assertIn('change_system', perms)
         self.assertIn('delete_system', perms)
         self.assertIn('view_system', perms)
+
+class SystemUITests(OrganizationSiteFunctionalTests):
+
+    def test_deployments_page_exists(self):
+
+        # login as the first user and create a new project
+        self._login()
+        self._new_project()
+
+        # systemid = System.objects.all().first()
+        project = Project.objects.all().last()
+        system = project.system
+
+        self.navigateToPage(f"/systems/{system.id}/deployments")
+        wait_for_sleep_after(lambda: self.assertInNodeText("New Deployment", ".systems-element-button"))
+
+        # # Add deault deployments to system
+        deployment = Deployment(name="Training", description="Training environment", system=system)
+        deployment.save()
+
+        # Does new deployment appear on deployments list?
+        self.navigateToPage(f"/systems/{system.id}/deployments")
+        var_sleep(3) # wait for page to open
+        wait_for_sleep_after(lambda: self.assertInNodeText("New Deployment", ".systems-element-button"))
 
 class PoamUnitTests(TestCase):
     """Class for Poam Unit Tests"""
@@ -633,10 +656,10 @@ class OrgParamTests(TestCase):
 
         # REMIND: it would be nice to refactor all this setup code so
         # it could be easily reused ...
-        
+
         from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
-        
+
         try:
             AppSource.objects.all().delete()
         except Exception as ex:
@@ -688,11 +711,11 @@ class OrgParamTests(TestCase):
         self.assertEquals(parameter_values["ac-1_prm_2"], "at least every 3 years")
 
         # now, add an organizational setting and try again
-        OrganizationalSetting.objects.create(organization=org, 
+        OrganizationalSetting.objects.create(organization=org,
                                              catalog_key=Catalogs.NIST_SP_800_53_rev4,
-                                             parameter_key="ac-1_prm_2", 
+                                             parameter_key="ac-1_prm_2",
                                              value="at least every 100 years")
-        
+
         # we should now see the organizational setting override
         parameter_values = project.get_parameter_values(Catalogs.NIST_SP_800_53_rev4)
         self.assertEquals(parameter_values["ac-1_prm_2"], "at least every 100 years")
@@ -1007,3 +1030,4 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
                 project_title = file_name
 
         self.assertIn(file_name, file_system)
+

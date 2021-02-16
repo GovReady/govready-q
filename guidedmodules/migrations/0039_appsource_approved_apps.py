@@ -24,7 +24,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='appsource',
             name='approved_apps',
-            field=jsonfield.fields.JSONField(blank=True, help_text='Information about apps whitelisted or blacklisted for display in the catalog from this source.'),
+            field=jsonfield.fields.JSONField(
+                blank=True,
+                help_text=(
+                    'Information about apps whitelisted or blacklisted for display in the'
+                    ' catalog from this source.'
+                ),
+            ),
         ),
-        migrations.RunPython(add_default_value),
+        migrations.RunPython(add_default_value, migrations.RunPython.noop),
     ]

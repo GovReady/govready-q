@@ -20,7 +20,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='elementcontrol',
             name='uuid',
-            field=models.UUIDField(default=uuid.uuid4, help_text='A UUID (a unique identifier) for this ElementControl.'),
+            field=models.UUIDField(
+                default=uuid.uuid4,
+                help_text='A UUID (a unique identifier) for this ElementControl.',
+            ),
         ),
-        migrations.RunPython(create_uuids),
+        migrations.RunPython(create_uuids, migrations.RunPython.noop),
     ]

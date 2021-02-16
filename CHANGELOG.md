@@ -1,6 +1,41 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.52 (February 16, 2021)
+------------------------
+
+Add System Assessment Report tracking to associate assessments and evidence with the system.
+Add initial dynamic status information to the project page.
+Project page displays mini-dashboard of compliance stats.
+
+**Feature changes**
+
+* Add System Assessment Report tracking to associate assessments and evidence with the system.
+* Add initial dynamic status information to the project page.
+
+**UI changes**
+
+* Improve page load times for listings with pagination and ordering for project listing and selected component listing. 
+* Display projects in pages of 10 and selected components by 5.
+* Project page displays mini-dashboard of compliance stats.
+    * Number of controls implemented out of count of controls.
+    * Number of POA&Ms.
+    * Count of system components.
+    * Approximate overall compliance based on controls implemented / count of controls.
+
+**Developer changes**
+
+* Properly restrict statement history access to users with system, staff, or admin permissions.
+* Avoid name collisions when cloning a component.
+* Replaced function-based views with class-based listview for SelectedComponentsList, ProjectList.
+* Avoid name collisions when cloning a component.
+* Default to not use Django Debug Toolbar. Added new `enable_tool_bar` parameter option for `local/environment.json` to allow users to enable(True) or disable(False) the Django Debug Toolbar.
+* Adding DummyCache to prevent real caching while running automated tests.
+* Refactored use of random package to use secure secrets module.
+* Added minor pylint fixes.
+* Added the ability to import and export Poams along with the project import/export.
+* Load sample/default components into component library during installation to provide users with starting set of components.
+
 v0.9.1.51 (February 03, 2021)
 -----------------------------
 
@@ -9,6 +44,8 @@ v0.9.1.51 (February 03, 2021)
 * Display components alphabetically in component library text listing and in selected components text listing.
 * Include a component description and statement count in component library text listing and in selected components text listing.
 * Remove admin's "update certified text" option from editing control implmentation statements.
+* New pages for System Assessment Report
+* Updates to project page for status information and other project information.
 
 **Developer changes**
 
@@ -60,6 +97,7 @@ Keeps track of app inputs by relating them to the app version.
 
 Includes the following schema update to the app.yaml file of Compliance Apps.
 Inputs are supported in the app.yaml file with the following format:
+
 ```
 input:
 - id: <input_id> (string)
@@ -352,7 +390,7 @@ v.0.9.1.47 (December 01, 2020)
 * Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
 
 v0.9.1.46.4 (November 25, 2020)
------------------------------
+-----------------------------	
 
 **UI changes**
 

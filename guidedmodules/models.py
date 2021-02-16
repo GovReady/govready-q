@@ -1,5 +1,6 @@
 import logging
 import structlog
+from django.utils.functional import cached_property
 from structlog import get_logger
 
 from django.db import models, transaction

@@ -13,10 +13,12 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
+from django.views.generic import ListView
 from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model
 
 from controls.forms import ImportProjectForm
+from controls.views import add_selected_components
 from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
@@ -113,45 +115,42 @@ def assign_project_lifecycle_stage(projects):
             # No matching output document with a non-empty value.
             project.lifecycle_stage = lifecycle_stage_code_mapping["none_none"]
 
-def project_list(request):
-    # Get all of the projects that the user can see *and* that are in a folder,
-    # which indicates it is top-level.
-    projects = Project.get_projects_with_read_priv(
-        request.user,
-        excludes={ "contained_in_folders": None })
-
+class ProjectList(ListView):
+    """
+    Get all of the projects that the user can see *and* that are in a folder, which indicates it is top-level.
+    """
+    model = Project
+    template_name = 'projects.html'
+    context_object_name = 'projects'
     # Sort the projects by their creation date. The projects
     # won't always appear in that order, but it will determine
     # the overall order of the page in a stable way.
-    projects = sorted(projects, key = lambda project : project.created)
+    ordering = ['created']
+    paginate_by = 10
 
-    # Load each project's lifecycle stage, which is computed by each project's
-    # root task's app's output document named govready_lifecycle_stage_code.
-    # That output document yields a string identifying a lifecycle stage.
-    assign_project_lifecycle_stage(projects)
+    def get_queryset(self):
+        """
+        Return the projects after assigning lifecycles
+        """
+        projects = Project.get_projects_with_read_priv(
+            self.request.user,
+            excludes={"contained_in_folders": None})
 
-    # Group projects into lifecyle types, and then lifecycle stages. The lifecycle
-    # types are arranged in the order they first appear across the projects.
-    lifecycles = []
-    for project in projects:
-        # On the first occurrence of this lifecycle type, add it to the output.
-        if project.lifecycle_stage[0] not in lifecycles:
-            lifecycles.append(project.lifecycle_stage[0])
+        # Log listing
+        logger.info(
+            event="project_list",
+            user={"id": self.request.user.id, "username": self.request.user.username}
+        )
+        return projects
 
-        # Put the project into the lifecycle's appropriate stage.
-        project.lifecycle_stage[1].setdefault("projects", []).append(project)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-    # Log listing
-    logger.info(
-        event="project_list",
-        user={"id": request.user.id, "username": request.user.username}
-    )
-
-    return render(request, "projects.html", {
-        "lifecycles": lifecycles,
-        "projects": projects,
-        "project_form": ProjectForm(request.user),
-    })
+        context['projects_access'] = Project.get_projects_with_read_priv(
+            self.request.user,
+            excludes={"contained_in_folders": None})
+        context['project_form'] = ProjectForm(self.request.user)
+        return context
 
 def project_list_lifecycle(request):
     # Get all of the projects that the user can see *and* that are in a folder,
@@ -293,7 +292,7 @@ def render_app_catalog_entry(appversion, appversions, organization):
         "icon": None if "icon" not in catalog
                     else image_to_dataurl(appversion.get_asset(catalog["icon"]), 128),
         "protocol": app_module.spec.get("protocol", []) if app_module else [],
-        
+
         # catalog detail page metadata
         "vendor": catalog.get("vendor"),
         "vendor_url": catalog.get("vendor_url"),
@@ -555,7 +554,7 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             user={"id": user.id, "username": user.username}
         )
         # Add deault deployments to system
-        deployment = Deployment(name="Design", description="Reference system archictecture design", system=system)
+        deployment = Deployment(name="Blueprint", description="Reference system archictecture design", system=system)
         deployment.save()
         deployment = Deployment(name="Dev", description="Development environment deployment", system=system)
         deployment.save()
@@ -572,13 +571,8 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             # Get the components from the import records of the app version
             import_records = appver.input_artifacts.all()
             for import_record in import_records:
-                producer_elements = Element.objects.filter(import_record=import_record)
-                for producer_element in producer_elements:
-                    smts = Statement.objects.filter(producer_element_id=producer_element.id,
-                                                    statement_type="control_implementation_prototype")
-                    for smt in smts:
-                        # Loop through element's prototype statements and add to control implementation statements
-                        smt.create_instance_from_prototype(system.root_element.id)
+                add_selected_components(system, import_record)
+
         else:
             # User does not have write permissions
             logger.info(
@@ -644,22 +638,18 @@ def project_read_required(f):
 @project_read_required
 def project(request, project):
 
+    # TODO: Lifecycles is part of the kanban style version of presenting projects that hasn't been optimized & fully implemented
     # Get this project's lifecycle stage, which is shown below the project title.
-    assign_project_lifecycle_stage([project])
-    if project.lifecycle_stage[0]["id"] == "none":
-        # Kill it if it's the default lifecycle.
-        project.lifecycle_stage = None
-    else:
-        # Mark the stages up to the active one as completed.
-        for stage in project.lifecycle_stage[0]["stages"]:
-            stage["complete"] = True
-            if stage == project.lifecycle_stage[1]:
-                break
-
-    # Get all of the discussions the user is participating in as a guest in this project.
-    # Meaning, I'm not a member, but I still need access to certain tasks and
-    # certain questions within those tasks.
-    discussions = list(project.get_discussions_in_project_as_guest(request.user))
+    # assign_project_lifecycle_stage([project])
+    # if project.lifecycle_stage[0]["id"] == "none":
+    #     # Kill it if it's the default lifecycle.
+    #     project.lifecycle_stage = None
+    # else:
+    #     # Mark the stages up to the active one as completed.
+    #     for stage in project.lifecycle_stage[0]["stages"]:
+    #         stage["complete"] = True
+    #         if stage == project.lifecycle_stage[1]:
+    #             break
 
     # Pre-load the answers to project root task questions and impute answers so
     # that we know which questions are suppressed by imputed values.
@@ -716,7 +706,7 @@ def project(request, project):
                 "invitations": [], # filled in below
                 "task": module_answers.task,
                 "can_start_new_task": False,
-                "discussions": [d for d in discussions if d.attached_to.task == module_answers.task],
+                "discussions": [] # no longer tracking discussions per question,
             }
 
         # Create a "question" record for the question itself it is is unanswered or if
@@ -804,27 +794,25 @@ def project(request, project):
         if "id" in doc:
             has_outputs = True
 
-    # Find any open invitations and if they are for particular modules,
-    # display them with the module.
-    other_open_invitations = []
-    for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created'):
-        if inv.is_expired():
-            continue
-        if inv.target == project:
-            into_new_task_question_id = inv.target_info.get("into_new_task_question_id")
-            if into_new_task_question_id:
-                if into_new_task_question_id in questions: # should always be True
-                    questions[into_new_task_question_id]["invitations"].append(inv)
-                    continue
-
-        # If the invitation didn't get put elsewhere, display in the
-        # other list.
-        other_open_invitations.append(inv)
+    # Calculate approximate compliance as degrees to display
+    percent_compliant = 0
+    if len(project.system.control_implementation_as_dict) > 0:
+        percent_compliant = project.system.controls_status_count['Implemented'] / len(project.system.control_implementation_as_dict)
+    # Need to reverse calculation for displaying as per styles in .piechart class
+    approx_compliance_degrees = 365 - ( 365 * percent_compliant )
+    if approx_compliance_degrees > 358:
+        approx_compliance_degrees = 358
 
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
+
+        "controls_status_count": project.system.controls_status_count,
+        "poam_status_count": project.system.poam_status_count,
+        "percent_compliant": percent_compliant,
+        "percent_compliant_100": percent_compliant * 100,
+        "approx_compliance_degrees": approx_compliance_degrees,
 
         "is_admin": request.user in project.get_admins(),
         "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
@@ -832,7 +820,7 @@ def project(request, project):
         "can_start_any_apps": can_start_any_apps,
 
         "title": project.title,
-        "open_invitations": other_open_invitations,
+        # "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
         "has_outputs": has_outputs,
 
@@ -871,7 +859,7 @@ def project_settings(request, project):
                     continue
 
         # If the invitation didn't get put elsewhere, display in the
-        # other list.                
+        # other list.
         other_open_invitations.append(inv)
 
     # Gather version upgrade information
@@ -1089,7 +1077,7 @@ def project_api(request, project):
             items = list(task.get_current_answer_records())
         else:
             items = [(q, None) for q in module.questions.order_by('definition_order')]
-        
+
         def add_filter_field(q, suffix, title):
             from guidedmodules.models import ModuleQuestion
             schema.append( (path, module, ModuleQuestion(
@@ -1205,7 +1193,7 @@ def move_project(request, project_id):
     request ([HttpRequest]): The network request
     project_id ([int|str]): The id of the project
     Returns:
-        [JsonResponse]: Either a ok status or an error 
+        [JsonResponse]: Either a ok status or an error
     """
     try:
         new_portfolio_id = request.POST.get("new_portfolio", "").strip() or None
@@ -1624,7 +1612,7 @@ def portfolio_read_required(f):
 def portfolio_projects(request, pk):
   """List of projects within a portfolio"""
   portfolio = Portfolio.objects.get(pk=pk)
-  projects = Project.objects.filter(portfolio=portfolio).exclude(is_organization_project=True)
+  projects = Project.objects.filter(portfolio=portfolio).exclude(is_organization_project=True).order_by('-created')
   user_projects = [project for project in projects if request.user.has_perm('view_project', project)]
   anonymous_user = User.objects.get(username='AnonymousUser')
   project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
