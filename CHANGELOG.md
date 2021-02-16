@@ -22,6 +22,8 @@ v999 (February XX, 2021)
 * Adding DummyCache to prevent real caching while running automated tests.
 * Refactored use of random package to use secure secrets module.
 * Added minor pylint fixes.
+* Added the ability to import and export Poams along with the project import/export.
+* Load sample/default components into component library during installation to provide users with starting set of components.
 
 v0.9.1.51 (February 03, 2021)
 -----------------------------
