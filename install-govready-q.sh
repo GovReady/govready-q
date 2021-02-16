@@ -4,8 +4,12 @@
 # for local testing, from a freshly-cloned repository.
 
 # Usage:
-#	$ ./install-govready-q.sh
+#	  $ ./install-govready-q.sh
 #   $ ./install-govready-q.sh --non-interactive
+#
+#   NOTE: VERY IMPORTANT TO INCLUDE --pip-user WHEN INSTALLING IN
+#         VIRTUAL PYTHON ENVIRONMENT ASSOCIATED WITH THE USER.
+#   $ ./install-govready-q.sh --pip-user
 
 # note that this script DOES NOT install libraries from a package manager,
 # and does not edit /etc/hosts. those will have to be done manually
@@ -13,9 +17,15 @@
 # Defaults
 ##########
 
+# URL browsers go to reach GovReady-Q site
+GOVREADYURL="http://localhost:8000"
+
 # run the script be non-interactively?
 # default is yes, run interactively
 NONINTERACTIVE=
+
+# run pip install with `--user` flag?
+PIPUSER=
 
 # some of these commands generate a big wall of text, so we may want visual space
 # between them
@@ -28,6 +38,10 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --non-interactive)
       NONINTERACTIVE=1
+      shift 1;;
+
+    --pip-user)
+      PIPUSER=1
       shift 1;;
 
     -v)
@@ -68,16 +82,13 @@ else
 	echo "Installing GovReady-Q in interactive mode (default)..."
 fi
 
-# install basic requirements either in venv or as the local user
-if test -f env/bin/activate
+# install basic as local user?
+
+if [ $PIPUSER ];
 then
-	source env/bin/activate;
-	pip3 install -r requirements.txt;
-elif [ -v VIRTUALENV_ENV ]
-then
-	pip3 install -r requirements.txt;
-else
 	pip3 install --user -r requirements.txt;
+else
+	pip3 install -r requirements.txt;
 fi
 
 echo $SPACER
@@ -104,11 +115,10 @@ then
 	# need to use a <<- heredoc if we want to have tabs be ignored
 	cat <<- ENDJSON > local/environment.json
 	{
-		"debug": true,
-		"host": "localhost:8000",
-		"https": false,
-		"organization-parent-domain": "localhost",
+		"govready-url": "$GOVREADYURL",
+		"static": "static_root",
 		$SECRET_KEY_LINE
+		"debug": true
 	}
 	ENDJSON
 else
@@ -131,33 +141,12 @@ fi
 
 echo $SPACER
 
-# Use jq and cut to extract hostname from govready-url param in local/environment.json
-# environment_json=$(<local/environment.json)
-govready_url=`cat local/environment.json | jq .\"govready-url\"`
-# echo "govready_url is $govready_url"
-govready_host_and_port=$(echo $govready_url | cut -f2 -d\" | cut -f3 -d/)
-echo "govready_host_and_port is $govready_host_and_port"
-
-
-if [ $NONINTERACTIVE ];
-then
-	echo ""
-	echo "*********************************"
-	echo "* Starting GovReady-Q Server... *"
-	echo "*********************************"
-	echo ""
-	python3 manage.py runserver "$govready_host_and_port"
-else
-	# prompt the user if they want to run the webserver now
-	# this currently runs synchronously, in the foreground, so it needs to be the last
-	# functional line of the script
-	while true;
-	do
-		read -p "Do you want to run the GovReady-Q now, in the foreground? [y/n] " answer
-		case $answer in
-			[Yy]* ) python3 manage.py runserver "$govready_host_and_port"; break;;
-			[Nn]* ) break;;
-			* ) echo "Please answer 'yes' or 'no'";;
-		esac
-	done
-fi
+echo ""
+echo "***********************************"
+echo "* GovReady-Q Server configured... *"
+echo "***********************************"
+echo ""
+echo "To start GovReady-Q, run: "
+echo "  python3 manage.py runserver"
+echo "or"
+echo "  python manage.py runserver"

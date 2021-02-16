@@ -13,13 +13,19 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
+from django.views.generic import ListView
 from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model
 
+from controls.forms import ImportProjectForm
+from controls.views import add_selected_components
 from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
-from controls.models import Element, System
+
+from controls.models import Element, System, Statement, Poam, Deployment
+from system_settings.models import SystemSettings
+
 
 from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
@@ -109,45 +115,42 @@ def assign_project_lifecycle_stage(projects):
             # No matching output document with a non-empty value.
             project.lifecycle_stage = lifecycle_stage_code_mapping["none_none"]
 
-def project_list(request):
-    # Get all of the projects that the user can see *and* that are in a folder,
-    # which indicates it is top-level.
-    projects = Project.get_projects_with_read_priv(
-        request.user,
-        excludes={ "contained_in_folders": None })
-
+class ProjectList(ListView):
+    """
+    Get all of the projects that the user can see *and* that are in a folder, which indicates it is top-level.
+    """
+    model = Project
+    template_name = 'projects.html'
+    context_object_name = 'projects'
     # Sort the projects by their creation date. The projects
     # won't always appear in that order, but it will determine
     # the overall order of the page in a stable way.
-    projects = sorted(projects, key = lambda project : project.created)
+    ordering = ['created']
+    paginate_by = 10
 
-    # Load each project's lifecycle stage, which is computed by each project's
-    # root task's app's output document named govready_lifecycle_stage_code.
-    # That output document yields a string identifying a lifecycle stage.
-    assign_project_lifecycle_stage(projects)
+    def get_queryset(self):
+        """
+        Return the projects after assigning lifecycles
+        """
+        projects = Project.get_projects_with_read_priv(
+            self.request.user,
+            excludes={"contained_in_folders": None})
 
-    # Group projects into lifecyle types, and then lifecycle stages. The lifecycle
-    # types are arranged in the order they first appear across the projects.
-    lifecycles = []
-    for project in projects:
-        # On the first occurrence of this lifecycle type, add it to the output.
-        if project.lifecycle_stage[0] not in lifecycles:
-            lifecycles.append(project.lifecycle_stage[0])
+        # Log listing
+        logger.info(
+            event="project_list",
+            user={"id": self.request.user.id, "username": self.request.user.username}
+        )
+        return projects
 
-        # Put the project into the lifecycle's appropriate stage.
-        project.lifecycle_stage[1].setdefault("projects", []).append(project)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-    # Log listing
-    logger.info(
-        event="project_list",
-        user={"id": request.user.id, "username": request.user.username}
-    )
-
-    return render(request, "projects.html", {
-        "lifecycles": lifecycles,
-        "projects": projects,
-        "project_form": ProjectForm(request.user),
-    })
+        context['projects_access'] = Project.get_projects_with_read_priv(
+            self.request.user,
+            excludes={"contained_in_folders": None})
+        context['project_form'] = ProjectForm(self.request.user)
+        return context
 
 def project_list_lifecycle(request):
     # Get all of the projects that the user can see *and* that are in a folder,
@@ -289,7 +292,7 @@ def render_app_catalog_entry(appversion, appversions, organization):
         "icon": None if "icon" not in catalog
                     else image_to_dataurl(appversion.get_asset(catalog["icon"]), 128),
         "protocol": app_module.spec.get("protocol", []) if app_module else [],
-        
+
         # catalog detail page metadata
         "vendor": catalog.get("vendor"),
         "vendor_url": catalog.get("vendor_url"),
@@ -364,10 +367,7 @@ def apps_catalog(request):
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
     # Add the portfolio id the user is creating the project from to the args
-    if "portfolio" not in request.GET:
-        messages.add_message(request, messages.ERROR, "Please select 'Start a project' to continue.")
-        return redirect('projects')
-    else:
+    if "portfolio" in request.GET:
         forward_qsargs["portfolio"] = request.GET["portfolio"]
 
     # Get the app catalog. If the user is answering a question, then filter to
@@ -553,6 +553,32 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             object={"object": "element", "id": element.id, "name":element.name},
             user={"id": user.id, "username": user.username}
         )
+        # Add deault deployments to system
+        deployment = Deployment(name="Blueprint", description="Reference system archictecture design", system=system)
+        deployment.save()
+        deployment = Deployment(name="Dev", description="Development environment deployment", system=system)
+        deployment.save()
+        deployment = Deployment(name="Stage", description="Stage/Test environment deployment", system=system)
+        deployment.save()
+        deployment = Deployment(name="Prod", description="Production environment deployment", system=system)
+        deployment.save()
+        # Assign default control catalog
+        # Assign default control profile for org systems
+        # Assign default organization components for a system
+        # Assign default org params
+
+        if user.has_perm('change_system', system):
+            # Get the components from the import records of the app version
+            import_records = appver.input_artifacts.all()
+            for import_record in import_records:
+                add_selected_components(system, import_record)
+
+        else:
+            # User does not have write permissions
+            logger.info(
+                event="change_system permission_denied",
+                user={"id": user.id, "username": user.username}
+            )
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
@@ -612,17 +638,18 @@ def project_read_required(f):
 @project_read_required
 def project(request, project):
 
+    # TODO: Lifecycles is part of the kanban style version of presenting projects that hasn't been optimized & fully implemented
     # Get this project's lifecycle stage, which is shown below the project title.
-    assign_project_lifecycle_stage([project])
-    if project.lifecycle_stage[0]["id"] == "none":
-        # Kill it if it's the default lifecycle.
-        project.lifecycle_stage = None
-    else:
-        # Mark the stages up to the active one as completed.
-        for stage in project.lifecycle_stage[0]["stages"]:
-            stage["complete"] = True
-            if stage == project.lifecycle_stage[1]:
-                break
+    # assign_project_lifecycle_stage([project])
+    # if project.lifecycle_stage[0]["id"] == "none":
+    #     # Kill it if it's the default lifecycle.
+    #     project.lifecycle_stage = None
+    # else:
+    #     # Mark the stages up to the active one as completed.
+    #     for stage in project.lifecycle_stage[0]["stages"]:
+    #         stage["complete"] = True
+    #         if stage == project.lifecycle_stage[1]:
+    #             break
 
     # Get all of the discussions the user is participating in as a guest in this project.
     # Meaning, I'm not a member, but I still need access to certain tasks and
@@ -804,6 +831,8 @@ def project(request, project):
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
         "has_outputs": has_outputs,
 
+        "enable_experimental_evidence": SystemSettings.enable_experimental_evidence,
+
         "layout_mode": layout_mode,
         "columns": columns,
         "action_buttons": action_buttons,
@@ -814,6 +843,7 @@ def project(request, project):
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
         "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
+        "import_project_form": ImportProjectForm()
     })
 
 @project_read_required
@@ -836,7 +866,7 @@ def project_settings(request, project):
                     continue
 
         # If the invitation didn't get put elsewhere, display in the
-        # other list.                
+        # other list.
         other_open_invitations.append(inv)
 
     # Gather version upgrade information
@@ -876,6 +906,7 @@ def project_settings(request, project):
         "users": User.objects.all(),
 
         "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
+        "import_project_form": ImportProjectForm()
     })
 
 @project_read_required
@@ -1053,7 +1084,7 @@ def project_api(request, project):
             items = list(task.get_current_answer_records())
         else:
             items = [(q, None) for q in module.questions.order_by('definition_order')]
-        
+
         def add_filter_field(q, suffix, title):
             from guidedmodules.models import ModuleQuestion
             schema.append( (path, module, ModuleQuestion(
@@ -1169,7 +1200,7 @@ def move_project(request, project_id):
     request ([HttpRequest]): The network request
     project_id ([int|str]): The id of the project
     Returns:
-        [JsonResponse]: Either a ok status or an error 
+        [JsonResponse]: Either a ok status or an error
     """
     try:
         new_portfolio_id = request.POST.get("new_portfolio", "").strip() or None
@@ -1246,13 +1277,20 @@ def upgrade_project(request, project):
         return JsonResponse({ "status": "error", "message": message })
 
 @project_admin_login_post_required
+@transaction.atomic
 def delete_project(request, project):
     if not project.is_deletable():
         return JsonResponse({ "status": "error", "message": "This project cannot be deleted." })
 
     # Get the project's parents for redirect.
     parents = project.get_parent_projects()
-    project.delete()
+
+    if project.system is not None:
+        # When project has a system, deleting the system deletes project
+        project.system.root_element.delete()
+    else:
+        # Just delete the project
+        project.delete()
 
     # Only choose parents the user can see.
     parents = [parent for parent in parents if parent.has_read_priv(request.user)]
@@ -1277,7 +1315,7 @@ def make_revoke_project_admin(request, project):
     return JsonResponse({ "status": "ok" })
 
 @project_admin_login_post_required
-def export_project(request, project):
+def export_project_questionnaire(request, project):
     from urllib.parse import quote
     data = project.export_json(include_metadata=True, include_file_content=True)
     resp = JsonResponse(data, json_dumps_params={"indent": 2})
@@ -1286,7 +1324,7 @@ def export_project(request, project):
     return resp
 
 @project_admin_login_post_required
-def import_project_data(request, project):
+def import_project_questionnaire(request, project):
     # Deserialize the JSON from request.FILES. Assume the JSON data is
     # UTF-8 encoded and ensure dicts are parsed as OrderedDict so that
     # key order is preserved, since key order matters because deserialization
@@ -1581,7 +1619,7 @@ def portfolio_read_required(f):
 def portfolio_projects(request, pk):
   """List of projects within a portfolio"""
   portfolio = Portfolio.objects.get(pk=pk)
-  projects = Project.objects.filter(portfolio=portfolio).exclude(is_organization_project=True)
+  projects = Project.objects.filter(portfolio=portfolio).exclude(is_organization_project=True).order_by('-created')
   user_projects = [project for project in projects if request.user.has_perm('view_project', project)]
   anonymous_user = User.objects.get(username='AnonymousUser')
   project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
@@ -2076,10 +2114,10 @@ def shared_static_pages(request, page):
 # SUPPORT
 
 def support(request):
-    """Render a supoort page with custom content"""
+    """Render a support page with custom content"""
 
     support_results = Support.objects.all()
-    if len(support_results) > 0:
+    if support_results.exists():
         support = support_results[0]
     else:
         support = {

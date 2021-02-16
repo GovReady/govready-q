@@ -10,7 +10,8 @@ from . import views
 from siteapp.settings import *
 
 urlpatterns = [
-    url(r'^test$', views.test),
+    # Docs
+    url('doc/', include('django.contrib.admindocs.urls')),
 
     # Catalogs
     url(r'^$', views.catalogs),
@@ -26,15 +27,25 @@ urlpatterns = [
     url(r'^related_system_components/', views.RelatedComponentStatements.as_view(), name="related_system_components"),
     url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),
     url(r'^(?P<system_id>.*)/components/editor_autocomplete$',  views.EditorAutocomplete.as_view(), name="editor_autocomplete"),
+    url(r'^(?P<system_id>.)/profile/oscal/json', views.system_profile_oscal_json, name="profile_oscal_json"),
     url(r'^statement_history/(?P<smt_id>.*)/$', views.statement_history, name="statement_history"),
     url(r'^restore_to/(?P<smt_id>.*)/(?P<history_id>.*)/$', views.restore_to_history, name="restore_to"),
 
+    # Systems Inventory and Deployments
+    url(r'^(?P<system_id>.*)/deployments$', views.system_deployments, name="system_deployments"),
+    url(r'^(?P<system_id>.*)/deployment/new$', views.manage_system_deployment, name="new_system_deployment"),
+    url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/edit$', views.manage_system_deployment, name="manage_system_deployment"),
+    url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/inventory$', views.system_deployment_inventory, name="system_deployment_inventory"),
+    url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/history$', views.deployment_history, name="deployment_history"),
+    # url(r'^restore_to/(?P<smt_id>.*)/(?P<history_id>.*)/$', views.restore_to_history, name="restore_to"),
+
+    # Statements
     url(r'^smt/_save/$', views.save_smt),
     url(r'^smt/_delete/$', views.delete_smt),
     url(r'^smt/_update_smt_prototype/$', views.update_smt_prototype),
 
     # System Components/Elements
-    url(r'^(?P<system_id>.*)/components/selected$', views.components_selected, name="components_selected"),
+    url(r'^(?P<system_id>.*)/components/selected$', views.SelectedComponentsList.as_view(), name="components_selected"),
     url(r'^(?P<system_id>.*)/components/selected/export/opencontrol$', views.export_system_opencontrol, name="export_system_opencontrol"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/download/oscal/json$', 
         views.system_element_download_oscal_json, 
@@ -71,4 +82,7 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/poams/export/csv$', views.poam_export_csv, name="poam_export_csv"),
     url(r'^(?P<system_id>.*)/poams/export/xlsx$', views.poam_export_xlsx, name="poam_export_xlsx"),
 
+    # Project
+    url(r'^(?P<project_id>.*)/import', views.project_import, name="project_import"),
+    url(r'^(?P<project_id>.*)/export', views.project_export, name="project_export"),
 ]

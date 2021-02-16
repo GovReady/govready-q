@@ -1,0 +1,426 @@
+id: se_aws_ci_cd_jenkins_gitlab_aqua_sonarqube
+output:
+- format: markdown
+  id: nist_80053rev4_ssp_AC_2_a_2
+  template: |
+    The AWS CME manages the hosting environment for {{project.system_info.system_short_name}} and its associated accounts.
+  title: NIST 800-53 rev4 SSP AC_2_a_2
+- format: markdown
+  id: nist_80053rev4_ssp_AC_2_b
+  template: |
+    Developers have privileged access to the compute and database environments; the AWS CME are the admins of these accounts.
+  title: NIST 800-53 rev4 SSP AC_2_b
+- format: markdown
+  id: nist_80053rev4_ssp_AC_3
+  template: |
+    Developer account access is enforced through the AWS GSS.
+  title: NIST 800-53 rev4 SSP AC_3
+- format: markdown
+  id: nist_80053rev4_ssp_AC_4_1
+  template: |
+    AWS defines the control of information flow of {{project.system_info.system_short_name}} through the implementation of network rules.
+  title: NIST 800-53 rev4 SSP AC_4_1
+- format: markdown
+  id: nist_80053rev4_ssp_AC_4_2
+  template: |
+    AWS enforces information flow of {{project.system_info.system_short_name}} through the implementation of network rules.
+  title: NIST 800-53 rev4 SSP AC_4_2
+- format: markdown
+  id: nist_80053rev4_ssp_CM_2_1
+  template: |
+    The ISSO develops and documents a current baseline configuration of the information system
+  title: NIST 800-53 rev4 SSP CM_2_1
+- format: markdown
+  id: nist_80053rev4_ssp_CM_2_2
+  template: |
+    The ISSO  maintains, under configuration control, a current baseline configuration of the information system
+  title: NIST 800-53 rev4 SSP CM_2_2
+- format: markdown
+  id: nist_80053rev4_ssp_CM_2_internal_policy_1
+  template: |
+    This control is not applicable. Network printers are facsimile machines are not within the system/application boundary
+  title: NIST 800-53 rev4 SSP CM_2_internal_policy_1
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_1_2_c
+  template: >
+    Information system components are defined per policy. The information
+    system components  that require configuration settings verification are documented
+    within the system Security Plan as well
+  title: NIST 800-53 rev4 SSP CM_6_1_2_c
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_a_3
+  template: >
+    The organization defines and documents configuration settings for information
+    technology products employed within the system any deviations from established
+    configuration settings inside the organization documents.
+  title: NIST 800-53 rev4 SSP CM_6_a_3
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_c_1_c
+  template: |
+    AWS has established and documented configuration settings.  Any deviations will have to be approved.
+  title: NIST 800-53 rev4 SSP CM_6_c_1_c
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_c_2_a
+  template: |
+    AWS has established and documented configuration settings.  Any deviations will have to be approved.
+  title: NIST 800-53 rev4 SSP CM_6_c_2_a
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_c_2_b
+  template: |
+    AWS has established and documented configuration settings.  Any deviations will have to be approved.
+  title: NIST 800-53 rev4 SSP CM_6_c_2_b
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_c_2_c
+  template: |
+    AWS has established and documented configuration settings.  Any deviations will have to be approved.
+  title: NIST 800-53 rev4 SSP CM_6_c_2_c
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_c_4
+  template: |
+    AWS has established and documented configuration settings.  Any deviations will have to be approved.
+  title: NIST 800-53 rev4 SSP CM_6_c_4
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_d_2
+  template: |
+    AWS has established and documented configuration settings.  Any changes will have to be approved.
+  title: NIST 800-53 rev4 SSP CM_6_d_2
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_internal_policy_1
+  template: >
+    This control is not applicable. There are no USGCB configurations for the OS,
+    databases or other supporting software currently being utilized within the system
+  title: NIST 800-53 rev4 SSP CM_6_internal_policy_1
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_internal_policy_2
+  template: |
+    This control is not applicable. Network printers are facsimile machines are not within the system/application boundary
+  title: NIST 800-53 rev4 SSP CM_6_internal_policy_2
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_internal_policy_3
+  template: |
+    This control is not applicable. There are no multifunctional devices within the AWS boundary
+  title: NIST 800-53 rev4 SSP CM_6_internal_policy_3
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_internal_policy_4
+  template: |
+    This control is not applicable. There are no fax servers within the system boundary.
+  title: NIST 800-53 rev4 SSP CM_6_internal_policy_4
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_internal_policy_5
+  template: >
+    AWS has established and documented configuration settings for CentOS and containzerized
+    versions of CentOS Linux by merging the CIS benchmarkswith hardening guidelines. AWS also uses hardening guidelines for other operating
+    systems and databases.
+  title: NIST 800-53 rev4 SSP CM_6_internal_policy_5
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_internal_policy_6
+  template: |
+    Telnet is not utilized within the AWS boundary. SSH is used.
+  title: NIST 800-53 rev4 SSP CM_6_internal_policy_6
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_internal_policy_7
+  template: |
+    Unsecured FTP is not available within the AWS boundary. SSH is used.
+  title: NIST 800-53 rev4 SSP CM_6_internal_policy_7
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_internal_policy_8
+  template: |
+    Unsecured FTP is not available within the AWS boundary. SSH is used.
+  title: NIST 800-53 rev4 SSP CM_6_internal_policy_8
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_1_1_a
+  template: |
+    The application utilizes GitLab and Jenkins to implement configuration settings which adhere to defined policies.
+  title: NIST 800-53 rev4 SSP CM_6_1_1_a
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_c_3
+  template: >
+    This control is not applicable. There are no USGCB configurations for the OS,
+    databases or other supporting software currently being utilized within the system
+  title: NIST 800-53 rev4 SSP CM_6_c_3
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_d_1
+  template: |
+    The application utilizes GitLab to centrally manage and ensure configuration settings which adhere to defined policies.
+  title: NIST 800-53 rev4 SSP CM_6_d_1
+- format: markdown
+  id: nist_80053rev4_ssp_CM_7_a
+  template: |
+    AWS is configured on the principle of least privileged.
+  title: NIST 800-53 rev4 SSP CM_7_a
+- format: markdown
+  id: nist_80053rev4_ssp_CM_7_b_2_a
+  template: |
+    The system prohibits restricts the use of restricted functions defined within the documentation.
+  title: NIST 800-53 rev4 SSP CM_7_b_2_a
+- format: markdown
+  id: nist_80053rev4_ssp_CM_7_b_2_b
+  template: |
+    The system prohibits the use of restricted ports defined within the documentation.
+  title: NIST 800-53 rev4 SSP CM_7_b_2_b
+- format: markdown
+  id: nist_80053rev4_ssp_CM_7_b_2_c
+  template: |
+    The system prohibits the use of restricted protocols defined within the documentation.
+  title: NIST 800-53 rev4 SSP CM_7_b_2_c
+- format: markdown
+  id: nist_80053rev4_ssp_CM_7_b_2_d
+  template: |
+    The system prohibits the use of restricted services defined within the documentation.
+  title: NIST 800-53 rev4 SSP CM_7_b_2_d
+- format: markdown
+  id: nist_80053rev4_ssp_CM_8_internal_policy_1
+  template: |
+    This control is not applicable. Network printers, copiers and facsimile machines are not within the system/application boundary
+  title: NIST 800-53 rev4 SSP CM_8_internal_policy_1
+- format: markdown
+  id: nist_80053rev4_ssp_CM_8_internal_policy_2
+  template: |
+    This control is not applicable. Network printers, copiers and facsimile machines are not within the system/application boundary
+  title: NIST 800-53 rev4 SSP CM_8_internal_policy_2
+- format: markdown
+  id: nist_80053rev4_ssp_IA_2_8
+  template: |
+    AWS is responsible for implementing encryption within the {{project.system_info.system_short_name}} hosting environment for those components supporting the {{project.system_info.system_short_name}} system.
+  title: NIST 800-53 rev4 SSP IA_2_8
+- format: markdown
+  id: nist_80053rev4_ssp_IA_2_12_1
+  template: |
+    Network access for non-privileged accounts is implemented through AWS.
+  title: NIST 800-53 rev4 SSP IA_2_12_1
+- format: markdown
+  id: nist_80053rev4_ssp_IA_2_12_2
+  template: |
+    Network access for privileged accounts is implemented through AWS.
+  title: NIST 800-53 rev4 SSP IA_2_12_2
+- format: markdown
+  id: nist_80053rev4_ssp_IA_2_2
+  template: |
+    Network access for non-privileged accounts is implemented through AWS.
+  title: NIST 800-53 rev4 SSP IA_2_2
+- format: markdown
+  id: nist_80053rev4_ssp_MP_4_a_1
+  template: |
+    This control is fully inherited from the CSP
+  title: NIST 800-53 rev4 SSP MP_4_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_SA_11_1
+  template: |
+    The CISO determine developer security policies and procedures.
+  title: NIST 800-53 rev4 SSP SA_11_1
+- format: markdown
+  id: nist_80053rev4_ssp_SC_12_internal_policy_1
+  template: |
+    FPKI associate certificate issued and digital signature access for privileged accounts is implemented through AWS.
+  title: NIST 800-53 rev4 SSP SC_12_internal_policy_1
+- format: markdown
+  id: nist_80053rev4_ssp_SC_12_internal_policy_2
+  template: |
+    FPKI Subscriber private keys shall not be used multipole entity may use the group private keys through AWS.
+  title: NIST 800-53 rev4 SSP SC_12_internal_policy_2
+- format: markdown
+  id: nist_80053rev4_ssp_SC_12_internal_policy_3
+  template: |
+    This control is not applicable. There are no wireless devices within the system/application boundary
+  title: NIST 800-53 rev4 SSP SC_12_internal_policy_3
+- format: markdown
+  id: nist_80053rev4_ssp_SC_12_internal_policy_4
+  template: |
+    This control is not applicable. The system does not use NPE PKI certificates
+  title: NIST 800-53 rev4 SSP SC_12_internal_policy_4
+- format: markdown
+  id: nist_80053rev4_ssp_SC_12_internal_policy_5
+  template: |
+    The system requests certificates through the PKI team per organizational policy
+  title: NIST 800-53 rev4 SSP SC_12_internal_policy_5
+- format: markdown
+  id: nist_80053rev4_ssp_SC_13_internal_policy_6
+  template: |
+    The system develop and maintain encryption plan for sensitive information through AWS
+  title: NIST 800-53 rev4 SSP SC_13_internal_policy_6
+- format: markdown
+  id: nist_80053rev4_ssp_SC_13_internal_policy_7
+  template: |
+    The system protects sensitive PII by encrypting sensitive data
+  title: NIST 800-53 rev4 SSP SC_13_internal_policy_7
+- format: markdown
+  id: nist_80053rev4_ssp_SC_13_internal_policy_8
+  template: |
+    The system utilizes AWS KMS which is FIPS 140-2 compliant
+  title: NIST 800-53 rev4 SSP SC_13_internal_policy_8
+- format: markdown
+  id: nist_80053rev4_ssp_SC_13_internal_policy_9
+  template: |
+    The system supports the following cryptographic algorithms and associated key sizes:
+    - SHA 1 and SHA 256
+    - RSA 1024 and 2048
+    - AES 128 and 256
+  title: NIST 800-53 rev4 SSP SC_13_internal_policy_9
+- format: markdown
+  id: nist_80053rev4_ssp_SC_13_internal_policy_10
+  template: |
+    The system utilizes AWS KMS which is FIPS 140-2 compliant
+  title: NIST 800-53 rev4 SSP SC_13_internal_policy_10
+- format: markdown
+  id: nist_80053rev4_ssp_SC_13_3
+  template: >
+    The system implements the cryptographic uses and type of cryptography required
+    for each use in accordance with applicable federal laws, Executive Orders, directives,
+    policies, regulations, and standards as defined within the documents.
+  title: NIST 800-53 rev4 SSP SC_13_3
+- format: markdown
+  id: nist_80053rev4_ssp_SC_18_c_2
+  template: |
+    The system monitors the use of mobile code through AWS - CI/CD Jenkins, GitLab, Aqua, SonarQube, integrated pipeline
+  title: NIST 800-53 rev4 SSP SC_18_c_2
+- format: markdown
+  id: nist_80053rev4_ssp_SC_18_c_3
+  template: |
+    The system controls the use of mobile code through AWS - CI/CD Jenkins, GitLab, Aqua, SonarQube, integrated pipeline.
+  title: NIST 800-53 rev4 SSP SC_18_c_3
+- format: markdown
+  id: nist_80053rev4_ssp_SC_23
+  template: >
+    The system utilizes the NOC, which provides network services as well as implements
+    ACL's to prevent non-organization networks from accessing the system.
+  title: NIST 800-53 rev4 SSP SC_23
+- format: markdown
+  id: nist_80053rev4_ssp_SC_23_3_2
+  template: >
+    The system utilizes the NOC, which provides network services as well as implements
+    ACL's to prevent non-organization networks from accessing the system.
+  title: NIST 800-53 rev4 SSP SC_23_3_2
+- format: markdown
+  id: nist_80053rev4_ssp_SC_23_3_3
+  template: >
+    The system utilizes the NOC, which provides network services as well as implements
+    ACL's to prevent non-organization networks from accessing the system.
+  title: NIST 800-53 rev4 SSP SC_23_3_3
+- format: markdown
+  id: nist_80053rev4_ssp_SC_24_4
+  template: |
+    The system fails to the known-state for types of failures defined within the documents.
+  title: NIST 800-53 rev4 SSP SC_24_4
+- format: markdown
+  id: nist_80053rev4_ssp_SC_24_5
+  template: |
+    The system preserves the system state information in the event of a system failure as defined by the documents.
+  title: NIST 800-53 rev4 SSP SC_24_5
+- format: markdown
+  id: nist_80053rev4_ssp_SC_28_1_3
+  template: >
+    The system utilies cryptographic mechanisms to prevent unauthorized disclosure
+    and modification of organization-defined information on organization-defined information
+    system components through AWS .
+  title: NIST 800-53 rev4 SSP SC_28_1_3
+- format: markdown
+  id: nist_80053rev4_ssp_SC_7_a_1
+  template: |
+    The system monitors and controls communications at each of the VPC boundaries by ways of a cloud services router
+  title: NIST 800-53 rev4 SSP SC_7_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_SC_7_a_2
+  template: |
+    The system monitors and controls communications at each of the VPC boundaries by ways of a cloud services router
+  title: NIST 800-53 rev4 SSP SC_7_a_2
+- format: markdown
+  id: nist_80053rev4_ssp_SC_7_a_3
+  template: |
+    The system monitors and controls communications at each of the VPC boundaries by ways of a cloud services router
+  title: NIST 800-53 rev4 SSP SC_7_a_3
+- format: markdown
+  id: nist_80053rev4_ssp_SC_7_a_4
+  template: |
+    The system monitors and controls communications at each of the VPC boundaries by ways of a cloud services router
+  title: NIST 800-53 rev4 SSP SC_7_a_4
+- format: markdown
+  id: nist_80053rev4_ssp_SC_7_b_1
+  template: |
+    The system implements a separate private IP subnet for each of the environments (DEV/SAT/PROD)
+  title: NIST 800-53 rev4 SSP SC_7_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_SC_7_b_2
+  template: |
+    The system implements a separate private IP subnet for each of the environments (DEV/SAT/PROD)
+  title: NIST 800-53 rev4 SSP SC_7_b_2
+- format: markdown
+  id: nist_80053rev4_ssp_SC_7_C
+  template: >
+    The system allows external users to only access the system via OneNet (Trusted
+    Internet Connection) and thruogh the Transit Virtual Private Cloud (VPC)
+  title: NIST 800-53 rev4 SSP SC_7_C
+- format: markdown
+  id: nist_80053rev4_ssp_SC_8_1
+  template: >
+    The system protects the confidentiality and integrity of transmitted information
+    by leveraging the circuit between AWS, which utilizes encryption
+  title: NIST 800-53 rev4 SSP SC_8_1
+- format: markdown
+  id: nist_80053rev4_ssp_SC_8_2
+  template: >
+    The system protects the confidentiality and integrity of transmitted information
+    by leveraging the circuit between AWS, which utilizes encryption
+  title: NIST 800-53 rev4 SSP SC_8_2
+- format: markdown
+  id: nist_80053rev4_ssp_SI_10_2
+  template: >
+    The system checks th validity of  organization defined information through AWS
+    - CI/CD Jenkins, GitLab, Aqua, SonarQube integrated pipeline.
+  title: NIST 800-53 rev4 SSP SI_10_2
+- format: markdown
+  id: nist_80053rev4_ssp_SI_2_3_a
+  template: |
+    The organization utilizs the team to access systems within a timeframe for vulnerabilities and remediation through AWS.
+  title: NIST 800-53 rev4 SSP SI_2_3_a
+- format: markdown
+  id: nist_80053rev4_ssp_SI_2_3_b_2
+  template: |
+    The system defined benchmarks documents all remediations are documented vulnerabilities and remediation through AWS.
+  title: NIST 800-53 rev4 SSP SI_2_3_b_2
+- format: markdown
+  id: nist_80053rev4_ssp_SI_2_a_3
+  template: |
+    The system utilizes with the SonarQube for code analysis to security vulnerabilities .
+  title: NIST 800-53 rev4 SSP SI_2_a_3
+- format: markdown
+  id: nist_80053rev4_ssp_SI_2_b_1
+  template: |
+    The system utilizes testing software SonarQube, Jenkins, GitLab and Aqua for code and system vulnerabilities.
+  title: NIST 800-53 rev4 SSP SI_2_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_SI_2_b_2
+  template: |
+    The system utilizes testing firmware updates patching activities using SonarQube and Aqua.
+  title: NIST 800-53 rev4 SSP SI_2_b_2
+- format: markdown
+  id: nist_80053rev4_ssp_SI_2_c_1
+  template: |
+    The system defines software updates the time period.
+  title: NIST 800-53 rev4 SSP SI_2_c_1
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_a_2_1
+  template: |
+    AWS monitors the information system to detect unauthorized local connections.
+  title: NIST 800-53 rev4 SSP SI_4_a_2_1
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_a_2_2
+  template: |
+    AWS monitors the information system to detect unauthorized network connections.
+  title: NIST 800-53 rev4 SSP SI_4_a_2_2
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_a_2_3
+  template: |
+    AWS monitors the information system to detect unauthorized remote connections.
+  title: NIST 800-53 rev4 SSP SI_4_a_2_3
+title: AWS - CI/CD (Jenkins, GitLab, Aqua, SonarQube)
+questions:
+- id: CICD_option
+  title: CI/CD Software
+  prompt: |
+    AWS CI/CD used by all IT Systems hosted in AWS.
+
+    All System hosted in AWS are required to use the AWS CI/CD Pipeline for deployment.
+
+    Your System will inherit the controls from AWS's Jenkins, GitLab, AcquaSec, and SonarQube tools.
+
+  type: interstitial

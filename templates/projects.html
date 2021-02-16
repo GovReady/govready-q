@@ -70,9 +70,9 @@ Your Compliance Projects
 
   h1.mini {
     font-size: 16px;
-    font-family: Hind, sands-serif;
+    font-family: Hind, sans-serif;
     line-height: 22px;
-    color: rgba(51, 51, 51);
+    color: rgba(51, 51, 51, .8);
     padding: 0px 0px 0px 0px;
     margin: 0px 0px 0px 0px;
   }
@@ -95,7 +95,7 @@ Your Compliance Projects
 </style>
 {% endblock %}
 
-<!-- Remove contextbar from top of page -->
+<!-- Remove context bar from top of page -->
 {% block contextbar %}{% endblock %}
 
 {% block body %}
@@ -105,10 +105,10 @@ Your Compliance Projects
 <div class="container">
 
 <div class="project-main">
-  <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#"" class=" btn btn-success">Start a project</a>
+  <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#" class=" btn btn-success">Start a project</a>
 </div>
 
-{% if projects|length > 0 %}
+{% if projects_access|length > 0 %}
 <h2 class="">Projects</h2>
 {% else %}
 <h2>Welcome to GovReady-Q</h2>
@@ -116,8 +116,8 @@ Your Compliance Projects
 <p>Assess, test, and authorize together</p>
 {% endif %}
 
-{% if projects|length > 0 %}
-<p>You have access to {{ projects|length }} project{{ projects|pluralize }}</p>
+{% if projects_access|length > 0 %}
+<p>You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}</p>
 
 <div class="container">
 <div class="row">
@@ -165,6 +165,21 @@ Your Compliance Projects
 
 {% endfor %}
 
+<div class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </div>
 {% if projects|length < 1 %}
 <!-- Display grid of options -->
   <div class="row">
@@ -175,7 +190,7 @@ Your Compliance Projects
           <div class="glyphicon glyphicon glyphicon-list-alt"></div>
         </div>
         <div class="col-md-9">
-          <h3><a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#"">Start a project</a></h3>
+          <h3><a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#">Start a project</a></h3>
           <p>Projects are your organization's questionnaires, assessments and guides needed for authorizations.
           </p>
         </div>
@@ -188,7 +203,7 @@ Your Compliance Projects
           <div class="glyphicon glyphicon glyphicon-folder-open"></div>
         </div>
         <div class="col-md-9">
-          <h3><a href="/portfolios/new">Create a Portfolio</a></h3>
+          <h3><a href={% url 'new_portfolio' %}>Create a Portfolio</a></h3>
           <p>Portfolios are a way to organize and manage related projects.
           </p>
         </div>

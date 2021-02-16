@@ -1,12 +1,158 @@
 GovReady-Q Release Notes
 ========================
 
-v.999 (January xx, 2021)
+v999 (February XX, 2021)
+------------------------
+
+[Add development changes here]
+
+**UI changes**
+
+* Improve page load times for listings with pagination and ordering for project listing and selected component listing. 
+* Display projects in pages of 10 and selected components by 5.
+
+**Developer changes**
+
+* Properly restrict access to statement history to users with system access, staff, admins.
+* Avoid name collissions when cloning a component.
+* Replaced function-based views with class-based listview for SelectedComponentsList, ProjectList.
+* Avoid name collisions when cloning a component.
+* Default to not use Django Debug Toolbar. Added new `enable_tool_bar` parameter option for `local/environment.json` to allow users to enable(True) or disable(False) the Django Debug Toolbar.
+* Added site-wide caching through django.middleware.cache.UpdateCacheMiddleware and django.middleware.cache.FetchFromCacheMiddleware as well as a few cache middleware settings in `siteapp/settings.py`
+* Adding DummyCache to prevent real caching while running automated tests.
+* Refactored use of random package to use secure secrets module.
+* Added minor pylint fixes.
+* Added the ability to import and export Poams along with the project import/export.
+
+v0.9.1.51 (February 03, 2021)
 -----------------------------
 
+**UI changes**
 
+* Display components alphabetically in component library text listing and in selected components text listing.
+* Include a component description and statement count in component library text listing and in selected components text listing.
+* Remove admin's "update certified text" option from editing control implmentation statements.
 
-v.0.9.1.49 (January 12, 2021)
+**Developer changes**
+
+* Set statements to delete (CASCADE) when producer_element deleted.
+* Set statements to delete (CASCADE) when consumer_element deleted.
+* Add methods to Element to `get_statements`
+* Refactor project deletion to properly delete related System (e.g., project.system.root_element), Statements, ElementControls, POAMS, Deployments.
+
+**Bug fix**
+
+* Fix erroneous control statement save error message.
+
+v0.9.1.50.4 (February 03, 2021)
+------------------------------
+
+**Bug fix**
+
+* Fix importing project to just update the project started.
+
+v0.9.1.50.3 (Feburary 01, 2021)
+------------------------------
+
+**UI changes**
+
+* Remove "Upgrade Project" button from project page action buttons. Upgrade is now in settings page.
+* Improve styling of app store items.
+* Tweek general styling of project page question page:
+    * Remove light gray background from project page, question page, task finished page.
+    * Reduce corner radius in focus area blocks.
+    * Widen question area.
+
+**Compliance app changes**
+
+* Lightweight-ato compliance app (installed by default) now displays SSP button below action buttons.
+* Display "Unknown" when app vendor is set to "None" instead of "none".
+
+**Developer changes**
+
+* Format clean up of style sheets in project, app-store templates.
+* added functools.lru_cache() decorator to speed a couple funcs.
+
+v0.9.1.50.2 (January 26, 2021)
+------------------------------
+
+Adds support for OSCAL component and statement input for Compliance Apps.
+(Currently only supports OSCAL JSON inputs.)
+Adds statements to project upon project creation.
+Keeps track of app inputs by relating them to the app version.
+
+Includes the following schema update to the app.yaml file of Compliance Apps.
+Inputs are supported in the app.yaml file with the following format:
+```
+input:
+- id: <input_id> (string)
+  name: <Input Name> (string)
+  type: oscal (Only oscal currently supported)
+  path: <dir/filename.json> (relative file path)
+  group: (optional string)
+```
+
+Add deployments to capture system deployments and the inventory items in each deployment.
+One system has multiple deployments (e.g., dev, stage, prod) and each deployment contains an inventory of the actual endpoints/items in a deployment of the system. Systems start with several common default (empty) deployments.
+The "design" deployment by convention is a special deployment to represent the system architecture.
+Deployments maintain a complete version history.
+Deployment inventory-items are represented as JSON data object following a scheme that is similar to OSCAL inventory-item section.
+Data for deployment inventory-items is assumed to be generated outside of GovReady. It is critical that the inventory items have UUIDs prior to import. Inventory item UUIDs for the life of the instantiated inventory item.
+Inventory items in an deployment can be associated with an inventory item in the "design" deployment by referencing the "design" inventory item's UUID. This enablea a virtual persistence of an inventory-item across different instances of the "same" assest, such as a virtual database server.
+
+**Feature changes**
+
+* Add system deployments with inventory items to track instantiations of the system in real assets.
+* Add lightweight-ato to default apps so users can get started easier.
+* Add the Django admin documentation generator to provide useful documentation for developers.
+
+**UI changes**
+
+* Add deployment index page for listing deployments associated with a system.
+* Add deployment form page for creating/editing deployments.
+* Add deployment history page.
+
+**Developer changes**
+
+* Add `.coveragerc` configuration file to ensure we cover and run only tests in locally and in Circleci.
+* Add `pyup.yml` configuration file to have pyup.io pull requests go against `develop` branch.
+* Add controls.Deployment object, related routes, views, templates, and admin to track system deployments and deployment inventory items.
+* Add DeploymentForm for Deployment model.
+* New '%dict' operator for JSON/YAML output templates
+* Pass OSCAL context to JSON/YAML output templates
+* New '%dict' operator for JSON/YAML output templates
+* Pass OSCAL context to JSON/YAML output templates
+* Created a recursive method `wait_for_sleep_after` that wraps around other functions allowing for drastically shorter wait times necessary compared to peppering var_sleeps.
+* Update install scripts.
+* Update default and recommended `local/environment.json` file from `first_run` and `install-govready-q.sh`.
+* By default, set organization name to "main".
+* Add optional `PIPUSER` parameter to `install-govready-q.sh` to avoid error of running pip install with `--user` flag in virtual environments.
+* Comment out starting GovReady-Q server automatically because too many edge cases exist to execute that well.
+* Update install scripts.
+* Update default and recommended `local/environment.json` file from `first_run` and `install-govready-q.sh`.
+* By default, set organization name to "main".
+* Add optional `PIPUSER` parameter to `install-govready-q.sh` to avoid error of running pip install with `--user` flag in virtual environments.
+* Comment out starting GovReady-Q server automatically because too many edge cases exist to execute that well.
+* Add method `get_answer` guidedmodules.models.Task to easily return answers from a project tasks answers.
+
+**Data changes**
+
+* Add lightweight-ato to default apps so users can get started easier.
+* Populate every new system with default deployments design, dev, stage, prod.
+
+v0.9.1.49.1 (January 20, 2021)
+------------------------------
+
+Fixes to 0.9.1.49 after merge.
+
+**Bug fixes**
+
+* Remove duplicate appearance of tabs in system selected components
+* Remove OSCAL download link from selected control pages because OSCAL for a single control would rarely be downloaded and would require different handling
+* Hide a discussion test that is failing to address later (not critical)
+* Add notes about testing download OSCAL that on Mac test must be run visible for custom download route to work.
+
+v0.9.1.49 (January 12, 2021)
 -----------------------------
 
 **IMPORTANT**
@@ -56,7 +202,7 @@ ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSIO
 * Add 'label' value to `oscal.Catalog.cx.get_flattened_controls_all_as_dict`.
 * Introducing model history tracking with django-simple-history.
 * Update various Python libraries.
-* Added file extension, size and type validation for Comment Attachment uploads.
+* Add file extension, size and type validation for Comment Attachment uploads.
 * Introducing request profiling with pyinstrument.
 * Add default `controls.models.OrgParams` class to support basic, default generation of orgizational defined parameters.
 
@@ -75,7 +221,7 @@ v.0.9.1.48.1 (December 17, 2020)
 * Fix handling of static files. Create new `static-root` directory outside of `siteapp` into which to collect static files.
 * Remove bad path reference to select2 javascript libraries in component library page.
 
-v.0.9.1.48 (December 15, 2020)
+v0.9.1.48 (December 15, 2020)
 ------------------------------
 
 Add Component Library feature pages and improve UI for managing reuse and "certified" component library.
@@ -111,7 +257,7 @@ Fix tests so they execute successfully in CircleCI.
 * Move component implementation statement tab to left of combined statement tab in control editor.
 * Updating certified text also updates the HTML block showing the certified text with updated certified text on edit pages.
 * Add components (system elements) via an autocomplete to a system on system's selected components page.
-* Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement. 
+* Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement.
 * Make statement synchronization status lable/alert clickable to reveal certified statement and diff between local and certified.
 * Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
 * Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
@@ -189,7 +335,7 @@ Example:
       "by-component": {
         "%for": "smt in system.control_implementation_as_dict[control]['control_impl_smts']",
         "%loop": {
-          "key": "{{ smt.producer_element.uuid }}", 
+          "key": "{{ smt.producer_element.uuid }}",
           "value": { "uuid" : "{{ smt.uuid }}",
             "component-name": "{{   smt.producer_element.name|safe }}",
             "description" : "{{ smt.body|safe }}"
@@ -215,7 +361,7 @@ v.0.9.1.47.1 (December 02, 2020)
 
 **Developer changes**
 
-* Minor further tweaks to CSS refactoring. 
+* Minor further tweaks to CSS refactoring.
 
 v.0.9.1.47 (December 01, 2020)
 ------------------------------
@@ -229,7 +375,7 @@ v.0.9.1.47 (December 01, 2020)
 * Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
 
 v0.9.1.46.4 (November 25, 2020)
------------------------------
+-----------------------------	
 
 **UI changes**
 

@@ -1,0 +1,89 @@
+id: pas_intro
+title: Privacy Act Statement
+output: []
+questions:
+- id: pas_intro
+  title: Overview
+  prompt: "This section will be about your Privacy Act Statement. \n\nWhen you request\
+    \ an individual to furnish personal information (name, date of birth, social security\
+    \ number, etc) for a system of records, regardless of the method used to collect\
+    \ the information (i.e., forms, personal or telephonic interview, etc), you are\
+    \ mandated to provide a Privacy Act Statement.\n\nThe Privacy Act of 1974, 5 USC\
+    \ 552a, provides protection to individuals by ensuring that\npersonal information\
+    \ collected by Federal agencies is limited to that which is legally authorized\n\
+    and necessary and is maintained in a manner which precludes unwarranted intrusions\
+    \ upon\nindividual privacy.\n\nPursuant to 5 U.S.C. §552a (e) (3) agencies are\
+    \ required to provide what is commonly referred to\nas a Privacy Act Statement\
+    \ to all persons asked to provide personal information about\nthemselves, which\
+    \ will go into a system of records (i.e., the information will be stored and\n\
+    retrieved using the individual’s name or other personal identifier such as a Social\
+    \ Security\nNumber). Organization policy is to provide a Privacy Act\nStatement\
+    \ regardless of whether the collection is part of a system of records or not.\
+    \ All Privacy\nAct statements must be reviewed by the Privacy Office or component\
+    \ Privacy Officer"
+  type: interstitial
+- id: pas_sorn
+  title: 'PAS: Intro'
+  prompt: "To help you fill out this Module: \n\nLocate the Privacy Act systems of\
+    \ records notice (SORN) that is applicable to the collection. If you need assistance\
+    \ finding this information, contact your Privacy POC, \n {{project.pta_poc_details.poc_name}}\
+    \ via telephone at {{project.pta_poc_details.poc_phone}} or by email via {{project.pta_poc_details.poc_email}}"
+  type: interstitial
+  help: If you need assistance, contact the component privacy officer.
+- id: pas_authority
+  title: 'PAS: Authority'
+  prompt: |-
+    List the Federal laws, Executive Orders or Departmental Directives that appear in the systems notice as amended.
+
+    "Authority" is the legal authority for collecting the information – statute, executive order,
+    regulation.
+  type: longtext
+  default: Ex. 5 U.S.C. 301, Departmental Regulations and Executive Order 9397 (SSN)
+- id: pas_purpose
+  title: 'PAS: Purpose'
+  prompt: |-
+    List the information that is contained in the systems notice under "Purpose".
+
+    "Purpose" is the purpose(s) for collecting the information and how the agency will use it.
+  type: longtext
+  default: Ex. Organization employees will use this information to conduct a security
+    threat assessment on airport employees and other personnel or applicants who work
+    in or have unescorted access to the Airport Operating Area (AOA), secured area,
+    sterile area, Security Identification Display Area (SIDA), or any area for which
+    the airport has issued a personnel identification media.
+- id: pas_routine_uses
+  title: 'PAS: Routine Uses'
+  prompt: "Address who outside the agency will have access to the information  \n\n\
+    Add the link to the applicable SORN in the description below."
+  type: longtext
+  default: >-
+    Ex. The information will be used by and disclosed to organization personnel and
+    contractors or other agents who need the information to assist in activities related
+    to aviation security. Additionally, the organization may share the information
+    with facility operators, law enforcement or other government agencies as necessary
+    to respond to potential or actual threats to transportation security, or pursuant
+    to its published Privacy Act system of records notice.
+
+    <include SORN link>
+  help: (i.e., To the Department of Veteran’s Affairs to verify eligibility of benefits).
+- id: pas_disclosure
+  title: 'PAS: Disclosure'
+  prompt: "Must Choose Either Mandatory or Voluntary: \n\nWhether providing the information\
+    \ is mandatory\nor voluntary, agency can only make collection mandatory when a\
+    \ Federal statute, executive\norder, regulation, or other lawful order specifically\
+    \ imposes a duty on the person to\nprovide the information; and the person is\
+    \ subject to a specific penalty for failing to\nprovide the requested information.\
+    \ The effects, if any, of not providing the information –\nfor example the loss\
+    \ or denial of a privilege, benefit, or entitlement sought as a\nconsequence of\
+    \ not furnishing the requested information."
+  type: longtext
+  default: 'Ex. DISCLOSURE: Voluntary. However, failure to provide the requested information
+    may result in (i.e., you not being considered for the position; not being notified
+    in case of emergency; etc).'
+  choices:
+  - key: mandatory
+    text: ' DISCLOSURE: Mandatory'
+  - key: 'voluntary '
+    text: ' DISCLOSURE: Voluntary. However, failure to provide the requested information
+      may result in (i.e., you not being considered for the position; not being notified
+      in case of emergency; etc).'

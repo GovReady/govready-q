@@ -155,6 +155,12 @@ h3.question-group-title {
       <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/poams';">
         <em class="glyphicon glyphicon-check"></em>&nbsp; POA&Ms</a>
       </button>
+      <button class="btn btn-sm btn-default" onclick="show_import_project_modal('{{ portfolio.id }}'); return false;" href="#">
+        <em class="glyphicon glyphicon-arrow-up"></em>&nbsp; Import Project</a>
+      </button>
+      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.id}}/export';">
+        <em class="glyphicon glyphicon-arrow-down"></em>&nbsp; Export project</a>
+      </button>
     {% endif %}
     {% if not project.is_account_project or project.is_deletable %}
       <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/settings';">
@@ -162,13 +168,13 @@ h3.question-group-title {
       </button>
     {% endif %}
     {% if send_invitation.can_add_invitee_to_team %}
-      <button id="show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
+      <button id="btn-show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
         <em class="glyphicon glyphicon-user"></em><em class="glyphicon glyphicon-plus"></em>
         Invite
       </button>
     {% endif %}
 
-    <button id="review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
+    <button id="btn-review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
       <em class="glyphicon glyphicon-list"></em>
       Review
     </button>
@@ -193,7 +199,7 @@ h3.question-group-title {
     {% endif %}
 
     {% if authoring_tool_enabled %}
-      <button id="open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
+      <button id="btn-open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
         <em class="glyphicon glyphicon-pencil"></em>
         Authoring Tool
       </button>
@@ -404,7 +410,7 @@ h3.question-group-title {
           </div>
           <div class="col-sm-12">
             {# export #}
-              <form method="post" action="{% url "export_project" project.id %}" style="display: inline-block; margin: 0; padding: 0;">{% csrf_token %}
+              <form method="post" action="{% url "export_project_questionnaire" project.id %}" style="display: inline-block; margin: 0; padding: 0;">{% csrf_token %}
                 <button class="btn btn-default">
                   <span class="glyphicon glyphicon-share" style="margin-right: .25em"></span>
                   Export Project Data
@@ -415,7 +421,7 @@ h3.question-group-title {
                 <span class="glyphicon glyphicon-cloud-upload" style="margin-right: .25em"> </span> Import Answers From File
               </button>
               <form id="import-form" style="display: none;"
-                method="post" enctype="multipart/form-data" action="{% url "import_project_data" project.id %}">{% csrf_token %}
+                method="post" enctype="multipart/form-data" action="{% url "import_project_questionnaire" project.id %}">{% csrf_token %}
                 <input name="value" type="file" id="import-file-input" class="form-control"
                   style="width: auto; border:  none; padding: 0; display: inline-block"
                   onchange="$('#import-form').submit()" />

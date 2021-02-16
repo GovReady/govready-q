@@ -7,6 +7,7 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
 from simple_history.models import HistoricalRecords
+from jsonfield import JSONField
 
 from .oscal import Catalogs, Catalog
 import uuid
@@ -54,8 +55,8 @@ class Statement(models.Model):
 
     parent = models.ForeignKey('self', help_text="Parent statement", related_name="children", on_delete=models.SET_NULL, blank=True, null=True)
     prototype = models.ForeignKey('self', help_text="Prototype statement", related_name="instances", on_delete=models.SET_NULL, blank=True, null=True)
-    producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element producing this statement.")
-    consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about.")
+    producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.CASCADE, blank=True, null=True, help_text="The element producing this statement.")
+    consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.CASCADE, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
     import_record = models.ForeignKey(ImportRecord, related_name="import_record_statements", on_delete=models.CASCADE,
@@ -67,11 +68,11 @@ class Statement(models.Model):
         ordering = ['producer_element__name', 'sid']
 
     def __str__(self):
-        return "'%s %s %s %s id=%d'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
+        return "'%s %s %s %s %s'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
 
     def __repr__(self):
         # For debugging.
-        return "'%s %s %s %s id=%d'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
+        return "'%s %s %s %s %s'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
 
     @cached_property
     def producer_element_name(self):
@@ -119,8 +120,8 @@ class Statement(models.Model):
         # System already has instance of the control_implementation statement
         # TODO: write check for this logic
         # Get all statements for consumer element so we can identify
-        smts_existing = Statement.objects.filter(consumer_element__id = consumer_element_id, statement_type = "control_implementation")
-        print(smts_existing)
+        smts_existing = Statement.objects.filter(consumer_element__id = consumer_element_id, statement_type = "control_implementation").select_related('prototype')
+
         # Get prototype ids for all consumer element statements
         smts_existing_prototype_ids = [smt.prototype.id for smt in smts_existing]
         if self.id is smts_existing_prototype_ids:
@@ -184,6 +185,27 @@ class Statement(models.Model):
     # TODO:c
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
+    @staticmethod
+    def _statement_id_from_control(control_id, part_id):
+        if part_id:
+            return f"{control_id}_smt.{part_id}"
+        else:
+            return f"{control_id}_smt"
+
+    @property
+    def oscal_statement_id(self):
+        return Statement._statement_id_from_control(self.sid, self.pid)
+
+    @staticmethod
+    def _statement_id_from_control(control_id, part_id):
+        if part_id:
+            return f"{control_id}_smt.{part_id}"
+        else:
+            return f"{control_id}_smt"
+
+    @property
+    def oscal_statement_id(self):
+        return Statement._statement_id_from_control(self.sid, self.pid)
 
 class Element(models.Model):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
@@ -259,6 +281,14 @@ class Element(models.Model):
         """Return on the statements of statement_type produced by this element"""
         smts = Statement.objects.filter(producer_element = self, statement_type = statement_type)
         return smts
+
+    @property
+    def get_control_impl_smts_prototype_count(self):
+        """Return count of statements with this element as producer_element"""
+
+        smt_count = Statement.objects.filter(producer_element=self, statement_type="control_implementation_prototype").count()
+
+        return smt_count
 
     @transaction.atomic
     def copy(self, name=None):
@@ -478,12 +508,13 @@ class System(models.Model):
                 pid_current = smt.pid
             # DEBUG
             # TODO
-            # Poor performance, at least in some instances, appears to being caused by `smt.prouder_element.name`
+            # Poor performance, at least in some instances, appears to being caused by `smt.producer_element.name`
             # parameter in the below statement.
-            smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i>\n{status_str}\n\n{smt.body}\n\n"
+            if smt.producer_element:
+                smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i>\n{status_str}\n\n{smt.body}\n\n"
             # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
             # for testing purposes, the loop runs 3x faster
-            # The reference `smt.prouder_element.name` appears to be calling the database and creating poor performance
+            # The reference `smt.producer_element.name` appears to be calling the database and creating poor performance
             # even where there are no statements.
 
         # Deprecated implementation of inherited/common controls
@@ -521,7 +552,7 @@ class System(models.Model):
         components.sort(key = lambda component:component.name)
         return components
 
-    producer_elements = property(get_producer_elements)
+    producer_elements = cached_property(get_producer_elements)
 
 class CommonControlProvider(models.Model):
     name = models.CharField(max_length=150, help_text="Name of the CommonControlProvider", unique=False)
@@ -698,3 +729,75 @@ class Poam(models.Model):
 
     # TODO:
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
+
+class Deployment(models.Model):
+    name = models.CharField(max_length=250, help_text="Name of the deployment", unique=False, blank=False, null=False)
+    description = models.CharField(max_length=255, help_text="Brief description of the deployment", unique=False, blank=False, null=False)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for the deployment.")
+    system = models.ForeignKey('System', related_name='deployments', on_delete=models.CASCADE, blank=True, null=True, help_text="The system associated with the deployment")
+    inventory_items = JSONField(blank=True, null=True,
+        help_text="JSON object representing the inventory items in a deployment.")
+    history = HistoricalRecords(cascade_delete_history=True)
+
+    # Notes
+    #
+    # Retrieve System Deployment
+    #    from controls.models import *
+    #    s = System.objects.get(pk=11)
+    #    s.deployments.all()
+    #    # returns <QuerySet ['ac-2 id=1', 'ac-3 id=2', 'au-2 id=3']>
+    #
+
+    def __str__(self):
+        return "'%s id=%d'" % (self.name, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "'%s id=%d'" % (self.name, self.id)
+
+    def get_absolute_url(self):
+        return "/systems/%d/deployments" % (self.system.id)
+
+# class InventoryItemAssessmentResults(models.Model):
+#     statement = models.OneToOneField(Statement, related_name="assessment_results",
+#         unique=False, blank=True, null=True, on_delete=models.CASCADE,
+#         help_text="The assessment results details for this statement. Statement must be type 'assessment_results'.")
+#     deployment = models.OneToOneField(Deployment, related_name="assessment_results",
+#         unique=False, blank=True, null=True, on_delete=models.SET_NULL,
+#         help_text="The deployment associated with the inventory item's assessment results.")
+#     inventory_item_uuid = models.UUIDField(default=None, editable=True, unique=False, blank=True, null=True,
+#         help_text="UUID of the inventory item.")
+#     data = JSONField(blank=True, null=True,
+#         help_text="JSON object representing the inventory item's assessment results.")
+#     ar_type = models.CharField(max_length=150, unique=False, blank=True, null=True,
+#         help_text="Assessment results type.")
+#     generated = models.DateTimeField(db_index=True)
+#     history = HistoricalRecords(cascade_delete_history=True)
+
+#     # Notes
+#     #
+#     # IMPORTANT
+#     #
+#     # JSON data must follow a scheme that is similar to OSCAL.
+#     # Data is assumed to be generated fropm outside of GovReady.
+#     # Data should either be in `data` or `data_binary` field.
+#     # `data_binary` field can hold PDF report or other machine readable format
+#     # Inventory-items must have UUIDs. A UUIDs persits for the life of the instantiaded inventory-item.
+#     #
+#     # The inventory-items in an assessment report can be related to
+#     # UUID of the related inventory-item in the `reference` deployment
+#     # to create a virtual persistence across different instances of
+#     # the "same" assest, such as a virtual database server.
+#     #
+#     # Retrieve System Deployment Inventory
+#     #
+
+#     def __str__(self):
+#         return "<Inventory %s id=%d>" % (self.statement, self.id)
+
+#     def __repr__(self):
+#         # For debugging.
+#         return "<Inventory %s id=%d>" % (self.statement, self.id)
+

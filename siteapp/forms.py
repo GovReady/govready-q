@@ -34,6 +34,7 @@ class PortfolioForm(ModelForm):
         if Portfolio.objects.filter(title__iexact=cd['title']).exists() and self.data.get('action') == 'newportfolio':
             raise ValidationError("Portfolio name {} not available.".format(cd['title']))
         return cd
+
 class PortfolioSignupForm(ModelForm):
 
     class Meta:

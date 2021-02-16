@@ -302,6 +302,18 @@ class User(AbstractUser):
         portfolios = Portfolio.objects.filter(id__in=portfolio_list)
         return portfolios
 
+#import factory
+#from siteapp.models import User
+
+# class UserFactory(factory.Factory):
+#     class Meta:
+#         model = User
+#
+#     first_name = "firstme"
+#     last_name = "Doe"
+#     username = "me",
+#     email = "test+user@q.govready.com"
+
 from django.contrib.auth.backends import ModelBackend
 class DirectLoginBackend(ModelBackend):
     # Register in settings.py!
@@ -402,7 +414,7 @@ class Organization(models.Model):
         first parameter for ac-1.
         """
 
-        settings = self.organizationalsetting_set.filter(catalog_key=catalog_key)
+        settings = self.org_setting.filter(catalog_key=catalog_key)
         return dict((setting.parameter_key, setting.value) for setting in settings)
 
 class OrganizationalSetting(models.Model):
@@ -410,14 +422,14 @@ class OrganizationalSetting(models.Model):
     Captures an organizationally-defined setting for a parameterized control
     in a catalog.
     """
-    
-    class Meta:
-        unique_together = ('organization', 'catalog_key', 'parameter_key',)
 
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, related_name="org_setting", on_delete=models.CASCADE)
     catalog_key = models.CharField(max_length=255)
     parameter_key = models.CharField(max_length=255)
-    value = models.CharField(max_length=1024)
+    value = models.TextField()
+
+    class Meta:
+        unique_together = ('organization', 'catalog_key', 'parameter_key',)
 
     def __str__(self):
         org_name = (self.organization and self.organization.name) or 'none'
@@ -437,12 +449,12 @@ class Portfolio(models.Model):
     def __str__(self):
         return "'Portfolio %s id=%d'" % (self.title, self.id)
 
+    def get_absolute_url(self):
+        return "/portfolios/%s/projects" % (self.id)
+
     def __repr__(self):
         # For debugging.
         return "'Portfolio %s id=%d'" % (self.title, self.id)
-
-    def get_absolute_url(self):
-        return "/portfolios/%s/projects" % (self.id)
 
     @staticmethod
     def get_all_readable_by(user):
@@ -503,13 +515,13 @@ class Folder(models.Model):
         # For the admin, notification strings
         return self.title
 
-    def __repr__(self):
-        # For debugging.
-        return "<Folder %d %s>" % (self.id, self.title[0:30])
-
     def get_absolute_url(self):
         from django.utils.text import slugify
         return "/projects/folders/%d/%s" % (self.id, slugify(self.title))
+
+    def __repr__(self):
+        # For debugging.
+        return "<Folder %d %s>" % (self.id, self.title[0:30])
 
     def get_admins(self):
         # Get all of the Users with admin privs on the folder --- which
@@ -561,6 +573,11 @@ class Project(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
+    version = models.CharField(max_length=32, unique=False, blank=True, null=True,
+                               help_text="Project's version identifier")
+    version_comment = models.TextField(unique=False, blank=True, null=True,
+                                       help_text="Project's version comment")
+
     class Meta:
         unique_together = [('organization', 'is_organization_project')] # ensures only one can be true
 
@@ -568,13 +585,13 @@ class Project(models.Model):
         # For the admin, notification strings
         return self.title
 
-    def __repr__(self):
-        # For debugging.
-        return "<Project %d %s>" % (self.id, self.title[0:30])
-
     def get_absolute_url(self):
         from django.utils.text import slugify
         return "/projects/%d/%s" % (self.id, slugify(self.title))
+
+    def __repr__(self):
+        # For debugging.
+        return "<Project %d %s>" % (self.id, self.title[0:30])
 
     @property
     def title(self):
@@ -734,7 +751,7 @@ class Project(models.Model):
         # Gets all projects a user has read priv to, excluding
         # account and organization profile projects, and sorted
         # in reverse chronological order by modified date.
-
+        # TODO: This could probably be optimized with prefetch related
         projects = set()
 
         if not user.is_authenticated:

@@ -21,11 +21,18 @@
     font-weight: bold;
   }
 
-  thead tr {
-    border:1px solid black;
-    background-color: rgb(80, 170, 67);
-    color: #fff;
-    font-weight: bold;
+  /* removed thead tr */
+
+  /* Legacy background and focus area styling for question pages */
+  body { /*background-color: rgb(247,247,247);*/ }
+  #focus-area-wrapper {
+    border-radius: 3px;
+    border: 0px solid rgb(204, 204, 204);
+    padding: 2em 2em 3em 2em;
+    background-color: white;
+    /*background-color: rgba(253,253,253,1);*/
+    /* on mobile, space between columns */
+    margin-bottom: 30px;
   }
 
 </style>
@@ -184,7 +191,7 @@
                         <input type="hidden" name="previous" value="project"/>
                     {% else %}
                       {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
-                      <form method="get" action="/store"
+                      <form method="get" action="{% url 'store' %}"
                         onclick="$(this).submit();" style="cursor: pointer">
                         <input type="hidden" name="q" value="{{task.project.root_task.id}}/{{next_module_spec.id}}">
                     {% endif %}
@@ -226,7 +233,7 @@
       {% endwith %}
 
       {% if can_review %}
-        <p><a id="review-answers" href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">
+        <p><a id="btn-review-answers" href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">
           <em class="glyphicon glyphicon-list"></em>
           Review &raquo;
         </a></p>

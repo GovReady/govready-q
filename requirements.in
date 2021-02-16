@@ -25,7 +25,7 @@ jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages
 # Django==2.2.12 # BSD License
-Django==3.0.11 # BSD License
+Django==3.1.6 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # Apache License 2.0
@@ -35,7 +35,6 @@ dj_database_url # BSD License
 whitenoise # MIT License
 django-guardian # MIT License
 django-simple-history # BSD License
-pyinstrument # BSD License
 
 
 # Python Packages Developed by GovReady and/or Josh

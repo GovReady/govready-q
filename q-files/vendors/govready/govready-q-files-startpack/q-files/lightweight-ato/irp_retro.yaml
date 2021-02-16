@@ -1,0 +1,41 @@
+id: irp_retro
+title: Incident Response Plan (Retrospective)
+questions:
+
+- id: intro
+  title: Introduction
+  prompt: |
+    Introduction
+
+    The final step to any Incident Response Plan is the 'Retrospective Phase'. The 'Retrospective Phase' typically includes figuring out lessons learned from the incident.
+  type: interstitial
+
+- id: q1
+  title: Incident Report
+  prompt: |
+    How does the Incident Response team report an incident? Where are those incident reports stored for future record?
+
+    The Incident Response Team should create an incident report after a security incident is handles to provide a record of events. 
+
+    Typically, the report should contain:
+      - Timeline of the incident
+      - Details about how the incident progressed
+      - Information about the vulnerabilities that led to the incident, cause analysis
+  examples:
+    - example: |
+        The incident response template contains...
+        The incident response template can be found...
+  type: longtext
+
+- id: q2
+  title: Incident Metrics
+  prompt: |
+    What response metrics does the Incident Response team record at the conclusion of a security incident?
+  examples:
+    - example: |
+        - Discovery method (how did we become aware of the issue?)
+        - Time to discovery (how long did it take from when the incident started until we became aware of it?)
+        - Time to containment (how long did it take from when we became aware until the issue was contained?)
+        - Threat actions (which specific actions -- e.g. phishing, password attacks, etc.) -- were taken by the actor)?
+
+  type: longtext

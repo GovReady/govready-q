@@ -1,0 +1,173 @@
+id: risk_assessment_report
+title: Risk Assessment Report Questions
+
+questions:
+- id: q1
+  title: Overview
+  prompt: |
+    Risk Assessment Report
+
+    The Risk Assessment Report (RAR) is a key document for the final security authorization package. The Risk Assessment Report summarizes security policy requirements, risks to the IT system based on vulnerabilities, and suggested countermeasures to mitigate risks among other things.
+    
+  type: interstitial
+
+- id: hardware
+  title: Related Hardware?
+  prompt: |
+    Risk Assessment and Related Hardware
+
+    Is there any related hardware that you would like entered into the project?
+  type: yesno
+- id: hardware_yes
+  title: Related Hardware - Yes
+  prompt: |
+    There is hardware relevant to this risk assessment. 
+
+    Could you elaborate on the hardware?
+  type: longtext
+  impute:
+  - condition: hardware != 'yes'
+    value: ~
+
+- id: software
+  title: Related Software?
+  prompt: |
+    Risk Assessment and Related Software
+
+    Is there any related software that you would like entered into the project?
+  type: yesno
+- id: software_yes
+  title: Related Software - Yes
+  prompt: |
+    There is software relevant to this risk assessment. 
+
+    Could you elaborate on the software?
+  type: longtext
+  impute:
+  - condition: software != 'yes'
+    value: ~
+
+- id: component_address
+  title: Componenet Address
+  prompt: |
+    What is your organization's address?
+  type: text
+
+- id: rar_version_grid
+  title: Risk Assessment Report, Version Info
+  prompt: |
+    Use this data grid to catalog your IT System version, its date of completion, its author, and a description.
+  type: datagrid
+  fields:
+    - key: Version
+      text: Version
+    - key: Date
+      text: Date
+    - key: Author
+      text: Author
+    - key: Description
+      text: Description
+  min: 0
+  max: ~
+
+- id: sys_interface
+  title: System Interface?
+  prompt: |
+    System Interface
+
+    Are there any system interfaces that you would like entered into the project?
+  type: yesno
+- id: sys_interface_yes
+  title: System Interface - Yes
+  prompt: |
+    There are system interfaces relevant to this risk assessment. 
+
+    Could you elaborate on the system interfaces?
+  type: longtext
+  impute:
+  - condition: sys_interface != 'yes'
+    value: ~
+
+- id: information_gather
+  title: Information Collection Techniques
+  prompt: |
+    How was information collected for this assessment?
+
+    Check all that apply.
+  type: multiple-choice
+  choices:
+  - key: interviews
+    text: Interviews
+  - key: on_site
+    text: On-Site Visit (may include interviews as well as observation of physical, envrionmental and operational security of the system)
+  - key: known_threats
+    text: Analyses of known threats to the system by researching vendor and other websites
+  - key: doc_reviews
+    text: Document Reviews
+  - key: scans
+    text: Vulnerability scans / Automated Reporting Tools
+  - key: rtm_review
+    text: Review of Requirements Traceability Matrix (RTM)
+  - key: other
+    text: Other
+
+- id: information_gather_other
+  title: Information Collection Techniques - Other
+  prompt: |
+    You selected "Other" as a collection technique.  
+
+    Could you elaborate on the other collection technique?
+  type: longtext
+  impute:
+  - condition: information_gather != "other"
+    value: ~
+
+- id: participants
+  title: Risk Assessment Report, Participants
+  prompt: |
+    Use this data grid to list relevant information for the participants of this risk assessment.
+  type: datagrid
+  fields:
+    - key: Name
+      text: Name
+    - key: Organization
+      text: Organization
+    - key: Role
+      text: Role
+    - key: Phone
+      text: Phone
+    - key: E-mail
+      text: E-mail
+  min: 0
+  max: ~
+
+- id: personnel
+  title: Risk Assessment Report, Personnel
+  prompt: |
+    Use this data grid to list this IT system's type of user and their minimum clearance level.
+  type: datagrid
+  fields:
+    - key: User Type
+      text: User Type
+    - key: Minimum Clearance Level
+      text: Minimum Clearance Level
+  min: 0
+  max: ~
+
+- id: location
+  title: Risk Assessment Report, Locations
+  prompt: |
+    Use this data grid to list this the facility locations associated with this IT system.
+  type: datagrid
+  fields:
+    - key: Facility Name
+      text: Facility Name
+    - key: Facility Location
+      text: Facility Location
+  min: 0
+  max: ~
+
+
+
+
+
