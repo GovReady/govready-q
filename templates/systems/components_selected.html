@@ -40,7 +40,7 @@
             {% endfor %}
 
             <div id="tab-content" class="row row-control" style="">
-                <form id="add_component" class="form-inline" method="post" action="/systems/{{ system.id }}/components/add_system_component">
+                <form id="add_component" class="form-inline" method="post" action="{%  url 'add_system_component' system_id=system.id %}">
                     {% csrf_token %}
                     <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
                         <div class="form-group">
