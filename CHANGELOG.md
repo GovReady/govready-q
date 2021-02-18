@@ -26,17 +26,17 @@ Project page displays mini-dashboard of compliance stats.
 
 **Developer changes**
 
-* Properly restrict access to statement history to users with system access, staff, admins.
-* Avoid name collissions when cloning a component.
+* Properly restrict statement history access to users with system, staff, or admin permissions.
+* Avoid name collisions when cloning a component.
 * Replaced function-based views with class-based listview for SelectedComponentsList, ProjectList.
 * Avoid name collisions when cloning a component.
 * Default to not use Django Debug Toolbar. Added new `enable_tool_bar` parameter option for `local/environment.json` to allow users to enable(True) or disable(False) the Django Debug Toolbar.
-* Added site-wide caching through django.middleware.cache.UpdateCacheMiddleware and django.middleware.cache.FetchFromCacheMiddleware as well as a few cache middleware settings in `siteapp/settings.py`
 * Adding DummyCache to prevent real caching while running automated tests.
 * Refactored use of random package to use secure secrets module.
 * Added minor pylint fixes.
 * Added the ability to import and export Poams along with the project import/export.
 * GovReady will now read compliance app catalog.parameters.catalog_key and catalog.parameters.baseline values to set the selected controls for a system.
+* Load sample/default components into component library during installation to provide users with starting set of components.
 
 v0.9.1.51 (February 03, 2021)
 -----------------------------

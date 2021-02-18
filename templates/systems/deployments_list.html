@@ -18,12 +18,10 @@
 <!-- authoring_tool_enabled included from project-base.html -->
 
 {% block body_content %}
-<div  class="systems-top">
-  <div class="container">
-
+<div class="systems-top">
     <div id="tab-content" class="row rows-header">
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam">Deployments</div>
-        <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">&nbsp;</div>
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 systems-poam">Deployments</div>
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">&nbsp;</div>
         <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
           <a href="/systems/{{ system.id }}/deployment/new" class="btn btn-sm btn-success systems-element-button">New Deployment</a>
           <span class="glyphicon glyphicon-download-alt pull-right systems-poam-glyphicon"
@@ -60,8 +58,6 @@
         </div>
       {% endfor %}
     {% endif %}
-
-  </div>
 </div>
 
 {% endblock %}

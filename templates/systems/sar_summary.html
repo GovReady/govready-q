@@ -64,19 +64,6 @@ System Assessment Results
   </div><!--/row-->
     <p>&nbsp;</p>
 
-<!--     <div class="row">
-        <div class="col-md-12">
-            <span class="last-login">Update: {{ sar.updated|timesince }} </span>
-        </div>
-    </div>
- -->
-    <!-- <div class="row">
-        <div class="col-md-3"><div class="status-box"><h2 class="status">{{ project.system.get_producer_elements|length }}</h2> <span class="status-small">total components in this project</span></div></div>
-        <div class="col-md-3"><div class="status-box"><h2 class="status">4</h2> <span class="status-small">total inventory-items in production</span></div></div>
-        <div class="col-md-3"><div class="status-box"><h2 class="status">{{ project.system.control_implementation_as_dict|length }}</h2> <span class="status-small">total controls selected</span></div></div>
-        <div class="col-md-3"><div class="status-box"><h2 class="status">100</h2> <span class="status-small">controls partially or fully implemented</span></div></div>
-    </div> -->
-    <p>&nbsp</p>
     <div class="row">
         <div class="col-md-3"><div class="status-box"><h2 class="status">{{ sar_items|length }}</h2> <span class="status-small">total assessments</span></div></div>
         <div class="col-md-3"><div class="status-box"><h2 class="status-success">{{ summary.pass }}</h2> <span class="status-small">total tests passed</span></div></div>
