@@ -178,8 +178,8 @@
     <div class="row">
       <div class="col-md-3">
         <div class="status-box">
-          <h2 class="status">{{ controls_status_count.Implemented }} of {{ project.system.control_implementation_as_dict|length }}</h2>
-          <span class="status-small">controls implemented</span>
+          <h2 class="status">{{ controls_status_count.Addressed }} of {{ project.system.control_implementation_as_dict|length }}</h2>
+          <span class="status-small">controls addressed</span>
         </div>
       </div>
       <div class="col-md-3">
@@ -197,7 +197,7 @@
         <div class="status-box-invisible">
           <h2 class="piechart" style="background-image: conic-gradient(#E1F8E2 {{ approx_compliance_degrees }}deg,
                                                                        #B2E0B2 0 235deg);"> </h2>
-          <span class="status-small">{{ percent_compliant_100|floatformat:2 }}% compliance<span>
+          <span class="status-small">{{ percent_compliant_100|floatformat:2 }}% compliance (unassessed)<span>
         </div>
       </div>
     </div>

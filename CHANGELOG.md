@@ -23,6 +23,7 @@ Project page displays mini-dashboard of compliance stats.
     * Number of POA&Ms.
     * Count of system components.
     * Approximate overall compliance based on controls implemented / count of controls.
+* Project mini-dashboard now reports controls "addressed" instead of implemented and "% compliance (unassessed)" which uses the number of controls that have at least one statement. This is more accurate representation than saying definitely which control has been assessed as implemented. Will show that in future dashboard items.
 
 **Developer changes**
 
