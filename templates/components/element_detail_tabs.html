@@ -304,18 +304,41 @@
         function add_smt() {
           var panel_num = $('.panel').length + 1
           var smt_form = `
-            <div id="panel-panel_num" class="panel panel-default">
+            <div id="panel-panel_num" class="">
               <div class="panel-heading" role="tabx" id="document-panel_num-title">
+
+
+                <div class="row statement-text">
+                  <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                    <span id="producer_element-panel_num-control" class="control-id-text">{{ smt.sid|upper }} {% if smt.delegate %} ({{ smt.delegate.sid|upper }}){% endif %} {% if smt.pid %}{{ smt.pid }}.{% endif %}</span>
+                  </div>
+                  <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
+                    <b>Add new statement</b>
+                    <a role="button" class="pull-right" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="false" aria-controls="document-panel_num-body">edit</a>
+                  </div>
+                  <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                    {{ smt.remarks }}
+                  </div>
+                </div>
+
+
                 <h4 id="panel-panel_num-title" class="panel-title">
                   <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-panel_num-body">
-                    <span id="producer_element-panel_num-title">{{ element.name }}</span>
-                    <div class="panel-heading-smt"></div>
+                    <!--span id="producer_element-panel_num-title">{{ element.name }}</span-->
+                    <!--div class="panel-heading-smt"></div-->
                   </a>
                 </h4>
               </div>
-              <div id="document-panel_num-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %}" role="tabpanel" aria-labelledby="document-panel_num-title">
+              <div id="document-panel_num-body" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="document-panel_num-title">
                 <div class="panel-body">
                   <div class="smt_block">
+
+                    <div class="row statement-text">
+                      <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                        &nbsp;
+                      </div>
+                      <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
+
                     <form id="smt_panel_num" class="smt_form">
                       <div class="form-group">
                         <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ element.id }}">
@@ -359,12 +382,15 @@
                       </div>
                       <input type="hidden" id="system_id_panel_num" name="system_id" value="{{ system.id }}">
                       <input type="hidden" id="statement_type_panel_num" name="statement_type" value="control_implementation">
-                      <div class="modal-footer">
+                      <div class="pull-right">
                         <div id="success-msg-smt_panel_num" style="display: inline; margin-right: 20px; color: gray;"></div>
                         <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_panel_num');return false;">Delete</button>
                         <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_panel_num');return false;">Save</button>
                       </div>
                     </form>
+
+                    </div>
+
                   </div>
                 </div><!-- end div class="panel-body"-->
               </div>
