@@ -89,6 +89,14 @@
 
   .control-id-text { font-weight: bold; }
 
+  #component-detail-content {
+    border-left:1px solid #ccc;
+    border-right:1px solid #ccc;
+    border-bottom:1px solid #ccc;
+    border-radius: 0px;
+    padding: 0px 0px 8px 12px;
+  }
+
 </style>
 {% endblock %}
 
@@ -122,6 +130,7 @@
       </div>
     </div>
   <div>&nbsp;</div>
+  <!-- Tab panels -->
   <div id="tab-content" class="row">
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
@@ -135,7 +144,7 @@
     </ul>
 
     <!-- Tab panels -->
-    <div class="tab-content">
+    <div id="component-detail-content" class="tab-content">
       <!-- Tab panel: component_controls -->
       <div role="tabpanel" class="tab-pane active" id="component_controls">
 
@@ -250,7 +259,9 @@
             </div>
             {% endfor %}
           </div><!--/smt-list-->
-        <div><h3><button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
+        <div>
+          <button type="submit" id="new_component_statement" class="small btn btn-xs btn-success" style="color: white;" onclick="add_smt()">Add component statement</button>
+        </div>
       </div>
 
       <!-- Tab panel: combined -->
@@ -286,8 +297,6 @@
 
 {% block scripts %}
       <script>
-        // View combined implementation statement
-
         // Adds statement form to page
         function add_smt() {
           var panel_num = $('.panel').length + 1
@@ -488,7 +497,6 @@
 
           // Stop <form> submit
           return false;
-
         }; // /save_smt
 
         function delete_smt(smt_panel_num) {
@@ -528,6 +536,7 @@
               }
           }
         }
+
         function edit_component() {
           show_edit_component_modal("{{element.name}}","{{element.description}}",(newName, newDescription)=>{
             ajax_with_indicator({
@@ -549,15 +558,13 @@
         }
       </script>
 
+      <script src="{% static "vendor/js/select2.min.js" %}"></script>
+      <link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
 
-<script src="{% static "vendor/js/select2.min.js" %}"></script>
-    <link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
-
-    <script>
+      <script>
         $( document ).ready(function() {
             //console.log("document ready");
         });
-
-    </script>
+      </script>
 
 {% endblock %}
