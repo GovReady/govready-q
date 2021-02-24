@@ -163,24 +163,21 @@
 
                 <div class="row statement-text">
                   <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                    <span id="producer_element-panel_num-control" class="control-id-text">{{ smt.sid|upper }} {% if smt.delegate %} ({{ smt.delegate.sid|upper }}){% endif %} {% if smt.pid %}{{ smt.pid }}.{% endif %}</span>
+                    <span id="producer_element-panel_num-control" class="control-id-text">{{ smt.sid|upper }} {% if smt.pid %}{{ smt.pid }}.{% endif %}</span>
                   </div>
                   <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
-                    {% if smt.delegate %}{{ smt.delegate.body }}<br />(via {{ smt.delegate.sid|upper }}){% else %}{{ smt.body }}{% endif %}
-                    <br />
-                    <a role="button" class="pull-right" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">edit</a>
+                    {{ smt.body }}
                   </div>
                   <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                    <a role="button" class="" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">edit</a>
+                    <br />
                     {{ smt.remarks }}
                   </div>
                 </div>
 
                 <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
-                  <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">
-                    <!-- <span id="producer_element-panel_num-control">{{ smt.sid|upper }} {% if smt.delegate %} ({{ smt.delegate.sid|upper }}){% endif %}</span>&nbsp; -->
-                    <!-- {% if smt.pid %}<div class="panel-heading-smt">{{ smt.pid }}.</div>{% endif %} -->
-                    <!-- <div class="panel-heading-smt-body">{% if smt.delegate %}{{ smt.delegate.body }} (via {{ smt.delegate.sid|upper }}){% else %}{{ smt.body }}{% endif %}</div> -->
-                  </a>
+                  <!-- <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">
+                  </a> -->
                 </h4>
               </div>
               <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
@@ -198,7 +195,6 @@
                           <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
                           <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
                           <div class="form-group">
-                            <label for="component">Edit</label>
                             <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
                             <!-- <label for="component"><a href="{% url 'system_element_download_oscal_json' system_id=system.id element_id=smt.producer_element.id %}" style="color: black;">{{ smt.producer_element.name }}</a></label> -->
                           </div>
@@ -206,15 +202,7 @@
                             <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
                             <label for="statement">Statement
                             </label>
-                            {% if smt.delegate %}
-                              <p>
-                                  {{smt.delegate.body}}
-                                  <br/>
-                                  <small style="color: #888;">Delegated to {{ smt.delegate.sid }}</small>
-                              </p>
-                            {% else %}
                               <textarea style="min-height:130px;overflow-y: scroll;" class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control"  cols="50">{{ smt.body }}</textarea>
-                            {% endif %}
                           </div>
                           <div class="form-group">
                             <label for="statement">Part</label>
@@ -307,16 +295,18 @@
             <div id="panel-panel_num" class="">
               <div class="panel-heading" role="tabx" id="document-panel_num-title">
 
-
                 <div class="row statement-text">
                   <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                    <span id="producer_element-panel_num-control" class="control-id-text">{{ smt.sid|upper }} {% if smt.delegate %} ({{ smt.delegate.sid|upper }}){% endif %} {% if smt.pid %}{{ smt.pid }}.{% endif %}</span>
+                    <span id="producer_element-panel_num-control" class="control-id-text">{{ smt.sid|upper }} {% if smt.pid %}{{ smt.pid }}.{% endif %}
+                    <b>New control statement</b>
+                    </span>
                   </div>
                   <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
-                    <b>Add new statement</b>
-                    <a role="button" class="pull-right" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="false" aria-controls="document-panel_num-body">edit</a>
+                    New control statement will appear here.
                   </div>
                   <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                    <a role="button" class="" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="false" aria-controls="document-panel_num-body">edit</a>
+                    <br />
                     {{ smt.remarks }}
                   </div>
                 </div>

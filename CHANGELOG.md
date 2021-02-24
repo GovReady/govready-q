@@ -7,7 +7,6 @@ v999 (February XX, 2021)
 **Developer changes**
 
 * Avoid name collissions when cloning a component.
-* Add controls.models.Statement.delegate field to allow statements to delegate their content to other statements. This supports controls from one catalog to be mapped to controls in another catalog. A statement must exist for each delegate. One control delegating to 3 controls in another catalog must do that through 3 statements.
 
 **Data changes**
 

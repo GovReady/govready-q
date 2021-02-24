@@ -55,7 +55,6 @@ class Statement(models.Model):
 
     parent = models.ForeignKey('self', help_text="Parent statement", related_name="children", on_delete=models.SET_NULL, blank=True, null=True)
     prototype = models.ForeignKey('self', help_text="Prototype statement", related_name="instances", on_delete=models.SET_NULL, blank=True, null=True)
-    delegate = models.ForeignKey('self', help_text="Delegate statement", related_name="delegators", on_delete=models.SET_NULL, blank=True, null=True)
     producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.CASCADE, blank=True, null=True, help_text="The element producing this statement.")
     consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.CASCADE, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
