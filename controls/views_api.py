@@ -107,10 +107,10 @@ def manage_system_assessment_result_api(request, system_id, sar_id=None, methods
         #             user={"id": request.user.id, "username": request.user.username}
         #         )
         #     return redirect('system_assessment_results_list', system_id=system_id)
-    else:
-        if sari is None:
-            sari = SystemAssessmentResult(system_id=system_id)
-        form = SystemAssessmentResultForm(instance=sari)
+#     else:
+#         if sari is None:
+#             sari = SystemAssessmentResult(system_id=system_id)
+#         form = SystemAssessmentResultForm(instance=sari)
 
     # Send simple response
     # TODO: Improve the response

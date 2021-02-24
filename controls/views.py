@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError
 from django.db.models.functions import Lower
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
@@ -19,6 +20,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views import View
+from django.views.generic import ListView
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from urllib.parse import quote
@@ -40,12 +42,6 @@ from structlog.stdlib import LoggerFactory
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
-
-def test(request):
-    # Simple test page of routing for controls
-    output = "Test works."
-    html = "<html><body><p>{}</p></body></html>".format(output)
-    return HttpResponse(html)
 
 def index(request):
     """Index page for controls"""
@@ -225,6 +221,10 @@ def rename_element(request,element_id):
     try:
         new_name = request.POST.get("name", "").strip() or None
         new_description = request.POST.get("description", "").strip() or None
+
+        if Element.objects.filter(name=new_name).exists() is True:
+            return JsonResponse({ "status": "err", "message": "Name already in use"})
+            
         element = get_object_or_404(Element, id=element_id)
         element.name = new_name
         element.description = new_description
@@ -236,31 +236,43 @@ def rename_element(request,element_id):
         return JsonResponse({ "status": "ok" })
     except:
         import sys
-        return JsonResponse({ "status": "error", "message": sys.exc_info() })
+        return JsonResponse({ "status": "err", "message": sys.exc_info() })
 
-@functools.lru_cache()
-def components_selected(request, system_id):
-    """Display System's selected components view"""
+class SelectedComponentsList(ListView):
+    """
+    Display System's selected components view
+    """
+    model = Element
+    template_name = 'systems/components_selected.html'
+    context_object_name = 'system_elements'
+    ordering = ['name']
+    paginate_by = 5
 
-    # Retrieve identified System
-    system = System.objects.get(id=system_id)
-    # Retrieve related selected controls if user has permission on system
-    if request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
+    def get_queryset(self):
+        """
+        Return the systems producer elements.
+        """
+        system = System.objects.get(id=self.kwargs['system_id'])
+        return system.producer_elements
 
-        # Return the components
-        context = {
-            "system": system,
-            "project": project,
-            "elements": Element.objects.all().exclude(element_type='system'),
-            "project_form": ProjectForm(request.user),
-        }
-        return render(request, "systems/components_selected.html", context)
-    else:
-        # User does not have permission to this system
-        raise Http404
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Retrieve identified System
+        system = System.objects.get(id=self.kwargs['system_id'])
+
+        # Retrieve related selected controls if user has permission on system
+        if self.request.user.has_perm('view_system', system):
+            # Retrieve primary system Project
+            # Temporarily assume only one project and get first project
+            project = system.projects.all()[0]
+            context['project'] = project
+            context['system'] = system
+            context['elements'] = Element.objects.all().exclude(element_type='system')
+            context['project_form'] = ProjectForm(self.request.user)
+            return context
+        else:
+            # User does not have permission to this system
+            raise Http404
 
 def component_library(request):
     """Display the library of components"""
@@ -546,7 +558,7 @@ class ComponentImporter(object):
             # TODO: When components can be uploaded by project, set element_type from component-type OSCAL property
             element_type="system_element"
         )
-        new_component.save()
+
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
         control_implementation_statements = component_json['control-implementations']
         for control_element in control_implementation_statements:
@@ -556,7 +568,7 @@ class ComponentImporter(object):
         return new_component
 
     def create_control_implementation_statements(self, catalog_key, implemented_reqs, parent_component):
-        """Creates a Statement from a JSON dictimplemented-requirements
+        """Creates a Statement from a JSON dict implemented-requirements
 
         @type catalog_key: str
         @param catalog_key: Catalog of the control statements
@@ -603,7 +615,7 @@ class ComponentImporter(object):
                         status=implemented_control['status'] if 'status' in implemented_control else None,
                         producer_element=parent_component,
                     )
-                    new_statement.save()
+
                     logger.info(f"New statement with UUID {new_statement.uuid} created.")
                     statements_created.append(new_statement)
 
@@ -630,9 +642,8 @@ class ComponentImporter(object):
             control = catalog.get_control_by_id(control_id)
             return True if control is not None else False
 
-
 def add_selected_components(system, import_record):
-        """Add a component from the library to the project and its statements using the import record"""
+        """Add a component from the library or a compliance app to the project and its statements using the import record"""
 
         # Get components from import record
         imported_components = Element.objects.filter(import_record=import_record)
@@ -645,8 +656,6 @@ def add_selected_components(system, import_record):
                 # The selected controls will serve as the primary filter on what content to display.
                 smt.create_instance_from_prototype(system.root_element.id)
         return imported_components
-
-
 
 def system_element(request, system_id, element_id):
     """Display System's selected element detail view"""
@@ -821,45 +830,86 @@ def import_component(request):
     result = ComponentImporter().import_components_as_json(import_name, oscal_component_json, request)
     return component_library(request)
 
+
+def raise_404_if_not_permitted_to_statement(request, statement, system_permission='view_system'):
+    """Raises a 404 if the user doesn't have the statement system permission"""
+    while True:
+        if request.user.is_superuser or request.user.is_staff:
+            # Allow access if the user has superuser or staff member permissions respectively
+            break
+        else:
+            # Allow access if the user has the statement system permission
+            try:
+                system = System.objects.get(root_element=statement.consumer_element)
+                if request.user.has_perm(system_permission, system):
+                    break
+            except System.DoesNotExist:
+                logger.info(
+                event="update_smt_permission permission_denied",
+                object={"object": "statement", "id": statement.id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+                raise Http404
+
 @login_required
 def statement_history(request, smt_id=None):
-    """Returns the history for the given statement"""
-    from controls.models import Statement
+    """Returns the history for the specified statement"""
+
+    # Get statement if exists else 404
+    smt = get_object_or_404(Statement, id=smt_id)
+
+
+    # Check permission block
+    permission = False
+    if request.user.is_superuser or request.user.is_staff:
+        # Grant permission to superusers and staff users
+        permission = True
+    elif System.objects.filter(root_element=smt.consumer_element).exists():
+        # Grant permission to user with edit access on system
+        system = System.objects.get(root_element=smt.consumer_element)
+        permission = True if request.user.has_perm('view_system', system) else False
+    # 404 if user does not have permission
+    if not permission:
+        raise Http404
+    # Check permission block end
+
     full_smt_history = None
     try:
-        smt = Statement.objects.get(id=smt_id)
         full_smt_history = smt.history.all()
     except Statement.DoesNotExist:
         messages.add_message(request, messages.ERROR, f'The statement id is not valid. Is this still a statement in GovReady?')
 
-    context = {"statement": full_smt_history}
 
-    return render(request, "controls/statement_history.html", context)
+    # Check permission
+    raise_404_if_not_permitted_to_statement(request, smt)
+
+    return render(request, "controls/statement_history.html", {"statement": smt.history.all()})
 
 @login_required
 def restore_to_history(request, smt_id, history_id):
-    """
-    Restore the current model instance to a previous version
-    """
+    """Restores the specified statement version"""
+
+    # Get statement if exists else 404
+    smt = get_object_or_404(Statement, id=smt_id)
+
+    # Check permission
+    raise_404_if_not_permitted_to_statement(request, smt, 'change_system')
+                        
     full_smt_history = None
     for query_key in request.POST:
         if "restore" in query_key:
             change_reason = request.POST.get(query_key, "")
         else:
             change_reason = None
-    try:
-        smt = Statement.objects.get(id=smt_id)
-        recent_smt = smt.history.first()
-
-    except ObjectDoesNotExist as ex:
-        messages.add_message(request, messages.ERROR, f'{ex} The statement id is not valid. Is this still a statement in GovReady?')
 
     try:
+        # Save historical statement as a new instance
         historical_smt = smt.history.get(history_id=history_id)
-        # saving historical statement as a new instance
         historical_smt.instance.save()
+
         # Update the reason for the new statement record
-        update_change_reason(smt.history.first().instance, change_reason)
+        recent_smt     = smt.history.first()
+        update_change_reason(recent_smt.instance, change_reason)
 
         logger.info( f"Change reason: {change_reason}")
 
@@ -1584,27 +1634,18 @@ def update_smt_prototype(request):
         return HttpResponseNotAllowed(["POST"])
 
     else:
-        form_dict = dict(request.POST)
+        # Get statement if exists else 404
+        form_dict   = dict(request.POST)
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
 
-        statement = Statement.objects.get(pk=form_values['smt_id'])
-        system = statement.consumer_element
+        statement = get_object_or_404(Statement, pk=form_values['smt_id'])
 
-        # Test if user is admin
-        if not request.user.is_superuser:
-            # User is not Admin and does not have permission to update statement prototype
-            # Log permission update statement prototype answer denied
-            logger.info(
-                event="update_smt_permission permission_denied",
-                object={"object": "statement", "id": statement.id},
-                user={"id": request.user.id, "username": request.user.username}
-            )
-            return HttpResponseForbidden("Permission denied. {} does not have change privileges to update statement prototype.".format(request.user.username))
+        # Check permission
+        raise_404_if_not_permitted_to_modify_statement(request, statement)
 
         if statement is None:
-            statement_status = "error"
             statement_msg = "The id for this statement is no longer valid in the database."
             return JsonResponse({ "status": "error", "message": statement_msg })
 
@@ -1617,7 +1658,6 @@ def update_smt_prototype(request):
             statement_status = "ok"
             statement_msg = f"Update to statement prototype {proto_statement.prototype_id} succeeded."
         except Exception as e:
-            statement_status = "error"
             statement_msg = "Update to statement prototype failed. Error reported {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg })
 
@@ -1779,14 +1819,14 @@ def add_system_component(request, system_id):
 
     # Loop through element's prototype statements and add to control implementation statements
     for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
-        # Add all existsing control statements for a component to a system even if system does not use controls.
+        # Add all existing control statements for a component to a system even if system does not use controls.
         # This guarantees that control statements are associated.
         # The selected controls will serve as the primary filter on what content to display.
         smt.create_instance_from_prototype(system.root_element.id)
 
     # Make sure some controls were added to the system. Report error otherwise.
     smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation")
-    print("DEBUG smts_added ", smts_added)
+
     smts_added_count = len(smts_added)
     if smts_added_count > 0:
         messages.add_message(request, messages.INFO,
@@ -2192,10 +2232,9 @@ certifications:
         # User does not have permission to this system
         raise Http404
 
-
 # PoamS
 def poams_list(request, system_id):
-    """List PoamS for a system"""
+    """List Poams for a system"""
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
@@ -2482,6 +2521,7 @@ def poam_export(request, system_id, format='xlsx'):
         # User does not have permission to this system
         raise Http404
 
+# Project
 def project_import(request, project_id):
     """
     Import an entire project's components and control content
@@ -2490,6 +2530,7 @@ def project_import(request, project_id):
     system_id = project.system.id
     # Retrieve identified System
     system = System.objects.get(id=system_id)
+    system_root_element = system.root_element
     # TODO: deprecated need. Should consider removing throughout
     #src = AppSource.objects.get(id=request.POST["appsource_compapp"])
    # app = AppVersion.objects.get(source=src, id=request.POST["appsource_version_id"])
@@ -2499,7 +2540,7 @@ def project_import(request, project_id):
         # Need to get or create the app source by the id of the given app source
         module_name = json.loads(project_data).get('project').get('module').get('key')
         title = json.loads(project_data).get('project').get('title')
-        system.root_element.name = title
+        system_root_element.name = title
         importcheck = False
         if "importcheck" in request.POST:
             importcheck = request.POST["importcheck"]
@@ -2533,6 +2574,8 @@ def project_import(request, project_id):
             object={"object": "project", "id": project.id, "title": project.title, "log_output": log_output},
             user={"id": request.user.id, "username": request.user.username}
         )
+        # TODO: Flags to avoid import any part of the project json (e.g. components, poams, questionnaire)
+        # Import components and their statements
         loaded_imported_jsondata = json.loads(project_data)
         if loaded_imported_jsondata.get('component-definitions') != None:
             # Load and get the components then dump
@@ -2546,6 +2589,43 @@ def project_import(request, project_id):
                     comp_num = comp_num + len(comps)
             messages.add_message(request, messages.INFO, f"Created {comp_num} components.")
 
+            # Import Poams
+        if loaded_imported_jsondata.get('poams') != None:
+            # Load and get the poams then dump
+            poam_num = 0
+            for k, poam in enumerate(loaded_imported_jsondata.get('poams')):
+                # Create a Poam for the system
+                ## Statement linked to the poam
+                poamsmt_data = poam.get('statement')
+                poam_smt = Statement.objects.create(
+                    sid=None,
+                    sid_class=None,
+                    pid=None,
+                    body= poamsmt_data.get('body'),
+                    remarks= poam.get('remarks'),
+                    version= poam.get('version'),
+                    created= poam.get('created'),
+                    updated= poam.get('updated'),
+                    statement_type="POAM",
+                    status= poamsmt_data.get('status', "New"),
+                    uuid= poam.get('uuid'),
+                    consumer_element= system_root_element
+                )
+                # Create Poam with statement and imported data
+                poam = Poam.objects.create(statement = poam_smt, controls= poam.get('controls'), milestones = poam.get('milestones'), poam_id = Poam.objects.order_by('-poam_id')[0] + 1 if poam.get('poam_id') == None else poam.get('poam_id'),
+                                           remediation_plan = poam.get('remediation_plan'), risk_rating_adjusted = poam.get('risk_rating_adjusted'),
+                                           risk_rating_original = poam.get('risk_rating_original'), scheduled_completion_date = poam.get('scheduled_completion_date'),
+                                           weakness_detection_source = poam.get('weakness_detection_source'), weakness_name = poam.get('weakness_name'),
+                                           weakness_source_identifier = poam.get('weakness_source_identifier'), poam_group = poam.get('poam_group'))
+                poam.save()
+                poam_num += 1
+                logger.info(
+                    event="Poam import",
+                    object={"object": "poam", "id": poam.poam_id, "controls": poam.poam_group},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+            messages.add_message(request, messages.INFO, f"Created {poam_num} Poams.")
+
         return HttpResponseRedirect("/projects")
 
 def project_export(request, project_id):
@@ -2557,23 +2637,49 @@ def project_export(request, project_id):
     system_id = project.system.id
     # Retrieve identified System
     system = System.objects.get(id=system_id)
+    system_root_element = system.root_element
 
-    # Retrieve related selected controls if user has permission on system
+    # Retrieve related selected controls and Poams if user has permission on system
     if request.user.has_perm('view_system', system):
 
         # Iterate through the elements associated with the system get all statements produced for each
         oscal_comps = []
         for element in system.producer_elements:
             # Implementation statement OSCAL JSON
-            impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+            impl_smts = element.statements_produced.filter(consumer_element=system_root_element)
             component = OSCALComponentSerializer(element, impl_smts).as_json()
             oscal_comps.append(component)
 
-    # TODO: multiple export types
 
+        poams = []
+        poam_smts = system_root_element.statements_consumed.filter(statement_type="POAM").order_by('id')
+        for smt in poam_smts:
+            poam = {
+                'controls': smt.poam.controls,
+                'milestones': smt.poam.milestones,
+                "poam_id": smt.poam.poam_id,
+                'remediation_plan': smt.poam.remediation_plan,
+                'risk_rating_original': smt.poam.risk_rating_original,
+                'risk_rating_adjusted': smt.poam.risk_rating_adjusted,
+                'scheduled_completion_date': smt.poam.scheduled_completion_date,
+                'weakness_detection_source': smt.poam.weakness_detection_source,
+                'weakness_name': smt.poam.weakness_name,
+                "weakness_source_identifier": smt.poam.weakness_source_identifier,
+                'poam_group': smt.poam.poam_group,
+                "statement": {
+                    "body": smt.body,
+                    "remarks": smt.remarks,
+                    "version": smt.remarks,
+                    "status": smt.status,
+                    "uuid": smt.uuid,
+                }
+            }
+            # Add json version as an element in the poams list
+            poams.append(json.dumps(poam))
     questionnaire_data = json.dumps(project.export_json(include_metadata=True, include_file_content=True))
     data = json.loads(questionnaire_data)
     data['component-definitions'] = [json.loads(oscal_comp) for oscal_comp in oscal_comps]
+    data['poams'] = [json.loads(poam) for poam in poams]
     response = JsonResponse(data, json_dumps_params={"indent": 2})
     filename = project.title.replace(" ", "_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
     response['Content-Disposition'] = f'attachment; filename="{quote(filename)}.json"'
@@ -2726,7 +2832,7 @@ def system_deployment_inventory(request, system_id, deployment_id):
 
 @login_required
 def system_assessment_results_list(request, system_id=None):
-    """List PoamS for a system"""
+    """List System Assessment Results for a system"""
 
     # Retrieve identified System
     if system_id:
@@ -2847,4 +2953,3 @@ def system_assessment_result_history(request, system_id, sar_id=None):
         "project_form": ProjectForm(request.user),
     }
     return render(request, "systems/sar_history.html", context)
-

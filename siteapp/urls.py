@@ -41,7 +41,7 @@ urlpatterns = [
     url(r'^library/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
 
     # projects
-    url(r"^projects$", views.project_list, name="projects"),
+    url(r"^projects$", views.ProjectList.as_view(), name="projects"),
     url(r"^projects/lifecycle$", views.project_list_lifecycle, name="projects_lifecycle"),
     url(r'^projects/(\d+)/__rename$', views.rename_project, name="rename_project"),
     url(r'^projects/(\d+)/__delete$', views.delete_project, name="delete_project"),

@@ -1,7 +1,7 @@
 id: app
 title: General IT System ATO
 type: project
-version: 1.1.0
+version: 1.1.1
 icon: app.png
 introduction:
   format: markdown
@@ -42,7 +42,7 @@ catalog:
   status: stub
   vendor: GovReady®
   vendor_url: ~
-  version: 1.1.0
+  version: 1.1.1
 questions:
 
 #System Info
@@ -249,20 +249,6 @@ questions:
   impute:
   - condition: project.system_info.system_personal_data != 'yes'
     value: ~
-
-#POAMS
-- id: poam_description
-  title: Description of the POAM
-  type: module-set
-  icon: poam.png
-  module-id: poam_description
-  group: Plan of Action and Milestones (POAM)
-- id: poam_doc
-  title: POAM Document
-  type: module
-  icon: poam.png
-  module-id: poam_doc
-  group: Plan of Action and Milestones (POAM)
 
 #RTM
 - id: rtm

@@ -737,7 +737,7 @@ class Project(models.Model):
         # Gets all projects a user has read priv to, excluding
         # account and organization profile projects, and sorted
         # in reverse chronological order by modified date.
-
+        # TODO: This could probably be optimized with prefetch related
         projects = set()
 
         if not user.is_authenticated:

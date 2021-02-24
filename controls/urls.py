@@ -8,16 +8,14 @@ from django.conf import settings
 admin.autodiscover()
 
 from django.views.decorators.csrf import csrf_exempt
-from . import urls_api
+from controls import urls_api
 
 import controls.views
-from . import views
+from controls import views
 
 from siteapp.settings import *
 
 urlpatterns = [
-    url(r'^test$', views.test),
-
     # Docs
     url('doc/', include('django.contrib.admindocs.urls')),
 
@@ -60,7 +58,7 @@ urlpatterns = [
     url(r'^smt/_update_smt_prototype/$', views.update_smt_prototype),
 
     # System Components/Elements
-    url(r'^(?P<system_id>.*)/components/selected$', views.components_selected, name="components_selected"),
+    url(r'^(?P<system_id>.*)/components/selected$', views.SelectedComponentsList.as_view(), name="components_selected"),
     url(r'^(?P<system_id>.*)/components/selected/export/opencontrol$', views.export_system_opencontrol, name="export_system_opencontrol"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/download/oscal/json$',
         views.system_element_download_oscal_json,

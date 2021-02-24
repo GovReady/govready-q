@@ -122,8 +122,8 @@ class Statement(models.Model):
         # System already has instance of the control_implementation statement
         # TODO: write check for this logic
         # Get all statements for consumer element so we can identify
-        smts_existing = Statement.objects.filter(consumer_element__id = consumer_element_id, statement_type = "control_implementation")
-        print(smts_existing)
+        smts_existing = Statement.objects.filter(consumer_element__id = consumer_element_id, statement_type = "control_implementation").select_related('prototype')
+
         # Get prototype ids for all consumer element statements
         smts_existing_prototype_ids = [smt.prototype.id for smt in smts_existing]
         if self.id is smts_existing_prototype_ids:
@@ -212,7 +212,7 @@ class Statement(models.Model):
 class Element(models.Model):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
-    description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=False, null=False)
+    description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=True, null=True)
     element_type = models.CharField(max_length=150, help_text="Component type", unique=False, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -510,12 +510,13 @@ class System(models.Model):
                 pid_current = smt.pid
             # DEBUG
             # TODO
-            # Poor performance, at least in some instances, appears to being caused by `smt.prouder_element.name`
+            # Poor performance, at least in some instances, appears to being caused by `smt.producer_element.name`
             # parameter in the below statement.
-            smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i>\n{status_str}\n\n{smt.body}\n\n"
+            if smt.producer_element:
+                smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i>\n{status_str}\n\n{smt.body}\n\n"
             # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
             # for testing purposes, the loop runs 3x faster
-            # The reference `smt.prouder_element.name` appears to be calling the database and creating poor performance
+            # The reference `smt.producer_element.name` appears to be calling the database and creating poor performance
             # even where there are no statements.
 
         # Deprecated implementation of inherited/common controls
@@ -542,6 +543,38 @@ class System(models.Model):
         # Return the dictionary
         return smts_as_dict
 
+    @cached_property
+    def controls_status_count(self):
+        """Retrieve counts of control status"""
+
+        status_list = ['Not Implemented', 'Planned', 'Partially Implemented', 'Implemented', 'Unknown']
+        status_stats = {}
+        # Fetch all selected controls
+        elm = self.root_element
+        for status in status_list:
+            # Get the smts_control_implementations ordered by part, e.g. pid
+            status_stats[status] = elm.statements_consumed.filter(statement_type="control_implementation", status=status).count()
+        # TODO add index on statement status
+        return status_stats
+
+    @cached_property
+    def poam_status_count(self):
+        """Retrieve counts of poam status"""
+
+        # Temporarily hard code status list
+        status_list = ['Open', 'Closed', "In Progress"]
+        # TODO
+        # Get a unique filter of status list and gather on that...
+        status_stats = {}
+        # Fetch all selected controls
+        elm = self.root_element
+        for status in status_list:
+            # Get the smts_control_implementations ordered by part, e.g. pid
+            status_stats[status] = elm.statements_consumed.filter(statement_type="POAM",
+                                                                  status__iexact=status).count()
+        # TODO add index on statement status
+        return status_stats
+
     # @property (See below for creation of property from method)
     def get_producer_elements(self):
         smts = self.root_element.statements_consumed.all()
@@ -553,7 +586,7 @@ class System(models.Model):
         components.sort(key = lambda component:component.name)
         return components
 
-    producer_elements = property(get_producer_elements)
+    producer_elements = cached_property(get_producer_elements)
 
 class CommonControlProvider(models.Model):
     name = models.CharField(max_length=150, help_text="Name of the CommonControlProvider", unique=False)

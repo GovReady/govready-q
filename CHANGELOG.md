@@ -4,12 +4,49 @@ GovReady-Q Release Notes
 v999 (February XX, 2021)
 ------------------------
 
-[Add development changes here]
-
 **Developer changes**
 
 * Avoid name collissions when cloning a component.
 * Add controls.models.Statement.delegate field to allow statements to delegate their content to other statements. This supports controls from one catalog to be mapped to controls in another catalog. A statement must exist for each delegate. One control delegating to 3 controls in another catalog must do that through 3 statements.
+
+**Data changes**
+
+* Alter Element description field to be blank and none.
+
+v0.9.1.52 (February 16, 2021)
+-----------------------------
+
+Add System Assessment Report tracking to associate assessments and evidence with the system.
+Add initial dynamic status information to the project page.
+Project page displays mini-dashboard of compliance stats.
+
+**Feature changes**
+
+* Add System Assessment Report tracking to associate assessments and evidence with the system.
+* Add initial dynamic status information to the project page.
+
+**UI changes**
+
+* Improve page load times for listings with pagination and ordering for project listing and selected component listing. 
+* Display projects in pages of 10 and selected components by 5.
+* Project page displays mini-dashboard of compliance stats.
+    * Number of controls implemented out of count of controls.
+    * Number of POA&Ms.
+    * Count of system components.
+    * Approximate overall compliance based on controls implemented / count of controls.
+
+**Developer changes**
+
+* Properly restrict statement history access to users with system, staff, or admin permissions.
+* Avoid name collisions when cloning a component.
+* Replaced function-based views with class-based listview for SelectedComponentsList, ProjectList.
+* Avoid name collisions when cloning a component.
+* Default to not use Django Debug Toolbar. Added new `enable_tool_bar` parameter option for `local/environment.json` to allow users to enable(True) or disable(False) the Django Debug Toolbar.
+* Adding DummyCache to prevent real caching while running automated tests.
+* Refactored use of random package to use secure secrets module.
+* Added minor pylint fixes.
+* Added the ability to import and export Poams along with the project import/export.
+* Load sample/default components into component library during installation to provide users with starting set of components.
 
 v0.9.1.51 (February 03, 2021)
 -----------------------------
@@ -373,7 +410,7 @@ v.0.9.1.47 (December 01, 2020)
 * Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
 
 v0.9.1.46.4 (November 25, 2020)
------------------------------
+-----------------------------	
 
 **UI changes**
 
