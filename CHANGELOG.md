@@ -4,6 +4,14 @@ GovReady-Q Release Notes
 v999 (February XX, 2021)
 ------------------------
 
+**Data changes**
+
+* Alter Element description field to be blank and none.
+
+
+v0.9.1.52 (February 16, 2021)
+-----------------------------
+
 Add System Assessment Report tracking to associate assessments and evidence with the system.
 Add initial dynamic status information to the project page.
 Project page displays mini-dashboard of compliance stats.
