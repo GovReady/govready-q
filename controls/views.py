@@ -21,6 +21,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views import View
 from django.views.generic import ListView
+from django.urls import reverse
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from urllib.parse import quote
@@ -725,7 +726,7 @@ def system_element_remove(request, system_id, element_id):
         # Create message for user
         messages.add_message(request, messages.INFO, f"Removed component '{element.name}' from system.")
 
-        response = redirect(f'/controls/{system_id}/components/selected')
+        response = redirect(reverse('components_selected', args=[system_id]))
         return response
 
     else:
