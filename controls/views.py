@@ -708,9 +708,6 @@ def system_element_remove(request, system_id, element_id):
     system = System.objects.get(id=system_id)
     # Retrieve related selected controls if user has permission on system
     if request.user.has_perm('change_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
 
         # Retrieve element
         element = Element.objects.get(id=element_id)
