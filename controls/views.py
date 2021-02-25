@@ -712,10 +712,6 @@ def system_element_remove(request, system_id, element_id):
         # Retrieve element
         element = Element.objects.get(id=element_id)
 
-        # Retrieve impl_smts produced by element and consumed by system
-        # Get the impl_smts contributed by this component to system
-        impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
-
         # Delete the control implementation statements associated with this component
         result = element.statements_produced.filter(consumer_element=system.root_element).delete()
 
