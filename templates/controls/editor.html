@@ -309,19 +309,26 @@
                         {% endfor %}
                     </div><!--/smt-list-->
 
+                    <!-- Add component button -->
+                    <div id="add-control-smt" class="" style="margin-top: 50px;">
+                        <h3>
+                            <button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button>
+                        </h3>
+                    </div>
+
                     <!-- Add existing component -->
-                    <div id="" class="row" style="">
+                    <div id="" class="row" style="margin-top: 20px;">
+                        <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
                         <form class="form-inline" method="post" action="">
                             {% csrf_token %}
-                            <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-                                <div class="form-group">
+                                <!-- <div class="form-group">
                                     <label for="component">Add existing component</label>&nbsp;&nbsp;
                                     <input type="text" class="form-control" id="producer_element_search" name="text" placeholder="Name of component"
                                            onchange="search_components($(this).val(), {{ system.id }})">
-                                </div>
-                                <div class="form-group">
+                                </div> -->
+                                <div class="form-group" class="pull-right">
                                     <select name="selected_producer_element_form_id" id="selected_producer_element_form_id" style="width:340px;">
-
+                                            <option value="Add existing component">Add existing component</option>
                                         {% for component in elements %}
                                             <option value="{{ component.id }}">{{ component.name }}</option>
                                         {% endfor %}
@@ -333,17 +340,13 @@
                                     <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
                                     <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
                                 </div>
-                            </div>
-                        </form>
-                        <!-- Search for related components -->
-                        <button type="submit" id="add_related_statements" class="small btn btn-sm btn-success" style="color: white;" onclick="show_related_controls({{ system.id }})">Submit for related</button>
-                    </div>
 
-                    <!-- Add component button -->
-                    <div>
-                        <h3>
-                            <button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button>
-                        </h3>
+                            <!-- Search for related components -->
+                            <button type="submit" id="add_related_statements" class="small btn btn-sm btn-success" style="color: white;" onclick="show_related_controls({{ system.id }}); return false;">
+                                Submit for related
+                            </button>
+                        </form>
+                        </div>
                     </div>
 
                 </div>
