@@ -4,10 +4,13 @@ GovReady-Q Release Notes
 v999 (February XX, 2021)
 ------------------------
 
+**Developer changes**
+
+* Move inclusion of `edit-component-modal.html` from `base.html` to `components/element_detail_tabs.html`.
+
 **Data changes**
 
 * Alter Element description field to be blank and none.
-
 
 v0.9.1.52 (February 16, 2021)
 -----------------------------
