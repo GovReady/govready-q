@@ -701,6 +701,52 @@ def system_element(request, system_id, element_id):
         return render(request, "systems/element_detail_tabs.html", context)
 
 @login_required
+def system_element_remove(request, system_id, element_id):
+    """Remove an element from a system and delete the controls it produces"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve element
+        element = Element.objects.get(id=element_id)
+
+        # Retrieve impl_smts produced by element and consumed by system
+        # Get the impl_smts contributed by this component to system
+        impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+
+        # Delete the control implementation statements associated with this component
+        result = element.statements_produced.filter(consumer_element=system.root_element).delete()
+
+        # Log result
+        logger.info(
+                event="change_system remove_component",
+                object={"object": "component", "id": element.id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"Removed component '{element.name}' from system.")
+
+        response = redirect(f'/controls/{system_id}/components/selected')
+        return response
+
+    else:
+        # User does not have permission
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
+
+        response = redirect(f'/controls/{system_id}/components/selected')
+        return response
+
+
+
+@login_required
 def new_element(request):
     """Form to create new system element (aka component)"""
 
