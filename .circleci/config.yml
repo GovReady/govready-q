@@ -1,15 +1,6 @@
 # A CircleCI configuration file because we do continuous integration testing!
 
-version: 2.1
-
-orbs:
-    snyk: snyk/snyk@0.0.13
-workflows:
-    build:
-        jobs:
-            - build:
-                context:
-                    - snyk_api
+version: 2
 
 jobs:
   build:
@@ -104,20 +95,3 @@ jobs:
         path: coverage.xml
     - store_artifacts:
         path: htmlcov
-
-    # Snyk Scan
-    - run: pip install -r requirements_util.txt
-    - snyk/scan:
-        token-variable: SNYK_API_TOKEN
-        project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
-        additional-arguments: "--file=requirements_mysql.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
-
-    - snyk/scan:
-        token-variable: SNYK_API_TOKEN
-        project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
-        additional-arguments: "--file=requirements_util.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
-
-    - snyk/scan:
-        token-variable: SNYK_API_TOKEN
-        project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
-        additional-arguments: "--file=requirements.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
