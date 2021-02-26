@@ -34,6 +34,7 @@ dj_database_url # BSD License
 whitenoise # MIT License
 django-guardian # MIT License
 django-simple-history # BSD License
+django-auto-prefetch # MIT License
 
 
 # Python Packages Developed by GovReady and/or Josh
