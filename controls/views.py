@@ -727,19 +727,20 @@ def system_element_remove(request, system_id, element_id):
         # Create message for user
         messages.add_message(request, messages.INFO, f"Removed component '{element.name}' from system.")
 
-        response = redirect(reverse('components_selected', args=[system_id]))
-        return response
-
     else:
         # User does not have permission
+        # Log result
+        logger.info(
+                event="change_system remove_component permission_denied",
+                object={"object": "component", "id": element.id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
 
         # Create message for user
         messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
 
-        response = redirect(f'/controls/{system_id}/components/selected')
-        return response
-
-
+    response = redirect(reverse('components_selected', args=[system_id]))
+    return response
 
 @login_required
 def new_element(request):
