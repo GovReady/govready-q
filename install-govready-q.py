@@ -10,6 +10,7 @@
 # Optional arguments:
 #   -h, --help             show this help message and exit
 #   -n, --non-interactive  run without terminal interaction
+#   -u, --user             do pip install with --user flag
 #   -v, --verbose          output more information
 #
 ################################################################
@@ -35,8 +36,9 @@ class FatalError(Exception):
 # Set up argparse
 def init_argparse():
     parser = argparse.ArgumentParser(description='Quickly set up a new GovReady-Q instance from a freshly-cloned repository.')
-    parser.add_argument('--verbose', '-v', action='count', default=0, help='output more information')
     parser.add_argument('--non-interactive', '-n', action='store_true', help='run without terminal interaction')
+    parser.add_argument('--user', '-u', action='store_true', help='do pip install with --user flag')
+    parser.add_argument('--verbose', '-v', action='count', default=0, help='output more information')
     return parser
 
 def main():
