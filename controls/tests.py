@@ -314,7 +314,6 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
             statement_type="control_implementation_prototype").count()
         self.assertEqual(statement_count_after_import + 4, statement_count_after_duplicate_import)
 
-
     def test_import_tracker(self):
         """Tests that imports are tracked correctly."""
 
@@ -385,7 +384,6 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.assertEqual(component_count, 0)
         statement_count = Statement.objects.filter(import_record=import_record).count()
         self.assertEqual(statement_count, 0)
-
 
     def test_element_rename(self):
         # Ensures that the edit button doesnt appear for non-superusers

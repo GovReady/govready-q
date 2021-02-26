@@ -22,6 +22,26 @@
     <div class="systems-top">
             <div id="tab-content" class="row rows-header">
                 <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span class="systems-selected-components">Selected Components</span></div>
+                <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
+                <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 pull-right">
+                    <form id="add_component" class="form-inline" method="post" action="/systems/{{ system.id }}/components/add_system_component">
+                        {% csrf_token %}
+                        <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
+                            <div class="form-group">
+                                <!-- <label for="component">Add component</label>&nbsp;&nbsp; -->
+                                <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
+                                <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onchange="$(form).submit();" style="width:340px;">
+                                    <option value="None" selected disabled hidden>Add a Component</option>
+                                    {% for component in elements %}
+                                        {% if component not in system_elements %}
+                                            <option value="{{ component.id }}">{{ component.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             {% for component in system_elements %}
@@ -30,34 +50,22 @@
                         <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
                             <a href={% url 'system_element' system_id=system.id element_id=component.id %}>{{ component.name }}</a>
                         </div>
-                        <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                        <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
                             {% if component.description %}{{ component.description }}{% else %}<span class="not-provided">No description provided.</span>{% endif %}
                         </div>
                         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
                             <span class="pull-right">{% if component.get_control_impl_smts_prototype_count > 0 %}{{ component.get_control_impl_smts_prototype_count }} control{{ component.get_control_impl_smts_prototype_count|pluralize }}</span>{% else %}None{% endif %}
                         </div>
+                    {% get_obj_perms request.user for system as "system_perms" %}
+                    {% if "view_system" in system_perms %}
+                        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 pull-right">
+                            <a href="{% url 'system_element_remove' system_id=system.id element_id=component.id %}"><small><span class="glyphicon glyphicon-trash" title="remove component"></span></small></a>
+                        </div>
+                    {% endif %}
                     </div>
             {% endfor %}
 
             <div id="tab-content" class="row row-control" style="">
-                <form id="add_component" class="form-inline" method="post" action="/systems/{{ system.id }}/components/add_system_component">
-                    {% csrf_token %}
-                    <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
-                        <div class="form-group">
-                            <label for="component">Add component</label>&nbsp;&nbsp;
-                            <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
-                            <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onchange="$(form).submit();" style="width:340px;">
-                                <option value="None" selected disabled hidden>Select a Component</option>
-                                {% for component in elements %}
-                                    {% if component not in system_elements %}
-                                        <option value="{{ component.id }}">{{ component.name }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-
-                </form>
                 <div class="step-links">
                     {% if page_obj.has_previous %}
                         <a href="?page=1">&laquo; first</a>

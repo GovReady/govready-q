@@ -21,6 +21,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views import View
 from django.views.generic import ListView
+from django.urls import reverse
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from urllib.parse import quote
@@ -42,6 +43,7 @@ from structlog.stdlib import LoggerFactory
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
+
 
 def index(request):
     """Index page for controls"""
@@ -699,6 +701,46 @@ def system_element(request, system_id, element_id):
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/element_detail_tabs.html", context)
+
+@login_required
+def system_element_remove(request, system_id, element_id):
+    """Remove an element from a system and delete the controls it produces"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+
+        # Retrieve element
+        element = Element.objects.get(id=element_id)
+
+        # Delete the control implementation statements associated with this component
+        result = element.statements_produced.filter(consumer_element=system.root_element).delete()
+
+        # Log result
+        logger.info(
+                event="change_system remove_component",
+                object={"object": "component", "id": element.id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"Removed component '{element.name}' from system.")
+
+    else:
+        # User does not have permission
+        # Log result
+        logger.info(
+                event="change_system remove_component permission_denied",
+                object={"object": "component", "id": element.id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
+
+    response = redirect(reverse('components_selected', args=[system_id]))
+    return response
 
 @login_required
 def new_element(request):

@@ -4,6 +4,15 @@ GovReady-Q Release Notes
 v999 (February XX, 2021)
 ------------------------
 
+**Feature changes**
+
+* Remove a component and its statements from a system.
+
+**UI changes**
+
+* Add a button to system selected component page to remove a component from the system.
+* Moved "Add a component" to a system drop down to top of selected component page.
+
 **Developer changes**
 
 * Move inclusion of `edit-component-modal.html` from `base.html` to `components/element_detail_tabs.html`.

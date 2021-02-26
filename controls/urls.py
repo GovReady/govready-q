@@ -60,6 +60,7 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/download/oscal/json$',
         views.system_element_download_oscal_json,
         name="system_element_download_oscal_json"),
+    url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/_remove$', views.system_element_remove, name="system_element_remove"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
     url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
 
