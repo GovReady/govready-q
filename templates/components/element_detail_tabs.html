@@ -249,6 +249,9 @@
   </div>
 </div>
 
+<!-- local modals -->
+{% include "edit-component-modal.html" %}
+
 {{ block.super }}
 {% endblock %}
 
@@ -489,15 +492,13 @@
         }
       </script>
 
-
-<script src="{% static "vendor/js/select2.min.js" %}"></script>
+    <script src="{% static "vendor/js/select2.min.js" %}"></script>
     <link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
 
     <script>
         $( document ).ready(function() {
             //console.log("document ready");
         });
-
     </script>
 
 {% endblock %}
