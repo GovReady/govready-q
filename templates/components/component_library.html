@@ -28,17 +28,16 @@
 
             <h2 class="">Component Library</h2>
 
-                <form action="{% url 'component_library' %}" method="GET">
-                    <div class="form-inline pull-right create-nav">
+            <form action="{% url 'component_library' %}" method="GET">
+                <div class="form-inline pull-right create-nav">
                     <div class="form-group">
-                    <div class="input-group">
-                        <div class="input-group-addon">search</div>
-                        <input name="search" value="{{ request.GET.search }}" type="text" placeholder="Search for components">
+                        <div class="input-group">
+                            <div class="input-group-addon">search</div>
+                            <input name="search" value="{{ request.GET.search }}" type="text" placeholder="Search for components">
+                        </div>
+                    </div>
                 </div>
-                    </div>
-                    </div>
-
-                </form>
+            </form>
 
             {% if page_obj|length > 0 %}
                 <p>You have access to {{ total_comps }} components.</p>
