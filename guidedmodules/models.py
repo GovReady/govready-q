@@ -12,6 +12,7 @@ from copy import deepcopy
 from collections import OrderedDict
 import uuid
 
+from siteapp.enums.assets import AssetTypeEnum
 from .module_logic import ModuleAnswers, render_content
 from .answer_validation import validator
 from siteapp.models import User, Organization, Project, ProjectMembership
@@ -1293,18 +1294,21 @@ class Task(models.Model):
 
         else:
             # Render to HTML and convert using pandoc.
-
-            # TODO: Currently this works with only one reference file;
             # /assets/custom-reference.docx. We should be able to point to a
             # reference file in a Compliance App.
-            template = "assets/custom-reference.docx"
-
+            template = self.project.assets.get_default(asset_type=AssetTypeEnum.SSP_EXPORT,
+                                                       default_if_not_exist="assets/custom-reference.docx")
             # odt and some other formats cannot pipe to stdout, so we always
             # generate a temporary file.
             import tempfile, os.path, subprocess # nosec
             with tempfile.TemporaryDirectory() as tempdir:
                 # convert from HTML to something else, writing to a temporary file
                 outfn = os.path.join(tempdir, filename)
+                if not isinstance(template, str):
+                    template_path = os.path.join(tempdir, template.name.split('/')[-1])
+                    with open(template_path, 'wb+') as f:
+                        f.write(template.file.read())
+                    template = template_path
                 # Append '# nosec' to line below to tell Bandit to ignore the low risk problem
                 # with not specifying the entire path to pandoc.
                 with subprocess.Popen(# nosec

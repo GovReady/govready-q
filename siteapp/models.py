@@ -2,6 +2,7 @@ from collections import ChainMap
 from itertools import chain
 import logging
 import structlog
+import uuid as uuid
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
 from typing import Dict
@@ -19,6 +20,9 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_users_with_perms, remove_perm)
 from controls.models import System, Element, OrgParams
 from jsonfield import JSONField
+
+from siteapp.enums.assets import AssetTypeEnum
+from siteapp.utils.uploads import hash_file
 
 logging.basicConfig()
 structlog.configure(logger_factory=LoggerFactory())
@@ -572,6 +576,8 @@ class Project(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+    configuration = JSONField(blank=True, help_text="Project configuration.")
+    # default reference document for docx - use to store the default doc
 
     version = models.CharField(max_length=32, unique=False, blank=True, null=True,
                                help_text="Project's version identifier")
@@ -1414,3 +1420,57 @@ class Support(models.Model):
 
   def __str__(self):
     return "Support information"
+
+
+class Asset(models.Model):
+    UPLOAD_TO = None
+    title = models.CharField(max_length=255, help_text="The title of this asset.", unique=True)
+    asset_type = models.CharField(max_length=150, help_text="Asset type.", unique=False, choices=AssetTypeEnum.choices())
+    content_hash = models.CharField(max_length=64,
+                                    help_text="A hash of the asset binary content, as provided by the source.")
+    file = models.FileField(upload_to=UPLOAD_TO, help_text="The attached file.")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False,
+                            help_text="A UUID (a unique identifier) for this Asset.")
+
+    def save(self, **kwargs):
+        if self.file:
+            self.content_hash = hash_file(self.file)
+        return super().save(**kwargs)
+
+    class Meta:
+           abstract = True
+
+
+class ProjectAssetQuerySet(models.Manager):
+    use_for_related_fields = True
+
+    def get_default(self, asset_type, default_if_not_exist=None):
+        asset = self.filter(asset_type=asset_type.name, default=True).first()
+        if not asset:
+            return default_if_not_exist
+        return asset.file
+
+
+class ProjectAsset(Asset):
+    UPLOAD_TO = "siteapp/project-assets"
+
+    project = models.ForeignKey(Project, related_name="assets", on_delete=models.CASCADE)
+    default = models.BooleanField(default=False)
+
+    objects = ProjectAssetQuerySet()
+
+    def __repr__(self):
+        return self.title
+
+    def save(self, **kwargs):
+        current_active = ProjectAsset.objects.filter(project_id=self.project_id,
+                                                     asset_type=self.asset_type,
+                                                     default=True)
+        if self.default:
+            current_active.update(default=False)
+        if not current_active.exists():
+            self.default = True
+        return super().save(**kwargs)
