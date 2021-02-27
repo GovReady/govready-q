@@ -43,7 +43,7 @@ from structlog.stdlib import LoggerFactory
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
-
+from natsort import natsorted, ns
 
 def index(request):
     """Index page for controls"""
@@ -226,7 +226,7 @@ def rename_element(request,element_id):
 
         if Element.objects.filter(name=new_name).exists() is True:
             return JsonResponse({ "status": "err", "message": "Name already in use"})
-            
+
         element = get_object_or_404(Element, id=element_id)
         element.name = new_name
         element.description = new_description
@@ -764,6 +764,7 @@ def new_element(request):
         'form': form,
     })
 
+
 def component_library_component(request, element_id):
     """Display certified component's element detail view"""
 
@@ -772,7 +773,13 @@ def component_library_component(request, element_id):
 
     # Retrieve impl_smts produced by element and consumed by system
     # Get the impl_smts contributed by this component to system
+
+
     impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
+    #we need to use natsort here to handle the sid that has letters and numbers. (e.g. to put AC-14 after AC-2 whereas before it was putting AC-14 before AC-2)
+    #using the natsort package from pypi: https://pypi.org/project/natsort/
+
+    impl_smts = natsorted(impl_smts, key=lambda x: x.sid)
 
     if len(impl_smts) < 1:
         context = {
@@ -790,8 +797,11 @@ def component_library_component(request, element_id):
         oscal_string = None
         opencontrol_string = None
     elif len(impl_smts) > 0:
+
+
         # TODO: We may have multiple catalogs in this case in the future
         # Retrieve used catalog_key
+
         catalog_key = impl_smts[0].sid_class
         # Retrieve control ids
         catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
@@ -850,9 +860,9 @@ def component_library_component_copy(request, element_id):
     # Retrieve element
     element = Element.objects.get(id=element_id)
     count = Element.objects.filter(uuid=element.uuid).count()
-    
+
     if count > 0:
-        e_copy = element.copy(name=element.name + " copy ("+str(count+1)+')') 
+        e_copy = element.copy(name=element.name + " copy ("+str(count+1)+')')
     else:
         e_copy = element.copy()
 
@@ -936,7 +946,7 @@ def restore_to_history(request, smt_id, history_id):
 
     # Check permission
     raise_404_if_not_permitted_to_statement(request, smt, 'change_system')
-                        
+
     full_smt_history = None
     for query_key in request.POST:
         if "restore" in query_key:
