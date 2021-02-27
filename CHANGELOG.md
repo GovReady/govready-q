@@ -48,7 +48,6 @@ Project page displays mini-dashboard of compliance stats.
 * Properly restrict statement history access to users with system, staff, or admin permissions.
 * Avoid name collisions when cloning a component.
 * Replaced function-based views with class-based listview for SelectedComponentsList, ProjectList.
-* Avoid name collisions when cloning a component.
 * Default to not use Django Debug Toolbar. Added new `enable_tool_bar` parameter option for `local/environment.json` to allow users to enable(True) or disable(False) the Django Debug Toolbar.
 * Adding DummyCache to prevent real caching while running automated tests.
 * Refactored use of random package to use secure secrets module.
