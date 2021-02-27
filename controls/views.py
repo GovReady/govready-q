@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError
 from django.db.models.functions import Lower
@@ -279,8 +280,14 @@ class SelectedComponentsList(ListView):
 def component_library(request):
     """Display the library of components"""
 
+    element_list = Element.objects.all().exclude(element_type='system').order_by('name')
+    ele_paginator = Paginator(element_list, 5)  # Show 25 contacts per page.
+
+    page_number = request.GET.get('page')
+    page_obj = ele_paginator.get_page(page_number)
+
     context = {
-        "elements": Element.objects.all().exclude(element_type='system').order_by('name'),
+        "page_obj": page_obj,
         "import_form": ImportOSCALComponentForm(),
     }
 
