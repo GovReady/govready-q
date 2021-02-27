@@ -166,7 +166,7 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 .question-glyphicon-comment { color: #56A; }
 
 /* within navbar and base.html */
-.navbar-brand img { margin: -2px 20px; width:110px; }
+.navbar-brand img { margin: -1px 20px; width:160px; }
 .dropdown-menu { width: 300px; }
 .nav-dropdown-item-text { margin: 0px 12px 8px 20px; }
 .nav-profile { margin: -5px 5px; }
