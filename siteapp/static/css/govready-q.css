@@ -349,3 +349,7 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 .systems-element-name { font-size: 14pt; font-weight: bold;}
 .systems-poam { margin-top: 4px; }
 .systems-poam-glyphicon {  margin-top: 6px; }
+
+.step-links {
+  white-space: nowrap;
+}

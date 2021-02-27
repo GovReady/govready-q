@@ -36,8 +36,9 @@
 
     <p>&nbsp;</p>
 
-  <div id="tab-content" class="row rows-header" style="">
-    <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span style="font-size: 14pt; font-weight: bold;">Available Components</span></div>
+  <div id="tab-content" class="row rows-header" style="font-weight: bold;">
+    <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span style="font-size: 14pt;">Available Components</span></div>
+    <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 pull-right"><span>{% include 'components/paginate_comp.html' %}</span></div>
   </div>
   {% for component in page_obj %}
     <div id="tab-content" class="row row-control" style="">
@@ -54,7 +55,8 @@
   {% endfor %}
 
   {% include "components/import-component-modal.html" %}
-
+  </div>
+  </div>
   {{ block.super }}
 {% endblock %}
 
