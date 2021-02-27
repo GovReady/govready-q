@@ -350,6 +350,6 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 .systems-poam { margin-top: 4px; }
 .systems-poam-glyphicon {  margin-top: 6px; }
 
-.step-links {
+.pagination {
   white-space: nowrap;
 }

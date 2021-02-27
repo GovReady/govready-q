@@ -28,16 +28,28 @@
 
             <h2 class="">Component Library</h2>
 
+                <form action="{% url 'component_library' %}" method="GET">
+                    <div class="form-inline pull-right create-nav">
+                    <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon">search</div>
+                        <input name="search" value="{{ request.GET.search }}" type="text" placeholder="Search for components">
+                </div>
+                    </div>
+                    </div>
+
+                </form>
+
             {% if page_obj|length > 0 %}
-                <p>You have access to {{ page_obj|length }} components{{ component|pluralize }}.</p>
+                <p>You have access to {{ total_comps }} components.</p>
             {% else %}
                 <p>You do not have access to any components.</p>
             {% endif %}
 
             <p>&nbsp;</p>
 
-            <div id="tab-content" class="row rows-header" style="font-weight: bold;">
-                <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span style="font-size: 14pt;">Available Components</span></div>
+            <div id="tab-content" class="row rows-header">
+                <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span style="font-size: 14pt; font-weight: bold;">Available Components</span></div>
                 <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 pull-right"><span>{% include 'components/paginate_comp.html' %}</span></div>
             </div>
             {% for component in page_obj %}

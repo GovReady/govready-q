@@ -7,12 +7,13 @@ from uuid import uuid4
 import rtyaml
 import shutil
 import operator
+from natsort import natsorted
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError
 from django.db.models.functions import Lower
@@ -280,15 +281,31 @@ class SelectedComponentsList(ListView):
 def component_library(request):
     """Display the library of components"""
 
-    element_list = Element.objects.all().exclude(element_type='system').order_by('name')
-    ele_paginator = Paginator(element_list, 5)  # Show 25 contacts per page.
+    query = request.GET.get('search')
+    if query:
+        element_list = Element.objects.filter(name__icontains=query).exclude(element_type='system')
+    else:
+        element_list = Element.objects.all().exclude(element_type='system')
 
+    # Natural sorting on name
+    element_list = natsorted(element_list, key=lambda x: x.name)
+
+    # Pagination
+    ele_paginator = Paginator(element_list, 15)
     page_number = request.GET.get('page')
-    page_obj = ele_paginator.get_page(page_number)
+
+    try:
+        page_obj = ele_paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = ele_paginator.page(1)
+    except EmptyPage:
+        page_obj = ele_paginator.page(ele_paginator.num_pages)
+
 
     context = {
         "page_obj": page_obj,
         "import_form": ImportOSCALComponentForm(),
+        "total_comps": Element.objects.exclude(element_type='system').count()
     }
 
     return render(request, "components/component_library.html", context)
