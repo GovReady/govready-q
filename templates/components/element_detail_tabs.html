@@ -542,10 +542,12 @@
 
         function edit_component() {
           show_edit_component_modal("{{element.name}}","{{element.description}}",(newName, newDescription)=>{
+
             ajax_with_indicator({
-              url: '{% url "rename_element" element.id %}',
+
+              url: '{% url "edit_element" element.id %}',
               method: "POST",
-              data: {name: newName,description: newDescription},
+              data: {name: newName, description: newDescription},
               keep_indicator_forever: true,
               success: function(res) {
                 if(res["status"]=="ok"){
