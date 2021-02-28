@@ -21,6 +21,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views import View
 from django.views.generic import ListView
+from django.urls import reverse
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from urllib.parse import quote
@@ -42,6 +43,7 @@ from structlog.stdlib import LoggerFactory
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
+from natsort import natsorted
 
 def index(request):
     """Index page for controls"""
@@ -224,7 +226,7 @@ def rename_element(request,element_id):
 
         if Element.objects.filter(name=new_name).exists() is True:
             return JsonResponse({ "status": "err", "message": "Name already in use"})
-            
+
         element = get_object_or_404(Element, id=element_id)
         element.name = new_name
         element.description = new_description
@@ -701,6 +703,46 @@ def system_element(request, system_id, element_id):
         return render(request, "systems/element_detail_tabs.html", context)
 
 @login_required
+def system_element_remove(request, system_id, element_id):
+    """Remove an element from a system and delete the controls it produces"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+
+        # Retrieve element
+        element = Element.objects.get(id=element_id)
+
+        # Delete the control implementation statements associated with this component
+        result = element.statements_produced.filter(consumer_element=system.root_element).delete()
+
+        # Log result
+        logger.info(
+                event="change_system remove_component",
+                object={"object": "component", "id": element.id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"Removed component '{element.name}' from system.")
+
+    else:
+        # User does not have permission
+        # Log result
+        logger.info(
+                event="change_system remove_component permission_denied",
+                object={"object": "component", "id": element.id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
+
+    response = redirect(reverse('components_selected', args=[system_id]))
+    return response
+
+@login_required
 def new_element(request):
     """Form to create new system element (aka component)"""
 
@@ -732,6 +774,11 @@ def component_library_component(request, element_id):
     # Get the impl_smts contributed by this component to system
     impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
 
+    # Use natsort here to handle the sid that has letters and numbers
+    # (e.g. to put AC-14 after AC-2 whereas before it was putting AC-14 before AC-2)
+    # using the natsort package from pypi: https://pypi.org/project/natsort/
+    impl_smts = natsorted(impl_smts, key=lambda x: x.sid)
+
     if len(impl_smts) < 1:
         context = {
             "element": element,
@@ -748,8 +795,10 @@ def component_library_component(request, element_id):
         oscal_string = None
         opencontrol_string = None
     elif len(impl_smts) > 0:
+
         # TODO: We may have multiple catalogs in this case in the future
         # Retrieve used catalog_key
+
         catalog_key = impl_smts[0].sid_class
         # Retrieve control ids
         catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
@@ -808,9 +857,9 @@ def component_library_component_copy(request, element_id):
     # Retrieve element
     element = Element.objects.get(id=element_id)
     count = Element.objects.filter(uuid=element.uuid).count()
-    
+
     if count > 0:
-        e_copy = element.copy(name=element.name + " copy ("+str(count+1)+')') 
+        e_copy = element.copy(name=element.name + " copy ("+str(count+1)+')')
     else:
         e_copy = element.copy()
 
@@ -894,7 +943,7 @@ def restore_to_history(request, smt_id, history_id):
 
     # Check permission
     raise_404_if_not_permitted_to_statement(request, smt, 'change_system')
-                        
+
     full_smt_history = None
     for query_key in request.POST:
         if "restore" in query_key:

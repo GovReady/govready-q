@@ -211,7 +211,7 @@ class Statement(auto_prefetch.Model):
 class Element(auto_prefetch.Model):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
-    description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=False, null=False)
+    description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=True, null=True)
     element_type = models.CharField(max_length=150, help_text="Component type", unique=False, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)

@@ -7,6 +7,7 @@ siteapp/static
 apps/
 static_root/*
 !static_root/README.md
+branding/
 
 # generated files
 .bash_history
