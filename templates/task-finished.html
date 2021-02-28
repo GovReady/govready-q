@@ -105,7 +105,7 @@
                           {% elif document.format == "xml" %}
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/xml">OSCAL (xml)</a>&nbsp;&nbsp;
                           {% else %}
-                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (docx)</a><button type="button" class="btn-xs btn-primary glyphicon glyphicon-cog" data-toggle="modal" data-target="#projectAssetWordConfig"
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (docx)</a><button id="projectAssetWordConfigButton" type="button" class="btn-xs btn-primary glyphicon glyphicon-cog" data-toggle="modal" data-target="#projectAssetWordConfig"
                                                                                                                                            aria-label="Word (docx) Settings" tooltip="Word (docx) Settings" style="text-align: center; margin-right:10px"></button>
                             {% if gr_pdf_generator == 'wkhtmltopdf' %}<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/pdf">PDF</a>&nbsp;&nbsp;{% endif %}
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/odt">Open Office (odt)</a>&nbsp;&nbsp;
