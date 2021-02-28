@@ -274,6 +274,8 @@
             <table class="table table-hover">
               <thead>
                   <th>Template Name</th>
+                  <th>Filename</th>
+                  <th>Description</th>
                   <th>Created</th>
                   <th>Updated</th>
               </thead>
@@ -288,6 +290,8 @@
                         {%  endif  %}
                       <label for="radio{{ forloop.counter }}">{{ asset.title }} </label>
                     </td>
+                    <td>{{ asset.filename }}</td>
+                    <td style="max-width: 30em;">{{ asset.description }}</td>
                     <td>{{ asset.created }}</td>
                     <td>{{ asset.updated }}</td>
                   </tr>
@@ -298,6 +302,8 @@
 
       </div>
       <div class="modal-footer">
+          <span style="float:left;" class="help-block">To add new templates please contact your Administrator</span>
+{#          <span ><i class="warning"></i></span>#}
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
       </div>
     </div>

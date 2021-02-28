@@ -153,8 +153,8 @@ class SupportAdmin(admin.ModelAdmin):
   fields = ('text', 'email', 'phone', 'url')
 
 class ProjectAssetAdmin(admin.ModelAdmin):
-    list_display = ('uuid', 'asset_type', 'project', 'default', 'title', 'content_hash', 'created', 'updated')
-    readonly_fields = ('content_hash', )
+    list_display = ('uuid', 'asset_type', 'description', 'project', 'default', 'title', 'filename', 'created', 'updated')
+    readonly_fields = ('content_hash', 'filename', )
     ordering = ('project', 'asset_type', 'created')
 
 admin.site.register(User, UserAdmin)

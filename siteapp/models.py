@@ -597,6 +597,17 @@ class Project(models.Model):
         # For debugging.
         return "<Project %d %s>" % (self.id, self.title[0:30])
 
+    def save(self, **kwargs):
+        need_to_add_asset = self.pk is None   # ensures only runs on first Save.
+        project = super().save(**kwargs)
+        if need_to_add_asset:
+            from django.core.files import File
+            ProjectAsset.objects.create(title="System Template", asset_type=AssetTypeEnum.SSP_EXPORT,
+                                        description="Standard template provided by the system",
+                                        file=File(open('assets/system-reference.docx', 'rb')),
+                                        project_id=self.pk)
+        return project
+
     @property
     def title(self):
         if not self.root_task: return "???"
@@ -1421,11 +1432,13 @@ class Support(models.Model):
 
 
 class Asset(models.Model):
-    UPLOAD_TO = None
-    title = models.CharField(max_length=255, help_text="The title of this asset.", unique=True)
+    UPLOAD_TO = None  # Should be overriden when iheritted
+    title = models.CharField(max_length=255, help_text="The title of this asset.")
     asset_type = models.CharField(max_length=150, help_text="Asset type.", unique=False, choices=AssetTypeEnum.choices())
     content_hash = models.CharField(max_length=64,
                                     help_text="A hash of the asset binary content, as provided by the source.")
+    description = models.TextField(blank=True, null=True)
+    filename = models.CharField(max_length=255)
     file = models.FileField(upload_to=UPLOAD_TO, help_text="The attached file.")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -1439,7 +1452,7 @@ class Asset(models.Model):
         return super().save(**kwargs)
 
     class Meta:
-           abstract = True
+        abstract = True
 
 
 class ProjectAssetManager(models.Manager):
@@ -1460,10 +1473,15 @@ class ProjectAsset(Asset):
 
     objects = ProjectAssetManager()
 
+    class Meta:
+        unique_together = ("title", "project")
+
     def __repr__(self):
         return self.title
 
     def save(self, **kwargs):
+        if self.pk is None:  # ensures only runs on first Save.  Otherwise it'll overwrite w/ stores value which is random
+            self.filename = self.file.name.split("/")[-1]
         current_active = ProjectAsset.objects.filter(project_id=self.project_id,
                                                      asset_type=self.asset_type,
                                                      default=True)

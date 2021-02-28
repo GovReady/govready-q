@@ -1294,10 +1294,10 @@ class Task(models.Model):
 
         else:
             # Render to HTML and convert using pandoc.
-            # /assets/custom-reference.docx. We should be able to point to a
+            # /assets/system-reference.docx. We should be able to point to a
             # reference file in a Compliance App.
             template = self.project.assets.get_default(asset_type=AssetTypeEnum.SSP_EXPORT,
-                                                       default_if_not_exist="assets/custom-reference.docx")
+                                                       default_if_not_exist="assets/system-reference.docx")
             # odt and some other formats cannot pipe to stdout, so we always
             # generate a temporary file.
             import tempfile, os.path, subprocess # nosec
