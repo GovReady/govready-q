@@ -16,6 +16,7 @@ v999 (February XX, 2021)
 **Developer changes**
 
 * Move inclusion of `edit-component-modal.html` from `base.html` to `components/element_detail_tabs.html`.
+* Fix sort control order in `component_library_component` on the `components/element_detail_tabs.html` using the `natsort` package to sort SID correctly.
 
 **Data changes**
 

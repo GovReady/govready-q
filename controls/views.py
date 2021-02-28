@@ -764,7 +764,6 @@ def new_element(request):
         'form': form,
     })
 
-
 def component_library_component(request, element_id):
     """Display certified component's element detail view"""
 
@@ -773,12 +772,11 @@ def component_library_component(request, element_id):
 
     # Retrieve impl_smts produced by element and consumed by system
     # Get the impl_smts contributed by this component to system
-
-
     impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
-    #we need to use natsort here to handle the sid that has letters and numbers. (e.g. to put AC-14 after AC-2 whereas before it was putting AC-14 before AC-2)
-    #using the natsort package from pypi: https://pypi.org/project/natsort/
 
+    # Use natsort here to handle the sid that has letters and numbers
+    # (e.g. to put AC-14 after AC-2 whereas before it was putting AC-14 before AC-2)
+    # using the natsort package from pypi: https://pypi.org/project/natsort/
     impl_smts = natsorted(impl_smts, key=lambda x: x.sid)
 
     if len(impl_smts) < 1:
@@ -797,7 +795,6 @@ def component_library_component(request, element_id):
         oscal_string = None
         opencontrol_string = None
     elif len(impl_smts) > 0:
-
 
         # TODO: We may have multiple catalogs in this case in the future
         # Retrieve used catalog_key
