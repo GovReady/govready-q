@@ -43,7 +43,7 @@ from structlog.stdlib import LoggerFactory
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
-
+from natsort import natsorted
 
 def index(request):
     """Index page for controls"""
@@ -778,6 +778,11 @@ def component_library_component(request, element_id):
     # Get the impl_smts contributed by this component to system
     impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
 
+    # Use natsort here to handle the sid that has letters and numbers
+    # (e.g. to put AC-14 after AC-2 whereas before it was putting AC-14 before AC-2)
+    # using the natsort package from pypi: https://pypi.org/project/natsort/
+    impl_smts = natsorted(impl_smts, key=lambda x: x.sid)
+
     if len(impl_smts) < 1:
         context = {
             "element": element,
@@ -794,8 +799,10 @@ def component_library_component(request, element_id):
         oscal_string = None
         opencontrol_string = None
     elif len(impl_smts) > 0:
+
         # TODO: We may have multiple catalogs in this case in the future
         # Retrieve used catalog_key
+
         catalog_key = impl_smts[0].sid_class
         # Retrieve control ids
         catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
