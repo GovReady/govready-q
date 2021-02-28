@@ -80,6 +80,11 @@ class ElementForm(ModelForm):
             raise ValidationError("Component (aka Element) name {} not available.".format(cd['name']))
         return cd
 
+class ElementEditForm(ModelForm):
+
+    class Meta:
+        model = Element
+        fields = ['id', 'name', 'description']
 class ImportOSCALComponentForm(forms.Form):
 
     file = forms.FileField(label="Select OSCAL file (.json)",
