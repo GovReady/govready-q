@@ -10,6 +10,8 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
 from simple_history.models import HistoricalRecords
 from jsonfield import JSONField
 from natsort import natsorted
+
+from siteapp.model_mixins.tags import TagModelMixin
 from .oscal import Catalogs, Catalog
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
@@ -208,7 +210,7 @@ class Statement(auto_prefetch.Model):
     def oscal_statement_id(self):
         return Statement._statement_id_from_control(self.sid, self.pid)
 
-class Element(auto_prefetch.Model):
+class Element(auto_prefetch.Model, TagModelMixin):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
     description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=True, null=True)

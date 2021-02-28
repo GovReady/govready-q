@@ -29,7 +29,8 @@ from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidati
 from urllib.parse import quote
 from guidedmodules.models import Task, Module, AppVersion, AppSource
 from siteapp.forms import ProjectForm
-from siteapp.models import Project
+from siteapp.model_mixins.tags import TagView
+from siteapp.models import Project, Tag
 from system_settings.models import SystemSettings
 from .forms import ImportOSCALComponentForm
 from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm

@@ -2,6 +2,10 @@ from django.conf.urls import include, url
 
 from django.contrib import admin
 from django.conf import settings
+
+from controls.models import Element
+from siteapp.model_mixins.tags import TagView, build_tag_urls
+
 admin.autodiscover()
 
 from django.views.decorators.csrf import csrf_exempt
@@ -77,6 +81,7 @@ urlpatterns = [
 
     # Elements
     url(r'^elements/(\d+)/__edit$', views.edit_element, name="edit_element"),
+    *build_tag_urls(r"^elements/(\d+)/", model=Element),  # Tag Urls
 
     # Controls
     url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)', views.group, name="control_group"),
