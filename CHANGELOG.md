@@ -4,9 +4,19 @@ GovReady-Q Release Notes
 v999 (February XX, 2021)
 ------------------------
 
+**Feature changes**
+
+* Remove a component and its statements from a system.
+
+**UI changes**
+
+* Add a button to system selected component page to remove a component from the system.
+* Moved "Add a component" to a system drop down to top of selected component page.
+
 **Developer changes**
 
-* Avoid name collissions when cloning a component.
+* Move inclusion of `edit-component-modal.html` from `base.html` to `components/element_detail_tabs.html`.
+* Fix sort control order in `component_library_component` on the `components/element_detail_tabs.html` using the `natsort` package to sort SID correctly.
 
 **Data changes**
 
