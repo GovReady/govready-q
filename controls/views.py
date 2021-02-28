@@ -29,9 +29,9 @@ from guidedmodules.models import Task, Module, AppVersion, AppSource
 from siteapp.forms import ProjectForm
 from siteapp.models import Project
 from system_settings.models import SystemSettings
-# from .forms import ImportOSCALComponentForm
-# from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
-from .forms import *
+from .forms import ImportOSCALComponentForm
+from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
+from .forms import ElementEditForm
 from .models import *
 from .utilities import *
 from simple_history.utils import update_change_reason
@@ -212,33 +212,37 @@ def controls_updated(request, system_id):
         # User does not have permission to this system
         raise Http404
 
-def rename_element(request,element_id):
-    """Update the component's name
+
+@login_required
+def edit_element(request, element_id):
+    """
+      Edit Element information as long as the name does not clash with a different element name
     Args:
         request ([HttpRequest]): The network request
     component_id ([int|str]): The id of the component
     Returns:
         [JsonResponse]: Either a ok status or an error
     """
-    try:
+
+    # The original element(component)
+    ele_instance = get_object_or_404(Element, id=element_id)
+
+    if request.method == 'POST':
         new_name = request.POST.get("name", "").strip() or None
-        new_description = request.POST.get("description", "").strip() or None
 
-        if Element.objects.filter(name=new_name).exists() is True:
-            return JsonResponse({ "status": "err", "message": "Name already in use"})
+        # Check if the new component name is already in use and if the new name is different from the current name
+        if Element.objects.filter(name__iexact=new_name).exists() and new_name != ele_instance.name:
+            return JsonResponse({"status": "err", "message": "Name already in use"})
 
-        element = get_object_or_404(Element, id=element_id)
-        element.name = new_name
-        element.description = new_description
-        element.save()
-        logger.info(
-            event="rename_element",
-            element={"id": element.id, "new_name": new_name, "new_description": new_description}
-        )
-        return JsonResponse({ "status": "ok" })
-    except:
-        import sys
-        return JsonResponse({ "status": "err", "message": sys.exc_info() })
+        form = ElementEditForm(request.POST or None, instance=ele_instance)
+        if form.is_valid():
+            logger.info(
+                event="edit_element",
+                object={"object": "element", "id": form.instance.id, "name": form.instance.name},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            form.save()
+            return JsonResponse({"status": "ok"})
 
 class SelectedComponentsList(ListView):
     """
@@ -732,7 +736,7 @@ def system_element_remove(request, system_id, element_id):
         # Log result
         logger.info(
                 event="change_system remove_component permission_denied",
-                object={"object": "component", "id": element.id},
+                object={"object": "component", "id": element_id},
                 user={"id": request.user.id, "username": request.user.username}
                 )
 
@@ -1692,7 +1696,7 @@ def update_smt_prototype(request):
         statement = get_object_or_404(Statement, pk=form_values['smt_id'])
 
         # Check permission
-        raise_404_if_not_permitted_to_modify_statement(request, statement)
+        raise_404_if_not_permitted_to_statement(request, statement)
 
         if statement is None:
             statement_msg = "The id for this statement is no longer valid in the database."
@@ -2587,7 +2591,7 @@ def project_import(request, project_id):
     if request.method == 'POST':
         project_data = request.POST['json_content']
         # Need to get or create the app source by the id of the given app source
-        module_name = json.loads(project_data).get('project').get('module').get('key')
+        #module_name = json.loads(project_data).get('project').get('module').get('key')
         title = json.loads(project_data).get('project').get('title')
         system_root_element.name = title
         importcheck = False
@@ -2666,7 +2670,6 @@ def project_import(request, project_id):
                                            risk_rating_original = poam.get('risk_rating_original'), scheduled_completion_date = poam.get('scheduled_completion_date'),
                                            weakness_detection_source = poam.get('weakness_detection_source'), weakness_name = poam.get('weakness_name'),
                                            weakness_source_identifier = poam.get('weakness_source_identifier'), poam_group = poam.get('poam_group'))
-                poam.save()
                 poam_num += 1
                 logger.info(
                     event="Poam import",
