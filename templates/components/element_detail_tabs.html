@@ -148,7 +148,18 @@
 
       <!-- Tab panel: component_controls -->
       <div role="tabpanel" class="tab-pane" id="component_controls">
-        <div id="control-description" class="control-text"><h3>Component Implementation Statements</h3></div>
+          <form action="{% url 'component_library_component' element_id=element.id %}" method="GET">
+                <div class="form-inline pull-right create-nav">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">search</div>
+                            <input name="search" value="{{ request.GET.search }}" type="text" placeholder="Search by control">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        <div id="control-description" class="control-text"><h3>Component Implementation Statements</h3>
+        </div>
           <div id="smt-list" class="" style="width: 90%">
             <!-- Loop through existing component-control statements -->
             {% for smt in impl_smts %}
@@ -225,7 +236,7 @@
       <div role="tabpanel" class="tab-pane" id="oscal">
         <p id="oscal_download" class="navbar-text navbar-right">
           <a id="oscal_download_json_link"
-             class="navbar-link" 
+             class="navbar-link"
              href={% url 'system_element_download_oscal_json' system_id=system.id element_id=element.id %}>
             <span class="glyphicon glyphicon-download"></span>
             Download ...
@@ -396,14 +407,12 @@
             indicator_parent: $('#page-content'),
             keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
             success: function(res) {
-              console.log('success');
-              console.log(res);
+
               if (res['status'] == "success") {
                 // Update field values from saved
                 // Initially update a few fields
                 smt_saved = JSON.parse(res['statement']);
-                console.log("printing smt_saved");
-                console.log(smt_saved);
+
                 $( '#'+smt_panel_num+' input[name=smt_id]' ).val(smt_saved[0]['pk']);
 
                 // If saving first time remove producer_element_name input field
@@ -415,24 +424,19 @@
                 $( '#'+smt_panel_num.replace("smt_","panel-")+' .panel-heading-smt-body' ).html(smt_saved[0]['fields']['body']);
 
                 $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
-                $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
                 // Update combined statement
-                if (typeof update_combined_smt === "function") { 
+                if (typeof update_combined_smt === "function") {
                   update_combined_smt();
                 }
-              } else {
-                $('#success-msg-'+smt_panel_num).fadeIn().text('Error '+res['message']);
               }
-              setTimeout(function() {
-                $('#success-msg-'+smt_panel_num).fadeOut("fast");
-              }, 1000 );
+              location.reload(); // reload the page
             }
           });
 
           // Stop <form> submit
           return false;
 
-        }; // /save_smt
+        };
 
         function delete_smt(smt_panel_num) {
           console.log("Deleting statement button pressed "+smt_panel_num);
