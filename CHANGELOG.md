@@ -4,6 +4,10 @@ GovReady-Q Release Notes
 v999 (February XX, 2021)
 ------------------------
 
+**Developer changes**
+
+* Created a ElementEditForm Django form in conjunction with some functional changes to avoid name collisions issues with component library.
+
 **Feature changes**
 
 * Remove a component and its statements from a system.
@@ -49,7 +53,6 @@ Project page displays mini-dashboard of compliance stats.
 * Properly restrict statement history access to users with system, staff, or admin permissions.
 * Avoid name collisions when cloning a component.
 * Replaced function-based views with class-based listview for SelectedComponentsList, ProjectList.
-* Avoid name collisions when cloning a component.
 * Default to not use Django Debug Toolbar. Added new `enable_tool_bar` parameter option for `local/environment.json` to allow users to enable(True) or disable(False) the Django Debug Toolbar.
 * Adding DummyCache to prevent real caching while running automated tests.
 * Refactored use of random package to use secure secrets module.
