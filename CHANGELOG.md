@@ -14,8 +14,11 @@ v999 (February XX, 2021)
 
 **UI changes**
 
-* Add a button to system selected component page to remove a component from the system.
+* Added a button to system selected component page to remove a component from the system.
 * Moved "Add a component" to a system drop down to top of selected component page.
+* Added a search text box for each searching of components in the library and their statements.
+* Added pagnation to the component library and their statements.
+* Added a reset button for explicit resetting of component search.
 
 **Developer changes**
 
