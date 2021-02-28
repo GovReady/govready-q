@@ -8,7 +8,6 @@ v999 (February XX, 2021)
 
 * Created a ElementEditForm Django form in conjunction with some functional changes to avoid name collisions issues with component library.
 
-
 **Feature changes**
 
 * Remove a component and its statements from a system.
