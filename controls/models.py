@@ -8,7 +8,7 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_users_with_perms, remove_perm)
 from simple_history.models import HistoricalRecords
 from jsonfield import JSONField
-
+from natsort import natsorted
 from .oscal import Catalogs, Catalog
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
@@ -321,6 +321,9 @@ class Element(models.Model):
         """Return array of selectecd controls oscal ids"""
         # oscal_ids = self.controls.all()
         oscal_ctl_ids = [control.oscal_ctl_id for control in self.controls.all()]
+        # Sort
+        oscal_ctl_ids = natsorted(oscal_ctl_ids, key=str.casefold)
+
         return oscal_ctl_ids
 
 class ElementControl(models.Model):
@@ -369,6 +372,8 @@ class ElementControl(models.Model):
         return "'%s id=%d'" % (self.oscal_ctl_id, self.id)
 
     def get_controls_by_element(self, element):
+
+        # TODO: Is this method being used? Can it be deleted?
         query_set = self.objects.filter(element=element)
         selected_controls = {}
         for cl in query_set:
@@ -376,6 +381,9 @@ class ElementControl(models.Model):
                                                      'oscal_catalog_key': cl['oscal_catalog_key'],
                                                      'uuid': cl['uuid']
                                                      }
+        # Sort
+        selected_controls = natsorted(selected_controls, key=lambda x: x.oscal_ctl_id.casefold)
+
         return selected_controls
 
     def get_flattened_oscal_control_as_dict(self):
