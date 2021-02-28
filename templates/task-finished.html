@@ -329,8 +329,6 @@
         $(':radio', this).trigger('click');
         var tmp = $('input[name="projectAssets"]:checked')[0].id.split('-');
         var selectedAsset = tmp[1];
-        console.log(selectedAsset);
-        console.log("/projects/{{ project.id }}/assets/" + selectedAsset + '/__update')
         ajax_with_indicator({
             url: "/projects/{{ project.id }}/assets/" + selectedAsset + '/__update',
             data: {

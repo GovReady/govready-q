@@ -576,8 +576,6 @@ class Project(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
-    configuration = JSONField(blank=True, help_text="Project configuration.")
-    # default reference document for docx - use to store the default doc
 
     version = models.CharField(max_length=32, unique=False, blank=True, null=True,
                                help_text="Project's version identifier")
@@ -1444,7 +1442,7 @@ class Asset(models.Model):
            abstract = True
 
 
-class ProjectAssetQuerySet(models.Manager):
+class ProjectAssetManager(models.Manager):
     use_for_related_fields = True
 
     def get_default(self, asset_type, default_if_not_exist=None):
@@ -1460,7 +1458,7 @@ class ProjectAsset(Asset):
     project = models.ForeignKey(Project, related_name="assets", on_delete=models.CASCADE)
     default = models.BooleanField(default=False)
 
-    objects = ProjectAssetQuerySet()
+    objects = ProjectAssetManager()
 
     def __repr__(self):
         return self.title
