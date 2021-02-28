@@ -24,6 +24,7 @@ v999 (February XX, 2021)
 
 * Move inclusion of `edit-component-modal.html` from `base.html` to `components/element_detail_tabs.html`.
 * Fix sort control order in `component_library_component` on the `components/element_detail_tabs.html` using the `natsort` package to sort SID correctly.
+* Comment out `controls.models.ElementControl.get_controls_by_element` method because it is not being used. Will delete after a few releases if not needed.
 
 **Data changes**
 
