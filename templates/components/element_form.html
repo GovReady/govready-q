@@ -18,7 +18,7 @@ Create System Element (a.k.a. Component)
             <div class="well">
                 <form method="post">
                     {% csrf_token %}
-                    <input type=hidden name=action value=neworg>
+                    <input type=hidden name=action value=newele>
                     {% bootstrap_form form %}
                     <p><button type="submit" id="create-portfolio-button" class="btn btn-success">Create &raquo;</button></p>
                 </form>
