@@ -10,13 +10,18 @@
 
 {% block head %}
     {% include "controls/_style-controls.html" %}
+    <style>
+        .pagination {
+            text-align: right;
+            margin: 0px;
+        }
+    </style>
 
 {% endblock %}
 
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-
 
     <div class="portfolio-top">
         <div class="container">
@@ -49,7 +54,8 @@
 
             <div id="tab-content" class="row rows-header">
                 <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span style="font-size: 14pt; font-weight: bold;">Available Components</span></div>
-                <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 pull-right"><span>{% include 'components/paginate_comp.html' %}</span></div>
+                <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">&nbsp;</div>
+                <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4"><span>{% include 'components/paginate_comp.html' %}</span></div>
             </div>
             {% for component in page_obj %}
                 <div id="tab-content" class="row row-control" style="">
