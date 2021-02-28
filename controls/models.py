@@ -9,7 +9,7 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_users_with_perms, remove_perm)
 from simple_history.models import HistoricalRecords
 from jsonfield import JSONField
-
+from natsort import natsorted
 from .oscal import Catalogs, Catalog
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
@@ -322,6 +322,9 @@ class Element(auto_prefetch.Model):
         """Return array of selectecd controls oscal ids"""
         # oscal_ids = self.controls.all()
         oscal_ctl_ids = [control.oscal_ctl_id for control in self.controls.all()]
+        # Sort
+        oscal_ctl_ids = natsorted(oscal_ctl_ids, key=str.casefold)
+
         return oscal_ctl_ids
 
 class ElementControl(auto_prefetch.Model):
@@ -369,15 +372,22 @@ class ElementControl(auto_prefetch.Model):
         # For debugging.
         return "'%s id=%d'" % (self.oscal_ctl_id, self.id)
 
-    def get_controls_by_element(self, element):
-        query_set = self.objects.filter(element=element)
-        selected_controls = {}
-        for cl in query_set:
-            selected_controls[cl['oscal_ctl_id']] = {'oscal_ctl_id': cl['oscal_ctl_id'],
-                                                     'oscal_catalog_key': cl['oscal_catalog_key'],
-                                                     'uuid': cl['uuid']
-                                                     }
-        return selected_controls
+    # Commenting out get_controls_by_element in 0.9.1.53+ because it does
+    # not appear to be used in the code base.
+    # def get_controls_by_element(self, element):
+
+    #     # TODO: Is this method being used? Can it be deleted?
+    #     query_set = self.objects.filter(element=element)
+    #     selected_controls = {}
+    #     for cl in query_set:
+    #         selected_controls[cl['oscal_ctl_id']] = {'oscal_ctl_id': cl['oscal_ctl_id'],
+    #                                                  'oscal_catalog_key': cl['oscal_catalog_key'],
+    #                                                  'uuid': cl['uuid']
+    #                                                  }
+    #     # Sort
+    #     selected_controls = natsorted(selected_controls, key=lambda x: x.oscal_ctl_id.casefold)
+
+    #     return selected_controls
 
     def get_flattened_oscal_control_as_dict(self):
         cg = Catalog.GetInstance(catalog_key=self.oscal_catalog_key)

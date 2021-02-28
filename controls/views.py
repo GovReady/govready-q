@@ -7,11 +7,13 @@ from uuid import uuid4
 import rtyaml
 import shutil
 import operator
+from natsort import natsorted
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError
 from django.db.models.functions import Lower
@@ -43,7 +45,7 @@ from structlog.stdlib import LoggerFactory
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
-from natsort import natsorted
+
 
 def index(request):
     """Index page for controls"""
@@ -283,9 +285,31 @@ class SelectedComponentsList(ListView):
 def component_library(request):
     """Display the library of components"""
 
+    query = request.GET.get('search')
+    if query:
+        element_list = Element.objects.filter(name__icontains=query).exclude(element_type='system')
+    else:
+        element_list = Element.objects.all().exclude(element_type='system')
+
+    # Natural sorting on name
+    element_list = natsorted(element_list, key=lambda x: x.name)
+
+    # Pagination
+    ele_paginator = Paginator(element_list, 15)
+    page_number = request.GET.get('page')
+
+    try:
+        page_obj = ele_paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = ele_paginator.page(1)
+    except EmptyPage:
+        page_obj = ele_paginator.page(ele_paginator.num_pages)
+
+
     context = {
-        "elements": Element.objects.all().exclude(element_type='system').order_by('name'),
+        "page_obj": page_obj,
         "import_form": ImportOSCALComponentForm(),
+        "total_comps": Element.objects.exclude(element_type='system').count()
     }
 
     return render(request, "components/component_library.html", context)
@@ -773,15 +797,14 @@ def component_library_component(request, element_id):
 
     # Retrieve element
     element = Element.objects.get(id=element_id)
+    smt_query = request.GET.get('search')
 
-    # Retrieve impl_smts produced by element and consumed by system
-    # Get the impl_smts contributed by this component to system
-    impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
-
-    # Use natsort here to handle the sid that has letters and numbers
-    # (e.g. to put AC-14 after AC-2 whereas before it was putting AC-14 before AC-2)
-    # using the natsort package from pypi: https://pypi.org/project/natsort/
-    impl_smts = natsorted(impl_smts, key=lambda x: x.sid)
+    if smt_query:
+        impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type="control_implementation_prototype")
+    else:
+        # Retrieve impl_smts produced by element and consumed by system
+        # Get the impl_smts contributed by this component to system
+        impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
 
     if len(impl_smts) < 1:
         context = {
@@ -799,16 +822,19 @@ def component_library_component(request, element_id):
         oscal_string = None
         opencontrol_string = None
     elif len(impl_smts) > 0:
-
         # TODO: We may have multiple catalogs in this case in the future
         # Retrieve used catalog_key
-
         catalog_key = impl_smts[0].sid_class
         # Retrieve control ids
         catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
         # Build OSCAL and OpenControl
         oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
         opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+
+    # Use natsort here to handle the sid that has letters and numbers
+    # (e.g. to put AC-14 after AC-2 whereas before it was putting AC-14 before AC-2)
+    # using the natsort package from pypi: https://pypi.org/project/natsort/
+    impl_smts = natsorted(impl_smts, key=lambda x: x.sid)
 
     # Return the system's element information
     context = {
@@ -1546,10 +1572,11 @@ def save_smt(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
+        smt_id = form_values['smt_id']
         # Updating or saving a new statement?
-        if len(form_values['smt_id']) > 0:
+        if len(smt_id) > 0:
             # Look up existing Statement object
-            statement = Statement.objects.get(pk=form_values['smt_id'])
+            statement = Statement.objects.get(pk=smt_id)
 
             # Check user permissions
             system = statement.consumer_element
@@ -1639,11 +1666,12 @@ def save_smt(request):
                 statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
                 return JsonResponse({"status": "error", "message": statement_msg})
 
+        messages.add_message(request, messages.INFO, f"Statement {smt_id} Saved")
         # Retain only prototype statement if statement is created in the component library
         # A statement of type `control_implementation` should only exists if associated a consumer_element.
         # When the statement is created in the component library, no consuming_element will exist.
         # TODO
-        # - Delete the statement that created the statement prototyp
+        # - Delete the statement that created the statement prototype
         # - Skip the associating the statement with the system's root_element because we do not have a system identified
         statement_del_msg = ""
         if "form_source" in form_values and form_values['form_source'] == 'component_library':
@@ -1692,8 +1720,8 @@ def update_smt_prototype(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
-
-        statement = get_object_or_404(Statement, pk=form_values['smt_id'])
+        smt_id = form_values['smt_id']
+        statement = get_object_or_404(Statement, pk=smt_id)
 
         # Check permission
         raise_404_if_not_permitted_to_statement(request, statement)
@@ -1757,7 +1785,7 @@ def delete_smt(request):
             form_values[key] = form_dict[key][0]
 
         # Delete statement?
-        statement = Statement.objects.get(pk=form_values['smt_id'])
+        statement = Statement.objects.get(pk=smt_id)
 
         # Check user permissions
         system = statement.consumer_element

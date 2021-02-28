@@ -149,7 +149,7 @@
       <div role="tabpanel" class="tab-pane active" id="component_controls">
 
         <div class="row">
-          <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10 description-text">
+          <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8 description-text">
             <h3>Component Description</h3>
             {% if element.description %}
               {{ element.description }}
@@ -157,8 +157,25 @@
               No description exists for this component.
             {% endif %}
           </div>
-          <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-            <div><h3><a id="copy_component" class="btn btn-sm btn-success" href={% url 'component_library_component_copy' element_id=element.id %} role="button" style="color: white;">Copy component</a></h3></div>
+          <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+            <div style="margin: 0px 12px 0px 0px;">
+              <h3><a id="copy_component" class="btn btn-sm btn-success pull-right" href={% url 'component_library_component_copy' element_id=element.id %} role="button" style="color: white;">Copy component</a></h3></div>
+
+            <!-- Search/Filter form -->
+            <div id="search-form-container" class="pull-right" style="margin: 12px 12px 0px 0px;">
+              <form action="{% url 'component_library_component' element_id=element.id %}" method="GET">
+                  <div class="form-inline pull-right create-nav">
+                      <a id="search-reset" href="{% url 'component_library_component' element_id=element.id %}" class="btn btn-danger btn-xs">Reset</a>
+                      <div class="form-group">
+                          <div class="input-group">
+                              <div class="input-group-addon">search</div>
+                              <input name="search" value="{{ request.GET.search }}" type="text" placeholder="Search by control">
+                          </div>
+                      </div>
+                  </div>
+              </form>
+            </div>
+
           </div>
         </div>
 
@@ -197,7 +214,7 @@
                       <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                         &nbsp;
                       </div>
-                      <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
+                      <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block"><div> 
 
                         <form id="smt_{{ forloop.counter }}" class="smt_form">
                           <!-- Never change name of the producer element already associated with a statement -->
@@ -252,19 +269,23 @@
                       </div>
                     </div>
 
-
                   </div>
+                  <div>Here6</div>
                 </div>
               </div>
             </div>
+          </div>
+
             {% endfor %}
           </div><!--/smt-list-->
         <div>
           <button type="submit" id="new_component_statement" class="small btn btn-xs btn-success" style="color: white;" onclick="add_smt()">Add component statement</button>
         </div>
+
+
       </div>
 
-      <!-- Tab panel: combined -->
+        <!-- Tab panel: combined -->
       <div role="tabpanel" class="tab-pane" id="oscal">
         <p id="oscal_download" class="navbar-text navbar-right">
           <a id="oscal_download_json_link"
@@ -465,14 +486,12 @@
             indicator_parent: $('#page-content'),
             keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
             success: function(res) {
-              console.log('success');
-              console.log(res);
+
               if (res['status'] == "success") {
                 // Update field values from saved
                 // Initially update a few fields
                 smt_saved = JSON.parse(res['statement']);
-                console.log("printing smt_saved");
-                console.log(smt_saved);
+
                 $( '#'+smt_panel_num+' input[name=smt_id]' ).val(smt_saved[0]['pk']);
 
                 // If saving first time remove producer_element_name input field
@@ -484,17 +503,12 @@
                 $( '#'+smt_panel_num.replace("smt_","panel-")+' .panel-heading-smt-body' ).html(smt_saved[0]['fields']['body']);
 
                 $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
-                $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
                 // Update combined statement
                 if (typeof update_combined_smt === "function") {
                   update_combined_smt();
                 }
-              } else {
-                $('#success-msg-'+smt_panel_num).fadeIn().text('Error '+res['message']);
               }
-              setTimeout(function() {
-                $('#success-msg-'+smt_panel_num).fadeOut("fast");
-              }, 1000 );
+              location.reload(); // reload the page
             }
           });
 

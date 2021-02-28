@@ -362,4 +362,4 @@ class Catalog (object):
     
     def get_parameter_ids_for_control(self, control_id):
         return self.parameters_by_control.get(control_id, [])
-    
+
