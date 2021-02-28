@@ -43,7 +43,7 @@ from structlog.stdlib import LoggerFactory
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
-from natsort import natsorted, ns
+from natsort import natsorted
 
 def index(request):
     """Index page for controls"""
