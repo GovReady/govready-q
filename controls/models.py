@@ -371,20 +371,22 @@ class ElementControl(models.Model):
         # For debugging.
         return "'%s id=%d'" % (self.oscal_ctl_id, self.id)
 
-    def get_controls_by_element(self, element):
+    # Commenting out get_controls_by_element in 0.9.1.53+ because it does
+    # not appear to be used in the code base.
+    # def get_controls_by_element(self, element):
 
-        # TODO: Is this method being used? Can it be deleted?
-        query_set = self.objects.filter(element=element)
-        selected_controls = {}
-        for cl in query_set:
-            selected_controls[cl['oscal_ctl_id']] = {'oscal_ctl_id': cl['oscal_ctl_id'],
-                                                     'oscal_catalog_key': cl['oscal_catalog_key'],
-                                                     'uuid': cl['uuid']
-                                                     }
-        # Sort
-        selected_controls = natsorted(selected_controls, key=lambda x: x.oscal_ctl_id.casefold)
+    #     # TODO: Is this method being used? Can it be deleted?
+    #     query_set = self.objects.filter(element=element)
+    #     selected_controls = {}
+    #     for cl in query_set:
+    #         selected_controls[cl['oscal_ctl_id']] = {'oscal_ctl_id': cl['oscal_ctl_id'],
+    #                                                  'oscal_catalog_key': cl['oscal_catalog_key'],
+    #                                                  'uuid': cl['uuid']
+    #                                                  }
+    #     # Sort
+    #     selected_controls = natsorted(selected_controls, key=lambda x: x.oscal_ctl_id.casefold)
 
-        return selected_controls
+    #     return selected_controls
 
     def get_flattened_oscal_control_as_dict(self):
         cg = Catalog.GetInstance(catalog_key=self.oscal_catalog_key)
