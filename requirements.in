@@ -9,6 +9,7 @@ Jinja2 # BSD License
 
 # Less Common Python Packages
 html5lib # MIT License
+natsort # MIT License
 commonmark # BSD License
 # commonmark>=0.9 (e.g., 0.9.1 tested)  for Python 3.9 compatibility:
 #   html.unescape <- html.parser.HTMLParser.unescape dropped in Python 3.9:
