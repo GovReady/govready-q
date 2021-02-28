@@ -28,6 +28,3 @@ class BaseEnum(enum.Enum):
     def choices(cls):
         return tuple((i.name, i.value) for i in cls)
 
-    @classmethod
-    def get_random(cls):
-        return random.choice(cls.get_names())
