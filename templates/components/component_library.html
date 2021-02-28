@@ -35,11 +35,12 @@
 
             <form action="{% url 'component_library' %}" method="GET">
                 <div class="form-inline pull-right create-nav">
+                    <a id="search-reset" href="{% url 'component_library' %}" class="btn btn-danger">Reset</a>
                     <div class="form-group">
                         <div class="input-group">
                             <div class="input-group-addon">search</div>
                             <input name="search" value="{{ request.GET.search }}" type="text" placeholder="Search for components">
-                        </div>
+                         </div>
                     </div>
                 </div>
             </form>
