@@ -1,4 +1,4 @@
-2# This module defines a SeleniumTest class that is used here and in
+# This module defines a SeleniumTest class that is used here and in
 # the discussion app to run Selenium and Chrome-based functional/integration
 # testing.
 #
