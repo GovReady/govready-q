@@ -47,6 +47,7 @@ Project page displays mini-dashboard of compliance stats.
 
 * Add System Assessment Report tracking to associate assessments and evidence with the system.
 * Add initial dynamic status information to the project page.
+* Use default catalog parameters to set default control catalog and baseline.
 
 **UI changes**
 
@@ -57,6 +58,7 @@ Project page displays mini-dashboard of compliance stats.
     * Number of POA&Ms.
     * Count of system components.
     * Approximate overall compliance based on controls implemented / count of controls.
+* Project mini-dashboard now reports controls "addressed" instead of implemented and "% compliance (unassessed)" which uses the number of controls that have at least one statement. This is more accurate representation than saying definitely which control has been assessed as implemented. Will show that in future dashboard items.
 
 **Developer changes**
 
@@ -68,6 +70,7 @@ Project page displays mini-dashboard of compliance stats.
 * Refactored use of random package to use secure secrets module.
 * Added minor pylint fixes.
 * Added the ability to import and export Poams along with the project import/export.
+* GovReady will now read compliance app catalog.parameters.catalog_key and catalog.parameters.baseline values to set the selected controls for a system.
 * Load sample/default components into component library during installation to provide users with starting set of components.
 
 v0.9.1.51 (February 03, 2021)

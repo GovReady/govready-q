@@ -1,0 +1,17 @@
+id: irp_doc
+title: Incident Response Plan (Document)
+
+introduction:
+  format: markdown
+  template: |
+    Incident Response Plan Document
+
+questions:
+- id: q1
+  title: Overview
+  prompt: |
+    We've prepared an Incident Response Plan based on the answers you provided.
+  type: interstitial
+
+output:
+- templates/irp_printable.md

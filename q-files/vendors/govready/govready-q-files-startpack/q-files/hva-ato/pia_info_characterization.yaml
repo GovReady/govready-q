@@ -1,0 +1,179 @@
+id: pia_info_characterization
+title: Privacy Impact Assessment (Characterization of Information)
+
+questions:
+
+- id: q1
+  title: Information Description
+  prompt: |
+    Identify the information the project collects, uses, disseminates, or maintains.
+
+    Identify (1) the categories of individuals for whom information is
+    collected, and (2) for each category, list all information, including PII, that is
+    collected and stored by the project.
+  examples:
+  - example: |
+      The could include name, date of birth, mailing
+      address, telephone number, social security number, e-mail address, zip code,
+      facsimile number, mother’s maiden name, medical record number, bank account
+      number, health plan beneficiary number, any other account numbers,
+      certificate/license number, vehicle identifier including license plate, marriage
+      record, civil or criminal history information, medical records, device identifiers
+      and serial numbers, education record, biometric identifiers, photographic facial
+      image, or any other unique identifying number or characteristic
+
+  type: longtext
+
+- id: q2
+  title: New Information Created?
+  prompt: |
+    Does your system create new information?
+
+    For example, a score, analysis, or report.
+  type: yesno
+
+- id: information_created
+  title: New Information, Description
+  prompt: |
+    Describe how new informaiton is created and the purpose of that information.
+  type: longtext
+  impute:
+  - condition: q2 == 'no'
+    value: ~
+
+- id: q3
+  title: Information from Other System?
+  prompt: |
+    Does the project receive information from another system?
+
+    For example, a background check.
+  type: yesno
+
+- id: information_connected
+  title: Information from Other System, Description
+  prompt: |
+    Describe the system from which the information originates, including what information is returned and how it is used.
+  type: longtext
+  impute:
+  - condition: q3 == 'no'
+    value: ~z
+
+- id: q4
+  title: Information Sources
+  prompt: |
+    What are the sources of the information and how is the information collected for the project?
+
+    A project may collect information directly from an individual, receive it
+    via computer readable extract from another system, or create the information
+    itself.
+
+    If information is being collected from sources other than the individual,
+    including other IT systems, systems of records, commercial data aggregators, 
+    and/or other Departments, state the source(s) and explain why information from
+    sources other than the individual is required.
+
+  type: longtext
+
+- id: q5
+  title: Commercial and Public Information
+  prompt: |
+    Does the project receive commercial or publicly available information?
+
+    Commercial data includes information from data aggregators such as
+    Choice Point or Lexis Nexis, where the information was originally collected by a
+    private organization for non-governmental purposes, such as marketing or credit
+    reporting.
+
+    Publicly available data includes information obtained from the internet,
+    news feeds, or from state or local public records, such as court records where the
+    records are received directly from the state or local agency, rather than from a
+    commercial data aggregator. 
+
+  type: yesno
+
+- id: commercial_public_info
+  title: Commcerical and Public Information, Description
+  prompt: |
+    Describe why and how the commercial and/or public information is being used.
+  examples:
+  - example: |
+      The commercial data is used as a primary source of information
+      regarding the individual. Alternatively, the commercial data is used to verify
+      information already provided by or about the individual.
+  type: longtext
+  impute:
+  - condition: q5 == 'no'
+    value: ~z
+
+- id: q6
+  title: Information Accuracy
+  prompt: |
+    Explain how the project checks the accuracy of the information and 
+    describe the process used for checking accuracy. 
+
+    If a commercial data
+    aggregator is involved describe the levels of accuracy required by the contract.
+    
+    Sometimes information is assumed to be accurate, or in R&D, inaccurate
+    information may not have an impact on the individual or the project. 
+
+    If the
+    project does not check for accuracy, please explain why.
+    
+    Describe any technical solutions, policies, or procedures focused on
+    improving data accuracy and integrity of the project. 
+  examples:
+  - example: |
+      The project may check the information provided by the
+      individual against any other source of information (within or outside your
+      organization) before the project uses the information to make decisions about an
+      individual.
+
+  type: longtext
+
+- id: q7
+  title: Privacy Impact Analysis, Characterization of the Information
+  prompt: |
+    Next we will describe how the privacy risk and mitigation is evaluated.
+
+    Given the specific data elements collected, we will discuss the privacy risks
+    identified and for each risk explain how it was mitigated. Specific risks may be
+    inherent in the sources or methods of collection, or the quality or quantity of
+    information included.
+
+  type: interstitial
+
+- id: q8
+  title: PIA, Purpose Specification
+  prompt: |
+    Explain how the collection ties with the purpose of the underlying mission of the organization and its enabling authority.
+
+    Reminder: Address the risk to privacy and mitigation efforts.
+  type: longtext
+
+- id: q9
+  title: PIA, Minimization
+  prompt: |
+    Is the information directly relevant and necessary to accomplish the specific purposes of the program?
+
+    Reminder: Address the risk to privacy and mitigation efforts.
+  type: longtext
+
+- id: q10
+  title: PIA, Individual Participation
+  prompt: |
+    Does the program, to the extent possible and practical, collect information directly from the individual?
+
+    Reminder: Address the risk to privacy and mitigation efforts.
+  type: longtext
+
+- id: q11
+  title: PIA, Data Quality and Integrity
+  prompt: |
+    Are there policies and procedures for DHS to ensure that personally identifiable information is accurate, complete, and current?
+    
+    Reminder: Address the risk to privacy and mitigation efforts.
+  type: longtext
+
+output:
+- templates/pia_characterization_info.md

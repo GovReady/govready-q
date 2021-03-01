@@ -1,0 +1,97 @@
+id: pia_authorities
+title: Privacy Impact Assessment (Authorities)
+
+questions:
+
+- id: q1
+  title: Specific Legal Authorities
+  prompt: |
+    What specific legal authorities and/or agreements permit and define the collection of information by the project in question? 
+    
+    List all statutory and regulatory authority for operating the project,
+    including the authority to collect the information which will be listed in the next section. Explain
+    how the statutory and regulatory authority permits collection and use of the
+    information. 
+
+    A simple citation without more information will not be sufficient for
+    purposes of this document and will result in rejection of a Privacy Impact
+    Assessment. Explain how the statutory and regulatory authority permits
+    the project and the collection of the subject information. If the project collects
+    Social Security numbers you must also identify the specific statutory authority
+    allowing such collection.
+
+    If you are relying on another component and/or agency, please list their
+    legal authorities.
+   
+    Where information is received from a foreign government pursuant to an
+    international agreement or memorandum of understanding, cite the agreement and
+    where it can be found (i.e. website). 
+  type: longtext
+  examples:
+  - example: |
+      Section 4011 of the Intelligence Reform and Terrorism Prevention Act
+      of 2004, 49 U.S.C. § 44903(h)(4) (2004). 
+
+- id: q2
+  title: Privacy Act System of Records Notice (SORN)
+  prompt: |
+    What Privacy Act System of Records Notice(s) (SORN(s)) apply to the information?
+
+    For all collections of PII where the information is retrieved by a personal
+    identifier, the Privacy Act requires that the agency publish a SORN in the Federal
+    Register. Include the Federal Register citation for the SORN. If the information
+    used in the project did not require a SORN, explain why not.
+
+    In some instances, an existing SORN (either program specific, DHS-wide,
+    or Government-wide) may apply to the project’s collection of information. In
+    other instances, a new SORN may be required.
+  type: longtext
+
+- id: q3
+  title: System Security Plan, Completed?
+  prompt: |
+    Has a system security plan been completed for the information system(s) supporting the project?
+
+    Provide the date that the Authority to Operate (ATO) was granted or the
+    date it is expected to be awarded. Note that all systems containing PII are
+    categorized at a minimum as “moderate” under Federal Information Processing
+    Standards Publication 199. If the project does not trigger the C&A requirement,
+    state that along with an explanation.
+
+    For a new project provide anticipated date of C&A completion.
+
+    If the project does not include technology, state that here.
+  type: longtext
+
+- id: q4
+  title: National Archived and Record Administration
+  prompt: |
+    Does a records retention schedule approved by the National Archives and Records Administration (NARA) exist?
+
+    The project manager, in consultation with counsel and the component
+    records management officer, must develop a records retention schedule for the
+    records contained in the project that considers the minimum amount of time
+    necessary to retain information while meeting the needs of the project. 
+
+    After the project manager and component records management officer finalize the schedule
+    based on the needs of the project, it is proposed to NARA for official approval.
+    Consult with your records management office for assistance with this question if
+    necessary. If a NARA-approved schedule does not exist, explain what stage the
+    project is in developing and submitting a records retention schedule.
+  type: longtext
+
+- id: q5
+  title: Paperwork Reduction Act (PRA)
+  prompt: |
+    If the information is covered by the Paperwork Reduction Act (PRA), provide the OMB Control number and the agency number for the collection.
+  type: text   
+
+output:
+- templates/pia_authorities_content.md
+
+
+
+
+
+
+

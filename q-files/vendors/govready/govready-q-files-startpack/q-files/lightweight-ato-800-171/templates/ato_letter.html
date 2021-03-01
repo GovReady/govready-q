@@ -1,0 +1,90 @@
+id: ato_letter.html
+format: html
+title: ATO Letter
+...
+<style type="text/css" scoped>
+    h2 { border-bottom:1px solid #888; }
+    h3 { border-bottom: 0.5px solid #aaa; }
+    h4 { margin-top: 15px; font-weight: bold; font-size: 1em; }
+    blockquote { color: #666; font-size:0.8em; margin: 0 10px; }
+    .notice {color: red; font-size:3.0em; text-align:center; transform: scaleY(.85);
+    font-weight: bold;}
+    table { border: none; border-collapse: collapse; }
+    th, td { border: 1px solid #888; padding: 15px; text-align: left;}
+    @media all {
+        .page-break     { display: none; }
+    }
+
+    @media print {
+        h1.title {
+            /* v-center, need absolute */
+            position: absolute; /* repeats once */
+            bottom: 50%;
+            /* h-center, for element with absolute positioning */
+            left: 0;
+            right: 0;
+            margin-left: 20%;
+            margin-right: 20%;
+        }
+        .footer {
+            position: fixed; /* repeats on every page */
+            bottom: 0;
+        }
+        table.footer {
+            width: 95%;
+            display: table;
+        }
+        table.footer td {
+            border: none;
+            padding: 0px;
+            padding-bottom: .1em;
+        }
+        .page-break { display: block; page-break-after: always; }
+    }
+</style>
+
+
+<p>{{project.ato_letter.ato_letter_date}}</p>
+</br>
+
+<p>{{project.system_info.system_owner}}</p>
+<p>{{project.system_info.system_name}} IT System Owner</p>
+<p>{{project.system_info_poc.system_owner_address}}</p>
+
+</br>
+
+<p>Mr./Mrs. {{project.system_info.system_owner}}:</p>
+
+</br>
+
+<p>The {{project.system_info.system_org}} has completed the review of the {{project.system_info.system_name}} IT system’s security authorization package that meets the Federal Risk and Authorization Management Program (FedRAMP) requirements.  Based on the Federal Information Processing Standard (FIPS) security categorization of “{{project.fisma_level.fisma_level}}” and the provided Security Assessment, the {{project.system_info.system_org}} has determined that the {{project.system_info.system_name}} Cloud system meets the information security requirements and is granted an Authority to Operate.</p>  
+
+</br>
+
+<p>The security authorization of the information system will remain in effect for a length of time in alignment with Office of Management and Budget Circular A-130 as long as: 
+{{project.system_info.system_name}} satisfies the requirement of implementing continuous monitoring activities as documented in FedRAMP’s continuous monitoring requirements and {{project.system_info.system_name}} Continuous Monitoring Plan;
+{{project.system_info.system_name}} mitigates all open low and moderate POA&M action items, agreed to in the Security Assessment Report (SAR) and as developed during the continuous monitoring activities; and 
+Significant changes or critical vulnerabilities are identified and managed in accordance with applicable Federal law, guidelines, and policies.</p>
+
+</br>
+
+<p>{{project.system_info.system_org}} is leveraging the documentation provided within the FedRAMP secure repository as a key element of the Authority to Operate (ATO).  Based on the documentation within the FedRAMP secure repository and customer-specific tailoring and operating procedures, the {{project.system_info.system_org}} believes the security authorization package accurately documents the {{project.system_info.system_name}} cloud system and clearly defines outstanding risk considerations.</p>
+
+</br>
+
+SIGNED:
+<input type="textfield"/>
+
+</br>
+
+<p>{{project.system_info_poc.system_ao_name}}</p>
+<p>{{project.system_info_poc.system_ao_title}}</p>
+<p>{{project.system_info_poc.system_ao_org}}</p>
+<p>{{project.system_info_poc.system_ao_address}}</p>
+<p>{{project.system_info_poc.system_ao_phone}}</p>
+<p>{{project.system_info_poc.system_ao_email}}</p>
+
+
+
+
+

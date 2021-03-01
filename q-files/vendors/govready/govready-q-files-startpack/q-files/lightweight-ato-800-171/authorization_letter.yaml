@@ -1,0 +1,61 @@
+id: authorization_letter
+title: Authorization Letter
+questions:
+
+- id: cert_intro
+  title: Authorization Intro
+  prompt: |
+    Certifying the Status of {{project.system_info.system_name}}'s ATO
+
+    This module will ask authorizing officials relevant questions assuming that the requisite information has been collected.
+
+  type: interstitial
+
+- id: cert_adjudicate
+  title: System Adjudication
+  prompt: |
+    Adjudicating {{project.system_info.system_name}}
+
+    After reviewing the documents, the Authorizing Official for this IT system can adjudicate on {{project.system_info.system_name}}:
+  type: choice
+  choices:
+  - key: accept
+    text: We are granting an Authority to Operate (ATO).
+  - key: conditions
+    text: We are granting an Authority to Operate (ATO) with the following conditions.
+  - key: reject
+    text: We are unable to certify for an Authority to Operate (ATO). We request that you resubmit with the following recommendations.
+
+- id: choice_conditions
+  title: Accept with Conditions
+  prompt: |
+    You selected "Accepts with Conditions" in your System Adjudication.
+
+    Could you elaborate on what conditions will need to be met for an ATO?
+  type: longtext
+  impute:
+  - condition: cert_adjudicate != 'conditions'
+    value: ~
+
+- id: choice_reject
+  title: Accept and Recommendations
+  prompt: |
+    You selected "Reject and Resubmit" in your System Adjudication.
+
+    Could you elaborate on what recommendations will need to be completed in order to resubmit?
+  type: longtext
+  impute:
+  - condition: cert_adjudicate != 'reject'
+    value: ~
+
+- id: expiration_date
+  title: Expiration Date for Authorization
+  prompt: |
+    This certification is valid until:
+  type: date
+  impute:
+  - condition: cert_adjudicate == 'reject'
+    value: ~
+
+output:
+- templates/certification.html

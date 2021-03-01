@@ -562,11 +562,31 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         deployment.save()
         deployment = Deployment(name="Prod", description="Production environment deployment", system=system)
         deployment.save()
-        # Assign default control catalog
-        # Assign default control profile for org systems
-        # Assign default organization components for a system
-        # Assign default org params
 
+        # Assign default control catalog and control profile
+        # Use from App catalog settings
+        try:
+            # Get default catalog key
+            parameters = project.root_task.module.app.catalog_metadata['parameters']
+            catalog_key = [p for p in parameters if p['id'] == 'catalog_key'][0]['value']
+            # Get default profile/baseline
+            baseline_name = [p for p in parameters if p['id'] == 'baseline'][0]['value']
+            # Assign profile/baseline
+            assign_results = system.root_element.assign_baseline_controls(user, catalog_key, baseline_name)
+            # Log result if successful
+            if assign_results:
+                # Log start app / new project
+                logger.info(
+                    event="assign_baseline",
+                    object={"object": "system", "id": system.root_element.id, "title": system.root_element.name},
+                    baseline={"catalog_key": catalog_key, "baseline_name": baseline_name},
+                    user={"id": user.id, "username": user.username}
+                )
+        except:
+            # TODO catch error and return error message
+            print("[INFO] App could not assign catalog_key or profile/baseline.\n")
+
+        # Assign default organization components for a system
         if user.has_perm('change_system', system):
             # Get the components from the import records of the app version
             import_records = appver.input_artifacts.all()
@@ -579,6 +599,8 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
                 event="change_system permission_denied",
                 user={"id": user.id, "username": user.username}
             )
+
+        # TODO: Assign default org parameters
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
@@ -797,7 +819,7 @@ def project(request, project):
     # Calculate approximate compliance as degrees to display
     percent_compliant = 0
     if len(project.system.control_implementation_as_dict) > 0:
-        percent_compliant = project.system.controls_status_count['Implemented'] / len(project.system.control_implementation_as_dict)
+        percent_compliant = project.system.controls_status_count['Addressed'] / len(project.system.control_implementation_as_dict)
     # Need to reverse calculation for displaying as per styles in .piechart class
     approx_compliance_degrees = 365 - ( 365 * percent_compliant )
     if approx_compliance_degrees > 358:

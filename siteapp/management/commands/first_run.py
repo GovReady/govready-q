@@ -57,7 +57,7 @@ class Command(BaseCommand):
             # Load the AppSource's assessments (apps) we want
             # We will do some hard-coding here temporarily
             created_appsource = AppSource.objects.get(slug="govready-q-files-startpack")
-            for appname in ["System-Description-Demo", "PTA-Demo", "rules-of-behavior", "lightweight-ato"]:
+            for appname in ["System-Description-Demo", "PTA-Demo", "rules-of-behavior", "lightweight-ato", "lightweight-ato-800-171"]:
                 print("Adding appname '{}' from AppSource '{}' to catalog.".format(appname, created_appsource))
                 try:
                     appver = created_appsource.add_app_to_catalog(appname)
