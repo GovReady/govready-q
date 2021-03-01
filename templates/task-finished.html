@@ -35,6 +35,16 @@
     margin-bottom: 30px;
   }
 
+  @media (min-width: 768px) {
+  .modal-xl {
+    width: 90%;
+    max-width:1200px;
+     }
+  }
+  .radiotext {
+    margin: 10px 10px 0 0;
+  }
+
 </style>
 {% endblock %}
 
@@ -95,7 +105,8 @@
                           {% elif document.format == "xml" %}
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/xml">OSCAL (xml)</a>&nbsp;&nbsp;
                           {% else %}
-                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (docx)</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (docx)</a><button id="projectAssetWordConfigButton" type="button" class="btn-xs btn-primary glyphicon glyphicon-cog" data-toggle="modal" data-target="#projectAssetWordConfig"
+                                                                                                                                           aria-label="Word (docx) Settings" tooltip="Word (docx) Settings" style="text-align: center; margin-right:10px"></button>
                             {% if gr_pdf_generator == 'wkhtmltopdf' %}<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/pdf">PDF</a>&nbsp;&nbsp;{% endif %}
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/odt">Open Office (odt)</a>&nbsp;&nbsp;
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/html">HTML</a>&nbsp;&nbsp;
@@ -250,6 +261,57 @@
   </div>
 </div>
 
+<div class="modal fade" id="projectAssetWordConfig" tabindex="-1" aria-labelledby="projectAssetWordConfig" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="projectAssetWordConfig">Export Document Settings - Word (docx)</h2>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+            <span id="projectAssetWordConfigValidation"></span>
+            <table class="table table-hover">
+              <thead>
+                  <th>Template Name</th>
+                  <th>Filename</th>
+                  <th>Description</th>
+                  <th>Created</th>
+                  <th>Updated</th>
+              </thead>
+              <tbody>
+              {% for asset in project.assets.all %}
+                  <tr style="cursor: pointer">
+                    <td>
+                        {% if asset.default %}
+                            <input type="radio" name="projectAssets" id="radio-{{ asset.id }}" checked/>
+                        {% else %}
+                            <input type="radio" name="projectAssets" id="radio-{{ asset.id }}" />
+                        {%  endif  %}
+                      <label for="radio{{ forloop.counter }}">{{ asset.title }} </label>
+                    </td>
+                    <td>{{ asset.filename }}</td>
+                    <td style="max-width: 30em;">{{ asset.description }}</td>
+                    <td>{{ asset.created }}</td>
+                    <td>{{ asset.updated }}</td>
+                  </tr>
+              {% endfor %}
+              </tbody>
+          </table>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+          <span style="float:left;" class="help-block">To add new templates please contact your Administrator</span>
+{#          <span ><i class="warning"></i></span>#}
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{#</div>#}
 {% endblock %}
 
 {% block scripts %}
@@ -266,6 +328,28 @@
   $('.output-document *[data-toggle=popover]')
     .popover()
     .css({ cursor: 'pointer' });
+
+  $('.modal .table tbody tr').click(function(event) {
+      if (event.target.type !== 'radio') {
+        var previouslySelected = $('input[name="projectAssets"]:checked')[0];
+        $(':radio', this).trigger('click');
+        var tmp = $('input[name="projectAssets"]:checked')[0].id.split('-');
+        var selectedAsset = tmp[1];
+        ajax_with_indicator({
+            url: "/projects/{{ project.id }}/assets/" + selectedAsset + '/__update',
+            data: {
+                "default": true
+            },
+            dataType: "json",
+            method: "POST",
+            success: function (res) {}, error: function (res) {
+                previouslySelected.checked = true;
+                var errorjson = $.parseJSON(res);
+                show_modal_error("Search Error", errorjson["message"]);
+            }
+        })
+      }
+    });
 
   // The download button shows a modal to ask what file format to download in.
   function download_document(document_id) {

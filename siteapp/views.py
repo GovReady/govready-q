@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.forms import ModelForm
+from django.forms import ModelForm, model_to_dict
 from django.http import (Http404, HttpResponse, HttpResponseForbidden,
                          HttpResponseNotAllowed, HttpResponseRedirect,
                          JsonResponse)
@@ -30,7 +30,7 @@ from system_settings.models import SystemSettings
 from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
-from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support
+from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, ProjectAsset
 from .notifications_helpers import *
 
 import sys
@@ -2134,3 +2134,20 @@ def sso_logout(request):
     output = "You are logged out."
     html = "<html><body><pre>{}</pre></body></html>".format(output)
     return HttpResponse(html)
+
+
+# @project_admin_login_post_required
+def update_project_asset(request, project_id, asset_id):
+    try:
+        asset = ProjectAsset.objects.get(id=asset_id, project=project_id)
+    except ProjectAsset.DoesNotExist:\
+        return JsonResponse({ "status": "err", "message": "Asset not found" }, status=404)
+    data = request.POST.dict()
+    for key, value in data.items():
+        if hasattr(asset, key):
+            setattr(asset, key, value)
+    asset.save()
+    from django.core import serializers
+    import json
+    response_data = json.loads(serializers.serialize('json', [asset]))[0]
+    return JsonResponse({ "status": "ok", "data": response_data})
