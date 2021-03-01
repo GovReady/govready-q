@@ -76,146 +76,147 @@ def main():
     print(">>>>>>>>>> Welcome to the GovReady-Q Installer <<<<<<<<<\n")
     print("Testing environment...\n")
 
-    # Test version of Python
-    ver = sys.version_info
-    print("GovReady-Q Installer running with Python {}.{}.{}".format(ver[0],ver[1],ver[2]))
-
-    if sys.version_info >= (3, 8):
-        print("√ Python version is >= 3.8.")
-    else:
-        print("! Python version is < 3.8.")
-        print("GovReady-Q is best run with Python 3.8 or higher.")
-        print("It is STRONGLY encouraged to run GovReady-Q inside a Python 3.8 or higher.")
-        reply = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0],ver[1],ver[2]))
-        if len(reply) == 0 or reply[0].lower() != "y":
-            print("Install halted.")
-            sys.exit(0)
-
-    # Print spacer
-    print(SPACER)
-
-    # Print machine information
-    uname = os.uname()
-    if uname[0] == "Darwin":
-        platform = "macOS Darwin"
-    else:
-        platform = uname[0]
-    print("Platform is {} version {} running on {}.".format(platform, uname[2], uname[4]))
-
-    # Collect command line arguments
-    argparser = init_argparse();
-    args = argparser.parse_args();
-
-    # Print spacer
-    print(SPACER)
-
-    # Check if inside a virtual environment
-    if sys.prefix != sys.base_prefix:
-        print("√ Installer is running inside a virtual Python environment.\n")
-    else:
-        print("! Installer is not running inside a virtual Python environment.")
-        print("It is STRONGLY encouraged to run GovReady-Q inside a Python virtual environment.")
-        reply = input("Continue install outside of virtual environment (y/n)? ")
-        if len(reply) == 0 or reply[0].lower() != "y":
-            print("Install halted.")
-            sys.exit(0)
-
-    # Print spacer
-    print(SPACER)
-
-    # Check for python3 and pip3 (and not 2 or e.g. 'python3.8')
-    if not check_has_command(['python3', '--version']):
-        raise FatalError("The 'python3' command is not available.")
-    if not check_has_command(['pip3', '--version']):
-        raise FatalError("The 'pip3' command is not available.")
-
-    # Print spacer
-    print(SPACER)
-
-    # Print mode of interactivity
-    if args.non_interactive:
-        print("Installing GovReady-Q in non-interactive mode...")
-    else:
-        print("Installing GovReady-Q in interactive mode (default)...")
-
-    # Print spacer
-    print(SPACER)
-
-    # pip install basic requirements
-    if args.user:
-        subprocess.run(['pip3', 'install', '--user', '-r', 'requirements.txt'])
-    else:
-        subprocess.run(['pip3', 'install', '-r', 'requirements.txt'])
-
-    # Print spacer
-    print(SPACER)
-
-    # Create the local/environment.json file, if it is missing (it generally will be)
-    # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
-    environment_path = 'local/environment.json'
-    if os.path.exists(environment_path):
-        # confirm that environment.json is JSON
-        try:
-            environment = json.load(open(environment_path))
-            print("environment.json file already exists, proceeding")
-        except json.decoder.JSONDecodeError as e:
-            print("'{}' is not in JSON format:".format(environment_path))
-            print(">>>>>>>>>>")
-            print(open(environment_path).read())
-            print("<<<<<<<<<<")
-            raise FatalError("'{}' is not in JSON format.".format(environment_path))
-    else:
-        print("creating DEV {} file".format(environment_path))
-        create_environment_json(environment_path)
-
-    # Configure database
     try:
-        subprocess.run(["./manage.py", "migrate"], capture_output=False)
-    except FatalError as err:
-        print("\n\nFatal error, exiting: {}\n".format(err));
-        sys.exit(1)
+        # Test version of Python
+        ver = sys.version_info
+        print("GovReady-Q Installer running with Python {}.{}.{}".format(ver[0],ver[1],ver[2]))
 
-    # Load modules
-    try:
-        subprocess.run(["./manage.py", "load_modules"], capture_output=False)
-    except FatalError as err:
-        print("\n\nFatal error, exiting: {}\n".format(err));
-        sys.exit(1)
-
-    # Run first_run non-interactive
-    try:
-        subprocess.run(["./manage.py", "first_run", "--non-interactive"], capture_output=False)
-    except FatalError as err:
-        print("\n\nFatal error, exiting: {}\n".format(err));
-        sys.exit(1)
-
-    # Run first_run interactive
-    # try:
-    #     subprocess.run(["./manage.py", "first_run"], capture_output=False)
-    # except FatalError as err:
-    #     print("\n\nFatal error, exiting: {}\n".format(err));
-    #     sys.exit(1)
-
-    # Retrieve static assets
-    try:
-        subprocess.run(['./fetch-vendor-resources.sh'])
-    except FatalError as err:
-        print("\n\nFatal error, exiting: {}\n".format(err));
-        sys.exit(1)
-
-    # Collect files into static directory
-    try:
-        if args.non_interactive:
-            subprocess.run(['./manage.py', 'collectstatic', '--no-input'])
+        if sys.version_info >= (3, 8):
+            print("√ Python version is >= 3.8.")
         else:
-            subprocess.run(['./manage.py', 'collectstatic'])
+            print("! Python version is < 3.8.")
+            print("GovReady-Q is best run with Python 3.8 or higher.")
+            print("It is STRONGLY encouraged to run GovReady-Q inside a Python 3.8 or higher.")
+            reply = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0],ver[1],ver[2]))
+            if len(reply) == 0 or reply[0].lower() != "y":
+                print("Install halted.")
+                sys.exit(0)
+
+        # Print spacer
+        print(SPACER)
+
+        # Print machine information
+        uname = os.uname()
+        if uname[0] == "Darwin":
+            platform = "macOS Darwin"
+        else:
+            platform = uname[0]
+        print("Platform is {} version {} running on {}.".format(platform, uname[2], uname[4]))
+
+        # Collect command line arguments
+        argparser = init_argparse();
+        args = argparser.parse_args();
+
+        # Print spacer
+        print(SPACER)
+
+        # Check if inside a virtual environment
+        if sys.prefix != sys.base_prefix:
+            print("√ Installer is running inside a virtual Python environment.\n")
+        else:
+            print("! Installer is not running inside a virtual Python environment.")
+            print("It is STRONGLY encouraged to run GovReady-Q inside a Python virtual environment.")
+            reply = input("Continue install outside of virtual environment (y/n)? ")
+            if len(reply) == 0 or reply[0].lower() != "y":
+                print("Install halted.")
+                sys.exit(0)
+
+        # Print spacer
+        print(SPACER)
+
+        # Check for python3 and pip3 (and not 2 or e.g. 'python3.8')
+        if not check_has_command(['python3', '--version']):
+            raise FatalError("The 'python3' command is not available.")
+        if not check_has_command(['pip3', '--version']):
+            raise FatalError("The 'pip3' command is not available.")
+
+        # Print spacer
+        print(SPACER)
+
+        # Print mode of interactivity
+        if args.non_interactive:
+            print("Installing GovReady-Q in non-interactive mode...")
+        else:
+            print("Installing GovReady-Q in interactive mode (default)...")
+
+        # Print spacer
+        print(SPACER)
+
+        # pip install basic requirements
+        if args.user:
+            subprocess.run(['pip3', 'install', '--user', '-r', 'requirements.txt'])
+        else:
+            subprocess.run(['pip3', 'install', '-r', 'requirements.txt'])
+
+        # Print spacer
+        print(SPACER)
+
+        # Create the local/environment.json file, if it is missing (it generally will be)
+        # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
+        environment_path = 'local/environment.json'
+        if os.path.exists(environment_path):
+            # confirm that environment.json is JSON
+            try:
+                environment = json.load(open(environment_path))
+                print("environment.json file already exists, proceeding")
+            except json.decoder.JSONDecodeError as e:
+                print("'{}' is not in JSON format:".format(environment_path))
+                print(">>>>>>>>>>")
+                print(open(environment_path).read())
+                print("<<<<<<<<<<")
+                raise FatalError("'{}' is not in JSON format.".format(environment_path))
+        else:
+            print("creating DEV {} file".format(environment_path))
+            create_environment_json(environment_path)
+
+        # Configure database
+        try:
+            subprocess.run(["./manage.py", "migrate"], capture_output=False)
+        except FatalError as err:
+            print("\n\nFatal error, exiting: {}\n".format(err));
+            sys.exit(1)
+
+        # Load modules
+        try:
+            subprocess.run(["./manage.py", "load_modules"], capture_output=False)
+        except FatalError as err:
+            print("\n\nFatal error, exiting: {}\n".format(err));
+            sys.exit(1)
+
+        # Run first_run non-interactive
+        try:
+            subprocess.run(["./manage.py", "first_run", "--non-interactive"], capture_output=False)
+        except FatalError as err:
+            print("\n\nFatal error, exiting: {}\n".format(err));
+            sys.exit(1)
+
+        # Run first_run interactive
+        # try:
+        #     subprocess.run(["./manage.py", "first_run"], capture_output=False)
+        # except FatalError as err:
+        #     print("\n\nFatal error, exiting: {}\n".format(err));
+        #     sys.exit(1)
+
+        # Retrieve static assets
+        try:
+            subprocess.run(['./fetch-vendor-resources.sh'])
+        except FatalError as err:
+            print("\n\nFatal error, exiting: {}\n".format(err));
+            sys.exit(1)
+
+        # Collect files into static directory
+        try:
+            if args.non_interactive:
+                subprocess.run(['./manage.py', 'collectstatic', '--no-input'])
+            else:
+                subprocess.run(['./manage.py', 'collectstatic'])
+        except FatalError as err:
+            print("\n\nFatal error, exiting: {}\n".format(err));
+            sys.exit(1)
+
     except FatalError as err:
         print("\n\nFatal error, exiting: {}\n".format(err));
         sys.exit(1)
-
-    # # Debugging STOP
-    # print("got here")
-    # sys.exit(0)
 
 if __name__ == "__main__":
     exit(main())
