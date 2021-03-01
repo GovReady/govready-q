@@ -59,10 +59,11 @@ def create_environment_json(path):
     secret_key = ''.join(secrets.choice(alphabet) for i in range(50))
     # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
     environment = {
-	"govready-url": GOVREADYURL,
-	"static": "static_root",
-	"secret-key": secret_key,
-        "debug": True
+    "govready-url": GOVREADYURL,
+    "static": "static_root",
+    "secret-key": secret_key,
+    "test_visible": false,
+    "debug": true
     }
     # Create local directory
     if not os.path.exists('local'):
@@ -150,10 +151,6 @@ def main():
         print("\n\nFatal error, exiting: {}\n".format(err));
         sys.exit(1)
 
-    # Debugging STOP
-    print("got here")
-    sys.exit(0)
-
     # Load modules
     try:
         subprocess.run(["./manage.py", "load_modules"], capture_output=False)
@@ -191,6 +188,10 @@ def main():
     except FatalError as err:
         print("\n\nFatal error, exiting: {}\n".format(err));
         sys.exit(1)
+
+    # # Debugging STOP
+    # print("got here")
+    # sys.exit(0)
 
 if __name__ == "__main__":
     exit(main())
