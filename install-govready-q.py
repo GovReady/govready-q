@@ -34,7 +34,7 @@ SPACER = "..."
 # Gracefully exit on control-C
 signal.signal(signal.SIGINT, lambda signal_number, current_stack_frame: sys.exit(0))
 
-# define a fatal error handler
+# Define a fatal error handler
 class FatalError(Exception):
     pass
 
@@ -64,66 +64,130 @@ def create_environment_json(path):
 	"secret-key": secret_key,
         "debug": True
     }
+    # Create local directory
+    if not os.path.exists('local'):
+        os.makedirs('local')
+    #Create local/envionment.json file
     with open(path, 'w') as f:
         f.write(json.dumps(environment, sort_keys=True, indent=2))
 
 def main():
+    print(">>>>>>>>>> Welcome to the GovReady-Q Installer <<<<<<<<<\n")
+    print("Testing environment...\n")
+
+    # Test version of Python
+    ver = sys.version_info
+    print("Installer running with Python {}.{}.{}".format(ver[0],ver[1],ver[2]))
+
+    if sys.version_info >= (3, 8):
+        print("√ Python version is >= 3.8.")
+    else:
+        print("! Python version is < 3.8.")
+        print("GovReady-Q is best run with Python 3.8 or higher.")
+        print("It is STRONGLY encouraged to run GovReady-Q inside a Python 3.8 or higher.")
+        var = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0],ver[1],ver[2]))
+        if var != "y":
+            print("Install halted.")
+            sys.exit(0)
+
+    argparser = init_argparse();
+    args = argparser.parse_args();
+
+    # Check if inside a virual environment
+    if sys.prefix != sys.base_prefix:
+        print("√ Installer is running inside a virtual Python environment.\n")
+    else:
+        print("! Installer is not running inside a virtual Python environment.")
+        print("It is STRONGLY encouraged to run GovReady-Q inside a Python virtual environment.")
+        var = input("Continue install outside of virtual environment (y/n)? ")
+        if var != "y":
+            print("Install halted.")
+            sys.exit(0)
+
+    # Check for python3 and pip3 (and not 2 or e.g. 'python3.8')
+    if not check_has_command(['python3', '--version']):
+        raise FatalError("The 'python3' command is not available.")
+    if not check_has_command(['pip3', '--version']):
+        raise FatalError("The 'pip3' command is not available.")
+
+    # Print mode of interactivity
+    if args.non_interactive:
+        print("Installing GovReady-Q in non-interactive mode...")
+    else:
+        print("Installing GovReady-Q in interactive mode (default)...")
+
+    # pip install basic requirements
+    if args.user:
+        subprocess.run(['pip3', 'install', '--user', '-r', 'requirements.txt'])
+    else:
+        subprocess.run(['pip3', 'install', '-r', 'requirements.txt'])
+
+    # Print spacer
+    print(SPACER)
+
+    # Create the local/environment.json file, if it is missing (it generally will be)
+    # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
+    environment_path = 'local/environment.json'
+    if os.path.exists(environment_path):
+        # confirm that environment.json is JSON
+        try:
+            environment = json.load(open(environment_path))
+            print("environment.json file already exists, proceeding")
+        except json.decoder.JSONDecodeError as e:
+            print("'{}' is not in JSON format:".format(environment_path))
+            print(">>>>>>>>>>")
+            print(open(environment_path).read())
+            print("<<<<<<<<<<")
+            raise FatalError("'{}' is not in JSON format.".format(environment_path))
+    else:
+        print("creating DEV {} file".format(environment_path))
+        create_environment_json(environment_path)
+
+    # Configure database
     try:
-        argparser = init_argparse();
-        args = argparser.parse_args();
-            
-        # check for python3 and pip3 (and not 2 or e.g. 'python3.8')
-        if not check_has_command(['python3', '--version']):
-            raise FatalError("The 'python3' command is not available.")
-        if not check_has_command(['pip3', '--version']):
-            raise FatalError("The 'pip3' command is not available.")
+        subprocess.run(["./manage.py", "migrate"], capture_output=False)
+    except FatalError as err:
+        print("\n\nFatal error, exiting: {}\n".format(err));
+        sys.exit(1)
 
-        # print mode of interactivity
-        if args.non_interactive:
-            print("Installing GovReady-Q in non-interactive mode...")
-        else:
-            print("Installing GovReady-Q in interactive mode (default)...")
+    # Debugging STOP
+    print("got here")
+    sys.exit(0)
 
-        # pip install basic requirements
-        if args.user:
-            subprocess.run(['pip3', 'install', '--user', '-r', 'requirements.txt'])
-        else:
-            subprocess.run(['pip3', 'install', '-r', 'requirements.txt'])
+    # Load modules
+    try:
+        subprocess.run(["./manage.py", "load_modules"], capture_output=False)
+    except FatalError as err:
+        print("\n\nFatal error, exiting: {}\n".format(err));
+        sys.exit(1)
 
-        # print spacer
-        print(SPACER)
+    # Run first_run non-interactive
+    try:
+        subprocess.run(["./manage.py", "first_run", "--non-interactive"], capture_output=False)
+    except FatalError as err:
+        print("\n\nFatal error, exiting: {}\n".format(err));
+        sys.exit(1)
 
-        # create the local/environment.json file, if it is missing (it generally will be)
-        # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
-        environment_path = 'local/environment.json'
-        if os.path.exists(environment_path):
-            # confirm that environment.json is JSON
-            try:
-                environment = json.load(open(environment_path))
-                print("environment.json file already exists, proceeding")
-            except json.decoder.JSONDecodeError as e:
-                print("'{}' is not in JSON format:".format(environment_path))
-                print(">>>>>>>>>>")
-                print(open(environment_path).read())
-                print("<<<<<<<<<<")
-                raise FatalError("'{}' is not in JSON format.".format(environment_path))
-        else:
-            print("creating DEV {} file".format(environment_path))
-            create_environment_json(environment_path)
+    # Run first_run interactive
+    # try:
+    #     subprocess.run(["./manage.py", "first_run"], capture_output=False)
+    # except FatalError as err:
+    #     print("\n\nFatal error, exiting: {}\n".format(err));
+    #     sys.exit(1)
 
-        # debugging STOP
-        print("got here")
-        sys.exit(0)
-
-        # retrieve static assets
+    # Retrieve static assets
+    try:
         subprocess.run(['./fetch-vendor-resources.sh'])
+    except FatalError as err:
+        print("\n\nFatal error, exiting: {}\n".format(err));
+        sys.exit(1)
 
-        # collect files into static directory
+    # Collect files into static directory
+    try:
         if args.non_interactive:
             subprocess.run(['./manage.py', 'collectstatic', '--no-input'])
         else:
             subprocess.run(['./manage.py', 'collectstatic'])
-
     except FatalError as err:
         print("\n\nFatal error, exiting: {}\n".format(err));
         sys.exit(1)
