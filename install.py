@@ -167,13 +167,14 @@ def main():
             p = run_optionally_verbose(['pip3', 'install', '-r', 'requirements.txt'], args.verbose)
             if p.returncode != 0:
                 raise FatalError("'pip3 install' returned error code {}".format(p.returncode))
-        print("... done installing Python libraries via pip.", flush=True)
+        print("... done installing Python libraries via pip.\n", flush=True)
 
         # Print spacer
         print(SPACER)
 
         # Create the local/environment.json file, if it is missing (it generally will be)
         # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
+        print("creating local/environment.json file...", flush=True)
         environment_path = 'local/environment.json'
         if os.path.exists(environment_path):
             # confirm that environment.json is JSON
@@ -189,6 +190,7 @@ def main():
         else:
             print("creating DEV {} file".format(environment_path))
             create_environment_json(environment_path)
+        print("... done creating local/environment.json file.\n", flush=True)
 
         # Configure database (migrate, load_modules)
         print("initializing database...", flush=True)
@@ -201,11 +203,11 @@ def main():
         print("... done initializing database.\n", flush=True)
 
         # Run first_run non-interactive
-        print("setting up system and creating demo user...", flush=True)
+        print("setting up system and creating demo user if none exists...", flush=True)
         p = run_optionally_verbose(["./manage.py", "first_run", "--non-interactive"], args.verbose)
         if p.returncode != 0:
             raise FatalError("'./manage.py first_run --non-interactive' returned error code {}".format(p.returncode))
-        print("... done setting up system and creating demo user.\n", flush=True)
+        print("... done setting up system and creating demo user if none exists.\n", flush=True)
 
         # Print administrator account details in non-interactive mode
         if args.non_interactive:
