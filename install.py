@@ -78,7 +78,7 @@ def main():
 
     # Test version of Python
     ver = sys.version_info
-    print("Installer running with Python {}.{}.{}".format(ver[0],ver[1],ver[2]))
+    print("GovReady-Q Installer running with Python {}.{}.{}".format(ver[0],ver[1],ver[2]))
 
     if sys.version_info >= (3, 8):
         print("√ Python version is >= 3.8.")
@@ -86,22 +86,22 @@ def main():
         print("! Python version is < 3.8.")
         print("GovReady-Q is best run with Python 3.8 or higher.")
         print("It is STRONGLY encouraged to run GovReady-Q inside a Python 3.8 or higher.")
-        var = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0],ver[1],ver[2]))
-        if var != "y":
+        reply = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0],ver[1],ver[2]))
+        if len(reply) == 0 or reply[0].lower() != "y":
             print("Install halted.")
             sys.exit(0)
 
     argparser = init_argparse();
     args = argparser.parse_args();
 
-    # Check if inside a virual environment
+    # Check if inside a virtual environment
     if sys.prefix != sys.base_prefix:
         print("√ Installer is running inside a virtual Python environment.\n")
     else:
         print("! Installer is not running inside a virtual Python environment.")
         print("It is STRONGLY encouraged to run GovReady-Q inside a Python virtual environment.")
-        var = input("Continue install outside of virtual environment (y/n)? ")
-        if var != "y":
+        reply = input("Continue install outside of virtual environment (y/n)? ")
+        if len(reply) == 0 or reply[0].lower() != "y":
             print("Install halted.")
             sys.exit(0)
 
