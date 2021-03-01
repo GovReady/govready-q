@@ -169,20 +169,20 @@
                     <div id="smt-list" class="" style="width: 100%">
                         <!-- Loop through existing component-control statements -->
                         {% for smt in impl_smts %}
-                            <div id="panel-{{ forloop.counter }}" class="">
+                            <div id="panel-{{ forloop.counter }}" class="smt-panel">
                                 <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
 
                                     <div class="row statement-text">
-                                      <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                                      <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                                         <span id="producer_element-panel_num-control" class="control-id-text">{{ smt.producer_element.name }}</span>
                                       </div>
-                                      <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
+                                      <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
                                         {% if smt.pid is not None and smt.pid != "" %}
                                             <div class="panel-heading-smt">{{ smt.pid }}.</div>
                                         {% endif %}
                                         {{ smt.body }}
                                       </div>
-                                      <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                                      <div id="smt-edit-{{ forloop.counter }}" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                                         <a role="button" class="" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">edit</a>
                                         &nbsp;&nbsp; &nbsp;
                                         Status: {% if smt.status != "" and smt.status is not None %}{{ smt.status }}{% else %}TBD{% endif %}
@@ -207,10 +207,10 @@
                                         <div class="smt_block">
 
                                          <div class="row statement-text">
-                                            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                                            <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                                                 &nbsp;
                                             </div>
-                                            <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
+                                            <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
                                                 <form id="smt_{{ forloop.counter }}" class="smt_form">
                                                     <!-- Never change name of the producer element already associated with a statement -->
                                                     <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
@@ -295,7 +295,7 @@
                                                     </div>
                                                 </form>
                                             </div>
-                                        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                                        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                                           &nbsp;
                                         </div>
 
@@ -317,15 +317,15 @@
                     </div>
 
                     <!-- Add existing component -->
-                    <div id="" class="row" style="margin-top: 20px;">
+                    <div class="row" style="margin-top: 20px;">
                         <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
                         <form class="form-inline" method="post" action="">
                             {% csrf_token %}
-                                <!-- <div class="form-group">
+                                <div class="form-group">
                                     <label for="component">Add existing component</label>&nbsp;&nbsp;
                                     <input type="text" class="form-control" id="producer_element_search" name="text" placeholder="Name of component"
                                            onchange="search_components($(this).val(), {{ system.id }})">
-                                </div> -->
+                                </div>
                                 <div class="form-group" class="pull-right">
                                     <select name="selected_producer_element_form_id" id="selected_producer_element_form_id" style="width:340px;">
                                             <option value="Add existing component">Add existing component</option>
@@ -449,7 +449,7 @@
 
         // Adds statement form to page
         function add_smt() {
-            var panel_num = $('.panel').length + 1
+            var panel_num = $('.smt_block').length + 1
             // call django view for composing new statement form
             var smt_form = `{% include 'controls/add_smt_form.html' %}`.replace(/panel_num/g, panel_num);
         $("#smt-list").append(smt_form);
@@ -517,6 +517,7 @@
         function delete_smt(smt_panel_num) {
             console.log("Deleting statement button pressed " + smt_panel_num);
             // Confirm deletion
+
             var result = confirm("Delete statement?");
             if (result) {
                 // Delete statement object in database if it exists
@@ -524,6 +525,7 @@
                     // console.log("deleting db object")
                     // serialize data from the identified statement form
                     var data = $('#' + smt_panel_num).serialize()
+
                     // send data via ajax to delete object
                     ajax_with_indicator({
                         url: "/controls/smt/_delete/",
