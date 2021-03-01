@@ -4,6 +4,10 @@ GovReady-Q Release Notes
 v999 (February XX, 2021)
 ------------------------
 
+**Bug changes**
+
+* Fixed how control id, title, and catalog key are retrieved for component library components.
+
 **Developer changes**
 
 * Created a ElementEditForm Django form in conjunction with some functional changes to avoid name collisions issues with component library.
