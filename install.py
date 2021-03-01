@@ -106,7 +106,7 @@ def main():
             print("It is STRONGLY encouraged to run GovReady-Q inside a Python 3.8 or higher.")
             reply = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0],ver[1],ver[2]))
             if len(reply) == 0 or reply[0].lower() != "y":
-                raise HaltedError("Python version is >= 3.8")
+                raise HaltedError("Python version is < 3.8")
 
         # Print spacer
         print(SPACER)
