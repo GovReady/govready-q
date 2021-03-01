@@ -467,11 +467,7 @@
             displaytext = display_text.split(' - ');
             var first = displaytext.shift(); //or arr[arr.length-1];
             var last = displaytext.pop(); //or arr[0];
-
-            dtv = [];
-            dtv.push(first);
-            dtv.push(displaytext.join(" - "));
-            dtv.push(last);
+            dtv = [first, displaytext.join(" - "), last];
             console.log(dtv) // [control_id, title, catalog_key]
 
 
