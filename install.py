@@ -2,10 +2,10 @@
 
 ################################################################
 #
-# install-govready-q.py - Quickly set up a new GovReady-Q instance
+# install.py - Quickly set up a new GovReady-Q instance
 #   from a freshly-cloned repository.
 #
-# Usage: install-govready-q.py [--help] [--non-interactive] [--verbose]
+# Usage: install.py [--help] [--non-interactive] [--verbose]
 #
 # Optional arguments:
 #   -h, --help             show this help message and exit
