@@ -38,6 +38,10 @@ signal.signal(signal.SIGINT, lambda signal_number, current_stack_frame: sys.exit
 class FatalError(Exception):
     pass
 
+# Define a halted error handler
+class HaltedError(Exception):
+    pass
+
 # Set up argparse
 def init_argparse():
     parser = argparse.ArgumentParser(description='Quickly set up a new GovReady-Q instance from a freshly-cloned repository.')
@@ -45,6 +49,19 @@ def init_argparse():
     parser.add_argument('--user', '-u', action='store_true', help='do pip install with --user flag')
     parser.add_argument('--verbose', '-v', action='count', default=0, help='output more information')
     return parser
+
+################################################################
+#
+# helpers
+#
+################################################################
+
+def run_optionally_verbose(args, verbose_flag):
+    if verbose_flag:
+        p = subprocess.run(args, capture_output=False)
+    else:
+        p = subprocess.run(args, capture_output=True)
+    return p
 
 def check_has_command(command_array):
     try:
@@ -89,8 +106,7 @@ def main():
             print("It is STRONGLY encouraged to run GovReady-Q inside a Python 3.8 or higher.")
             reply = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0],ver[1],ver[2]))
             if len(reply) == 0 or reply[0].lower() != "y":
-                print("Install halted.")
-                sys.exit(0)
+                raise HaltedError("Python version is >= 3.8")
 
         # Print spacer
         print(SPACER)
@@ -118,8 +134,7 @@ def main():
             print("It is STRONGLY encouraged to run GovReady-Q inside a Python virtual environment.")
             reply = input("Continue install outside of virtual environment (y/n)? ")
             if len(reply) == 0 or reply[0].lower() != "y":
-                print("Install halted.")
-                sys.exit(0)
+                raise HaltedError("Installer is not running inside a virtual Python environment")
 
         # Print spacer
         print(SPACER)
@@ -143,10 +158,16 @@ def main():
         print(SPACER)
 
         # pip install basic requirements
+        print("installing Python libraries via pip...", flush=True)
         if args.user:
-            subprocess.run(['pip3', 'install', '--user', '-r', 'requirements.txt'])
+            p = run_optionally_verbose(['pip3', 'install', '--user', '-r', 'requirements.txt'], args.verbose)
+            if p.returncode != 0:
+                raise FatalError("'pip3 install' returned error code {}".format(p.returncode))
         else:
-            subprocess.run(['pip3', 'install', '-r', 'requirements.txt'])
+            p = run_optionally_verbose(['pip3', 'install', '-r', 'requirements.txt'], args.verbose)
+            if p.returncode != 0:
+                raise FatalError("'pip3 install' returned error code {}".format(p.returncode))
+        print("... done installing Python libraries via pip.", flush=True)
 
         # Print spacer
         print(SPACER)
@@ -169,53 +190,59 @@ def main():
             print("creating DEV {} file".format(environment_path))
             create_environment_json(environment_path)
 
-        # Configure database
-        try:
-            subprocess.run(["./manage.py", "migrate"], capture_output=False)
-        except FatalError as err:
-            print("\n\nFatal error, exiting: {}\n".format(err));
-            sys.exit(1)
-
-        # Load modules
-        try:
-            subprocess.run(["./manage.py", "load_modules"], capture_output=False)
-        except FatalError as err:
-            print("\n\nFatal error, exiting: {}\n".format(err));
-            sys.exit(1)
+        # Configure database (migrate, load_modules)
+        print("initializing database...", flush=True)
+        p = run_optionally_verbose(["./manage.py", "migrate"], args.verbose)
+        if p.returncode != 0:
+            raise FatalError("'./manage.py migrate' returned error code {}".format(p.returncode))
+        p = run_optionally_verbose(["./manage.py", "load_modules"], args.verbose)
+        if p.returncode != 0:
+            raise FatalError("'./manage.py load_modules' returned error code {}".format(p.returncode))
+        print("... done initializing database.\n", flush=True)
 
         # Run first_run non-interactive
-        try:
-            subprocess.run(["./manage.py", "first_run", "--non-interactive"], capture_output=False)
-        except FatalError as err:
-            print("\n\nFatal error, exiting: {}\n".format(err));
-            sys.exit(1)
+        print("setting up system and creating demo user...", flush=True)
+        p = run_optionally_verbose(["./manage.py", "first_run", "--non-interactive"], args.verbose)
+        if p.returncode != 0:
+            raise FatalError("'./manage.py first_run --non-interactive' returned error code {}".format(p.returncode))
+        print("... done setting up system and creating demo user.\n", flush=True)
 
-        # Run first_run interactive
-        # try:
-        #     subprocess.run(["./manage.py", "first_run"], capture_output=False)
-        # except FatalError as err:
-        #     print("\n\nFatal error, exiting: {}\n".format(err));
-        #     sys.exit(1)
+        # Print administrator account details in non-interactive mode
+        if args.non_interactive:
+            m = re.search('\n(Created administrator account.+)\n', p.stdout.decode('utf-8'))
+            if m:
+                print(m.group(1) + "\n", flush=True)
+
+        # Run first_run interactively
+        # p = run_optionally_verbose(["./manage.py", "first_run"], args.verbose)
+        # if p.returncode != 0:
+        #     raise FatalError("'./manage.py first_run' returned error code {}".format(p.returncode))
 
         # Retrieve static assets
-        try:
-            subprocess.run(['./fetch-vendor-resources.sh'])
-        except FatalError as err:
-            print("\n\nFatal error, exiting: {}\n".format(err));
-            sys.exit(1)
+        print("fetching resource files from Internet...", flush=True)
+        p = run_optionally_verbose(['./fetch-vendor-resources.sh'], args.verbose)
+        if p.returncode != 0:
+            raise FatalError("'./fetch-vendor-resources.sh' returned error code {}".format(p.returncode))
+        print("... done fetching resource files from Internet\n", flush=True)
 
         # Collect files into static directory
-        try:
-            if args.non_interactive:
-                subprocess.run(['./manage.py', 'collectstatic', '--no-input'])
-            else:
-                subprocess.run(['./manage.py', 'collectstatic'])
-        except FatalError as err:
-            print("\n\nFatal error, exiting: {}\n".format(err));
-            sys.exit(1)
+        print("collecting files into static directory...", flush=True)
+        if args.non_interactive:
+            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
+            if p.returncode != 0:
+                raise FatalError("'./manage.py collectstatic --no-input' returned error code {}".format(p.returncode))
+        else:
+            p = run_optionally_verbose(['./manage.py', 'collectstatic'], args.verbose)
+            if p.returncode != 0:
+                raise FatalError("'./manage.py collectstatic' returned error code {}".format(p.returncode))
+        print("... done collecting files into static directory.\n", flush=True)
+
+    except HaltedError as err:
+        print("\n\nInstall halted because: {}.\n".format(err));
+        sys.exit(0)
 
     except FatalError as err:
-        print("\n\nFatal error, exiting: {}\n".format(err));
+        print("\n\nFatal error, exiting: {}.\n".format(err));
         sys.exit(1)
 
 if __name__ == "__main__":
