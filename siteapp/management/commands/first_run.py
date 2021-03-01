@@ -58,7 +58,7 @@ class Command(BaseCommand):
             # We will do some hard-coding here temporarily
             created_appsource = AppSource.objects.get(slug="govready-q-files-startpack")
             for appname in ["System-Description-Demo", "PTA-Demo", "rules-of-behavior", "lightweight-ato"]:
-                print("Adding appname '{}' from AppSource '{}' to catalog.".format(appname, created_appsource))
+                print("Ensuring appname '{}' from AppSource '{}' is in catalog.".format(appname, created_appsource))
                 try:
                     appver = created_appsource.add_app_to_catalog(appname)
                 except Exception as e:
@@ -74,19 +74,24 @@ class Command(BaseCommand):
                 if component_file.endswith(".json"):
                     with open(os.path.join(path, component_file)) as f:
                         oscal_component_json = f.read()
+                        # Check first component, import if new, ignore if exists
+                        # TODO: implement the check-for-new function
                         result = ComponentImporter().import_components_as_json(import_name, oscal_component_json)
 
         # Finally, for authoring, create an AppSource to the stub file
         qfiles_path = 'guidedmodules/stubs/q-files'
         if os.path.exists(qfiles_path):
             # For 0.9.x+.
-            AppSource.objects.get_or_create(
+            appsource, created = AppSource.objects.get_or_create(
                 slug="govready-q-files-stubs",
                 defaults={
                     "spec": { "type": "local", "path": qfiles_path }
                 }
             )
-            print("Adding AppSource for authoring.")
+            if created:
+                print("Adding AppSource for authoring.")
+            else:
+                print("Confirmed that AppSource for authoring exists.")
 
         # Create GovReady admin users, if specified in local/environment.json
         if len(settings.GOVREADY_ADMINS):
