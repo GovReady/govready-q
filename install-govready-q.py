@@ -62,8 +62,8 @@ def create_environment_json(path):
     "govready-url": GOVREADYURL,
     "static": "static_root",
     "secret-key": secret_key,
-    "test_visible": false,
-    "debug": true
+    "test_visible": False,
+    "debug": True
     }
     # Create local directory
     if not os.path.exists('local'):
