@@ -29,7 +29,7 @@ import json
 
 # Default constants
 GOVREADYURL = "http://localhost:8000"
-SPACER = "..."
+SPACER = "\n====\n"
 
 # Gracefully exit on control-C
 signal.signal(signal.SIGINT, lambda signal_number, current_stack_frame: sys.exit(0))
@@ -91,8 +91,23 @@ def main():
             print("Install halted.")
             sys.exit(0)
 
+    # Print spacer
+    print(SPACER)
+
+    # Print machine information
+    uname = os.uname()
+    if uname[0] == "Darwin":
+        platform = "macOS Darwin"
+    else:
+        platform = uname[0]
+    print("Platform is {} version {} running on {}.".format(platform, uname[2], uname[4]))
+
+    # Collect command line arguments
     argparser = init_argparse();
     args = argparser.parse_args();
+
+    # Print spacer
+    print(SPACER)
 
     # Check if inside a virtual environment
     if sys.prefix != sys.base_prefix:
@@ -105,17 +120,26 @@ def main():
             print("Install halted.")
             sys.exit(0)
 
+    # Print spacer
+    print(SPACER)
+
     # Check for python3 and pip3 (and not 2 or e.g. 'python3.8')
     if not check_has_command(['python3', '--version']):
         raise FatalError("The 'python3' command is not available.")
     if not check_has_command(['pip3', '--version']):
         raise FatalError("The 'pip3' command is not available.")
 
+    # Print spacer
+    print(SPACER)
+
     # Print mode of interactivity
     if args.non_interactive:
         print("Installing GovReady-Q in non-interactive mode...")
     else:
         print("Installing GovReady-Q in interactive mode (default)...")
+
+    # Print spacer
+    print(SPACER)
 
     # pip install basic requirements
     if args.user:
