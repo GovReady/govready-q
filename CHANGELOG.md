@@ -1,20 +1,15 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (February XX, 2021)
+v0.9.2 (March 1, 2021)
 ------------------------
-
-**Bug changes**
-
-* Fixed how control id, title, and catalog key are retrieved for component library components.
-
-**Developer changes**
-
-* Created a ElementEditForm Django form in conjunction with some functional changes to avoid name collisions issues with component library.
 
 **Feature changes**
 
 * Remove a component and its statements from a system.
+* Implemented improved, 3 column editing page UI
+* Search/filter components feature added to component library (and for system control implementation page).
+* Support multiple reference-documents for generating Word version of SSP and other artififacts.
 
 **UI changes**
 
@@ -30,11 +25,16 @@ v999 (February XX, 2021)
 * Move inclusion of `edit-component-modal.html` from `base.html` to `components/element_detail_tabs.html`.
 * Fix sort control order in `component_library_component` on the `components/element_detail_tabs.html` using the `natsort` package to sort SID correctly.
 * Comment out `controls.models.ElementControl.get_controls_by_element` method because it is not being used. Will delete after a few releases if not needed.
+* Created a ElementEditForm Django form in conjunction with some functional changes to avoid name collisions issues with component library.
 
 **Data changes**
 
 * Alter Element description field to be blank and none.
 * Migration to lengthen django.contrib.auth.User.first_name field to 150 characters (change happened during an upgrade of Django and/or libraries).
+
+**Bug changes**
+
+* Fixed how control id, title, and catalog key are retrieved for component library components.
 
 v0.9.1.52 (February 16, 2021)
 -----------------------------
