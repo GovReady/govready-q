@@ -584,7 +584,7 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
                 )
         except:
             # TODO catch error and return error message
-            pprint("[INFO] App could not assign catalog_key or profile/baseline.\n")
+            print("[INFO] App could not assign catalog_key or profile/baseline.\n")
 
         # Assign default organization components for a system
         if user.has_perm('change_system', system):
