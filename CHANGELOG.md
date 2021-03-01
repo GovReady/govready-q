@@ -6,7 +6,26 @@ v999 (February XX, 2021)
 
 **Developer changes**
 
+* Created a ElementEditForm Django form in conjunction with some functional changes to avoid name collisions issues with component library.
+
+**Feature changes**
+
+* Remove a component and its statements from a system.
+
+**UI changes**
+
+* Added a button to system selected component page to remove a component from the system.
+* Moved "Add a component" to a system drop down to top of selected component page.
+* Added a search text box for each searching of components in the library and their statements.
+* Added pagnation to the component library and their statements.
+* Added a reset button for explicit resetting of component search.
+* Update component control statement editor layout with 3 column layout to make reading control implementation statements easier.
+
+**Developer changes**
+
 * Move inclusion of `edit-component-modal.html` from `base.html` to `components/element_detail_tabs.html`.
+* Fix sort control order in `component_library_component` on the `components/element_detail_tabs.html` using the `natsort` package to sort SID correctly.
+* Comment out `controls.models.ElementControl.get_controls_by_element` method because it is not being used. Will delete after a few releases if not needed.
 
 **Data changes**
 
@@ -39,7 +58,6 @@ Project page displays mini-dashboard of compliance stats.
 * Properly restrict statement history access to users with system, staff, or admin permissions.
 * Avoid name collisions when cloning a component.
 * Replaced function-based views with class-based listview for SelectedComponentsList, ProjectList.
-* Avoid name collisions when cloning a component.
 * Default to not use Django Debug Toolbar. Added new `enable_tool_bar` parameter option for `local/environment.json` to allow users to enable(True) or disable(False) the Django Debug Toolbar.
 * Adding DummyCache to prevent real caching while running automated tests.
 * Refactored use of random package to use secure secrets module.
@@ -49,6 +67,14 @@ Project page displays mini-dashboard of compliance stats.
 
 v0.9.1.51 (February 03, 2021)
 -----------------------------
+
+Add System Assessment Report tracking to associate assessments and evidence with the system.
+Add initial dynamic status information to the project page.
+
+**Feature changes**
+
+* Add System Assessment Report tracking to associate assessments and evidence with the system.
+* Add initial dynamic status information to the project page.
 
 **UI changes**
 

@@ -1,11 +1,11 @@
-<div id="edit-component-modal" class="modal"">
+<div id="edit-component-modal" class="modal">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h4 class="modal-title" id="invitation_modal_title">Edit Component</h4>
         </div>
-        <form role="form" method="get">
+        <form role="form" method="POST">
            <div class="modal-body">
             <div class="form-group" data-children-count="1">
                 <label class="control-label" for="id_name">Name</label>
@@ -14,7 +14,7 @@
             </div>
             <div class="form-group" data-children-count="1">
                 <label class="control-label" for="id_name">Description</label>
-                <input type="text" name="name" maxlength="250" class="form-control" placeholder="Description" title="Common name or acronym of the element" required="" id="description-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0">
+                <input type="text" name="name" maxlength="250" class="form-control" placeholder="Description" title="Brief description of the Element" required="" id="description-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0">
                 <div class="help-block">Brief description of the Element</div>
             </div>
             <div class="alert alert-danger" role="alert" id="error-alert">
@@ -28,8 +28,8 @@
         </div>
       </div>
     </div>
-  </div>
-  
+
+
   {% block scripts %}
   <script>
     function show_edit_component_modal(name,description,callback) {
@@ -46,7 +46,7 @@
       $('#edit-component-modal').modal('hide');
     }
     function show_edit_component_modal_error(errorMessage){
-      $("#error-alert").html(errorMessage); 
+      $("#error-alert").html(errorMessage);
       $('#error-alert').fadeIn();
     }
   </script>

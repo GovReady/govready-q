@@ -1,0 +1,30 @@
+@font-face {
+	font-family: 'Hind';
+	font-style: normal;
+	font-weight: 400;
+	src:
+		/* from https://fonts.gstatic.com/s/hind/v11/5aU69_a8oxmIdGl4Ag.woff */
+		url('../vendor/Hind_400.woff') format('woff'),
+		/* from https://fonts.gstatic.com/s/hind/v11/5aU69_a8oxmIdGl4BA.woff2 */
+		url('../vendor/Hind_400.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Hind';
+	font-style: normal;
+	font-weight: 700;
+	src:
+		/* from https://fonts.gstatic.com/s/hind/v11/5aU19_a8oxmIfNJdERySiw.woff */
+		url('../vendor/Hind_700.woff') format('woff'),
+		/* from https://fonts.gstatic.com/s/hind/v11/5aU19_a8oxmIfNJdERySjQ.woff2 */
+		url('../vendor/Hind_700.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Lato';
+	font-style: normal;
+	font-weight: 900;
+	src:
+		/* from https://fonts.gstatic.com/s/lato/v17/S6u9w4BMUTPHh50XSwiPHw.woff */
+		url('../vendor/Lato_900.woff') format('woff'),
+		/* from https://fonts.gstatic.com/s/lato/v17/S6u9w4BMUTPHh50XSwiPGQ.woff2 */
+		url('../vendor/Lato_900.woff2') format('woff2');
+}

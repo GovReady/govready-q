@@ -203,21 +203,34 @@ download \
 
 # google fonts
 #  Hind: SIL Open Font License 1.1
-# first download a helper (note: we're about to run a foreign script locally)
-# TODO: Requires bash v4 not available on macOS.
+#  Lato: SIL Open Font License 1.1
+# to get static download locations, use https://github.com/neverpanic/google-font-download
 download \
-  https://raw.githubusercontent.com/neverpanic/google-font-download/d7bb34e0c5fa01d9411213fd1a1363317d3ceb11/google-font-download \
-  /tmp/google-font-download \
-  '95195992a6bb551755e8871e7570a544b047f46bcc253f0f3691f0d657a5a620'
-(cd $VENDOR; bash /tmp/google-font-download -f woff,woff2 -o google-fonts.css Hind:400 Hind:700 Lato:900)
-rm -f /tmp/google-font-download
-# generated with: $SHACMD $VENDOR/{google-fonts.css,Hind*,Lato*}
-$SHACMD_CHECK << EOF
-faf874b09bc8220042ee61d072a5a5de49eac3275b5fe4917ed336461e35080a  siteapp/static/vendor/google-fonts.css
-6375a7ecbb77ba42e2de22c99aab9fea1fea125d6d857512360a3a555ff74161  siteapp/static/vendor/Hind_400.woff
-d7a3280717b1f82f46bee459863720a03de43b16dc8097ba1b133440e5fe0edc  siteapp/static/vendor/Hind_400.woff2
-a3ef4f13a191d01ecca06b8b997a666b28d4c614d6de256753fa9f4fbe15b726  siteapp/static/vendor/Hind_700.woff
-e2f1a473a1649fe316dbddc5cf8f45c525d62b8373d1be395272864c0cf1e60f  siteapp/static/vendor/Hind_700.woff2
-7831e273f41fef8485564286f3578d2847754db375befdb48b8ce37e1e1f3a57  siteapp/static/vendor/Lato_900.woff
-7d4243c8e973ec0cfc707904891ae4e3efc03dbc8923acb9755f9a35c92269a6  siteapp/static/vendor/Lato_900.woff2
-EOF
+    https://fonts.gstatic.com/s/hind/v11/5aU69_a8oxmIdGl4Ag.woff \
+    $VENDOR/Hind_400.woff \
+    '6375a7ecbb77ba42e2de22c99aab9fea1fea125d6d857512360a3a555ff74161'
+
+download \
+    https://fonts.gstatic.com/s/hind/v11/5aU69_a8oxmIdGl4BA.woff2 \
+    $VENDOR/Hind_400.woff2 \
+    'd7a3280717b1f82f46bee459863720a03de43b16dc8097ba1b133440e5fe0edc'
+
+download \
+    https://fonts.gstatic.com/s/hind/v11/5aU19_a8oxmIfNJdERySiw.woff \
+    $VENDOR/Hind_700.woff \
+    'a3ef4f13a191d01ecca06b8b997a666b28d4c614d6de256753fa9f4fbe15b726'
+
+download \
+    https://fonts.gstatic.com/s/hind/v11/5aU19_a8oxmIfNJdERySjQ.woff2 \
+    $VENDOR/Hind_700.woff2 \
+    'e2f1a473a1649fe316dbddc5cf8f45c525d62b8373d1be395272864c0cf1e60f'
+
+download \
+    https://fonts.gstatic.com/s/lato/v17/S6u9w4BMUTPHh50XSwiPHw.woff \
+    $VENDOR/Lato_900.woff \
+    '7831e273f41fef8485564286f3578d2847754db375befdb48b8ce37e1e1f3a57'
+
+download \
+    https://fonts.gstatic.com/s/lato/v17/S6u9w4BMUTPHh50XSwiPGQ.woff2 \
+    $VENDOR/Lato_900.woff2 \
+    '7d4243c8e973ec0cfc707904891ae4e3efc03dbc8923acb9755f9a35c92269a6'
