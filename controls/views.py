@@ -1746,7 +1746,6 @@ def update_smt_prototype(request):
 
 def delete_smt(request):
     """Delete a statement"""
-
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
@@ -1785,6 +1784,7 @@ def delete_smt(request):
             form_values[key] = form_dict[key][0]
 
         # Delete statement?
+        smt_id = form_values['smt_id']
         statement = Statement.objects.get(pk=smt_id)
 
         # Check user permissions
@@ -1832,7 +1832,6 @@ def delete_smt(request):
         #     return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg })
 
         return JsonResponse({"status": "success", "message": statement_msg})
-
 
 # Components
 
