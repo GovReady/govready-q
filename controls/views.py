@@ -31,7 +31,7 @@ from guidedmodules.models import Task, Module, AppVersion, AppSource
 from siteapp.forms import ProjectForm
 from siteapp.models import Project
 from system_settings.models import SystemSettings
-from .forms import ImportOSCALComponentForm
+from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
 from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
 from .forms import ElementEditForm
 from .models import *
@@ -516,7 +516,7 @@ class ComponentImporter(object):
         else:
             if request is not None:
                 messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
-            logger.info(f"Invalid JSON. Component(s) not created.")
+                logger.info(f"Invalid JSON. Component(s) not created.")
             return False
 
     def create_import_record(self, import_name, components):
@@ -1616,7 +1616,7 @@ def save_smt(request):
             )
             new_statement = True
             # Convert the human readable catalog name to proper catalog key, if needed
-            # from huma readable `NIST SP-800-53 rev4` to `NIST_SP-800-53_rev4`
+            # from human readable `NIST SP-800-53 rev4` to `NIST_SP-800-53_rev4`
             statement.sid_class = statement.sid_class.replace(" ","_")
 
         # Save Statement object
@@ -1746,6 +1746,7 @@ def update_smt_prototype(request):
 
 def delete_smt(request):
     """Delete a statement"""
+
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
@@ -1782,9 +1783,8 @@ def delete_smt(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
-
-        # Delete statement?
         smt_id = form_values['smt_id']
+        # Delete statement?
         statement = Statement.objects.get(pk=smt_id)
 
         # Check user permissions
@@ -1832,6 +1832,7 @@ def delete_smt(request):
         #     return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg })
 
         return JsonResponse({"status": "success", "message": statement_msg})
+
 
 # Components
 
