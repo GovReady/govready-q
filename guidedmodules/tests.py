@@ -1,7 +1,12 @@
 from django.contrib.auth.models import Permission
+from django.core.files import File
 from django.db.models import Q
 from django.test import TestCase
-from siteapp.models import Organization, Project, User
+from django.utils.crypto import get_random_string
+
+from siteapp.enums.assets import AssetTypeEnum
+from siteapp.models import Organization, Project, User, ProjectAsset
+from siteapp.tests import SeleniumTest, wait_for_sleep_after
 from .app_loading import load_app_into_database
 from .models import Module, Task, AppVersion
 from .module_logic import *
@@ -760,6 +765,43 @@ class ImportExportTests(TestCaseWithFixtureData):
                     # Check other value types for equality.
                     self.assertEqual(b.get(k), v, "->".join(path+[k]))
         check_dict(task_dict, export, [module_name, question_name])
+
+    def test_system_docx_template_asset_exists(self):
+        self.assertEqual(self.project.assets.first().title, "System Template")
+
+    def test_export_docx(self):
+        # Add New SSP Template Assets
+        assets = []
+        for i in range(10):
+            assets.append(ProjectAsset(title=f"Test Template {i}", asset_type=AssetTypeEnum.SSP_EXPORT,
+                                       description=f"Test Description - {i}",
+                                       file=File(open('assets/system-reference.docx', 'rb')),
+                                       project_id=self.project.pk))
+        ProjectAsset.objects.bulk_create(assets)
+        asset_ids = []
+        for asset in ProjectAsset.objects.filter(~Q(title__exact="System Template") &
+                                                 Q(project=self.project)).values('id', 'default'):
+            self.assertFalse(asset['default'])  # System Template still default
+            asset_ids.append(asset['id'])
+        new_default_asset = ProjectAsset.objects.get(id=asset_ids.pop())
+        new_default_asset.default = True
+        new_default_asset.save()
+
+        new_default_asset = ProjectAsset.objects.get(id=new_default_asset.id)  # checking it persisted
+        self.assertTrue(new_default_asset.default)
+
+        #  Verifying all the other assets are defaulted to False
+        self.assertFalse(ProjectAsset.objects.filter(pk__in=[x for x in asset_ids], default=True).exists())
+
+        task = self.project.tasks.first()
+
+        # TODO - Selenium check
+        # Goto self.navigateToPage(f"/tasks/{task.id}/system-security-plan/finished")
+        # wait_for_sleep_after(lambda: self.click_element("#projectAssetWordConfigButton"))
+        # Click on an option that isn't "checked" by radio button
+        # Assert that the model changed on the backend based on the id of the radio button clicked
+        # Download the file @ f"/tasks/{task.id}/system-security-plan/download/document/ssp_v1/docx"
+        # Assert no errors.  Not sure how to verify the template changes in the docx
 
 class ComplianceAppTests(TestCaseWithFixtureData):
     ## COMPLIANCE APP VISIBILITY DATA TESTS ##
