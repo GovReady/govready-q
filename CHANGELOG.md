@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.52 (February 16, 2021)
+v999 (February XX, 2021)
 ------------------------
 
 **Developer changes**
@@ -19,6 +19,7 @@ v0.9.1.52 (February 16, 2021)
 * Added a search text box for each searching of components in the library and their statements.
 * Added pagnation to the component library and their statements.
 * Added a reset button for explicit resetting of component search.
+* Update component control statement editor layout with 3 column layout to make reading control implementation statements easier.
 
 **Developer changes**
 
