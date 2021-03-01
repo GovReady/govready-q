@@ -1,7 +1,7 @@
 id: app
 title: General IT System ATO for 800-53 (low)
 type: project
-version: 1.1.4
+version: 1.2.0
 icon: app.png
 introduction:
   format: markdown
@@ -34,7 +34,7 @@ catalog:
   status: production
   vendor: GovReady®
   vendor_url: ~
-  version: 1.1.4
+  version: 1.2.0
   parameters:
     - id: catalog_key
       value: NIST_SP-800-53_rev4

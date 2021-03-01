@@ -1,0 +1,12 @@
+id: ato_letter
+title: ATO Letter
+questions:
+
+- id: ato_letter_date
+  title: ATO Letter Delivery Date
+  prompt: |
+    When will this ATO letter be delivered?
+  type: date
+
+output:
+- templates/ato_letter.html

@@ -63,6 +63,7 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/download/oscal/json$',
         views.system_element_download_oscal_json,
         name="system_element_download_oscal_json"),
+    url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/_remove$', views.system_element_remove, name="system_element_remove"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
     url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
 
@@ -78,7 +79,7 @@ urlpatterns = [
     url(r'^import_records/(?P<import_record_id>.*)/delete$', views.import_record_delete, name="import_record_delete"),
 
     # Elements
-    url(r'^elements/(\d+)/__rename$', views.rename_element, name="rename_element"),
+    url(r'^elements/(\d+)/__edit$', views.edit_element, name="edit_element"),
 
     # Controls
     url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)', views.group, name="control_group"),

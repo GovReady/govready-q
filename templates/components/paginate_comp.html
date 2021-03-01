@@ -1,0 +1,17 @@
+{% if page_obj.has_other_pages %}
+<span class="pagination pull-right">
+    {% if page_obj.has_previous %}
+        <a href="?page=1">&laquo; </a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">previous</a>
+    {% endif %}
+
+    <span class="current">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">next</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"> &raquo;</a>
+    {% endif %}
+</span>
+{% endif %}

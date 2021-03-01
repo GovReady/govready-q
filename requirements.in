@@ -9,7 +9,11 @@ Jinja2 # BSD License
 
 # Less Common Python Packages
 html5lib # MIT License
+natsort # MIT License
 commonmark # BSD License
+# commonmark>=0.9 (e.g., 0.9.1 tested)  for Python 3.9 compatibility:
+#   html.unescape <- html.parser.HTMLParser.unescape dropped in Python 3.9:
+#     https://github.com/readthedocs/commonmark.py/commit/e2f389456b39aece2d9ced16f3a3656caeb0a423
 graphviz # MIT License
 fs # BSD License
 PyGithub # LGPL License
@@ -24,7 +28,7 @@ jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages
 # Django==2.2.12 # BSD License
-Django==3.1.6 # BSD License
+Django==3.1.7 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # Apache License 2.0
@@ -34,6 +38,7 @@ dj_database_url # BSD License
 whitenoise # MIT License
 django-guardian # MIT License
 django-simple-history # BSD License
+django-auto-prefetch # MIT License
 
 
 # Python Packages Developed by GovReady and/or Josh
@@ -43,14 +48,20 @@ exclusiveprocess # CC0
 django-html-emailer # MIT License
 django-database-storage-backend # CC0, requires libmagic (libmagic1 in Debian)
 commonmarkextensions # BSD 3
+# commonmarkextensions>=0.0.6 (e.g., 0.0.6 tested)  for Python 3.9 compatibility:
+#   commonmark <=0.9.1 compatibility:
+#     https://github.com/GovReady/CommonMark-py-Extensions/commit/72992208a2ddcb686e5a5a678dfeb04ee0440585
 structlog # Apache License
 
 # Only needed in common production deployment configurations
 # uwsgi # GPL2 # Needed only if using uwsgi instead of gunicorn
 gunicorn # MIT License
-# Pin gevent to avoid Docker build errors with gevent==20.5.0
-# gevent==20.5.0 requires c compiler and build tools
-gevent==1.4.0 # MIT License
+gevent>=1.4.0 # MIT License
+# gevent>=20.6.0 (e.g., 21.1.2 tested)  for Python 3.9 compatibility:
+#   http://www.gevent.org/changelog.html#id21
+#
+#   Note: >=20.5.0 has required building from source at `pip3 install`-time,
+#                  requiring Python dev, C compiler, & other build tool packages
 psycopg2-binary # LGPL
 rfc5424-logging-handler # BSD License
 
