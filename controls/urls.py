@@ -1,7 +1,7 @@
 from django.conf.urls import include, url
-
 from django.contrib import admin
 from django.conf import settings
+
 admin.autodiscover()
 
 from django.views.decorators.csrf import csrf_exempt
@@ -47,7 +47,6 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/edit$', views.manage_system_deployment, name="manage_system_deployment"),
     url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/inventory$', views.system_deployment_inventory, name="system_deployment_inventory"),
     url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/history$', views.deployment_history, name="deployment_history"),
-    # url(r'^restore_to/(?P<smt_id>.*)/(?P<history_id>.*)/$', views.restore_to_history, name="restore_to"),
 
     # Statements
     url(r'^smt/_save/$', views.save_smt),
@@ -60,6 +59,7 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/download/oscal/json$',
         views.system_element_download_oscal_json,
         name="system_element_download_oscal_json"),
+    url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/_remove$', views.system_element_remove, name="system_element_remove"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
     url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
 
@@ -75,7 +75,7 @@ urlpatterns = [
     url(r'^import_records/(?P<import_record_id>.*)/delete$', views.import_record_delete, name="import_record_delete"),
 
     # Elements
-    url(r'^elements/(\d+)/__rename$', views.rename_element, name="rename_element"),
+    url(r'^elements/(\d+)/__edit$', views.edit_element, name="edit_element"),
 
     # Controls
     url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)', views.group, name="control_group"),

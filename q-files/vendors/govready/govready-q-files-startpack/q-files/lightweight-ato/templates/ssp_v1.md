@@ -3,9 +3,11 @@ format: markdown
 title: SSP v1
 ...
 <style type="text/css" scoped>
+
+    body { max-width: 950px; margin: auto; }
     h2 { border-bottom:1px solid #888; margin-top: 3em; color: red;}
     h3 { border-bottom: 0.5px solid #aaa; color: #777; font-size: 14pt; font-weight: bold;}
-    h4 { margin-top: 15px; font-weight: bold; font-size: 1em; }
+    h4 { margin-top: 15px; font-weight: normal; font-size: 1em; }
     blockquote { color: #666; font-size:0.8em; margin: 0 10px; }
     .notice {color: red; font-size:3.0em; text-align:center; transform: scaleY(.85);
     font-weight: bold;}
@@ -51,6 +53,10 @@ title: SSP v1
 
     .soft {
       color: #aaa;
+    }
+
+    .warning {
+      color: red;
     }
 
     @media print {
@@ -181,17 +187,17 @@ The following tables identify the information types that are input, stored, proc
 
 The tables also identify the security impact levels for confidentiality, integrity and availability for each of the information types expressed as low, moderate, or high.  The security impact levels are based on the potential impact definitions for each of the security objectives (i.e., confidentiality, integrity and availability) discussed in NIST SP 800-60 and FIPS Pub 199.
 
-The potential impact is low if—
+The potential impact is low if:
 
 * The loss of confidentiality, integrity, or availability could be expected to have a limited adverse effect on organizational operations, organizational assets, or individuals.
 * A limited adverse effect means that, for example, the loss of confidentiality, integrity, or availability might: (i) cause a degradation in mission capability to an extent and duration that the organization is able to perform its primary functions, but the effectiveness of the functions is noticeably reduced; (ii) result in minor damage to organizational assets; (iii) result in minor financial loss; or (iv) result in minor harm to individuals.
 
-The potential impact is moderate if—
+The potential impact is moderate if:
 
 * The loss of confidentiality, integrity, or availability could be expected to have a serious adverse effect on organizational operations, organizational assets, or individuals. 
 * A serious adverse effect means that, for example, the loss of confidentiality, integrity, or availability might: (i) cause a significant degradation in mission capability to an extent and duration that the organization is able to perform its primary functions, but the effectiveness of the functions is significantly reduced; (ii) result in significant damage to organizational assets; (iii) result in significant financial loss; or (iv) result in significant harm to individuals that does not involve loss of life or serious life threatening injuries.
 
-The potential impact is high if—
+The potential impact is high if:
 
 * The loss of confidentiality, integrity, or availability could be expected to have a severe or catastrophic adverse effect on organizational operations, organizational assets, or individuals.
 * A severe or catastrophic adverse effect means that, for example, the loss of confidentiality, integrity, or availability might: (i) cause a severe degradation in or loss of mission capability to an extent and duration that the organization is not able to perform one or more of its primary functions; (ii) result in major damage to organizational assets; (iii) result in major financial loss; or (iv) result in severe or catastrophic harm to individuals involving loss of life or serious life threatening injuries.
@@ -564,7 +570,7 @@ Table 12 2. Information System Name Standards and Guidance includes in this sect
 
 Security controls must meet minimum security control baseline requirements.  Upon categorizing a system as Low, Moderate, or High sensitivity in accordance with FIPS 199, the corresponding security control baseline standards apply.  Some of the control baselines have enhanced controls which are indicated in parentheses.
 
-Security controls that are representative of the sensitivity of Enter Information System Abbreviation are described in the sections that follow.  Security controls that are designated as “Not Selected” or “Withdrawn by NIST” are not described unless they have additional FedRAMP controls.  Guidance on how to describe the implemented standard can be found in NIST 800-53, Rev 4.  Control enhancements are marked in parentheses in the sensitivity columns.
+Security controls that are representative of the sensitivity of Enter Information System Abbreviation are described in the sections that follow.  Security controls that are designated as "Not Selected" or "Withdrawn by NIST" are not described unless they have additional FedRAMP controls.  Guidance on how to describe the implemented standard can be found in NIST 800-53, Rev 4.  Control enhancements are marked in parentheses in the sensitivity columns.
 
 Systems that are categorized as FIPS 199 Low use the controls designated as Low, systems categorized as FIPS 199 Moderate use the controls designated as Moderate and systems categorized as FIPS 199 High use the controls designated as High.
 
@@ -573,6 +579,11 @@ Systems that are categorized as FIPS 199 Low use the controls designated as Low,
 {% set meta = {"current_family_title": "", "current_control": "", "current_control_part": "", "control_count": 0, "current_parts": []} %}
 
 {% for control in system.root_element.selected_controls_oscal_ctl_ids %}
+  {% set control_selected = false %}
+  {% if control in system.control_implementation_as_dict %}{% set control_selected = true %}{% endif %}
+  {% set control_smt_exists = false %}
+  {% if system.control_implementation_as_dict[control]['combined_smt']|length > 0 %}{% set control_smt_exists = true %}{% endif %}
+
   {% set var_ignore = meta.update({"control_count": meta['control_count'] + 1}) %}
 
   {% if meta['current_family_title'] != control_catalog[control.lower()]['family_title'] %}
@@ -585,12 +596,12 @@ Systems that are categorized as FIPS 199 Low use the controls designated as Low,
     <div style="font-size: 1.2em; margin: 1em 0 1em 0;">{{control|upper}} - {{control_catalog[control.lower()]['title']}}</div>
     <div style="white-space: pre-wrap;">{{control_catalog[control.lower()]['description']}}</div>
     <div>
-      <h4>What is the solution and how is it implemented?</h4>
-        {% if control in system.control_implementation_as_dict %}
-          <div style="white-space: pre-line; word-break: keep-all;">{{ system.control_implementation_as_dict[control]['combined_smt']|safe }}</div>
-        {% else %}
-          <div style="white-space: pre-line; word-break: keep-all;">No statement available.</div>
-        {% endif %}
+          {% if control_smt_exists %}
+            <h4>What is the solution and how is it implemented?</h4>
+            <div style="white-space: pre-line; word-break: keep-all;">{{ system.control_implementation_as_dict[control]['combined_smt']|safe }}</div>
+          {% else %}
+            <div {% if not control_smt_exists %}class="warning"{% endif %} style="white-space: pre-line; word-break: keep-all;">No implementation available.</div>
+          {% endif %}
     </div>
     {% endif %}
   </div>

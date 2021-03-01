@@ -1,0 +1,148 @@
+id: cp_reconstitution
+title: Contingency Plan Reconstitution
+internal:
+  snippets:
+  - snippet: |
+      Contingency Plan Activation
+introduction:
+  format: markdown
+  template: |
+    In the following questions, we'll summarize the Reconstitution Phase of your Contingency Plan.
+questions:
+- id: q24_pre
+  title: Reconstitution (pre)
+  prompt: |
+    Terminology: Reconstitution and Concurrent Processing.
+
+    **Reconstitution** is the process by which recovery activities are completed and
+    normal system operations are resumed.  If the original facility is unrecoverable,
+    the activities in this phase can also be applied to preparing a new permanent
+    location to support system processing requirements.  A determination must be made
+    whether the system has undergone significant change and will require reassessment
+    and reauthorization.  The phase consists of two major activities: (1) validating
+    successful reconstitution and (2) deactivation of the plan.
+
+    **Concurrent Processing** is the process of running a system at two separate locations
+    concurrently until there is a level of assurance that the recovered system is
+    operating correctly and securely.
+  type: interstitial
+- id: q25_data_validation_testing
+  title: Data Validation Testing
+  prompt: |
+    Describe your Contingency Plan's Data Validation Testing.
+
+    **Validation data testing** is the process of testing and validating data to ensure
+    that data files or databases have been recovered completely at the permanent location.
+
+    Describe procedures for testing and validation of data to ensure that data is
+    correct and up to date as of the last available backup.  Teams or persons responsible
+    for each procedure must be identified.  An example of a validation data test for
+    a moderate-impact system would be to compare a database audit log to the recovered
+    database to make sure all transactions were properly updated.
+  type: longtext
+- id: q26_functional_validation_testing
+  title: Functional Validation Testing
+  prompt: |
+    Describe your Contingency Plan's Functionality Testing.
+
+    **Functionality Testing** is a process for verifying that all system functionality has been tested, and the system is ready to return to normal operations.
+
+    Describe procedures for testing and validation functional and operational aspects of the system.
+  type: longtext
+- id: role_approve_recovery
+  title: Recovery Approver
+  prompt: What organizational role will formally declare the recovery effort is complete?
+  type: text
+- id: cp_recovery_declaration
+  title: Recovery Declaration Statement
+  prompt: |-
+    How will you declare that the system has been successfully recovered?
+
+    Update or add to the template text below:
+  type: longtext
+  default: Upon successfully completing testing and validation, the **[Insert role]**
+    will formally declare recovery efforts complete, and that {{project.system_info.system_name}}
+    is in normal operations.  {{project.system_info.system_name}} business and technical
+    POCs will be notified of the declaration by the Contingency Plan Coordinator.  The
+    recovery declaration statement notifies the Contingency Plan Team and executive
+    management that the {{project.system_info.system_name}} has returned to normal
+    operations.
+- id: cp_user_notification
+  title: User Notification Procedure
+  prompt: "How will you notify users the system has been recovered?\n\nAfter the recovery\
+    \ declaration statement is made, notifications need to be sent to users and customers.\
+    \  \n\nDescribe the notification procedures.  Ensure that the procedures described\
+    \ are consistent with Service Level Agreements and contracts."
+  type: longtext
+- id: cp_cleanup
+  title: Cleanup
+  prompt: >-
+    How will you cleanup after recovery?
+
+
+    Cleanup is the process of cleaning up or dismantling any temporary recovery locations,
+    restocking supplies used, returning manuals or other documentation to their original
+    locations, and readying the system for a possible future contingency event.
+
+
+    Describe cleanup procedures and tasks including cleanup roles and responsibilities.
+  type: longtext
+
+- id: cp_cleanup_roles
+  title: Cleanup, Roles and Responsibilities
+  prompt: |
+    Enter information on the roles who are responsible for cleanup.
+
+  type: datagrid
+  fields:
+    - key: Role
+      text: Role
+    - key: Cleanup Responsibilities
+      text: Cleanup Responsibilities
+  min: 0
+  max: ~
+
+- id: cp_returning_backup
+  title: Returning Backup Assets
+  prompt: "How will you return backups to appropriate state and location after recovery?\n\
+    \nIt is important that all backup and installation assets used during recovery\
+    \ be returned to the off-site data storage location.  \n\nProvide procedures for\
+    \ returning retrieved backup or installation assets to its offsite data storage\
+    \ location.  This may include proper logging and packaging of backup and installation\
+    \ media, preparing for transportation, and validating that media is securely stored\
+    \ at the offsite location."
+  type: longtext
+- id: cp_backingup_restored_systems
+  title: Backing-up Restored Systems
+  prompt: >-
+    How will you backup the recovered system?
+
+
+    As soon as reasonable following recovery, the system must be fully backed up and
+    a new copy of the current operational system stored for future recovery efforts.  This
+    full backup is then kept with other system backups.
+
+
+    Provide appropriate procedures for ensuring that a full system backup is conducted
+    within a reasonable time frame, ideally at the next scheduled backup period.
+  type: longtext
+- id: cp_role_activity_log
+  title: 'Role: Activity log'
+  prompt: What organizational role is responsible for creating the activity log of
+    the recovery?
+  type: text
+- id: cp_role_testing
+  title: 'Role: Functionality and Data Testing'
+  prompt: What organizational role is responsible for functionality and data testing
+    during the recovery?
+  type: text
+- id: cp_role_lessons_learned
+  title: 'Role: Lessons Learned'
+  prompt: What organizational role is responsible for preparing lessons learned from
+    the recovery?
+  type: text
+- id: cp_role_after_action_report
+  title: 'Role: After Action Report'
+  prompt: What organizational role is responsible for the After Action Report for
+    the recovery?
+  type: text

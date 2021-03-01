@@ -1,0 +1,23 @@
+id: risk_assessment_report_doc
+title: Risk Assessment Report Document
+
+questions:
+- id: q1
+  title: Overview
+  prompt: |
+    Risk Assessment Report
+
+    The Risk Assessment Report (RAR) is a key document for the final security authorization package. The Risk Assessment Report summarizes security policy requirements, risks to the IT system based on vulnerabilities, and suggested countermeasures to mitigate risks among other things.
+    
+    We've prepared a draft Risk Assessment Report based on what you've told us about your system.
+  type: interstitial
+- id: rar_date
+  title: Date Completed
+  prompt: |
+    Risk Assessment Report Document, Date Complete
+
+    What is the date by which you will complete this Risk Assessment Report?
+  type: date
+
+output:
+- templates/risk_assessment_report.md

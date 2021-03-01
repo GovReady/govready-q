@@ -1,0 +1,992 @@
+id: se_ciso_policy_soc_stp
+output:
+- format: markdown
+  id: nist_80053rev4_ssp_AC_11_a_1
+  template: |
+    Per policy the session lock parameter should be set to 15 minutes.
+  title: NIST 800-53 rev4 SSP AC_11_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_AC_2_a_1
+  template: |
+    Policy defines information system account types to be identified and selected to support organizational missions/business functions.
+  title: NIST 800-53 rev4 SSP AC_2_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_AC_2_j_1
+  template: |
+    Policy accounts must be reviewed at least monthly.
+  title: NIST 800-53 rev4 SSP AC_2_j_1
+- format: markdown
+  id: nist_80053rev4_ssp_AC_23_1
+  template: |
+    The SOD defines techniques for data mining prevention and detection.
+  title: NIST 800-53 rev4 SSP AC_23_1
+- format: markdown
+  id: nist_80053rev4_ssp_AC_23_2
+  template: |
+    The SOD defines the specific data objects that must be protected from data mining.
+  title: NIST 800-53 rev4 SSP AC_23_2
+- format: markdown
+  id: nist_80053rev4_ssp_AC_23_3
+  template: |
+    The SOD employs wide data mining prevention and detection solutions.
+  title: NIST 800-53 rev4 SSP AC_23_3
+- format: markdown
+  id: nist_80053rev4_ssp_AC_3
+  template: >
+    All application accounts are authenticated against the ICAM using the PIV
+    card with PIN. Entitlement roles are managed through the ICAM.
+  title: NIST 800-53 rev4 SSP AC_3
+- format: markdown
+  id: nist_80053rev4_ssp_AC_4_21_1
+  template: |
+    The CISO defines the required separations of information flows by types of information.
+  title: NIST 800-53 rev4 SSP AC_4_21_1
+- format: markdown
+  id: nist_80053rev4_ssp_AC_4_21_2
+  template: |
+    The CISO defines the mechanisms and/or techniques to be used to separate information flows logically or physically.
+  title: NIST 800-53 rev4 SSP AC_4_21_2
+- format: markdown
+  id: nist_80053rev4_ssp_AC_6
+  template: >
+    Privileged accounts are established via the AWS form process, which enforces
+    approved authorizations with access controls in place. The application layer utilizes
+    entitlement roles managed by the ICAM to enforce the principle of least privilege.
+  title: NIST 800-53 rev4 SSP AC_6
+- format: markdown
+  id: nist_80053rev4_ssp_AU_12_a_1
+  template: >
+    The CISO defines the information system components which are to provide
+    audit record generation capability for the auditable events defined in AU-2a.
+  title: NIST 800-53 rev4 SSP AU_12_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_AU_12_b_1
+  template: >
+    The CISO defines the personnel or roles allowed to select which auditable
+    events are to be audited by specific components of the information system.
+  title: NIST 800-53 rev4 SSP AU_12_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_AU_2_a_1
+  template: |
+    Policy has defined the list of auditable events that the information system must be capable of auditing.
+  title: NIST 800-53 rev4 SSP AU_2_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_AU_2_c
+  template: >
+    Policy has defined the list of auditable events that the information system
+    must be capable of auditing which has been deemed the minimum set of events to
+    support after the fact investigations.
+  title: NIST 800-53 rev4 SSP AU_2_c
+- format: markdown
+  id: nist_80053rev4_ssp_AU_2_d_1
+  template: |
+    Policy has defined the subset of auditable events that must be audited.
+  title: NIST 800-53 rev4 SSP AU_2_d_1
+- format: markdown
+  id: nist_80053rev4_ssp_AU_2_d_3
+  template: |
+    Policy defines the frequency as at least monthly.
+  title: NIST 800-53 rev4 SSP AU_2_d_3
+- format: markdown
+  id: nist_80053rev4_ssp_AU_6_a_1
+  template: >
+    Policy has defined the minimum level of inappropriate or unusual activity
+    to look for when information system audit records are reviewed and analyzed.
+  title: NIST 800-53 rev4 SSP AU_6_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_AU_6_a_2
+  template: >
+    Policy defines the frequency to review and analyze information system audit
+    records for indications of organization-defined inappropriate or unusual activity.
+  title: NIST 800-53 rev4 SSP AU_6_a_2
+- format: markdown
+  id: nist_80053rev4_ssp_CA_3_a
+  template: |
+    The CISO determines the requirements for Interconnection Security Agreements to authorize other system connections.
+  title: NIST 800-53 rev4 SSP CA_3_a
+- format: markdown
+  id: nist_80053rev4_ssp_CA_3_b_1
+  template: |
+    The CISO determines the requirements for Interconnection Security Agreements to document interface characteristics.
+  title: NIST 800-53 rev4 SSP CA_3_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_CA_3_b_2
+  template: |
+    The CISO determines the requirements for Interconnection Security Agreements to document the security requirements.
+  title: NIST 800-53 rev4 SSP CA_3_b_2
+- format: markdown
+  id: nist_80053rev4_ssp_CA_3_b_3
+  template: |
+    The CISO determines the requirements for Interconnection Security Agreements to document the nature of the information.
+  title: NIST 800-53 rev4 SSP CA_3_b_3
+- format: markdown
+  id: nist_80053rev4_ssp_CA_3_c_2
+  template: |
+    The CISO determines the frequency defined within organizational documentation.
+  title: NIST 800-53 rev4 SSP CA_3_c_2
+- format: markdown
+  id: nist_80053rev4_ssp_CA_3_c_1
+  template: |
+    The system follows organizational documentation to review and update the Interconnection Security Agreement
+  title: NIST 800-53 rev4 SSP CA_3_c_1
+- format: markdown
+  id: nist_80053rev4_ssp_CA_5_internal_policy_1
+  template: |
+    The ISSO in coordination with the system owner, and system staff, shall ensure that POA&MS are in compliance with requirements.
+  title: NIST 800-53 rev4 SSP CA_5_internal_policy_1
+- format: markdown
+  id: nist_80053rev4_ssp_CA_5_a_1
+  template: >
+    The CISO (ISSO) in coordination with the system owner and system staff,
+    develop a POA&M to document the organization’s planned remedial actions to correct
+    weaknesses or deficiencies noted during the assessment of the security controls
+  title: NIST 800-53 rev4 SSP CA_5_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_CA_5_a_2
+  template: |
+    The ISSO updates the existing POA&Ms in coordination with the system owner and system staff, according to CISO requirements.
+  title: NIST 800-53 rev4 SSP CA_5_a_2
+- format: markdown
+  id: nist_80053rev4_ssp_CA_5_b_1
+  template: |
+    The CISO determine the frequency by which to update POA&Ms.
+  title: NIST 800-53 rev4 SSP CA_5_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_CA_5_b_2_a
+  template: >
+    The ISSO in coordination with the system owner, and system staff, updates the
+    existing POA&M according to requirements based on the findings from security
+    controls assessments.
+  title: NIST 800-53 rev4 SSP CA_5_b_2_a
+- format: markdown
+  id: nist_80053rev4_ssp_CA_5_b_2_b
+  template: >
+    The ISSO in coordination with the system owner, and system staff, updates the
+    existing POA&M according to requirements based on the findings from security
+    impact analyses.
+  title: NIST 800-53 rev4 SSP CA_5_b_2_b
+- format: markdown
+  id: nist_80053rev4_ssp_CA_5_b_2_c
+  template: >
+    The ISSO in coordination with the system owner, and system staff, updates the
+    existing POA&M according to requirements based on the findings from continuous
+    monitoring activities.
+  title: NIST 800-53 rev4 SSP CA_5_b_2_c
+- format: markdown
+  id: nist_80053rev4_ssp_CA_7_b_3
+  template: >
+    STP develops the SAMS continuous monitoring strategy that includes establishment
+    of the organization-defined frequencies for assessments supporting monitoring.
+  title: NIST 800-53 rev4 SSP CA_7_b_3
+- format: markdown
+  id: nist_80053rev4_ssp_CA_7_b_4
+  template: >
+    STP implements the SAMS continuous monitoring strategy that includes establishment
+    of the organization-defined frequencies for assessments supporting monitoring.
+  title: NIST 800-53 rev4 SSP CA_7_b_4
+- format: markdown
+  id: nist_80053rev4_ssp_CA_7_b_2
+  template: |
+    Frequency of assessments are defined by the STP OA program.
+  title: NIST 800-53 rev4 SSP CA_7_b_2
+- format: markdown
+  id: nist_80053rev4_ssp_CA_7_c_1
+  template: |
+    STP develops the OA program.
+  title: NIST 800-53 rev4 SSP CA_7_c_1
+- format: markdown
+  id: nist_80053rev4_ssp_CA_7_c_2
+  template: |
+    STP implements the OA program.
+  title: NIST 800-53 rev4 SSP CA_7_c_2
+- format: markdown
+  id: nist_80053rev4_ssp_CM_2_1
+  template: |
+    The development team maintains the current baseline configuration of the applications in the GitLab repository.
+  title: NIST 800-53 rev4 SSP CM_2_1
+- format: markdown
+  id: nist_80053rev4_ssp_CM_2_2
+  template: >
+    The development team utilizes a GitLab repository to maintain an up-to-date,
+    complete, accurate, and readily available baseline configuration of the information
+    system
+  title: NIST 800-53 rev4 SSP CM_2_2
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_d_2
+  template: |
+    The application utilizes GitLab to centrally manage configuration settings which adhere to defined policies.
+  title: NIST 800-53 rev4 SSP CM_6_d_2
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_1_1_b
+  template: >
+    The organization defines information system components for which any deviations
+    from establishes configuration settings must be identified inside organizational
+    documents
+  title: NIST 800-53 rev4 SSP CM_6_1_1_b
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_1_1_c
+  template: >
+    The organization defines information system components for which any deviations
+    from establishes configuration settings must be documented inside organizational
+    documents
+  title: NIST 800-53 rev4 SSP CM_6_1_1_c
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_1_2_a
+  template: >
+    Information system components are defined per policy. The information
+    system components that require configuration settings to be automated and applied
+    are documented within the system Security Plan as well
+  title: NIST 800-53 rev4 SSP CM_6_1_2_a
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_1_2_b
+  template: >
+    Information system components are defined per policy. The information
+    system components that require configuration settings verification are documented
+    within the system Security Plan as well
+  title: NIST 800-53 rev4 SSP CM_6_1_2_b
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_a_1
+  template: >
+    The organization defines information system components for which any deviations
+    from establishes configuration settings must be approved within organizational documents
+  title: NIST 800-53 rev4 SSP CM_6_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_a_2
+  template: >
+    The organization defines operational requirements to support the identification
+    of any deviations from established configuration settings within organizational documents
+  title: NIST 800-53 rev4 SSP CM_6_a_2
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_b
+  template: >
+    The organization defines operational requirements to support the documentation
+    of any deviations from established configuration settings within organizational documents
+  title: NIST 800-53 rev4 SSP CM_6_b
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_c_1
+  template: >
+    The organization defines operational requirements to support the approval of any
+    deviations from established configuration settings within organizational documents
+  title: NIST 800-53 rev4 SSP CM_6_c_1
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_c_1_b
+  template: |
+    The organization identifies any deviations from established configuration settings within POA&M's and Security Waivers
+  title: NIST 800-53 rev4 SSP CM_6_c_1_b
+- format: markdown
+  id: nist_80053rev4_ssp_CM_6_c_5
+  template: >
+    The organization defines security configuration checklists to be used to establish
+    and document configuration settings within organizational documents documents
+  title: NIST 800-53 rev4 SSP CM_6_c_5
+- format: markdown
+  id: nist_80053rev4_ssp_CM_7_b_1_a
+  template: |
+    The system defines prohibited or restricted functions as outlined within organizational documentation
+  title: NIST 800-53 rev4 SSP CM_7_b_1_a
+- format: markdown
+  id: nist_80053rev4_ssp_CM_7_b_1_b
+  template: |
+    The system defines prohibited or restricted ports as outlined within organizational documentation
+  title: NIST 800-53 rev4 SSP CM_7_b_1_b
+- format: markdown
+  id: nist_80053rev4_ssp_CM_7_b_1_c
+  template: |
+    The system defines prohibited or restricted protocols as outlined within organizational documentation
+  title: NIST 800-53 rev4 SSP CM_7_b_1_c
+- format: markdown
+  id: nist_80053rev4_ssp_CM_7_b_1_d
+  template: |
+    The system defines prohibited or restricted services as outlined within organizational documentation
+  title: NIST 800-53 rev4 SSP CM_7_b_1_d
+- format: markdown
+  id: nist_80053rev4_ssp_CM_8_a_1
+  template: |
+    The CISO determines SSP requirements.
+  title: NIST 800-53 rev4 SSP CM_8_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_CM_8_a_2
+  template: |
+    The CISO determines SSP requirements.
+  title: NIST 800-53 rev4 SSP CM_8_a_2
+- format: markdown
+  id: nist_80053rev4_ssp_CM_8_a_3
+  template: |
+    The CISO determines SSP requirements.
+  title: NIST 800-53 rev4 SSP CM_8_a_3
+- format: markdown
+  id: nist_80053rev4_ssp_CM_8_a_4_1
+  template: |
+    The CISO defines the information deemed necessary to achieve effective information system component accountability
+  title: NIST 800-53 rev4 SSP CM_8_a_4_1
+- format: markdown
+  id: nist_80053rev4_ssp_CM_8_a_4_2
+  template: |
+    The CISO determines SSP requirements.
+  title: NIST 800-53 rev4 SSP CM_8_a_4_2
+- format: markdown
+  id: nist_80053rev4_ssp_CM_8_b_1
+  template: |
+    The CISO defines the frequency to review and update the information system component inventory
+  title: NIST 800-53 rev4 SSP CM_8_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_CM_8_b_2
+  template: |
+    The CISO reviews and updates the information system component inventory with the organization-defined frequency.
+  title: NIST 800-53 rev4 SSP CM_8_b_2
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_a_1
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_a_2_1
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_a_2_1
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_a_2_2
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_a_2_2
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_a_2_3
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_a_2_3
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_a_3_1
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_a_3_1
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_a_3_2
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_a_3_2
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_a_3_3
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_a_3_3
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_a_4
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_a_4
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_a_5
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_a_5
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_a_6_1
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_a_6_1
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_a_6_2
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_a_6_2
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_b_1
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_b_2
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_b_2
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_d_2
+  template: |
+    The CISO shall determine the frequency to review the contingency plan,
+  title: NIST 800-53 rev4 SSP CP_2_d_2
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_e_2
+  template: |
+    The CISO shall determine the requirements for updating system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_e_2
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_f_1
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_f_1
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_f_2
+  template: |
+    The CISO shall determine the requirements for  system contignecy plans.
+  title: NIST 800-53 rev4 SSP CP_2_f_2
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_c
+  template: |
+    The CISO shall determine the requirements for contingency planning coordination across the organization
+  title: NIST 800-53 rev4 SSP CP_2_c
+- format: markdown
+  id: nist_80053rev4_ssp_CP_2_d_1
+  template: |
+    The CISO shall determine the frequency to review the contingency plan.
+  title: NIST 800-53 rev4 SSP CP_2_d_1
+- format: markdown
+  id: nist_80053rev4_ssp_CP_4_internal_policy_1
+  template: >
+    The CISO shall  ensure that CP testing is performed in accordance with
+    the availability security objective based on whether the information system is
+    categorized as High, moderate, or low impact.
+  title: NIST 800-53 rev4 SSP CP_4_internal_policy_1
+- format: markdown
+  id: nist_80053rev4_ssp_CP_4_a_1
+  template: >
+    The CISO shall define tests to determine the effectiveness of the contingency
+    plan and the organizational readiness to execute the plan.
+  title: NIST 800-53 rev4 SSP CP_4_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_CP_4_a_2
+  template: |
+    The CISO shall define a frequency to test the contingency plan for the information system.
+  title: NIST 800-53 rev4 SSP CP_4_a_2
+- format: markdown
+  id: nist_80053rev4_ssp_CP_4_a_3
+  template: >
+    The CISO defines the frequency, using defined tests to determine
+    the effectiveness of the plan and the organizational readiness to execute the
+    plan.
+  title: NIST 800-53 rev4 SSP CP_4_a_3
+- format: markdown
+  id: nist_80053rev4_ssp_IA_2
+  template: >
+    All SAMS application accounts are authenticated against the ICAM using the
+    PIV card with PIN.  The PIV is assigned and credentials are verified by the organization.
+  title: NIST 800-53 rev4 SSP IA_2
+- format: markdown
+  id: nist_80053rev4_ssp_IA_2_internal_policy_1
+  template: >
+    All SAMS application implements multifactor authentication against the ICAM
+    using the PIV card with PIN.  The PIV is assigned and credentials are verified
+    by the organization.
+  title: NIST 800-53 rev4 SSP IA_2_internal_policy_1
+- format: markdown
+  id: nist_80053rev4_ssp_IA_2_internal_policy_2
+  template: >
+    The system implements multifactor authentication by making use of the PIV card
+    against the ICAM for authentication. Users must authenticate with their PIV
+    and associated PIN to access the application.
+  title: NIST 800-53 rev4 SSP IA_2_internal_policy_2
+- format: markdown
+  id: nist_80053rev4_ssp_IA_2_1
+  template: >
+    The system implements multifactor authentication by making use of the PIV card
+    against the ICAM for authentication. Users must authenticate with their PIV
+    and associated PIN to access the application. PIV credentials are verified by
+    electronically by organizational systems
+  title: NIST 800-53 rev4 SSP IA_2_1
+- format: markdown
+  id: nist_80053rev4_ssp_IA_2_9
+  template: |
+    User training is conducted through the PALMS training requirements.
+  title: NIST 800-53 rev4 SSP IA_2_9
+- format: markdown
+  id: nist_80053rev4_ssp_IR_6_a_2
+  template: >
+    The CISO shall  require personnel to report suspected security incidents
+    to the organizational incident response capability within the organization-defined
+    time period.
+  title: NIST 800-53 rev4 SSP IR_6_a_2
+- format: markdown
+  id: nist_80053rev4_ssp_IR_6_b_1
+  template: |
+    The organization's CISO  shall defines authorities to whom security incident information is to be reported.
+  title: NIST 800-53 rev4 SSP IR_6_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_MP_4
+  template: >
+    The system protects information system media until the media are destroyed or
+    sanitized using approved equipment, techniques, and procedures as defined within
+    organizational documentation
+  title: NIST 800-53 rev4 SSP MP_4
+- format: markdown
+  id: nist_80053rev4_ssp_MP_4_a_2
+  template: >
+    The system defines types of digital and/or non-digital media to be physically
+    controlled and securely stored within designated controlled areas within organizational documentation
+  title: NIST 800-53 rev4 SSP MP_4_a_2
+- format: markdown
+  id: nist_80053rev4_ssp_MP_4_a_3
+  template: >
+    The system defines controlled areas designated to physically control and securely
+    store organization-defined types of digital and/or non-digital media within organizational documentation
+  title: NIST 800-53 rev4 SSP MP_4_a_3
+- format: markdown
+  id: nist_80053rev4_ssp_MP_4_a_4
+  template: >
+    The system physically controls organization-defined types of digital and/or non-digital
+    media within controlled areas defined by organizational documentation
+  title: NIST 800-53 rev4 SSP MP_4_a_4
+- format: markdown
+  id: nist_80053rev4_ssp_MP_4_b
+  template: >
+    The system securely stores organization-defined types of digital and/or non-digital
+    media within controlled areas defined within organizational documentation
+  title: NIST 800-53 rev4 SSP MP_4_b
+- format: markdown
+  id: nist_80053rev4_ssp_PL_2_a_1
+  template: |
+    The CISO determines enterprise architecture.
+  title: NIST 800-53 rev4 SSP PL_2_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_PL_2_a_9
+  template: |
+    The CISO determines SSP requirements.
+  title: NIST 800-53 rev4 SSP PL_2_a_9
+- format: markdown
+  id: nist_80053rev4_ssp_PL_2_c_1
+  template: |
+    The CISO determines the frequency.
+  title: NIST 800-53 rev4 SSP PL_2_c_1
+- format: markdown
+  id: nist_80053rev4_ssp_PL_2_c_2
+  template: |
+    The CISO determines the frequency.
+  title: NIST 800-53 rev4 SSP PL_2_c_2
+- format: markdown
+  id: nist_80053rev4_ssp_PL_8_a_1
+  template: >
+    The CISO develops an information security architecture for the information
+    system that describes: the overall philosophy, requirements, and approach to be
+    taken with regard to protecting the confidentiality, integrity, and availability
+    of organizational information;
+  title: NIST 800-53 rev4 SSP PL_8_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_PL_8_a_2
+  template: >
+    The CISO Develops an information security architecture for the information
+    system that describes how the information security architecture is integrated
+    into and supports the enterprise architecture.
+  title: NIST 800-53 rev4 SSP PL_8_a_2
+- format: markdown
+  id: nist_80053rev4_ssp_PL_8_a_3
+  template: >
+    The CISO Develops an information security architecture for the information
+    system that describes: any information security assumptions about, and dependencies
+    on, external services.
+  title: NIST 800-53 rev4 SSP PL_8_a_3
+- format: markdown
+  id: nist_80053rev4_ssp_PL_8_b_1
+  template: |
+    The CISO defines the frequency to review and update the information security architecture.
+  title: NIST 800-53 rev4 SSP PL_8_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_PL_8_b_2
+  template: >
+    The CISO reviews and updates the information security architecture with the
+    organization-defined frequency to reflect updates in the enterprise architecture.
+  title: NIST 800-53 rev4 SSP PL_8_b_2
+- format: markdown
+  id: nist_80053rev4_ssp_RA_2_a
+  template: >
+    The CISO categorizes information and the information system in accordance
+    with applicable federal laws, Executive Orders, directives, policies, regulations,
+    standards, and guidance.
+  title: NIST 800-53 rev4 SSP RA_2_a
+- format: markdown
+  id: nist_80053rev4_ssp_RA_2_c
+  template: >
+    The CISO ensures the authorizing official or authorizing official designated
+    representative reviews and approves the security categorization decision.
+  title: NIST 800-53 rev4 SSP RA_2_c
+- format: markdown
+  id: nist_80053rev4_ssp_RA_3_c_1
+  template: |
+    The CISO determines the frequency.
+  title: NIST 800-53 rev4 SSP RA_3_c_1
+- format: markdown
+  id: nist_80053rev4_ssp_RA_3_d_1
+  template: |
+    The CISO determines Risk Assessment access controls.
+  title: NIST 800-53 rev4 SSP RA_3_d_1
+- format: markdown
+  id: nist_80053rev4_ssp_RA_3_e_2_a
+  template: |
+    The CISO determines the frequency.
+  title: NIST 800-53 rev4 SSP RA_3_e_2_a
+- format: markdown
+  id: nist_80053rev4_ssp_RA_3_e_2_b
+  template: |
+    The CISO determines the frequency by which updates are made.
+  title: NIST 800-53 rev4 SSP RA_3_e_2_b
+- format: markdown
+  id: nist_80053rev4_ssp_RA_3_e_2_c
+  template: |
+    The CISO determine Risk Assessment policies and procedures.
+  title: NIST 800-53 rev4 SSP RA_3_e_2_c
+- format: markdown
+  id: nist_80053rev4_ssp_RA_3_e_1
+  template: |
+    The CISO  defines the frequency to update the risk assessment.
+  title: NIST 800-53 rev4 SSP RA_3_e_1
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_a_2_a
+  template: |
+    The CISO determine Risk Assessment policies and procedures.
+  title: NIST 800-53 rev4 SSP RA_5_a_2_a
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_a_2_b
+  template: |
+    The CISO determine Risk Assessment policies and procedures.
+  title: NIST 800-53 rev4 SSP RA_5_a_2_b
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_b_1_1
+  template: |
+    The CISO determine Risk Assessment policies and procedures.
+  title: NIST 800-53 rev4 SSP RA_5_b_1_1
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_b_1_2
+  template: |
+    The CISO determine Risk Assessment policies and procedures.
+  title: NIST 800-53 rev4 SSP RA_5_b_1_2
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_b_1_3
+  template: |
+    The CISO determine Risk Assessment policies and procedures.
+  title: NIST 800-53 rev4 SSP RA_5_b_1_3
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_b_2_1
+  template: |
+    The CISO determine Risk Assessment policies and procedures.
+  title: NIST 800-53 rev4 SSP RA_5_b_2_1
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_b_2_2
+  template: |
+    The CISO determine Risk Assessment policies and procedures.
+  title: NIST 800-53 rev4 SSP RA_5_b_2_2
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_b_3
+  template: |
+    The CISO determine Risk Assessment policies and procedures.
+  title: NIST 800-53 rev4 SSP RA_5_b_3
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_d_1
+  template: |
+    The CISO determine Risk Assessment policies and procedures.
+  title: NIST 800-53 rev4 SSP RA_5_d_1
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_e_1
+  template: |
+    The CISO determine Risk Assessment policies and procedures.
+  title: NIST 800-53 rev4 SSP RA_5_e_1
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_e_2
+  template: |
+    The CISO determine Risk Assessment policies and procedures.
+  title: NIST 800-53 rev4 SSP RA_5_e_2
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_e_3
+  template: |
+    The CISO determine Risk Assessment policies and procedures.
+  title: NIST 800-53 rev4 SSP RA_5_e_3
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_a_1_a
+  template: |
+    The CISO  defines the frequency for conducting vulnerability scans on the information system and hosted applications.
+  title: NIST 800-53 rev4 SSP RA_5_a_1_a
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_a_1_b
+  template: |
+    The CISO defines the process for conducting random vulnerability scans on the information system and hosted applications.
+  title: NIST 800-53 rev4 SSP RA_5_a_1_b
+- format: markdown
+  id: nist_80053rev4_ssp_RA_5_d_2
+  template: >
+    The information system remediates legitimate vulnerabilities within defined
+    response times in accordance with assessment of risk.
+  title: NIST 800-53 rev4 SSP RA_5_d_2
+- format: markdown
+  id: nist_80053rev4_ssp_SA_9_a_1
+  template: |
+    The CISO defines security controls to be employed by providers of external information system services.
+  title: NIST 800-53 rev4 SSP SA_9_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_SA_9_a_2
+  template: >
+    The CISO requires that providers of external information system services
+    comply with organizational information security requirements.
+  title: NIST 800-53 rev4 SSP SA_9_a_2
+- format: markdown
+  id: nist_80053rev4_ssp_SA_9_a_3
+  template: >
+    The CISO requires that providers of external information system services
+    employ defined security controls in accordance with applicable federal
+    laws, Executive Orders, directives, policies, regulations, standards, and guidance.
+  title: NIST 800-53 rev4 SSP SA_9_a_3
+- format: markdown
+  id: nist_80053rev4_ssp_SA_9_b_1
+  template: |
+    The CISO defines and documents government oversight with regard to external information system services.
+  title: NIST 800-53 rev4 SSP SA_9_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_SA_9_b_2
+  template: |
+    The CISO defines and documents user roles and responsibilities with regard to external information system services.
+  title: NIST 800-53 rev4 SSP SA_9_b_2
+- format: markdown
+  id: nist_80053rev4_ssp_SA_9_c_1
+  template: >
+    The CISO defines processes, methods, and techniques to be employed to
+    monitor security control compliance by external service providers.
+  title: NIST 800-53 rev4 SSP SA_9_c_1
+- format: markdown
+  id: nist_80053rev4_ssp_SA_9_c_2
+  template: >
+    The CISO employs defined processes, methods, and techniques to
+    monitor security control compliance by external service providers on an ongoing
+    basis.
+  title: NIST 800-53 rev4 SSP SA_9_c_2
+- format: markdown
+  id: nist_80053rev4_ssp_SC_12_1_a
+  template: |
+    The system defines requirements for cryptographic key generation within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_12_1_a
+- format: markdown
+  id: nist_80053rev4_ssp_SC_12_1_b
+  template: |
+    The system defines requirements for cryptographic key distribution within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_12_1_b
+- format: markdown
+  id: nist_80053rev4_ssp_SC_12_1_c
+  template: |
+    The system defines requirements for cryptographic key storage within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_12_1_c
+- format: markdown
+  id: nist_80053rev4_ssp_SC_12_1_d
+  template: |
+    The system defines requirements for cryptographic key access within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_12_1_d
+- format: markdown
+  id: nist_80053rev4_ssp_SC_12_1_e
+  template: |
+    The system defines requirements for cryptographic key destruction within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_12_1_e
+- format: markdown
+  id: nist_80053rev4_ssp_SC_12_2
+  template: >
+    The system uses organization standards for their Principal Certificate Authority. New cryptographic
+    keys are established and managed by the Root Certificate Authority (CA)
+  title: NIST 800-53 rev4 SSP SC_12_2
+- format: markdown
+  id: nist_80053rev4_ssp_SC_13_1
+  template: |
+    The system defines cryptographic uses within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_13_1
+- format: markdown
+  id: nist_80053rev4_ssp_SC_13_2
+  template: |
+    The system defines the type of cryptography required for each use within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_13_2
+- format: markdown
+  id: nist_80053rev4_ssp_SC_18_a
+  template: |
+    The system defines acceptable and unacceptable mobile code and mobile code technologies within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_18_a
+- format: markdown
+  id: nist_80053rev4_ssp_SC_18_b_1
+  template: >
+    The system stablishes usage restrictions for acceptable mobile code and mobile
+    code technologies within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_18_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_SC_18_b_2
+  template: >
+    The system establishes implementation guidance for acceptable mobile code and
+    mobile code technologies within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_18_b_2
+- format: markdown
+  id: nist_80053rev4_ssp_SC_18_c_1
+  template: |
+    The system authorizes the use of mobile code as defined within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_18_c_1
+- format: markdown
+  id: nist_80053rev4_ssp_SC_23_3_1
+  template: >
+    The system defines randomness requirements for generating a unique session identifier
+    for each session within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_23_3_1
+- format: markdown
+  id: nist_80053rev4_ssp_SC_24_1
+  template: >
+    The system defines a known-state to which the information system is to fail in
+    the event of a system failure within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_24_1
+- format: markdown
+  id: nist_80053rev4_ssp_SC_24_2
+  template: >
+    The system defines types of failures for which the information system is to fail
+    to an organization-defined known-state within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_24_2
+- format: markdown
+  id: nist_80053rev4_ssp_SC_24_3
+  template: |
+    The system defines system state information to be preserved in the event of a system failure within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_24_3
+- format: markdown
+  id: nist_80053rev4_ssp_SC_28_1_1
+  template: |
+    The system defines information requiring cryptographic protection within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_28_1_1
+- format: markdown
+  id: nist_80053rev4_ssp_SC_28_1_2
+  template: >
+    The system defines information system components with information requiring cryptographic
+    protection within organizational documentation
+  title: NIST 800-53 rev4 SSP SC_28_1_2
+- format: markdown
+  id: nist_80053rev4_ssp_SI_10_1
+  template: |
+    The CISO determine information-input validity check parameters.
+  title: NIST 800-53 rev4 SSP SI_10_1
+- format: markdown
+  id: nist_80053rev4_ssp_SI_2_c_2
+  template: |
+    The CISO determine configuration management policies and procedures.
+  title: NIST 800-53 rev4 SSP SI_2_c_2
+- format: markdown
+  id: nist_80053rev4_ssp_SI_2_c_3
+  template: |
+    The CISO determine configuration management policies and procedures.
+  title: NIST 800-53 rev4 SSP SI_2_c_3
+- format: markdown
+  id: nist_80053rev4_ssp_SI_2_c_4
+  template: |
+    The CISO determine configuration management policies and procedures.
+  title: NIST 800-53 rev4 SSP SI_2_c_4
+- format: markdown
+  id: nist_80053rev4_ssp_SI_2_3_b_1
+  template: >
+    The organization defines the time period within which to install security-relevant
+    firmware updates within organizational documentation
+  title: NIST 800-53 rev4 SSP SI_2_3_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_SI_2_a_1
+  template: |
+    The organization defines benchmarks for taking corrective actions within organizational documentation
+  title: NIST 800-53 rev4 SSP SI_2_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_SI_2_a_2
+  template: |
+    The organization establishes benchmarks for taking corrective actions within organizational documentation
+  title: NIST 800-53 rev4 SSP SI_2_a_2
+- format: markdown
+  id: nist_80053rev4_ssp_SI_2_d
+  template: >
+    The organization defines the time period within which to install security-relevant
+    software updates within organizational documentation
+  title: NIST 800-53 rev4 SSP SI_2_d
+- format: markdown
+  id: nist_80053rev4_ssp_SI_13_a_1
+  template: >
+    The system defines information system components for which mean time to failure
+    (MTTF) is determined within organizational documentation
+  title: NIST 800-53 rev4 SSP SI_13_a_1
+- format: markdown
+  id: nist_80053rev4_ssp_SI_13_a_2
+  template: >
+    The system determines MTTF for information system components in specific environments
+    of operation as defined by organizational documentation
+  title: NIST 800-53 rev4 SSP SI_13_a_2
+- format: markdown
+  id: nist_80053rev4_ssp_SI_13_b_1
+  template: >
+    The system defines MTTF substitution criteria to be used as a means to exchange
+    active and standby components within organizational documentation
+  title: NIST 800-53 rev4 SSP SI_13_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_SI_13_b_2
+  template: >
+    The system provides substitute information system components at MTTF substitution
+    criteria defined within organizational documentation
+  title: NIST 800-53 rev4 SSP SI_13_b_2
+- format: markdown
+  id: nist_80053rev4_ssp_SI_13_b_3
+  template: >
+    The system provides a means to exchange active and standby components at MTTF
+    substitution criteria defined within organizational documentation
+  title: NIST 800-53 rev4 SSP SI_13_b_3
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_a_1_1
+  template: |
+    The SOD defines monitoring objectives to detect attacks and indicators of potential attacks on SAMS from an enterprise perspective.
+  title: NIST 800-53 rev4 SSP SI_4_a_1_1
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_a_1_2_a
+  template: |
+    The SOD monitors the information system to detect attacks from an enterprise perspective.
+  title: NIST 800-53 rev4 SSP SI_4_a_1_2_a
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_a_1_2_b
+  template: |
+    The SOD monitors the information system to detect indicators of potential attacks from an enterprise perspective.
+  title: NIST 800-53 rev4 SSP SI_4_a_1_2_b
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_b_1
+  template: |
+    The SOD defines techniques and methods to identify unauthorized use of the information system from an enterprise perspective.
+  title: NIST 800-53 rev4 SSP SI_4_b_1
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_b_2
+  template: |
+    The SOD identifies unauthorized use of the information system from an enterprise perspective.
+  title: NIST 800-53 rev4 SSP SI_4_b_2
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_c_1
+  template: |
+    The SOD deploys monitoring devices strategically within the information system to collect organization-determined essential information.
+  title: NIST 800-53 rev4 SSP SI_4_c_1
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_d_1
+  template: |
+    For its tools the SOD protects information obtained from intrusion-monitoring tools from unauthorized access.
+  title: NIST 800-53 rev4 SSP SI_4_d_1
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_d_2
+  template: |
+    For its tools the SOD protects information obtained from intrusion-monitoring tools from unauthorized modification.
+  title: NIST 800-53 rev4 SSP SI_4_d_2
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_d_3
+  template: |
+    For its tools the SOD protects information obtained from intrusion-monitoring tools from unauthorized deletion.
+  title: NIST 800-53 rev4 SSP SI_4_d_3
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_c_2
+  template: |
+    The SOD deploys any additional monitoring devices at ad-hoc locations to monitor SAMS from an enterprise perspective.
+  title: NIST 800-53 rev4 SSP SI_4_c_2
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_e
+  template: >
+    The SOD will heighten the level of information system monitoring activity whenever
+    there is an indication of increased risk to organizational operations and assets,
+    individuals, other organizations, or the Nation based on law enforcement information,
+    intelligence information, or other credible sources of information.
+  title: NIST 800-53 rev4 SSP SI_4_e
+- format: markdown
+  id: nist_80053rev4_ssp_SI_4_f
+  template: >
+    The SOD will obtains legal opinion with regard to information system monitoring
+    activities in accordance with applicable federal laws, Executive Orders, directives,
+    policies, or regulations.
+  title: NIST 800-53 rev4 SSP SI_4_f
+title: CISO (Policy, SOC, STP )
+questions:
+- id: content_option
+  title: Content Policy
+  prompt: 
+    CISO Policy inheritance.
+  prompt: |
+    CISO Policies are inherited by all IT Systems hosted in AWS.
+
+    All System hosted in AWS inherit CISO Policies.
+
+    Your System will inherit these controls.
+  type: interstitial
