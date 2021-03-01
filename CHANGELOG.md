@@ -30,6 +30,7 @@ v999 (February XX, 2021)
 **Data changes**
 
 * Alter Element description field to be blank and none.
+* Migration to lengthen django.contrib.auth.User.first_name field to 150 characters (change happened during an upgrade of Django and/or libraries).
 
 v0.9.1.52 (February 16, 2021)
 -----------------------------
