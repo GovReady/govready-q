@@ -39,11 +39,11 @@ class Command(BaseCommand):
             # Set defaults for testing
             self.org = Organization.objects.first()
             print(self.org.slug)
-            # hardcode user for dev
-            user = User.objects.get(username="admin")
+            # hardcode to second user (first user that was created)
+            username = User.objects.all()[1].username
 
             from loadtesting.web import WebClient
-            client = WebClient("admin", "main")
+            client = WebClient(username, "main")
 
             portfolio = Portfolio.objects.first()
             print("Adding project to portfolio: {} (#{})".format(portfolio.title, portfolio.id))
