@@ -120,7 +120,10 @@ def main():
             print("! Python version is < 3.8.")
             print("GovReady-Q is best run with Python 3.8 or higher.")
             print("It is STRONGLY encouraged to run GovReady-Q inside a Python 3.8 or higher.")
-            reply = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0],ver[1],ver[2]))
+            if args.non_interactive:
+                reply = ''
+            else:
+                reply = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0],ver[1],ver[2]))
             if len(reply) == 0 or reply[0].lower() != "y":
                 raise HaltedError("Python version is < 3.8")
 
@@ -133,7 +136,10 @@ def main():
         else:
             print("! Installer is not running inside a virtual Python environment.")
             print("It is STRONGLY encouraged to run GovReady-Q inside a Python virtual environment.")
-            reply = input("Continue install outside of virtual environment (y/n)? ")
+            if args.non_interactive:
+                reply = ''
+            else:
+                reply = input("Continue install outside of virtual environment (y/n)? ")
             if len(reply) == 0 or reply[0].lower() != "y":
                 raise HaltedError("Installer is not running inside a virtual Python environment")
 
