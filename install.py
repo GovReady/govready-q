@@ -122,8 +122,8 @@ def main():
                 reply = ''
             else:
                 reply = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0],ver[1],ver[2]))
-                if len(reply) == 0 or reply[0].lower() != "y":
-                    raise HaltedError("Python version is < 3.8")
+            if len(reply) == 0 or reply[0].lower() != "y":
+                raise HaltedError("Python version is < 3.8")
 
         # Print spacer
         print(SPACER)
@@ -139,8 +139,8 @@ def main():
                 reply = ''
             else:
                 reply = input("Continue install outside of virtual environment (y/n)? ")
-                if len(reply) == 0 or reply[0].lower() != "y":
-                    raise HaltedError("Installer is not running inside a virtual Python environment")
+            if len(reply) == 0 or reply[0].lower() != "y":
+                raise HaltedError("Installer is not running inside a virtual Python environment")
 
         # Print spacer
         print(SPACER)
