@@ -91,12 +91,28 @@ def create_environment_json(path):
 
 def main():
     print(">>>>>>>>>> Welcome to the GovReady-Q Installer <<<<<<<<<\n")
-    print("Testing environment...\n")
 
     try:
+        # Collect command line arguments, print help if necessary
+        argparser = init_argparse();
+        args = argparser.parse_args();
+
+        print("Testing environment...\n")
+
+        # Print machine information
+        uname = os.uname()
+        if uname[0] == "Darwin":
+            platform = "macOS Darwin"
+        else:
+            platform = uname[0]
+        print("Platform is {} version {} running on {}.".format(platform, uname[2], uname[4]))
+
+        # Print spacer
+        print(SPACER)
+
         # Test version of Python
         ver = sys.version_info
-        print("GovReady-Q Installer running with Python {}.{}.{}".format(ver[0],ver[1],ver[2]))
+        print("Python version is {}.{}.{}.".format(ver[0],ver[1],ver[2]))
 
         if sys.version_info >= (3, 8):
             print("√ Python version is >= 3.8.")
@@ -107,21 +123,6 @@ def main():
             reply = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0],ver[1],ver[2]))
             if len(reply) == 0 or reply[0].lower() != "y":
                 raise HaltedError("Python version is < 3.8")
-
-        # Print spacer
-        print(SPACER)
-
-        # Print machine information
-        uname = os.uname()
-        if uname[0] == "Darwin":
-            platform = "macOS Darwin"
-        else:
-            platform = uname[0]
-        print("Platform is {} version {} running on {}.".format(platform, uname[2], uname[4]))
-
-        # Collect command line arguments
-        argparser = init_argparse();
-        args = argparser.parse_args();
 
         # Print spacer
         print(SPACER)
@@ -172,6 +173,25 @@ def main():
         # Print spacer
         print(SPACER)
 
+        # Retrieve static assets
+        print("fetching resource files from Internet...", flush=True)
+        p = run_optionally_verbose(['./fetch-vendor-resources.sh'], args.verbose)
+        if p.returncode != 0:
+            raise FatalError("'./fetch-vendor-resources.sh' returned error code {}".format(p.returncode))
+        print("... done fetching resource files from Internet\n", flush=True)
+
+        # Collect files into static directory
+        print("collecting files into static directory...", flush=True)
+        if args.non_interactive:
+            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
+            if p.returncode != 0:
+                raise FatalError("'./manage.py collectstatic --no-input' returned error code {}".format(p.returncode))
+        else:
+            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
+            if p.returncode != 0:
+                raise FatalError("'./manage.py collectstatic' returned error code {}".format(p.returncode))
+        print("... done collecting files into static directory.\n", flush=True)
+
         # Create the local/environment.json file, if it is missing (it generally will be)
         # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
         print("creating local/environment.json file...", flush=True)
@@ -220,31 +240,23 @@ def main():
         # if p.returncode != 0:
         #     raise FatalError("'./manage.py first_run' returned error code {}".format(p.returncode))
 
-        # Retrieve static assets
-        print("fetching resource files from Internet...", flush=True)
-        p = run_optionally_verbose(['./fetch-vendor-resources.sh'], args.verbose)
-        if p.returncode != 0:
-            raise FatalError("'./fetch-vendor-resources.sh' returned error code {}".format(p.returncode))
-        print("... done fetching resource files from Internet\n", flush=True)
-
-        # Collect files into static directory
-        print("collecting files into static directory...", flush=True)
-        if args.non_interactive:
-            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
-            if p.returncode != 0:
-                raise FatalError("'./manage.py collectstatic --no-input' returned error code {}".format(p.returncode))
-        else:
-            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
-            if p.returncode != 0:
-                raise FatalError("'./manage.py collectstatic' returned error code {}".format(p.returncode))
-        print("... done collecting files into static directory.\n", flush=True)
-
         # Load GovReady sample SSP
         print("setting up GovReady-Q sample project if none exists...", flush=True)
         p = run_optionally_verbose(["./manage.py", "load_govready_ssp"], args.verbose)
         if p.returncode != 0:
             raise FatalError("'./manage.py load_govready_ssp' returned error code {}".format(p.returncode))
         print("... done setting up GovReady-Q sample project if none exists.\n", flush=True)
+
+        print("""\
+
+***********************************
+* GovReady-Q Server configured... *
+***********************************
+
+To start GovReady-Q, run:
+    ./manage.py runserver
+
+""")
 
     except HaltedError as err:
         print("\n\nInstall halted because: {}.\n".format(err));

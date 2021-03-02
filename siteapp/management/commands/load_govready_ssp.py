@@ -19,14 +19,12 @@ import fs, fs.errors
 class Command(BaseCommand):
     help = 'Load GovReady-Q Sample Project'
 
+    # TODO: complete argparse set-up
     def add_arguments(self, parser):
         # parser.add_argument('forever', nargs='?', type=bool)
         parser.add_argument('--non-interactive', action='store_true')
 
     def handle(self, *args, **options):
-        # Return a simple value
-        print("Running load_govready_ssp")
-
         # Check if projects already exist
         project_count = len(Project.objects.all())
         if project_count > 1:
@@ -46,8 +44,8 @@ class Command(BaseCommand):
             client = WebClient(username, "main")
 
             portfolio = Portfolio.objects.first()
-            print("Adding project to portfolio: {} (#{})".format(portfolio.title, portfolio.id))
+            print("Adding project to portfolio: {} (#{}).".format(portfolio.title, portfolio.id))
             client.post("/store/govready-q-files-startpack/lightweight-ato?portfolio={}".format(portfolio.id), {"organization":self.org.slug})
             print(client.response.url)
 
-            print("Project created")
+            print("Project created.")
