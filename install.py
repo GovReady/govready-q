@@ -20,6 +20,7 @@ import argparse
 
 # system stuff
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -85,7 +86,7 @@ def create_environment_json(path):
     # Create local directory
     if not os.path.exists('local'):
         os.makedirs('local')
-    #Create local/envionment.json file
+    # Create local/envionment.json file
     with open(path, 'w') as f:
         f.write(json.dumps(environment, sort_keys=True, indent=2))
 
@@ -132,7 +133,7 @@ def main():
 
         # Check if inside a virtual environment
         if sys.prefix != sys.base_prefix:
-            print("√ Installer is running inside a virtual Python environment.\n")
+            print("√ Installer is running inside a virtual Python environment.")
         else:
             print("! Installer is not running inside a virtual Python environment.")
             print("It is STRONGLY encouraged to run GovReady-Q inside a Python virtual environment.")
@@ -152,7 +153,7 @@ def main():
             raise FatalError("The 'python3' command is not available.")
         if not check_has_command(['pip3', '--version']):
             raise FatalError("The 'pip3' command is not available.")
-        print("... done confirming python3 and pip3 commands are available.\n", flush=True)
+        print("... done confirming python3 and pip3 commands are available.", flush=True)
 
         # Print spacer
         print(SPACER)
@@ -176,7 +177,7 @@ def main():
             p = run_optionally_verbose(['pip3', 'install', '-r', 'requirements.txt'], args.verbose)
             if p.returncode != 0:
                 raise FatalError("'pip3 install' returned error code {}".format(p.returncode))
-        print("... done installing Python libraries via pip.\n", flush=True)
+        print("... done installing Python libraries via pip.", flush=True)
 
         # Print spacer
         print(SPACER)
@@ -186,7 +187,7 @@ def main():
         p = run_optionally_verbose(['./fetch-vendor-resources.sh'], args.verbose)
         if p.returncode != 0:
             raise FatalError("'./fetch-vendor-resources.sh' returned error code {}".format(p.returncode))
-        print("... done fetching resource files from Internet.\n", flush=True)
+        print("... done fetching resource files from Internet.", flush=True)
 
         # Print spacer
         print(SPACER)
@@ -201,7 +202,7 @@ def main():
             p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
             if p.returncode != 0:
                 raise FatalError("'./manage.py collectstatic' returned error code {}".format(p.returncode))
-        print("... done collecting files into static directory.\n", flush=True)
+        print("... done collecting files into static directory.", flush=True)
 
         # Print spacer
         print(SPACER)
@@ -222,9 +223,9 @@ def main():
                 print("<<<<<<<<<<")
                 raise FatalError("'{}' is not in JSON format.".format(environment_path))
         else:
-            print("Creating DEV {} file".format(environment_path))
+            print("... ", environment_path)
             create_environment_json(environment_path)
-        print("... done creating local/environment.json file.\n", flush=True)
+        print("... done creating local/environment.json file.", flush=True)
 
         # Print spacer
         print(SPACER)
@@ -237,26 +238,28 @@ def main():
         p = run_optionally_verbose(["./manage.py", "load_modules"], args.verbose)
         if p.returncode != 0:
             raise FatalError("'./manage.py load_modules' returned error code {}".format(p.returncode))
-        print("... done initializing database.\n", flush=True)
+        print("... done initializing database.", flush=True)
 
         # Print spacer
         print(SPACER)
 
-        # Run first_run non-interactive
+        # Run first_run non-interactively
         print("Setting up system and creating demo user if none exists...", flush=True)
-        p = run_optionally_verbose(["./manage.py", "first_run", "--non-interactive"], args.verbose)
+        p = subprocess.run(["./manage.py", "first_run", "--non-interactive"], capture_output=True)
         if p.returncode != 0:
             raise FatalError("'./manage.py first_run --non-interactive' returned error code {}".format(p.returncode))
-        print("... done setting up system and creating demo user.\n", flush=True)
-
-        # Print spacer
-        print(SPACER)
-
-        # Print administrator account details in non-interactive mode
-        if p.stdout and args.non_interactive:
+        if args.verbose:
+            print(p.stdout.decode('utf-8'))
+            print(p.stdout.decode('utf-8'), p.stderr.decode('utf-8'))
+        # save admin account details
+        admin_details = ''
+        if p.stdout:
             m = re.search('\n(Created administrator account.+)\n', p.stdout.decode('utf-8'))
             if m:
-                print(m.group(1) + "\n", flush=True)
+                admin_details = m.group(1)
+            else:
+                admin_details = "Administrator account details not found."
+        print("... done setting up system and creating demo user.", flush=True)
 
         # Print spacer
         print(SPACER)
@@ -271,7 +274,7 @@ def main():
         p = run_optionally_verbose(["./manage.py", "load_govready_ssp"], args.verbose)
         if p.returncode != 0:
             raise FatalError("'./manage.py load_govready_ssp' returned error code {}".format(p.returncode))
-        print("... done setting up GovReady-Q sample project.\n", flush=True)
+        print("... done setting up GovReady-Q sample project.", flush=True)
 
         # Print spacer
         print(SPACER)
@@ -284,8 +287,13 @@ def main():
 
 To start GovReady-Q, run:
     ./manage.py runserver
-
 """)
+
+        if len(admin_details):
+            print("Log in with these administrator credentials.\n\nWRITE THIS DOWN:\n")
+            print(admin_details, "\n")
+
+        print("When GovReady-Q is running, visit http://localhost:8000/ with your web browser.\n")
 
     except HaltedError as err:
         print("\n\nInstall halted because: {}.\n".format(err));
