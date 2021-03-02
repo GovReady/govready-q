@@ -29,7 +29,7 @@ class Command(BaseCommand):
 
         # Check if projects already exist
         project_count = len(Project.objects.all())
-        if project_count > 100:
+        if project_count > 1:
             print("Confirmed GovReady-Q currently has projects.")
             # We're done
         else:
@@ -40,10 +40,10 @@ class Command(BaseCommand):
             self.org = Organization.objects.first()
             print(self.org.slug)
             # hardcode user for dev
-            user = User.objects.get(username="Greg")
+            user = User.objects.get(username="admin")
 
             from loadtesting.web import WebClient
-            client = WebClient("Greg", "main")
+            client = WebClient("admin", "main")
 
             portfolio = Portfolio.objects.first()
             print("Adding project to portfolio: {} (#{})".format(portfolio.title, portfolio.id))
