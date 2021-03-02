@@ -239,6 +239,13 @@ def main():
                 raise FatalError("'./manage.py collectstatic' returned error code {}".format(p.returncode))
         print("... done collecting files into static directory.\n", flush=True)
 
+        # Load GovReady sample SSP
+        print("setting up GovReady-Q sample project if none exists...", flush=True)
+        p = run_optionally_verbose(["./manage.py", "load_govready_ssp"], args.verbose)
+        if p.returncode != 0:
+            raise FatalError("'./manage.py load_govready_ssp' returned error code {}".format(p.returncode))
+        print("... done setting up GovReady-Q sample project  if none exists.\n", flush=True)
+
     except HaltedError as err:
         print("\n\nInstall halted because: {}.\n".format(err));
         sys.exit(0)
