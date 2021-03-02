@@ -20,10 +20,12 @@ import argparse
 
 # system stuff
 import os
+import platform
 import re
 import signal
 import subprocess
 import sys
+import time
 
 # JSON handling
 import json
@@ -101,12 +103,7 @@ def main():
         print("Testing environment...\n")
 
         # Print machine information
-        uname = os.uname()
-        if uname[0] == "Darwin":
-            platform = "macOS Darwin"
-        else:
-            platform = uname[0]
-        print("Platform is {} version {} running on {}.".format(platform, uname[2], uname[4]))
+        print("Platform is {} version {} running on {}.".format(platform.system(), platform.release(), platform.machine()))
 
         # Print spacer
         print(SPACER)
@@ -120,18 +117,19 @@ def main():
         else:
             print("! Python version is < 3.8.")
             print("GovReady-Q is best run with Python 3.8 or higher.")
-            print("It is STRONGLY encouraged to run GovReady-Q inside a Python 3.8 or higher.")
+            print("It is STRONGLY encouraged to run GovReady-Q with Python 3.8 or higher.")
             if args.non_interactive:
                 reply = ''
             else:
                 reply = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0],ver[1],ver[2]))
-            if len(reply) == 0 or reply[0].lower() != "y":
-                raise HaltedError("Python version is < 3.8")
+                if len(reply) == 0 or reply[0].lower() != "y":
+                    raise HaltedError("Python version is < 3.8")
 
         # Print spacer
         print(SPACER)
 
         # Check if inside a virtual environment
+        print("Check for virtual Python environment.")
         if sys.prefix != sys.base_prefix:
             print("√ Installer is running inside a virtual Python environment.")
         else:
@@ -141,8 +139,8 @@ def main():
                 reply = ''
             else:
                 reply = input("Continue install outside of virtual environment (y/n)? ")
-            if len(reply) == 0 or reply[0].lower() != "y":
-                raise HaltedError("Installer is not running inside a virtual Python environment")
+                if len(reply) == 0 or reply[0].lower() != "y":
+                    raise HaltedError("Installer is not running inside a virtual Python environment")
 
         # Print spacer
         print(SPACER)
@@ -160,12 +158,15 @@ def main():
 
         # Print mode of interactivity
         if args.non_interactive:
-            print("Installing GovReady-Q in non-interactive mode.")
+            print("Installing/updating GovReady-Q in non-interactive mode.")
         else:
-            print("Installing GovReady-Q in interactive mode.")
+            print("Installing/updating GovReady-Q in interactive mode.")
 
         # Print spacer
         print(SPACER)
+
+        # Briefly sleep in verbose mode so user can glance at output.
+        time.sleep(3) if args.verbose else time.sleep(0)
 
         # pip install basic requirements
         print("Installing Python libraries via pip...", flush=True)
@@ -183,7 +184,7 @@ def main():
         print(SPACER)
 
         # Retrieve static assets
-        print("Fetching resource files from Internet...", flush=True)
+        print("Fetching static resource files from Internet...", flush=True)
         p = run_optionally_verbose(['./fetch-vendor-resources.sh'], args.verbose)
         if p.returncode != 0:
             raise FatalError("'./fetch-vendor-resources.sh' returned error code {}".format(p.returncode))
@@ -223,7 +224,6 @@ def main():
                 print("<<<<<<<<<<")
                 raise FatalError("'{}' is not in JSON format.".format(environment_path))
         else:
-            print("... ", environment_path)
             create_environment_json(environment_path)
         print("... done creating local/environment.json file.", flush=True)
 
@@ -231,20 +231,20 @@ def main():
         print(SPACER)
 
         # Configure database (migrate, load_modules)
-        print("Initializing database...", flush=True)
+        print("Initializing/migrating database...", flush=True)
         p = run_optionally_verbose(["./manage.py", "migrate"], args.verbose)
         if p.returncode != 0:
             raise FatalError("'./manage.py migrate' returned error code {}".format(p.returncode))
         p = run_optionally_verbose(["./manage.py", "load_modules"], args.verbose)
         if p.returncode != 0:
             raise FatalError("'./manage.py load_modules' returned error code {}".format(p.returncode))
-        print("... done initializing database.", flush=True)
+        print("... done initializing/migrating database.", flush=True)
 
         # Print spacer
         print(SPACER)
 
         # Run first_run non-interactively
-        print("Setting up system and creating demo user if none exists...", flush=True)
+        print("Setting up system and creating Administrator user if none exists...", flush=True)
         p = subprocess.run(["./manage.py", "first_run", "--non-interactive"], capture_output=True)
         if p.returncode != 0:
             raise FatalError("'./manage.py first_run --non-interactive' returned error code {}".format(p.returncode))
@@ -254,20 +254,21 @@ def main():
         # save admin account details
         admin_details = ''
         if p.stdout:
-            m = re.search('\n(Created administrator account.+)\n', p.stdout.decode('utf-8'))
-            if m:
-                admin_details = m.group(1)
+            m1 = re.search('\n(Created administrator account.+)\n', p.stdout.decode('utf-8'))
+            m2 = re.search('\n(Skipping create admin account.+)\n', p.stdout.decode('utf-8'))
+            m3 = re.search('\n(\[INFO\] Superuser.+)\n', p.stdout.decode('utf-8'))
+            if m1:
+                admin_details = m1.group(1)
+            elif m2:
+                admin_details = "Administrator account(s) previously created."
+            elif m3:
+                admin_details = "Administrator account(s) previously created."
             else:
                 admin_details = "Administrator account details not found."
-        print("... done setting up system and creating demo user.", flush=True)
+        print("... done setting up system and creating Administrator user.", flush=True)
 
         # Print spacer
         print(SPACER)
-
-        # Run first_run interactively
-        # p = run_optionally_verbose(["./manage.py", "first_run"], args.verbose)
-        # if p.returncode != 0:
-        #     raise FatalError("'./manage.py first_run' returned error code {}".format(p.returncode))
 
         # Load GovReady sample SSP
         print("Setting up GovReady-Q sample project if none exists...", flush=True)
@@ -290,7 +291,8 @@ To start GovReady-Q, run:
 """)
 
         if len(admin_details):
-            print("Log in with these administrator credentials.\n\nWRITE THIS DOWN:\n")
+            if "Created administrator account" in admin_details:
+                print("Log in with these administrator credentials.\n\nWRITE THIS DOWN:\n")
             print(admin_details, "\n")
 
         print("When GovReady-Q is running, visit http://localhost:8000/ with your web browser.\n")

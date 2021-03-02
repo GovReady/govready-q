@@ -107,7 +107,7 @@ class Command(BaseCommand):
                         user.email
                     ))
                 else:
-                    print("\n[WARNING] Skipping create admin account '{}' - username already exists.\n".format(
+                    print("\n[INFO] Skipping create admin account '{}' - username already exists.\n".format(
                         username
                     ))
 
@@ -120,7 +120,7 @@ class Command(BaseCommand):
                 # Create an "admin" account with a random pwd and
                 # print it on stdout.
                 user = User.objects.create(username="admin", is_superuser=True, is_staff=True)
-                password = User.objects.make_random_password(length=24)
+                password = User.objects.make_random_password(length=12)
                 user.set_password(password)
                 user.save()
                 print("Created administrator account (username: {}) with password: {}".format(
@@ -136,7 +136,7 @@ class Command(BaseCommand):
             print("Created administrator portfolio {}".format(portfolio.title))
         else:
             # One or more superusers already exist
-            print("\n[WARNING] Superuser(s) already exist, not creating default admin superuser. Did you specify 'govready_admins' in 'local/environment.json'? Are you connecting to a persistent database?\n")
+            print("\n[INFO] Superuser(s) already exist, not creating default admin superuser. Did you specify 'govready_admins' in 'local/environment.json'? Are you connecting to a persistent database?\n")
 
         # Create the default organization.
         if not Organization.objects.all().exists() and not Organization.objects.filter(name="main").exists():
@@ -146,7 +146,7 @@ class Command(BaseCommand):
         try:
             user
         except NameError:
-            print("[WARNING] Admin already added to Help Squad and Reviewers")
+            print("[INFO] Admin already added to Help Squad and Reviewers")
         else:
             if user not in org.help_squad.all(): org.help_squad.add(user)
             if user not in org.reviewers.all(): org.reviewers.add(user)
