@@ -141,25 +141,27 @@ def main():
         print(SPACER)
 
         # Check for python3 and pip3 (and not 2 or e.g. 'python3.8')
+        print("Confirming python3 and pip3 commands are available...", flush=True)
         if not check_has_command(['python3', '--version']):
             raise FatalError("The 'python3' command is not available.")
         if not check_has_command(['pip3', '--version']):
             raise FatalError("The 'pip3' command is not available.")
+        print("... done confirming python3 and pip3 commands are available.\n", flush=True)
 
         # Print spacer
         print(SPACER)
 
         # Print mode of interactivity
         if args.non_interactive:
-            print("Installing GovReady-Q in non-interactive mode...")
+            print("Installing GovReady-Q in non-interactive mode.")
         else:
-            print("Installing GovReady-Q in interactive mode (default)...")
+            print("Installing GovReady-Q in interactive mode.")
 
         # Print spacer
         print(SPACER)
 
         # pip install basic requirements
-        print("installing Python libraries via pip...", flush=True)
+        print("Installing Python libraries via pip...", flush=True)
         if args.user:
             p = run_optionally_verbose(['pip3', 'install', '--user', '-r', 'requirements.txt'], args.verbose)
             if p.returncode != 0:
@@ -174,14 +176,17 @@ def main():
         print(SPACER)
 
         # Retrieve static assets
-        print("fetching resource files from Internet...", flush=True)
+        print("Fetching resource files from Internet...", flush=True)
         p = run_optionally_verbose(['./fetch-vendor-resources.sh'], args.verbose)
         if p.returncode != 0:
             raise FatalError("'./fetch-vendor-resources.sh' returned error code {}".format(p.returncode))
-        print("... done fetching resource files from Internet\n", flush=True)
+        print("... done fetching resource files from Internet.\n", flush=True)
+
+        # Print spacer
+        print(SPACER)
 
         # Collect files into static directory
-        print("collecting files into static directory...", flush=True)
+        print("Collecting files into static directory...", flush=True)
         if args.non_interactive:
             p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
             if p.returncode != 0:
@@ -192,9 +197,12 @@ def main():
                 raise FatalError("'./manage.py collectstatic' returned error code {}".format(p.returncode))
         print("... done collecting files into static directory.\n", flush=True)
 
+        # Print spacer
+        print(SPACER)
+
         # Create the local/environment.json file, if it is missing (it generally will be)
         # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
-        print("creating local/environment.json file...", flush=True)
+        print("Creating local/environment.json file...", flush=True)
         environment_path = 'local/environment.json'
         if os.path.exists(environment_path):
             # confirm that environment.json is JSON
@@ -208,12 +216,15 @@ def main():
                 print("<<<<<<<<<<")
                 raise FatalError("'{}' is not in JSON format.".format(environment_path))
         else:
-            print("creating DEV {} file".format(environment_path))
+            print("Creating DEV {} file".format(environment_path))
             create_environment_json(environment_path)
         print("... done creating local/environment.json file.\n", flush=True)
 
+        # Print spacer
+        print(SPACER)
+
         # Configure database (migrate, load_modules)
-        print("initializing database...", flush=True)
+        print("Initializing database...", flush=True)
         p = run_optionally_verbose(["./manage.py", "migrate"], args.verbose)
         if p.returncode != 0:
             raise FatalError("'./manage.py migrate' returned error code {}".format(p.returncode))
@@ -222,12 +233,18 @@ def main():
             raise FatalError("'./manage.py load_modules' returned error code {}".format(p.returncode))
         print("... done initializing database.\n", flush=True)
 
+        # Print spacer
+        print(SPACER)
+
         # Run first_run non-interactive
-        print("setting up system and creating demo user if none exists...", flush=True)
+        print("Setting up system and creating demo user if none exists...", flush=True)
         p = run_optionally_verbose(["./manage.py", "first_run", "--non-interactive"], args.verbose)
         if p.returncode != 0:
             raise FatalError("'./manage.py first_run --non-interactive' returned error code {}".format(p.returncode))
-        print("... done setting up system and creating demo user if none exists.\n", flush=True)
+        print("... done setting up system and creating demo user.\n", flush=True)
+
+        # Print spacer
+        print(SPACER)
 
         # Print administrator account details in non-interactive mode
         if p.stdout and args.non_interactive:
@@ -235,17 +252,23 @@ def main():
             if m:
                 print(m.group(1) + "\n", flush=True)
 
+        # Print spacer
+        print(SPACER)
+
         # Run first_run interactively
         # p = run_optionally_verbose(["./manage.py", "first_run"], args.verbose)
         # if p.returncode != 0:
         #     raise FatalError("'./manage.py first_run' returned error code {}".format(p.returncode))
 
         # Load GovReady sample SSP
-        print("setting up GovReady-Q sample project if none exists...", flush=True)
+        print("Setting up GovReady-Q sample project if none exists...", flush=True)
         p = run_optionally_verbose(["./manage.py", "load_govready_ssp"], args.verbose)
         if p.returncode != 0:
             raise FatalError("'./manage.py load_govready_ssp' returned error code {}".format(p.returncode))
-        print("... done setting up GovReady-Q sample project if none exists.\n", flush=True)
+        print("... done setting up GovReady-Q sample project.\n", flush=True)
+
+        # Print spacer
+        print(SPACER)
 
         print("""\
 
