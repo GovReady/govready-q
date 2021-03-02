@@ -234,7 +234,7 @@ def main():
             if p.returncode != 0:
                 raise FatalError("'./manage.py collectstatic --no-input' returned error code {}".format(p.returncode))
         else:
-            p = run_optionally_verbose(['./manage.py', 'collectstatic'], args.verbose)
+            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
             if p.returncode != 0:
                 raise FatalError("'./manage.py collectstatic' returned error code {}".format(p.returncode))
         print("... done collecting files into static directory.\n", flush=True)
