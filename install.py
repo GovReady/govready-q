@@ -113,7 +113,7 @@ def main():
         print("Python version is {}.{}.{}.".format(ver[0],ver[1],ver[2]))
 
         if sys.version_info >= (3, 8):
-            print("√ Python version is >= 3.8.")
+            print("+ Python version is >= 3.8.")
         else:
             print("! Python version is < 3.8.")
             print("GovReady-Q is best run with Python 3.8 or higher.")
@@ -131,7 +131,7 @@ def main():
         # Check if inside a virtual environment
         print("Check for virtual Python environment.")
         if sys.prefix != sys.base_prefix:
-            print("√ Installer is running inside a virtual Python environment.")
+            print("+ Installer is running inside a virtual Python environment.")
         else:
             print("! Installer is not running inside a virtual Python environment.")
             print("It is STRONGLY encouraged to run GovReady-Q inside a Python virtual environment.")
