@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (March xx, 2021)
+v0.9.2.1 (March 05, 2021)
 ---------------------
 
 **Developer changes**
