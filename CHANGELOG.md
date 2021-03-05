@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v999 (March xx, 2021)
+---------------------
+
+**Developer changes**
+
+* Adjust Python libraries to support Python 3.6 to 3.9 and improve dependency license tracking comments.
+
 v0.9.2 (March 1, 2021)
 ------------------------
 
