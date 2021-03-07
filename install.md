@@ -2,7 +2,7 @@
 
 Thank you for testing the GovReady-Q Install Script!
 
-This document version: 2021-03-03-002
+This document version: 2021-03-07-001
 
 ## System Requirements
 
@@ -167,7 +167,7 @@ Platform is Darwin version 20.3.0 running on x86_64.
 ====
 
 Python version is 3.8.2.
-√ Python version is >= 3.8.
++ Python version is >= 3.8.
 ```
 
 If the install and configuration completes properly, you should see something like this:
