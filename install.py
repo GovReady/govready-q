@@ -15,6 +15,9 @@
 #
 ################################################################
 
+# Note: we use print("foo") ; sys.stdout.flush() instead of print("",
+# flush=True) to avoid a syntax error crash if we get run under Python 2.
+
 # parse command-line arguments
 import argparse
 
@@ -155,12 +158,14 @@ def main():
         print(SPACER)
 
         # Check for python3 and pip3 (and not 2 or e.g. 'python3.8')
-        print("Confirming python3 and pip3 commands are available...", flush=True)
+        print("Confirming python3 and pip3 commands are available...")
+        sys.stdout.flush()
         if not check_has_command(['python3', '--version']):
             raise FatalError("The 'python3' command is not available.")
         if not check_has_command(['pip3', '--version']):
             raise FatalError("The 'pip3' command is not available.")
-        print("... done confirming python3 and pip3 commands are available.", flush=True)
+        print("... done confirming python3 and pip3 commands are available.")
+        sys.stdout.flush()
 
         # Print spacer
         print(SPACER)
@@ -178,7 +183,8 @@ def main():
         time.sleep(3) if args.verbose else time.sleep(0)
 
         # pip install basic requirements
-        print("Installing Python libraries via pip...", flush=True)
+        print("Installing Python libraries via pip...")
+        sys.stdout.flush()
         if args.user:
             p = run_optionally_verbose(['pip3', 'install', '--user', '-r', 'requirements.txt'], args.verbose)
             if p.returncode != 0:
@@ -187,23 +193,27 @@ def main():
             p = run_optionally_verbose(['pip3', 'install', '-r', 'requirements.txt'], args.verbose)
             if p.returncode != 0:
                 raise ReturncodeNonZeroError(p)
-        print("... done installing Python libraries via pip.", flush=True)
+        print("... done installing Python libraries via pip.")
+        sys.stdout.flush()
 
         # Print spacer
         print(SPACER)
 
         # Retrieve static assets
-        print("Fetching static resource files from Internet...", flush=True)
+        print("Fetching static resource files from Internet...")
+        sys.stdout.flush()
         p = run_optionally_verbose(['./fetch-vendor-resources.sh'], args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
-        print("... done fetching resource files from Internet.", flush=True)
+        print("... done fetching resource files from Internet.")
+        sys.stdout.flush()
 
         # Print spacer
         print(SPACER)
 
         # Collect files into static directory
-        print("Collecting files into static directory...", flush=True)
+        print("Collecting files into static directory...")
+        sys.stdout.flush()
         if args.non_interactive:
             p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
             if p.returncode != 0:
@@ -212,14 +222,16 @@ def main():
             p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
             if p.returncode != 0:
                 raise ReturncodeNonZeroError(p)
-        print("... done collecting files into static directory.", flush=True)
+        print("... done collecting files into static directory.")
+        sys.stdout.flush()
 
         # Print spacer
         print(SPACER)
 
         # Create the local/environment.json file, if it is missing (it generally will be)
         # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
-        print("Creating local/environment.json file...", flush=True)
+        print("Creating local/environment.json file...")
+        sys.stdout.flush()
         environment_path = 'local/environment.json'
         if os.path.exists(environment_path):
             # confirm that environment.json is JSON
@@ -234,26 +246,30 @@ def main():
                 raise FatalError("'{}' is not in JSON format.".format(environment_path))
         else:
             create_environment_json(environment_path)
-        print("... done creating local/environment.json file.", flush=True)
+        print("... done creating local/environment.json file.")
+        sys.stdout.flush()
 
         # Print spacer
         print(SPACER)
 
         # Configure database (migrate, load_modules)
-        print("Initializing/migrating database...", flush=True)
+        print("Initializing/migrating database...")
+        sys.stdout.flush()
         p = run_optionally_verbose(["./manage.py", "migrate"], args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
         p = run_optionally_verbose(["./manage.py", "load_modules"], args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
-        print("... done initializing/migrating database.", flush=True)
+        print("... done initializing/migrating database.")
+        sys.stdout.flush()
 
         # Print spacer
         print(SPACER)
 
         # Run first_run non-interactively
-        print("Setting up system and creating Administrator user if none exists...", flush=True)
+        print("Setting up system and creating Administrator user if none exists...")
+        sys.stdout.flush()
         p = subprocess.run(["./manage.py", "first_run", "--non-interactive"], capture_output=True)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
@@ -274,17 +290,20 @@ def main():
                 admin_details = "Administrator account(s) previously created."
             else:
                 admin_details = "Administrator account details not found."
-        print("... done setting up system and creating Administrator user.", flush=True)
+        print("... done setting up system and creating Administrator user.")
+        sys.stdout.flush()
 
         # Print spacer
         print(SPACER)
 
         # Load GovReady sample SSP
-        print("Setting up GovReady-Q sample project if none exists...", flush=True)
+        print("Setting up GovReady-Q sample project if none exists...")
+        sys.stdout.flush()
         p = run_optionally_verbose(["./manage.py", "load_govready_ssp"], args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
-        print("... done setting up GovReady-Q sample project.", flush=True)
+        print("... done setting up GovReady-Q sample project.")
+        sys.stdout.flush()
 
         # Print spacer
         print(SPACER)
@@ -322,6 +341,11 @@ To start GovReady-Q, run:
 
     except FatalError as err:
         print("\n\nFatal error, exiting: {}.\n".format(err));
+        sys.exit(1)
+
+    # catch all errors
+    except Exception as err:
+        print('\n\nFatal error, exiting: unrecognized error, "{}".\n'.format(err));
         sys.exit(1)
 
 if __name__ == "__main__":
