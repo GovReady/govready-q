@@ -7,7 +7,7 @@ This document version: 2021-03-07-001
 ## System Requirements
 
 * A Windows, Mac, or Linux computer with [Python 3](https://www.python.org/downloads/) and Git installed.
-  * To complete the install, Python 3.8 or higher will be required, but we are interested in seeing how the script responds to versions < 3.8, so please don't upgrade Python right away if you have a lower version.
+  * To complete the install, Python 3.6 or higher will be required, but we are interested in seeing how the script responds to versions < 3.6, so please don't upgrade Python right away if you have a lower version.
   * On Macs, you should already have Python 3 and Git installed.
   * On Windows, you may need to install a [Windows version of Python](https://www.python.org/downloads/windows/), and [Git for Windows](https://gitforwindows.org/) or a [Windows version of Git](https://git-scm.com/download/win).  Or, you can use [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
 * Access to a command line, to run Python and Git commands.
@@ -37,11 +37,62 @@ Please also give us any comments, questions, or concerns you have about the inst
 
 At the end of your testing, you may delete the GovReady-Q directory to reclaim the disk space.
 
-## Preparing Windows
+## Before You Install - Windows
 
 (This section has not been completed yet.)
 
-## Preparing macOS
+## Before You Install - Ubuntu
+
+Some additional dependencies are required for Linux Ubuntu.
+
+Do these shell commands to update package list.
+
+```shell
+# Update package list
+apt-get update
+apt-get upgrade
+```
+
+Do these shell commands to install the OS dependencies for GovReady-Q.
+
+```shell
+# Install dependencies
+DEBIAN_FRONTEND=noninteractive \
+apt-get install -y \
+unzip git curl jq \
+python3 python3-pip \
+python3-yaml \
+graphviz pandoc \
+language-pack-en-base language-pack-en
+```
+
+## Before You Install - CentOS 8, RHEL 8, Fedora 8
+
+Some additional dependencies are required for Linux CentOS, RHEL, Fedora.
+
+Do these shell commands to update package list.
+
+```shell
+# Update package list
+dnf update
+```
+
+Do these shell commands to install the OS dependencies for GovReady-Q.
+
+```shell
+# Install dependencies
+dnf install \
+python3 python3-devel gcc-c++.x86_64 \
+unzip git jq \
+graphviz
+
+# for pandoc, enable PowerTools repository
+dnf install dnf-plugins-core
+dnf config-manager --set-enabled PowerTools
+dnf install pandoc
+```
+
+## Before You Install - macOS
 
 Some additional dependencies are required for macOS.
 
@@ -83,7 +134,7 @@ If you get a warning that postgresql is already installed, just proceed.
 
 [Note, this is needed to resolve this dependency: "Error: pg_config executable not found. pg_config is required to build psycopg2 from source." We should just move this dependency out to a pg_requirements file.]
 
-## Instructions
+## Install Instructions
 
 Start your command line shell.
 
@@ -110,8 +161,6 @@ On Windows, do these shell commands.
 py -m venv venv
 venv\scripts\activate.bat
 ```
-
-
 
 On Mac, do these shell commands.
 
