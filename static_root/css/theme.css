@@ -1,0 +1,213 @@
+/* define font (industry) */
+
+@font-face {
+  font-family: 'industry-bold';
+  src: url('industry-bold-webfont.eot'); /* IE9 Compat Modes */
+  src: url('industry-bold-webfont.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('industry-bold-webfont.woff2') format('woff2'), /* Super Modern Browsers */
+       url('industry-bold-webfont.woff') format('woff'), /* Pretty Modern Browsers */
+       url('industry-bold-webfont.ttf')  format('truetype'), /* Safari, Android, iOS */
+       url('industry-bold-webfont.svg#svgFontName') format('svg'); /* Legacy iOS */
+}
+
+@font-face {
+  font-family: 'industry-medium';
+  src: url('industry-medium-webfont.eot'); /* IE9 Compat Modes */
+  src: url('industry-medium-webfont.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('industry-medium-webfont.woff2') format('woff2'), /* Super Modern Browsers */
+       url('industry-medium-webfont.woff') format('woff'), /* Pretty Modern Browsers */
+       url('industry-medium-webfont.ttf')  format('truetype'), /* Safari, Android, iOS */
+       url('industry-medium-webfont.svg#svgFontName') format('svg'); /* Legacy iOS */
+}
+
+
+
+/* Body, called in base.html */
+
+body {
+  padding-top: 75px !important; /* the !important is to fix a bug with the dashboard integration, remove it eventually */
+  padding-left: 0; /*  changed from 20px to 0 */
+  padding-right: 0; /*  changed from 20px to 0 */
+  padding-bottom: 0; /*  changed from 20px to 0 */
+  overflow-y: scroll;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  font-family: 'Myriad Pro', sans-serif;
+  background:#FFFFFF;
+min-height: 100vh;
+position: relative;
+padding-bottom:300px;
+background: #F7F7F7;
+/* background-image: url("/static/img/brand/body-wave2.jpg");
+background-repeat: repeat-y; */
+/* background image is only used on front page (logged out) specified in index.html */
+}
+
+body, blockquote {
+  font-size: 16px;
+}
+
+
+/* this may be problematic
+.glyphicon-check {
+  color: #96B;
+}
+.glyphicon-check { color: #1D471D;}
+.glyphicon.glyphicon-check { color: #1D471D; }
+
+*/
+
+
+/* base (all pages) */
+footer {
+  position: absolute;
+  bottom: 0;
+  width:100%;
+  margin:10em 0 0 0;
+}
+.footer-base { background:#2E2E2E; }
+.footer-logo { width:300px; }
+.footer-bottom-bar { background:#DF2327; height:25px; }
+.footer-col-1 { padding:2em 2em 2em 5em; }
+.footer-col-1 img { padding-bottom:2em; }
+
+.footer-links li { display:inline-block; margin-right:10px; color: #fff; font-weight: bold;}
+.footer-links a { color:#EBEBEB;}
+
+a {
+    color: #a91e22;
+    text-decoration: none;
+}
+
+footer .container-fluid { width:100%;}
+
+/* top of the page stuff */
+#context-bar {
+  padding: 25px 0 8px 0;
+  margin-bottom: 8px;
+}
+
+#context-bar .breadcrumb {
+  margin: 0;
+/* background-color: rgba(255,255,255,1); */
+background-color: transparent;
+  padding: 8px;
+  cursor: default;
+}
+
+#context-bar .breadcrumb a {
+  color: black;
+}
+
+.portfolio-top {
+    margin-top: 50px;
+}
+
+.projects-top {
+    margin-top: 50px;
+}
+
+.classification-bar { background-color:green; padding:2px 0 2px 0; }
+.classification-text { display:block; text-align: center; font-size: .6em; color: #fff; }
+
+
+/* front page */
+h1, h2 .splash { font-family: 'Industry-bold', sans-serif; }
+
+.splash-box {
+  background:#DF2327;
+  padding:20px;
+  color:#fff;
+  font-size:1.6em;
+  font-weight: bold;
+  font-family: 'industry-bold', sans-serif;
+  margin:1em 0 1em 0;
+}
+
+.front-row { margin-bottom:0;}
+.container-white { background:#ffffff; padding:1em; border-radius: 10px; }
+
+/* new/added/edited CSS here */
+.navbar-left li { font-family: 'Industry-medium', sans-serif; }
+
+/* on the task finished page */
+thead th { font-weight:normal;}
+thead tr {
+    border:1px solid #CCCCCC;
+    background-color: #E6E6E6;
+    color: #1A1A1A;
+    font-weight: normal;
+  }
+
+  .has-success .checkbox, .has-success .checkbox-inline, .has-success .control-label, .has-success .help-block, .has-success .radio, .has-success .radio-inline, .has-success.checkbox label, .has-success.checkbox-inline label, .has-success.radio label, .has-success.radio-inline label {
+      color: #808080;
+  }
+
+.well { background: #fff; }
+
+.login-button {
+  background-color:#808080;
+  color:#fff;
+  border: none;
+  display: inline-block; /* replaced inline-block with none to hide this button */
+  padding: 5px 10px;
+  margin: 4px 2px;
+  border-radius: 10px;
+  font-family:  sans-serif; }
+
+
+/* header overrides */
+h1, h2 {
+  font-weight: bold;
+}
+
+h1 { font-size: 44px; color: #444; }
+h2 { font-size: 20px;}
+h3 { font-size: 18px; }
+
+
+h2.control-heading { font-size:1.2em;}
+
+
+/* buttons need lots of overrides */
+.btn-success, .btn-success.active.focus, .btn-success.active:focus, .btn-success.active:hover, .btn-success:active.focus, .btn-success:active:focus, .btn-success:active:hover, .open>.dropdown-toggle.btn-success.focus, .open>.dropdown-toggle.btn-success:focus, .open>.dropdown-toggle.btn-success:hover
+{
+    background-image: -webkit-linear-gradient(top,#999999 0,#808080 100%);
+    background-image: -o-linear-gradient(top,#999999 0,#808080 100%);
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#999999),to(#808080));
+    background-image: linear-gradient(to bottom,#999999 0,#808080 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#999999', endColorstr='#808080', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+    background-repeat: repeat-x;
+    border-color: #595959;
+    color:#fff;
+    background-color: #808080;
+}
+
+.btn { font-size: 12px;}
+
+.btn-success:focus, .btn-success:hover {
+  background-color: #808080;
+  border-color: #808080; }
+
+.btn-app-sm { font-size:12px;}
+.btn { white-space: normal; }
+
+.btn.btn-sm { font-size: 12px; }
+.btn.btn-xs { font-size: .8em; }
+
+.project-button-finished {
+    color: #1A1A1A;
+}
+
+
+/* glyphicon color on project page */
+
+.luna-box div.glyphicon { color: #D9D9D9; }
+
+/* misc tweaks */
+.navbar .notification.unread a span { font-weight: bold; }
+
+.glyphicon-globe { color: #888; }
+.portfolio-glyphicons { font-size: 8em; color: #D9D9D9; }
+.modal-body select  { padding:3px; }

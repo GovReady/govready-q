@@ -5,8 +5,6 @@ __pycache__/
 siteapp/static/vendor
 siteapp/static
 apps/
-static_root/*
-!static_root/README.md
 branding/
 
 # generated files
