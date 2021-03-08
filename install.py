@@ -78,27 +78,16 @@ def run_optionally_verbose(args, timeout, verbose_flag):
     if verbose_flag:
         import time
         start = time.time()
-        if sys.version_info >= (3, 7):
-            p = subprocess.run(args, timeout=timeout, capture_output=False)
-        else:
-            # Python 3.6 does not support capture_output
-            p = subprocess.run(args, timeout=timeout)
+        p = subprocess.run(args, timeout=timeout)
         print("Elapsed time: {:1f} seconds.".format(time.time() - start))
     else:
-        if sys.version_info >= (3, 7):
-            p = subprocess.run(args, timeout=timeout, capture_output=True)
-        else:
-            # Python 3.6 does not support capture_output
-            p = subprocess.run(args, timeout=timeout, stdout=PIPE, stderr=PIPE)
+        p = subprocess.run(args, timeout=timeout, stdout=PIPE, stderr=PIPE)
     return p
 
 def check_has_command(command_array):
     try:
         # hardcode timeout to 5 seconds; if checking command takes longer than that, something is really wrong
-        if sys.version_info >= (3, 7):
-            p = subprocess.run(command_array, timeout=5, capture_output=True)
-        else:
-            p = subprocess.run(command_array, timeout=5, stdout=PIPE, stderr=PIPE)
+        p = subprocess.run(command_array, timeout=5, stdout=PIPE, stderr=PIPE)
         return True
     except FileNotFoundError as err:
         return False
@@ -154,11 +143,11 @@ def main():
         ver = sys.version_info
         print("Python version is {}.{}.{}.".format(ver[0],ver[1],ver[2]))
 
-        if sys.version_info >= (3, 8):
-            print("+ Python version is >= 3.8.")
+        if sys.version_info >= (3, 6):
+            print("+ Python version is >= 3.6.")
         else:
-            print("! Python version is < 3.8.")
-            print("GovReady-Q is best run with Python 3.8 or higher.")
+            print("! Python version is < 3.6.")
+            print("GovReady-Q is best run with Python 3.6 or higher.")
             print("It is STRONGLY encouraged to run GovReady-Q with Python 3.8 or higher.")
             if args.non_interactive:
                 reply = ''
@@ -318,7 +307,7 @@ def main():
         # Run first_run non-interactively
         print("Setting up system and creating Administrator user if none exists...")
         sys.stdout.flush()
-        p = subprocess.run(["./manage.py", "first_run", "--non-interactive"], timeout=args.timeout, capture_output=True)
+        p = subprocess.run(["./manage.py", "first_run", "--non-interactive"], timeout=args.timeout, stdout=PIPE, stderr=PIPE)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
         if args.verbose:
