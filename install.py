@@ -91,6 +91,18 @@ def check_has_command(command_array):
     except FileNotFoundError as err:
         return False
 
+# checks if a package is out of date
+# if okay, returns (True, None, None)
+# if out of date, returns (False, current_version, latest_version)
+# N.B., this routine will return okay if the package is not installed
+def check_package_version(package_name):
+    p = subprocess.run([sys.executable, '-m', 'pip', 'list', '--outdated', '--format', 'json'], capture_output=True)
+    packages = json.loads(p.stdout.decode('utf-8'))
+    for package in packages:
+        if package['name'] == package_name:
+            return False, package['version'], package['latest_version']
+    return True, None, None
+
 def create_environment_json(path):
     import secrets
     alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
@@ -172,6 +184,24 @@ def main():
             raise FatalError("The 'pip3' command is not available.")
         print("... done confirming python3 and pip3 commands are available.")
         sys.stdout.flush()
+
+        # Print spacer
+        print(SPACER)
+
+        # Check for updated pip
+        print("Check that pip is up to date.")
+        pip_up_to_date, pip_current, pip_latest = check_package_version('pip')
+        if pip_up_to_date:
+            print("+ pip is up to date.")
+        else:
+            print("! pip is not the latest version ({} vs. {}).".format(pip_current, pip_latest))
+            print("It is STRONGLY encouraged to ensure pip is updated before continuing, or non-obvious errors may occur.")
+            if args.non_interactive:
+                reply = ''
+            else:
+                reply = input("Continue install with outdated pip (y/n)? ")
+            if len(reply) == 0 or reply[0].lower() != "y":
+                raise HaltedError("pip is not up to date ({} vs. {}).\n\nSuggested fix: Run 'pip install --upgrade pip'".format(pip_current, pip_latest))
 
         # Print spacer
         print(SPACER)
@@ -346,8 +376,8 @@ To start GovReady-Q, run:
         sys.exit(1)
 
     except HaltedError as err:
-        print("\n\nInstall halted because: {}.\n".format(err));
-        sys.exit(0)
+        sys.stderr.write("\n\nInstall halted because: {}.\n\n".format(err));
+        sys.exit(1)
 
     except FatalError as err:
         sys.stderr.write("\n\nFatal error, exiting: {}.\n\n".format(err));
