@@ -327,12 +327,12 @@ To start GovReady-Q, run:
 
     except ReturncodeNonZeroError as err:
         p = err.completed_process
-        print("\n\nFatal error, exiting: external program or script {} returned error code {}.\n".format(p.args, p.returncode))
+        sys.stderr.write("\n\nFatal error, exiting: external program or script {} returned error code {}.\n\n".format(p.args, p.returncode))
         # diagnose stdout and stdout to see if we can find an obvious problem
         # (add more checks here as appropriate)
         # check for missing Xcode Command Line Tools (macOS)
         if 'xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun' in p.stderr.decode('utf-8'):
-            print("Suggested fix (see documentation): You need to do 'xcode-select --install'.\n")
+            sys.stderr.write("Suggested fix (see documentation): You need to do 'xcode-select --install'.\n\n")
         sys.exit(1)
 
     except HaltedError as err:
@@ -340,12 +340,12 @@ To start GovReady-Q, run:
         sys.exit(0)
 
     except FatalError as err:
-        print("\n\nFatal error, exiting: {}.\n".format(err));
+        sys.stderr.write("\n\nFatal error, exiting: {}.\n\n".format(err));
         sys.exit(1)
 
     # catch all errors
     except Exception as err:
-        print('\n\nFatal error, exiting: unrecognized error, "{}".\n'.format(err));
+        sys.stderr.write('\n\nFatal error, exiting: unrecognized error, "{}".\n\n'.format(err));
         sys.exit(1)
 
 if __name__ == "__main__":
