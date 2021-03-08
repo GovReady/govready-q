@@ -11,7 +11,7 @@
 * Internet access or alternative resources:
   * Access to repositories with appropriate operating systems packages for OS dependencies.
   * Access to https://github.com/GovReady/govready-q, https://govready.com/govready-q/download, or another repository with GovReady-Q source code
-  * Access to https://Pypi.org or local mirror of Pypi to install Python dependencies. 
+  * Access to https://pypi.org/simple or local mirror of Pypi to install Python dependencies. 
 * On macOS, installation of some additional dependencies.
 
 ## Before You Install - Windows

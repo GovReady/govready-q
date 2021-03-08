@@ -2,18 +2,22 @@
 
 Thank you for testing the GovReady-Q Install Script!
 
-This document version: 2021-03-07-001
+This document version: 2021-03-07-002
 
 ## System Requirements
 
 * A Windows, Mac, or Linux computer with [Python 3](https://www.python.org/downloads/) and Git installed.
-  * To complete the install, Python 3.6 or higher will be required, but we are interested in seeing how the script responds to versions < 3.6, so please don't upgrade Python right away if you have a lower version.
+* Python 3.6 or higher will be required, but we are interested in seeing how the script responds to versions < 3.6, so please don't upgrade Python right away if you have a lower version.
+  * On Macs, you should already have Python 3 and Git installed.
   * On Macs, you should already have Python 3 and Git installed.
   * On Windows, you may need to install a [Windows version of Python](https://www.python.org/downloads/windows/), and [Git for Windows](https://gitforwindows.org/) or a [Windows version of Git](https://git-scm.com/download/win).  Or, you can use [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
 * Access to a command line, to run Python and Git commands.
 * 300-500 MB of free disk space to install GovReady-Q. The installed files will be in the GovReady-Q directory, and you may delete that directory after the test.
+* Internet access or alternative resources:
+  * Access to repositories with appropriate operating systems packages for OS dependencies.
+  * Access to https://github.com/GovReady/govready-q, https://govready.com/govready-q/download, or another repository with GovReady-Q source code
+  * Access to https://pypi.org/simple or local mirror of Pypi to install Python dependencies. 
 * On macOS, installation of some additional dependencies.
-* (TODO: There may be additional dependencies needed for Windows, too.)
 * A way to report results back -- either with screenshots or by copy/pasting text from your command shell.
   * Email feedback to [Dayton Williams](mailto:dayton.williams@govready.com) ([dayton.williams@govready.com](dayton.williams@govready.com)).
   * There are instructions to [take a screenshot on your Mac](https://support.apple.com/en-us/HT201361).
