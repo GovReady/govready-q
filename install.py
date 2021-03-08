@@ -183,7 +183,7 @@ def main():
         time.sleep(3) if args.verbose else time.sleep(0)
 
         # pip install basic requirements
-        print("Installing Python libraries via pip...")
+        print("Installing Python libraries via pip (this may take a while)...")
         sys.stdout.flush()
         if args.user:
             p = run_optionally_verbose(['pip3', 'install', '--user', '-r', 'requirements.txt'], args.verbose)
@@ -320,7 +320,7 @@ To start GovReady-Q, run:
 
         if len(admin_details):
             if "Created administrator account" in admin_details:
-                print("Log in with these administrator credentials.\n\nWRITE THIS DOWN:\n")
+                print("Log in using the administrator credentials printed below.\n\nWRITE THIS DOWN:\n")
             print(admin_details, "\n")
 
         print("When GovReady-Q is running, visit http://localhost:8000/ with your web browser.\n")
