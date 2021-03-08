@@ -4,7 +4,11 @@ GovReady-Q Release Notes
 v999 (March XX, 2021)
 ---------------------
 
+New, better install process written in Python.
 
+**Developer changes**
+
+* Replace shell script install script `install-govready-q.sh` with better Python install scrpt `install.py`.
 
 
 v0.9.2.1 (March 05, 2021)
