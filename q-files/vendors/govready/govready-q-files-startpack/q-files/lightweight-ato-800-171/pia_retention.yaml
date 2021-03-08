@@ -1,0 +1,53 @@
+id: pia_retention
+title: Privacy Impact Assessment (Retention)
+
+questions:
+
+- id: q1
+  title: Length and Reason for Retention
+  prompt: |
+    The purpose of this question is to identify the specific types of information
+    the project retains. Is all the information the project collects retained? Is there a
+    specific sub set of information retained? 
+
+    This section should explain the nexus between the original purpose for the
+    collection and this retention period. The minimum amount of information should
+    be maintained for the minimum amount of time in order to support the project.
+
+    In some cases, agencies may choose to retain files in active status and archive
+    them after a certain period of time. State active file retention periods as well as
+    archived records, in number of years, as well as the approved or proposed NARA
+    records schedule. Discuss when the time periods begin for inputs, outputs, and
+    master files. Project managers should work with component records officers early
+    in the development process to ensure that appropriate retention and destruction
+    schedules are implemented.
+  examples:
+    - example: |
+        A project may collect extensive PII initially for the purpose of
+        verifying the identity of an individual for a background check. Upon completion
+        of the background check, the project will maintain the new information, the
+        results of the background check (approved/not approved) and delete all
+        application information.
+    - example: |
+        The project retains the information for the period of time in
+        which fraud could be prosecuted and then the information is deleted. 
+  type: longtext
+
+- id: q2
+  title: PIA, Related to Retention
+  prompt: |
+    Discuss the risks associated with the length of time data is retained. How
+    were those risks mitigated?
+
+    Although establishing retention periods for records is a formal process,
+    there are policy considerations behind how long a project keeps information. The
+    longer a project retains information, the longer it needs to secure the information
+    and assure its accuracy and integrity. The proposed schedule should match the
+    requirements of the Privacy Act to keep the minimum amount of PII for the
+    minimum amount of time, while meeting the Federal Records Act. The schedule
+    should align with the stated purpose and mission of the system.
+
+  type: longtext
+
+output:
+- templates/pia_retention.md

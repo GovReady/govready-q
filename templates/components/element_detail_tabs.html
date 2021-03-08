@@ -464,12 +464,17 @@
           // Determine the catalog from the selected display_text
           console.log(display_text);
           // Split text
-          dtv = display_text.split(' - ');
-          console.log(dtv)
+            displaytext = display_text.split(' - ');
+            var first = displaytext.shift(); //or arr[arr.length-1];
+            var last = displaytext.pop(); //or arr[0];
+            dtv = [first, displaytext.join(" - "), last];
+            console.log(dtv) // [control_id, title, catalog_key]
+
+
           ck = dtv[2]
-          console.log(ck)
+
           //$('#sid_class_panel_num').val('NIST_SP-800-53_rev4')
-          console.log(element)
+
           $(element).val(ck)
         }
 

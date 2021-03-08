@@ -1,0 +1,34 @@
+id: project_reference
+title: Project Reference
+instance-name: "{{document_name}} ({{document_version}})"
+introduction:
+  format: markdown
+  template: |
+    Identify a project reference document.
+questions:
+
+  - id: document_name
+    title: Document Name
+    prompt: Name of project reference document
+    type: text
+
+  - id: document_version
+    title: Document Version
+    prompt: Relevant version (or date) of document
+    type: text
+
+  - id: document_location
+    title: Document Location
+    prompt: |
+      What is the location of the document?
+
+      Where can an authoritative version of the document be located?
+    type: text
+
+output:
+  - title: Data
+    format: yaml
+    template:
+      - document_name: "{{document_name}}"
+        document_version: "{{document_version}}"
+        document_location: "{{document_location}}"

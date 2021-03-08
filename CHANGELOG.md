@@ -1,16 +1,32 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (February XX, 2021)
-------------------------
+v999 (March XX, 2021)
+---------------------
+
+
+
+
+v0.9.2.1 (March 05, 2021)
+---------------------
 
 **Developer changes**
 
-* Created a ElementEditForm Django form in conjunction with some functional changes to avoid name collisions issues with component library.
+* Adjust Python libraries to support Python 3.6 to 3.9 and improve dependency license tracking comments.
+
+**Bug changes**
+
+* Fixed display of tabular data from data grid questions in questionnaire output documents including generated SSPs.
+
+v0.9.2 (March 1, 2021)
+------------------------
 
 **Feature changes**
 
 * Remove a component and its statements from a system.
+* Implemented improved, 3 column editing page UI
+* Search/filter components feature added to component library (and for system control implementation page).
+* Support multiple reference-documents for generating Word version of SSP and other artififacts.
 
 **UI changes**
 
@@ -26,11 +42,16 @@ v999 (February XX, 2021)
 * Move inclusion of `edit-component-modal.html` from `base.html` to `components/element_detail_tabs.html`.
 * Fix sort control order in `component_library_component` on the `components/element_detail_tabs.html` using the `natsort` package to sort SID correctly.
 * Comment out `controls.models.ElementControl.get_controls_by_element` method because it is not being used. Will delete after a few releases if not needed.
+* Created a ElementEditForm Django form in conjunction with some functional changes to avoid name collisions issues with component library.
 
 **Data changes**
 
 * Alter Element description field to be blank and none.
 * Migration to lengthen django.contrib.auth.User.first_name field to 150 characters (change happened during an upgrade of Django and/or libraries).
+
+**Bug changes**
+
+* Fixed how control id, title, and catalog key are retrieved for component library components.
 
 v0.9.1.52 (February 16, 2021)
 -----------------------------
@@ -43,6 +64,7 @@ Project page displays mini-dashboard of compliance stats.
 
 * Add System Assessment Report tracking to associate assessments and evidence with the system.
 * Add initial dynamic status information to the project page.
+* Use default catalog parameters to set default control catalog and baseline.
 
 **UI changes**
 
@@ -53,6 +75,7 @@ Project page displays mini-dashboard of compliance stats.
     * Number of POA&Ms.
     * Count of system components.
     * Approximate overall compliance based on controls implemented / count of controls.
+* Project mini-dashboard now reports controls "addressed" instead of implemented and "% compliance (unassessed)" which uses the number of controls that have at least one statement. This is more accurate representation than saying definitely which control has been assessed as implemented. Will show that in future dashboard items.
 
 **Developer changes**
 
@@ -64,6 +87,7 @@ Project page displays mini-dashboard of compliance stats.
 * Refactored use of random package to use secure secrets module.
 * Added minor pylint fixes.
 * Added the ability to import and export Poams along with the project import/export.
+* GovReady will now read compliance app catalog.parameters.catalog_key and catalog.parameters.baseline values to set the selected controls for a system.
 * Load sample/default components into component library during installation to provide users with starting set of components.
 
 v0.9.1.51 (February 03, 2021)

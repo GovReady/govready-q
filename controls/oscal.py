@@ -6,10 +6,10 @@ import re
 from pathlib import Path
 import sys
 
-CATALOG_PATH = os.path.join(os.path.dirname(__file__),'data','catalogs')
+CATALOG_PATH = os.path.join(os.path.dirname(__file__), 'data', 'catalogs')
 
 
-class Catalogs (object):
+class Catalogs(object):
     """Represent list of catalogs"""
 
     # well known catalog identifiers
@@ -45,38 +45,42 @@ class Catalogs (object):
         return catalog._load_catalog_json()
 
     def _build_index(self):
-        """Build a small catalog_index from metada"""
+        """Build a small catalog_index from metadata"""
         index = []
         for catalog_key in self._list_catalog_keys():
             catalog = self._load_catalog_json(catalog_key)
-            index.append( { 'id': catalog['id'], 'catalog_key': catalog_key, 'catalog_key_display': catalog_key.replace("_", " "), 'metadata': catalog['metadata'] } )
+            index.append(
+                {'id': catalog['id'], 'catalog_key': catalog_key, 'catalog_key_display': catalog_key.replace("_", " "),
+                 'metadata': catalog['metadata']})
         return index
 
     def list(self):
-        catalog_titles = [item['metadata']['title'] for item in self.index ]
+        catalog_titles = [item['metadata']['title'] for item in self.index]
         return catalog_titles
+
 
 def uhash(obj):
     """Return a positive hash code"""
     h = hash(obj)
     return h + sys.maxsize + 1
 
-class Catalog (object):
+
+class Catalog(object):
     """Represent a catalog"""
 
     # Create a singleton instance of this class per catalog. GetInstance returns
-    # that singleton instance. Instead of doing 
+    # that singleton instance. Instead of doing
     # `cg = Catalog(catalog_key=Catalogs.NIST_SP_800_53_rev4)`,
     # do `cg = Catalog.GetInstance(catalog_key=Catalogs.NIST_SP_800_53_rev4')`.
     @classmethod
     def GetInstance(cls, catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
-        # Create a new instance of Catalog() the first time for each 
+        # Create a new instance of Catalog() the first time for each
         # catalog key / parameter combo
         # this method is called. Keep it in memory indefinitely.
         # Clear cache only if a catalog itself changes
 
         catalog_instance_key = Catalog._catalog_instance_key(catalog_key, parameter_values)
-        
+
         if not hasattr(cls, catalog_instance_key):
             new_catalog = Catalog(catalog_key=catalog_key, parameter_values=parameter_values)
             setattr(cls, catalog_instance_key, new_catalog)
@@ -96,7 +100,7 @@ class Catalog (object):
         self.catalog_key_display = catalog_key.replace("_", " ")
         self.catalog_path = CATALOG_PATH
         self.catalog_file = catalog_key + "_catalog.json"
-        try: 
+        try:
             self.oscal = self._load_catalog_json()
             self.status = "ok"
             self.status_message = "Success loading catalog"
@@ -208,7 +212,7 @@ class Catalog (object):
         param = self.find_dict_by_value(control['parameters'], "id", param_id)
         return param['label']
 
-    def get_control_prose_as_markdown(self, control_data, part_types={ "statement" }, parameter_values=dict()):
+    def get_control_prose_as_markdown(self, control_data, part_types={"statement"}, parameter_values=dict()):
         # Concatenate the prose text of all of the 'parts' of this control
         # in Markdown. Filter out the parts that are not wanted.
         # Example 'statement'
@@ -227,7 +231,8 @@ class Catalog (object):
 
         return text_params_replaced
 
-    def format_part_as_markdown(self, part, indentation_level=-1, indentation_string="    ", filter_name=None, hide_first_label=True):
+    def format_part_as_markdown(self, part, indentation_level=-1, indentation_string="    ", filter_name=None,
+            hide_first_label=True):
         # Format part, which is either a control or a part, as Markdown.
 
         # First construct the prose text of this part. If there is a
@@ -273,7 +278,7 @@ class Catalog (object):
         # the lines back together again.
         # In Python, a string times an integer repeats it.
         md = "\n".join([
-            (indentation_level*indentation_string) + line
+            (indentation_level * indentation_string) + line
             for line in md.split("\n")
         ])
 
@@ -292,14 +297,14 @@ class Catalog (object):
                 # Append this part.
                 md += self.format_part_as_markdown(part,
                                                    indentation_string=indentation_string,
-                                                   indentation_level=indentation_level+1)
+                                                   indentation_level=indentation_level + 1)
 
         return md
 
     def substitute_parameter_text(self, control, text, parameter_values):
         # Fill in parameter_values with control parameter labels for any
         # parameters that are not specified.
-        parameter_values = dict(parameter_values) # clone so that we don't modify the caller's dict
+        parameter_values = dict(parameter_values)  # clone so that we don't modify the caller's dict
 
         if "parameters" not in control:
             return text
@@ -322,14 +327,14 @@ class Catalog (object):
         family_id = self.get_group_id_by_control_id(control['id'])
         cl_dict = {
             "id": control['id'],
-            "id_display": re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)\.([0-9]*)$',r'\1\2 (\3)', control['id']),
+            "id_display": re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)\.([0-9]*)$', r'\1\2 (\3)', control['id']),
             "title": control['title'],
             "family_id": family_id,
             "family_title": self.get_group_title_by_id(family_id),
             "class": control['class'],
-            "description": self.get_control_prose_as_markdown(control, part_types={ "statement" },
+            "description": self.get_control_prose_as_markdown(control, part_types={"statement"},
                                                               parameter_values=self.parameter_values),
-            "guidance": self.get_control_prose_as_markdown(control, part_types={ "guidance" }),
+            "guidance": self.get_control_prose_as_markdown(control, part_types={"guidance"}),
             "catalog_file": self.catalog_file,
             "catalog_id": self.catalog_id,
             "sort_id": self.get_control_property_by_name(control, "sort-id"),
@@ -359,7 +364,7 @@ class Catalog (object):
                     for parameter in control.get("parameters", []):
                         cache[control_id].append(parameter["id"])
         return dict(cache)
-    
+
     def get_parameter_ids_for_control(self, control_id):
         return self.parameters_by_control.get(control_id, [])
 

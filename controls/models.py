@@ -564,6 +564,9 @@ class System(auto_prefetch.Model):
             # Get the smts_control_implementations ordered by part, e.g. pid
             status_stats[status] = elm.statements_consumed.filter(statement_type="control_implementation", status=status).count()
         # TODO add index on statement status
+
+        # Get overall controls addressed (e.g., covered)
+        status_stats['Addressed'] = elm.statements_consumed.filter(statement_type="control_implementation").values('sid').count()
         return status_stats
 
     @cached_property

@@ -1,0 +1,22 @@
+id: cp_q_set_2
+title: Question Set 2
+internal:
+  snippets:
+  - snippet: |
+      Update the Question Set 2 snippet
+introduction:
+  format: markdown
+  template: Update the Question Set 2 introduction content.
+
+questions:
+
+- id: q1
+  type: text
+  title: New Question Title 1
+  prompt: Enter some text.
+- id: q2
+  type: text
+  title: New Question Title 2
+  prompt: Enter some text.
+
+output: []

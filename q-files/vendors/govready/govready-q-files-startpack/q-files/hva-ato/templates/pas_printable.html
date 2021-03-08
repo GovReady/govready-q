@@ -1,0 +1,111 @@
+id: pas_printable
+format: html
+title: Privacy Act Statement Document
+...
+<style type="text/css" scoped>
+    h2 { border-bottom:1px solid #888; }
+    h3 { border-bottom: 0.5px solid #aaa; }
+    h4 { margin-top: 15px; font-weight: bold; font-size: 1em; }
+    blockquote { color: #666; font-size:0.8em; margin: 0 10px; }
+    .notice {color: red; font-size:3.0em; text-align:center; transform: scaleY(.85);
+    font-weight: bold;}
+    table { border: none; border-collapse: collapse; }
+    th, td { border: 1px solid #888; padding: 15px; text-align: left;}
+    @media all {
+        .page-break     { display: none; }
+    }
+
+    @media print {
+        h1.title {
+            /* v-center, need absolute */
+            position: absolute; /* repeats once */
+            bottom: 50%;
+            /* h-center, for element with absolute positioning */
+            left: 0;
+            right: 0;
+            margin-left: 20%;
+            margin-right: 20%;
+        }
+        .footer {
+            position: fixed; /* repeats on every page */
+            bottom: 0;
+        }
+        table.footer {
+            width: 95%;
+            display: table;
+        }
+        table.footer td {
+            border: none;
+            padding: 0px;
+            padding-bottom: .1em;
+        }
+        .page-break { display: block; page-break-after: always; }
+    }
+</style>
+
+<center>
+<img style="max-width:70%;height:auto;" src="{{static_asset_path_for('app.png')}}">
+<h1 class="title">{{project.system_info.system_name}}<br/>Privacy Act Statement</h1>
+</center>
+
+<div class="page-break">
+  <table class="footer">
+    <tr>
+      <td width="33%"><strong>{{project.system_info.system_short_name}}</strong></td>
+      <td width="34%" style="text-align: center;"><strong>LIMITED OFFICIAL USE</strong></td>
+      <td width="33%" style="text-align: right;"> <!-- page number --></td>
+    </tr><tr>
+      <td colspan="3">Privacy Act Statement</td>
+    </tr>
+  </table>
+</div>
+
+<h2>System Information</h2>
+
+<center>
+<div style="font-weight: bold;">
+  <p>{{project.system_info.system_name}}</p>
+</div>
+
+<div>
+  <p>Mission Unit: {{project.system_info.system_org}}</p>
+  <p>Privacy POC: {{project.pta_poc_details.poc_name}}</p>
+</div>
+</center>
+
+<div class="page-break">
+</div>
+
+<h2>Privacy Act Notice</h2>
+
+<h3>Introduction</h3>
+
+<p>The Privacy Act of 1974, 5 USC 552a, provides protection to individuals by ensuring that
+personal information collected by Federal agencies is limited to that which is legally authorized
+and necessary and is maintained in a manner which precludes unwarranted intrusions upon
+individual privacy.</p>
+
+<p>Pursuant to 5 U.S.C. Section 552a (e) (3) agencies are required to provide what is commonly referred to
+as a Privacy Act Statement to all persons asked to provide personal information about
+themselves, which will go into a system of records (i.e., the information will be stored and
+retrieved using the individual name or other personal identifier such as a Social Security
+Number). Organizational policy is to provide a Privacy Act
+Statement regardless of whether the collection is part of a system of records or not. All Privacy
+Act statements must be reviewed by the Privacy Office or component Privacy Officer. </p>
+
+<h3>Authority</h3>
+
+  <p>{{project.pas_intro.pas_authority|safe}}</p>
+
+<h3>Purpose</h3>
+
+  <p>{{project.pas_intro.pas_purpose|safe}}</p>
+
+<h3>Routine Uses</h3>
+  
+  <p>{{project.pas_intro.pas_routine_uses|safe}}</p>
+
+<h3>Disclosure</h3>
+
+  <p>{{project.pas_intro.pas_disclosure|safe}}</p>
+
