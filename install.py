@@ -45,6 +45,15 @@ class FatalError(Exception):
 class HaltedError(Exception):
     pass
 
+# Define a non-zero return code error handler
+class ReturncodeNonZeroError(Exception):
+    def __init__(self, completed_process, msg=None):
+        if msg is None:
+            # default message if none set
+            msg = "An external program or script returned an error."
+        super(ReturncodeNonZeroError, self).__init__(msg)
+        self.completed_process = completed_process
+
 # Set up argparse
 def init_argparse():
     parser = argparse.ArgumentParser(description='Quickly set up a new GovReady-Q instance from a freshly-cloned repository.')
@@ -173,11 +182,11 @@ def main():
         if args.user:
             p = run_optionally_verbose(['pip3', 'install', '--user', '-r', 'requirements.txt'], args.verbose)
             if p.returncode != 0:
-                raise FatalError("'pip3 install' returned error code {}".format(p.returncode))
+                raise ReturncodeNonZeroError(p)
         else:
             p = run_optionally_verbose(['pip3', 'install', '-r', 'requirements.txt'], args.verbose)
             if p.returncode != 0:
-                raise FatalError("'pip3 install' returned error code {}".format(p.returncode))
+                raise ReturncodeNonZeroError(p)
         print("... done installing Python libraries via pip.", flush=True)
 
         # Print spacer
@@ -187,7 +196,7 @@ def main():
         print("Fetching static resource files from Internet...", flush=True)
         p = run_optionally_verbose(['./fetch-vendor-resources.sh'], args.verbose)
         if p.returncode != 0:
-            raise FatalError("'./fetch-vendor-resources.sh' returned error code {}".format(p.returncode))
+            raise ReturncodeNonZeroError(p)
         print("... done fetching resource files from Internet.", flush=True)
 
         # Print spacer
@@ -198,11 +207,11 @@ def main():
         if args.non_interactive:
             p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
             if p.returncode != 0:
-                raise FatalError("'./manage.py collectstatic --no-input' returned error code {}".format(p.returncode))
+                raise ReturncodeNonZeroError(p)
         else:
             p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
             if p.returncode != 0:
-                raise FatalError("'./manage.py collectstatic' returned error code {}".format(p.returncode))
+                raise ReturncodeNonZeroError(p)
         print("... done collecting files into static directory.", flush=True)
 
         # Print spacer
@@ -234,10 +243,10 @@ def main():
         print("Initializing/migrating database...", flush=True)
         p = run_optionally_verbose(["./manage.py", "migrate"], args.verbose)
         if p.returncode != 0:
-            raise FatalError("'./manage.py migrate' returned error code {}".format(p.returncode))
+            raise ReturncodeNonZeroError(p)
         p = run_optionally_verbose(["./manage.py", "load_modules"], args.verbose)
         if p.returncode != 0:
-            raise FatalError("'./manage.py load_modules' returned error code {}".format(p.returncode))
+            raise ReturncodeNonZeroError(p)
         print("... done initializing/migrating database.", flush=True)
 
         # Print spacer
@@ -247,7 +256,7 @@ def main():
         print("Setting up system and creating Administrator user if none exists...", flush=True)
         p = subprocess.run(["./manage.py", "first_run", "--non-interactive"], capture_output=True)
         if p.returncode != 0:
-            raise FatalError("'./manage.py first_run --non-interactive' returned error code {}".format(p.returncode))
+            raise ReturncodeNonZeroError(p)
         if args.verbose:
             print(p.stdout.decode('utf-8'))
             print(p.stdout.decode('utf-8'), p.stderr.decode('utf-8'))
@@ -274,7 +283,7 @@ def main():
         print("Setting up GovReady-Q sample project if none exists...", flush=True)
         p = run_optionally_verbose(["./manage.py", "load_govready_ssp"], args.verbose)
         if p.returncode != 0:
-            raise FatalError("'./manage.py load_govready_ssp' returned error code {}".format(p.returncode))
+            raise ReturncodeNonZeroError(p)
         print("... done setting up GovReady-Q sample project.", flush=True)
 
         # Print spacer
@@ -296,6 +305,16 @@ To start GovReady-Q, run:
             print(admin_details, "\n")
 
         print("When GovReady-Q is running, visit http://localhost:8000/ with your web browser.\n")
+
+    except ReturncodeNonZeroError as err:
+        p = err.completed_process
+        print("\n\nFatal error, exiting: external program or script {} returned error code {}.\n".format(p.args, p.returncode))
+        # diagnose stdout and stdout to see if we can find an obvious problem
+        # (add more checks here as appropriate)
+        # check for missing Xcode Command Line Tools (macOS)
+        if 'xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun' in p.stderr.decode('utf-8'):
+            print("Suggested fix (see documentation): You need to do 'xcode-select --install'.\n")
+        sys.exit(1)
 
     except HaltedError as err:
         print("\n\nInstall halted because: {}.\n".format(err));
