@@ -236,6 +236,23 @@ def main():
         # Print spacer
         print(SPACER)
 
+        # Collect files into static directory
+        print("Collecting files into static directory...")
+        sys.stdout.flush()
+        if args.non_interactive:
+            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.timeout, argsverbose)
+            if p.returncode != 0:
+                raise ReturncodeNonZeroError(p)
+        else:
+            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.timeout, argsverbose)
+            if p.returncode != 0:
+                raise ReturncodeNonZeroError(p)
+        print("... done collecting files into static directory.")
+        sys.stdout.flush()
+
+        # Print spacer
+        print(SPACER)
+
         # Create the local/environment.json file, if it is missing (it generally will be)
         # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
         print("Creating local/environment.json file...")
