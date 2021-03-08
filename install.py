@@ -236,15 +236,27 @@ def main():
         # Print spacer
         print(SPACER)
 
+        # # Retrieve static assets
+        # print("Fetching static resource files from Internet...")
+        # sys.stdout.flush()
+        # p = run_optionally_verbose(['./fetch-vendor-resources.sh'], args.timeout, args.verbose)
+        # if p.returncode != 0:
+        #     raise ReturncodeNonZeroError(p)
+        # print("... done fetching resource files from Internet.")
+        # sys.stdout.flush()
+
+        # # Print spacer
+        # print(SPACER)
+
         # Collect files into static directory
         print("Collecting files into static directory...")
         sys.stdout.flush()
         if args.non_interactive:
-            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.timeout, argsverbose)
+            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.timeout, args.verbose)
             if p.returncode != 0:
                 raise ReturncodeNonZeroError(p)
         else:
-            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.timeout, argsverbose)
+            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.timeout, args.verbose)
             if p.returncode != 0:
                 raise ReturncodeNonZeroError(p)
         print("... done collecting files into static directory.")
