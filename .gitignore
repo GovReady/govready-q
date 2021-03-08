@@ -2,8 +2,6 @@
 __pycache__/
 /local
 /modules/local
-siteapp/static/vendor
-siteapp/static
 apps/
 static_root/*
 !static_root/README.md
