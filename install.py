@@ -30,6 +30,7 @@ import signal
 import subprocess
 import sys
 import time
+from subprocess import PIPE
 
 # JSON handling
 import json
@@ -77,16 +78,27 @@ def run_optionally_verbose(args, timeout, verbose_flag):
     if verbose_flag:
         import time
         start = time.time()
-        p = subprocess.run(args, timeout=timeout, capture_output=False)
+        if sys.version_info >= (3, 7):
+            p = subprocess.run(args, timeout=timeout, capture_output=False)
+        else:
+            # Python 3.6 does not support capture_output
+            p = subprocess.run(args, timeout=timeout)
         print("Elapsed time: {:1f} seconds.".format(time.time() - start))
     else:
-        p = subprocess.run(args, timeout=timeout, capture_output=True)
+        if sys.version_info >= (3, 7):
+            p = subprocess.run(args, timeout=timeout, capture_output=True)
+        else:
+            # Python 3.6 does not support capture_output
+            p = subprocess.run(args, timeout=timeout, stdout=PIPE, stderr=PIPE)
     return p
 
 def check_has_command(command_array):
     try:
         # hardcode timeout to 5 seconds; if checking command takes longer than that, something is really wrong
-        p = subprocess.run(command_array, timeout=5, capture_output=True)
+        if sys.version_info >= (3, 7):
+            p = subprocess.run(command_array, timeout=5, capture_output=True)
+        else:
+            p = subprocess.run(command_array, timeout=5, stdout=PIPE, stderr=PIPE)
         return True
     except FileNotFoundError as err:
         return False
@@ -96,7 +108,7 @@ def check_has_command(command_array):
 # if out of date, returns (False, current_version, latest_version)
 # N.B., this routine will return okay if the package is not installed
 def check_package_version(package_name):
-    p = subprocess.run([sys.executable, '-m', 'pip', 'list', '--outdated', '--format', 'json'], capture_output=True)
+    p = subprocess.run([sys.executable, '-m', 'pip', 'list', '--outdated', '--format', 'json'], stdout=PIPE, stderr=PIPE)
     packages = json.loads(p.stdout.decode('utf-8'))
     for package in packages:
         if package['name'] == package_name:
