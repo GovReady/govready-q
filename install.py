@@ -10,13 +10,14 @@
 # Optional arguments:
 #   -h, --help             show this help message and exit
 #   -n, --non-interactive  run without terminal interaction
+#   -t, --timeout          seconds to allow external programs to run
 #   -u, --user             do pip install with --user flag
 #   -v, --verbose          output more information
 #
 ################################################################
 
-# Note: we use print("foo") ; sys.stdout.flush() instead of print("",
-# flush=True) to avoid a syntax error crash if we get run under Python 2.
+# Note: we use print("foo") ; sys.stdout.flush() instead of print("", flush=True)
+# to avoid a syntax error crash if run under Python 2.
 
 # parse command-line arguments
 import argparse
@@ -61,6 +62,7 @@ class ReturncodeNonZeroError(Exception):
 def init_argparse():
     parser = argparse.ArgumentParser(description='Quickly set up a new GovReady-Q instance from a freshly-cloned repository.')
     parser.add_argument('--non-interactive', '-n', action='store_true', help='run without terminal interaction')
+    parser.add_argument('--timeout', '-t', type=int, default=120, help='seconds to allow external programs to run (default=120)')
     parser.add_argument('--user', '-u', action='store_true', help='do pip install with --user flag')
     parser.add_argument('--verbose', '-v', action='count', default=0, help='output more information')
     return parser
@@ -71,16 +73,20 @@ def init_argparse():
 #
 ################################################################
 
-def run_optionally_verbose(args, verbose_flag):
+def run_optionally_verbose(args, timeout, verbose_flag):
     if verbose_flag:
-        p = subprocess.run(args, capture_output=False)
+        import time
+        start = time.time()
+        p = subprocess.run(args, timeout=timeout, capture_output=False)
+        print("Elapsed time: {:1f} seconds.".format(time.time() - start))
     else:
-        p = subprocess.run(args, capture_output=True)
+        p = subprocess.run(args, timeout=timeout, capture_output=True)
     return p
 
 def check_has_command(command_array):
     try:
-        p = subprocess.run(command_array, capture_output=True)
+        # hardcode timeout to 5 seconds; if checking command takes longer than that, something is really wrong
+        p = subprocess.run(command_array, timeout=5, capture_output=True)
         return True
     except FileNotFoundError as err:
         return False
@@ -186,11 +192,11 @@ def main():
         print("Installing Python libraries via pip (this may take a while)...")
         sys.stdout.flush()
         if args.user:
-            p = run_optionally_verbose(['pip3', 'install', '--user', '-r', 'requirements.txt'], args.verbose)
+            p = run_optionally_verbose(['pip3', 'install', '--user', '-r', 'requirements.txt'], args.timeout, args.verbose)
             if p.returncode != 0:
                 raise ReturncodeNonZeroError(p)
         else:
-            p = run_optionally_verbose(['pip3', 'install', '-r', 'requirements.txt'], args.verbose)
+            p = run_optionally_verbose(['pip3', 'install', '-r', 'requirements.txt'], args.timeout, args.verbose)
             if p.returncode != 0:
                 raise ReturncodeNonZeroError(p)
         print("... done installing Python libraries via pip.")
@@ -202,7 +208,7 @@ def main():
         # Retrieve static assets
         print("Fetching static resource files from Internet...")
         sys.stdout.flush()
-        p = run_optionally_verbose(['./fetch-vendor-resources.sh'], args.verbose)
+        p = run_optionally_verbose(['./fetch-vendor-resources.sh'], args.timeout, args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
         print("... done fetching resource files from Internet.")
@@ -215,11 +221,11 @@ def main():
         print("Collecting files into static directory...")
         sys.stdout.flush()
         if args.non_interactive:
-            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
+            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.timeout, args.verbose)
             if p.returncode != 0:
                 raise ReturncodeNonZeroError(p)
         else:
-            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.verbose)
+            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.timeout, args.verbose)
             if p.returncode != 0:
                 raise ReturncodeNonZeroError(p)
         print("... done collecting files into static directory.")
@@ -255,10 +261,10 @@ def main():
         # Configure database (migrate, load_modules)
         print("Initializing/migrating database...")
         sys.stdout.flush()
-        p = run_optionally_verbose(["./manage.py", "migrate"], args.verbose)
+        p = run_optionally_verbose(["./manage.py", "migrate"], args.timeout, args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
-        p = run_optionally_verbose(["./manage.py", "load_modules"], args.verbose)
+        p = run_optionally_verbose(["./manage.py", "load_modules"], args.timeout, args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
         print("... done initializing/migrating database.")
@@ -270,11 +276,10 @@ def main():
         # Run first_run non-interactively
         print("Setting up system and creating Administrator user if none exists...")
         sys.stdout.flush()
-        p = subprocess.run(["./manage.py", "first_run", "--non-interactive"], capture_output=True)
+        p = subprocess.run(["./manage.py", "first_run", "--non-interactive"], timeout=args.timeout, capture_output=True)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
         if args.verbose:
-            print(p.stdout.decode('utf-8'))
             print(p.stdout.decode('utf-8'), p.stderr.decode('utf-8'))
         # save admin account details
         admin_details = ''
@@ -299,7 +304,7 @@ def main():
         # Load GovReady sample SSP
         print("Setting up GovReady-Q sample project if none exists...")
         sys.stdout.flush()
-        p = run_optionally_verbose(["./manage.py", "load_govready_ssp"], args.verbose)
+        p = run_optionally_verbose(["./manage.py", "load_govready_ssp"], args.timeout, args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
         print("... done setting up GovReady-Q sample project.")
@@ -331,8 +336,13 @@ To start GovReady-Q, run:
         # diagnose stdout and stdout to see if we can find an obvious problem
         # (add more checks here as appropriate)
         # check for missing Xcode Command Line Tools (macOS)
-        if 'xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun' in p.stderr.decode('utf-8'):
+        if p.stderr and 'xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun' in p.stderr.decode('utf-8'):
             sys.stderr.write("Suggested fix (see documentation): You need to do 'xcode-select --install'.\n\n")
+        sys.exit(1)
+
+    except subprocess.TimeoutExpired as err:
+        sys.stderr.write("\n\nFatal error, exiting: external program or script {} took longer than {:.1f} seconds.\n\n".format(err.cmd, err.timeout))
+        sys.stderr.write("Suggested fix: run again with '--timeout {}'.\n\n".format(max(args.timeout+120, 600)))
         sys.exit(1)
 
     except HaltedError as err:
@@ -345,7 +355,7 @@ To start GovReady-Q, run:
 
     # catch all errors
     except Exception as err:
-        sys.stderr.write('\n\nFatal error, exiting: unrecognized error, "{}".\n\n'.format(err));
+        sys.stderr.write('\n\nFatal error, exiting: unrecognized error on line {}, "{}".\n\n'.format(sys.exc_info()[2].tb_lineno, err));
         sys.exit(1)
 
 if __name__ == "__main__":
