@@ -85,7 +85,10 @@
 
         .statement-text, .description-text { font-size: 0.8em; }
 
-        .statement-text-block { border-left: 1px solid #ccc; }
+        .statement-text-block, .remark-text-block {
+            border-left: 1px solid #ccc;
+            white-space: pre-line;
+        }
 
         .control-id-text { font-weight: bold; }
 
@@ -182,7 +185,7 @@
                                         {% endif %}
                                         {{ smt.body }}
                                       </div>
-                                      <div id="smt-edit-{{ forloop.counter }}" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                                      <div id="smt-edit-{{ forloop.counter }}" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 remark-text-block">
                                         <a role="button" class="" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">edit</a>
                                         &nbsp;&nbsp; &nbsp;
                                         Status: {% if smt.status != "" and smt.status is not None %}{{ smt.status }}{% else %}TBD{% endif %}
