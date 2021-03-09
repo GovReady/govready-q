@@ -1,8 +1,15 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.2.2 (March 09, 2021)
+-------------------------
+
+**Bug changes**
+
+* Fix Postgres crash error by setting the ProjectAsset Model content hash length to 128 characters.
+
 v0.9.2.1 (March 05, 2021)
----------------------
+-------------------------
 
 **Developer changes**
 
