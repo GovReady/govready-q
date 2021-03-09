@@ -4,7 +4,9 @@ GovReady-Q Release Notes
 v999 (March XX, 2021)
 ---------------------
 
+**Developer changes**
 
+* Ensure that the number of controls selected for a project reflect non-duplicate counts of that control.
 
 
 v0.9.2.1 (March 05, 2021)
