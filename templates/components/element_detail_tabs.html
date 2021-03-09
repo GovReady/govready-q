@@ -144,7 +144,12 @@
       {% if enable_experimental_opencontrol %}
       <li id="opencontrol-tab" role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
       {% endif %}
+      <div style="margin: 0px 12px 0px 0px;">
+        <a id="copy_component" class="btn btn btn-default pull-right" href={% url 'component_library_component_copy' element_id=element.id %} role="button" style="color: black;">Clone component</a>
+      </div>
     </ul>
+
+
 
     <!-- Tab panels -->
     <div id="component-detail-content" class="tab-content">
@@ -161,8 +166,6 @@
             {% endif %}
           </div>
           <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
-            <div style="margin: 0px 12px 0px 0px;">
-              <h3><a id="copy_component" class="btn btn-sm btn-success pull-right" href={% url 'component_library_component_copy' element_id=element.id %} role="button" style="color: white;">Copy component</a></h3></div>
 
             <!-- Search/Filter form -->
             <div id="search-form-container" class="pull-right" style="margin: 12px 12px 0px 0px;">
@@ -175,18 +178,31 @@
                               <input name="search" value="{{ request.GET.search }}" type="text" placeholder="Search by control">
                           </div>
                       </div>
+                      <div>
+                        {% include 'components/paginate_comp.html' %}
+                      </div>
                   </div>
               </form>
             </div>
-
           </div>
         </div>
 
-        <div id="control-description" class="control-text"><h3>Control Implementation Statements</h3></div>
+        <div class="row">
+          <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9 description-text">
+            <div id="" class="">
+              <h3>Control Implementation Statements</h3>
+            </div>
+          </div>
+          <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+            <div style="margin: 0px 12px 0px 0px;">
+              &nbsp;
+            </div>
+          </div>
+        </div>
 
           <div id="smt-list" class="" style="width: 100%">
             <!-- Loop through existing component-control statements -->
-            {% for smt in impl_smts %}
+            {% for smt in page_obj %}
             <div id="panel-{{ forloop.counter }}" class="">
               <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
 
@@ -290,7 +306,7 @@
 
         <!-- Tab panel: combined -->
       <div role="tabpanel" class="tab-pane" id="oscal">
-        <p id="oscal_download" class="navbar-text navbar-right">
+        <p id="oscal_download" class="pull-right" style="margin: 12px 12px 0px 0px;">
           <a id="oscal_download_json_link"
              class="navbar-link"
              href={% url 'system_element_download_oscal_json' system_id=system.id element_id=element.id %}>
@@ -298,7 +314,7 @@
             Download ...
           </a>
         </p>
-        <div id="combined_smt" class="control-text"><h3>OSCAL (under development)</h3></div>
+        <div id="combined_smt" class="control-text"><h3>OSCAL</h3></div>
         <div style="font-family: monospace; font-size:12px; white-space: pre;">{{ oscal }}</div>
       </div>
 

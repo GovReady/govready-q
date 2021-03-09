@@ -305,7 +305,6 @@ def component_library(request):
     except EmptyPage:
         page_obj = ele_paginator.page(ele_paginator.num_pages)
 
-
     context = {
         "page_obj": page_obj,
         "import_form": ImportOSCALComponentForm(),
@@ -836,8 +835,20 @@ def component_library_component(request, element_id):
     # using the natsort package from pypi: https://pypi.org/project/natsort/
     impl_smts = natsorted(impl_smts, key=lambda x: x.sid)
 
+    # Pagination
+    obj_paginator = Paginator(impl_smts, 10)
+    page_number = request.GET.get('page')
+
+    try:
+        page_obj = obj_paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = obj_paginator.page(1)
+    except EmptyPage:
+        page_obj = obj_paginator.page(obj_paginator.num_pages)
+
     # Return the system's element information
     context = {
+        "page_obj": page_obj,
         "element": element,
         "impl_smts": impl_smts,
         "catalog_controls": catalog_controls,
