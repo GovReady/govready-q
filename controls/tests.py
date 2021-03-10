@@ -278,7 +278,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         oscal_json_path = self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
         self.click_element('input#import_component_submit')
-
+        var_sleep(2)
         element_count_after_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
 
         wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 2, element_count_after_import))
