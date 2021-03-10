@@ -801,8 +801,6 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         # Head to the control ac-3
         self.navigateToPage(f"/systems/{systemid.id}/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
 
-        statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
-        # assert len(statement_title_list) == 0
 
         # How many components are there currently?
         # Confirm the dropdown sees all components
@@ -830,7 +828,6 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         # Confirm the dropdown sees all components
         comps_dropdown = wait_for_sleep_after(lambda: self.dropdown_option("selected_producer_element_form_id"))
 
-        statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
 
         self.assertEquals(len(comps_dropdown.options), 7)
 
