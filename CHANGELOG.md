@@ -16,6 +16,10 @@ v999 (March XX, 2021)
 v0.9.2.1 (March 05, 2021)
 -------------------------
 
+**UI changes**
+
+* Improve style sheets for 3 column layout.
+
 **Developer changes**
 
 * Adjust Python libraries to support Python 3.6 to 3.9 and improve dependency license tracking comments.
