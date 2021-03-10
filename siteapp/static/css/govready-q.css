@@ -353,3 +353,15 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 .pagination {
   white-space: nowrap;
 }
+
+.statement-text-block, .remark-text-block {
+    border-left: 1px solid #ccc;
+    white-space: pre-line;
+  }
+
+.statement-edit-text-block {
+    border-left: 1px solid #ccc;
+    background-color: rgb(253, 253, 253);
+    padding-bottom: 8px;
+    margin-top: -20px;
+  }

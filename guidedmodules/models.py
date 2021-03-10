@@ -124,7 +124,7 @@ class AppVersion(models.Model):
     input_paths = JSONField(
         help_text="A dictionary mapping file paths to the content_hashes of inputs included in the inputs field of this instance.",
         blank=True, null=True)
-    input_artifacts = models.ManyToManyField('controls.ImportRecord', related_name="import_records",
+    input_artifacts = models.ManyToManyField('controls.ImportRecord', related_name="import_records", blank=True,
                                              help_text="The objects created from this input.")
     trust_inputs = models.BooleanField(default=False, null=True,
                                        help_text="Are inputs trusted? Inputs include OSCAL components and statements that will be served on our domain.")
