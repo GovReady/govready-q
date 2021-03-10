@@ -8,9 +8,12 @@ v999 (March XX, 2021)
 
 * Ensure that the number of controls selected for a project reflect non-duplicate counts of that control.
 
+**Bug changes**
+
+* Fix Postgres crash error by setting the ProjectAsset Model content hash length to 128 characters.
 
 v0.9.2.1 (March 05, 2021)
----------------------
+-------------------------
 
 **Developer changes**
 
