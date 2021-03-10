@@ -214,14 +214,13 @@
                       <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                         &nbsp;
                       </div>
-                      <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block"><div> 
+                      <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block"><div>
 
                         <form id="smt_{{ forloop.counter }}" class="smt_form">
                           <!-- Never change name of the producer element already associated with a statement -->
                           <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
                           <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
                           <div class="form-group">
-                            <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
                             <!-- <label for="component"><a href="{% url 'system_element_download_oscal_json' system_id=system.id element_id=smt.producer_element.id %}" style="color: black;">{{ smt.producer_element.name }}</a></label> -->
                           </div>
                           <div class="form-group">
@@ -235,8 +234,8 @@
                             <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="{{smt.pid}}" style="width:180px;">
                           </div>
                           <div class="form-group">
-                            <label class="hidden" for="status">Status</label>
-                            <select class="form-control hidden" id="status_{{ forloop.counter }}" name="status" style="width:180px;">
+                            <label for="status">Status</label>
+                            <select class=form-control id="status_{{ forloop.counter }}" name="status" style="width:180px;">
                             <option value='' {% if '' == smt.status %}selected="selected"{% endif %}></option>
                             <option value='Not Implemented' {% if 'Not Implemented' == smt.status %}selected="selected"{% endif %}>Not Implemented</option>
                             <option value='Planned' {% if 'Planned' == smt.status %}selected="selected"{% endif %}>Planned</option>
@@ -249,7 +248,6 @@
                             <label for="remarks">Remarks</label>
                             <textarea style="min-height:70px; overflow-y: scroll;" class="form-control" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
                           </div>
-                          <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
                           <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
                           <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
                           <input type="hidden" id="sid_class" name="sid_class" value="{{ smt.sid_class }}">
@@ -279,7 +277,7 @@
             {% endfor %}
           </div><!--/smt-list-->
         <div>
-          <button type="submit" id="new_component_statement" class="small btn btn-xs btn-success" style="color: white;" onclick="add_smt()">Add component statement</button>
+          <button type="submit" id="new_component_statement" class="small btn btn-xs btn-success" style="color: white;" onclick="add_smt({{ impl_smts|length }})">Add component statement</button>
         </div>
 
 
@@ -322,9 +320,9 @@
 {% block scripts %}
       <script>
         // Adds statement form to page
-        function add_smt() {
-          var panel_num = $('.panel').length + 1
-          var smt_form = {% include "components/element_details_tabs_smtform.html" %}.replace(/panel_num/g, panel_num);
+        function add_smt(smt_count) {
+          var panel_num = $('.panel').length  + smt_count
+          var smt_form = `{% include 'controls/add_smt_form.html' %}`.replace(/panel_num/g, panel_num);
           $( "#smt-list" ).append(smt_form);
 
           $(".control-select").select2({
@@ -465,15 +463,12 @@
               }
           }
         }
-
         function edit_component() {
           show_edit_component_modal("{{element.name}}","{{element.description}}",(newName, newDescription)=>{
-
             ajax_with_indicator({
-
               url: '{% url "edit_element" element.id %}',
               method: "POST",
-              data: {name: newName, description: newDescription},
+              data: {name: newName,description: newDescription},
               keep_indicator_forever: true,
               success: function(res) {
                 if(res["status"]=="ok"){
@@ -489,13 +484,15 @@
         }
       </script>
 
-      <script src="{% static "vendor/js/select2.min.js" %}"></script>
-      <link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
 
-      <script>
+<script src="{% static "vendor/js/select2.min.js" %}"></script>
+    <link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
+
+    <script>
         $( document ).ready(function() {
             //console.log("document ready");
         });
-      </script>
+
+    </script>
 
 {% endblock %}
