@@ -11,9 +11,14 @@ v999 (March XX, 2021)
 **Bug changes**
 
 * Fix Postgres crash error by setting the ProjectAsset Model content hash length to 128 characters.
+* Find the correct number of panels by adding implementation statement number when adding a statement to a component in the library.
 
 v0.9.2.1 (March 05, 2021)
 -------------------------
+
+**UI changes**
+
+* Improve style sheets for 3 column layout.
 
 **Developer changes**
 
