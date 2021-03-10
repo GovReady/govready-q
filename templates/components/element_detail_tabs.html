@@ -322,18 +322,13 @@
 
         function set_catalog_key(display_text, element) {
           // Determine the catalog from the selected display_text
-          console.log(display_text);
           // Split text
             displaytext = display_text.split(' - ');
             var first = displaytext.shift(); //or arr[arr.length-1];
             var last = displaytext.pop(); //or arr[0];
-            dtv = [first, displaytext.join(" - "), last];
-            console.log(dtv) // [control_id, title, catalog_key]
-
+            dtv = [first, displaytext.join(" - "), last]; // [control_id, title, catalog_key]
 
           ck = dtv[2]
-
-          //$('#sid_class_panel_num').val('NIST_SP-800-53_rev4')
 
           $(element).val(ck)
         }
@@ -362,12 +357,5 @@
 
 <script src="{% static "vendor/js/select2.min.js" %}"></script>
     <link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
-
-    <script>
-        $( document ).ready(function() {
-            //console.log("document ready");
-        });
-
-    </script>
 
 {% endblock %}
