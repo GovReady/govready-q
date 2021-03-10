@@ -53,7 +53,7 @@
     <div class="container-fluid message-margin">
       {% for message in messages %}
         {# Django levels are: debug (map to Boostrap 'info'), info, success, warning, error (map to Boostrap 'danger') #}
-        {% if message.level_tag != "success" %}{# Skip success messages #}
+        {% if  'Successfully signed in as ' not in  message.message  and  'You have signed out.' not in message.message %}{# Skip login/out messages #}
         <div class="alert fade in alert-{% if message.level_tag == "error" %}danger{% elif message.level_tag == "debug" %}info{% else %}{{message.level_tag}}{% endif %}">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
             {{ message }}
