@@ -566,7 +566,7 @@ class System(auto_prefetch.Model):
         # TODO add index on statement status
 
         # Get overall controls addressed (e.g., covered)
-        status_stats['Addressed'] = elm.statements_consumed.filter(statement_type="control_implementation").values('sid').count()
+        status_stats['Addressed'] = elm.statements_consumed.filter(statement_type="control_implementation").values('sid').distinct().count()
         return status_stats
 
     @cached_property
