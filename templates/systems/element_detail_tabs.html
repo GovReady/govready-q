@@ -156,7 +156,7 @@
 
                                 <div class="row statement-text">
                                   <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                                    <span id="producer_element-panel_num-control" class="control-id-text">{{ smt.sid|upper }} {% if smt.pid %}{{ smt.pid }}.{% endif %}</span>
+                                    <span id="producer_element-{{ forloop.counter }}-control" class="control-id-text">{{ smt.sid|upper }} {% if smt.pid %}{{ smt.pid }}.{% endif %}</span>
                                   </div>
                                   <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
                                     {{ smt.body }}
