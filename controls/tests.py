@@ -10,6 +10,7 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 import time
+import unittest
 from pathlib import PurePath
 
 from django.test import TestCase
@@ -783,6 +784,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         self.browser.find_elements_by_name("save")[-1].click()
         self.browser.refresh()
 
+    @unittest.skip
     def test_smt_autocomplete(self):
         """
         Testing if the textbox can autocomplete and filter for existing components
