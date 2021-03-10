@@ -263,7 +263,7 @@ Remove contextbar from top of page
               <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
                 <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
                   <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="true" aria-controls="document-{{ forloop.counter }}-body">
-                    <span id="producer_element-panel_num-title">{{ smt.producer_element.name }}</span>&nbsp;...
+                    <span id="producer_element-{{ forloop.counter }}-title">{{ smt.producer_element.name }}</span>&nbsp;...
                   </a>
                 </h4>
               </div>
@@ -317,7 +317,7 @@ Remove contextbar from top of page
               <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
                 <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
                   <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="true" aria-controls="document-{{ forloop.counter }}-body">
-                    <span id="producer_element-panel_num-title">{{ smt.producer_element.name }}</span>&nbsp;...
+                    <span id="producer_element-{{ forloop.counter }}-title">{{ smt.producer_element.name }}</span>&nbsp;...
                   </a>
                 </h4>
               </div>
@@ -362,16 +362,17 @@ Remove contextbar from top of page
 
             {% endfor %}
           </div><!--/smt-list-->
-          <div><h3><button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
+          <div><h3><button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt({{ impl_smts|length }})">Add component statement</button></h3></div>
 </div>
 
     </div>
   </div>
 
+</div>
       {{ block.super }}
       {% endblock %}
 
-      {% block scripts %}
+{% block scripts %}
       <script>
         // Submits control id for Control look up box
         function show_control_by_id() {
@@ -402,8 +403,8 @@ Remove contextbar from top of page
           $( "#combined_smt" ).html("<h3>Component Implementations Statement</h3><textarea style=\"border: none; min-height:300px;overflow-y: scroll;\" class=\"form-control\" cols=\"50\" onkeypress=\"$(this).keypress(function(e) {return false});\">"+combined_smt+"</textarea>");
         }
         // Adds statement form to page
-        function add_smt() {
-          var panel_num = $('.panel').length + 1
+         function add_smt(smt_count) {
+          var panel_num = $('.panel').length  + smt_count
           var smt_form = `
             <div id="panel-panel_num" class="panel panel-default">
             <div class="panel-heading" role="tabx" id="document-panel_num-title">
@@ -481,7 +482,7 @@ Remove contextbar from top of page
                 // If saving first time remove producer_element_name input field
                 if ($( '#'+smt_panel_num+' input[name=producer_element_id]' ).val().length == 0) {
                   $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
-                } 
+                }
 
                 $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
                 $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
@@ -546,4 +547,4 @@ Remove contextbar from top of page
 
       </script>
 
-      {% endblock %}
+{% endblock %}

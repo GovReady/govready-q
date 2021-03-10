@@ -1,8 +1,24 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.2.1 (March 05, 2021)
+v0.9.2.2 (March 10, 2021)
 ---------------------
+
+**Developer changes**
+
+* Ensure that the number of controls selected for a project reflect non-duplicate counts of that control.
+
+**Bug changes**
+
+* Fix Postgres crash error by setting the ProjectAsset Model content hash length to 128 characters.
+* Find the correct number of panels by adding implementation statement number when adding a statement to a component in the library.
+
+v0.9.2.1 (March 05, 2021)
+-------------------------
+
+**UI changes**
+
+* Improve style sheets for 3 column layout.
 
 **Developer changes**
 
