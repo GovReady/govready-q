@@ -10,6 +10,14 @@ v999 (March XX, 2021)
 * Update 3-column statement layout to include column headings.
 * Conditionally display remarks in component library using HTML details tag.
 
+New, better install process written in Python.
+Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
+
+**Developer changes**
+
+* Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
+* Now including all static files pre-collected as part of distribution.
+
 v0.9.2.2 (March 10, 2021)
 -------------------------
 
@@ -25,6 +33,7 @@ v0.9.2.2 (March 10, 2021)
 
 * Fix Postgres crash error by setting the ProjectAsset Model content hash length to 128 characters.
 * Find the correct number of panels by adding implementation statement number when adding a statement to a component in the library.
+
 
 v0.9.2.1 (March 05, 2021)
 -------------------------

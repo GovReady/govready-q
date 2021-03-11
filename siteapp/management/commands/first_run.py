@@ -9,6 +9,7 @@ from django.conf import settings
 
 from guidedmodules.models import AppSource, Module
 from siteapp.models import User, Organization, Portfolio
+from controls.models import Element
 from django.contrib.auth.management.commands import createsuperuser
 
 import fs, fs.errors
@@ -64,29 +65,33 @@ class Command(BaseCommand):
                 except Exception as e:
                     raise
 
-        # Install default example components
-        from controls.views import ComponentImporter
-        path = 'q-files/vendors/govready/components/OSCAL'
-        import_name = "Default components"
-        if os.path.exists(path):
-            for component_file in os.listdir(path):
-                # Read component json file as text
-                if component_file.endswith(".json"):
-                    with open(os.path.join(path, component_file)) as f:
-                        oscal_component_json = f.read()
-                        result = ComponentImporter().import_components_as_json(import_name, oscal_component_json)
+        # Install default example components if no components in library
+        if len(Element.objects.all()) == 0:
+            from controls.views import ComponentImporter
+            path = 'q-files/vendors/govready/components/OSCAL'
+            import_name = "Default components"
+            if os.path.exists(path):
+                for component_file in os.listdir(path):
+                    # Read component json file as text
+                    if component_file.endswith(".json"):
+                        with open(os.path.join(path, component_file)) as f:
+                            oscal_component_json = f.read()
+                            result = ComponentImporter().import_components_as_json(import_name, oscal_component_json)
 
         # Finally, for authoring, create an AppSource to the stub file
         qfiles_path = 'guidedmodules/stubs/q-files'
         if os.path.exists(qfiles_path):
             # For 0.9.x+.
-            AppSource.objects.get_or_create(
+            appsource, created = AppSource.objects.get_or_create(
                 slug="govready-q-files-stubs",
                 defaults={
                     "spec": { "type": "local", "path": qfiles_path }
                 }
             )
-            print("Adding AppSource for authoring.")
+            if created:
+                print("Adding AppSource for authoring.")
+            else:
+                print("Confirmed that AppSource for authoring exists.")
 
         # Create GovReady admin users, if specified in local/environment.json
         if len(settings.GOVREADY_ADMINS):
@@ -102,7 +107,7 @@ class Command(BaseCommand):
                         user.email
                     ))
                 else:
-                    print("\n[WARNING] Skipping create admin account '{}' - username already exists.\n".format(
+                    print("\n[INFO] Skipping create admin account '{}' - username already exists.\n".format(
                         username
                     ))
 
@@ -115,7 +120,7 @@ class Command(BaseCommand):
                 # Create an "admin" account with a random pwd and
                 # print it on stdout.
                 user = User.objects.create(username="admin", is_superuser=True, is_staff=True)
-                password = User.objects.make_random_password(length=24)
+                password = User.objects.make_random_password(length=12)
                 user.set_password(password)
                 user.save()
                 print("Created administrator account (username: {}) with password: {}".format(
@@ -131,7 +136,7 @@ class Command(BaseCommand):
             print("Created administrator portfolio {}".format(portfolio.title))
         else:
             # One or more superusers already exist
-            print("\n[WARNING] Superuser(s) already exist, not creating default admin superuser. Did you specify 'govready_admins' in 'local/environment.json'? Are you connecting to a persistent database?\n")
+            print("\n[INFO] Superuser(s) already exist, not creating default admin superuser. Did you specify 'govready_admins' in 'local/environment.json'? Are you connecting to a persistent database?\n")
 
         # Create the default organization.
         if not Organization.objects.all().exists() and not Organization.objects.filter(name="main").exists():
@@ -141,7 +146,7 @@ class Command(BaseCommand):
         try:
             user
         except NameError:
-            print("[WARNING] Admin already added to Help Squad and Reviewers")
+            print("[INFO] Admin already added to Help Squad and Reviewers")
         else:
             if user not in org.help_squad.all(): org.help_squad.add(user)
             if user not in org.reviewers.all(): org.reviewers.add(user)
