@@ -21,8 +21,8 @@ output:
         padding: 8px;
       }
     </style>
-    <div style="width: 650px; margin: auto; font-family: TimesNewRoman, Times, serif; ">
-    <div style="font-weight: bold;">
+    <div>
+    <div>
       <p style="text-align: center;">
         SYSTEM INFORMATION
       </p>
@@ -35,7 +35,7 @@ output:
       </p>
     </div>
     <div style="text-align: center;">
-      <table border=1 style="margin:auto; font-family: TimesNewRoman, Times, serif; text-align: center;">
+      <table>
         <tr>
           <td>Organization</td><td>{{system_org}}</td>
         </tr>
