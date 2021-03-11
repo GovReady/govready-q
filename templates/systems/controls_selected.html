@@ -12,6 +12,7 @@
 {% block head %}
 {{block.super}}
 {% include "controls/_style-controls.html" %}
+<style>{% include 'bootstrap-extensions.css' %}</style>
 {% endblock %}
 
 <!-- action buttons included from project-base.html -->
@@ -19,19 +20,35 @@
 
 {% block body_content %}
   <div class="systems-top">
-    <div id="tab-content" class="row rows-header">
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">Selected controls</div>
-        <div id="" class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9">&nbsp;</div>
-        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+    <div id="tab-content" class="bootstrap-extension row rows-header">
+        <!-- Horizontal for wider / Stacked for narrower widths  w/ Download always upper right -->
+
+        <div class="col-auto align-self-end mr-auto"><span class="systems-table-title">Controls</span></div>
+
+        <div class="col-12 order-last  col-xl order-xl-first">
+          <form id="add-form" class="form-inline" method="post"
+                action="{%  url 'system_controls_add' system_id=system.id %}">
+            {% csrf_token %}
+            <select title="Add" id="add-control_id-select" name="control_id" style="width: 100%">
+              <!-- script'd to select2 w/ search & submit  (style=width:100% instead of class per select2 docs) -->
+              <option value="None" selected disabled hidden>Add</option>
+            </select>
+            <input type="hidden" id="add-catalog_key-input" name="catalog_key">
+          </form>
+        </div>
+
+        <!-- Download button  on upper right -->
+        <div class="col-auto align-self-end ml-auto  ml-sm-0"> <!-- Vertically center -->
           <!--a href="selected/export/xacta/xlsx">export</a-->
-          <span class="glyphicon glyphicon-download-alt pull-right"
-                style="cursor: pointer;"
+          <span title="Download"
+                class="glyphicon glyphicon-download-alt" style="cursor: pointer"
                 onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
         </div>
     </div>
+
     {% if controls|length < 1 %}
       <div id="tab-content" class="row row-control">
-        <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+        <div class="col-xs-12">
           <p>No controls are currently selected for this system.</p>
           <p>FEATURE NOTE: We are automating the assigning of control baselines by system categorization.
           Prior to feature completion, we humbly ask you manually select the desired control baseline...</p>
@@ -45,46 +62,96 @@
       </div>
     {% else %}
       {% for control in controls %}
-        <div id="tab-content" class="row row-control">
-            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                <a href= {% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}>{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}</a>
+        <div id="tab-content" class="bootstrap-extension row row-control">
+            <!-- Horizontal for wider / Stacked progressively for narrower widths -->
+
+            {% with control_oscal=control.get_flattened_oscal_control_as_dict %}
+            <div class="col-auto order--3  col-sm-em-5">
+              <!-- Fixed width for up to 'AC-16 (10) ' -->
+              <a href= {% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}
+              >{{ control_oscal.id_display }}</a>
             </div>
-            <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
-                {{ control.get_flattened_oscal_control_as_dict.title }}
-            </div>
-            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-              {% with total=impl_smts_count|get_item:control.oscal_ctl_id %}
-                {% if total > 0%}
-                  {{ total }} component{{ total|pluralize }}
-                {% else %}
-                  <div class="center-text">
-                    &mdash;
+
+            <div class="col-12  offset-sm-1 col-sm-10-64  offset-xl-0 col-xl order-xl--2">
+              <div class="row">
+                <div class="col-12 mb-3  col-xl mb-xl-0"> <!-- Bottom margin for stacked layout -->
+                    {{ control_oscal.title }}
+                </div>
+            {% endwith %}
+
+                <div class="col-min ml-auto  col-sm-max  ml-xl-4"> <!-- Left margin fixed for horizontal layout -->
+                  <div class="row">
+                    <div class="col-max-em-8-5 mb-3  col-sm-min-em-8-5 mb-sm-0"> <!-- Bottom margin for stacked layout -->
+                      <!-- Fixed width for up to '1000 components ' -->
+                      {% with total=impl_smts_count|get_item:control.oscal_ctl_id %}
+                        {% if total > 0%}
+                          {{ total }} component{{ total|pluralize }}
+                        {% else %}
+                          <div class="text-left text-sm-center"> <!-- Left align for stacked layout -->
+                            &mdash;
+                          </div>
+                        {% endif %}
+                      {% endwith %}
+                    </div>
+
+                    <div class="col-max-em-12 col-sm-min-em-12">
+                      <!-- Fixed width for up to '12 months, 59 minutes ago ' -->
+                      {% if control.smts_updated %}
+                        {{ control.smts_updated|timesince}} ago
+                      {% else %}
+                        {{ control.created|timesince}} ago
+                      {% endif %}
+                    </div>
                   </div>
-                {% endif %}
+                </div>
+              </div>
+            </div>
+
+
+          {% get_obj_perms request.user for system as 'system_perms' %}
+          {% if 'change_system' in system_perms %}
+            <div class="col-auto order--1 mt-2  ml-auto ml-xl-0"> <!-- Top align with name -->
+              {% with control_id_string=control.id|stringformat:'s' %}
+              {% with form_id='remove-'|add:control_id_string|add:'-form' %}
+              {% url 'system_controls_remove' system_id=system.id control_id=control.id as remove_url %}
+              <form id="{{ form_id }}" class="form-inline" method="post" action="{{ remove_url }}">
+                {% csrf_token %}
+                <a title="Remove" href="{{ remove_url }}"
+                    onclick="return remove('{{ control.get_name_with_catalog }}', '{{ form_id }}')"
+                  ><span class="glyphicon glyphicon-trash"></span></a>
+              </form>
+              {% endwith %}
               {% endwith %}
             </div>
-            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-              {% if control.smts_updated %}
-                {{ control.smts_updated|timesince}} ago
-              {% else %}
-                {{ control.created|timesince}} ago
-              {% endif %}
-            </div>
+          {% endif %}
         </div>
       {% endfor %}
     {% endif %}
 </div>
-
-
 {% endblock %}
 
 {% block scripts %}
 <script>
-  function show_control_by_id() {
-    var control_id = $('#control-lookup').find('input[name="id"]').val();
-    var url = "/systems/{{ system.id }}/controls/catalogs/{{ control_id.oscal_catalog_key }}/control/" + control_id;
-    window.location.href = url;
-  }
+  // Add:  Convert form select to jQuery Select2
+  $(document).ready(function() {
+    $('#add-control_id-select').select2({
+      // Initially, show all Controls that haven't been added
+      //
+      //   Note: Not caching 1st/full listing so results always reflect the latest
+      language:         { inputTooShort: function() { return 'Please enter your search'; } },
+      ajax: {
+        url:            '{%  url 'controls_system_addable_search' system_id=system.id %}',
+        dataType:       'json',
+        delay:          250,
+        data:           function(params)       { return { q:       params.term }; },
+        processResults: function(data, params) { return { results: data.data.controls }; }
+      }
+    }).on('select2:select', function (e) {
+      // After change event for which e.params isn't defined
+      $('#add-catalog_key-input').val(e.params.data.catalog_key);
+      $('#add-form').submit();
+    });
+  });
 
   // The download button shows a modal to ask what file format to download in.
   function download_document(document_id, system_id) {
@@ -108,6 +175,12 @@
       }
     });
   }
-</script>
 
+  function remove(control_name, form_id) {
+    if (confirm("Remove "+control_name+"  &  Delete this System's related Component associations & Statement customizations?"))
+      $('#'+form_id).submit();
+
+    return false;  // so href link not requested
+  }
+</script>
 {% endblock %}

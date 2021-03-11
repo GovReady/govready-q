@@ -257,6 +257,7 @@ class Element(auto_prefetch.Model):
         except:
             return False
 
+
     def assign_baseline_controls(self, user, baselines_key, baseline_name):
         """Assign set of controls from baseline to an element"""
 
@@ -278,6 +279,7 @@ class Element(auto_prefetch.Model):
             # print("User does not have permission to assign selected controls to element's system.")
             return False
 
+
     def statements(self, statement_type):
         """Return on the statements of statement_type produced by this element"""
         smts = Statement.objects.filter(producer_element = self, statement_type = statement_type)
@@ -290,6 +292,7 @@ class Element(auto_prefetch.Model):
         smt_count = Statement.objects.filter(producer_element=self, statement_type="control_implementation_prototype").count()
 
         return smt_count
+
 
     @transaction.atomic
     def copy(self, name=None):
@@ -389,9 +392,21 @@ class ElementControl(auto_prefetch.Model):
 
     #     return selected_controls
 
+    def get_catalog(self):
+        return Catalog.GetInstance(catalog_key=self.oscal_catalog_key)
+
+    def call_catalog_for_control(self, get_control_function_callback):
+        catalog = self.get_catalog()
+        return get_control_function_callback(catalog)( catalog.get_control_by_id(self.oscal_ctl_id) )
+
+    def get_name(self):
+        return self.call_catalog_for_control(lambda catalog: catalog.get_control_name)
+
+    def get_name_with_catalog(self):
+        return f'{self.get_name()} ({self.get_catalog().catalog_key_display})'
+
     def get_flattened_oscal_control_as_dict(self):
-        cg = Catalog.GetInstance(catalog_key=self.oscal_catalog_key)
-        return cg.get_flattened_control_as_dict(cg.get_control_by_id(self.oscal_ctl_id))
+        return self.call_catalog_for_control(lambda catalog: catalog.get_flattened_control_as_dict)
 
     # def get_flattened_impl_smt_as_dict(self):
     #     """Return the implementation statement for this ElementControl combination"""
@@ -444,6 +459,27 @@ class System(auto_prefetch.Model):
             return True
         except:
             return False
+
+
+    def add_control(self, catalog_key, control_id):
+        """Add & return Control"""
+        control = ElementControl(element=self.root_element,
+                                 oscal_catalog_key=catalog_key, oscal_ctl_id=control_id)
+        control.save()
+        return control
+
+    def remove_control(self, control_id):
+        """Remove & return Control"""
+        control = ElementControl.objects.get(pk=control_id)
+
+        # Delete Control Statements
+        self.root_element.statements_consumed.filter(
+            statement_type="control_implementation",
+            sid_class=control.oscal_catalog_key, sid=control.oscal_ctl_id ).delete()
+
+        control.delete()
+        return control
+
 
     @property
     def smts_common_controls_as_dict(self):

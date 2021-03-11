@@ -437,7 +437,7 @@
 
           $(".control-select").select2({
                   ajax: {
-                      url: "/controls/api/controlsselect/",
+                      url:      '{% url 'controls_search' %}',
                       dataType: 'json',
                       delay: 250,
                       data: function(params) {
@@ -457,14 +457,14 @@
                           // scrolling can be used
                           var resData = [];
                           data.data.controls.forEach(function(value) {
-                              if (value.display_text.indexOf(params.term) != -1)
+                              if (value.text.indexOf(params.term) != -1)
                                   resData.push(value)
                           })
                           return {
                               results: $.map(resData, function(item) {
                                   return {
-                                      text: item.display_text,
-                                      id: item.id
+                                      text: item.text,
+                                      id:   item.id
                                   }
                               })
                           };

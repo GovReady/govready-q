@@ -16,14 +16,24 @@ urlpatterns = [
     # Docs
     url('doc/', include('django.contrib.admindocs.urls')),
 
+
     # Catalogs
-    url(r'^$', views.catalogs),
-    url(r'^catalogs$', views.catalogs),
+    url(r'^$',                              views.catalogs),
+    url(r'^catalogs$',                      views.catalogs),
     url(r'^catalogs/(?P<catalog_key>.*)/$', views.catalog),
 
+    # Controls
+    url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)',    views.group,           name="control_group"),
+    url(r'^catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)', views.control,         name="control_info"),
+    url(r'^controls$',                                          views.controls_search, name="controls_search"),
+
+
     # Systems
-    url(r'^(?P<system_id>.*)/controls/selected/export/xacta/xlsx$', views.controls_selected_export_xacta_xslx, name="controls_selected"),
-    url(r'^(?P<system_id>.*)/controls/selected$', views.controls_selected, name="controls_selected"),
+    url(r'^(?P<system_id>.*)/controls/selected$',                   views.system_controls,                   name="controls_selected"),
+    url(r'^(?P<system_id>.*)/controls/selected/export/xacta/xlsx$', views.system_controls_export_xacta_xslx, name="system_controls_export_xacta_xslx"),
+    url(r'^(?P<system_id>.*)/controls/addable$',                    views.controls_system_addable_search,    name="controls_system_addable_search"),
+    url(r'^(?P<system_id>.*)/controls/add$',                        views.system_controls_add,               name="system_controls_add"),
+    url(r'^(?P<system_id>.*)/controls/remove/(?P<control_id>.*)$',  views.system_controls_remove,            name="system_controls_remove"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/compare$', views.editor_compare, name="control_compare"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),
     url(r'^editor_autocomplete/', views.EditorAutocomplete.as_view(), name="search_system_component"),
@@ -76,11 +86,6 @@ urlpatterns = [
 
     # Elements
     url(r'^elements/(\d+)/__edit$', views.edit_element, name="edit_element"),
-
-    # Controls
-    url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)', views.group, name="control_group"),
-    url(r'^catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)', views.control, name="control_info"),
-    url(r'^api/controlsselect/', views.api_controls_select, name="api_controls_select"),
 
     # Baselines
     url(r'^(?P<system_id>.*)/controls/baseline/(?P<catalog_key>.*)/(?P<baseline_name>.*)/_assign$', views.assign_baseline, name="assign_baseline"),

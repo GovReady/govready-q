@@ -318,6 +318,35 @@ class Catalog(object):
 
         return text
 
+
+    def get_control_name(self, control):
+        """Get Control's name = label w/ spacing added (e.g., between NIST 800-53 parent & enhancement ids"""
+        return re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]+)[\.?\(]{1}([0-9]+)\)?$', r'\1\2 (\3)',
+                      self.get_control_property_by_name(control, 'label'))
+        # translating e.g., AC-2(1) & AC-2.1 to 'AC-2 (1)'
+
+    def get_control_listing(self, control):
+        """Return Control's minimal listing"""
+        return {
+            'id':    control['id'],
+            'name':  self.get_control_name(control),
+            'title': control['title'],
+        }
+
+    def get_controls_index(self, get_control_callback=None):
+        """Return all Controls indexed by Control id,  minimally by default"""
+
+        if get_control_callback is None:
+            get_control_callback = self.get_control_listing
+
+        index = {}
+        for control in self.get_controls_all():
+            listing                = get_control_callback(control)
+            index[ listing['id'] ] = listing
+
+        return index
+
+
     def get_flattened_control_as_dict(self, control):
         """
         Return a control as a simplified, flattened Python dictionary.
@@ -327,7 +356,7 @@ class Catalog(object):
         family_id = self.get_group_id_by_control_id(control['id'])
         cl_dict = {
             "id": control['id'],
-            "id_display": re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)\.([0-9]*)$', r'\1\2 (\3)', control['id']),
+            "id_display": self.get_control_name(control),
             "title": control['title'],
             "family_id": family_id,
             "family_title": self.get_group_title_by_id(family_id),
@@ -345,14 +374,8 @@ class Catalog(object):
 
     def get_flattened_controls_all_as_dict(self):
         """Return all controls as a simplified flattened Python dictionary indexed by control ids"""
-        # Create an empty dictionary
-        cl_all_dict = {}
-        # Get all the controls
-        for cl in self.get_controls_all():
-            # Get flattened control and add to dictionary of controls
-            cl_dict = self.get_flattened_control_as_dict(cl)
-            cl_all_dict[cl_dict['id']] = cl_dict
-        return cl_all_dict
+        return self.get_controls_index(self.get_flattened_control_as_dict)
+
 
     def _cache_parameters_by_control(self):
         cache = defaultdict(list)
@@ -367,4 +390,3 @@ class Catalog(object):
 
     def get_parameter_ids_for_control(self, control_id):
         return self.parameters_by_control.get(control_id, [])
-

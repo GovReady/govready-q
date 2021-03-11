@@ -10,7 +10,6 @@ import operator
 from natsort import natsorted
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -22,8 +21,10 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views import View
+from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView
 from django.urls import reverse
+from http import HTTPStatus
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from urllib.parse import quote
@@ -45,7 +46,6 @@ from structlog.stdlib import LoggerFactory
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
-
 
 def index(request):
     """Index page for controls"""
@@ -137,46 +137,271 @@ def control(request, catalog_key, cl_id):
     }
     return render(request, "controls/detail.html", context)
 
+
+def raise_404_if_system_permissions_not(request, system, permission='view_system', not_callback=None):
+    """Raise an HTTP 404 exception after calling callback(permission, action, user_message)  if the user doesn't have the system permission"""
+    if not request.user.has_perm(permission, system):
+        if not_callback:
+            not_callback(permission, 'permission_denied',
+                         'You do not have permission to change this system')
+
+        raise Http404(f'Access denied:  You do not have permission')
+        # 404 instead of 403 + vague message  to not leak info.
+        #   Message only conveyed when DEBUG True
+
+def raise_404_if_system_permissions_not_view(request, system, not_callback=None):
+    """Raise an HTTP 404 exception after calling callback  if the user doesn't have the system view permission"""
+    raise_404_if_system_permissions_not(request, system, 'view_system', not_callback)
+
+def raise_404_if_system_permissions_not_change(request, system, not_callback=None):
+    """Raise an HTTP 404 exception after calling callback  if the user doesn't have the system change permission"""
+    raise_404_if_system_permissions_not(request, system, 'change_system', not_callback)
+
+def raise_404_if_system_permissions_not_view_controls(request, system):
+    """Raise an HTTP 404 exception after calling callback  if the user doesn't have the system view controls permission"""
+    raise_404_if_system_permissions_not_view(request, system,
+        lambda permission, action, user_message:
+            log_system_action(request, system, [permission, 'view_controls', action])
+    )
+
+
+def log_system_action(request, system, action, message={}):
+    """Log System action
+
+        action can be scalar (e.g., string) or list (e.g., array)
+            e.g., 'view_system' or ['view_system', 'view_controls', 'permission_denied']
+    """
+    if message is None:
+        messae = {}
+    message.update({
+        'event': ' '.join(action) if isinstance(action, list) else action,
+        'user':  {'id': request.user.id,  'username': request.user.username}
+    })
+    message_object_key = 'object'
+    if message_object_key not in message.keys():
+        message[message_object_key] = {}
+    message[message_object_key]['system_id'] = system.id
+
+    logger.info(**message)
+
+def log_system_object_action(request, system, action, object_type, object_id_name, object_id):
+    """Log System object action
+
+        action can be scalar (e.g., string) or list (e.g., array)
+            e.g., 'add_control' or ['add_control', 'permission_denied']
+    """
+    log_system_action(request, system, action, {
+        'object': {'object': object_type,  object_id_name: object_id}
+    })
+
+def log_system_object_change(request, system, action, object_type, object_id_name, object_id,
+                             user_message, user_message_level=messages.SUCCESS):
+    """Log System object change,  including user message
+
+        action can be scalar (e.g., string) or list (e.g., array)
+            e.g., 'add_control' or ['add_control', 'permission_denied']
+    """
+
+    # actions = ['change_system' {action}]
+    actions=['change_system']
+    actions.extend(action) if isinstance(action, list) else actions.append(action)
+    log_system_object_action(request, system, actions, object_type, object_id_name, object_id)
+
+    messages.add_message(request, user_message_level, user_message)
+
+
 @functools.lru_cache()
-def controls_selected(request, system_id):
-    """Display System's selected controls view"""
+def system_controls(request, system_id):
+    """Render System Controls page"""
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
     # Retrieve related selected controls if user has permission on system
-    if request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
-        controls = system.root_element.controls.all()
-        impl_smts = system.root_element.statements_consumed.all()
+    raise_404_if_system_permissions_not_view_controls(request, system)
 
-        # sort controls
-        controls = list(controls)
-        controls.sort(key=lambda control: control.get_flattened_oscal_control_as_dict()['sort_id'])
-        # controls.sort(key = lambda control:list(reversed(control.get_flattened_oscal_control_as_dict()['sort_id'])))
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project   = system.projects.all()[0]
+    controls  = system.root_element.controls.all()
+    impl_smts = system.root_element.statements_consumed.all()
 
-        impl_smts_count = {}
-        ikeys = system.smts_control_implementation_as_dict.keys()
-        for c in controls:
-            impl_smts_count[c.oscal_ctl_id] = 0
-            if c.oscal_ctl_id in ikeys:
-                impl_smts_count[c.oscal_ctl_id] = len(
-                    system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+    # sort controls
+    controls = list(controls)
+    control_sort_key_context = new_control_sort_key_context()
+    controls.sort(key=lambda control:
+        get_control_sort_key(control.oscal_ctl_id, control.oscal_catalog_key,
+                             control_sort_key_context)
+    )
 
-        # Return the controls
-        context = {
-            "system": system,
-            "project": project,
-            "controls": controls,
-            "impl_smts_count": impl_smts_count,
-            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "project_form": ProjectForm(request.user),
-        }
-        return render(request, "systems/controls_selected.html", context)
-    else:
-        # User does not have permission to this system
-        raise Http404
+    impl_smts_count = {}
+    ikeys = system.smts_control_implementation_as_dict.keys()
+    for c in controls:
+        impl_smts_count[c.oscal_ctl_id] = 0
+        if c.oscal_ctl_id in ikeys:
+            impl_smts_count[c.oscal_ctl_id] = len(
+                system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+
+    return render(request, 'systems/controls_selected.html', {
+        'system':                          system,
+        'project':                         project,
+        'controls':                        controls,
+        'impl_smts_count':                 impl_smts_count,
+        'enable_experimental_opencontrol': SystemSettings.enable_experimental_opencontrol,
+        'project_form':                    ProjectForm(request.user),
+    })
+
+
+def new_control_sort_key_context():
+    """Return a new get_control_sort_key() context"""
+    id_separator = '.'  # e.g., for 3.1.1
+    return {
+        'id_trans':     str.maketrans('-()', id_separator * 3),  # e.g., for AC-2(1)
+        'id_separator': id_separator
+    }
+
+def get_control_sort_key(control_id, catalog_key, context):
+    """Return the Control's sort key
+
+        for sorting Controls by  Control id , Control Catalog key
+    """
+    return (
+        [(0, int(part))  if part.isdigit()  else (1, part.lower())
+            for part in control_id.translate( context['id_trans'] ).split( context['id_separator'] )],
+        catalog_key
+    )
+    # Translate the Control's id (display name basis)  to a sort key
+    #   for intuitive, mixed alphanumeric ordering  like 3.1 3.2 3.10 AC-1 AC-2 AC-10
+    #
+    #   1. Replace all alternate part separators w/ the primary separator  (e.g., for AC-2(1))
+    #   2. Separate into parts
+    #   3. Convert each part into a mixed alphanumeric sort key
+    #        for number-before-letter ordering:
+    #
+    #        If digits,  (0, integer)
+    #        otherwise,  (1, lowercase)  (lowercase for mixed case proofing)
+
+
+@require_GET
+def controls_system_addable_search(request, system_id):
+    """Return a not-System Controls search results list JSON response
+
+        for selecting Controls to add to the System,
+
+        listing the Controls across all Catalogs that:
+          - are not already associated with the System
+          - contain the search query (if any) in their name, title, or Catalog key  (case-sensitive)
+    """
+    system = get_object_or_404(System, pk=system_id)
+    raise_404_if_system_permissions_not_view_controls(request, system)
+
+    return controls_search(request, system.root_element.controls.all())
+
+@require_GET
+def controls_search(request, system_controls=None):
+    """Return a Controls search results list JSON response  for selecting Controls
+
+        listing the Controls across all Catalogs that optionally:
+          - contain the search query (if any) in their name, title, or Catalog key  (case-sensitive)
+          - are not in the System Controls (if any)
+    """
+    results = []
+    query   = request.GET.get("q")
+    for catalog_key in Catalogs()._list_catalog_keys():
+        catalog          = Catalog.GetInstance(catalog_key=catalog_key)
+        catalog_controls = catalog.get_controls_index()
+        results.extend([{
+            'catalog_key': catalog_key,
+            'id':          cc['id'],
+            'text':        f"{cc['name']} - {cc['title']} - {catalog.catalog_key_display}"
+        } for cc in catalog_controls.values()
+            if (not query or query in cc['name']
+                          or query in cc['title']
+                          or query in catalog.catalog_key_display)
+               and
+               not (system_controls and any(sc.oscal_catalog_key == catalog_key  and
+                                            sc.oscal_ctl_id      == cc['id']
+                                            for sc in system_controls))
+        ])
+
+    sort_key_context = new_control_sort_key_context()
+    results.sort(key=lambda control:
+        get_control_sort_key(control['id'], control['catalog_key'],
+                             sort_key_context)
+    )
+
+    return new_JsonResponse('Searched Controls', 'controls', results)
+
+def new_JsonResponse(message, data_type=None, data=None):
+    body = {'status': 'success',  'message': message}
+
+    if data_type:
+        body['data'] = {data_type: data}
+
+    return JsonResponse(body)
+
+
+@require_POST
+def system_controls_add(request, system_id):
+    """Add System Control  &  redirect to System Controls page"""
+    return system_controls_modify(request, system_id, 'add_control', 'Added',
+        [ request.POST['catalog_key'], request.POST['control_id'] ],  # control_key
+        lambda system, control_key:  system.add_control(*control_key)
+    )
+
+@require_POST
+def system_controls_remove(request, system_id, control_id):
+    """Remove System Control,  including associated System Statements,  &  redirect to System Controls page"""
+    return system_controls_modify(request, system_id, 'remove_control', 'Removed',
+        control_id,
+        lambda system, control_key:  system.remove_control(control_id)
+    )
+
+def system_controls_modify(request, system_id, action, action_user_verb_after,
+                           control_key, modify_and_get_control_callback):
+    """Modify System Controls for this Control  &  redirect to System Controls page"""
+
+    system = get_object_or_404(System, pk=system_id)
+
+    def log_system_controls_change(action, control_or_id, user_verb_after_or_message,
+                                   user_message_level=messages.SUCCESS):
+        """Log System Controls change,  including user message
+
+            e.g.,
+                control_or_id=control    , user_verb_after_or_message='Added'
+                             =control_id                             ='You do not have permission to change this system'
+
+            See log_system_object_change
+        """
+        if isinstance(control_or_id, ElementControl):
+            user_verb_after_or_message = f'{user_verb_after_or_message} {control_or_id.get_name_with_catalog()})'
+            control_or_id              = control_or_id.id or control_key  # control_key e.g., when .id None after remove
+
+        log_system_object_change(request, system, action, 'control', 'id', control_or_id,
+                                 user_verb_after_or_message, user_message_level)
+
+    raise_404_if_system_permissions_not_change(request, system,
+        lambda permission, subaction, user_message:
+            log_system_controls_change([action, subaction], control_key,
+                                       user_message, messages.ERROR)
+    )
+
+    control = modify_and_get_control_callback(system, control_key)
+    log_system_controls_change(action, control, action_user_verb_after)
+
+    return redirect_303('controls_selected', system_id=system_id)
+
+def redirect_303(to, *args, **kwargs):
+    """Return an HTTP 303 See Other redirect response
+
+        whose resulting, following request method  must be GET  per the HTTP spec
+
+        unlike an HTTP 302 Found  for which the spec  only most recently  starting allowing that
+        the following request method  only MAY be changed  from POST to GET  for historical reasons
+    """
+    response             = redirect(to, *args, **kwargs)
+    response.status_code = HTTPStatus.SEE_OTHER
+    return response
+
 
 @functools.lru_cache()
 def controls_updated(request, system_id):
@@ -862,35 +1087,6 @@ def component_library_component(request, element_id):
     }
     return render(request, "components/element_detail_tabs.html", context)
 
-def api_controls_select(request):
-    """Return list of controls in json for select2 options from all control catalogs"""
-
-    # Create array to hold accumulated controls
-    cxs = []
-    # Loop through control catalogs
-    catalogs = Catalogs()
-    for ck in catalogs._list_catalog_keys():
-        cx = Catalog.GetInstance(catalog_key=ck)
-        # Get controls
-        ctl_list = cx.get_flattened_controls_all_as_dict()
-        # Build objects for rendering Select2 auto complete list from catalog
-        select_list = [{'id': ctl_list[ctl]['id'], 'title': ctl_list[ctl]['title'], 'class': ctl_list[ctl]['class'], 'catalog_key_display': cx.catalog_key_display, 'display_text': f"{ctl_list[ctl]['label']} - {ctl_list[ctl]['title']} - {cx.catalog_key_display}"} for ctl in ctl_list]
-        # Extend array of accumuated controls with catalog's control list
-        cxs.extend(select_list)
-    # Sort the accummulated list
-    cxs.sort(key = operator.itemgetter('id', 'catalog_key_display'))
-    data = cxs
-
-    if True:
-        status = "ok"
-        message = "Sending list."
-        return JsonResponse( {"status": "success", "message": message, "data": {"controls": data} })
-    else:
-        status = "error"
-        message = "Could not generate controls list."
-        data = {}
-        return JsonResponse({"status": status, "message": message, "data": data})
-
 @login_required
 def component_library_component_copy(request, element_id):
     """Copy a component"""
@@ -1060,8 +1256,8 @@ def system_element_download_oscal_json(request, system_id, element_id):
     return response
 
 @login_required
-def controls_selected_export_xacta_xslx(request, system_id):
-    """Export System's selected controls compatible with Xacta 360"""
+def system_controls_export_xacta_xslx(request, system_id):
+    """Export System's Controls in an Xacta 360 compatible MS-XSLX Microsoft Excel .xslx format"""
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)

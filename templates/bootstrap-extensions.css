@@ -1,0 +1,808 @@
+/*
+Bootstrap 4/5ish etc. extensions to Bootstrap 3 as needed ...
+
+  Bootstrap 3 overrides like .row are namespaced via the .bootstrap-extension class
+
+    e.g., class="bootstrap-extension row"
+*/
+
+.bootstrap-extension .row,  .bootstrap-extension.row {
+  display:       -ms-flexbox;
+  display:       flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap:     wrap;
+  margin-right:  -15px;
+  margin-left:   -15px;
+}
+
+
+/* Bootstrap 4's 5 breakpoints  up from  Bootstrap 3's 4 */
+
+/* Bootstrap 4 default breakpoint  ==  Bootstrap 3 xs */
+
+.col, .bootstrap-extension .col,
+.bootstrap-extension [class^=col-],
+.bootstrap-extension [class*=' col-']
+{
+  position:      relative;
+  min-height:    1px;
+  width:         100%;
+  padding-right: 15px;
+  padding-left:  15px;
+}
+
+.col,  .bootstrap-extension .col {
+  -ms-flex-preferred-size: 0;
+  flex-basis:              0;
+  -ms-flex-positive:       1;
+  flex-grow:               1;
+  max-width:               100%;
+}
+.col-1,  .bootstrap-extension .col-1 {
+  -ms-flex:  0 0 calc(100% / 12);
+  flex:      0 0 calc(100% / 12);
+  max-width:     calc(100% / 12);
+}
+.col-1-5,  .bootstrap-extension .col-1-5 {
+  -ms-flex:  0 0 calc(1.5 * 100% / 12);
+  flex:      0 0 calc(1.5 * 100% / 12);
+  max-width:     calc(1.5 * 100% / 12);
+}
+.col-2,  .bootstrap-extension .col-2 {
+  -ms-flex:  0 0 calc(2 * 100% / 12);
+  flex:      0 0 calc(2 * 100% / 12);
+  max-width:     calc(2 * 100% / 12);
+}
+.col-3,  .bootstrap-extension .col-3 {
+  -ms-flex:  0 0 calc(3 * 100% / 12);
+  flex:      0 0 calc(3 * 100% / 12);
+  max-width:     calc(3 * 100% / 12);
+}
+.col-4,  .bootstrap-extension .col-4 {
+  -ms-flex:  0 0 calc(4 * 100% / 12);
+  flex:      0 0 calc(4 * 100% / 12);
+  max-width:     calc(4 * 100% / 12);
+}
+.col-5,  .bootstrap-extension .col-5 {
+  -ms-flex:  0 0 calc(5 * 100% / 12);
+  flex:      0 0 calc(5 * 100% / 12);
+  max-width:     calc(5 * 100% / 12);
+}
+.col-6,  .bootstrap-extension .col-6 {
+  -ms-flex:  0 0 calc(6 * 100% / 12);
+  flex:      0 0 calc(6 * 100% / 12);
+  max-width:     calc(6 * 100% / 12);
+}
+.col-6-7,  .bootstrap-extension .col-6-7 {
+  -ms-flex:  0 0 calc(6.7 * 100% / 12);
+  flex:      0 0 calc(6.7 * 100% / 12);
+  max-width:     calc(6.7 * 100% / 12);
+}
+.col-7,  .bootstrap-extension .col-7 {
+  -ms-flex:  0 0 calc(7 * 100% / 12);
+  flex:      0 0 calc(7 * 100% / 12);
+  max-width:     calc(7 * 100% / 12);
+}
+.col-10-5,  .bootstrap-extension .col-10-5 {
+  -ms-flex:  0 0 calc(10.5 * 100% / 12);
+  flex:      0 0 calc(10.5 * 100% / 12);
+  max-width:     calc(10.5 * 100% / 12);
+}
+.col-12,   .bootstrap-extension .col-12 {
+  -ms-flex:  0 0 100%;
+  flex:      0 0 100%;
+  max-width:     100%;
+}
+.col-auto,  .bootstrap-extension .col-auto {
+  -ms-flex:  0 0 auto;
+  flex:      0 0 auto;
+  width:         auto;
+  max-width:     100%;
+}
+
+.col-em-5,     .bootstrap-extension .col-em-5 {
+  -ms-flex:  0 0 calc(5em + 2*15px);
+  flex:      0 0 calc(5em + 2*15px);
+  max-width:     calc(5em + 2*15px);
+}
+.col-em-8-5,   .bootstrap-extension .col-em-8-5 {
+  -ms-flex:  0 0 calc(8.5em + 2*15px);
+  flex:      0 0 calc(8.5em + 2*15px);
+  max-width:     calc(8.5em + 2*15px);
+}
+.col-em-12,    .bootstrap-extension .col-em-12 {
+  -ms-flex:  0 0 calc(12em + 2*15px);
+  flex:      0 0 calc(12em + 2*15px);
+  max-width:     calc(12em + 2*15px);
+}
+.col-em-12-5,  .bootstrap-extension .col-em-12-5 {
+  -ms-flex:  0 0 calc(12.5em + 2*15px);
+  flex:      0 0 calc(12.5em + 2*15px);
+  max-width:     calc(12.5em + 2*15px);
+}
+
+[class^=col-min],
+[class*=' col-min'],
+.bootstrap-extension [class^=col-min],
+.bootstrap-extension [class*=' col-min'] {
+  -ms-flex-basis: auto;
+  flex-basis:     auto;
+}
+.col-min,  .bootstrap-extension .col-min {
+  max-width:      min-content;
+}
+
+[class^=col-max],
+[class*=' col-max'],
+.bootstrap-extension [class^=col-max],
+.bootstrap-extension [class*=' col-max'] {
+  -ms-flex-basis: auto;
+  flex-basis:     auto;
+  word-break:     break-all;
+}
+.col-max,         .bootstrap-extension .col-max {
+  max-width:     max-content;
+}
+.col-max-em-8-5,  .bootstrap-extension .col-max-em-8-5 {
+  width:         calc(8.5em + 2*15px);
+  max-width:     calc(8.5em + 2*15px);
+}
+.col-max-em-12,   .bootstrap-extension .col-max-em-12 {
+  width:         calc(12em + 2*15px);
+  max-width:     calc(12em + 2*15px);
+}
+
+
+.w-100,  .bootstrap-extension .w-100 {
+  width: 100% !important;
+}
+
+
+.offset-1,   .bootstrap-extension .offset-1 {
+  margin-left: calc(100% / 12);
+}
+
+
+.ml-auto,  .bootstrap-extension .ml-auto {
+  margin-left: auto   !important;
+}
+.ml-1,  .bootstrap-extension .ml-1 {
+  margin-left: .25rem !important;
+}
+.ml-2,  .bootstrap-extension .ml-2 {
+  margin-left: .5rem  !important;
+}
+.ml-3,  .bootstrap-extension .ml-3 {
+  margin-left: 1rem   !important;
+}
+.ml-4,  .bootstrap-extension .ml-4 {
+  margin-left: 1.5rem !important;
+}
+
+.mr-auto,  .bootstrap-extension .mr-auto {
+  margin-right: auto   !important;
+}
+.mr-3,  .bootstrap-extension .mr-3 {
+  margin-right: 1rem   !important;
+}
+.mr-4,  .bootstrap-extension .mr-4 {
+  margin-right: 1.5rem !important;
+}
+.mr-5,  .bootstrap-extension .mr-5 {
+  margin-right: 3rem   !important;
+}
+
+.mt-1,  .bootstrap-extension .mt-1 {
+  margin-top: .25rem !important;
+}
+.mt-2,  .bootstrap-extension .mt-2 {
+  margin-top: .5rem  !important;
+}
+.mt-3,  .bootstrap-extension .mt-3 {
+  margin-top: 1rem   !important;
+}
+
+.mb-auto,  .bootstrap-extension .mb-auto {
+  margin-bottom: auto  !important;
+}
+.mb-2,     .bootstrap-extension .mb-2 {
+  margin-bottom: .5rem !important;
+}
+.mb-3,     .bootstrap-extension .mb-3 {
+  margin-bottom: 1rem  !important;
+}
+
+
+.align-self-center,  .bootstrap-extension .align-self-center {
+  -ms-flex-item-align: center !important;
+  align-self:          center !important;
+}
+.align-self-end,     .bootstrap-extension .align-self-end {
+  -ms-flex-item-align: end      !important;
+  align-self:          flex-end !important;
+}
+
+
+.order--3,  .bootstrap-extension .order--3 {
+  -ms-flex-order: -3;
+  order:          -3;
+}
+.order--2,  .bootstrap-extension .order--2 {
+  -ms-flex-order: -2;
+  order:          -2;
+}
+.order--1,  .bootstrap-extension .order--1 {
+  -ms-flex-order: -1;
+  order:          -1;
+}
+.order-first,  .bootstrap-extension .order-first {
+  -ms-flex-order: 0;
+  order:          0;
+}
+.order-1,  .bootstrap-extension .order-1 {
+  -ms-flex-order: 1;
+  order:          1;
+}
+.order-2,  .bootstrap-extension .order-2 {
+  -ms-flex-order: 2;
+  order:          2;
+}
+.order-3,  .bootstrap-extension .order-3 {
+  -ms-flex-order: 3;
+  order:          3;
+}
+.order-4,  .bootstrap-extension .order-4 {
+  -ms-flex-order: 4;
+  order:          4;
+}
+.order-5,  .bootstrap-extension .order-5 {
+  -ms-flex-order: 5;
+  order:          5;
+}
+.order-6,  .bootstrap-extension .order-6 {
+  -ms-flex-order: 6;
+  order:          6;
+}
+.order-7,  .bootstrap-extension .order-7 {
+  -ms-flex-order: 7;
+  order:          7;
+}
+.order-8,  .bootstrap-extension .order-8 {
+  -ms-flex-order: 8;
+  order:          8;
+}
+.order-9,  .bootstrap-extension .order-9 {
+  -ms-flex-order: 9;
+  order:          9;
+}
+.order-10,  .bootstrap-extension .order-10 {
+  -ms-flex-order: 10;
+  order:          10;
+}
+.order-11,  .bootstrap-extension .order-11 {
+  -ms-flex-order: 11;
+  order:          11;
+}
+.order-12,  .bootstrap-extension .order-12 {
+  -ms-flex-order: 12;
+  order:          12;
+}
+.order-last,  .bootstrap-extension .order-last {
+  -ms-flex-order: 13;
+  order:          13;
+}
+
+
+.float-left,   .bootstrap-extension .float-left {
+  float: left  !important;
+}
+.float-right,  .bootstrap-extension .float-right {
+  float: right !important;
+}
+
+
+/* Bootstrap 4 sm breakpoint  down from  Bootstrap 3's >= 768px */
+@media (min-width: 576px) {
+  .bootstrap-extension .col-sm {
+    -ms-flex-preferred-size: 0;
+    flex-basis:              0;
+    -ms-flex-positive:       1;
+    flex-grow:               1;
+    max-width:               100%;
+  }
+  .bootstrap-extension .col-sm-1 {
+    -ms-flex:  0 0 calc(100% / 12);
+    flex:      0 0 calc(100% / 12);
+    max-width:     calc(100% / 12);
+  }
+  .bootstrap-extension .col-sm-4 {
+    -ms-flex:  0 0 calc(4 * 100% / 12);
+    flex:      0 0 calc(4 * 100% / 12);
+    max-width:     calc(4 * 100% / 12);
+  }
+  .bootstrap-extension .col-sm-4-5,  .col-sm-4-15 {
+    -ms-flex:  0 0 calc(4.5 * 100% / 12);
+    flex:      0 0 calc(4.5 * 100% / 12);
+    max-width:     calc(4.5 * 100% / 12);
+  }
+  .bootstrap-extension .col-sm-5 {
+    -ms-flex:  0 0 calc(5 * 100% / 12);
+    flex:      0 0 calc(5 * 100% / 12);
+    max-width:     calc(5 * 100% / 12);
+  }
+  .bootstrap-extension .col-sm-5-5,  .col-sm-5-5 {
+    -ms-flex:  0 0 calc(5.5 * 100% / 12);
+    flex:      0 0 calc(5.5 * 100% / 12);
+    max-width:     calc(5.5 * 100% / 12);
+  }
+  .bootstrap-extension .col-sm-6 {
+    -ms-flex:  0 0 calc(6 * 100% / 12);
+    flex:      0 0 calc(6 * 100% / 12);
+    max-width:     calc(6 * 100% / 12);
+  }
+  .bootstrap-extension .col-sm-6-5,  .col-sm-6-5 {
+    -ms-flex:  0 0 calc(6.5 * 100% / 12);
+    flex:      0 0 calc(6.5 * 100% / 12);
+    max-width:     calc(6.5 * 100% / 12);
+  }
+  .bootstrap-extension .col-sm-7 {
+    -ms-flex:  0 0 calc(7 * 100% / 12);
+    flex:      0 0 calc(7 * 100% / 12);
+    max-width:     calc(7 * 100% / 12);
+  }
+  .bootstrap-extension .col-sm-10-5,  .col-sm-10-5 {
+    -ms-flex:  0 0 calc(10.5 * 100% / 12);
+    flex:      0 0 calc(10.5 * 100% / 12);
+    max-width:     calc(10.5 * 100% / 12);
+  }
+  .bootstrap-extension .col-sm-10-64,  .col-sm-10-64 {
+    -ms-flex:  0 0 calc(10.64 * 100% / 12);
+    flex:      0 0 calc(10.64 * 100% / 12);
+    max-width:     calc(10.64 * 100% / 12);
+  }
+  .bootstrap-extension .col-sm-11 {
+    -ms-flex:  0 0 calc(11 * 100% / 12);
+    flex:      0 0 calc(11 * 100% / 12);
+    max-width:     calc(11 * 100% / 12);
+  }
+  .bootstrap-extension .col-sm-auto,  .col-sm-auto {
+    -ms-flex:  0 0 auto;
+    flex:      0 0 auto;
+    width:         auto;
+    max-width:     100%;
+  }
+
+  .col-sm-em-5,     .bootstrap-extension .col-sm-em-5 {
+    -ms-flex:  0 0 calc(5em + 2*15px);
+    flex:      0 0 calc(5em + 2*15px);
+    max-width:     calc(5em + 2*15px);
+  }
+  .col-sm-em-8-5,   .bootstrap-extension .col-sm-em-8-5 {
+    -ms-flex:  0 0 calc(8.5em + 2*15px);
+    flex:      0 0 calc(8.5em + 2*15px);
+    max-width:     calc(8.5em + 2*15px);
+  }
+  .col-sm-em-12,    .bootstrap-extension .col-sm-em-12 {
+    -ms-flex:  0 0 calc(12em + 2*15px);
+    flex:      0 0 calc(12em + 2*15px);
+    max-width:     calc(12em + 2*15px);
+  }
+  .col-sm-em-12-5,  .bootstrap-extension .col-sm-em-12-5 {
+    -ms-flex:  0 0 calc(12.5em + 2*15px);
+    flex:      0 0 calc(12.5em + 2*15px);
+    max-width:     calc(12.5em + 2*15px);
+  }
+
+
+  [class^=col-sm-min],
+  [class*=' col-sm-min'],
+  .bootstrap-extension [class^=col-sm-min],
+  .bootstrap-extension [class*=' col-sm-min'] {
+    -ms-flex-basis: auto;
+    flex-basis:     auto;
+  }
+  .col-sm-min-em-5,       .bootstrap-extension .col-sm-min-em-5 {
+    width:      calc(5em + 2*15px);
+    min-width:  calc(5em + 2*15px);
+  }
+  .col-sm-min-em-8-5,     .bootstrap-extension .col-sm-min-em-8-5 {
+    width:      calc(8.5em + 2*15px);
+    min-width:  calc(8.5em + 2*15px);
+  }
+  .col-sm-min-em-12,      .bootstrap-extension .col-sm-min-em-12 {
+    width:      calc(12em  + 2*15px);
+    min-width:  calc(12em  + 2*15px);
+  }
+  .col-sm-min-em-12-5,    .bootstrap-extension .col-sm-min-em-12-5 {
+    width:      calc(12.5em  + 2*15px);
+    min-width:  calc(12.5em  + 2*15px);
+  }
+  .col-sm-min-em-20-5,    .bootstrap-extension .col-sm-min-em-20-5 {
+    width:      calc(20.5em  + 2*15px);
+    min-width:  calc(20.5em  + 2*15px);
+  }
+
+  [class^=col-sm-max],
+  [class*=' col-sm-max'],
+  .bootstrap-extension [class^=col-sm-max],
+  .bootstrap-extension [class*=' col-sm-max'] {
+    -ms-flex-basis: auto;
+    flex-basis:     auto;
+    word-break:     break-all;
+  }
+  .col-sm-max,  .bootstrap-extension .col-sm-max {
+    max-width:      max-content;
+  }
+
+
+  .offset-sm-1,    .bootstrap-extension .offset-sm-1 {
+    margin-left: calc(      100% / 12);
+  }
+  .offset-sm-1-5,  .bootstrap-extension .offset-sm-1-5 {
+    margin-left: calc(1.5 * 100% / 12);
+  }
+
+  .ml-sm-auto,  .bootstrap-extension .ml-sm-auto {
+    margin-left: auto   !important;
+  }
+  .ml-sm-0,     .bootstrap-extension .ml-sm-0 {
+    margin-left: 0      !important;
+  }
+
+  .mb-sm-0,  .bootstrap-extension .mb-sm-0 {
+    margin-bottom: 0    !important;
+  }
+
+  .bootstrap-extension .text-sm-center {
+    text-align: center;
+  }
+}
+
+/* Bootstrap 4 md breakpoint  down from  Bootstrap 3's >= 992px */
+@media (min-width: 768px) {
+  .bootstrap-extension .col-md {
+    -ms-flex-preferred-size: 0;
+    flex-basis:              0;
+    -ms-flex-positive:       1;
+    flex-grow:               1;
+    max-width:               100%;
+  }
+  .bootstrap-extension .col-md-3 {
+    -ms-flex:  0 0 calc(3 * 100% / 12);
+    flex:      0 0 calc(3 * 100% / 12);
+    max-width:     calc(3 * 100% / 12);
+  }
+  .bootstrap-extension .col-md-3-5,  .col-md-3-5 {
+    -ms-flex:  0 0 calc(3.5 * 100% / 12);
+    flex:      0 0 calc(3.5 * 100% / 12);
+    max-width:     calc(3.5 * 100% / 12);
+  }
+  .bootstrap-extension .col-md-4 {
+    -ms-flex:  0 0 calc(4 * 100% / 12);
+    flex:      0 0 calc(4 * 100% / 12);
+    max-width:     calc(4 * 100% / 12);
+  }
+  .bootstrap-extension .col-md-4-5,  .col-md-4-5 {
+    -ms-flex:  0 0 calc(4.5 * 100% / 12);
+    flex:      0 0 calc(4.5 * 100% / 12);
+    max-width:     calc(4.5 * 100% / 12);
+  }
+  .bootstrap-extension .col-md-5 {
+    -ms-flex:  0 0 calc(5 * 100% / 12);
+    flex:      0 0 calc(5 * 100% / 12);
+    max-width:     calc(5 * 100% / 12);
+  }
+
+  .offset-md-2,    .bootstrap-extension .offset-md-2 {
+    margin-left: calc(2 * 100% / 12);
+  }
+  .offset-md-2-5,  .bootstrap-extension .offset-md-2-5 {
+    margin-left: calc(2.5 * 100% / 12);
+  }
+  .offset-md-3-5,  .bootstrap-extension .offset-md-3-5 {
+    margin-left: calc(3.5 * 100% / 12);
+  }
+
+  .ml-md-auto,  .bootstrap-extension .ml-md-auto {
+    margin-left:   auto !important;
+  }
+  .mr-md-auto,  .bootstrap-extension .mr-md-auto {
+    margin-right:  auto !important;
+  }
+  .mb-md-0,     .bootstrap-extension .mb-md-0 {
+    margin-bottom: 0    !important;
+  }
+}
+
+/* Bootstrap 4 lg breakpoint  down from  Bootstrap 3's >= 1200px */
+@media (min-width: 992px) {
+  .bootstrap-extension .col-lg {
+    -ms-flex-preferred-size: 0;
+    flex-basis:              0;
+    -ms-flex-positive:       1;
+    flex-grow:               1;
+    max-width:               100%;
+  }
+  .bootstrap-extension .col-lg-1 {
+    -ms-flex:  0 0 calc(100% / 12);
+    flex:      0 0 calc(100% / 12);
+    max-width:     calc(100% / 12);
+  }
+}
+
+/* Bootstrap 4 xl breakpoint  ==  Bootstrap 3 lg */
+@media (min-width: 1200px) {
+  .col-xl,  .bootstrap-extension .col-xl {
+    -ms-flex-preferred-size: 0;
+    flex-basis:              0;
+    -ms-flex-positive:       1;
+    flex-grow:               1;
+    max-width:               100%;
+  }
+  .col-xl-1,  .bootstrap-extension .col-xl-1 {
+    -ms-flex:  0 0 calc(100% / 12);
+    flex:      0 0 calc(100% / 12);
+    max-width:     calc(100% / 12);
+  }
+  .col-xl-1-5,  .bootstrap-extension .col-xl-1-5 {
+    -ms-flex:  0 0 calc(1.5 * 100% / 12);
+    flex:      0 0 calc(1.5 * 100% / 12);
+    max-width:     calc(1.5 * 100% / 12);
+  }
+  .col-xl-2,  .bootstrap-extension .col-xl-2 {
+    -ms-flex:  0 0 calc(2 * 100% / 12);
+    flex:      0 0 calc(2 * 100% / 12);
+    max-width:     calc(2 * 100% / 12);
+  }
+  .col-xl-2-5, .bootstrap-extension  .col-xl-2-5 {
+    -ms-flex:  0 0 calc(2.5 * 100% / 12);
+    flex:      0 0 calc(2.5 * 100% / 12);
+    max-width:     calc(2.5 * 100% / 12);
+  }
+  .col-xl-3, .bootstrap-extension  .col-xl-3 {
+    -ms-flex:  0 0 calc(3 * 100% / 12);
+    flex:      0 0 calc(3 * 100% / 12);
+    max-width:     calc(3 * 100% / 12);
+  }
+  .col-xl-3-25,  .bootstrap-extension .col-xl-3-25 {
+    -ms-flex:  0 0 calc(3.25 * 100% / 12);
+    flex:      0 0 calc(3.25 * 100% / 12);
+    max-width:     calc(3.25 * 100% / 12);
+  }
+  .col-xl-3-5,  .bootstrap-extension .col-xl-3-5 {
+    -ms-flex:  0 0 calc(3.5 * 100% / 12);
+    flex:      0 0 calc(3.5 * 100% / 12);
+    max-width:     calc(3.5 * 100% / 12);
+  }
+  .col-xl-4,  .bootstrap-extension .col-xl-4 {
+    -ms-flex:  0 0 calc(4 * 100% / 12);
+    flex:      0 0 calc(4 * 100% / 12);
+    max-width:     calc(4 * 100% / 12);
+  }
+  .col-xl-4-25,  .bootstrap-extension .col-xl-4-25 {
+    -ms-flex:  0 0 calc(4.25 * 100% / 12);
+    flex:      0 0 calc(4.25 * 100% / 12);
+    max-width:     calc(4.25 * 100% / 12);
+  }
+  .col-xl-4-5,  .bootstrap-extension .col-xl-4-5 {
+    -ms-flex:  0 0 calc(4.5 * 100% / 12);
+    flex:      0 0 calc(4.5 * 100% / 12);
+    max-width:     calc(4.5 * 100% / 12);
+  }
+  .col-xl-5,  .bootstrap-extension .col-xl-5 {
+    -ms-flex:  0 0 calc(5 * 100% / 12);
+    flex:      0 0 calc(5 * 100% / 12);
+    max-width:     calc(5 * 100% / 12);
+  }
+  .col-xl-5-5,  .bootstrap-extension .col-xl-5-5 {
+    -ms-flex:  0 0 calc(5.5 * 100% / 12);
+    flex:      0 0 calc(5.5 * 100% / 12);
+    max-width:     calc(5.5 * 100% / 12);
+  }
+  .col-xl-6,  .bootstrap-extension .col-xl-6 {
+    -ms-flex:  0 0 calc(6 * 100% / 12);
+    flex:      0 0 calc(6 * 100% / 12);
+    max-width:     calc(6 * 100% / 12);
+  }
+  .col-xl-8,  .bootstrap-extension .col-xl-8 {
+    -ms-flex:  0 0 calc(8 * 100% / 12);
+    flex:      0 0 calc(8 * 100% / 12);
+    max-width:     calc(8 * 100% / 12);
+  }
+  .col-xl-9,  .bootstrap-extension .col-xl-9 {
+    -ms-flex:  0 0 calc(9 * 100% / 12);
+    flex:      0 0 calc(9 * 100% / 12);
+    max-width:     calc(9 * 100% / 12);
+  }
+  .col-xl-9-5,  .bootstrap-extension .col-xl-9-5 {
+    -ms-flex:  0 0 calc(9.5 * 100% / 12);
+    flex:      0 0 calc(9.5 * 100% / 12);
+    max-width:     calc(9.5 * 100% / 12);
+  }
+  .col-xl-9-75,  .bootstrap-extension .col-xl-9-75 {
+    -ms-flex:  0 0 calc(9.75 * 100% / 12);
+    flex:      0 0 calc(9.75 * 100% / 12);
+    max-width:     calc(9.75 * 100% / 12);
+  }
+  .col-xl-10,  .bootstrap-extension .col-xl-10 {
+    -ms-flex:  0 0 calc(10 * 100% / 12);
+    flex:      0 0 calc(10 * 100% / 12);
+    max-width:     calc(10 * 100% / 12);
+  }
+  .col-xl-auto,  .bootstrap-extension .col-xl-auto {
+    -ms-flex:  0 0 auto;
+    flex:      0 0 auto;
+    width:         auto;
+    max-width:     100%;
+  }
+
+  .offset-xl-0,    .bootstrap-extension .offset-xl-0 {
+    margin-left: 0;
+  }
+  .offset-xl-1,    .bootstrap-extension .offset-xl-1 {
+    margin-left: calc(100% / 12);
+  }
+  .offset-xl-1-5,  .bootstrap-extension .offset-xl-1-5 {
+    margin-left: calc(1.5 * 100% / 12);
+  }
+  .offset-xl-3-5,  .bootstrap-extension .offset-xl-3-5 {
+    margin-left: calc(3.5 * 100% / 12);
+  }
+  .offset-xl-4-5,  .bootstrap-extension .offset-xl-4-5 {
+    margin-left: calc(4.5 * 100% / 12);
+  }
+  .offset-xl-5-5,  .bootstrap-extension .offset-xl-5-5 {
+    margin-left: calc(5.5 * 100% / 12);
+  }
+
+  .ml-xl-0,  .bootstrap-extension .ml-xl-0 {
+    margin-left: 0      !important;
+  }
+  .ml-xl-4,  .bootstrap-extension .ml-xl-4 {
+    margin-left: 1.5rem !important;
+  }
+
+  .mb-xl-0,  .bootstrap-extension .mb-xl-0 {
+    margin-bottom: 0     !important;
+  }
+  .mb-xl-3,  .bootstrap-extension .mb-xl-3 {
+    margin-bottom: 1rem  !important;
+  }
+
+  .order-xl--3,     .bootstrap-extension .order-xl--3 {
+    -ms-flex-order: -3;
+    order:          -3;
+  }
+  .order-xl--2,     .bootstrap-extension .order-xl--2 {
+    -ms-flex-order: -2;
+    order:          -2;
+  }
+  .order-xl--1,     .bootstrap-extension .order-xl--1 {
+    -ms-flex-order: -1;
+    order:          -1;
+  }
+  .order-xl-first,  .bootstrap-extension .order-xl-first {
+    -ms-flex-order: 0;
+    order:          0;
+  }
+  .order-xl-last,  .bootstrap-extension .order-xl-last {
+    -ms-flex-order: 13;
+    order:          13;
+  }
+}
+
+/* Bootstrap 4 xxl breakpoint */
+@media (min-width: 1400px) {
+  .col-xxl,  .bootstrap-extension .col-xxl {
+    -ms-flex-preferred-size: 0;
+    flex-basis:              0;
+    -ms-flex-positive:       1;
+    flex-grow:               1;
+    max-width:               100%;
+  }
+  .col-xxl-1,  .bootstrap-extension .col-xxl-1 {
+    -ms-flex:  0 0 calc(100% / 12);
+    flex:      0 0 calc(100% / 12);
+    max-width:     calc(100% / 12);
+  }
+  .col-xxl-1-25,  .bootstrap-extension .col-xxl-1-25 {
+    -ms-flex:  0 0 calc(1.25 * 100% / 12);
+    flex:      0 0 calc(1.25 * 100% / 12);
+    max-width:     calc(1.25 * 100% / 12);
+  }
+  .col-xxl-1-5,  .bootstrap-extension .col-xxl-1-5 {
+    -ms-flex:  0 0 calc(1.5 * 100% / 12);
+    flex:      0 0 calc(1.5 * 100% / 12);
+    max-width:     calc(1.5 * 100% / 12);
+  }
+  .col-xxl-2,  .bootstrap-extension .col-xxl-2 {
+    -ms-flex:  0 0 calc(2 * 100% / 12);
+    flex:      0 0 calc(2 * 100% / 12);
+    max-width:     calc(2 * 100% / 12);
+  }
+  .col-xxl-2-25,  .bootstrap-extension .col-xxl-2-25 {
+    -ms-flex:  0 0 calc(2.25 * 100% / 12);
+    flex:      0 0 calc(2.25 * 100% / 12);
+    max-width:     calc(2.25 * 100% / 12);
+  }
+  .col-xxl-2-5,  .bootstrap-extension .col-xxl-2-5 {
+    -ms-flex:  0 0 calc(2.5 * 100% / 12);
+    flex:      0 0 calc(2.5 * 100% / 12);
+    max-width:     calc(2.5 * 100% / 12);
+  }
+  .col-xxl-2-75,  .bootstrap-extension .col-xxl-2-75 {
+    -ms-flex:  0 0 calc(2.75 * 100% / 12);
+    flex:      0 0 calc(2.75 * 100% / 12);
+    max-width:     calc(2.75 * 100% / 12);
+  }
+  .col-xxl-3,  .bootstrap-extension .col-xxl-3 {
+    -ms-flex:  0 0 calc(3 * 100% / 12);
+    flex:      0 0 calc(3 * 100% / 12);
+    max-width:     calc(3 * 100% / 12);
+  }
+  .col-xxl-3-5,  .bootstrap-extension .col-xxl-3-5 {
+    -ms-flex:  0 0 calc(3.5 * 100% / 12);
+    flex:      0 0 calc(3.5 * 100% / 12);
+    max-width:     calc(3.5 * 100% / 12);
+  }
+  .col-xxl-5-7,  .bootstrap-extension .col-xxl-5-7 {
+    -ms-flex:  0 0 calc(5.7 * 100% / 12);
+    flex:      0 0 calc(5.7 * 100% / 12);
+    max-width:     calc(5.7 * 100% / 12);
+  }
+  .col-xxl-6,  .bootstrap-extension .col-xxl-6 {
+    -ms-flex:  0 0 calc(6 * 100% / 12);
+    flex:      0 0 calc(6 * 100% / 12);
+    max-width:     calc(6 * 100% / 12);
+  }
+  .col-xxl-7,  .bootstrap-extension .col-xxl-7 {
+    -ms-flex:  0 0 calc(7 * 100% / 12);
+    flex:      0 0 calc(7 * 100% / 12);
+    max-width:     calc(7 * 100% / 12);
+  }
+  .col-xxl-7-8,  .bootstrap-extension .col-xxl-7-8 {
+    -ms-flex:  0 0 calc(7.8 * 100% / 12);
+    flex:      0 0 calc(7.8 * 100% / 12);
+    max-width:     calc(7.8 * 100% / 12);
+  }
+  .col-xxl-8,  .bootstrap-extension .col-xxl-8 {
+    -ms-flex:  0 0 calc(8 * 100% / 12);
+    flex:      0 0 calc(8 * 100% / 12);
+    max-width:     calc(8 * 100% / 12);
+  }
+  .col-xxl-9,  .bootstrap-extension .col-xxl-9 {
+    -ms-flex:  0 0 calc(9 * 100% / 12);
+    flex:      0 0 calc(9 * 100% / 12);
+    max-width:     calc(9 * 100% / 12);
+  }
+  .col-xxl-10,  .bootstrap-extension .col-xxl-10 {
+    -ms-flex:  0 0 calc(10 * 100% / 12);
+    flex:      0 0 calc(10 * 100% / 12);
+    max-width:     calc(10 * 100% / 12);
+  }
+  .col-xxl-10-5,  .bootstrap-extension .col-xxl-10-5 {
+    -ms-flex:  0 0 calc(10.5 * 100% / 12);
+    flex:      0 0 calc(10.5 * 100% / 12);
+    max-width:     calc(10.5 * 100% / 12);
+  }
+
+  .offset-xxl-6-25,  .bootstrap-extension .offset-xxl-6-25 {
+    margin-left: calc(6.25 * 100% / 12);
+  }
+  .offset-xxl-6-75,  .bootstrap-extension .offset-xxl-6-75 {
+    margin-left: calc(6.75 * 100% / 12);
+  }
+
+  .ml-xxl-4,  .bootstrap-extension .ml-xxl-4 {
+    margin-left:   1.5rem !important;
+  }
+
+  .mb-xxl-3,  .bootstrap-extension .mb-xxl-3 {
+    margin-bottom: 1rem   !important;
+  }
+
+  .order-xxl-first,  .bootstrap-extension .order-xxl-first {
+    -ms-flex-order: 0;
+    order:          0;
+  }
+}
