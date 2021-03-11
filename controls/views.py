@@ -1070,28 +1070,6 @@ def statement_history(request, smt_id=None):
     # Get statement if exists else 404
     smt = get_object_or_404(Statement, id=smt_id)
 
-
-    # Check permission block
-    permission = False
-    if request.user.is_superuser or request.user.is_staff:
-        # Grant permission to superusers and staff users
-        permission = True
-    elif System.objects.filter(root_element=smt.consumer_element).exists():
-        # Grant permission to user with edit access on system
-        system = System.objects.get(root_element=smt.consumer_element)
-        permission = True if request.user.has_perm('view_system', system) else False
-    # 404 if user does not have permission
-    if not permission:
-        raise Http404
-    # Check permission block end
-
-    full_smt_history = None
-    try:
-        full_smt_history = smt.history.all()
-    except Statement.DoesNotExist:
-        messages.add_message(request, messages.ERROR, f'The statement id is not valid. Is this still a statement in GovReady?')
-
-
     # Check permission
     raise_404_if_statement_permission_not(request, smt, 'view_statement_history')
 
