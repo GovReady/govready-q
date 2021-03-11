@@ -354,8 +354,19 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
   white-space: nowrap;
 }
 
-.statement-text-block, .remark-text-block {
+.statement-column-headings {
+    background-color: #ddd;
+    margin: 0px 12px 12px 2px;
+    padding: 4px 4px 4px 0px;
+    font-weight: bold;
+  }
+
+.statement-text-block {
     border-left: 1px solid #ccc;
+    white-space: pre-line;
+  }
+
+.remark-text-block {
     white-space: pre-line;
   }
 

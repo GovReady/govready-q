@@ -4,6 +4,11 @@ GovReady-Q Release Notes
 v999 (March XX, 2021)
 -------------------------
 
+**UI changes**
+
+* Update 3-column statement layout's "edit" into a glyphicon pencil pulled all the way right, remove extra lines and other small changes.
+* Update 3-column statement layout to include column headings.
+* Conditionally display remarks in component library using HTML details tag.
 
 v0.9.2.2 (March 10, 2021)
 -------------------------
