@@ -44,12 +44,12 @@
                             </div>
                             <div class="form-group">
                                 <label for="control-selection">Control</label>
-                                <select class="form-control control-select" id="sid_control_panel_num" name="sid" style="width:580px;" onchange="set_catalog_key($('#sid_control_panel_num option:selected').text(), '#sid_class_panel_num');return false;">
-                                    set_catalog_key(display_text)
+                                <select id="control-select" name="sid" class="form-control" style="width:580px;">
                                     <option value=''>Select a control</option>
+                                    <!-- script'd to select2 w/ search & submit -->
                                 </select>
-                                <input type="hidden" id="sid_class_panel_num" name="sid_class" prompt="Enter catalog_key" value="{{ catalog_key }}">
-                                <input type="hidden" id="form_source_panel_num" name="form_source" prompt="Form source" value="component_library">
+                                <input type="hidden" id="control-catalog_key-input" name="sid_class"   prompt="Enter catalog_key">
+                                <input type="hidden" id="form_source_panel_num"     name="form_source" prompt="Form source" value="component_library">
                             </div>
                             <div class="form-group">
                                 <input type="hidden" id="smt_id" name="smt_id" value="">
