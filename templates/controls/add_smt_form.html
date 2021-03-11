@@ -43,9 +43,9 @@
                                        onchange="$('#producer_element-panel_num-title').text($(this).val());" value="{{ element.name }}">
                             </div>
                             <div class="form-group">
-                                <label for="control-selection">Control</label>
-                                <select id="control-select" name="sid" class="form-control" style="width:580px;">
-                                    <option value=''>Select a control</option>
+                                <label for="control-select">Control</label>
+                                <select title="Select a Control" id="control-select" name="sid" class="form-control" style="width:580px;">
+                                    <option value="None" selected disabled hidden>Select a control</option>
                                     <!-- script'd to select2 w/ search & submit -->
                                 </select>
                                 <input type="hidden" id="control-catalog_key-input" name="sid_class"   prompt="Enter catalog_key">

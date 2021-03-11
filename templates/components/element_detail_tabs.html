@@ -341,6 +341,7 @@
 
           $('#control-select').select2({
             minimumInputLength: 1,
+            language:         { inputTooShort: function() { return 'Please enter your search'; } },
             ajax: {
               url:            '{% url 'controls_search' %}',
               dataType:       'json',
