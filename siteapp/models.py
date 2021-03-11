@@ -1435,7 +1435,7 @@ class Asset(models.Model):
     UPLOAD_TO = None  # Should be overriden when iheritted
     title = models.CharField(max_length=255, help_text="The title of this asset.")
     asset_type = models.CharField(max_length=150, help_text="Asset type.", unique=False, choices=AssetTypeEnum.choices())
-    content_hash = models.CharField(max_length=64,
+    content_hash = models.CharField(max_length=128,
                                     help_text="A hash of the asset binary content, as provided by the source.")
     description = models.TextField(blank=True, null=True)
     filename = models.CharField(max_length=255)

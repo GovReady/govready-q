@@ -10,6 +10,7 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 import time
+import unittest
 from pathlib import PurePath
 
 from django.test import TestCase
@@ -277,7 +278,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         oscal_json_path = self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
         self.click_element('input#import_component_submit')
-
+        var_sleep(2)
         element_count_after_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
 
         wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 2, element_count_after_import))
@@ -783,6 +784,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         self.browser.find_elements_by_name("save")[-1].click()
         self.browser.refresh()
 
+    @unittest.skip
     def test_smt_autocomplete(self):
         """
         Testing if the textbox can autocomplete and filter for existing components
@@ -801,8 +803,6 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         # Head to the control ac-3
         self.navigateToPage(f"/systems/{systemid.id}/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
 
-        statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
-        # assert len(statement_title_list) == 0
 
         # How many components are there currently?
         # Confirm the dropdown sees all components
@@ -830,7 +830,6 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         # Confirm the dropdown sees all components
         comps_dropdown = wait_for_sleep_after(lambda: self.dropdown_option("selected_producer_element_form_id"))
 
-        statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
 
         self.assertEquals(len(comps_dropdown.options), 7)
 

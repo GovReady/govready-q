@@ -7,7 +7,7 @@
                     <b>New control statement</b>
                     </span>
             </div>
-            <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
+            <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-edit-text-block">
                 New control statement will appear here.
             </div>
             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
@@ -35,23 +35,15 @@
                     <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-edit-text-block">
 
                         <form id="smt_panel_num" class="smt_form">
+                      <div class="form-group">
+                        <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
+                        <input type="hidden" id="producer_element_id" name="producer_element_id" value="">
+                        <label for="component">Producer Component</label>
+                        <input type="text" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
+                          onchange="$('#producer_element-panel_num-title').text($(this).val());">
+                      </div>
                             <div class="form-group">
-                                <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ element.id }}">
-                                <label for="component"><a href="/systems/{{ system.id }}/component/{{ element.id }}" style="color: black;">{{ element.name }}</a></label>
-                                <!-- <label for="component">Producer Component</label> -->
-                                <input type="hidden" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
-                                       onchange="$('#producer_element-panel_num-title').text($(this).val());" value="{{ element.name }}">
-                            </div>
-                            <div class="form-group">
-                                <label for="control-selection">Control</label>
-                                <select class="form-control control-select" id="sid_control_panel_num" name="sid" style="width:580px;" onchange="set_catalog_key($('#sid_control_panel_num option:selected').text(), '#sid_class_panel_num');return false;">
-                                    set_catalog_key(display_text)
-                                    <option value=''>Select a control</option>
-                                </select>
-                                <input type="hidden" id="sid_class_panel_num" name="sid_class" prompt="Enter catalog_key" value="{{ catalog_key }}">
-                                <input type="hidden" id="form_source_panel_num" name="form_source" prompt="Form source" value="component_library">
-                            </div>
-                            <div class="form-group">
+                                <input type="hidden" id="sid_class" name="sid_class" value="{{ smt.sid_class }}">
                                 <input type="hidden" id="smt_id" name="smt_id" value="">
                                 <label for="statement">What is the solution and how is it implemented?</label>
                                 <textarea class="form-control" id="body_panel_num" name="body" placeholder="How component contributes to control" rows="5" cols="50"></textarea>
