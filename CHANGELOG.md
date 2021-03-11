@@ -7,6 +7,10 @@ v999 (March XX, 2021)
 **Developer changes**
 
 * Ensure that the number of controls selected for a project reflect non-duplicate counts of that control.
+* Updates to how SSP generation works. Passing in a yaml file to provide metadata for title page. Updated docx template. Revisions to the 800-171 markdown template to remove colspans and support display of title page, toc, etc in DOCX. Edits to associated yaml file as well.
+
+**UI changes**
+* removed display of export options ("plain text", "markdown"), leaving docx and html.
 
 **Bug changes**
 
