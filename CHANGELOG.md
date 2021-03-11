@@ -9,7 +9,7 @@ Include all required static files pre-collected in `static_root` directory as pa
 
 **Developer changes**
 
-* Replace shell script install script `install-govready-q.sh` with better Python install scrpt `install.py`.
+* Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
 * Now including all static files pre-collected as part of distribution.
 
 v0.9.2.1 (March 05, 2021)
