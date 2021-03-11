@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 ################################################################
 #
@@ -179,10 +179,10 @@ def main():
         # Check for python3 and pip3 (and not 2 or e.g. 'python3.8')
         print("Confirming python3 and pip3 commands are available...")
         sys.stdout.flush()
-        if not check_has_command(['python3', '--version']):
-            raise FatalError("The 'python3' command is not available.")
-        if not check_has_command(['pip3', '--version']):
-            raise FatalError("The 'pip3' command is not available.")
+        # if not check_has_command(['python3', '--version']):
+        #     raise FatalError("The 'python3' command is not available.")
+        # if not check_has_command(['pip3', '--version']):
+        #     raise FatalError("The 'pip3' command is not available.")
         print("... done confirming python3 and pip3 commands are available.")
         sys.stdout.flush()
 
@@ -223,11 +223,11 @@ def main():
         print("Installing Python libraries via pip (this may take a while)...")
         sys.stdout.flush()
         if args.user:
-            p = run_optionally_verbose(['pip3', 'install', '--user', '-r', 'requirements.txt'], args.timeout, args.verbose)
+            p = run_optionally_verbose([sys.executable, '-m', 'pip', 'install', '--user', '-r', 'requirements.txt'], args.timeout, args.verbose)
             if p.returncode != 0:
                 raise ReturncodeNonZeroError(p)
         else:
-            p = run_optionally_verbose(['pip3', 'install', '-r', 'requirements.txt'], args.timeout, args.verbose)
+            p = run_optionally_verbose([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'], args.timeout, args.verbose)
             if p.returncode != 0:
                 raise ReturncodeNonZeroError(p)
         print("... done installing Python libraries via pip.")
