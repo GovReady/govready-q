@@ -138,6 +138,47 @@ def control(request, catalog_key, cl_id):
     }
     return render(request, "controls/detail.html", context)
 
+
+def raise_404_if_system_permissions_not(request, system, permission='view_system', not_callback=None):
+    """Raise an HTTP 404 exception after calling callback(permission, action, user_message)  if the user doesn't have the system permission"""
+    if not request.user.has_perm(permission, system):
+        if not_callback:
+            not_callback(permission, 'permission_denied',
+                         'You do not have permission to change this system')
+
+        raise Http404(f'Access denied:  You do not have permission')
+        # 404 instead of 403 + vague message  to not leak info.
+        #   Message only conveyed when DEBUG True
+
+
+def log_system_action(request, system, action, message={}):
+    """Log System action
+
+        action can be scalar (e.g., string) or list (e.g., array)
+            e.g., 'view_system' or ['view_system', 'view_controls', 'permission_denied']
+    """
+    message.update({
+        'event': ' '.join(action) if isinstance(action, list) else action,
+        'user':  { 'id': request.user.id,  'username': request.user.username }
+    })
+    message_object_key = 'object'
+    if message_object_key not in message.keys():
+        message[message_object_key] = {}
+    message[message_object_key]['system_id'] = system.id
+
+    logger.info(**message)
+
+def log_system_object_action(request, system, action, object_type, object_id_name, object_id):
+    """Log System object action
+
+        action can be scalar (e.g., string) or list (e.g., array)
+            e.g., 'add_control' or ['add_control', 'permission_denied']
+    """
+    log_system_action(request, system, action, {
+        'object': { 'object': object_type,  object_id_name: object_id }
+    })
+
+
 @functools.lru_cache()
 def controls_selected(request, system_id):
     """Display System's selected controls view"""
@@ -1003,25 +1044,24 @@ def import_component(request):
     return component_library(request)
 
 
-def raise_404_if_not_permitted_to_statement(request, statement, system_permission='view_system'):
-    """Raises a 404 if the user doesn't have the statement system permission"""
-    while True:
-        if request.user.is_superuser or request.user.is_staff:
-            # Allow access if the user has superuser or staff member permissions respectively
-            break
-        else:
-            # Allow access if the user has the statement system permission
-            try:
-                system = System.objects.get(root_element=statement.consumer_element)
-                if request.user.has_perm(system_permission, system):
-                    break
-            except System.DoesNotExist:
-                logger.info(
-                event="update_smt_permission permission_denied",
-                object={"object": "statement", "id": statement.id},
-                user={"id": request.user.id, "username": request.user.username}
-                )
-                raise Http404
+def raise_404_if_statement_permission_not(request, statement, action, system_permission='view_system'):
+    """Raise an HTTP 404 if the user doesn't have the statement system permission"""
+
+    # Allow access if the user has superuser or staff member permissions respectively
+    if not (request.user.is_superuser or request.user.is_staff):
+
+        # Allow access if the user has the statement system permission
+        system = get_object_or_404(System, root_element=statement.consumer_element)
+        raise_404_if_system_permissions_not(request, system, system_permission,
+            lambda permission, subaction, user_message:
+                log_system_object_action(request, system,
+                                         [permission, action, subaction],
+                                         'statement', 'id', statement.id)
+        )
+
+def raise_404_if_statement_permission_not_change(request, statement, action):
+    raise_404_if_statement_permission_not(request, statement, action, 'change_system')
+
 
 @login_required
 def statement_history(request, smt_id=None):
@@ -1053,7 +1093,7 @@ def statement_history(request, smt_id=None):
 
 
     # Check permission
-    raise_404_if_not_permitted_to_statement(request, smt)
+    raise_404_if_statement_permission_not(request, smt, 'view_statement_history')
 
     return render(request, "controls/statement_history.html", {"statement": smt.history.all()})
 
@@ -1065,7 +1105,7 @@ def restore_to_history(request, smt_id, history_id):
     smt = get_object_or_404(Statement, id=smt_id)
 
     # Check permission
-    raise_404_if_not_permitted_to_statement(request, smt, 'change_system')
+    raise_404_if_statement_permission_not_change(request, smt, 'restore_statement_version')
 
     full_smt_history = None
     for query_key in request.POST:
@@ -1818,7 +1858,7 @@ def update_smt_prototype(request):
         statement = get_object_or_404(Statement, pk=smt_id)
 
         # Check permission
-        raise_404_if_not_permitted_to_statement(request, statement)
+        raise_404_if_statement_permission_not(request, statement, 'update_statement_prototype')
 
         if statement is None:
             statement_msg = "The id for this statement is no longer valid in the database."
