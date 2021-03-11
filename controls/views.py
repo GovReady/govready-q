@@ -1860,10 +1860,6 @@ def update_smt_prototype(request):
         # Check permission
         raise_404_if_statement_permission_not_change(request, statement, 'update_statement_prototype')
 
-        if statement is None:
-            statement_msg = "The id for this statement is no longer valid in the database."
-            return JsonResponse({ "status": "error", "message": statement_msg })
-
         # needs self.body == self.prototype.body
 
         try:
