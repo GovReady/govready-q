@@ -1858,7 +1858,7 @@ def update_smt_prototype(request):
         statement = get_object_or_404(Statement, pk=smt_id)
 
         # Check permission
-        raise_404_if_statement_permission_not(request, statement, 'update_statement_prototype')
+        raise_404_if_statement_permission_not_change(request, statement, 'update_statement_prototype')
 
         if statement is None:
             statement_msg = "The id for this statement is no longer valid in the database."
