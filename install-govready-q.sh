@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "NOTE: THIS SCRIPT (install-govready-q.sh) IS DEPRECATED - please migrate to 'install.py'" when possible.
+echo "NOTE: THIS SCRIPT (install-govready-q.sh) IS DEPRECATED - please migrate to 'install.py' when possible."
 sleep 3
 
 # this script can be used to quickly set up a new  GovReady-Q instance
@@ -144,7 +144,7 @@ fi
 
 echo $SPACER
 
-echo "NOTE: THIS SCRIPT (install-govready-q.sh) IS DEPRECATED - please migrate to 'install.py'" when possible.
+echo "NOTE: THIS SCRIPT (install-govready-q.sh) IS DEPRECATED - please migrate to 'install.py' when possible."
 
 echo ""
 echo "***********************************"
