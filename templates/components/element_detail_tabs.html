@@ -340,7 +340,9 @@
           $("#smt-list").append(`{% include 'controls/add_smt_form.html' %}`.replace(/panel_num/g, panel_num));
 
           $('#control-select').select2({
-            minimumInputLength: 1,
+            // Initially, show all Controls that haven't been added
+            //
+            //   Note: Not caching 1st/full listing so results always reflect the latest
             language:         { inputTooShort: function() { return 'Please enter your search'; } },
             ajax: {
               url:            '{% url 'controls_search' %}',
