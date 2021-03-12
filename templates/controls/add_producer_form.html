@@ -43,7 +43,6 @@
                           onchange="$('#producer_element-panel_num-title').text($(this).val());">
                       </div>
                             <div class="form-group">
-                                <input type="hidden" id="sid_class" name="sid_class" value="{{ smt.sid_class }}">
                                 <input type="hidden" id="smt_id" name="smt_id" value="">
                                 <label for="statement">What is the solution and how is it implemented?</label>
                                 <textarea class="form-control" id="body_panel_num" name="body" placeholder="How component contributes to control" rows="5" cols="50"></textarea>
@@ -68,6 +67,7 @@
                                 <textarea class="form-control" id="remarks_panel_num" name="remarks" placeholder="Add remarks for team" rows="4" cols="50"></textarea>
                             </div>
                             <input type="hidden" id="system_id_panel_num" name="system_id" value="{{ system.id }}">
+                            <input type="hidden" id="sid_class" name="sid_class" value="{{ catalog.catalog_key }}">
                             <input type="hidden" id="statement_type_panel_num" name="statement_type" value="control_implementation">
                             <div class="pull-right">
                                 <div id="success-msg-smt_panel_num" style="display: inline; margin-right: 20px; color: gray;"></div>
