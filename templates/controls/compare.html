@@ -404,7 +404,7 @@ Remove contextbar from top of page
         }
         // Adds statement form to page
          function add_smt(smt_count) {
-          var panel_num = $('.panel').length  + smt_count
+          var panel_num = smt_count + 1
           var smt_form = `
             <div id="panel-panel_num" class="panel panel-default">
             <div class="panel-heading" role="tabx" id="document-panel_num-title">
