@@ -1,8 +1,8 @@
-# Testing GovReady-Q Install Script
+# Installing GovReady-Q
 
 ## System Requirements
 
-* A Windows, Mac, or Linux computer with [Python 3](https://www.python.org/downloads/) and Git installed.
+* A Windows 10, Mac, or Linux computer with [Python 3](https://www.python.org/downloads/) and Git installed.
 * Python 3.6 or higher will be required.
   * On Macs, you should already have Python 3 and Git installed.
   * On Windows, you may need to install a [Windows version of Python](https://www.python.org/downloads/windows/), and [Git for Windows](https://gitforwindows.org/) or a [Windows version of Git](https://git-scm.com/download/win).  Or, you can use [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
@@ -14,102 +14,13 @@
   * Access to https://pypi.org/simple or local mirror of Pypi to install Python dependencies. 
 * On macOS, installation of some additional dependencies.
 
+## Before You Install
+
+For Mac, Linux, or Windows Subsystem for Linux, please find the `install.md` file and follow the instructions there.
+
 ## Before You Install - Windows
 
-(This section has not been completed yet.)
-
-## Before You Install - Ubuntu
-
-Some additional dependencies are required for Linux Ubuntu.
-
-Do these shell commands to update package list.
-
-```shell
-# Update package list
-apt-get update
-apt-get upgrade
-```
-
-Do these shell commands to install the OS dependencies for GovReady-Q.
-
-```shell
-# Install dependencies
-DEBIAN_FRONTEND=noninteractive \
-apt-get install -y \
-unzip git curl jq \
-python3 python3-pip \
-python3-yaml \
-graphviz pandoc \
-language-pack-en-base language-pack-en
-```
-
-## Before You Install - CentOS 8, RHEL 8, Fedora 8
-
-Some additional dependencies are required for Linux CentOS, RHEL, Fedora.
-
-Do these shell commands to update package list.
-
-```shell
-# Update package list
-dnf update
-```
-
-Do these shell commands to install the OS dependencies for GovReady-Q.
-
-```shell
-# Install dependencies
-dnf install \
-python3 python3-devel gcc-c++.x86_64 \
-unzip git jq \
-graphviz
-
-# for pandoc, enable PowerTools repository
-dnf install dnf-plugins-core
-dnf config-manager --set-enabled PowerTools
-dnf install pandoc
-```
-
-## Before You Install - macOS
-
-Some additional dependencies are required for macOS.
-
-Setup instructions (may need to be cleaned up and/or fleshed out.)
-
-Do this shell command.
-
-```shell
-xcode-select --install
-```
-
-(See [How to fix the xcrun invalid active developer path error in macOS](https://flaviocopes.com/fix-xcrun-error-invalid-active-developer-path/) for more complete instructions.)
-
-If you get an error that command line tools are already installed, just proceed.
-
-Next, install Homebrew, if it is not already installed.  This is one way to get started.
-
-```shell
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-(For more details, see [Installation — Homebrew Documentation](https://brew.sh/).)
-
-After Homebrew is installed, do this shell command.
-
-```shell
-brew install libmagic
-```
-
-If you get a warning that libmagic is already installed, just proceed.
-
-After Homebrew is installed, do this shell command.
-
-```shell
-brew install postgresql
-```
-
-If you get a warning that postgresql is already installed, just proceed.
-
-[Note, this is needed to resolve this dependency: "Error: pg_config executable not found. pg_config is required to build psycopg2 from source." We should just move this dependency out to a pg_requirements file.]
+(This section is under construction.)
 
 ## Install Instructions
 
@@ -126,23 +37,18 @@ git clone https://github.com/GovReady/govready-q.git
 cd govready-q
 ```
 
-### 2. Create and Activate Python Virtual Environmemt
+### 2. Create and Activate Python Virtual Environment
 
-On **Windows**, do these shell commands.
+Do these shell commands.
 
 ```shell
 py -m venv venv
-venv\scripts\activate.bat
+venv/scripts/activate.bat
 ```
 
-On **Linux and Mac**, do these shell commands.
+You should see "(venv)".
 
-```shell
-python3 -m venv venv
-source venv/bin/activate
-```
-
-You should not see any output.  Your prompt may or may not change to include "venv".
+Your prompt may or may not change to include "venv".
 
 ### 3. Run Installer
 

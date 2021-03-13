@@ -1,8 +1,8 @@
-# Testing GovReady-Q Install Script
+# Installing GovReady-Q
 
 ## System Requirements
 
-* A Windows, Mac, or Linux computer with [Python 3](https://www.python.org/downloads/) and Git installed.
+* A Windows 10, Mac, or Linux computer with [Python 3](https://www.python.org/downloads/) and Git installed.
 * Python 3.6 or higher will be required.
   * On Macs, you should already have Python 3 and Git installed.
   * On Windows, you may need to install a [Windows version of Python](https://www.python.org/downloads/windows/), and [Git for Windows](https://gitforwindows.org/) or a [Windows version of Git](https://git-scm.com/download/win).  Or, you can use [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
@@ -16,7 +16,9 @@
 
 ## Before You Install - Windows
 
-(This section has not been completed yet.)
+If you are using Windows 10 directly, please find the `install-win.md` file and follow the instructions there.
+
+If you are using Windows Subsystem for Linux, follow the instructions below that correspond to the Linux distro you're using.
 
 ## Before You Install - Ubuntu
 
@@ -126,16 +128,7 @@ git clone https://github.com/GovReady/govready-q.git
 cd govready-q
 ```
 
-### 2. Create and Activate Python Virtual Environmemt
-
-On **Windows**, do these shell commands.
-
-```shell
-py -m venv venv
-venv\scripts\activate.bat
-```
-
-On **Linux and Mac**, do these shell commands.
+### 2. Create and Activate Python Virtual Environment
 
 ```shell
 python3 -m venv venv
