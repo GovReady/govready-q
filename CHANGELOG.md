@@ -9,6 +9,7 @@ v999 (March XX, 2021)
 * Update 3-column statement layout's "edit" into a glyphicon pencil pulled all the way right, remove extra lines and other small changes.
 * Update 3-column statement layout to include column headings.
 * Conditionally display remarks in component library using HTML details tag.
+* Display tags associated with components (components must currently be set in Django admin.)
 
 New, better install process written in Python.
 Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
@@ -17,6 +18,7 @@ Include all required static files pre-collected in `static_root` directory as pa
 
 * Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
 * Now including all static files pre-collected as part of distribution.
+* Added tag models, views, urls, migrations for reusability. First model to get tags is Controls.models.Element.
 
 v0.9.2.2 (March 10, 2021)
 -------------------------
