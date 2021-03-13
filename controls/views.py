@@ -32,7 +32,7 @@ from siteapp.forms import ProjectForm
 from siteapp.model_mixins.tags import TagView
 from siteapp.models import Project, Tag
 from system_settings.models import SystemSettings
-from .forms import ImportOSCALComponentForm
+from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
 from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
 from .forms import ElementEditForm
 from .models import *
@@ -306,7 +306,6 @@ def component_library(request):
     except EmptyPage:
         page_obj = ele_paginator.page(ele_paginator.num_pages)
 
-
     context = {
         "page_obj": page_obj,
         "import_form": ImportOSCALComponentForm(),
@@ -517,7 +516,7 @@ class ComponentImporter(object):
         else:
             if request is not None:
                 messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
-            logger.info(f"Invalid JSON. Component(s) not created.")
+                logger.info(f"Invalid JSON. Component(s) not created.")
             return False
 
     def create_import_record(self, import_name, components):
@@ -837,8 +836,20 @@ def component_library_component(request, element_id):
     # using the natsort package from pypi: https://pypi.org/project/natsort/
     impl_smts = natsorted(impl_smts, key=lambda x: x.sid)
 
+    # Pagination
+    obj_paginator = Paginator(impl_smts, 10)
+    page_number = request.GET.get('page')
+
+    try:
+        page_obj = obj_paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = obj_paginator.page(1)
+    except EmptyPage:
+        page_obj = obj_paginator.page(obj_paginator.num_pages)
+
     # Return the system's element information
     context = {
+        "page_obj": page_obj,
         "element": element,
         "impl_smts": impl_smts,
         "catalog_controls": catalog_controls,
@@ -1573,6 +1584,7 @@ def save_smt(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
+        print(form_dict)
         smt_id = form_values['smt_id']
         # Updating or saving a new statement?
         if len(smt_id) > 0:
@@ -1617,7 +1629,7 @@ def save_smt(request):
             )
             new_statement = True
             # Convert the human readable catalog name to proper catalog key, if needed
-            # from huma readable `NIST SP-800-53 rev4` to `NIST_SP-800-53_rev4`
+            # from human readable `NIST SP-800-53 rev4` to `NIST_SP-800-53_rev4`
             statement.sid_class = statement.sid_class.replace(" ","_")
 
         # Save Statement object
@@ -1784,7 +1796,7 @@ def delete_smt(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
-
+        smt_id = form_values['smt_id']
         # Delete statement?
         statement = Statement.objects.get(pk=smt_id)
 

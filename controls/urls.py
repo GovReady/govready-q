@@ -1,5 +1,4 @@
 from django.conf.urls import include, url
-
 from django.contrib import admin
 from django.conf import settings
 
@@ -51,7 +50,6 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/edit$', views.manage_system_deployment, name="manage_system_deployment"),
     url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/inventory$', views.system_deployment_inventory, name="system_deployment_inventory"),
     url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/history$', views.deployment_history, name="deployment_history"),
-    # url(r'^restore_to/(?P<smt_id>.*)/(?P<history_id>.*)/$', views.restore_to_history, name="restore_to"),
 
     # Statements
     url(r'^smt/_save/$', views.save_smt),

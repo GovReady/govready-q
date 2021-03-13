@@ -1,0 +1,171 @@
+id: pta_info_description
+title: Type of Information Collected
+reminders: |
+  * move item 'e' to the end
+questions:
+- id: intro
+  title: Introduction
+  prompt: |
+    In this section, we'll ask about the type of information your app collects.
+  type: interstitial
+- id: pii
+  title: Personally Identifiable Information (PII)
+  prompt: >
+    Does this app collect any “Personally Identifiable Information” (PII)?
+
+
+    “Personally identifiable information” means any information that permits the identity
+    of an individual to be directly or indirectly inferred, including any other information
+    which is linked or linkable to that individual, regardless of whether the individual
+    is a U.S. citizen, lawful permanent resident, visitor to the U.S., or employee
+    or contractor to the Department.
+  type: yesno
+- id: types_individuals
+  title: Type(s) of Individuals
+  prompt: |
+    From which type(s) of individuals does this form collect information?
+
+    Check all that apply.
+  type: multiple-choice
+  choices:
+  - key: members_of_the_public
+    text: Members of the public
+  - key: us_citizens_permanent_residents
+    text: U.S. citizens or lawful permanent residents
+  - key: non_us_persons
+    text: Non-U.S. Persons
+  - key: agency_employees
+    text: DOS Employees
+  - key: agency_contractors
+    text: DOS Contractors
+  - key: other_feds_contractors
+    text: Other federal employees or contractors
+  min: 0
+  max: ~
+- id: complete_and_submit
+  title: Who Will Complete and Submit?
+  prompt: |
+    Who will complete and submit the information this app collects?
+
+    Check all that apply.
+  type: multiple-choice
+  choices:
+  - key: record_subject
+    text: The record subject of the form (e.g., the individual applicant)
+  - key: legal_representative
+    text: Legal Representative (preparer, attorney, etc.)
+  - key: business_entity
+    text: Business entity
+  - key: law_enforcement
+    text: Law enforcement
+  - key: agency_employee_contractor
+    text: DOS employee or contractor
+  - key: other
+    text: Other individual/entity/organization that is NOT the record subject
+  min: 0
+  max: ~
+- id: business_entities
+  title: Business Entities
+  prompt: |
+    For business entities, is the business contact information the only information collected?
+  type: yesno
+  impute:
+  - condition: '''business_entity'' not in complete_and_submit'
+    value: ~
+- id: other_individuals_entities_organizations
+  title: Other Individuals, Entities, or Organizations
+  prompt: |
+    For individuals, entities, or organizations that are NOT the record subject, please describe them.
+  type: longtext
+  impute:
+  - condition: '''other'' not in complete_and_submit'
+    value: ~
+- id: spii
+  title: Sensitive Personally Identifiable Information (SPII)
+  prompt: |
+    Does the app collect Social Security Number (SSN) or other elements that are stand-alone Sensitive Personally Identifiable Information (SPII)?
+
+    Check all that apply.
+  type: multiple-choice
+  choices:
+  - key: ssn
+    text: Social Security Number
+  - key: alien_number
+    text: Alien Number (A-Number)
+  - key: tin
+    text: Tax Identification Number
+  - key: visa_number
+    text: Visa Number
+  - key: passport_number
+    text: Passport Number
+  - key: financial_account_number
+    text: Bank Account, Credit Card, or other financial account number
+  - key: agency_edipi
+    text: DOS Electronic Data Interchange Personal Identifier (EDIPI)
+  - key: social_media_handle
+    text: Social Media Handle/ID
+  - key: known_traveler_number
+    text: Known Traveler Number
+  - key: trusted_traveler_number
+    text: Trusted Traveler Number (Global Entry, Pre-Check, etc.)
+  - key: drivers_license_number
+    text: Driver’s License Number
+  - key: biometrics
+    text: Biometrics
+  - key: other
+    text: Other
+  min: 0
+  max: ~
+- id: other_spii
+  title: Other SPII
+  prompt: |
+    What other stand-alone Sensitive Personally Identifiable Information (SPII) does the app collect?
+
+    {% if spii|length > 1 %}
+    In the previous question you answered:
+
+    {% for item in spii %}{% if item != "other" %}({{item.text}})
+    {% endif %}{% endfor %}
+
+    What other SPII does the form collect?
+    {% endif %}
+  type: longtext
+  impute:
+  - condition: '''other'' not in spii'
+    value: ~
+- id: specific_authority
+  title: Specific Authority To Collect SPII
+  prompt: |
+    List the specific authority to collect the SPII elements.
+  type: longtext
+  impute:
+  - condition: spii|length == 0
+    value: ~
+- id: how_used
+  title: How Will SPII Be Used
+  prompt: |
+    How will the SPII be used?
+
+    What is the purpose of the collection? Describe _why_ this collection of SPII is the minimum amount of information necessary to accomplish the purpose of the program.
+  type: longtext
+  impute:
+  - condition: spii|length == 0
+    value: ~
+- id: notice
+  title: Notice at the Time of Collection
+  prompt: |
+    Is notice provided to the records subject at the time of information collection?
+
+    Select "yes" if the records subject has notice at the time of the information collection. Select "no" if the information is provided by a third party.
+  type: yesno
+  impute:
+  - condition: spii|length == 0
+    value: ~
+- id: notice_describe
+  title: How Notice is Provided
+  prompt: |
+    Please describe how notice is provided to individuals at the time of collection.
+  type: longtext
+  impute:
+  - condition: notice != 'yes'
+    value: ~

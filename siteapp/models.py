@@ -2,6 +2,7 @@ from collections import ChainMap
 from itertools import chain
 import logging
 import structlog
+import uuid as uuid
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
 from typing import Dict
@@ -20,6 +21,8 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
 from jsonfield import JSONField
 
 from siteapp.model_mixins.tags import TagModelMixin
+from siteapp.enums.assets import AssetTypeEnum
+from siteapp.utils.uploads import hash_file
 
 logging.basicConfig()
 structlog.configure(logger_factory=LoggerFactory())
@@ -593,6 +596,17 @@ class Project(TagModelMixin):
     def __repr__(self):
         # For debugging.
         return "<Project %d %s>" % (self.id, self.title[0:30])
+
+    def save(self, **kwargs):
+        need_to_add_asset = self.pk is None   # ensures only runs on first Save.
+        project = super().save(**kwargs)
+        if need_to_add_asset:
+            from django.core.files import File
+            ProjectAsset.objects.create(title="System Template", asset_type=AssetTypeEnum.SSP_EXPORT,
+                                        description="Standard template provided by the system",
+                                        file=File(open('assets/system-reference.docx', 'rb')),
+                                        project_id=self.pk)
+        return project
 
     @property
     def title(self):
@@ -1417,7 +1431,6 @@ class Support(models.Model):
   def __str__(self):
     return "Support information"
 
-
 class Tag(models.Model):
     label = models.CharField(max_length=100, unique=True, help_text="Label for tag")
     system_created = models.BooleanField(default=True)
@@ -1430,3 +1443,64 @@ class Tag(models.Model):
 
     def serialize(self):
         return {"label": self.label, "system_created": self.system_created, "id": self.id}
+
+class Asset(models.Model):
+    UPLOAD_TO = None  # Should be overriden when iheritted
+    title = models.CharField(max_length=255, help_text="The title of this asset.")
+    asset_type = models.CharField(max_length=150, help_text="Asset type.", unique=False, choices=AssetTypeEnum.choices())
+    content_hash = models.CharField(max_length=128,
+                                    help_text="A hash of the asset binary content, as provided by the source.")
+    description = models.TextField(blank=True, null=True)
+    filename = models.CharField(max_length=255)
+    file = models.FileField(upload_to=UPLOAD_TO, help_text="The attached file.")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False,
+                            help_text="A UUID (a unique identifier) for this Asset.")
+
+    def save(self, **kwargs):
+        if self.file:
+            self.content_hash = hash_file(self.file)
+        return super().save(**kwargs)
+
+    class Meta:
+        abstract = True
+
+
+class ProjectAssetManager(models.Manager):
+    use_for_related_fields = True
+
+    def get_default(self, asset_type, default_if_not_exist=None):
+        asset = self.filter(asset_type=asset_type.name, default=True).first()
+        if not asset:
+            return default_if_not_exist
+        return asset.file
+
+
+class ProjectAsset(Asset):
+    UPLOAD_TO = "siteapp/project-assets"
+
+    project = models.ForeignKey(Project, related_name="assets", on_delete=models.CASCADE)
+    default = models.BooleanField(default=False)
+
+    objects = ProjectAssetManager()
+
+    class Meta:
+        unique_together = ("title", "project")
+
+    def __repr__(self):
+        return self.title
+
+    def save(self, **kwargs):
+        if self.pk is None:  # ensures only runs on first Save.  Otherwise it'll overwrite w/ stores value which is random
+            self.filename = self.file.name.split("/")[-1]
+        current_active = ProjectAsset.objects.filter(project_id=self.project_id,
+                                                     asset_type=self.asset_type,
+                                                     default=True)
+        if self.default:
+            current_active.update(default=False)
+        if not current_active.exists():
+            self.default = True
+        return super().save(**kwargs)
+>>>>>>> develop

@@ -1,0 +1,157 @@
+id: tp_printable
+format: html
+title: Test Plan Document
+...
+<style type="text/css" scoped>
+    h2 { border-bottom:1px solid #888; }
+    h3 { border-bottom: 0.5px solid #aaa; }
+    h4 { margin-top: 15px; font-weight: bold; font-size: 1em; }
+    blockquote { color: #666; font-size:0.8em; margin: 0 10px; }
+    .notice {color: red; font-size:3.0em; text-align:center; transform: scaleY(.85);
+    font-weight: bold;}
+    table { border: none; border-collapse: collapse; }
+    th, td { border: 1px solid #888; padding: 15px; text-align: left;}
+    @media all {
+        .page-break     { display: none; }
+    }
+
+    @media print {
+        h1.title {
+            /* v-center, need absolute */
+            position: absolute; /* repeats once */
+            bottom: 50%;
+            /* h-center, for element with absolute positioning */
+            left: 0;
+            right: 0;
+            margin-left: 20%;
+            margin-right: 20%;
+        }
+        .footer {
+            position: fixed; /* repeats on every page */
+            bottom: 0;
+        }
+        table.footer {
+            width: 95%;
+            display: table;
+        }
+        table.footer td {
+            border: none;
+            padding: 0px;
+            padding-bottom: .1em;
+        }
+        .page-break { display: block; page-break-after: always; }
+    }
+</style>
+
+<center>
+<img style="max-width:70%;height:auto;" src="{{static_asset_path_for('app.png')}}">
+<h1 class="title">{{project.system_info.system_name}}<br/>Security Test Plan</h1>
+</center>
+
+<div class="page-break">
+  <table class="footer">
+    <tr>
+      <td width="33%"><strong>{{project.system_info.system_short_name}}</strong></td>
+      <td width="34%" style="text-align: center;"><strong>LIMITED OFFICIAL USE</strong></td>
+      <td width="33%" style="text-align: right;"> <!-- page number --></td>
+    </tr><tr>
+      <td colspan="3">Security Test Plan</td>
+    </tr>
+  </table>
+</div>
+
+<h2>System Information</h2>
+
+<center>
+<div style="font-weight: bold;">
+  <p>{{project.system_info.system_name}}</p>
+</div>
+
+<div>
+  <p>Mission Unit: {{project.system_info.system_org}}</p>
+  <p>System Owner: {{project.system_info.system_owner}}</p>
+</div>
+</center>
+
+<div class="page-break">
+</div>
+
+<h2>1 Introduction</h2>
+
+<h3>1.1 Scope</h3>
+
+  <p>{{project.tp_introduction.scope}}</p>
+
+<h3>1.2 Background</h3>
+
+  <p>{{project.tp_introduction.background}}</p>
+
+<h3>1.3 Project References</h3>
+
+  <!-- (Table 2: Project References. Contains columns for Document Name, Document Version/Date, and Document Location) -->
+
+  <p>{{project.tp_introduction.q0}}</p>
+
+<h2>2 Roles and Responsibilities</h2>
+
+  <p>{{project.tp_project_management.roles_and_responsibilities}}
+
+  <!-- (Table 3: Organizational Roles and Responsibilities. Contains columns for Name, Team Role, Task, and Length of Project & Percentage of Time Allocated) -->
+
+<h2> 3 Schedule</h2>
+
+  <!-- [//]: # (Security Test Schedule. Contains columns for Systems Test Step and Dates for System Testing Steps) -->
+
+  <p>{{project.tp_project_management.test_schedule_description}}</p>
+
+  <table>
+  <tr><td>Event                        </td><td>Start Date       </td></tr>
+  <tr><td>Test Case Creation Start</td><td>{{project.tp_project_management.test_case_creation_start}}</td></tr>
+  <tr><td>Test Case Review Start</td><td>{{project.tp_project_management.teset_case_review_start}}</td></tr>
+  <tr><td>Test Case Execution Start</td><td>{{project.tp_project_management.test_case_execution_start}}</td></tr>
+  <tr><td>Test Result Report Start</td><td>{{project.tp_project_management.test_result_report_start}}</td></tr>
+  <tr><td>Test Result Report Delivery</td><td>{{project.tp_project_management.test_result_report_delivery}}</td></tr>
+  </table>
+
+<h2>4 Scope of Testing</h2>
+
+<h3>4.1 Controls to be Tested</h3>
+
+<div>
+  {% if project.se_aws_auditing_splunk_elk %}
+
+    {% for od in project.se_aws_auditing_splunk_elk.output_documents %}
+    {% set odl = od.split('_') %}
+    {% set c_name = "{}-{}".format(odl[3].upper(), " ".join(odl[4:])) %}
+    <table border=1 style="width: 80%; margin-bottom: 1em;">
+      <tr><td style="width: 20%; padding: 8px;">
+      {% if 'test' in odl %}
+        <h4>Test</h4>
+      {% else %}
+        <h4>Control {{c_name}}</h4>
+      {% endif %}
+      </td>
+      <td>
+      <div style="margin: 12px 0 0 0;">
+          {{project.se_aws_auditing_splunk_elk.output_documents[od]}}
+      </div>
+        <!-- <small style="color: #aaa;">{{od}}</small> -->
+      </td></tr>
+    </table>
+    {% endfor %}
+    {% endif %}
+  </div>
+
+
+<h3>4.2 Controls Not to be Tested</h3>
+
+<h3>4.3 Assumptions For Test Execution</h3>
+
+<h3>4.4 Test Completion Criteria</h3>
+
+<!-- <h2>5 Test Strategy</h2> -->
+
+<!-- <h2>6 Security Test Results</h2> -->
+
+  <!-- [//]: # (Table: Type, Name, Version) -->
+

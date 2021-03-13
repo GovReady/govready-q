@@ -112,15 +112,6 @@ THIRD_PARTY_APPS = [
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS
 
-# Add test_without_migrations if it is installed. This provides --nomigrations
-# to the test management command.
-try:
-	import test_without_migrations
-	INSTALLED_APPS.append('test_without_migrations')
-except ImportError:
-	print("WARNING: 'test_without_migrations' could not be imported")
-
-
 # profile every request and save the HTML output to the folder profiles
 if DEBUG:
 	PYINSTRUMENT_PROFILE_DIR = 'profiles'

@@ -54,6 +54,8 @@ urlpatterns = [
     url(r'^projects/(\d+)/__upgrade$', views.upgrade_project, name="upgrade_project"),
     url(r'^projects/(\d+)/__move$', views.move_project, name="move_project"),
     *build_tag_urls(r"^projects/(\d+)/", model=Project), # Tag Urls
+    url(r'^projects/(\d+)/assets/(\d+)/__update$', views.update_project_asset,
+        name="update_project_assets"),
     url(r'^projects/(\d+)/(?:[\w\-]+)()$', views.project), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/settings)$', views.project_settings, name="project_settings"),
     url(r'^projects/(\d+)/(?:[\w\-]+)(/startapps)$', views.project_start_apps), # must be last because regex matches some previous URLs

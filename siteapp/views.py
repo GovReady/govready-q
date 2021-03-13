@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
-from django.forms import ModelForm
+from django.forms import ModelForm, model_to_dict
 from django.http import (Http404, HttpResponse, HttpResponseForbidden,
                          HttpResponseNotAllowed, HttpResponseRedirect,
                          JsonResponse)
@@ -34,7 +34,7 @@ from system_settings.models import SystemSettings
 from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
-from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, Tag
+from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, Tag, ProjectAsset
 from .notifications_helpers import *
 
 import sys
@@ -566,11 +566,31 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         deployment.save()
         deployment = Deployment(name="Prod", description="Production environment deployment", system=system)
         deployment.save()
-        # Assign default control catalog
-        # Assign default control profile for org systems
-        # Assign default organization components for a system
-        # Assign default org params
 
+        # Assign default control catalog and control profile
+        # Use from App catalog settings
+        try:
+            # Get default catalog key
+            parameters = project.root_task.module.app.catalog_metadata['parameters']
+            catalog_key = [p for p in parameters if p['id'] == 'catalog_key'][0]['value']
+            # Get default profile/baseline
+            baseline_name = [p for p in parameters if p['id'] == 'baseline'][0]['value']
+            # Assign profile/baseline
+            assign_results = system.root_element.assign_baseline_controls(user, catalog_key, baseline_name)
+            # Log result if successful
+            if assign_results:
+                # Log start app / new project
+                logger.info(
+                    event="assign_baseline",
+                    object={"object": "system", "id": system.root_element.id, "title": system.root_element.name},
+                    baseline={"catalog_key": catalog_key, "baseline_name": baseline_name},
+                    user={"id": user.id, "username": user.username}
+                )
+        except:
+            # TODO catch error and return error message
+            print("[INFO] App could not assign catalog_key or profile/baseline.\n")
+
+        # Assign default organization components for a system
         if user.has_perm('change_system', system):
             # Get the components from the import records of the app version
             import_records = appver.input_artifacts.all()
@@ -583,6 +603,8 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
                 event="change_system permission_denied",
                 user={"id": user.id, "username": user.username}
             )
+
+        # TODO: Assign default org parameters
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
@@ -801,7 +823,7 @@ def project(request, project):
     # Calculate approximate compliance as degrees to display
     percent_compliant = 0
     if len(project.system.control_implementation_as_dict) > 0:
-        percent_compliant = project.system.controls_status_count['Implemented'] / len(project.system.control_implementation_as_dict)
+        percent_compliant = project.system.controls_status_count['Addressed'] / len(project.system.control_implementation_as_dict)
     # Need to reverse calculation for displaying as per styles in .piechart class
     approx_compliance_degrees = 365 - ( 365 * percent_compliant )
     if approx_compliance_degrees > 358:
@@ -2139,7 +2161,6 @@ def sso_logout(request):
     html = "<html><body><pre>{}</pre></body></html>".format(output)
     return HttpResponse(html)
 
-
 @login_required
 def list_tags(request):
     starts_with = request.GET.get('search')
@@ -2150,7 +2171,6 @@ def list_tags(request):
     for tag in Tag.objects.filter(query).iterator():
         response_data.append(tag.serialize())
     return JsonResponse({"status": "ok", "data": response_data})
-
 
 @login_required
 def create_tag(request):
@@ -2164,7 +2184,6 @@ def create_tag(request):
     response_data = json.loads(serializers.serialize('json', [tag]))[0]
     return JsonResponse({"status": "ok", "data": response_data}, status=201)
 
-
 @login_required
 def delete_tag(request, tag_id):
     try:
@@ -2173,3 +2192,19 @@ def delete_tag(request, tag_id):
     except Tag.DoesNotExist:
         return JsonResponse({"status": "error", "message": f"Tag does not exist"}, status=404)
     return JsonResponse({"status": "ok"})
+
+# @project_admin_login_post_required
+def update_project_asset(request, project_id, asset_id):
+    try:
+        asset = ProjectAsset.objects.get(id=asset_id, project=project_id)
+    except ProjectAsset.DoesNotExist:\
+        return JsonResponse({ "status": "err", "message": "Asset not found" }, status=404)
+    data = request.POST.dict()
+    for key, value in data.items():
+        if hasattr(asset, key):
+            setattr(asset, key, value)
+    asset.save()
+    from django.core import serializers
+    import json
+    response_data = json.loads(serializers.serialize('json', [asset]))[0]
+    return JsonResponse({ "status": "ok", "data": response_data})

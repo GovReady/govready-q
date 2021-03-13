@@ -2,8 +2,6 @@
 __pycache__/
 /local
 /modules/local
-siteapp/static/vendor
-siteapp/static
 apps/
 static_root/*
 !static_root/README.md
@@ -32,6 +30,11 @@ profiles/
 .Python
 env/
 venv/
+venv3/
+venv3.6/
+venv3.7/
+venv3.8/
+venv3.9/
 build/
 develop-eggs/
 dist/
