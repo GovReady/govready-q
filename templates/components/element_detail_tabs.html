@@ -166,11 +166,13 @@
             <div id="search-form-container" class="pull-right" style="margin: 12px 12px 0px 0px;">
               <form action="{% url 'component_library_component' element_id=element.id %}" method="GET">
                   <div class="form-inline pull-right create-nav">
-                      <a id="search-reset" href="{% url 'component_library_component' element_id=element.id %}" class="btn btn-danger btn-xs">Reset</a>
                       <div class="form-group">
                           <div class="input-group">
-                              <div class="input-group-addon">search</div>
-                              <input name="search" value="{{ request.GET.search }}" type="text" placeholder="Search by control">
+                              <input id="searchbox" name="search" value="{{ request.GET.search }}" type="text" placeholder="search control">
+                              <span id="searchicon" class="glyphicon glyphicon-search" href="{% url 'component_library' %}"></span>
+                              {% if request.GET.search %}
+                                <a id="searchclear" class="glyphicon glyphicon-remove" href="{% url 'component_library_component' element_id=element.id %}"></a>
+                              {% endif %}
                           </div>
                       </div>
                       <div>
