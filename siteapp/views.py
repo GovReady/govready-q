@@ -67,7 +67,6 @@ def homepage(request):
 
     if request.user.is_authenticated:
         return HttpResponseRedirect("/projects")
-    print("LOGIN2 PAGE HOMEPAGE")
     from allauth.account.forms import SignupForm, LoginForm
 
     portfolio_form = PortfolioSignupForm()
