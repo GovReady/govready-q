@@ -108,68 +108,65 @@ Your Compliance Projects
   <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#" class=" btn btn-success">Start a project</a>
 </div>
 
-<h2 class="">Projects</h2>
+<h2>Welcome to GovReady-Q</h2>
 
-{% if projects_access|length < 1 %}
-<p>You do not currently have access to any projects.</p>
-{% else %}
-<p>You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}</p>
+<p>Assess, test, and authorize together</p>
 
-<div class="container">
-<div class="row">
-  <div class="col-xs-10 col-md-5"><strong>Project</strong></div>
-  <div class="col-xs-6 col-sm-1"><strong>ID</strong></div>
-  <div class="col-xs-6 col-sm-2"><strong>Portfolio</strong></div>
-  <div class="col-xs-6 col-sm-2"><strong>Role</strong></div>
-  <div class="col-xs-12 col-md-2"><strong>Updated</strong></div>
-</div>
-{% endif %}
-
-{% for project in projects %}
-<div class="row projects-row">
-  <div class="col-xs-10 col-md-5">
-    {% if project.root_task.get_app_icon_url %}
-      <span class="project-image">
-        <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive" alt="App Icon">
-      </span>
-      &nbsp;&nbsp;&nbsp;
-    {% else %}
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    {% endif %}
-    <a href="{{project.get_absolute_url}}" class="projects-link">{{project.title}}</a>
-  </div>
-
-  <div class="col-xs-6 col-sm-1">{{project.id}}</div>
-  <div class="col-xs-6 col-sm-2">{{project.portfolio.title}}</div>
-
-  {% get_obj_perms request.user for project as "perms" %}
-  {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
-  {% if "delete_project" in perms %}
-  <div class="col-xs-6 col-sm-2">Owner</div>
-  {% elif "change_project" in perms%}
-  <div class="col-xs-6 col-sm-2">Project Member</div>
-  {% elif "portfolio_perms"%}
-  <div class="col-xs-6 col-sm-2">Portfolio Member</div>
-  {% endif %}
-
-  <div class="col-xs-12 col-md-2 left-text">
-      <!-- App version: {{project.root_task.module.spec.catalog.version|force_escape}} -->
-      {{project.root_task.updated|naturaltime}}
-      <!-- Started: {{project.created|naturaltime}} -->
-  </div>
-</div>
-
-{% endfor %}
-
-
-{% include 'components/paginate_comp.html' with projects=page_obj %}
-
-
-{% if projects|length < 1 %}
 <!-- Display grid of options -->
-  <div class="row" style="height: 600px;">
-    &nbsp;
-  </div>
-{% endif %}
+  <div class="row">
+
+    <div class="col-sm-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon glyphicon-list-alt"></div>
+        </div>
+        <div class="col-md-9">
+
+          <h3><a id="new-project" href="/projects">You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}</a></h3>
+          <p>Projects are your organization's questionnaires, assessments and guides needed for authorizations.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon glyphicon-folder-open"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a href="/portfolios">You have access to {{ portfolios|length }} portfolio{{ portfolios|pluralize }}</a></h3>
+          <p>Portfolios are a way to organize and manage related projects.</p>
+          <p><a href={% url 'new_portfolio' %}>Create a Portfolio</a></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon-heart-empty"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a href="love-assessments">Fall in love with assessments</a></h3>
+          <p>Assessing, learning, and improving is one of the most powerful things about being  human.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon-duplicate"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a href="https://govready-q.readthedocs.org">Learn more about GovReady-Q</a></h3>
+          <p>Checkout our documentation to learn how to take full advantage of GovReady-Q.
+          </p>
+        </div>
+      </div>
+    </div>
+</div>
 
 {% endblock %}
