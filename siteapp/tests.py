@@ -1245,21 +1245,11 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#save-button")
         var_sleep(1)
 
-        # Clicking the global modal error ok button
-        wait_for_sleep_after(lambda: self.browser.find_element_by_xpath("//*[@id='global_modal']/div/div/div[3]/button[1]").click())
-
-        # interstitial
-        # nothing to really test in terms of functionality, but check that
-        # page elements are present
-        self.assertIn("| Test The Media Question Types - GovReady-Q", self.browser.title)
-        self.assertInNodeText("Upload a file!", "h1")
-
         self.click_element("#save-button")
         var_sleep(1)
-        # TODO: commenting out for now they are not passing
-       # self.assertRegex(self.browser.title, "^Test The Media Question Types - ")
-       # self.assertInNodeText("Download attachment (image; 90.5 kB; ",
-            #   ".output-document div[data-question='file']")
+
+        self.assertRegex(self.browser.title, "^Test The Media Question Types - ")
+        self.assertInNodeText("Download attachment (image; 90.5 kB; ", ".output-document div[data-question='file']")
 
     def test_questions_module(self):
         # Log in and create a new project.

@@ -109,7 +109,7 @@ class question_input_parser:
         import re
         from base64 import b64encode
         return {
-            "content": re.findall(".{1,64}", b64encode(value.read()).decode("ascii")),
+            "content": re.findall(".{1,64}", b64encode(value.open().read()).decode("ascii")),
             "type": value.content_type, # as given by the client
         }
 

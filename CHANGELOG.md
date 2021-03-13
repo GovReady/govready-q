@@ -2,18 +2,45 @@ GovReady-Q Release Notes
 ========================
 
 v999 (March XX, 2021)
----------------------
+-------------------------
+
+**UI changes**
+
+* Update 3-column statement layout's "edit" into a glyphicon pencil pulled all the way right, remove extra lines and other small changes.
+* Update 3-column statement layout to include column headings.
+* Conditionally display remarks in component library using HTML details tag.
 
 New, better install process written in Python.
 Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
 
 **Developer changes**
 
-* Replace shell script install script `install-govready-q.sh` with better Python install scrpt `install.py`.
+* Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
 * Now including all static files pre-collected as part of distribution.
 
+v0.9.2.2 (March 10, 2021)
+-------------------------
+
+**Developer changes**
+
+* Ensure that the number of controls selected for a project reflect non-duplicate counts of that control.
+* Updates to how SSP generation works. Passing in a yaml file to provide metadata for title page. Updated docx template. Revisions to the 800-171 markdown template to remove colspans and support display of title page, toc, etc in DOCX. Edits to associated yaml file as well.
+
+**UI changes**
+* removed display of export options ("plain text", "markdown"), leaving docx and html.
+
+**Bug changes**
+
+* Fix Postgres crash error by setting the ProjectAsset Model content hash length to 128 characters.
+* Find the correct number of panels by adding implementation statement number when adding a statement to a component in the library.
+
+
 v0.9.2.1 (March 05, 2021)
----------------------
+-------------------------
+
+**UI changes**
+
+* Improve style sheets for 3 column layout.
 
 **Developer changes**
 
