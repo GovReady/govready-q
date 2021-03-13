@@ -9,6 +9,7 @@ v999 (March XX, 2021)
 * Update 3-column statement layout's "edit" into a glyphicon pencil pulled all the way right, remove extra lines and other small changes.
 * Update 3-column statement layout to include column headings.
 * Conditionally display remarks in component library using HTML details tag.
+* Style searchbox on component library and component library detail page to use search glyphicon to indicate search and remove glyphicon within search box to clear search results.
 
 New, better install process written in Python.
 Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
