@@ -252,11 +252,11 @@ def main():
         print("Collecting files into static directory...")
         sys.stdout.flush()
         if args.non_interactive:
-            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.timeout, args.verbose)
+            p = run_optionally_verbose([sys.executable, 'manage.py', 'collectstatic', '--no-input'], args.timeout, args.verbose)
             if p.returncode != 0:
                 raise ReturncodeNonZeroError(p)
         else:
-            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.timeout, args.verbose)
+            p = run_optionally_verbose([sys.executable, 'manage.py', 'collectstatic', '--no-input'], args.timeout, args.verbose)
             if p.returncode != 0:
                 raise ReturncodeNonZeroError(p)
         print("... done collecting files into static directory.")
@@ -292,10 +292,10 @@ def main():
         # Configure database (migrate, load_modules)
         print("Initializing/migrating database...")
         sys.stdout.flush()
-        p = run_optionally_verbose(["./manage.py", "migrate"], args.timeout, args.verbose)
+        p = run_optionally_verbose([sys.executable, "manage.py", "migrate"], args.timeout, args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
-        p = run_optionally_verbose(["./manage.py", "load_modules"], args.timeout, args.verbose)
+        p = run_optionally_verbose([sys.executable, "manage.py", "load_modules"], args.timeout, args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
         print("... done initializing/migrating database.")
@@ -307,7 +307,7 @@ def main():
         # Run first_run non-interactively
         print("Setting up system and creating Administrator user if none exists...")
         sys.stdout.flush()
-        p = subprocess.run(["./manage.py", "first_run", "--non-interactive"], timeout=args.timeout, stdout=PIPE, stderr=PIPE)
+        p = subprocess.run([sys.executable, "manage.py", "first_run", "--non-interactive"], timeout=args.timeout, stdout=PIPE, stderr=PIPE)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
         if args.verbose:
@@ -335,7 +335,7 @@ def main():
         # Load GovReady sample SSP
         print("Setting up GovReady-Q sample project if none exists...")
         sys.stdout.flush()
-        p = run_optionally_verbose(["./manage.py", "load_govready_ssp"], args.timeout, args.verbose)
+        p = run_optionally_verbose([sys.executable, "manage.py", "load_govready_ssp"], args.timeout, args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
         print("... done setting up GovReady-Q sample project.")
