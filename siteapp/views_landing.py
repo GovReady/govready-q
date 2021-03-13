@@ -29,91 +29,6 @@ logger = get_logger()
 LOGIN = "login"
 SIGNUP = "signup"
 
-def homepage(request):
-    # Main landing page.
-
-    from allauth.account.forms import SignupForm, LoginForm
-
-    portfolio_form = PortfolioSignupForm()
-    signup_form = SignupForm()
-    login_form = LoginForm()
-
-    # The allauth forms have 'autofocus' set on their widgets that draw the
-    # focus in a way that doesn't make sense here.
-    signup_form.fields['username'].widget.attrs.pop("autofocus", None)
-    login_form.fields['login'].widget.attrs.pop("autofocus", None)
-
-    if SIGNUP in request.path or request.POST.get("action") == SIGNUP:
-        signup_form = SignupForm(request.POST)
-        portfolio_form = PortfolioSignupForm(request.POST)
-        if (request.user.is_authenticated or signup_form.is_valid()) and portfolio_form.is_valid():
-            # Perform signup and new org creation, then redirect to main page
-            with transaction.atomic():
-                if not request.user.is_authenticated:
-                    # Create account.
-                    new_user = signup_form.save(request)
-                    # Add default permission, view AppSource
-                    new_user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
-                    new_user.save()
-
-                    # Log them in.
-                    from django.contrib.auth import authenticate, login
-                    user = authenticate(request, username=signup_form.cleaned_data['username'], password=signup_form.cleaned_data['password1'])
-                    if user is not None:
-                        login(request, user, 'django.contrib.auth.backends.ModelBackend')
-                    else:
-                        print("[ERROR] new_user '{}' did not authenticate after during account creation.".format(new_user.username))
-                        messages.error(request, "[ERROR] new_user '{}' did not authenticate during account creation. Account not created. Report error to System Administrator. {}".format(new_user.username, vars(new_user)))
-                        return HttpResponseRedirect("/")
-                else:
-                    user = request.user
-                if portfolio_form.is_valid():
-                    portfolio = portfolio_form.save()
-                    portfolio.assign_owner_permissions(request.user)
-                    logger.info(
-                        event="new_portfolio",
-                        object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
-                        user={"id": request.user.id, "username": request.user.username}
-                    )
-                    logger.info(
-                        event="new_portfolio assign_owner_permissions",
-                        object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
-                        receiving_user={"id": request.user.id, "username": request.user.username},
-                        user={"id": request.user.id, "username": request.user.username}
-                    )
-                # Send a message to site administrators.
-                from django.core.mail import mail_admins
-                def subvars(s):
-                    return s.format(
-                        portfolio=portfolio.title,
-                        username=user.username,
-                        email=user.email,
-                    )
-                mail_admins(
-                    subvars("New portfolio: {portfolio} (created by {email})"),
-                    subvars("A new portfolio has been registered!\n\nPortfolio\n------------\nName: {portfolio}\nRegistering User\n----------------\nUsername: {username}\nEmail: {email}"))
-
-                return HttpResponseRedirect("/projects")
-
-    elif LOGIN in request.path or request.POST.get("action") == LOGIN:
-        login_form = LoginForm(request.POST, request=request)
-        if login_form.is_valid():
-            login_form.login(request)
-            return HttpResponseRedirect('/') # reload
-
-    elif request.POST.get("action") == "logout" and request.user.is_authenticated:
-        from django.contrib.auth import logout
-        logout(request)
-        return HttpResponseRedirect('/') # reload
-
-    return render(request, "index.html", {
-        "hide_registration": SystemSettings.hide_registration,
-        "signup_form": signup_form,
-        "portfolio_form": portfolio_form,
-        "login_form": login_form,
-        "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
-    })
-
 def org_group_projects(request, org_slug):
     """Get projects belonging to group"""
     org = get_object_or_404(Organization, slug=org_slug)
@@ -232,7 +147,7 @@ def project_api(request, project_id):
 
     from django.db.models import Q
     from .models import User, Project
-    
+
     try:
         user = User.objects.get(Q(api_key_rw=api_key)|Q(api_key_ro=api_key)|Q(api_key_wo=api_key))
     except User.DoesNotExist:
@@ -357,7 +272,7 @@ def project_api(request, project_id):
                         log.append(key + " updated")
                     else:
                         log.append(key + " unchanged")
-                
+
                 except ValueError as e:
                     log.append(key + ": " + str(e))
                     ok = False
