@@ -22,9 +22,51 @@ For Mac, Linux, or Windows Subsystem for Linux, please find the `install.md` fil
 
 (This section is under construction.)
 
-## Install Instructions
+For Windows Subsystem for Linux, please find the `install.md` file and follow the instructions there.  If you are using Windows 10 directly, please continue.
 
-Start your command line shell.
+These instructions assume you will be using Git Bash as your shell, and that you  will run it as administrator.  If you cannot run Git Bash as administrator, please contact your system adminstrator, or contact GovReady for more information.
+
+### Install Python for Windows
+
+Go to [Python Releases for Windows](https://www.python.org/downloads/windows/).
+
+Choose an appropriate download file.
+
+A good choice may be the "Windows installer (64-bit)" within the most recent release under "Stable Releases".
+
+After download, run the install.  Usually you can "Install Now", which is described with "Includes IDLE, pip and documentation".  Choose "Customize installation" you need to make changes.
+
+### Install Git for Windows
+
+Go to [Git for Windows](https://gitforwindows.org/).
+
+After the redirect to GitHub, scroll down to "Assets" and click the appropriate file to download.
+
+A good choice may be "Git-x.xx.x-64-bit.exe".
+
+After download, run the install.
+
+During the Git install, take care to choose your desired editor on the "Choosing the default editor used by Git".  If none of the choices is familiar to you, you may wish to choose the simplest (and least powerful) editor, "Notepad".
+
+After Git is installed, find the "Git" folder in your Start menu, and then "Git Bash". Select "Run as administrator".
+
+### Install Visual Studio Build Tools 2019
+
+Go to [Visual Studio Build Tools 2019](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
+
+Click "Download Build Tools".
+
+After download, run the install.
+
+In "Workloads", select "C++ build tools".
+
+Click "Install".
+
+After the install, you do not need to click "Launch". Just close the installer.
+
+## GovReady-Q Install Instructions
+
+Make sure you are running Git Bash as administrator.
 
 Go to a directory that you can download GovReady-Q into.  If you wish, you can create a new directory, and change directory into it.
 
@@ -37,25 +79,78 @@ git clone https://github.com/GovReady/govready-q.git
 cd govready-q
 ```
 
+[Next step needed until `installer.py` is on the main branch.]
+
+Do this shell command.
+
+```shell
+git checkout install-test-001-windows
+```
+
+You should see:
+
+```
+Branch 'install-test-001-windows' set up to track remote branch 'install-test-001-windows' from 'origin'.
+Switched to a new branch 'install-test-001-windows'
+```
+
 ### 2. Create and Activate Python Virtual Environment
 
 Do these shell commands.
 
 ```shell
 py -m venv venv
-venv/scripts/activate.bat
+source venv/scripts/activate
 ```
 
 You should see "(venv)".
 
-Your prompt may or may not change to include "venv".
+### 3. Upgrade pip
 
-### 3. Run Installer
+You should check to see if `pip` should be upgraded.
+
+Try this shell command.
+
+```shell
+pip install --upgrade pip
+```
+
+You may see an error, even if you ran Git Bash as administrator:
+
+```
+ERROR: Could not install packages due to an OSError: [WinError 5] Access is denied
+```
+
+This error can occur even if the `pip` upgrade was successful.
+
+To check, run the same command again.
+
+```shell
+pip install --upgrade pip
+```
+
+If you see "Requirement already satisfied", you can proceed.
+
+### 4. Install Additional Modules
+
+On Windows, you need to install these additional modules.
+
+```shell
+pip install colorama python-magic-bin
+```
+
+When successful, `pip` will print:
+
+```
+Successfully installed colorama-0.x.x python-magic-bin-0.x.x
+```
+
+### 5. Run Installer
 
 Do this shell command for to see all install options.
 
 ```shell
-python3 install.py -h
+py install.py -h
 ```
 
 The script will print command options.
@@ -82,7 +177,7 @@ optional arguments:
 Do this shell command for default install.
 
 ```shell
-python3 install.py
+py install.py
 ```
 
 The script will print progress messages. Some of the steps may take a minute or several minutes.
