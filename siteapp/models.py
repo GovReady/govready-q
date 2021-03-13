@@ -1503,4 +1503,3 @@ class ProjectAsset(Asset):
         if not current_active.exists():
             self.default = True
         return super().save(**kwargs)
->>>>>>> develop
