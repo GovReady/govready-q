@@ -445,6 +445,18 @@ class System(auto_prefetch.Model):
         except:
             return False
 
+    def remove_control(self, control_id):
+        """Remove ElementControl (e.g., selected control) from a system"""
+        control = ElementControl.objects.get(pk=control_id)
+
+        # Delete Control Statements
+        self.root_element.statements_consumed.filter(
+            statement_type="control_implementation",
+            sid_class=control.oscal_catalog_key, sid=control.oscal_ctl_id ).delete()
+
+        control.delete()
+        return control
+
     @property
     def smts_common_controls_as_dict(self):
         common_controls = self.root_element.common_controls.all()

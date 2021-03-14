@@ -61,8 +61,11 @@
 
                     {% get_obj_perms request.user for system as "system_perms" %}
                     {% if "view_system" in system_perms %}
-                        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 pull-right">
-                            <a href="{% url 'system_element_remove' system_id=system.id element_id=component.id %}"><small><span class="glyphicon glyphicon-trash" title="remove component"></span></small></a>
+                        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 small">
+                            <span class="pull-right">
+                                <a href="" onclick='confirm_cmpt_rm("{% url 'system_element_remove' system_id=system.id element_id=component.id %}"); return false;'>
+                                    <span class="glyphicon glyphicon-trash text-muted small" title="remove component"></span></a>
+                            </span>
                         </div>
                     {% endif %}
 
@@ -83,6 +86,15 @@
   $(document).ready(function() {
     $('#producer_element_id').select2();
   });
+
+  // Confirm deletion of component
+  function confirm_cmpt_rm(cmpt_rm_url) {
+    var result = confirm('Remove component and related controls from system?\nAny customizations to component\'s statements will be lost.');
+      if (result) {
+        // Pass - allow click to propegate and follow to href target
+        window.location.href = cmpt_rm_url;
+      }
+    }
 </script>
 
 {% endblock %}

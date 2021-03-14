@@ -49,7 +49,7 @@
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
                 <a href= {% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}>{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}</a>
             </div>
-            <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+            <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
                 {{ control.get_flattened_oscal_control_as_dict.title }}
             </div>
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
@@ -63,13 +63,30 @@
                 {% endif %}
               {% endwith %}
             </div>
-            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-              {% if control.smts_updated %}
-                {{ control.smts_updated|timesince}} ago
-              {% else %}
-                {{ control.created|timesince}} ago
-              {% endif %}
-            </div>
+            {% get_obj_perms request.user for system as "system_perms" %}
+            {% if "view_system" in system_perms %}
+              <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                {% if control.smts_updated %}
+                  {{ control.smts_updated|timesince}} ago
+                {% else %}
+                  {{ control.created|timesince}} ago
+                {% endif %}
+              </div>
+              <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 small">
+                <span class="pull-right">
+                  <a href="" onclick='confirm_cnt_rm("{% url 'system_control_remove' system_id=system.id element_control_id=control.id %}"); return false;'>
+                    <span class="glyphicon glyphicon-trash text-muted small" title="remove component"></span></a>
+                </span>
+              </div>
+            {% else %}
+              <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                {% if control.smts_updated %}
+                  {{ control.smts_updated|timesince}} ago
+                {% else %}
+                  {{ control.created|timesince}} ago
+                {% endif %}
+              </div>
+            {% endif %}
         </div>
       {% endfor %}
     {% endif %}
@@ -108,6 +125,14 @@
       }
     });
   }
+
+  // Confirm deletion of control
+  function confirm_cnt_rm(cnt_rm_url) {
+    var result = confirm('Remove selected control from system?\nAny customizations to control\'s statements will be lost.');
+      if (result) {
+        window.location.href = cnt_rm_url;
+      }
+    }
 </script>
 
 {% endblock %}

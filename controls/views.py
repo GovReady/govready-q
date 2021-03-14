@@ -178,6 +178,50 @@ def controls_selected(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
+def system_control_remove(request, system_id, element_control_id):
+    """Remove a selected control from a system and delete/hide the related statements"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+
+        # Retrieve element
+        # element = Element.objects.get(id=element_id)
+        # Retrieve ElementControl
+        ec = ElementControl.objects.get(id=element_control_id)
+
+        # Delete the control implementation statements associated with this component
+        system.remove_control(element_control_id)
+        # result = element.statements_produced.filter(consumer_element=system.root_element).delete()
+        messages.add_message(request, messages.INFO, f"Removed control '{ec.oscal_ctl_id}' from system.")
+
+        # Log result
+        logger.info(
+                event="change_system remove_selected_control",
+                object={"object": "control", "id": element_control_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        # messages.add_message(request, messages.INFO, f"Removed control '{element_control_id}' from system.")
+
+    else:
+        # User does not have permission
+        # Log result
+        logger.info(
+                event="change_system remove_selected_control permission_denied",
+                object={"object": "component", "id": element_control_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
+
+    response = redirect(reverse('controls_selected', args=[system_id]))
+    return response
+
 @functools.lru_cache()
 def controls_updated(request, system_id):
     """Display System's statements by updated date in reverse chronological order"""
