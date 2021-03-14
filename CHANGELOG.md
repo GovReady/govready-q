@@ -6,7 +6,7 @@ v999 (March XX, 2021)
 
 **Feature changes**
 
-* Delete controls from a system's selected controls.
+* Add and delete controls from a system's selected controls.
 
 **UI changes**
 
@@ -16,6 +16,7 @@ v999 (March XX, 2021)
 * Style searchbox on component library and component library detail page to use search glyphicon to indicate search and remove glyphicon within search box to clear search results.
 * Add delete trash icon to selected control list for users with permission to change system. Include a pop-up confirmation dialog.
 * Add popup conformation dialog box for deleting components from system's selected components.
+* Add autocomplete select box for adding controls to systems's selected controls page.
 
 New, better install process written in Python.
 Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.

@@ -179,6 +179,39 @@ def controls_selected(request, system_id):
         raise Http404
 
 @login_required
+def system_controls_add(request, system_id):
+    """Add a selected control to a system (e.g., selected controls)"""
+
+    # Get control values from request.POST
+    catalog_key = request.POST['catalog_key'].replace(" ","_") # Make sure catalog key has underscores instead of spaces
+    control_id = request.POST['control_id']
+
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+
+        # Add ElementControl to system
+        system.add_control(catalog_key, control_id)
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"Control '{control_id}' added to selected controls. IN PROGRESS")
+
+    else:
+        # User does not have permission
+        # Log result
+        logger.info(
+                event="change_system add_selected_control permission_denied",
+                object={"object": "control", "id": control_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
+
+    response = redirect(reverse('controls_selected', args=[system_id]))
+    return response
+
+@login_required
 def system_control_remove(request, system_id, element_control_id):
     """Remove a selected control from a system and delete/hide the related statements"""
 
@@ -187,8 +220,6 @@ def system_control_remove(request, system_id, element_control_id):
     # Retrieve related selected controls if user has permission on system
     if request.user.has_perm('change_system', system):
 
-        # Retrieve element
-        # element = Element.objects.get(id=element_id)
         # Retrieve ElementControl
         ec = ElementControl.objects.get(id=element_control_id)
 
@@ -212,7 +243,7 @@ def system_control_remove(request, system_id, element_control_id):
         # Log result
         logger.info(
                 event="change_system remove_selected_control permission_denied",
-                object={"object": "component", "id": element_control_id},
+                object={"object": "control", "id": element_control_id},
                 user={"id": request.user.id, "username": request.user.username}
                 )
 

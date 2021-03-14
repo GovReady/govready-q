@@ -445,14 +445,25 @@ class System(auto_prefetch.Model):
         except:
             return False
 
+    def add_control(self, catalog_key, control_id):
+         """Add ElementControl (e.g., selected control) to a system"""
+
+         control = ElementControl(element=self.root_element,
+                                  oscal_catalog_key=catalog_key,
+                                  oscal_ctl_id=control_id
+                                 )
+         control.save()
+         return control
+
     def remove_control(self, control_id):
         """Remove ElementControl (e.g., selected control) from a system"""
         control = ElementControl.objects.get(pk=control_id)
 
         # Delete Control Statements
-        self.root_element.statements_consumed.filter(
-            statement_type="control_implementation",
-            sid_class=control.oscal_catalog_key, sid=control.oscal_ctl_id ).delete()
+        self.root_element.statements_consumed.filter(statement_type="control_implementation",
+                                                     sid_class=control.oscal_catalog_key,
+                                                     sid=control.oscal_ctl_id
+                                                     ).delete()
 
         control.delete()
         return control
