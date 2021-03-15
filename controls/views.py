@@ -8,6 +8,7 @@ import rtyaml
 import shutil
 import operator
 from natsort import natsorted
+from django.db.models import Q
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
@@ -187,6 +188,19 @@ def system_controls_add(request, system_id):
     control_id = request.POST['control_id']
 
     system = System.objects.get(id=system_id)
+    controls = system.root_element.controls.all()
+
+    # If the catalog key and control id combination returns a result than don't add to controls selected
+    if controls.filter(Q(oscal_catalog_key=catalog_key)).filter(Q(oscal_ctl_id=control_id)):
+        messages.add_message(request, messages.WARNING, f"Control {control_id.upper()} in catalog {catalog_key} is already in selected controls!")
+        # Log result
+        logger.warning(
+                event="change_system add_selected_control",
+                object={"object": "control", "id": control_id, "catalog": catalog_key},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+        return redirect(reverse('controls_selected', args=[system_id]))
+
     # Retrieve related selected controls if user has permission on system
     if request.user.has_perm('change_system', system):
 
@@ -194,7 +208,7 @@ def system_controls_add(request, system_id):
         system.add_control(catalog_key, control_id)
 
         # Create message for user
-        messages.add_message(request, messages.INFO, f"Control '{control_id}' added to selected controls.")
+        messages.add_message(request, messages.INFO, f"Control {control_id.upper()} added to selected controls.")
 
     else:
         # User does not have permission
