@@ -342,8 +342,10 @@
 
 
           $(".control-select").select2({
+
+                  language: { inputTooShort: function() { return 'Please enter your search'; } },
                   ajax: {
-                      url: "/controls/api/controlsselect/",
+                      url: '{% url 'api_controls_select' %}',
                       dataType: 'json',
                       delay: 250,
                       data: function(params) {
@@ -366,7 +368,8 @@
                               })
                           };
                       },
-                      cache: true
+                      // Note: Not caching 1st/full listing so results always reflect the latest
+                      cache: false
                   },
                   minimumInputLength: 1
               });
