@@ -18,6 +18,7 @@
 <!-- authoring_tool_enabled included from project-base.html -->
 
 {% block body_content %}
+
   <div class="systems-top">
     <div id="tab-content" class="row rows-header">
         <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4"><span class="systems-selected-components">Selected controls</span></div>
@@ -59,10 +60,10 @@
     {% else %}
       {% for control in controls %}
         <div id="tab-content" class="row row-control">
-            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                <a href= {% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}>{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}</a>
+            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                <a href= {% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}>{{ control.get_flattened_oscal_control_as_dict.id_display|upper }} </a>{{ control.oscal_catalog_key }}
             </div>
-            <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
+            <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
                 {{ control.get_flattened_oscal_control_as_dict.title }}
             </div>
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
@@ -104,7 +105,6 @@
       {% endfor %}
     {% endif %}
 </div>
-
 
 {% endblock %}
 
