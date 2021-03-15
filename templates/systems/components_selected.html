@@ -58,12 +58,13 @@
                     {% endwith %}
 
                     {% get_obj_perms request.user for system as "system_perms" %}
-                    {% if "view_system" in system_perms %}
-                        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 small">
-                            <span class="pull-right">
-                                <a href="" onclick='confirm_cmpt_rm("{% url 'system_element_remove' system_id=system.id element_id=component.id %}"); return false;'>
-                                    <span class="glyphicon glyphicon-trash text-muted small" title="remove component"></span></a>
-                            </span>
+                    {% if "change_system" in system_perms %}
+                        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 pull-right">
+                            <a href="{% url 'system_element_remove' system_id=system.id element_id=component.id %}">
+                              <small>
+                              <span class="glyphicon glyphicon-trash" title="remove component"></span>
+                              </small>
+                          </a>
                         </div>
                     {% endif %}
                     </div>
