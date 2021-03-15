@@ -968,17 +968,10 @@ def api_controls_select(request):
         cxs.extend(select_list)
     # Sort the accummulated list
     cxs.sort(key = operator.itemgetter('id', 'catalog_key_display'))
-    data = cxs
 
-    if True:
-        status = "ok"
-        message = "Sending list."
-        return JsonResponse( {"status": "success", "message": message, "data": {"controls": data} })
-    else:
-        status = "error"
-        message = "Could not generate controls list."
-        data = {}
-        return JsonResponse({"status": status, "message": message, "data": data})
+    status = "success"
+    message = "Sending list."
+    return JsonResponse( {"status": status, "message": message, "data": {"controls": cxs} })
 
 @login_required
 def component_library_component_copy(request, element_id):
