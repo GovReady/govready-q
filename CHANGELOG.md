@@ -19,6 +19,10 @@ Include all required static files pre-collected in `static_root` directory as pa
 * Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
 * Now including all static files pre-collected as part of distribution.
 
+**Bug fixes**
+
+* Properly populate previously blank "Start project" modal that appeared on component library, component library detail, and some other pages.
+
 v0.9.2.2 (March 10, 2021)
 -------------------------
 
@@ -101,7 +105,7 @@ Project page displays mini-dashboard of compliance stats.
 
 **UI changes**
 
-* Improve page load times for listings with pagination and ordering for project listing and selected component listing. 
+* Improve page load times for listings with pagination and ordering for project listing and selected component listing.
 * Display projects in pages of 10 and selected components by 5.
 * Project page displays mini-dashboard of compliance stats.
     * Number of controls implemented out of count of controls.
@@ -485,7 +489,7 @@ v.0.9.1.47 (December 01, 2020)
 * Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
 
 v0.9.1.46.4 (November 25, 2020)
------------------------------	
+-----------------------------
 
 **UI changes**
 
