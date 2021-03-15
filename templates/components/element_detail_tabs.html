@@ -342,8 +342,10 @@
 
 
           $(".control-select").select2({
+
+                  language: { inputTooShort: function() { return 'Please enter your search'; } },
                   ajax: {
-                      url: "/controls/api/controlsselect/",
+                      url: '{% url 'api_controls_select' %}',
                       dataType: 'json',
                       delay: 250,
                       data: function(params) {
@@ -352,15 +354,6 @@
                           };
                       },
                       processResults: function(data, params) {
-                        console.log(data.data.controls.length)
-                        // data.data.controls.forEach(function(item, index, array) {
-                        //   console.log(item, index)
-                        // });
-                        console.log("params: "+params);
-                          // parse the results into the format expected by Select2
-                          // since we are using custom formatting functions we do not need to
-                          // alter the remote JSON data, except to indicate that infinite
-                          // scrolling can be used
                           var resData = [];
                           data.data.controls.forEach(function(value) {
                               if (value.display_text.indexOf(params.term) != -1)
@@ -375,7 +368,8 @@
                               })
                           };
                       },
-                      cache: true
+                      // Note: Not caching 1st/full listing so results always reflect the latest
+                      cache: false
                   },
                   minimumInputLength: 1
               });

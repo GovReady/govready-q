@@ -18,11 +18,25 @@
 <!-- authoring_tool_enabled included from project-base.html -->
 
 {% block body_content %}
+
   <div class="systems-top">
     <div id="tab-content" class="row rows-header">
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">Selected controls</div>
-        <div id="" class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9">&nbsp;</div>
-        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4"><span class="systems-selected-components">Selected controls</span></div>
+        <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
+          <form id="add-control" class="form-inline pull-right" method="post"
+                action="{%  url 'system_controls_add' system_id=system.id %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="control_id">Add control</label>&nbsp;&nbsp;
+                <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
+                <select class="producer_element_id" id="add-control_id-select" name="control_id" style="width:440px;">
+                    <option value="None" selected disabled hidden>Select a Control</option>
+                </select>
+            </div>
+            <input type="hidden" id="add-catalog_key-input" name="catalog_key">
+          </form>
+        </div>
+        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 pull-right">
           <!--a href="selected/export/xacta/xlsx">export</a-->
           <span class="glyphicon glyphicon-download-alt pull-right"
                 style="cursor: pointer;"
@@ -46,10 +60,10 @@
     {% else %}
       {% for control in controls %}
         <div id="tab-content" class="row row-control">
-            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                <a href= {% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}>{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}</a>
+            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                <a href= {% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}>{{ control.get_flattened_oscal_control_as_dict.id_display|upper }} </a>{{ control.oscal_catalog_key }}
             </div>
-            <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+            <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
                 {{ control.get_flattened_oscal_control_as_dict.title }}
             </div>
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
@@ -63,18 +77,34 @@
                 {% endif %}
               {% endwith %}
             </div>
-            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-              {% if control.smts_updated %}
-                {{ control.smts_updated|timesince}} ago
-              {% else %}
-                {{ control.created|timesince}} ago
-              {% endif %}
-            </div>
+            {% get_obj_perms request.user for system as "system_perms" %}
+            {% if "view_system" in system_perms %}
+              <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                {% if control.smts_updated %}
+                  {{ control.smts_updated|timesince}} ago
+                {% else %}
+                  {{ control.created|timesince}} ago
+                {% endif %}
+              </div>
+              <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 small">
+                <span class="pull-right">
+                  <a href="" onclick='confirm_cnt_rm("{% url 'system_control_remove' system_id=system.id element_control_id=control.id %}"); return false;'>
+                    <span class="glyphicon glyphicon-trash text-muted small" title="remove control"></span></a>
+                </span>
+              </div>
+            {% else %}
+              <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                {% if control.smts_updated %}
+                  {{ control.smts_updated|timesince}} ago
+                {% else %}
+                  {{ control.created|timesince}} ago
+                {% endif %}
+              </div>
+            {% endif %}
         </div>
       {% endfor %}
     {% endif %}
 </div>
-
 
 {% endblock %}
 
@@ -86,28 +116,83 @@
     window.location.href = url;
   }
 
-  // The download button shows a modal to ask what file format to download in.
-  function download_document(document_id, system_id) {
-    var dom = $("<div><p>Select download format:</p>"
-      + "<select class=form-control>"
-      {% if enable_experimental_opencontrol %}
-      + "<option value='opencontrol'>OpenControl Repository</option>"
-      {% endif %}
-      + "<option value='xacta'>Xacta Import Spreadsheet</option>"
-      + "</select>"
-      + "</div>");
-    show_modal_confirm("Download Document", dom, "Download", function() {
-      var format = dom.find("select").val();
-      switch(format) {
-        case "opencontrol":
-          window.location = "/systems/" + system_id + "/components/selected/export/opencontrol";
-          break;
-        case "xacta":
-          window.location = "selected/export/" + format + "/xlsx";
-          break;
-      }
+  $(document).ready(function() {
+
+
+    // Download button shows a modal to ask what file format to download in.
+    function download_document(document_id, system_id) {
+      var dom = $("<div><p>Select download format:</p>"
+        + "<select class=form-control>"
+        {% if enable_experimental_opencontrol %}
+        + "<option value='opencontrol'>OpenControl Repository</option>"
+        {% endif %}
+        + "<option value='xacta'>Xacta Import Spreadsheet</option>"
+        + "</select>"
+        + "</div>");
+      show_modal_confirm("Download Document", dom, "Download", function() {
+        var format = dom.find("select").val();
+        switch(format) {
+          case "opencontrol":
+            window.location = "/systems/" + system_id + "/components/selected/export/opencontrol";
+            break;
+          case "xacta":
+            window.location = "selected/export/" + format + "/xlsx";
+            break;
+        }
+      });
+    }
+
+    // Add:  Convert form select to jQuery Select2
+    $('#add-control_id-select').select2({
+      ajax: {
+              url: "/controls/api/controlsselect/",
+              dataType: 'json',
+              delay: 250,
+              data: function(params) {
+                  return {
+                      q: params.term // search term
+                  };
+              },
+              processResults: function(data, params) {
+                  var resData = [];
+                  data.data.controls.forEach(function(value) {
+                      if (value.display_text.indexOf(params.term) != -1)
+                          resData.push(value)
+                  })
+                  return {
+                      results: $.map(resData, function(item) {
+                          return {
+                              text: item.display_text,
+                              id: item.id
+                          }
+                      })
+                  };
+              },
+              cache: true
+          },
+          minimumInputLength: 1
+    }).on('select2:select', function (e) {
+      // After change event for which e.params isn't defined
+      display_text = e.params.data.text;
+      displaytext = display_text.split(' - ');
+      var first = displaytext.shift(); //or arr[arr.length-1];
+      var last = displaytext.pop(); //or arr[0];
+      dtv = [first, displaytext.join(" - "), last]; // [control_id, title, catalog_key]
+      ck = dtv[2];
+      // $('#add-catalog_key-input').val(e.params.data.catalog_key);
+      $('#add-catalog_key-input').val(ck.replace(" ","_"));
+      $('#add-control').submit();
     });
-  }
+
+  }); //$(document).ready(function()
+
+  // Confirm deletion of control
+  function confirm_cnt_rm(cnt_rm_url) {
+    var result = confirm('Remove selected control from system?\nAny customizations to control\'s statements will be lost.');
+      if (result) {
+        window.location.href = cnt_rm_url;
+      }
+    }
 </script>
 
 {% endblock %}

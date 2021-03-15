@@ -4,12 +4,19 @@ GovReady-Q Release Notes
 v999 (March XX, 2021)
 -------------------------
 
+**Feature changes**
+
+* Add and delete controls from a system's selected controls.
+
 **UI changes**
 
 * Update 3-column statement layout's "edit" into a glyphicon pencil pulled all the way right, remove extra lines and other small changes.
 * Update 3-column statement layout to include column headings.
 * Conditionally display remarks in component library using HTML details tag.
 * Style searchbox on component library and component library detail page to use search glyphicon to indicate search and remove glyphicon within search box to clear search results.
+* Add delete trash icon to selected control list for users with permission to change system. Include a pop-up confirmation dialog.
+* Add popup conformation dialog box for deleting components from system's selected components.
+* Add autocomplete select box for adding controls to systems's selected controls page.
 
 New, better install process written in Python.
 Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
@@ -101,7 +108,7 @@ Project page displays mini-dashboard of compliance stats.
 
 **UI changes**
 
-* Improve page load times for listings with pagination and ordering for project listing and selected component listing. 
+* Improve page load times for listings with pagination and ordering for project listing and selected component listing.
 * Display projects in pages of 10 and selected components by 5.
 * Project page displays mini-dashboard of compliance stats.
     * Number of controls implemented out of count of controls.
@@ -485,7 +492,7 @@ v.0.9.1.47 (December 01, 2020)
 * Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
 
 v0.9.1.46.4 (November 25, 2020)
------------------------------	
+-----------------------------
 
 **UI changes**
 
