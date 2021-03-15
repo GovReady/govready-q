@@ -194,7 +194,7 @@ def system_controls_add(request, system_id):
         system.add_control(catalog_key, control_id)
 
         # Create message for user
-        messages.add_message(request, messages.INFO, f"Control '{control_id}' added to selected controls. IN PROGRESS")
+        messages.add_message(request, messages.INFO, f"Control '{control_id}' added to selected controls.")
 
     else:
         # User does not have permission
