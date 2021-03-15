@@ -60,7 +60,7 @@
                     {% endwith %}
 
                     {% get_obj_perms request.user for system as "system_perms" %}
-                    {% if "view_system" in system_perms %}
+                    {% if "change_system" in system_perms %}
                         <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 pull-right">
                             <a href="{% url 'system_element_remove' system_id=system.id element_id=component.id %}"><small><span class="glyphicon glyphicon-trash" title="remove component"></span></small></a>
                         </div>
