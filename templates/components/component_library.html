@@ -33,13 +33,15 @@
 
             <h2 class="">Component Library</h2>
 
-            <form action="{% url 'component_library' %}" method="GET">
+            <form action="{% url 'component_library' %}" method="GET" role="search">
                 <div class="form-inline pull-right create-nav">
-                    <a id="search-reset" href="{% url 'component_library' %}" class="btn btn-danger">Reset</a>
                     <div class="form-group">
                         <div class="input-group">
-                            <div class="input-group-addon">search</div>
-                            <input name="search" value="{{ request.GET.search }}" type="text" placeholder="Search for components">
+                            <input id="searchbox" name="search" value="{{ request.GET.search }}" type="text" placeholder="search components" spellcheck="false" aria-label="Search" aria-describedby="search">
+                            <span id="searchicon" class="glyphicon glyphicon-search" href="{% url 'component_library' %}"></span>
+                            {% if request.GET.search %}
+                                <a id="searchclear" class="glyphicon glyphicon-remove" href="{% url 'component_library' %}"></a>
+                            {% endif %}
                          </div>
                     </div>
                 </div>

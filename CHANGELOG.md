@@ -1,22 +1,26 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (March XX, 2021)
--------------------------
+v0.9.3.0rc1 (March 13, 2021)
+----------------------------
+
+New, better install process written in Python.
+Include all required static files `siteapp/static` directory as part of GovReady-Q distribution.
 
 **UI changes**
 
 * Update 3-column statement layout's "edit" into a glyphicon pencil pulled all the way right, remove extra lines and other small changes.
 * Update 3-column statement layout to include column headings.
 * Conditionally display remarks in component library using HTML details tag.
-
-New, better install process written in Python.
-Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
+* Style searchbox on component library and component library detail page to use search glyphicon to indicate search and remove glyphicon within search box to clear search results.
+* Separate user home page (e.g., "/") page from `/project` page to provide a better first use and login experience.
+* Display number of projects and portfolios on the new user home page.
 
 **Developer changes**
 
 * Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
-* Now including all static files pre-collected as part of distribution.
+* Now including all static files as part of distribution.
+
 
 v0.9.2.2 (March 10, 2021)
 -------------------------
@@ -100,7 +104,7 @@ Project page displays mini-dashboard of compliance stats.
 
 **UI changes**
 
-* Improve page load times for listings with pagination and ordering for project listing and selected component listing. 
+* Improve page load times for listings with pagination and ordering for project listing and selected component listing.
 * Display projects in pages of 10 and selected components by 5.
 * Project page displays mini-dashboard of compliance stats.
     * Number of controls implemented out of count of controls.
@@ -484,7 +488,7 @@ v.0.9.1.47 (December 01, 2020)
 * Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
 
 v0.9.1.46.4 (November 25, 2020)
------------------------------	
+-----------------------------
 
 **UI changes**
 
