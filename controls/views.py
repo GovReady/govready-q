@@ -8,6 +8,7 @@ import rtyaml
 import shutil
 import operator
 from natsort import natsorted
+from django.db.models import Q
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
@@ -34,6 +35,7 @@ from system_settings.models import SystemSettings
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
 from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
 from .forms import ElementEditForm
+from siteapp.forms import PortfolioForm, ProjectForm
 from .models import *
 from .utilities import *
 from simple_history.utils import update_change_reason
@@ -178,6 +180,94 @@ def controls_selected(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
+def system_controls_add(request, system_id):
+    """Add a selected control to a system (e.g., selected controls)"""
+
+    # Get control values from request.POST
+    catalog_key = request.POST['catalog_key'].replace(" ","_") # Make sure catalog key has underscores instead of spaces
+    control_id = request.POST['control_id']
+
+    system = System.objects.get(id=system_id)
+    controls = system.root_element.controls.all()
+
+    # If the catalog key and control id combination returns a result than don't add to controls selected
+    if controls.filter(Q(oscal_catalog_key=catalog_key)).filter(Q(oscal_ctl_id=control_id)):
+        messages.add_message(request, messages.WARNING, f"Control {control_id.upper()} in catalog {catalog_key} is already in selected controls!")
+        # Log result
+        logger.warning(
+                event="change_system add_selected_control",
+                object={"object": "control", "id": control_id, "catalog": catalog_key},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+        return redirect(reverse('controls_selected', args=[system_id]))
+
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+
+        # Add ElementControl to system
+        system.add_control(catalog_key, control_id)
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"Control {control_id.upper()} added to selected controls.")
+
+    else:
+        # User does not have permission
+        # Log result
+        logger.info(
+                event="change_system add_selected_control permission_denied",
+                object={"object": "control", "id": control_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
+
+    response = redirect(reverse('controls_selected', args=[system_id]))
+    return response
+
+@login_required
+def system_control_remove(request, system_id, element_control_id):
+    """Remove a selected control from a system and delete/hide the related statements"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+
+        # Retrieve ElementControl
+        ec = ElementControl.objects.get(id=element_control_id)
+
+        # Delete the control implementation statements associated with this component
+        system.remove_control(element_control_id)
+        # result = element.statements_produced.filter(consumer_element=system.root_element).delete()
+        messages.add_message(request, messages.INFO, f"Removed control '{ec.oscal_ctl_id}' from system.")
+
+        # Log result
+        logger.info(
+                event="change_system remove_selected_control",
+                object={"object": "control", "id": element_control_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        # messages.add_message(request, messages.INFO, f"Removed control '{element_control_id}' from system.")
+
+    else:
+        # User does not have permission
+        # Log result
+        logger.info(
+                event="change_system remove_selected_control permission_denied",
+                object={"object": "control", "id": element_control_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
+
+    response = redirect(reverse('controls_selected', args=[system_id]))
+    return response
+
 @functools.lru_cache()
 def controls_updated(request, system_id):
     """Display System's statements by updated date in reverse chronological order"""
@@ -308,7 +398,8 @@ def component_library(request):
     context = {
         "page_obj": page_obj,
         "import_form": ImportOSCALComponentForm(),
-        "total_comps": Element.objects.exclude(element_type='system').count()
+        "total_comps": Element.objects.exclude(element_type='system').count(),
+        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
 
     return render(request, "components/component_library.html", context)
@@ -324,6 +415,7 @@ def import_records(request):
 
     context = {
         "import_components": import_components,
+        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
 
     return render(request, "components/import_records.html", context)
@@ -337,6 +429,7 @@ def import_record_details(request, import_record_id):
     context = {
         "import_record": import_record,
         "component_statements": component_statements,
+        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
     return render(request, "components/import_record_details.html", context)
 
@@ -811,6 +904,7 @@ def component_library_component(request, element_id):
             "impl_smts": impl_smts,
             "is_admin": request.user.is_superuser,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
         }
         return render(request, "components/element_detail_tabs.html", context)
 
@@ -858,7 +952,7 @@ def component_library_component(request, element_id):
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
-        # "project_form": ProjectForm(request.user),
+        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
     return render(request, "components/element_detail_tabs.html", context)
 
@@ -879,17 +973,10 @@ def api_controls_select(request):
         cxs.extend(select_list)
     # Sort the accummulated list
     cxs.sort(key = operator.itemgetter('id', 'catalog_key_display'))
-    data = cxs
 
-    if True:
-        status = "ok"
-        message = "Sending list."
-        return JsonResponse( {"status": "success", "message": message, "data": {"controls": data} })
-    else:
-        status = "error"
-        message = "Could not generate controls list."
-        data = {}
-        return JsonResponse({"status": status, "message": message, "data": data})
+    status = "success"
+    message = "Sending list."
+    return JsonResponse( {"status": status, "message": message, "data": {"controls": cxs} })
 
 @login_required
 def component_library_component_copy(request, element_id):

@@ -1197,7 +1197,7 @@ class Task(models.Model):
             "oscal_yaml": ("markdown_github", "md", "text/plain"),
             "oscal_xml": ("markdown_github", "md", "text/plain"),
             "docx": ("docx", "docx", "application/octet-stream"),
-            "odt": ("odt", "odt", "application/octet-stream"),
+            #"odt": ("odt", "odt", "application/octet-stream"),
         }
 
         if download_format not in format_opts:
@@ -1297,7 +1297,7 @@ class Task(models.Model):
             # /assets/system-reference.docx. We should be able to point to a
             # reference file in a Compliance App.
             template = self.project.assets.get_default(asset_type=AssetTypeEnum.SSP_EXPORT,
-                                                       default_if_not_exist="assets/system-reference.docx")
+                                                       default_if_not_exist="assets/default-ssp-template.docx")
             # odt and some other formats cannot pipe to stdout, so we always
             # generate a temporary file.
             import tempfile, os.path, subprocess # nosec
@@ -1311,8 +1311,12 @@ class Task(models.Model):
                     template = template_path
                 # Append '# nosec' to line below to tell Bandit to ignore the low risk problem
                 # with not specifying the entire path to pandoc.
+
+                # NOTE: we need to make the pandoc cmd flexible, so non-ssp don't use the ssp yaml file.
+                # Right now, all generated docx files will include the ssp yaml.
+
                 with subprocess.Popen(# nosec
-                    ["pandoc", "-f", "html", "--toc", "--toc-depth=4", "-s", "--reference-doc", template, "-t", pandoc_format, "-o", outfn],
+                    ["pandoc", "-f", "html", "-s", "--metadata-file=assets/ssp-cover.yaml", "--toc", "--toc-depth=2", "--reference-doc", template, "-t", pandoc_format, "-o", outfn],
                     stdin=subprocess.PIPE
                     ) as proc:
                     proc.communicate(
@@ -1323,7 +1327,6 @@ class Task(models.Model):
                 # return the content of the temporary file
                 with open(outfn, "rb") as f:
                     blob = f.read()
-
         return blob, filename, mime_type
 
     def render_snippet(self):

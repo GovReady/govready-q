@@ -1,17 +1,58 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.3.0rc1 (March 16, 2021)
+----------------------------
+
+New, better install process written in Python.
+Include all required static files `siteapp/static` directory as part of GovReady-Q distribution.
+
+**Feature changes**
+
+* Add and delete controls from a system's selected controls.
+
+**UI changes**
+
+* Update 3-column statement layout's "edit" into a glyphicon pencil pulled all the way right, remove extra lines and other small changes.
+* Update 3-column statement layout to include column headings.
+* Conditionally display remarks in component library using HTML details tag.
+* Style searchbox on component library and component library detail page to use search glyphicon to indicate search and remove glyphicon within search box to clear search results.
+* Separate user home page (e.g., "/") page from `/project` page to provide a better first use and login experience.
+* Display number of projects and portfolios on the new user home page.
+* Add delete trash icon to selected control list for users with permission to change system. Include a pop-up confirmation dialog.
+* Add popup conformation dialog box for deleting components from system's selected components.
+* Add autocomplete select box for adding controls to systems's selected controls page.
+
+**Developer changes**
+
+* New, better install process written in Python.
+* Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
+* Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
+* Now including all static files as part of distribution.
+* Adds Snyk Security Scans to CircleCi scanned items include python requirements files requirements.txt, requirements_util.txt, and requirements_mysql.txt.
+
+
+
+**Bug fixes**
+
+* Properly populate previously blank "Start project" modal that appeared on component library, component library detail, and some other pages.
+
 v0.9.2.2 (March 10, 2021)
----------------------
+-------------------------
 
 **Developer changes**
 
 * Ensure that the number of controls selected for a project reflect non-duplicate counts of that control.
+* Updates to how SSP generation works. Passing in a yaml file to provide metadata for title page. Updated docx template. Revisions to the 800-171 markdown template to remove colspans and support display of title page, toc, etc in DOCX. Edits to associated yaml file as well.
+
+**UI changes**
+* removed display of export options ("plain text", "markdown"), leaving docx and html.
 
 **Bug changes**
 
 * Fix Postgres crash error by setting the ProjectAsset Model content hash length to 128 characters.
 * Find the correct number of panels by adding implementation statement number when adding a statement to a component in the library.
+
 
 v0.9.2.1 (March 05, 2021)
 -------------------------
@@ -78,7 +119,7 @@ Project page displays mini-dashboard of compliance stats.
 
 **UI changes**
 
-* Improve page load times for listings with pagination and ordering for project listing and selected component listing. 
+* Improve page load times for listings with pagination and ordering for project listing and selected component listing.
 * Display projects in pages of 10 and selected components by 5.
 * Project page displays mini-dashboard of compliance stats.
     * Number of controls implemented out of count of controls.
@@ -462,7 +503,7 @@ v.0.9.1.47 (December 01, 2020)
 * Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
 
 v0.9.1.46.4 (November 25, 2020)
------------------------------	
+-----------------------------
 
 **UI changes**
 

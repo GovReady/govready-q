@@ -108,15 +108,11 @@ Your Compliance Projects
   <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#" class=" btn btn-success">Start a project</a>
 </div>
 
-{% if projects_access|length > 0 %}
 <h2 class="">Projects</h2>
+
+{% if projects_access|length < 1 %}
+<p>You do not currently have access to any projects.</p>
 {% else %}
-<h2>Welcome to GovReady-Q</h2>
-
-<p>Assess, test, and authorize together</p>
-{% endif %}
-
-{% if projects_access|length > 0 %}
 <p>You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}</p>
 
 <div class="container">
@@ -171,60 +167,9 @@ Your Compliance Projects
 
 {% if projects|length < 1 %}
 <!-- Display grid of options -->
-  <div class="row">
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon glyphicon-list-alt"></div>
-        </div>
-        <div class="col-md-9">
-          <h3><a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#">Start a project</a></h3>
-          <p>Projects are your organization's questionnaires, assessments and guides needed for authorizations.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon glyphicon-folder-open"></div>
-        </div>
-        <div class="col-md-9">
-          <h3><a href={% url 'new_portfolio' %}>Create a Portfolio</a></h3>
-          <p>Portfolios are a way to organize and manage related projects.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon-heart-empty"></div>
-        </div>
-        <div class="col-md-9">
-          <h3><a href="love-assessments">Fall in love with assessments</a></h3>
-          <p>Assessing, learning, and improving is one of the most powerful things about being  human.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon-duplicate"></div>
-        </div>
-        <div class="col-md-9">
-          <h3><a href="https://govready-q.readthedocs.org">Learn more about GovReady-Q</a></h3>
-          <p>Checkout our documentation to learn how to take full advantage of GovReady-Q.
-          </p>
-        </div>
-      </div>
-    </div>
-</div>
+  <div class="row" style="height: 600px;">
+    &nbsp;
+  </div>
 {% endif %}
 
 {% endblock %}

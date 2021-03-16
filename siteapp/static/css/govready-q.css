@@ -216,6 +216,11 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 .app-info-height { height: 24px; }
 .app-bottom-spacer { height:40px; }
 
+/* search */
+#searchbox { padding-left:28px; }
+#searchclear { position: absolute; right: 5px; top: 0; bottom: 0; height: 14px; margin: auto; font-size: 14px; cursor: pointer; color: #ccc; text-decoration: none; }
+#searchicon { position: absolute; left: 8px; top: 0; bottom: 0; height: 14px; margin: auto; font-size: 14px; cursor: default; color: #999; text-decoration: none; }
+
 /* project */
 /* leaving display tags within the html to prevent issues */
 
@@ -348,14 +353,26 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 
 .systems-element-name { font-size: 14pt; font-weight: bold;}
 .systems-poam { margin-top: 4px; }
-.systems-poam-glyphicon {  margin-top: 6px; }
+.systems-poam-glyphicon { margin-top: 6px; }
+.systems-control-catalog { font-size: 0.65em; color:#aaa; border:1px solid #aaa; border-radius: 12px; padding:0px 8px 0px 8px; }
 
 .pagination {
   white-space: nowrap;
 }
 
-.statement-text-block, .remark-text-block {
+.statement-column-headings {
+    background-color: #ddd;
+    margin: 0px 12px 12px 2px;
+    padding: 4px 4px 4px 0px;
+    font-weight: bold;
+  }
+
+.statement-text-block {
     border-left: 1px solid #ccc;
+    white-space: pre-line;
+  }
+
+.remark-text-block {
     white-space: pre-line;
   }
 
