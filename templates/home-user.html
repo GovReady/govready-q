@@ -42,7 +42,7 @@ h4.home { font-size:1.3em; font-weight:bold;}
 
 <div class="row">
 
-
+<!-- start module -->
 <div class="col-md-12 ">
    <div class="home-box home-hover">
      <div class="home-icon"><img src="{% static "img/icons/home-projects.png" %}" style="width:75px;"></div>
@@ -63,27 +63,7 @@ h4.home { font-size:1.3em; font-weight:bold;}
 
 
 
-
-<div class="col-md-12">
-  <div class="home-box home-hover">
-    <div class="home-icon"><img src="{% static "img/icons/home-components.png" %}" style="width:75px;"></div>
-
-{% if total_comps > 0 %}
-<h4 class="home">You've got {{ total_comps }} components!</h4>
-{% else %}
-<h4 class="home">You don't have any component yet!</h4>
-{% endif %}
- <p>Components are the building blocks of a System Security Plan. You can add additional components by importing OSCAL files or by <a id="component-new" href="{% url 'new_element' %}">creating a component</a> yourself.</p>
-
-<span class="home-view-link"><a href="{% url 'component_library' %}">View component library</a></span>
- </div>
-
-</div>
-
-
-
-
-
+<!-- start module -->
   <div class="col-md-12">
     <div class="home-box home-hover">
       <div class="home-icon"><img src="{% static "img/icons/home-portfolios.png" %}" style="width:75px;"></div>
@@ -105,7 +85,23 @@ h4.home { font-size:1.3em; font-weight:bold;}
 
 
 
+<!-- start module -->
+<div class="col-md-12">
+  <div class="home-box home-hover">
+    <div class="home-icon"><img src="{% static "img/icons/home-components.png" %}" style="width:75px;"></div>
+{% if total_comps > 0 %}
+<h4 class="home">You've got {{ total_comps }} components!</h4>
+{% else %}
+<h4 class="home">You don't have any component yet!</h4>
+{% endif %}
+ <p>Components are the building blocks of a System Security Plan. You can add additional components by importing OSCAL files or by <a id="component-new" href="{% url 'new_element' %}">creating a component</a> yourself.</p>
+<span class="home-view-link"><a href="{% url 'component_library' %}">View component library</a></span>
+ </div>
+</div>
 
+
+
+<!-- start module -->
   <div class="col-md-12">
     <div class="home-box home-hover">
       <div class="home-icon"><img src="{% static "img/icons/home-gears.png" %}" style="width:75px;"></div>
