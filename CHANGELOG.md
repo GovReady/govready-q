@@ -29,6 +29,8 @@ Include all required static files `siteapp/static` directory as part of GovReady
 * Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
 * Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
 * Now including all static files as part of distribution.
+* Adds Snyk Security Scans to CircleCi scanned items include python requirements files requirements.txt, requirements_util.txt, and requirements_mysql.txt.
+
 
 
 **Bug fixes**
