@@ -14,17 +14,20 @@ v999 (March XX, 2021)
 * Update 3-column statement layout to include column headings.
 * Conditionally display remarks in component library using HTML details tag.
 * Style searchbox on component library and component library detail page to use search glyphicon to indicate search and remove glyphicon within search box to clear search results.
+* Separate user home page (e.g., "/") page from `/project` page to provide a better first use and login experience.
+* Display number of projects and portfolios on the new user home page.
 * Add delete trash icon to selected control list for users with permission to change system. Include a pop-up confirmation dialog.
 * Add popup conformation dialog box for deleting components from system's selected components.
 * Add autocomplete select box for adding controls to systems's selected controls page.
 
-New, better install process written in Python.
-Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
-
 **Developer changes**
 
+* New, better install process written in Python.
+* Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
 * Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
-* Now including all static files pre-collected as part of distribution.
+* Now including all static files as part of distribution.
+* Adds Snyk Security Scans to CircleCi scanned items include python requirements files requirements.txt, requirements_util.txt, and requirements_mysql.txt.
+
 
 **Bug fixes**
 
