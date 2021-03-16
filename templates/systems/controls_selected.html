@@ -61,7 +61,8 @@
       {% for control in controls %}
         <div id="tab-content" class="row row-control">
             <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                <a href= {% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}>{{ control.get_flattened_oscal_control_as_dict.id_display|upper }} </a>{{ control.oscal_catalog_key }}
+                <a href= {% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}>{{ control.get_flattened_oscal_control_as_dict.id_display|upper }} </a>
+                <span class="systems-control-catalog pull-right">{{ control.oscal_catalog_key }}</span>
             </div>
             <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
                 {{ control.get_flattened_oscal_control_as_dict.title }}
