@@ -35,6 +35,7 @@ from system_settings.models import SystemSettings
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
 from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
 from .forms import ElementEditForm
+from siteapp.forms import PortfolioForm, ProjectForm
 from .models import *
 from .utilities import *
 from simple_history.utils import update_change_reason
@@ -397,7 +398,8 @@ def component_library(request):
     context = {
         "page_obj": page_obj,
         "import_form": ImportOSCALComponentForm(),
-        "total_comps": Element.objects.exclude(element_type='system').count()
+        "total_comps": Element.objects.exclude(element_type='system').count(),
+        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
 
     return render(request, "components/component_library.html", context)
@@ -413,6 +415,7 @@ def import_records(request):
 
     context = {
         "import_components": import_components,
+        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
 
     return render(request, "components/import_records.html", context)
@@ -426,6 +429,7 @@ def import_record_details(request, import_record_id):
     context = {
         "import_record": import_record,
         "component_statements": component_statements,
+        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
     return render(request, "components/import_record_details.html", context)
 
@@ -900,6 +904,7 @@ def component_library_component(request, element_id):
             "impl_smts": impl_smts,
             "is_admin": request.user.is_superuser,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
         }
         return render(request, "components/element_detail_tabs.html", context)
 
@@ -947,7 +952,7 @@ def component_library_component(request, element_id):
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
-        # "project_form": ProjectForm(request.user),
+        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
     return render(request, "components/element_detail_tabs.html", context)
 

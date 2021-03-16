@@ -26,6 +26,10 @@ Include all required static files pre-collected in `static_root` directory as pa
 * Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
 * Now including all static files pre-collected as part of distribution.
 
+**Bug fixes**
+
+* Properly populate previously blank "Start project" modal that appeared on component library, component library detail, and some other pages.
+
 v0.9.2.2 (March 10, 2021)
 -------------------------
 
