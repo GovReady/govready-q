@@ -1,11 +1,15 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.3.0rc1 (March 13, 2021)
+v0.9.3.0rc1 (March 16, 2021)
 ----------------------------
 
 New, better install process written in Python.
 Include all required static files `siteapp/static` directory as part of GovReady-Q distribution.
+
+**Feature changes**
+
+* Add and delete controls from a system's selected controls.
 
 **UI changes**
 
@@ -15,12 +19,21 @@ Include all required static files `siteapp/static` directory as part of GovReady
 * Style searchbox on component library and component library detail page to use search glyphicon to indicate search and remove glyphicon within search box to clear search results.
 * Separate user home page (e.g., "/") page from `/project` page to provide a better first use and login experience.
 * Display number of projects and portfolios on the new user home page.
+* Add delete trash icon to selected control list for users with permission to change system. Include a pop-up confirmation dialog.
+* Add popup conformation dialog box for deleting components from system's selected components.
+* Add autocomplete select box for adding controls to systems's selected controls page.
 
 **Developer changes**
 
+* New, better install process written in Python.
+* Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
 * Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
 * Now including all static files as part of distribution.
 
+
+**Bug fixes**
+
+* Properly populate previously blank "Start project" modal that appeared on component library, component library detail, and some other pages.
 
 v0.9.2.2 (March 10, 2021)
 -------------------------

@@ -28,7 +28,7 @@
                         <td class="col-xs-1 col-sm-1 col-md-1">{{ smt_record.history_id }}</td>
                         <td class="col-xs-2 col-sm-2 col-md-2">{{ smt_record.history_user }}</td>
                         <td class="col-xs-2 col-sm-2 col-md-2">{{ smt_record.history_date }}{{ smt_record.body|length }}{{ smt_record.history_change_reason|length }}</td>
-                    {% if  smt_record.body|length <= 10  or smt_record.history_change_reason|length <= 10 %}
+                    {% if  smt_record.body|length <= 10 %}
                         <td class="col-xs-2 col-sm-2 col-md-2">{{ smt_record.body }}</td>
                         <td class="col-xs-2 col-sm-2 col-md-2">{{ smt_record.history_change_reason }}</td>
                     {% else %}

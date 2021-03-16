@@ -26,7 +26,6 @@
                 <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 pull-right">
                     <form id="add_component" class="form-inline" method="post" action="{%  url 'add_system_component' system_id=system.id %}">
                     {% csrf_token %}
-                    <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
                         <div class="form-group">
                             <label for="component">Add component</label>&nbsp;&nbsp;
                             <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
@@ -39,7 +38,6 @@
                                 {% endfor %}
                             </select>
                         </div>
-                    </div>
                 </form>
             </div>
         </div>
@@ -60,18 +58,20 @@
                     {% endwith %}
 
                     {% get_obj_perms request.user for system as "system_perms" %}
-                    {% if "view_system" in system_perms %}
+                    {% if "change_system" in system_perms %}
                         <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 pull-right">
-                            <a href="{% url 'system_element_remove' system_id=system.id element_id=component.id %}"><small><span class="glyphicon glyphicon-trash" title="remove component"></span></small></a>
+                            <a href="{% url 'system_element_remove' system_id=system.id element_id=component.id %}">
+                              <small>
+                              <span class="glyphicon glyphicon-trash" title="remove component"></span>
+                              </small>
+                          </a>
                         </div>
                     {% endif %}
-
                     </div>
             {% endfor %}
-
-            <div id="tab-content" class="row row-control" style="">
-                {% include 'components/paginate_comp.html' with system_elements=page_obj %}
-            </div>
+    </div>
+    <div>
+        {% include 'components/paginate_comp.html' with system_elements=page_obj %}
     </div>
 {% endblock %}
 
@@ -83,6 +83,15 @@
   $(document).ready(function() {
     $('#producer_element_id').select2();
   });
+
+  // Confirm deletion of component
+  function confirm_cmpt_rm(cmpt_rm_url) {
+    var result = confirm('Remove component and related controls from system?\nAny customizations to component\'s statements will be lost.');
+      if (result) {
+        // Pass - allow click to propegate and follow to href target
+        window.location.href = cmpt_rm_url;
+      }
+    }
 </script>
 
 {% endblock %}
