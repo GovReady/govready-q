@@ -60,7 +60,11 @@ def home_user(request):
         "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
         "projects_access": Project.get_projects_with_read_priv(request.user, excludes={"contained_in_folders": None}),
         "import_project_form": ImportProjectForm(),
+        "projects": Project.get_projects_with_read_priv(
+            request.user,
+            excludes={ "contained_in_folders": None }),
         "portfolios": request.user.portfolio_list(),
+        "total_comps": Element.objects.exclude(element_type='system').count(),
     })
 
 def homepage(request):
