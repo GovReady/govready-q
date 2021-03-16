@@ -9,88 +9,18 @@ Your Compliance Projects
 
 {% block head %}
 <style>
-  .btn .glyphicon { margin-right: 6px; }
-  .btn.btn-success .glyphicon { color: #FFF; }
 
-  .lifecycle {
-    margin-bottom: 30px;
-  }
 
-  .lifecycle h2 {
-    margin: 0 0 1em 0;
-  }
+h2.home { font-size:2em; margin-bottom:2em; }
+h4.home { font-size:1.3em; font-weight:bold;}
+.home-box { border:1px solid #D9D9D9; padding:1.5em; border-radius: 8px; display:block; margin-bottom:2em;}
 
-  .lifecycle .stage {
-    margin: 0 -10px;
-    padding: 10px;
-    background-color: rgb(247,247,247);
-    border-radius: 5px;
-    max-width: 530px; /* so individual cards don't stretch across whole page */
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
-  }
+.home-icon { float:left; width:100px; height:150px;}
+.home-list li { margin-left: 125px; }
+.home-view-link { display:block; text-align:right; margin-top:2.5em;}
 
-  .lifecycle .stage h3 {
-    color: black;
-    margin: 5px 0 0 0;
-    text-align: center;
-  }
-
-  .lifecycle .stage .stage-subhead {
-    text-align: center;
-    margin-bottom: 15px;
-  }
-
-  .project {
-    background-color: white;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 3px;
-    border-bottom: 1px solid rgb(204, 204, 204);
-  }
-
-  .project-image {
-    width: 20px;
-    float: left;
-    margin: 4px 0 5px 8px;
-  }
-
-  .project-text {
-  }
-
-  .project-text h4 {
-    margin: 0;
-    font-weight: bold;
-    font-size: inherit;
-  }
-
-  .project-text > * {
-    margin: .5em 0 0 0;
-    font-size: 13px;
-  }
-
-  h1.mini {
-    font-size: 16px;
-    font-family: Hind, sans-serif;
-    line-height: 22px;
-    color: rgba(51, 51, 51, .8);
-    padding: 0px 0px 0px 0px;
-    margin: 0px 0px 0px 0px;
-  }
-
-  .luna-box {
-    border: 1px solid rgb(210, 210, 210);
-    min-height: 160px;
-    margin-top: 30px;
-    font-size: .8em;
-    border-radius: 4px;
-    padding: 20px 20px 0px 0px;
-  }
-
-  .luna-box div.glyphicon {
-    font-size:3em;
-
-    margin:30px 0px 0px 40px;
-  }
+.home-hover { background-color: #FFFFFF; }
+.home-hover:hover { background-color: #F2F2F2; }
 
 </style>
 {% endblock %}
@@ -99,74 +29,124 @@ Your Compliance Projects
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-
+{% load static %}
 <div class="projects-top">
 
 <div class="container">
 
 <div class="project-main">
-  <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#" class=" btn btn-success">Start a project</a>
+<!--  <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#" class=" btn btn-success">Start a project</a>-->
 </div>
 
-<h2>Welcome to GovReady-Q</h2>
+<h2 class="home">Welcome to your Governance, Risk Management, and Compliance tool</h2>
 
-<p>Assess, test, and authorize together</p>
+<div class="row">
+
+
+<div class="col-md-12 ">
+   <div class="home-box home-hover">
+     <div class="home-icon"><img src="{% static "img/icons/home-projects.png" %}" style="width:75px;"></div>
+{% if projects_access|length < 0 %}
+<h4 class="home">You do not currently have access to any projects.</h4>
+{% else %}
+<h4 class="home">You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}</h4>
+{% endif %}
+<p>Projects are your organization's questionnaires, assessments and guides needed for authorizations.</p>
+<ol class="home-list">
+{% for project in projects %}
+<li><a href="{{project.get_absolute_url}}" class="projects-link">{{project.title}}</a></li>
+{% endfor %}
+</ol>
+<span class="home-view-link"><a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#">Start a new project</a></span>
+</div>
+</div>
+
+
+
+
+<div class="col-md-12">
+  <div class="home-box home-hover">
+    <div class="home-icon"><img src="{% static "img/icons/home-components.png" %}" style="width:75px;"></div>
+
+{% if total_comps > 0 %}
+<h4 class="home">You've got {{ total_comps }} components!</h4>
+{% else %}
+<h4 class="home">You don't have any component yet!</h4>
+{% endif %}
+ <p>Components are the building blocks of a System Security Plan. You can add additional components by importing OSCAL files or by <a id="component-new" href="{% url 'new_element' %}">creating a component</a> yourself.</p>
+
+<span class="home-view-link"><a href="{% url 'component_library' %}">View component library</a></span>
+ </div>
+
+</div>
+
+
+
+
+
+  <div class="col-md-12">
+    <div class="home-box home-hover">
+      <div class="home-icon"><img src="{% static "img/icons/home-portfolios.png" %}" style="width:75px;"></div>
+   {% if portfolios|length < 1 %}
+   <h4 class="home">You do not currently have access to any portfolios.</h4>
+   {% else %}
+   <h4 class="home">You have access to {{ portfolios|length }} portfolio{{ portfolios|pluralize }}</h4>
+   {% endif %}
+   <p>Portfolios are a way to organize and manage related projects. The owners of the portfolio can manage portfolio members. </p>
+
+  <ol class="home-list">
+    {% for portfolio in portfolios %}
+    <li><a href={% url 'portfolio_projects' pk=portfolio.id %} id="portfolio_{{portfolio.title}}" class="portfolio-project-link">{{portfolio.title}}</a></li>
+      {% endfor %}
+  </ol>
+<span class="home-view-link"><a id="new-portfolio" href="/portfolios/new">Create a new portfolio</a></span>
+   </div>
+  </div>
+
+
+
+
+  <div class="col-md-12">
+    <div class="home-box home-hover">
+      <div class="home-icon"><img src="{% static "img/icons/home-gears.png" %}" style="width:75px;"></div>
+    <h4 class="home">Get to know GovReady-Q</h4>
+<p>Check out our documentation to learn how to take full advantage of the GovReady-Q GRC tool.</p>
+      <span class="home-view-link"><a href="https://govready-q.readthedocs.org" target="_new">View the documentation</a></span>
+         </div>
+
+        </div>
+
+<!-- This is not yet operational (it will replace the "govready documentation" box eventually)...
+  <div class="col-md-6">
+    <div class="home-box home-hover">
+      <div class="home-icon"><img src="{% static "img/icons/home-catalogs.png" %}" style="width:75px;"></div>
+   {% if catalogs_access|length < 1 %}
+   <h4 class="home">You do not currently have access to any catalogs.</h4>
+   {% else %}
+   <h4 class="home">You have access to {{ catalogs|length }} catalog{{ catalogs|pluralize }}</h4>
+   {% endif %}
+   <p>Catalogs provide specific guidance for implementing security controls.</p>
+
+   <ol class="home-list">
+   <li>Control catalog here</li>
+   </ol>
+<span class="home-view-link"><a href="#">View the control catalog</a></span>
+   </div>
+
+  </div>
+-->
+</div>
+
+
+
+
+
+
+
+
+
 
 <!-- Display grid of options -->
-  <div class="row">
 
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon glyphicon-list-alt"></div>
-        </div>
-        <div class="col-md-9">
-
-          <h3><a id="new-project" href="/projects">You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}</a></h3>
-          <p>Projects are your organization's questionnaires, assessments and guides needed for authorizations.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon glyphicon-folder-open"></div>
-        </div>
-        <div class="col-md-9">
-          <h3><a href="/portfolios">You have access to {{ portfolios|length }} portfolio{{ portfolios|pluralize }}</a></h3>
-          <p>Portfolios are a way to organize and manage related projects.</p>
-          <p><a href={% url 'new_portfolio' %}>Create a Portfolio</a></p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon-heart-empty"></div>
-        </div>
-        <div class="col-md-9">
-          <h3><a href="love-assessments">Fall in love with assessments</a></h3>
-          <p>Assessing, learning, and improving is one of the most powerful things about being  human.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon-duplicate"></div>
-        </div>
-        <div class="col-md-9">
-          <h3><a href="https://govready-q.readthedocs.org">Learn more about GovReady-Q</a></h3>
-          <p>Checkout our documentation to learn how to take full advantage of GovReady-Q.
-          </p>
-        </div>
-      </div>
-    </div>
-</div>
 
 {% endblock %}
