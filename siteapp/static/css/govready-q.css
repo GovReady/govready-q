@@ -51,8 +51,16 @@ h3 { font-size: 18px; }
 .btn.btn-sm { font-size: 12px; }
 .btn.btn-xs { font-size: 12px; }
 
-
-
+/* user home page */
+h2.home { font-size:2em; margin-bottom:2em; }
+h4.home { font-size:1.3em; font-weight:bold;}
+.home-box { border:1px solid #D9D9D9; padding:1.5em; border-radius: 8px; display:block; margin-bottom:2em; min-height:225px;}
+.home-icon { float:left; width:100px; height:150px;}
+.home-list li { margin-left: 125px; margin-bottom:.7em;}
+.home-view-link { display:block; text-align:right; margin-top:2.5em;}
+.home-hover { background-color: #FFFFFF; }
+.home-hover:hover { background-color: #F2F2F2; }
+/* end user home page */
 
 footer { margin-top:60px;
   font-size: .75em;
