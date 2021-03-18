@@ -213,6 +213,7 @@ class Element(auto_prefetch.Model):
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
     description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=True, null=True)
     element_type = models.CharField(max_length=150, help_text="Component type", unique=False, blank=True, null=True)
+    roles = models.ManyToManyField('ElementRole', related_name='elements', blank=True, help_text="Roles assigned to the Element")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
@@ -399,6 +400,19 @@ class ElementControl(auto_prefetch.Model):
     #     impl_smt = {"sid": "impl_smt sid", "body": "This is the statement itself"}
     #     # Error checking
     #     return impl_smt
+
+class ElementRole(auto_prefetch.Model):
+    role = models.CharField(max_length=250, help_text="Common name or acronym of the role", unique=True, blank=False, null=False)
+    description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=False, null=False)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    def __str__(self):
+        return "'%s id=%d'" % (self.role, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "'%s id=%d'" % (self.role, self.id)
 
 class System(auto_prefetch.Model):
     root_element = auto_prefetch.ForeignKey(Element, related_name="system", on_delete=models.CASCADE, help_text="The Element that is this System. Element must be type [Application, General Support System]")
