@@ -1,0 +1,6 @@
+{
+ "debug": true,
+ "govready-url": "http://localhost:8000",
+ "secret-key": "0jmcmird^2oc6k$v*x0$1&r=2&6fhij7!ez9r@xn_+(vc%@rka",
+ "static": "static_root"
+}
