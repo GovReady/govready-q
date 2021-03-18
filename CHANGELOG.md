@@ -13,6 +13,13 @@ Add "roles" to identify, organize, and process system elements (e.g., components
 * Support assigning "roles" to elements.
 * Use new "actions" and "roles" functionality to enable question answers to add/delete components from selected components of a system.
 
+**UI changes**
+
+* Renamed "Component Library" to "Component Catalog" in nav bar.
+* Rename "App Library" to "Template Library" in nav bar.
+* Add "Project Home" button to action button ribbon.
+* Top of action button ribbon button order now: "Project Home", "Controls", "Components".
+
 **Developer changes**
 
 The add action capability is supported by new `actions` item within each defined question.
