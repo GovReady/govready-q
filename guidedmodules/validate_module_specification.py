@@ -98,6 +98,7 @@ def validate_document(doc, error_message_name, app):
         # is YAML's standard end-of-stream marker. But PyYAML doesn't
         # have a way to read just up to the "...", so we handle that
         # ourselves.
+        blob = blob.replace("\r\n", "\n")  # fixes Windows compatibility issues
         sep = "\n...\n"
         if sep not in blob:
             raise ValidationError(error_message_name, "File does not contain a line with just '...'.")

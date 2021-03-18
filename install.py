@@ -66,6 +66,7 @@ def init_argparse():
     parser.add_argument('--timeout', '-t', type=int, default=120, help='seconds to allow external programs to run (default=120)')
     parser.add_argument('--user', '-u', action='store_true', help='do pip install with --user flag')
     parser.add_argument('--verbose', '-v', action='count', default=0, help='output more information')
+    parser.add_argument('--docker', '-d', action='store_true', help='runs with docker installation')
     return parser
 
 ################################################################
@@ -131,6 +132,10 @@ def main():
         argparser = init_argparse();
         args = argparser.parse_args();
 
+        python_manage = ['./manage.py']
+        if args.docker:
+            python_manage = ["python3", "manage.py"]
+        
         print("Testing environment...\n")
 
         # Print machine information
@@ -160,18 +165,19 @@ def main():
         print(SPACER)
 
         # Check if inside a virtual environment
-        print("Check for virtual Python environment.")
-        if sys.prefix != sys.base_prefix:
-            print("+ Installer is running inside a virtual Python environment.")
-        else:
-            print("! Installer is not running inside a virtual Python environment.")
-            print("It is STRONGLY encouraged to run GovReady-Q inside a Python virtual environment.")
-            if args.non_interactive:
-                reply = ''
+        if not args.docker:
+            print("Check for virtual Python environment.")
+            if sys.prefix != sys.base_prefix:
+                print("+ Installer is running inside a virtual Python environment.")
             else:
-                reply = input("Continue install outside of virtual environment (y/n)? ")
-            if len(reply) == 0 or reply[0].lower() != "y":
-                raise HaltedError("Installer is not running inside a virtual Python environment")
+                print("! Installer is not running inside a virtual Python environment.")
+                print("It is STRONGLY encouraged to run GovReady-Q inside a Python virtual environment.")
+                if args.non_interactive:
+                    reply = ''
+                else:
+                    reply = input("Continue install outside of virtual environment (y/n)? ")
+                if len(reply) == 0 or reply[0].lower() != "y":
+                    raise HaltedError("Installer is not running inside a virtual Python environment")
 
         # Print spacer
         print(SPACER)
@@ -223,13 +229,15 @@ def main():
         print("Installing Python libraries via pip (this may take a while)...")
         sys.stdout.flush()
         if args.user:
-            p = run_optionally_verbose(['pip3', 'install', '--user', '-r', 'requirements.txt'], args.timeout, args.verbose)
-            if p.returncode != 0:
-                raise ReturncodeNonZeroError(p)
+            pip_install_command = ['pip3', 'install', '--user', '-r', 'requirements.txt']
         else:
-            p = run_optionally_verbose(['pip3', 'install', '-r', 'requirements.txt'], args.timeout, args.verbose)
-            if p.returncode != 0:
-                raise ReturncodeNonZeroError(p)
+            pip_install_command = ['pip3', 'install', '-r', 'requirements.txt']
+        if args.docker:
+            pip_install_command.append('--ignore-installed')
+
+        p = run_optionally_verbose(pip_install_command, args.timeout, args.verbose)
+        if p.returncode != 0:
+            raise ReturncodeNonZeroError(p)
         print("... done installing Python libraries via pip.")
         sys.stdout.flush()
 
@@ -237,33 +245,18 @@ def main():
         print(SPACER)
 
         # # Retrieve static assets
-        # print("Fetching static resource files from Internet...")
-        # sys.stdout.flush()
-        # p = run_optionally_verbose(['./fetch-vendor-resources.sh'], args.timeout, args.verbose)
-        # if p.returncode != 0:
-        #     raise ReturncodeNonZeroError(p)
-        # print("... done fetching resource files from Internet.")
-        # sys.stdout.flush()
-
-        # # Print spacer
-        # print(SPACER)
-
-        # Collect files into static directory
-        print("Collecting files into static directory...")
-        sys.stdout.flush()
-        if args.non_interactive:
-            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.timeout, args.verbose)
+        if args.docker:
+            print("Fetching static resource files from Internet...")
+            sys.stdout.flush()
+            p = run_optionally_verbose(['./fetch-vendor-resources.sh'], args.timeout, args.verbose)
             if p.returncode != 0:
                 raise ReturncodeNonZeroError(p)
-        else:
-            p = run_optionally_verbose(['./manage.py', 'collectstatic', '--no-input'], args.timeout, args.verbose)
-            if p.returncode != 0:
-                raise ReturncodeNonZeroError(p)
-        print("... done collecting files into static directory.")
-        sys.stdout.flush()
+            print("... done fetching resource files from Internet.")
+            sys.stdout.flush()
 
-        # Print spacer
-        print(SPACER)
+            # Print spacer
+            print(SPACER)
+
 
         # Create the local/environment.json file, if it is missing (it generally will be)
         # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
@@ -292,10 +285,10 @@ def main():
         # Configure database (migrate, load_modules)
         print("Initializing/migrating database...")
         sys.stdout.flush()
-        p = run_optionally_verbose(["./manage.py", "migrate"], args.timeout, args.verbose)
+        p = run_optionally_verbose([*python_manage, "migrate"], args.timeout, args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
-        p = run_optionally_verbose(["./manage.py", "load_modules"], args.timeout, args.verbose)
+        p = run_optionally_verbose([*python_manage, "load_modules"], args.timeout, args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
         print("... done initializing/migrating database.")
@@ -304,10 +297,27 @@ def main():
         # Print spacer
         print(SPACER)
 
+        # Collect files into static directory
+        print("Collecting files into static directory...")
+        sys.stdout.flush()
+        if args.non_interactive:
+            p = run_optionally_verbose([*python_manage, 'collectstatic', '--no-input'], args.timeout, args.verbose)
+            if p.returncode != 0:
+                raise ReturncodeNonZeroError(p)
+        else:
+            p = run_optionally_verbose([*python_manage, 'collectstatic', '--no-input'], args.timeout, args.verbose)
+            if p.returncode != 0:
+                raise ReturncodeNonZeroError(p)
+        print("... done collecting files into static directory.")
+        sys.stdout.flush()
+
+        # Print spacer
+        print(SPACER)
+
         # Run first_run non-interactively
         print("Setting up system and creating Administrator user if none exists...")
         sys.stdout.flush()
-        p = subprocess.run(["./manage.py", "first_run", "--non-interactive"], timeout=args.timeout, stdout=PIPE, stderr=PIPE)
+        p = subprocess.run([*python_manage, "first_run", "--non-interactive"], timeout=args.timeout, stdout=PIPE, stderr=PIPE)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
         if args.verbose:
@@ -335,7 +345,7 @@ def main():
         # Load GovReady sample SSP
         print("Setting up GovReady-Q sample project if none exists...")
         sys.stdout.flush()
-        p = run_optionally_verbose(["./manage.py", "load_govready_ssp"], args.timeout, args.verbose)
+        p = run_optionally_verbose([*python_manage, "load_govready_ssp"], args.timeout, args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
         print("... done setting up GovReady-Q sample project.")
