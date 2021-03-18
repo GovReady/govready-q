@@ -520,10 +520,10 @@ def save_answer(request, task, answered, context, __):
                             # Prepare message
                             if smts_added_count > 0:
                                 messages.add_message(request, messages.INFO,
-                                                 f'I\'ve added "{producer_element.name}" to the system and its {smts_added_count} control implementation statements to the system. You\'re welcome. :-)')
+                                                 f'I\'ve added "{producer_element.name}" and its {smts_added_count} control implementation statements to the system. You\'re welcome. :-)')
                             else:
                                 messages.add_message(request, messages.WARNING,
-                                                 f'Oops. I tried adding "{producer_element.name}" to the system, but the component added 0 controls.')
+                                                 f'Oops. I tried adding "{producer_element.name}" to the system, but no control implementation statements were found.')
 
                     # Delete elements matching role from the selected components of a system
                     if a_verb == "del_role":
