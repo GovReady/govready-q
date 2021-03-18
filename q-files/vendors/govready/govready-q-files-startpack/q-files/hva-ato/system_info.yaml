@@ -1,0 +1,228 @@
+id: system_info
+title: System Profile - Information
+internal:
+  snippets:
+  - snippet: |
+      System Info (internal > snippets > snippet)
+introduction:
+  format: markdown
+  template: Let's gather some initial information about your IT System.
+output:
+- id: system_info
+  format: markdown
+  title: System Information
+  placement: action-buttons
+  template: |2
+    <style>
+      table {
+        min-width: 450px;
+      }
+      td {
+        padding: 8px;
+      }
+    </style>
+    <div style="width: 650px; margin: auto; font-family: TimesNewRoman, Times, serif; ">
+    <div style="font-weight: bold;">
+      <p style="text-align: center;">
+        SYSTEM INFORMATION
+      </p>
+    </div>
+    <div>
+      <p>{{system_short_name}} is a {{system_type.text}} hosted in the {{system_hosting.text}} environment.
+      </p>
+      <p>
+        {{system_description}}
+      </p>
+    </div>
+    <div style="text-align: center;">
+      <table border=1 style="margin:auto; font-family: TimesNewRoman, Times, serif; text-align: center;">
+        <tr>
+          <td>Organization</td><td>{{system_org}}</td>
+        </tr>
+        <tr>
+          <td>System Owner</td><td>{{system_owner}}</td>
+        </tr>
+        <tr>
+          <td>Program Manager</td><td>{{system_pm}}</td>
+        </tr>
+      </table>
+    </div>
+    </div>
+questions:
+- id: system_name
+  title: System Name
+  prompt: What is the FULL name of your IT System?
+  type: text
+  help: Enter the full or official name, not acronym
+- id: system_short_name
+  title: System Short Name
+  prompt: |-
+    What is the system's nickname or abbreviation?
+    Great! The full name of IT System is "**{{system_name}}**." What about a short name,  acronym or nickname  for your IT System?
+  type: text
+- id: system_description
+  title: System Description
+  prompt: >-
+    General system description.
+    Describe what the system does and its general purpose to your organization. (This
+    is your main description of {% if system_short_name %} {{system_short_name}}{%
+    else %}your IT System {% endif %}. We'll get a more technical description later.)
+  type: longtext
+  tags:
+  - system_description
+- id: system_type
+  title: System Type
+  prompt: What is the type of system?
+  type: choice
+  choices:
+  - key: web_app
+    text: Web application
+  - key: mobile_app
+    text: Mobile application
+    help: Primarily mobile application with backend
+  - key: cots
+    text: COTS
+  - key: other
+    text: Other
+- id: system_hosting
+  title: System Hosting
+  prompt: Where will the system be hosted?
+  type: choice
+  choices:
+  - key: org_ds1
+    text: In an organization on premises data center
+  - key: aws
+    text: AWS Cloud
+    help: Amazon AWS Cloud
+  - key: azure
+    text: Azure
+    help: Microsoft Azure Cloud
+  - key: Google Cloud
+    text: Google Cloud Services
+  - key: Other Cloud
+    text: Other Cloud Service Provider
+- id: operational_system
+  title: Is Operational System
+  prompt: Do you plan to operate this system in production or to use production data
+    in development?
+  type: yesno
+- id: system_org
+  title: System Organization
+  prompt: Which business unit is responsible for the {{system_short_name}}?
+  type: text
+- id: system_owner
+  title: System Owner
+  prompt: Who is the System Owner for {{system_short_name}}?
+  type: text
+- id: system_pm
+  title: System PM
+  prompt: Who is the Program Manager (PM) for {{system_short_name}}?
+  type: text
+- id: system_admin_team
+  title: System Admin Team
+  prompt: What team will administer the system?
+  type: text
+  help: Systems in production typically have a team that administer it.
+  impute:
+  - condition: operational_system == "no"
+    value: ~
+- id: system_admin_short_name
+  title: System Admin Team Short Name
+  prompt: What is a short name or acronym used for the System Admin Team?
+  type: text
+  impute:
+  - condition: operational_system == "no"
+    value: ~
+- id: primary_agency_admin_site
+  title: Primary Agency Admin Site
+  prompt: Where is your System Admin Team based?
+  type: text
+  help: Name of the facility, location, or admin site
+  impute:
+  - condition: operational_system == "no"
+    value: ~
+- id: system_personal_data
+  title: System has personal data
+  prompt: >-
+    IMPORTANT: Does the IT System collect, store, or process Personally Identifiable Information (PII)?
+    Answer "Yes" if the {{system_name}} collects, stores, or processes Personally Identifiable Information (PII)
+    about individuals. Answer  "No" if the system contains only publicly available
+    information and no information about individuals.
+  type: yesno
+- id: system_data
+  title: System Data
+  prompt: >-
+    Describe the data your IT System collects, stores, or processes.
+    Describe in general terms the data that the {{system_name}} handles. Summarize
+    why the information is being collected or processed.
+    {% if system_personal_data == "yes" %}Be sure to summarize what kind of personal
+    data the system collects and why. {% endif %}
+  type: longtext
+- id: pta_needed
+  title: PTA Needed
+  prompt: |
+    We've added a PTA (Privacy Threshold Analysis) task for you.
+    Because {{system_name}} interacts with personal data, a PTA will need to be completed.
+    We've added a PTA to your tasks.
+  type: interstitial
+  impute:
+  - condition: system_personal_data == "no"
+    value: ~
+- id: other_plans
+  title: Other plans
+  prompt: |-
+    We've added these tasks for you because of your production plans:
+    * Test Plan
+    * Contingency Plan
+    Because {{system_name}} will either be in production or use production data
+    during development, you will need to complete a Test Plan and Contingency Plan.
+  type: interstitial
+  impute:
+  - condition: operational_system == "no"
+    value: ~
+- id: system_connection
+  title: Connection with another system?
+  prompt: >-
+    IMPORTANT: Does the IT System connect to a system outside of your organization?
+    Answer "Yes" if the {{system_name}} connects with another IT system in another organization.
+  type: yesno
+- id: mou_yes
+  title: Memorandum of Understanding
+  prompt: |-
+    We've added a 'Memorandum of Undestanding' because {{system_name}} connects to another organization's system.
+  type: interstitial
+  impute:
+  - condition: system_connection == "no"
+    value: ~
+- id: feedback_exists
+  title: Feedback or Other Information
+  prompt: Is there any information that you feel should be included in this assessment
+    that was not present?
+  type: yesno
+  help: Information that should be included but was not? Any thoughts on the form
+    itself?
+- id: feedback
+  title: Feedback
+  prompt: Please include your additional information here?
+  type: longtext
+  impute:
+  - condition: feedback_exists == "no"
+    value: ~
+- id: module_complete
+  title: Module Complete?
+  prompt: |-
+    Congratulations on reaching the end of this module! Here are some highlights:
+        System Name: "{{system_name}}"
+        Operational? "{{operational_system}}"
+        Has personal data? "{{system_personal_data}}"
+        System Description:
+        {{system_description}}
+    <h1><em>Mark this module as complete?</em></h1>
+    Selecting "Yes" will mark the module as finished.
+  type: choice
+  choices:
+  - key: complete
+    text: 'Yes'
+  ask-first:
+  - feedback_exists
+  - feedback

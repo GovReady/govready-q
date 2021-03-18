@@ -12,6 +12,7 @@ from copy import deepcopy
 from collections import OrderedDict
 import uuid
 
+from siteapp.enums.assets import AssetTypeEnum
 from .module_logic import ModuleAnswers, render_content
 from .answer_validation import validator
 from siteapp.models import User, Organization, Project, ProjectMembership
@@ -119,11 +120,11 @@ class AppVersion(models.Model):
     version_number = models.CharField(blank=True, null=True, max_length=128, help_text="The version number of the compliance app.")
     version_name = models.CharField(blank=True, null=True, max_length=128, help_text="The name of this version/release of the compliance app.")
 
-    input_files = models.ManyToManyField('guidedmodules.AppInput', help_text="The inputs linked to this pack.")
+    input_files = models.ManyToManyField('guidedmodules.AppInput', blank=True, help_text="The inputs linked to this pack.")
     input_paths = JSONField(
         help_text="A dictionary mapping file paths to the content_hashes of inputs included in the inputs field of this instance.",
         blank=True, null=True)
-    input_artifacts = models.ManyToManyField('controls.ImportRecord', related_name="import_records",
+    input_artifacts = models.ManyToManyField('controls.ImportRecord', related_name="import_records", blank=True,
                                              help_text="The objects created from this input.")
     trust_inputs = models.BooleanField(default=False, null=True,
                                        help_text="Are inputs trusted? Inputs include OSCAL components and statements that will be served on our domain.")
@@ -1196,7 +1197,7 @@ class Task(models.Model):
             "oscal_yaml": ("markdown_github", "md", "text/plain"),
             "oscal_xml": ("markdown_github", "md", "text/plain"),
             "docx": ("docx", "docx", "application/octet-stream"),
-            "odt": ("odt", "odt", "application/octet-stream"),
+            #"odt": ("odt", "odt", "application/octet-stream"),
         }
 
         if download_format not in format_opts:
@@ -1293,22 +1294,29 @@ class Task(models.Model):
 
         else:
             # Render to HTML and convert using pandoc.
-
-            # TODO: Currently this works with only one reference file;
-            # /assets/custom-reference.docx. We should be able to point to a
+            # /assets/system-reference.docx. We should be able to point to a
             # reference file in a Compliance App.
-            template = "assets/custom-reference.docx"
-
+            template = self.project.assets.get_default(asset_type=AssetTypeEnum.SSP_EXPORT,
+                                                       default_if_not_exist="assets/default-ssp-template.docx")
             # odt and some other formats cannot pipe to stdout, so we always
             # generate a temporary file.
             import tempfile, os.path, subprocess # nosec
             with tempfile.TemporaryDirectory() as tempdir:
                 # convert from HTML to something else, writing to a temporary file
                 outfn = os.path.join(tempdir, filename)
+                if not isinstance(template, str):
+                    template_path = os.path.join(tempdir, template.name.split('/')[-1])
+                    with open(template_path, 'wb+') as f:
+                        f.write(template.file.read())
+                    template = template_path
                 # Append '# nosec' to line below to tell Bandit to ignore the low risk problem
                 # with not specifying the entire path to pandoc.
+
+                # NOTE: we need to make the pandoc cmd flexible, so non-ssp don't use the ssp yaml file.
+                # Right now, all generated docx files will include the ssp yaml.
+
                 with subprocess.Popen(# nosec
-                    ["pandoc", "-f", "html", "--toc", "--toc-depth=4", "-s", "--reference-doc", template, "-t", pandoc_format, "-o", outfn],
+                    ["pandoc", "-f", "html", "-s", "--metadata-file=assets/ssp-cover.yaml", "--toc", "--toc-depth=2", "--reference-doc", template, "-t", pandoc_format, "-o", outfn],
                     stdin=subprocess.PIPE
                     ) as proc:
                     proc.communicate(
@@ -1319,7 +1327,6 @@ class Task(models.Model):
                 # return the content of the temporary file
                 with open(outfn, "rb") as f:
                     blob = f.read()
-
         return blob, filename, mime_type
 
     def render_snippet(self):

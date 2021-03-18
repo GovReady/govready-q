@@ -1,0 +1,77 @@
+id: mou_intro
+title: Memorandum of Understanding (Intro)
+
+questions:
+
+- id: q1
+  title: Overview
+  prompt: |
+    Memo Overview
+
+    The purpose of this module is to collect information regarding the connection of {{project.system_info.system_name}} with another external organization system.
+  type: interstitial
+
+- id: q2
+  title: External System
+  prompt: |
+    What is the name of the external system that {{project.system_info.system_name}} will connect to?
+  type: text
+
+- id: q3
+  title: External Organization
+  prompt: |
+    What is the name of the organization that manages {{q2}}?
+  type: text
+
+- id: q4
+  title: External System, Function
+  prompt: |
+    What function does {{q2}} serve in {{q3}}?
+  type: longtext
+
+- id: q5
+  title: External System, Location
+  prompt: |
+    Where is the system, {{q2}}, located within {{q3}}?
+  type: text
+
+- id: q6
+  title: External System, Description
+  prompt: |
+    Describe some of the other aspects of {{q2}}.
+
+    What kind of data does {{q2}} use? What is {{q2}}'s sensitivity level? What is {{q2}}'s classification level?
+  type: longtext
+
+- id: q7
+  title: Authority of Memorandum
+  prompt: |
+    Where does the authority of this memorandum derive from?
+
+  default: |
+    The authority for this agreement is based on PROCLAMATION issued by the SECRETARY OF ORGANIZATION on DATE OF PROCLAMATION. 
+  type: longtext
+
+- id: q8
+  title: Memorandum Background
+  prompt: |
+    What is the purpose, value, and background for connecting these two IT systems?
+
+  default: |
+    It is the intent of both parties to this agreement to interconnect the following information technology (IT) systems to exchange data between {{project.system_info.system_name}} and {{q2}}. {{project.system_info.system_org}} requires the use of {{q3}} {{q2}}'s database, and {{q3}} requires the use of {{project.system_info.system_org}} 's {{project.system_info.system_name}}'s database. The expected benefit of the interconnection is to expedite the processing of data associated with "Project X" within prescribed timelines.
+  type: longtext
+
+- id: q9
+  title: Superseding Document?
+  prompt: |
+    Does this Memorandum supersede a preexisting document regarding the interconnection of {{project.system_info.system_name}} and {{q2}}?
+  type: yesno
+
+- id: q10
+  title: Superseding Dcoument Title & Date
+  prompt: |
+    Please provide the title of the superseded document and the date it was published.
+  type: text
+
+
+

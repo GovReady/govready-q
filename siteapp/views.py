@@ -4,8 +4,9 @@ from datetime import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Permission
 from django.db import transaction
-from django.forms import ModelForm
+from django.forms import ModelForm, model_to_dict
 from django.http import (Http404, HttpResponse, HttpResponseForbidden,
                          HttpResponseNotAllowed, HttpResponseRedirect,
                          JsonResponse)
@@ -30,7 +31,8 @@ from system_settings.models import SystemSettings
 from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
-from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support
+from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, ProjectAsset
+from .forms import PortfolioSignupForm
 from .notifications_helpers import *
 
 import sys
@@ -44,14 +46,109 @@ structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
 # logger = logging.getLogger(__name__)
 
+LOGIN = "login"
+SIGNUP = "signup"
+
+def home_user(request):
+    # If the user is logged in, then redirect them to the projects page.
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect("/login")
+
+    return render(request, "home-user.html", {
+        "content": "some content",
+        "users": User.objects.all(),
+        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
+        "projects_access": Project.get_projects_with_read_priv(request.user, excludes={"contained_in_folders": None}),
+        "import_project_form": ImportProjectForm(),
+        "portfolios": request.user.portfolio_list(),
+    })
 
 def homepage(request):
-    # If the user is logged in, then redirect them to the projects page.
+
     if request.user.is_authenticated:
         return HttpResponseRedirect("/projects")
+    from allauth.account.forms import SignupForm, LoginForm
 
-    from .views_landing import homepage
-    return homepage(request)
+    portfolio_form = PortfolioSignupForm()
+    signup_form = SignupForm()
+    login_form = LoginForm()
+
+    # The allauth forms have 'autofocus' set on their widgets that draw the
+    # focus in a way that doesn't make sense here.
+    signup_form.fields['username'].widget.attrs.pop("autofocus", None)
+    login_form.fields['login'].widget.attrs.pop("autofocus", None)
+
+    if SIGNUP in request.path or request.POST.get("action") == SIGNUP:
+        signup_form = SignupForm(request.POST)
+        portfolio_form = PortfolioSignupForm(request.POST)
+        if (request.user.is_authenticated or signup_form.is_valid()) and portfolio_form.is_valid():
+            # Perform signup and new org creation, then redirect to main page
+            with transaction.atomic():
+                if not request.user.is_authenticated:
+                    # Create account.
+                    new_user = signup_form.save(request)
+                    # Add default permission, view AppSource
+                    new_user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
+                    new_user.save()
+
+                    # Log them in.
+                    from django.contrib.auth import authenticate, login
+                    user = authenticate(request, username=signup_form.cleaned_data['username'], password=signup_form.cleaned_data['password1'])
+                    if user is not None:
+                        login(request, user, 'django.contrib.auth.backends.ModelBackend')
+                    else:
+                        print("[ERROR] new_user '{}' did not authenticate after during account creation.".format(new_user.username))
+                        messages.error(request, "[ERROR] new_user '{}' did not authenticate during account creation. Account not created. Report error to System Administrator. {}".format(new_user.username, vars(new_user)))
+                        return HttpResponseRedirect("/")
+                else:
+                    user = request.user
+                if portfolio_form.is_valid():
+                    portfolio = portfolio_form.save()
+                    portfolio.assign_owner_permissions(request.user)
+                    logger.info(
+                        event="new_portfolio",
+                        object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+                        user={"id": request.user.id, "username": request.user.username}
+                    )
+                    logger.info(
+                        event="new_portfolio assign_owner_permissions",
+                        object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+                        receiving_user={"id": request.user.id, "username": request.user.username},
+                        user={"id": request.user.id, "username": request.user.username}
+                    )
+                # Send a message to site administrators.
+                from django.core.mail import mail_admins
+                def subvars(s):
+                    return s.format(
+                        portfolio=portfolio.title,
+                        username=user.username,
+                        email=user.email,
+                    )
+                mail_admins(
+                    subvars("New portfolio: {portfolio} (created by {email})"),
+                    subvars("A new portfolio has been registered!\n\nPortfolio\n------------\nName: {portfolio}\nRegistering User\n----------------\nUsername: {username}\nEmail: {email}"))
+
+                return HttpResponseRedirect("/")
+
+    elif LOGIN in request.path or request.POST.get("action") == LOGIN:
+        login_form = LoginForm(request.POST, request=request)
+        if login_form.is_valid():
+            login_form.login(request)
+            return HttpResponseRedirect('/') # reload
+
+    elif request.POST.get("action") == "logout" and request.user.is_authenticated:
+        from django.contrib.auth import logout
+        logout(request)
+        return HttpResponseRedirect('/') # reload
+
+    return render(request, "index.html", {
+        "hide_registration": SystemSettings.hide_registration,
+        "signup_form": signup_form,
+        "portfolio_form": portfolio_form,
+        "login_form": login_form,
+        "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
+    })
+
 
 def debug(request):
     # Raise Exception to see session information
@@ -562,11 +659,31 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         deployment.save()
         deployment = Deployment(name="Prod", description="Production environment deployment", system=system)
         deployment.save()
-        # Assign default control catalog
-        # Assign default control profile for org systems
-        # Assign default organization components for a system
-        # Assign default org params
 
+        # Assign default control catalog and control profile
+        # Use from App catalog settings
+        try:
+            # Get default catalog key
+            parameters = project.root_task.module.app.catalog_metadata['parameters']
+            catalog_key = [p for p in parameters if p['id'] == 'catalog_key'][0]['value']
+            # Get default profile/baseline
+            baseline_name = [p for p in parameters if p['id'] == 'baseline'][0]['value']
+            # Assign profile/baseline
+            assign_results = system.root_element.assign_baseline_controls(user, catalog_key, baseline_name)
+            # Log result if successful
+            if assign_results:
+                # Log start app / new project
+                logger.info(
+                    event="assign_baseline",
+                    object={"object": "system", "id": system.root_element.id, "title": system.root_element.name},
+                    baseline={"catalog_key": catalog_key, "baseline_name": baseline_name},
+                    user={"id": user.id, "username": user.username}
+                )
+        except:
+            # TODO catch error and return error message
+            print("[INFO] App could not assign catalog_key or profile/baseline.\n")
+
+        # Assign default organization components for a system
         if user.has_perm('change_system', system):
             # Get the components from the import records of the app version
             import_records = appver.input_artifacts.all()
@@ -579,6 +696,8 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
                 event="change_system permission_denied",
                 user={"id": user.id, "username": user.username}
             )
+
+        # TODO: Assign default org parameters
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
@@ -797,7 +916,7 @@ def project(request, project):
     # Calculate approximate compliance as degrees to display
     percent_compliant = 0
     if len(project.system.control_implementation_as_dict) > 0:
-        percent_compliant = project.system.controls_status_count['Implemented'] / len(project.system.control_implementation_as_dict)
+        percent_compliant = project.system.controls_status_count['Addressed'] / len(project.system.control_implementation_as_dict)
     # Need to reverse calculation for displaying as per styles in .piechart class
     approx_compliance_degrees = 365 - ( 365 * percent_compliant )
     if approx_compliance_degrees > 358:
@@ -2134,3 +2253,20 @@ def sso_logout(request):
     output = "You are logged out."
     html = "<html><body><pre>{}</pre></body></html>".format(output)
     return HttpResponse(html)
+
+
+# @project_admin_login_post_required
+def update_project_asset(request, project_id, asset_id):
+    try:
+        asset = ProjectAsset.objects.get(id=asset_id, project=project_id)
+    except ProjectAsset.DoesNotExist:\
+        return JsonResponse({ "status": "err", "message": "Asset not found" }, status=404)
+    data = request.POST.dict()
+    for key, value in data.items():
+        if hasattr(asset, key):
+            setattr(asset, key, value)
+    asset.save()
+    from django.core import serializers
+    import json
+    response_data = json.loads(serializers.serialize('json', [asset]))[0]
+    return JsonResponse({ "status": "ok", "data": response_data})

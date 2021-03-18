@@ -12,7 +12,8 @@ from .good_settings_helpers import signup_wrapper
 from .settings import *
 
 urlpatterns = [
-    url(r"^(?![\s\S]|login)$", views.homepage, name="homepage"),
+    url(r"^(?![\s\S])$", views.home_user, name="home_user"),
+    url(r"^login$", views.homepage, name="homepage"),
     url(r"^(privacy|terms-of-service|love-assessments)$", views.shared_static_pages, name="privacy_terms_love"),
 
     url(r'^api/v1/projects/(?P<project_id>\d+)/answers$', views_landing.project_api),
@@ -50,6 +51,8 @@ urlpatterns = [
     url(r'^projects/(\d+)/__import$', views.import_project_questionnaire, name="import_project_questionnaire"),
     url(r'^projects/(\d+)/__upgrade$', views.upgrade_project, name="upgrade_project"),
     url(r'^projects/(\d+)/__move$', views.move_project, name="move_project"),
+    url(r'^projects/(\d+)/assets/(\d+)/__update$', views.update_project_asset,
+        name="update_project_assets"),
     url(r'^projects/(\d+)/(?:[\w\-]+)()$', views.project), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/settings)$', views.project_settings, name="project_settings"),
     url(r'^projects/(\d+)/(?:[\w\-]+)(/startapps)$', views.project_start_apps), # must be last because regex matches some previous URLs

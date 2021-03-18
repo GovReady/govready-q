@@ -1059,13 +1059,13 @@ class HtmlAnswerRenderer:
                 # To get the correct order, get keys from question specification fields
                 for field in question.spec["fields"]:
                     value += "<th>{}</th>".format(html.escape(str(field["text"])))
-                value += "</tr>\n"
+                value += "</tr></thead>\n"
                 for item in datagrid_rows:
                     value += "<tr>"
                     # To get the correct order, get keys from question specification fields
                     for field in question.spec["fields"]:
                         value += "<td>{}</td>".format(html.escape(str(item[field["key"]])))
-                    value += "</tr>\n</thead>"
+                    value += "</tr>\n"
                 # value = html.escape(str(datagrid_rows))
                 value += "\n</table>"
             wrappertag = "div"

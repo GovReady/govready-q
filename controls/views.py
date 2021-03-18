@@ -7,11 +7,14 @@ from uuid import uuid4
 import rtyaml
 import shutil
 import operator
+from natsort import natsorted
+from django.db.models import Q
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError
 from django.db.models.functions import Lower
@@ -21,6 +24,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views import View
 from django.views.generic import ListView
+from django.urls import reverse
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from urllib.parse import quote
@@ -28,9 +32,10 @@ from guidedmodules.models import Task, Module, AppVersion, AppSource
 from siteapp.forms import ProjectForm
 from siteapp.models import Project
 from system_settings.models import SystemSettings
-# from .forms import ImportOSCALComponentForm
-# from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
-from .forms import *
+from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
+from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
+from .forms import ElementEditForm
+from siteapp.forms import PortfolioForm, ProjectForm
 from .models import *
 from .utilities import *
 from simple_history.utils import update_change_reason
@@ -42,6 +47,7 @@ from structlog.stdlib import LoggerFactory
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
+
 
 def index(request):
     """Index page for controls"""
@@ -174,6 +180,94 @@ def controls_selected(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
+def system_controls_add(request, system_id):
+    """Add a selected control to a system (e.g., selected controls)"""
+
+    # Get control values from request.POST
+    catalog_key = request.POST['catalog_key'].replace(" ","_") # Make sure catalog key has underscores instead of spaces
+    control_id = request.POST['control_id']
+
+    system = System.objects.get(id=system_id)
+    controls = system.root_element.controls.all()
+
+    # If the catalog key and control id combination returns a result than don't add to controls selected
+    if controls.filter(Q(oscal_catalog_key=catalog_key)).filter(Q(oscal_ctl_id=control_id)):
+        messages.add_message(request, messages.WARNING, f"Control {control_id.upper()} in catalog {catalog_key} is already in selected controls!")
+        # Log result
+        logger.warning(
+                event="change_system add_selected_control",
+                object={"object": "control", "id": control_id, "catalog": catalog_key},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+        return redirect(reverse('controls_selected', args=[system_id]))
+
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+
+        # Add ElementControl to system
+        system.add_control(catalog_key, control_id)
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"Control {control_id.upper()} added to selected controls.")
+
+    else:
+        # User does not have permission
+        # Log result
+        logger.info(
+                event="change_system add_selected_control permission_denied",
+                object={"object": "control", "id": control_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
+
+    response = redirect(reverse('controls_selected', args=[system_id]))
+    return response
+
+@login_required
+def system_control_remove(request, system_id, element_control_id):
+    """Remove a selected control from a system and delete/hide the related statements"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+
+        # Retrieve ElementControl
+        ec = ElementControl.objects.get(id=element_control_id)
+
+        # Delete the control implementation statements associated with this component
+        system.remove_control(element_control_id)
+        # result = element.statements_produced.filter(consumer_element=system.root_element).delete()
+        messages.add_message(request, messages.INFO, f"Removed control '{ec.oscal_ctl_id}' from system.")
+
+        # Log result
+        logger.info(
+                event="change_system remove_selected_control",
+                object={"object": "control", "id": element_control_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        # messages.add_message(request, messages.INFO, f"Removed control '{element_control_id}' from system.")
+
+    else:
+        # User does not have permission
+        # Log result
+        logger.info(
+                event="change_system remove_selected_control permission_denied",
+                object={"object": "control", "id": element_control_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
+
+    response = redirect(reverse('controls_selected', args=[system_id]))
+    return response
+
 @functools.lru_cache()
 def controls_updated(request, system_id):
     """Display System's statements by updated date in reverse chronological order"""
@@ -210,33 +304,37 @@ def controls_updated(request, system_id):
         # User does not have permission to this system
         raise Http404
 
-def rename_element(request,element_id):
-    """Update the component's name
+
+@login_required
+def edit_element(request, element_id):
+    """
+      Edit Element information as long as the name does not clash with a different element name
     Args:
         request ([HttpRequest]): The network request
     component_id ([int|str]): The id of the component
     Returns:
         [JsonResponse]: Either a ok status or an error
     """
-    try:
-        new_name = request.POST.get("name", "").strip() or None
-        new_description = request.POST.get("description", "").strip() or None
 
-        if Element.objects.filter(name=new_name).exists() is True:
-            return JsonResponse({ "status": "err", "message": "Name already in use"})
-            
-        element = get_object_or_404(Element, id=element_id)
-        element.name = new_name
-        element.description = new_description
-        element.save()
-        logger.info(
-            event="rename_element",
-            element={"id": element.id, "new_name": new_name, "new_description": new_description}
-        )
-        return JsonResponse({ "status": "ok" })
-    except:
-        import sys
-        return JsonResponse({ "status": "err", "message": sys.exc_info() })
+    # The original element(component)
+    ele_instance = get_object_or_404(Element, id=element_id)
+
+    if request.method == 'POST':
+        new_name = request.POST.get("name", "").strip() or None
+
+        # Check if the new component name is already in use and if the new name is different from the current name
+        if Element.objects.filter(name__iexact=new_name).exists() and new_name != ele_instance.name:
+            return JsonResponse({"status": "err", "message": "Name already in use"})
+
+        form = ElementEditForm(request.POST or None, instance=ele_instance)
+        if form.is_valid():
+            logger.info(
+                event="edit_element",
+                object={"object": "element", "id": form.instance.id, "name": form.instance.name},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            form.save()
+            return JsonResponse({"status": "ok"})
 
 class SelectedComponentsList(ListView):
     """
@@ -277,9 +375,31 @@ class SelectedComponentsList(ListView):
 def component_library(request):
     """Display the library of components"""
 
+    query = request.GET.get('search')
+    if query:
+        element_list = Element.objects.filter(name__icontains=query).exclude(element_type='system')
+    else:
+        element_list = Element.objects.all().exclude(element_type='system')
+
+    # Natural sorting on name
+    element_list = natsorted(element_list, key=lambda x: x.name)
+
+    # Pagination
+    ele_paginator = Paginator(element_list, 15)
+    page_number = request.GET.get('page')
+
+    try:
+        page_obj = ele_paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = ele_paginator.page(1)
+    except EmptyPage:
+        page_obj = ele_paginator.page(ele_paginator.num_pages)
+
     context = {
-        "elements": Element.objects.all().exclude(element_type='system').order_by('name'),
+        "page_obj": page_obj,
         "import_form": ImportOSCALComponentForm(),
+        "total_comps": Element.objects.exclude(element_type='system').count(),
+        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
 
     return render(request, "components/component_library.html", context)
@@ -295,6 +415,7 @@ def import_records(request):
 
     context = {
         "import_components": import_components,
+        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
 
     return render(request, "components/import_records.html", context)
@@ -308,6 +429,7 @@ def import_record_details(request, import_record_id):
     context = {
         "import_record": import_record,
         "component_statements": component_statements,
+        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
     return render(request, "components/import_record_details.html", context)
 
@@ -486,7 +608,7 @@ class ComponentImporter(object):
         else:
             if request is not None:
                 messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
-            logger.info(f"Invalid JSON. Component(s) not created.")
+                logger.info(f"Invalid JSON. Component(s) not created.")
             return False
 
     def create_import_record(self, import_name, components):
@@ -701,6 +823,46 @@ def system_element(request, system_id, element_id):
         return render(request, "systems/element_detail_tabs.html", context)
 
 @login_required
+def system_element_remove(request, system_id, element_id):
+    """Remove an element from a system and delete the controls it produces"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+
+        # Retrieve element
+        element = Element.objects.get(id=element_id)
+
+        # Delete the control implementation statements associated with this component
+        result = element.statements_produced.filter(consumer_element=system.root_element).delete()
+
+        # Log result
+        logger.info(
+                event="change_system remove_component",
+                object={"object": "component", "id": element.id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"Removed component '{element.name}' from system.")
+
+    else:
+        # User does not have permission
+        # Log result
+        logger.info(
+                event="change_system remove_component permission_denied",
+                object={"object": "component", "id": element_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
+
+    response = redirect(reverse('components_selected', args=[system_id]))
+    return response
+
+@login_required
 def new_element(request):
     """Form to create new system element (aka component)"""
 
@@ -727,10 +889,14 @@ def component_library_component(request, element_id):
 
     # Retrieve element
     element = Element.objects.get(id=element_id)
+    smt_query = request.GET.get('search')
 
-    # Retrieve impl_smts produced by element and consumed by system
-    # Get the impl_smts contributed by this component to system
-    impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
+    if smt_query:
+        impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type="control_implementation_prototype")
+    else:
+        # Retrieve impl_smts produced by element and consumed by system
+        # Get the impl_smts contributed by this component to system
+        impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
 
     if len(impl_smts) < 1:
         context = {
@@ -738,6 +904,7 @@ def component_library_component(request, element_id):
             "impl_smts": impl_smts,
             "is_admin": request.user.is_superuser,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
         }
         return render(request, "components/element_detail_tabs.html", context)
 
@@ -757,8 +924,25 @@ def component_library_component(request, element_id):
         oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
         opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
 
+    # Use natsort here to handle the sid that has letters and numbers
+    # (e.g. to put AC-14 after AC-2 whereas before it was putting AC-14 before AC-2)
+    # using the natsort package from pypi: https://pypi.org/project/natsort/
+    impl_smts = natsorted(impl_smts, key=lambda x: x.sid)
+
+    # Pagination
+    obj_paginator = Paginator(impl_smts, 10)
+    page_number = request.GET.get('page')
+
+    try:
+        page_obj = obj_paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = obj_paginator.page(1)
+    except EmptyPage:
+        page_obj = obj_paginator.page(obj_paginator.num_pages)
+
     # Return the system's element information
     context = {
+        "page_obj": page_obj,
         "element": element,
         "impl_smts": impl_smts,
         "catalog_controls": catalog_controls,
@@ -768,7 +952,7 @@ def component_library_component(request, element_id):
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
-        # "project_form": ProjectForm(request.user),
+        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
     return render(request, "components/element_detail_tabs.html", context)
 
@@ -789,17 +973,10 @@ def api_controls_select(request):
         cxs.extend(select_list)
     # Sort the accummulated list
     cxs.sort(key = operator.itemgetter('id', 'catalog_key_display'))
-    data = cxs
 
-    if True:
-        status = "ok"
-        message = "Sending list."
-        return JsonResponse( {"status": "success", "message": message, "data": {"controls": data} })
-    else:
-        status = "error"
-        message = "Could not generate controls list."
-        data = {}
-        return JsonResponse({"status": status, "message": message, "data": data})
+    status = "success"
+    message = "Sending list."
+    return JsonResponse( {"status": status, "message": message, "data": {"controls": cxs} })
 
 @login_required
 def component_library_component_copy(request, element_id):
@@ -808,9 +985,9 @@ def component_library_component_copy(request, element_id):
     # Retrieve element
     element = Element.objects.get(id=element_id)
     count = Element.objects.filter(uuid=element.uuid).count()
-    
+
     if count > 0:
-        e_copy = element.copy(name=element.name + " copy ("+str(count+1)+')') 
+        e_copy = element.copy(name=element.name + " copy ("+str(count+1)+')')
     else:
         e_copy = element.copy()
 
@@ -894,7 +1071,7 @@ def restore_to_history(request, smt_id, history_id):
 
     # Check permission
     raise_404_if_not_permitted_to_statement(request, smt, 'change_system')
-                        
+
     full_smt_history = None
     for query_key in request.POST:
         if "restore" in query_key:
@@ -1493,10 +1670,12 @@ def save_smt(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
+        print(form_dict)
+        smt_id = form_values['smt_id']
         # Updating or saving a new statement?
-        if len(form_values['smt_id']) > 0:
+        if len(smt_id) > 0:
             # Look up existing Statement object
-            statement = Statement.objects.get(pk=form_values['smt_id'])
+            statement = Statement.objects.get(pk=smt_id)
 
             # Check user permissions
             system = statement.consumer_element
@@ -1536,7 +1715,7 @@ def save_smt(request):
             )
             new_statement = True
             # Convert the human readable catalog name to proper catalog key, if needed
-            # from huma readable `NIST SP-800-53 rev4` to `NIST_SP-800-53_rev4`
+            # from human readable `NIST SP-800-53 rev4` to `NIST_SP-800-53_rev4`
             statement.sid_class = statement.sid_class.replace(" ","_")
 
         # Save Statement object
@@ -1586,11 +1765,12 @@ def save_smt(request):
                 statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
                 return JsonResponse({"status": "error", "message": statement_msg})
 
+        messages.add_message(request, messages.INFO, f"Statement {smt_id} Saved")
         # Retain only prototype statement if statement is created in the component library
         # A statement of type `control_implementation` should only exists if associated a consumer_element.
         # When the statement is created in the component library, no consuming_element will exist.
         # TODO
-        # - Delete the statement that created the statement prototyp
+        # - Delete the statement that created the statement prototype
         # - Skip the associating the statement with the system's root_element because we do not have a system identified
         statement_del_msg = ""
         if "form_source" in form_values and form_values['form_source'] == 'component_library':
@@ -1639,11 +1819,11 @@ def update_smt_prototype(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
-
-        statement = get_object_or_404(Statement, pk=form_values['smt_id'])
+        smt_id = form_values['smt_id']
+        statement = get_object_or_404(Statement, pk=smt_id)
 
         # Check permission
-        raise_404_if_not_permitted_to_modify_statement(request, statement)
+        raise_404_if_not_permitted_to_statement(request, statement)
 
         if statement is None:
             statement_msg = "The id for this statement is no longer valid in the database."
@@ -1702,9 +1882,9 @@ def delete_smt(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
-
+        smt_id = form_values['smt_id']
         # Delete statement?
-        statement = Statement.objects.get(pk=form_values['smt_id'])
+        statement = Statement.objects.get(pk=smt_id)
 
         # Check user permissions
         system = statement.consumer_element
@@ -2538,7 +2718,7 @@ def project_import(request, project_id):
     if request.method == 'POST':
         project_data = request.POST['json_content']
         # Need to get or create the app source by the id of the given app source
-        module_name = json.loads(project_data).get('project').get('module').get('key')
+        #module_name = json.loads(project_data).get('project').get('module').get('key')
         title = json.loads(project_data).get('project').get('title')
         system_root_element.name = title
         importcheck = False
@@ -2617,7 +2797,6 @@ def project_import(request, project_id):
                                            risk_rating_original = poam.get('risk_rating_original'), scheduled_completion_date = poam.get('scheduled_completion_date'),
                                            weakness_detection_source = poam.get('weakness_detection_source'), weakness_name = poam.get('weakness_name'),
                                            weakness_source_identifier = poam.get('weakness_source_identifier'), poam_group = poam.get('poam_group'))
-                poam.save()
                 poam_num += 1
                 logger.info(
                     event="Poam import",

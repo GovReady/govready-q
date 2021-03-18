@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import json
+import auto_prefetch
 from django.db import models
 from django.utils.functional import cached_property
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
@@ -8,7 +9,7 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_users_with_perms, remove_perm)
 from simple_history.models import HistoricalRecords
 from jsonfield import JSONField
-
+from natsort import natsorted
 from .oscal import Catalogs, Catalog
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
@@ -41,7 +42,7 @@ class SystemException(Exception):
     """Class for raising custom exceptions with Systems"""
     pass
 
-class Statement(models.Model):
+class Statement(auto_prefetch.Model):
     sid = models.CharField(max_length=100, help_text="Statement identifier such as OSCAL formatted Control ID", unique=False, blank=True, null=True)
     sid_class = models.CharField(max_length=200, help_text="Statement identifier 'class' such as 'NIST_SP-800-53_rev4' or other OSCAL catalog name Control ID.", unique=False, blank=True, null=True)
     pid = models.CharField(max_length=20, help_text="Statement part identifier such as 'h' or 'h.1' or other part key", unique=False, blank=True, null=True)
@@ -53,13 +54,13 @@ class Statement(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
-    parent = models.ForeignKey('self', help_text="Parent statement", related_name="children", on_delete=models.SET_NULL, blank=True, null=True)
-    prototype = models.ForeignKey('self', help_text="Prototype statement", related_name="instances", on_delete=models.SET_NULL, blank=True, null=True)
-    producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.CASCADE, blank=True, null=True, help_text="The element producing this statement.")
-    consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.CASCADE, blank=True, null=True, help_text="The element the statement is about.")
+    parent = auto_prefetch.ForeignKey('self', help_text="Parent statement", related_name="children", on_delete=models.SET_NULL, blank=True, null=True)
+    prototype = auto_prefetch.ForeignKey('self', help_text="Prototype statement", related_name="instances", on_delete=models.SET_NULL, blank=True, null=True)
+    producer_element = auto_prefetch.ForeignKey('Element', related_name='statements_produced', on_delete=models.CASCADE, blank=True, null=True, help_text="The element producing this statement.")
+    consumer_element = auto_prefetch.ForeignKey('Element', related_name='statements_consumed', on_delete=models.CASCADE, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
-    import_record = models.ForeignKey(ImportRecord, related_name="import_record_statements", on_delete=models.CASCADE,
+    import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_statements", on_delete=models.CASCADE,
                                       unique=False, blank=True, null=True, help_text="The Import Record which created this Statement.")
     history = HistoricalRecords(cascade_delete_history=True)
     class Meta:
@@ -207,15 +208,15 @@ class Statement(models.Model):
     def oscal_statement_id(self):
         return Statement._statement_id_from_control(self.sid, self.pid)
 
-class Element(models.Model):
+class Element(auto_prefetch.Model):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
-    description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=False, null=False)
+    description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=True, null=True)
     element_type = models.CharField(max_length=150, help_text="Component type", unique=False, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
-    import_record = models.ForeignKey(ImportRecord, related_name="import_record_elements", on_delete=models.CASCADE,
+    import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_elements", on_delete=models.CASCADE,
                                       unique=False, blank=True, null=True, help_text="The Import Record which created this Element.")
 
     # Notes
@@ -321,10 +322,13 @@ class Element(models.Model):
         """Return array of selectecd controls oscal ids"""
         # oscal_ids = self.controls.all()
         oscal_ctl_ids = [control.oscal_ctl_id for control in self.controls.all()]
+        # Sort
+        oscal_ctl_ids = natsorted(oscal_ctl_ids, key=str.casefold)
+
         return oscal_ctl_ids
 
-class ElementControl(models.Model):
-    element = models.ForeignKey(Element, related_name="controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which controls are associated.")
+class ElementControl(auto_prefetch.Model):
+    element = auto_prefetch.ForeignKey(Element, related_name="controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which controls are associated.")
     oscal_ctl_id = models.CharField(max_length=20, help_text="OSCAL formatted Control ID (e.g., au-2.3)", blank=True, null=True)
     oscal_catalog_key = models.CharField(max_length=100, help_text="Catalog key from which catalog file can be derived (e.g., 'NIST_SP-800-53_rev4')", blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -368,15 +372,22 @@ class ElementControl(models.Model):
         # For debugging.
         return "'%s id=%d'" % (self.oscal_ctl_id, self.id)
 
-    def get_controls_by_element(self, element):
-        query_set = self.objects.filter(element=element)
-        selected_controls = {}
-        for cl in query_set:
-            selected_controls[cl['oscal_ctl_id']] = {'oscal_ctl_id': cl['oscal_ctl_id'],
-                                                     'oscal_catalog_key': cl['oscal_catalog_key'],
-                                                     'uuid': cl['uuid']
-                                                     }
-        return selected_controls
+    # Commenting out get_controls_by_element in 0.9.1.53+ because it does
+    # not appear to be used in the code base.
+    # def get_controls_by_element(self, element):
+
+    #     # TODO: Is this method being used? Can it be deleted?
+    #     query_set = self.objects.filter(element=element)
+    #     selected_controls = {}
+    #     for cl in query_set:
+    #         selected_controls[cl['oscal_ctl_id']] = {'oscal_ctl_id': cl['oscal_ctl_id'],
+    #                                                  'oscal_catalog_key': cl['oscal_catalog_key'],
+    #                                                  'uuid': cl['uuid']
+    #                                                  }
+    #     # Sort
+    #     selected_controls = natsorted(selected_controls, key=lambda x: x.oscal_ctl_id.casefold)
+
+    #     return selected_controls
 
     def get_flattened_oscal_control_as_dict(self):
         cg = Catalog.GetInstance(catalog_key=self.oscal_catalog_key)
@@ -389,8 +400,8 @@ class ElementControl(models.Model):
     #     # Error checking
     #     return impl_smt
 
-class System(models.Model):
-    root_element = models.ForeignKey(Element, related_name="system", on_delete=models.CASCADE, help_text="The Element that is this System. Element must be type [Application, General Support System]")
+class System(auto_prefetch.Model):
+    root_element = auto_prefetch.ForeignKey(Element, related_name="system", on_delete=models.CASCADE, help_text="The Element that is this System. Element must be type [Application, General Support System]")
     fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=True, null=True)
 
     # Notes
@@ -433,6 +444,29 @@ class System(models.Model):
             return True
         except:
             return False
+
+    def add_control(self, catalog_key, control_id):
+         """Add ElementControl (e.g., selected control) to a system"""
+
+         control = ElementControl(element=self.root_element,
+                                  oscal_catalog_key=catalog_key,
+                                  oscal_ctl_id=control_id
+                                 )
+         control.save()
+         return control
+
+    def remove_control(self, control_id):
+        """Remove ElementControl (e.g., selected control) from a system"""
+        control = ElementControl.objects.get(pk=control_id)
+
+        # Delete Control Statements
+        self.root_element.statements_consumed.filter(statement_type="control_implementation",
+                                                     sid_class=control.oscal_catalog_key,
+                                                     sid=control.oscal_ctl_id
+                                                     ).delete()
+
+        control.delete()
+        return control
 
     @property
     def smts_common_controls_as_dict(self):
@@ -553,6 +587,9 @@ class System(models.Model):
             # Get the smts_control_implementations ordered by part, e.g. pid
             status_stats[status] = elm.statements_consumed.filter(statement_type="control_implementation", status=status).count()
         # TODO add index on statement status
+
+        # Get overall controls addressed (e.g., covered)
+        status_stats['Addressed'] = elm.statements_consumed.filter(statement_type="control_implementation").values('sid').distinct().count()
         return status_stats
 
     @cached_property
@@ -593,19 +630,19 @@ class CommonControlProvider(models.Model):
     def __str__(self):
         return self.name
 
-class CommonControl(models.Model):
+class CommonControl(auto_prefetch.Model):
     name = models.CharField(max_length=150, help_text="Name of the CommonControl", unique=False, blank=True, null=True)
     description = models.CharField(max_length=255, help_text="Brief description of the CommonControlProvider", unique=False)
     oscal_ctl_id = models.CharField(max_length=20, help_text="OSCAL formatted Control ID (e.g., au-2.3)", blank=True, null=True)
     legacy_imp_smt = models.TextField(help_text="Legacy large implementation statement", unique=False, blank=True, null=True,)
-    common_control_provider =  models.ForeignKey(CommonControlProvider, on_delete=models.CASCADE)
+    common_control_provider =  auto_prefetch.ForeignKey(CommonControlProvider, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
 
-class ElementCommonControl(models.Model):
-    element = models.ForeignKey(Element, related_name="common_controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which common controls are associated.")
-    common_control = models.ForeignKey(CommonControl, related_name="element_common_control", on_delete=models.CASCADE, help_text="The Common Control for this association.")
+class ElementCommonControl(auto_prefetch.Model):
+    element = auto_prefetch.ForeignKey(Element, related_name="common_controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which common controls are associated.")
+    common_control = auto_prefetch.ForeignKey(CommonControl, related_name="element_common_control", on_delete=models.CASCADE, help_text="The Common Control for this association.")
     oscal_ctl_id = models.CharField(max_length=20, help_text="OSCAL formatted Control ID (e.g., au-2.3)", blank=True, null=True)
     oscal_catalog_key = models.CharField(max_length=100, help_text="Catalog key from which catalog file can be derived (e.g., 'NIST_SP-800-53_rev4')", blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -762,13 +799,13 @@ class Poam(models.Model):
     # TODO:
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
-class Deployment(models.Model):
+class Deployment(auto_prefetch.Model):
     name = models.CharField(max_length=250, help_text="Name of the deployment", unique=False, blank=False, null=False)
     description = models.CharField(max_length=255, help_text="Brief description of the deployment", unique=False, blank=False, null=False)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for the deployment.")
-    system = models.ForeignKey('System', related_name='deployments', on_delete=models.CASCADE, blank=True, null=True, help_text="The system associated with the deployment")
+    system = auto_prefetch.ForeignKey('System', related_name='deployments', on_delete=models.CASCADE, blank=True, null=True, help_text="The system associated with the deployment")
     inventory_items = JSONField(blank=True, null=True,
         help_text="JSON object representing the inventory items in a deployment.")
     history = HistoricalRecords(cascade_delete_history=True)
@@ -792,14 +829,14 @@ class Deployment(models.Model):
     def get_absolute_url(self):
         return "/systems/%d/deployments" % (self.system.id)
 
-class SystemAssessmentResult(models.Model):
+class SystemAssessmentResult(auto_prefetch.Model):
     name = models.CharField(max_length=250, help_text="Name of the system assessment result", unique=False, blank=False, null=False)
     description = models.CharField(max_length=255, help_text="Brief description of the system assessment result", unique=False, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for the system assessment result.")
-    system = models.ForeignKey('System', related_name='system_assessment_result', on_delete=models.CASCADE, blank=True, null=True, help_text="The system associated with the system assessment result")
-    deployment = models.ForeignKey(Deployment, related_name="assessment_results",
+    system = auto_prefetch.ForeignKey('System', related_name='system_assessment_result', on_delete=models.CASCADE, blank=True, null=True, help_text="The system associated with the system assessment result")
+    deployment = auto_prefetch.ForeignKey(Deployment, related_name="assessment_results",
         unique=False, blank=True, null=True, on_delete=models.SET_NULL,
         help_text="The deployment associated with the assessment result.")
     assessment_results = JSONField(blank=True, null=True,
@@ -818,10 +855,10 @@ class SystemAssessmentResult(models.Model):
 #     statement = models.OneToOneField(Statement, related_name="assessment_result",
 #         unique=False, blank=True, null=True, on_delete=models.CASCADE,
 #         help_text="The assessment results details for this statement. Statement must be type 'assessment_result'.")
-#     deployment = models.ForeignKey(Deployment, related_name="assessment_results",
+#     deployment = auto_prefetch.ForeignKey(Deployment, related_name="assessment_results",
 #         unique=False, blank=True, null=True, on_delete=models.SET_NULL,
 #         help_text="The deployment associated with the assessment result.")
-#     # reporter = models.ForeignKey(Reporter, on_delete=models.CASCADE)
+#     # reporter = auto_prefetch.ForeignKey(Reporter, on_delete=models.CASCADE)
 #     # inventory_item_uuid = models.UUIDField(default=None, editable=True, unique=False, blank=True, null=True,
 #         # help_text="UUID of the inventory item.")
 #     # data = JSONField(blank=True, null=True,

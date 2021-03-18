@@ -1,14 +1,15 @@
-{% extends "base.html" %}
+{% extends "project-base.html" %}
 {% load humanize %}
 {% load guardian_tags %}
 {% load static %}
 {% load q %}
 
 {% block title %}
-{{ portfolio.title }} Component Detail
+  Component Detail
 {% endblock %}
 
 {% block head %}
+{{block.super}}
 {% include "controls/_style-controls.html" %}
 <style>
   .project-image {
@@ -28,9 +29,11 @@
   }
 
   #above-tab-content, #tab-content {
-    max-width: 950px;
+    max-width: 1250px;
     margin: auto;
   }
+
+  .container { width: 90%; }
 
   .control-text {
     white-space: pre-wrap;
@@ -81,29 +84,32 @@
     color: #000;
   }
 
+  .statement-text, .description-text { font-size: 0.8em; }
+
+  .control-id-text { font-weight: bold; }
+
+  #component-detail-content {
+    border-left:1px solid #ccc;
+    border-right:1px solid #ccc;
+    border-bottom:1px solid #ccc;
+    border-radius: 0px;
+    padding: 0px 0px 8px 12px;
+  }
+
 </style>
 {% endblock %}
 
-{% block contextbar %}{% endblock %}
+<!-- action buttons included from project-base.html -->
 
-{% block body %}
+<!-- authoring_tool_enabled included from project-base.html -->
+
+{% block body_content %}
   <div class="systems-top">
-      <!-- <div class="container"> -->
-      <div class="row">
-          <div id="above-tab-content" class="row">
-              <!-- Page Title-->
-              <div class="systems-title">
-                  <h2 class="control-heading">
-                      <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> &gt; <a href="/systems/{{system.id}}/components/selected" class="systems-link">Selected Components</a>
-                  </h2>
-              </div>
-          </div>
-      </div><!--/row-->
 
       <div id="above-tab-content" class="row">
         <div class="systems-control-heading">
             <h2 class="control-heading">
-                {{ element.name }}
+                System Component: {{ element.name }}
             </h2>
             <h2 class="control-heading" style="">
                 &nbsp;<!-- <small style="color: #888;">{{ catalog.catalog_key_display }}</small> -->
@@ -111,12 +117,11 @@
         </div>
       </div>
 
-
+      <!-- Tab panels -->
       <div id="tab-content" class="row">
         <!-- Nav tabs -->
         <ul class="nav nav-tabs" role="tablist">
-          <li role="presentation" class="active"><a href="#component" aria-controls="component" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Component</a></li>
-          <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
+          <li role="presentation" class="active"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Control Implementation Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
             <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
           {% if enable_experimental_opencontrol %}
           <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
@@ -124,45 +129,55 @@
         </ul>
 
             <!-- Tab panels -->
-            <div class="tab-content">
-              <!-- Tab panel: component -->
-              <div role="tabpanel" class="tab-pane active" id="component">
-                  <div class="row">
-                      <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10">
-                          <h3>Description</h3>
-                          {% if element.description %}
-                            {{ element.description }}
-                          {% else %}
-                            No description exists for this component.
-                          {% endif %}
-                      </div>
-                      <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                          <div>&nbsp;</div>
-                      </div>
-                  </div>
-              </div>
-              <!-- Tab panel: combined -->
-              <!-- Combined control content does not appear on this page -->
+            <div id="component-detail-content" class="tab-content">
               <!-- Tab panel: component_controls -->
-              <div role="tabpanel" class="tab-pane" id="component_controls">
-                  <div id="control-description" class="control-text"><h3>Component Implementations Statements</h3></div>
-                  <div id="smt-list" class="systems-smt-list">
+              <div role="tabpanel" class="tab-pane active" id="component_controls">
+
+                  <div class="row">
+                    <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10 description-text">
+                      <h3>Component Description</h3>
+                      {% if element.description %}
+                        {{ element.description }}
+                      {% else %}
+                        No description exists for this component.
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div id="control-description" class="control-text"><h3>{{ impl_smts|length }} associated Component Control Implementations Statements</h3></div>
+
+                  <div class="row statement-column-headings" style="">
+                    <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Control</div>
+                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">Statement</div>
+                    <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Action</div>
+                  </div>
+
+                    <div id="smt-list" class="" style="width: 100%">
                       <!-- Loop through existing component-control statements -->
                       {% for smt in impl_smts %}
-                          <div id="panel-{{ forloop.counter }}" class="panel panel-default">
+                          <div id="panel-{{ forloop.counter }}" class="">
                               <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
+
+                                <div class="row statement-text">
+                                  <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                                    <span id="producer_element-{{ forloop.counter }}-control" class="control-id-text">{{ smt.sid|upper }} {% if smt.pid %}{{ smt.pid }}.{% endif %}</span>
+                                  </div>
+                                  <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">{{ smt.body }}</div><div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 remark-text-block"><a role="button" class="glyphicon glyphicon-pencil pull-right" style="color: #aaa;"  data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body"></a>{% if smt.remarks %}<details><summary>Remarks</summary><div>{{ smt.remarks }}</div></details>{% endif %}</div></div>
+
                                   <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
-                                      <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">
-                                          <span id="producer_element-panel_num-control">{{ smt.sid|upper }}</span>&nbsp;
-                                          <div class="panel-heading-smt">Status: {% if smt.status != "" and smt.status is not None %}{{ smt.status }}{% else %}TBD{% endif %}</div>
-                                          {% if smt.pid is not None %}<div class="panel-heading-smt">{{ smt.pid }}.</div>{% endif %}
-                                          <div class="panel-heading-smt-body">{{ smt.body }}</div>
-                                      </a>
+                                    &nbsp;
                                   </h4>
                               </div>
                               <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
                                   <div class="panel-body">
                                       <div class="smt_block">
+
+                                        <div class="row statement-text">
+                                          <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                                            &nbsp;
+                                          </div>
+                                          <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-edit-text-block">
+
                                           <form id="smt_{{ forloop.counter }}" class="smt_form">
                                               <!-- Never change name of the producer element already associated with a statement -->
                                               <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
@@ -233,7 +248,7 @@
                                                   <label for="remarks">Remarks</label>
                                                   <textarea class="form-control systems-element-form-remarks" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
                                               </div>
-                                              <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
+
                                               <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
                                               <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
                                               <input type="hidden" id="sid_class" name="sid_class" value="{{ smt.sid_class }}">
@@ -247,21 +262,26 @@
                                                   <button type="button" name="history" value="history" class="btn btn-xs btn-primary" onclick="location.href='{% url 'statement_history' smt_id=smt.id %}'">History</button>
                                               </div>
                                           </form>
+
+                                          </div>
+
+                                        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                                          &nbsp;
+                                        </div>
+
+                                      </div>
+
                                       </div>
                                   </div>
                               </div>
                           </div>
                       {% endfor %}
-                  </div><!--/smt-list-->
-                  <!-- Add component statement-->
-                  <div>
-                      <h3><button type="submit" id="new_component_statement" class="small btn btn-md btn-success systems-element-button" onclick="add_smt()">Add component statement</button></h3>
-                  </div>
+                    </div><!--/smt-list-->
               </div>
 
               <!-- Tab panel: oscal -->
                 <div role="tabpanel" class="tab-pane" id="oscal">
-                  <p id="oscal_download" class="navbar-text navbar-right">
+                  <p id="oscal_download" class="navbar-text navbar-right" style="margin: 12px 12px 0px 0px;">
                     <a id="oscal_download_json_link"
                        class="navbar-link"
                        href="/systems/{{ system.id }}/component/{{ element.id }}/download/oscal/json">
@@ -288,19 +308,10 @@
   </div>
 </div>
 
-{{ block.super }}
 {% endblock %}
 
 {% block scripts %}
       <script>
-        // View combined implementation statement
-
-        // Adds statement form to page
-        function add_smt() {
-          var panel_num = $('.panel').length + 1
-          var smt_form = `{% include 'components/element_details_tabs_smtform.html' %}`.replace(/panel_num/g, panel_num);
-          $( "#smt-list" ).append(smt_form);
-        }
 
         function save_smt(smt_panel_num) {
           // Save a statement
@@ -350,7 +361,6 @@
 
           // Stop <form> submit
           return false;
-
         }; // /save_smt
 
         function delete_smt(smt_panel_num) {
@@ -390,14 +400,7 @@
               }
           }
         }
-      </script>
-      <script>
-        $( document ).ready(function() {
-            //console.log("document ready");
-        });
 
-      </script>
-      <script>
         function copy_smt_prototype(smt_panel_num) {
           // User wants to copy the certified statement locally
           // Copy the statement's prototype body text into statement body textarea
@@ -408,6 +411,12 @@
           // Update comparison
           $('#diff_comparison_' + smt_panel_num).text('Texts are identical.');
         }
+      </script>
+
+      <script>
+        $( document ).ready(function() {
+            //console.log("document ready");
+        });
       </script>
 
 {% endblock %}

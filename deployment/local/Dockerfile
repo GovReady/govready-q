@@ -33,13 +33,10 @@ WORKDIR /usr/src/app
 
 # Upgrade pip to version 20.1+ - IMPORTANT
 RUN python3 -m pip install --upgrade pip
+RUN pip3 install ipdb
 
 # install wkhtmltopdf for generating PDFs, thumbnails
 RUN apt-get -y install xvfb libfontconfig wkhtmltopdf
-
-# Copy in the Python module requirements and install them.
-COPY requirements.txt ./
-RUN pip3 install --no-cache-dir -r requirements.txt --ignore-installed
 
 # This directory must be present for the AppSource created by our
 # first_run script. The directory only has something in it if
