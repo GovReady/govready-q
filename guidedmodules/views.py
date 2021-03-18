@@ -259,7 +259,7 @@ def save_answer(request, task, answered, context, __):
         cleared = True
         skipped_reason = None
         unsure = False
-    
+
     elif request.POST.get("method") == "skip":
         # The question is being skipped, i.e. answered with a null value,
         # because the user doesn't know the answer, it doesn't apply to
@@ -364,7 +364,7 @@ def save_answer(request, task, answered, context, __):
                     raise ValueError("invalid task ID")
             if q.spec["type"] == "module" and len(answered_by_tasks) != 1:
                 raise ValueError("did not provide exactly one task ID")
-        
+
         value = None
         answered_by_file = None
 
@@ -425,6 +425,96 @@ def save_answer(request, task, answered, context, __):
             "answer_value": value,
         }
     )
+
+    # Process any actions from the question
+    if 'actions' in q.spec:
+        print("******************\nReady to process actions")
+        print("answer value:", value)
+        print(q.spec['actions'])
+        for action in q.spec['actions']:
+            if value == action['value']:
+                # do action
+                print("doing:", action['hook'])
+                project_id = task.project_id
+                # print(task.__dict__)
+                # print(task.module.__dict__)
+                # a_project = task.module.project
+                project = Project.objects.get(pk=project_id)
+                system = project.system
+                system_id = system.id
+                print("system", system)
+                a_obj, a_verb, a_qcode = action['hook'].split("/")
+
+                from controls.models import Element, Statement
+                from django.contrib import messages
+
+                if a_obj == 'component':
+                    if a_verb == "add":
+                        # Get system's existing components selected
+                        elements_selected = system.producer_elements
+                        elements_selected_ids = [e.id for e in elements_selected]
+
+                        # Get system's selected controls because we only want to add statements for selected controls
+                        # TODO DO WE ONLY WANT TO ADD STATEMENTS FOR EXISTING CONTROLS?
+                        selected_controls = system.root_element.controls.all()
+                        selected_controls_ids = set([f"{sc.oscal_ctl_id} {sc.oscal_catalog_key}" for sc in selected_controls])
+                        # TODO: Refactor above line selected_controls into a system model function if not already existing
+
+                        # hardcode element
+                        harcoded_producer_element_id = 1 # Cybrary
+
+                        # Add element to system's selected components
+                        # Look up the element rto add
+                        producer_element = Element.objects.get(pk=harcoded_producer_element_id)
+
+                        # TODO: various use cases
+                            # - component previously added but element has statements not yet added to system
+                            #   this issue may be best addressed elsewhere.
+
+                        # Component already added to system. Do not add the component (element) to the system again.
+                        if producer_element.id in elements_selected_ids:
+                            messages.add_message(request, messages.ERROR,
+                                                f'Component "{producer_element.name}" already exists in selected components.')
+                            # Redirect to selected element page
+                            # return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+                            response = JsonResponse({ "status": "ok", "redirect": redirect_to() })
+                            # Return the response.
+                            return response
+
+                        smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype")
+
+                        # Component does not have any statements of type control_implementation_prototype to
+                        # add to system. So we cannot add the component (element) to the system.
+                        if len(smts) == 0:
+                            # print(f"The component {producer_element.name} does not have any control implementation statements.")
+                            messages.add_message(request, messages.ERROR,
+                                                f'I couldn\'t add "{producer_element.name}" to the system because the component does not currently have any control implementation statements to add.')
+                            # Redirect to selected element page
+                            # return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+                            response = JsonResponse({ "status": "ok", "redirect": redirect_to() })
+                            # Return the response.
+                            return response
+
+
+                        # Loop through element's prototype statements and add to control implementation statements
+                        for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
+                            # Add all existing control statements for a component to a system even if system does not use controls.
+                            # This guarantees that control statements are associated.
+                            # The selected controls will serve as the primary filter on what content to display.
+                            smt.create_instance_from_prototype(system.root_element.id)
+
+                        # Make sure some controls were added to the system. Report error otherwise.
+                        smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation")
+
+                        smts_added_count = len(smts_added)
+                        if smts_added_count > 0:
+                            messages.add_message(request, messages.INFO,
+                                             f'OK. I\'ve added "{producer_element.name}" to the system and its {smts_added_count} control implementation statements to the system.')
+                        else:
+                            messages.add_message(request, messages.WARNING,
+                                             f'Oops. I tried adding "{producer_element.name}" to the system, but the component added 0 controls.')
+
+
 
     # Form a JSON response to the AJAX request and indicate the
     # URL to redirect to, to load the next question.
@@ -1112,7 +1202,7 @@ def instrumentation_record_interaction(request):
         return HttpResponseNotAllowed(["POST"])
 
     # Get event variables.
-    
+
     task = get_object_or_404(Task, id=request.POST["task"])
     if not task.has_read_priv(request.user):
         return HttpResponseForbidden()
@@ -1815,7 +1905,7 @@ def analytics(request):
                 avg_value=Avg('event_value'),
                 count=Count('event_value'),
             )
-        
+
         rows = qs\
             .exclude(**{opt["field"]: None})\
             .annotate(
