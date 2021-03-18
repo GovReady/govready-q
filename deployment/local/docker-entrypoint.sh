@@ -6,7 +6,6 @@ else
     echo "[ + ] Executing first_run"
     python3 install.py --non-interactive --docker
     touch local/first_run.lock
-fi
 
 
 # Start server
