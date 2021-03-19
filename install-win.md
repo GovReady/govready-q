@@ -20,11 +20,11 @@ For Mac, Linux, or Windows Subsystem for Linux, please find the `install.md` fil
 
 ## Before You Install - Windows
 
-(This section is under construction.)
-
 For Windows Subsystem for Linux, please find the `install.md` file and follow the instructions there.  If you are using Windows 10 directly, please continue.
 
-These instructions assume you will be using Git Bash as your shell, and that you  will run it as administrator.  If you cannot run Git Bash as administrator, please contact your system adminstrator, or contact GovReady for more information.
+These instructions assume you will be using **Git Bash** as your shell, and that you  will run it as administrator.  Git Bash comes with Git for Windows, see below for install instructions.
+
+If you cannot run Git Bash as administrator, please contact your system adminstrator, or contact GovReady for more information.
 
 ### Install Python for Windows
 
@@ -52,7 +52,7 @@ After Git is installed, find the "Git" folder in your Start menu, and then "Git 
 
 ### Install Visual Studio Build Tools 2019
 
-Go to [Visual Studio Build Tools 2019](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
+Go to [Visual Studio Build Tools 2019](https://visualstudio.microsoft.com/visual-cpp-build-tools/) in your web browser.
 
 Click "Download Build Tools".
 
@@ -68,9 +68,17 @@ After the install, you do not need to click "Launch". Just close the installer.
 
 Make sure you are running Git Bash as administrator.
 
+### 1. Go to Install Location
+
 Go to a directory that you can download GovReady-Q into.  If you wish, you can create a new directory, and change directory into it.
 
-### 1. Clone GovReady-Q
+For example, if you want to use your Desktop directory, use this command.
+
+```shell
+cd ~/Desktop
+```
+
+### 2. Clone GovReady-Q
 
 Do these shell commands.
 
@@ -94,7 +102,7 @@ Branch 'install-test-001-windows' set up to track remote branch 'install-test-00
 Switched to a new branch 'install-test-001-windows'
 ```
 
-### 2. Create and Activate Python Virtual Environment
+### 3. Create and Activate Python Virtual Environment
 
 Do these shell commands.
 
@@ -105,7 +113,7 @@ source venv/scripts/activate
 
 You should see "(venv)".
 
-### 3. Upgrade pip
+### 4. Upgrade pip
 
 You should check to see if `pip` should be upgraded.
 
@@ -131,7 +139,7 @@ pip install --upgrade pip
 
 If you see "Requirement already satisfied", you can proceed.
 
-### 4. Install Additional Modules
+### 5. Install Additional Modules
 
 On Windows, you need to install these additional modules.
 
@@ -145,7 +153,7 @@ When successful, `pip` will print:
 Successfully installed colorama-0.x.x python-magic-bin-0.x.x
 ```
 
-### 5. Run Installer
+### 6. Run Installer
 
 Do this shell command for to see all install options.
 
