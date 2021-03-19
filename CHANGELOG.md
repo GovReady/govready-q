@@ -1,8 +1,8 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.3.0rc1 (March 13, 2021)
-----------------------------
+v999 (March XX, 2021)
+---------------------
 
 New, better install process written in Python.
 Include all required static files `siteapp/static` directory as part of GovReady-Q distribution.
