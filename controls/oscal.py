@@ -325,6 +325,9 @@ class Catalog(object):
         in the catalog.
         """
         family_id = self.get_group_id_by_control_id(control['id'])
+        description = self.get_control_prose_as_markdown(control, part_types={"statement"},
+                                                        parameter_values=self.parameter_values)
+        description_print = description.replace("\n", "<br/>")
         cl_dict = {
             "id": control['id'],
             "id_display": re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)\.([0-9]*)$', r'\1\2 (\3)', control['id']),
@@ -332,8 +335,8 @@ class Catalog(object):
             "family_id": family_id,
             "family_title": self.get_group_title_by_id(family_id),
             "class": control['class'],
-            "description": self.get_control_prose_as_markdown(control, part_types={"statement"},
-                                                              parameter_values=self.parameter_values),
+            "description": description,
+            "description_print": description_print,
             "guidance": self.get_control_prose_as_markdown(control, part_types={"guidance"}),
             "catalog_file": self.catalog_file,
             "catalog_id": self.catalog_id,
