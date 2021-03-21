@@ -2850,7 +2850,7 @@ def project_export(request, project_id):
                     "remarks": smt.remarks,
                     "version": smt.remarks,
                     "status": smt.status,
-                    "uuid": smt.uuid,
+                    "uuid": str(smt.uuid),
                 }
             }
             # Add json version as an element in the poams list
