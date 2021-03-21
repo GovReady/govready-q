@@ -2784,11 +2784,9 @@ def project_import(request, project_id):
                     body= poamsmt_data.get('body'),
                     remarks= poam.get('remarks'),
                     version= poam.get('version'),
-                    created= poam.get('created'),
-                    updated= poam.get('updated'),
                     statement_type="POAM",
                     status= poamsmt_data.get('status', "New"),
-                    uuid= poam.get('uuid'),
+                    uuid= str(uuid4()),
                     consumer_element= system_root_element
                 )
                 # Create Poam with statement and imported data
