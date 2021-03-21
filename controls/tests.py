@@ -537,6 +537,15 @@ class ElementUnitTests(TestCase):
         self.assertEqual(e.name, "Renamed Element A")
         self.assertEqual(e.description, "Renamed Element A Description")
 
+class ElementControlUnitTests(TestCase):
+
+    def test_assign_baseline():
+        self.assertEqual(1,1)
+
+        # Assign moderate baseline
+
+        # Assign low baseline
+
 class SystemUnitTests(TestCase):
     def test_system_create(self):
         e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
