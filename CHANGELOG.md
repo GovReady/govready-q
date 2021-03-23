@@ -4,6 +4,86 @@ GovReady-Q Release Notes
 v999 (March XX, 2021)
 ----------------------------
 
+**Feature changes**
+
+* Re-assign system's baseline to different baseline; dynamically batch add and removes controls to change a system's existing baseline to a different baseline (e.g. from moderate to low)
+* Enable questionnaire question to process question system actions to set system baseline (e.g., selected controls).
+* Enable questionnaire question to process question system actions to set project title and system name.
+* Support "actions" functionality associated with question answers.
+* Support assigning "roles" to elements.
+* Use new "actions" and "roles" functionality to enable question answers to add/delete components from selected components of a system.
+
+**UI changes**
+
+* Rename "App Library" to "Template Library" in nav bar.
+* Add "Project Home" button to action button ribbon.
+* Top of action button ribbon button order now: "Project Home", "Controls", "Components".
+
+
+**Developer changes**
+
+* Add processing for question actions targeted at system to handle `system/assign_baseline/<value>` to assign baseline set of controls to a system.
+* Add processing for question actions targeted at system to handle `system/update_system_and_project_name/<value>` to set system name and project title.
+* Add "actions" to Compliance App questions (e.g., tasks) that are conditionally performed based on question answer(s).
+* Add "roles" to identify, organize, and process system elements (e.g., components)
+
+The add action capability is supported by new `actions` item within each defined question.
+
+Actions take the form:
+
+```
+  actions:
+    - value: <answer_value>
+      action: <object>/<verb>/<filter>
+      comment: <comment>
+```
+
+Example actions:
+
+```
+  actions:
+    - value: adfs
+      action: element/add_role/ADFS
+      comment: Add elements assigned AFDS to selected components
+    - value: adfs
+      action: element/del_role/Azure Active Directory
+      comment: Delete elements assigned Azure Active Directory from selected components
+```
+
+Only two actions are currently supported:
+
+1. `element/add_role/<role_value>` - Automatically add elements to the selected components of a system
+1. `element/del_role/<role_value>` - Automatically delete elements from the selected components of a system
+
+- Actions are (currently) performed as part of the processing question answer in guidedmodules, before going to next question.
+- Actions should be idempotent.
+- Actions almost never re-direct user out of the questionnaire.
+- Actions need to be reversible. When a user changes an answer previous action should be undone or modified accordingly.
+
+We connect actions defined in the portable compliance app to GovReady-Q instance data via "roles" dynamically assigned to target objects.
+In the initially supported use case, Elements can be assiged Roles via new `ElementRole` model.
+The new `ElementRole` model assigns roles to system elements via a Many-to-Many relationship.
+ElementRoles and associating Elements to roles is currently be done in Django admin interface.
+
+Roles provide a level of abstraction between an action defined in compliance app and actual objects dynamically assign that role.
+
+ElementRoles also enables categorizing, organizing, filtering, and creating checks around Elements. An example roles might be "internal-only" to make allow checks to be added to prevent accidental disclore.
+
+ElementsRoles differ from more generic tags because the setting of roles should be limited to privileged users and have specific organizational purpose.
+
+Current limitations:
+- No tests.
+- ElementRoles and Element assignment to roles must be done in Djang admin interface.
+- Adding component is done through questionnaire, but if component deleted question does not yet know or update. Need to be able to clear question.
+- No handling yet of marking a question unanswered.
+- No logging yet of action result to question history.
+- Code needs optimization and DRY-ness.
+- Roles need to be created manually in the GovReady-Q instance for a compliance app using actions with roles. In the future, when a compliance app is loaded the roles could be created automically. An privileged would still need to assign local elements to roles.
+
+**UI changes**
+
+* Provide messaging feedback when answering a question triggers an action.
+
 
 v0.9.3.0rc1 (March 16, 2021)
 ----------------------------
