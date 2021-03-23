@@ -213,6 +213,7 @@ class Element(auto_prefetch.Model):
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
     description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=True, null=True)
     element_type = models.CharField(max_length=150, help_text="Component type", unique=False, blank=True, null=True)
+    roles = models.ManyToManyField('ElementRole', related_name='elements', blank=True, help_text="Roles assigned to the Element")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
@@ -436,6 +437,19 @@ class ElementControl(auto_prefetch.Model):
     #     # Error checking
     #     return impl_smt
 
+class ElementRole(auto_prefetch.Model):
+    role = models.CharField(max_length=250, help_text="Common name or acronym of the role", unique=True, blank=False, null=False)
+    description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=False, null=False)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    def __str__(self):
+        return "'%s id=%d'" % (self.role, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "'%s id=%d'" % (self.role, self.id)
+
 class System(auto_prefetch.Model):
     root_element = auto_prefetch.ForeignKey(Element, related_name="system", on_delete=models.CASCADE, help_text="The Element that is this System. Element must be type [Application, General Support System]")
     fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=True, null=True)
@@ -581,7 +595,8 @@ class System(auto_prefetch.Model):
             # Poor performance, at least in some instances, appears to being caused by `smt.producer_element.name`
             # parameter in the below statement.
             if smt.producer_element:
-                smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i>\n{status_str}\n\n{smt.body}\n\n"
+                smt_formatted = smt.body.replace('\n','<br/>')
+                smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i><br/>{status_str}<br/><br/>{smt_formatted}<br/><br/>"
             # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
             # for testing purposes, the loop runs 3x faster
             # The reference `smt.producer_element.name` appears to be calling the database and creating poor performance
