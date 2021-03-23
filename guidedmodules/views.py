@@ -492,7 +492,7 @@ def save_answer(request, task, answered, context, __):
                                 messages.add_message(request, messages.ERROR,
                                                     f'Component "{producer_element.name}" already exists in selected components.')
                                 # Go to next element
-                                next
+                                continue
 
                             smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype")
 
