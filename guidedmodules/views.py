@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
 from django.utils import timezone
@@ -15,6 +16,7 @@ import guidedmodules.answer_validation as answer_validation
 from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership
 from siteapp.forms import ProjectForm
+from controls.models import Element
 
 import fs, fs.errors
 
@@ -259,7 +261,7 @@ def save_answer(request, task, answered, context, __):
         cleared = True
         skipped_reason = None
         unsure = False
-    
+
     elif request.POST.get("method") == "skip":
         # The question is being skipped, i.e. answered with a null value,
         # because the user doesn't know the answer, it doesn't apply to
@@ -364,7 +366,7 @@ def save_answer(request, task, answered, context, __):
                     raise ValueError("invalid task ID")
             if q.spec["type"] == "module" and len(answered_by_tasks) != 1:
                 raise ValueError("did not provide exactly one task ID")
-        
+
         value = None
         answered_by_file = None
 
@@ -425,6 +427,51 @@ def save_answer(request, task, answered, context, __):
             "answer_value": value,
         }
     )
+
+    # Process any actions from the question.
+    # --------------------------------------
+    # Can we automatically make other changes to the project, including the system
+    # based on an question answer?
+    # For example, and we add a component and its statements to a system
+    # based on what the user selects in the questions?
+    # This block processes any actions specified in the question.
+    # This requires a tightly controled vocabularly.
+    #
+    # We assume user has sufficient permission because user is answering question.
+    #
+    if 'actions' in q.spec:
+        # Loop through list of actions
+        for action in q.spec['actions']:
+            # Perform action if question (task) `value` is same as defined action value
+            if value == action['value']:
+                # Get project_id to be compatible with borrowed code block
+                project_id = task.project_id
+                project = Project.objects.get(pk=project_id)
+                system = project.system
+                system_id = system.id
+                # Decode the action by splitting on `/`
+                a_obj, a_verb, a_filter = action['action'].split("/")
+
+                # Process system actions
+                # -----------------------------------
+                # The system actions are currently supported:
+                #   1. `system/assign_baseline/<value>` - Automatically sets the system baseline controls to the selected impact value
+                if a_obj == 'system':
+
+                    # Assign baseline set of controls to a root_element
+                    if a_verb == "assign_baseline":
+
+                        # Split a_filter into catalog and baseline
+                        catalog, baseline = a_filter.split("=+=")
+                        if catalog is None or baseline is None:
+                            # Problem, we did not get two value
+                            print("Problem - assign_baseline a_filter did not produce catalog, baseline", a_filter)
+                        #element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'moderate')
+                        system.root_element.assign_baseline_controls(request.user, catalog, baseline)
+                        catalog_display = catalog.replace("_", " ")
+                        messages.add_message(request, messages.INFO,
+                                                     f'I\'ve set the control baseline to "{catalog_display} {baseline}."')
+                        # TODO Log setting baseline
 
     # Form a JSON response to the AJAX request and indicate the
     # URL to redirect to, to load the next question.
@@ -1112,7 +1159,7 @@ def instrumentation_record_interaction(request):
         return HttpResponseNotAllowed(["POST"])
 
     # Get event variables.
-    
+
     task = get_object_or_404(Task, id=request.POST["task"])
     if not task.has_read_priv(request.user):
         return HttpResponseForbidden()
@@ -1815,7 +1862,7 @@ def analytics(request):
                 avg_value=Avg('event_value'),
                 count=Count('event_value'),
             )
-        
+
         rows = qs\
             .exclude(**{opt["field"]: None})\
             .annotate(

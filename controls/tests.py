@@ -557,7 +557,6 @@ class ElementControlUnitTests(TestCase):
 
         # Assign low baseline and some controls should exist
         result = element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'low')
-        print(result)
         self.assertLess(110,len(element.controls.all()))
         self.assertGreater(135,len(element.controls.all()))
 
