@@ -27,8 +27,8 @@ from controls.views import OSCALComponentSerializer
 from siteapp.models import User, Organization, OrganizationalSetting
 from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests, wait_for_sleep_after
 from system_settings.models import SystemSettings
-from .models import *
-from .oscal import Catalogs, Catalog
+from controls.models import *
+from controls.oscal import Catalogs, Catalog
 from siteapp.models import User, Project, Portfolio
 from system_settings.models import SystemSettings
 
@@ -534,6 +534,40 @@ class ElementUnitTests(TestCase):
         self.assertEqual(e.name, "Renamed Element A")
         self.assertEqual(e.description, "Renamed Element A Description")
 
+
+class ElementControlUnitTests(TestCase):
+
+    def test_assign_baseline(self):
+
+        # Create root_element - no relayed controls should exist
+        element = Element(name="sys_root_element")
+        element.save()
+        self.assertEqual(0,len(element.controls.all()))
+        # Create system
+        system = System(root_element=element)
+        system.save()
+
+        # Create a user because method expect user with correct permission
+        user = User(email='jane@example.com', username="Jane")
+        user.save()
+        # Assign owner permissions
+        element.assign_edit_permissions(user)
+
+        # Assign low baseline and some controls should exist
+        result = element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'low')
+        self.assertLess(110,len(element.controls.all()))
+        self.assertGreater(135,len(element.controls.all()))
+
+        # Assign moderate baseline and more controls should exist
+        element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'moderate')
+        self.assertLess(210,len(element.controls.all()))
+        self.assertGreater(280,len(element.controls.all()))
+
+        # Assign low baseline and controls should be removed
+        element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'low')
+        self.assertLess(110,len(element.controls.all()))
+        self.assertGreater(135,len(element.controls.all()))
+
     def test_element_role(self):
         """Test adding a role to an element"""
 
@@ -557,6 +591,7 @@ class ElementUnitTests(TestCase):
 
         # Even with two elements there is still only one element with a role
         self.assertEqual(ele.roles.values_list('role', flat=True).count(), 1)
+
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):

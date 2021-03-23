@@ -435,6 +435,7 @@ def save_answer(request, task, answered, context, __):
     # For example, and we add a component and its statements to a system
     # based on what the user selects in the questions?
     # This block processes any actions specified in the question.
+
     # This requires a tightly controlled vocabulary.
     #
     # We assume user has sufficient permission because user is answering question.
@@ -448,9 +449,32 @@ def save_answer(request, task, answered, context, __):
                 project_id = task.project_id
                 project = Project.objects.get(pk=project_id)
                 system = project.system
-             
+
+                system_id = system.id
                 # Decode the action by splitting on `/`
                 a_obj, a_verb, a_filter = action['action'].split("/")
+
+                # Process system actions
+                # -----------------------------------
+                # The system actions are currently supported:
+                #   1. `system/assign_baseline/<value>` - Automatically sets the system baseline controls to the selected impact value
+                if a_obj == 'system':
+
+                    # Assign baseline set of controls to a root_element
+                    if a_verb == "assign_baseline":
+
+                        # Split a_filter into catalog and baseline
+                        catalog, baseline = a_filter.split("=+=")
+                        if catalog is None or baseline is None:
+                            # Problem, we did not get two value
+                            print("Problem - assign_baseline a_filter did not produce catalog, baseline", a_filter)
+                        #element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'moderate')
+                        system.root_element.assign_baseline_controls(request.user, catalog, baseline)
+                        catalog_display = catalog.replace("_", " ")
+                        messages.add_message(request, messages.INFO,
+                                                     f'I\'ve set the control baseline to "{catalog_display} {baseline}."')
+                        # TODO Log setting baseline
+
 
                 # Process element actions
                 # -----------------------------------

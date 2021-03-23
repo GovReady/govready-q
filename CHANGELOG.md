@@ -4,11 +4,10 @@ GovReady-Q Release Notes
 v999 (March XX, 2021)
 ----------------------------
 
-Add "actions" to Compliance App questions (e.g., tasks) that are conditionally performed based on question answer(s).
-Add "roles" to identify, organize, and process system elements (e.g., components)
-
 **Feature changes**
 
+* Re-assign system's baseline to different baseline; dynamically batch add and removes controls to change a system's existing baseline to a different baseline (e.g. from moderate to low)
+* Enable questionnaire question to process question system actions to set system baseline (e.g., selected controls).
 * Support "actions" functionality associated with question answers.
 * Support assigning "roles" to elements.
 * Use new "actions" and "roles" functionality to enable question answers to add/delete components from selected components of a system.
@@ -20,6 +19,10 @@ Add "roles" to identify, organize, and process system elements (e.g., components
 * Top of action button ribbon button order now: "Project Home", "Controls", "Components".
 
 **Developer changes**
+
+* Add processing for question actions targeted at system to handle `system/assign_baseline/<value>` to assign baseline set of controls to a system.
+* Add "actions" to Compliance App questions (e.g., tasks) that are conditionally performed based on question answer(s).
+* Add "roles" to identify, organize, and process system elements (e.g., components)
 
 The add action capability is supported by new `actions` item within each defined question.
 
@@ -77,6 +80,7 @@ Current limitations:
 **UI changes**
 
 * Provide messaging feedback when answering a question triggers an action.
+
 
 v0.9.3.0rc1 (March 16, 2021)
 ----------------------------
