@@ -382,3 +382,20 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
     padding-bottom: 8px;
     margin-top: -20px;
   }
+
+/* displays OSCAL in a scrolling div */
+  .display-oscal {
+    overflow: scroll;
+    height:500px;
+    word-wrap: break-word;
+    display:block;
+    margin: 2em;
+    padding: 1em;
+    border:1px solid #D9D9D9;
+    overflow-wrap: break-word;
+    width: 95%;
+    -webkit-user-select: all;  /* Chrome all / Safari all */
+      -moz-user-select: all;     /* Firefox all */
+      -ms-user-select: all;      /* IE 10+ */
+      user-select: all;          /* Likely future */
+  }
