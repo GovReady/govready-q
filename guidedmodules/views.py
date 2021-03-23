@@ -476,12 +476,6 @@ def save_answer(request, task, answered, context, __):
                         elements_selected = system.producer_elements
                         elements_selected_ids = [e.id for e in elements_selected]
 
-                        # Get system's selected controls because we only want to add statements for selected controls
-                        # TODO DO WE ONLY WANT TO ADD STATEMENTS FOR EXISTING CONTROLS?
-                        selected_controls = system.root_element.controls.all()
-                        selected_controls_ids = set([f"{sc.oscal_ctl_id} {sc.oscal_catalog_key}" for sc in selected_controls])
-                        # TODO: Refactor above line selected_controls into a system model function if not already existing
-
                         # Iterate through elements in role adding each to the selected components of the system
                         for producer_element in elements_with_role:
                             # TODO: various use cases
