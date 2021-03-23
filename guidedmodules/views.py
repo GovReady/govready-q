@@ -448,7 +448,7 @@ def save_answer(request, task, answered, context, __):
                 project_id = task.project_id
                 project = Project.objects.get(pk=project_id)
                 system = project.system
-                system_id = system.id
+             
                 # Decode the action by splitting on `/`
                 a_obj, a_verb, a_filter = action['action'].split("/")
 
