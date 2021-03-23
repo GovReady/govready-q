@@ -435,7 +435,7 @@ def save_answer(request, task, answered, context, __):
     # For example, and we add a component and its statements to a system
     # based on what the user selects in the questions?
     # This block processes any actions specified in the question.
-    # This requires a tightly controled vocabularly.
+    # This requires a tightly controlled vocabulary.
     #
     # We assume user has sufficient permission because user is answering question.
     #
