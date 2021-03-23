@@ -436,7 +436,7 @@ def save_answer(request, task, answered, context, __):
     # based on what the user selects in the questions?
     # This block processes any actions specified in the question.
 
-    # This requires a tightly controled vocabularly.
+    # This requires a tightly controlled vocabulary.
     #
     # We assume user has sufficient permission because user is answering question.
     #
