@@ -76,11 +76,14 @@
       {% block action_buttons %}
         <div class="btn-group" role="group" aria-label="action buttons group">
           {% if project.system is not None %}
-            <button id="btn-components" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
-              <em class="glyphicon glyphicon-tags"></em>&nbsp; Components</a>
+            <button id="btn-controls" class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url}}';">
+              <em class="glyphicon glyphicon-home"></em> Project Home</a>
             </button>
             <button id="btn-controls" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
-              <em class="glyphicon glyphicon-book"></em> Controls</a>
+              <em class="glyphicon glyphicon-list-alt"></em> Controls</a>
+            </button>
+            <button id="btn-components" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
+              <em class="glyphicon glyphicon-book"></em>&nbsp; Components</a>
             </button>
             <button id="btn-poams" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/poams';">
               <em class="glyphicon glyphicon-check"></em>&nbsp; POA&Ms</a>

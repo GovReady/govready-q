@@ -16,7 +16,7 @@ import guidedmodules.answer_validation as answer_validation
 from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership
 from siteapp.forms import ProjectForm
-from controls.models import Element
+from controls.models import Element, ElementRole, Statement
 
 import fs, fs.errors
 
@@ -435,7 +435,8 @@ def save_answer(request, task, answered, context, __):
     # For example, and we add a component and its statements to a system
     # based on what the user selects in the questions?
     # This block processes any actions specified in the question.
-    # This requires a tightly controled vocabularly.
+
+    # This requires a tightly controlled vocabulary.
     #
     # We assume user has sufficient permission because user is answering question.
     #
@@ -448,6 +449,7 @@ def save_answer(request, task, answered, context, __):
                 project_id = task.project_id
                 project = Project.objects.get(pk=project_id)
                 system = project.system
+
                 system_id = system.id
                 # Decode the action by splitting on `/`
                 a_obj, a_verb, a_filter = action['action'].split("/")
@@ -474,6 +476,7 @@ def save_answer(request, task, answered, context, __):
                                                      f'I\'ve set the control baseline to "{catalog_display} {baseline}."')
                         # TODO Log setting baseline
 
+
                     # Update name of system and project
                     if a_verb == "update_system_and_project_name":
 
@@ -489,6 +492,85 @@ def save_answer(request, task, answered, context, __):
 
                         messages.add_message(request, messages.INFO,
                                                      f'I\'ve updated the system and project name.')
+
+
+                # Process element actions
+                # -----------------------------------
+                # Only two actions are currently supported:
+                #   1. `element/add_role/<role_value>` - Automatically add elements to the selected components of a system
+                #   2. `element/del_role/<role_value>` - Automatically delete elements from the selected components of a system
+                if a_obj == 'element':
+
+                    # Get all elements assigned role specified in the action
+                    elements_with_role = Element.objects.filter(element_type="system_element").filter(roles__role=a_filter)
+
+                    # Add elements matching role to the selected components of a system
+                    if a_verb == "add_role":
+                        # TODO: Optimize and improve DRY-ness of this code block
+                        # The adding of a component code is copied from `controls.views.add_system_component`.
+                        # It was not possible to easily combine the code because
+                        # the request and http POST information `add_system_component` uses.
+                        # Also, `add_system_component` has different assumptions about routing.
+                        #
+                        # Nevertheless, the two code blocks could be refactored.
+
+                        # Get system's existing components selected because we don't want to add an already added component
+                        elements_selected = system.producer_elements
+                        elements_selected_ids = [e.id for e in elements_selected]
+
+                        # Iterate through elements in role adding each to the selected components of the system
+                        for producer_element in elements_with_role:
+                            # TODO: various use cases
+                                # - component previously added but element has statements not yet added to system
+                                #   this issue may be best addressed elsewhere.
+                            # Component already added to system. Do not add the component (element) to the system again.
+                            if producer_element.id in elements_selected_ids:
+                                messages.add_message(request, messages.ERROR,
+                                                    f'Component "{producer_element.name}" already exists in selected components.')
+                                # Go to next element
+                                continue
+
+                            smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype")
+
+                            # Component does not have any statements of type control_implementation_prototype to
+                            # add to system. So we cannot add the component (element) to the system.
+                            if len(smts) == 0:
+                                # print(f"The component {producer_element.name} does not have any control implementation statements.")
+                                messages.add_message(request, messages.ERROR,
+                                                    f'I couldn\'t add "{producer_element.name}" to the system because the component does not currently have any control implementation statements to add.')
+                                # Go to next element
+                                continue
+
+                            # If we get here, we are going to add the element to the system
+                            # We add an element to a system by adding copies of the element's statements
+                            # Loop through element's prototype statements and add to control implementation statements
+                            for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
+                                # Add all existing control statements for a component to a system even if system does not use controls.
+                                # This guarantees that control statements are associated.
+                                # The selected controls will serve as the primary filter on what content to display.
+                                smt.create_instance_from_prototype(system.root_element.id)
+
+                            # Get a count of control statements added to the system.
+                            smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation")
+                            smts_added_count = len(smts_added)
+                            # Prepare message
+                            if smts_added_count > 0:
+                                messages.add_message(request, messages.INFO,
+                                                 f'I\'ve added "{producer_element.name}" and its {smts_added_count} control implementation statements to the system. You\'re welcome. :-)')
+                            else:
+                                messages.add_message(request, messages.WARNING,
+                                                 f'Oops. I tried adding "{producer_element.name}" to the system, but no control implementation statements were found.')
+
+                    # Delete elements matching role from the selected components of a system
+                    if a_verb == "del_role":
+                        for producer_element in elements_with_role:
+                            # Delete component from system
+                            smts_assigned_count = len(Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation"))
+                            if smts_assigned_count > 0:
+                                Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation").delete()
+                                messages.add_message(request, messages.INFO,
+                                                     f'I\'ve deleted "{producer_element.name}" and its {smts_assigned_count} control implementation statements from the system.')
+ 
 
     # Form a JSON response to the AJAX request and indicate the
     # URL to redirect to, to load the next question.
