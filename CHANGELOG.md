@@ -1,6 +1,10 @@
 GovReady-Q Release Notes
 ========================
 
+v999 (March XX, 2021)
+----------------------------
+
+
 v0.9.3.0rc1 (March 16, 2021)
 ----------------------------
 
@@ -30,8 +34,6 @@ Include all required static files `siteapp/static` directory as part of GovReady
 * Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
 * Now including all static files as part of distribution.
 * Adds Snyk Security Scans to CircleCi scanned items include python requirements files requirements.txt, requirements_util.txt, and requirements_mysql.txt.
-
-
 
 **Bug fixes**
 
