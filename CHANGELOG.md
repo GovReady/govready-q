@@ -15,7 +15,6 @@ Add "roles" to identify, organize, and process system elements (e.g., components
 
 **UI changes**
 
-* Renamed "Component Library" to "Component Catalog" in nav bar.
 * Rename "App Library" to "Template Library" in nav bar.
 * Add "Project Home" button to action button ribbon.
 * Top of action button ribbon button order now: "Project Home", "Controls", "Components".
