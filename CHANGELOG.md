@@ -7,7 +7,11 @@ v999 (March XX, 2021)
 **Feature change**
 
 * Re-assign system's baseline to different baseline; dynamically batch add and removes controls to change a system's existing baseline to a different baseline (e.g. from moderate to low)
+* Enable questionnaire question to process question system actions to set system baseline (e.g., selected controls).
 
+**Developer changes**
+
+* Add processing for question actions targeted at system to handle `system/assign_baseline/<value>` to assign baseline set of controls to a system.
 
 v0.9.3.0rc1 (March 16, 2021)
 ----------------------------
