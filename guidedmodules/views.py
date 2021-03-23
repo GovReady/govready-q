@@ -460,7 +460,7 @@ def save_answer(request, task, answered, context, __):
                 if a_obj == 'element':
 
                     # Get all elements assigned role specified in the action
-                    elements_with_role = Element.objects.filter(roles__role=a_filter)
+                    elements_with_role = Element.objects.filter(element_type="system_element").filter(roles__role=a_filter)
 
                     # Add elements matching role to the selected components of a system
                     if a_verb == "add_role":
