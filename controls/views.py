@@ -2779,11 +2779,9 @@ def project_import(request, project_id):
                     body= poamsmt_data.get('body'),
                     remarks= poam.get('remarks'),
                     version= poam.get('version'),
-                    created= poam.get('created'),
-                    updated= poam.get('updated'),
                     statement_type="POAM",
                     status= poamsmt_data.get('status', "New"),
-                    uuid= poam.get('uuid'),
+                    uuid= str(uuid4()),
                     consumer_element= system_root_element
                 )
                 # Create Poam with statement and imported data
@@ -2845,7 +2843,7 @@ def project_export(request, project_id):
                     "remarks": smt.remarks,
                     "version": smt.remarks,
                     "status": smt.status,
-                    "uuid": smt.uuid,
+                    "uuid": str(smt.uuid),
                 }
             }
             # Add json version as an element in the poams list
