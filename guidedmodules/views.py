@@ -503,7 +503,7 @@ def save_answer(request, task, answered, context, __):
                                 messages.add_message(request, messages.ERROR,
                                                     f'I couldn\'t add "{producer_element.name}" to the system because the component does not currently have any control implementation statements to add.')
                                 # Go to next element
-                                next
+                                continue
 
                             # If we get here, we are going to add the element to the system
                             # We add an element to a system by adding copies of the element's statements
