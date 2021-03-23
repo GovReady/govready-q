@@ -443,7 +443,7 @@ def save_answer(request, task, answered, context, __):
         # Loop through list of actions
         for action in q.spec['actions']:
             # Perform action if question (task) `value` is same as defined action value
-            if value == action['value']:
+            if value == action['value'] or action['value'] == "*":
                 # Get project_id to be compatible with borrowed code block
                 project_id = task.project_id
                 project = Project.objects.get(pk=project_id)
@@ -456,6 +456,7 @@ def save_answer(request, task, answered, context, __):
                 # -----------------------------------
                 # The system actions are currently supported:
                 #   1. `system/assign_baseline/<value>` - Automatically sets the system baseline controls to the selected impact value
+                #   2. `system/update_system_and_project_name/<value>` - Automatically sets the system, project names
                 if a_obj == 'system':
 
                     # Assign baseline set of controls to a root_element
@@ -472,6 +473,22 @@ def save_answer(request, task, answered, context, __):
                         messages.add_message(request, messages.INFO,
                                                      f'I\'ve set the control baseline to "{catalog_display} {baseline}."')
                         # TODO Log setting baseline
+
+                    # Update name of system and project
+                    if a_verb == "update_system_and_project_name":
+
+                        new_name = value
+
+                        if system is not None:
+                            system.root_element.name = new_name
+                            system.root_element.save()
+
+                        project.root_task.title_override = new_name
+                        project.root_task.save()
+                        project.root_task.on_answer_changed()
+
+                        messages.add_message(request, messages.INFO,
+                                                     f'I\'ve updated the system and project name.')
 
     # Form a JSON response to the AJAX request and indicate the
     # URL to redirect to, to load the next question.
