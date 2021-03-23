@@ -448,9 +448,6 @@ class StatementUnitTests(TestCase):
         self.assertEqual(smt.diff_prototype_main, [(0, 'This is a test statement.'), (-1, '\nModified statememt')])
 
 class ElementUnitTests(TestCase):
-    ## Simply dummy test ##
-    def test_tests(self):
-        self.assertEqual(1,1)
 
     def test_element_create(self):
         e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
@@ -485,7 +482,7 @@ class ElementUnitTests(TestCase):
         """Test copying an element"""
 
         # Create an element
-        e = Element.objects.create(name="OAuth", full_name="OAuth Service", element_type="component")
+        e = Element.objects.create(name="OAuth", full_name="OAuth Service", element_type="system_element")
         self.assertTrue(e.id is not None)
         self.assertTrue(e.name == "OAuth")
         e.save()
@@ -527,7 +524,7 @@ class ElementUnitTests(TestCase):
         """Test renaming an element"""
 
         # Create an element
-        e = Element.objects.create(name="Element A", full_name="Element A Full Name",description="Element A Description",element_type="component")
+        e = Element.objects.create(name="Element A", full_name="Element A Full Name",description="Element A Description",element_type="system_element")
         self.assertIsNotNone(e.id)
         self.assertEqual(e.name, "Element A")
         self.assertEqual(e.description, "Element A Description")
@@ -536,6 +533,30 @@ class ElementUnitTests(TestCase):
         e.save()
         self.assertEqual(e.name, "Renamed Element A")
         self.assertEqual(e.description, "Renamed Element A Description")
+
+    def test_element_role(self):
+        """Test adding a role to an element"""
+
+        # Create an element and make sure it has an id
+        ele = Element.objects.create(name="Element A", full_name="Element A Full Name",description="Element A Description",element_type="system_element")
+        self.assertIsNotNone(ele.id)
+
+        # No elements have a role
+        self.assertEqual(ele.roles.values_list('role', flat=True).count(), 0)
+
+        ele_role = ElementRole.objects.create(id=1, role="add", description="testing adding a description")
+        # Adding the add role to the element
+        ele.roles.add(ele_role)
+
+        # One element has a role
+        self.assertEqual(ele.roles.values_list('role', flat=True).count(), 1)
+
+        ele2 = Element.objects.create(name="Element B", full_name="Element B Full Name",description="Element B Description",element_type="system_element")
+        # Do we have two elements?
+        self.assertEqual(Element.objects.all().count(), 2)
+
+        # Even with two elements there is still only one element with a role
+        self.assertEqual(ele.roles.values_list('role', flat=True).count(), 1)
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):
