@@ -89,6 +89,10 @@ Current limitations:
 
 * Added speedysp to q-files' govready-q-files-startpack to demonstrate how fast an SSP can be made.
 
+**Install changes**
+
+* Rename installed sample project to clearly indicate project is sample data.
+
 v0.9.3.0rc1 (March 16, 2021)
 ----------------------------
 
