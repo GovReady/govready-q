@@ -19,7 +19,6 @@ v999 (March XX, 2021)
 * Add "Project Home" button to action button ribbon.
 * Top of action button ribbon button order now: "Project Home", "Controls", "Components".
 
-
 **Developer changes**
 
 * Add processing for question actions targeted at system to handle `system/assign_baseline/<value>` to assign baseline set of controls to a system.
@@ -50,10 +49,12 @@ Example actions:
       comment: Delete elements assigned Azure Active Directory from selected components
 ```
 
-Only two actions are currently supported:
+The following actions are currently supported:
 
-1. `element/add_role/<role_value>` - Automatically add elements to the selected components of a system
-1. `element/del_role/<role_value>` - Automatically delete elements from the selected components of a system
+1. `system/assign_baseline/<value>` - Automatically sets the system baseline controls to the selected impact
+2. `system/update_system_and_project_name/<value>` - Automatically sets the system, project names
+3. `element/add_role/<role_value>` - Automatically add elements to the selected components of a system
+4. `element/del_role/<role_value>` - Automatically delete elements from the selected components of a system
 
 - Actions are (currently) performed as part of the processing question answer in guidedmodules, before going to next question.
 - Actions should be idempotent.
@@ -84,6 +85,9 @@ Current limitations:
 
 * Provide messaging feedback when answering a question triggers an action.
 
+**Data changes**
+
+* Added speedysp to q-files' govready-q-files-startpack to demonstrate how fast an SSP can be made.
 
 v0.9.3.0rc1 (March 16, 2021)
 ----------------------------

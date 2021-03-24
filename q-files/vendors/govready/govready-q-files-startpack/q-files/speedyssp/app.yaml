@@ -1,7 +1,7 @@
 id: app
 title: Speedy SSP
 type: project
-version: 1.5
+version: 1.5.1
 icon: speedy.png
 introduction:
   format: markdown
@@ -20,7 +20,7 @@ catalog:
   status: stub
   vendor: GovReady
   vendor_url: ~
-  version: 1.5
+  version: 1.5.1
   parameters:
     - id: catalog_key
       value: NIST_SP-800-53_rev4

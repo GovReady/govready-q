@@ -83,7 +83,7 @@ questions:
     - value: ilias
       action: element/add_role/ILIAS
       comment: Add elements assigned ILIAS to selected components
-    - value: azure_ad
+    - value: ilias
       action: element/del_role/Cybrary
       comment: Delete elements assigned Cybrary from selected components
 
