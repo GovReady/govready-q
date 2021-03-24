@@ -1,7 +1,7 @@
 id: app
 title: Speedy SSP
 type: project
-version: 1.5.1
+version: 1.6
 icon: speedy.png
 introduction:
   format: markdown
@@ -20,7 +20,7 @@ catalog:
   status: stub
   vendor: GovReady
   vendor_url: ~
-  version: 1.5.1
+  version: 1.6
   parameters:
     - id: catalog_key
       value: NIST_SP-800-53_rev4
@@ -51,4 +51,11 @@ questions:
   icon: test_plan_new.png
   module-id: speedy_ssp_additional_info
   group: Speedy SSP
+
+- id: system_info_technical
+  title: System Profile - Technical
+  type: module
+  icon: system_info.png
+  module-id: system_info_technical
+  group: System Info
 
