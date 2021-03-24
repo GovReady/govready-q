@@ -49,3 +49,19 @@ class Command(BaseCommand):
             print(client.response.url)
 
             print("Project created.")
+
+            # Get project
+            project = Project.objects.first()
+
+            # Rename project
+            if project:
+                new_name = "GovReady-Q Sample System"
+                project.root_task.title_override = new_name
+                project.root_task.save()
+                project.root_task.on_answer_changed()
+                if project.system is not None:
+                    project.system.root_element.name = new_name
+                    project.system.root_element.save()
+
+                print("Project renamed.")
+

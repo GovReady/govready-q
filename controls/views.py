@@ -1966,11 +1966,6 @@ def add_system_component(request, system_id):
     elements_selected = system.producer_elements
     elements_selected_ids = [e.id for e in elements_selected]
 
-    # Get system's selected controls because we only want to add statements for selected controls
-    selected_controls = system.root_element.controls.all()
-    selected_controls_ids = set([f"{sc.oscal_ctl_id} {sc.oscal_catalog_key}" for sc in selected_controls])
-    # TODO: Refactor above line selected_controls into a system model function if not already existing
-
     # Add element to system's selected components
     # Look up the element rto add
     producer_element = Element.objects.get(pk=form_values['producer_element_id'])
@@ -2784,11 +2779,9 @@ def project_import(request, project_id):
                     body= poamsmt_data.get('body'),
                     remarks= poam.get('remarks'),
                     version= poam.get('version'),
-                    created= poam.get('created'),
-                    updated= poam.get('updated'),
                     statement_type="POAM",
                     status= poamsmt_data.get('status', "New"),
-                    uuid= poam.get('uuid'),
+                    uuid= str(uuid4()),
                     consumer_element= system_root_element
                 )
                 # Create Poam with statement and imported data
@@ -2850,7 +2843,7 @@ def project_export(request, project_id):
                     "remarks": smt.remarks,
                     "version": smt.remarks,
                     "status": smt.status,
-                    "uuid": smt.uuid,
+                    "uuid": str(smt.uuid),
                 }
             }
             # Add json version as an element in the poams list
