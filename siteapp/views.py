@@ -25,7 +25,7 @@ from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
 
 from controls.models import Element, System, Statement, Poam, Deployment
-from system_settings.models import SystemSettings
+from system_settings.models import SystemSettings, Classification
 
 
 from .forms import PortfolioForm, ProjectForm
@@ -952,6 +952,8 @@ def project(request, project):
         "projects": Project.objects.all(),
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
+
+        "class_status" : Classification.objects.last(),
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
         "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
