@@ -12,12 +12,11 @@ class Classification(models.Model):
     )
 
     status = models.CharField(
-        max_length=16,
+        max_length=32,
         choices=CLASS_STATUS,
         default='UNCLASSIFIED',)
 
     def __str__(self):
-        #return get_status_display()
         return f'{self.status}'
 
 
