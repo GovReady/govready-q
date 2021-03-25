@@ -3102,6 +3102,8 @@ def manage_system_assessment_result(request, system_id, sar_id=None):
         if sari is None:
             sari = SystemAssessmentResult(system_id=system_id)
         form = SystemAssessmentResultForm(instance=sari)
+        # Filter deployments to current system
+        form.fields["deployment"].queryset = Deployment.objects.filter(system__id=system_id)
 
     return render(request, 'systems/sar_form.html', {
         'form': form,

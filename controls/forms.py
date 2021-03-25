@@ -145,8 +145,6 @@ class SystemAssessmentResultForm(ModelForm):
         self.fields['system'].widget = forms.HiddenInput()
         # Display pretty JSON in JSONfield's text area
         self.initial['assessment_results'] = json.dumps(self.instance.assessment_results, indent=4, sort_keys=True)
-        # Filter deployments to current system
-        self.fields['deployment'].queryset = Deployment.objects.filter(system__id=self.instance.system_id)
 
     class Meta:
         model = SystemAssessmentResult

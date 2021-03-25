@@ -4,6 +4,9 @@ GovReady-Q Release Notes
 v999 (March XX, 2021)
 ----------------------------
 
+**UI changes**
+
+* Filter System Asessment Result Deployment dropdown to only display System's deployments.
 
 v0.9.3.1 (March 23, 2021)
 ----------------------------
