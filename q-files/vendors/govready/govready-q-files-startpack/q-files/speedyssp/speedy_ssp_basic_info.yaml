@@ -2,7 +2,11 @@ id: speedy_ssp_basic_info
 title: Speedy SSP Basic Info
 introduction:
   format: markdown
-  template: This is the Speedy SSP module for GovReady-Q. The Speedy SSP module can be used to generate a quick, no-nonsense SSP. Let's gather some essential information about your IT System.
+  template: |
+    This is the Speedy SSP module for GovReady-Q.
+
+
+    The Speedy SSP module can be used to generate a quick, no-nonsense SSP. Let's gather some essential information about your IT System.
 
 questions:
 - id: system_name
@@ -49,16 +53,16 @@ questions:
     value: ~
   actions:
     - value: awsiam
-      action: element/add_role/AWS IAM
+      action: element/add_role/AWSIAM
       comment: Add elements assigned AWS IAM to selected components
     - value: awsiam
-      action: element/del_role/Microsoft Active Directory
+      action: element/del_role/MicrosoftActiveDirectory
       comment: Delete elements assigned Microsoft Active Directory from selected components
     - value: active_directory
-      action: element/add_role/Microsoft Active Directory
+      action: element/add_role/MicrosoftActiveDirectory
       comment: Add elements assigned Microsoft Active Directory to selected components
     - value: active_directory
-      action: element/del_role/AWS IAM
+      action: element/del_role/AWSIAM
       comment: Delete elements assigned AWS IAM from selected components
 
 - id: training

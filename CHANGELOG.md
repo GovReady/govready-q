@@ -4,6 +4,10 @@ GovReady-Q Release Notes
 v999 (March XX, 2021)
 ----------------------------
 
+
+v0.9.3.1 (March 23, 2021)
+----------------------------
+
 **Feature changes**
 
 * Re-assign system's baseline to different baseline; dynamically batch add and removes controls to change a system's existing baseline to a different baseline (e.g. from moderate to low)
