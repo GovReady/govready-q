@@ -34,8 +34,6 @@
 
 -->
 
-
-
 <style>
   .classification-bar-fouo { background-color:#007A33; padding:2px 0 2px 0; }
   .classification-bar-confidential { background-color:#0033A0; padding:2px 0 2px 0; }
@@ -44,9 +42,11 @@
   .classification-text { display:block; text-align: center; font-size: .6em; color: #fff; }
 </style>
 
+{# This is just a bare minimum for demo. Needs to be elaborated upon. Classified intentionally left out because it has complicated implications. #}
+
 {% if class_status %}
-{% if class_status|stringformat:"s" == "FOUO" %}
-<div class="classification-bar-fouo"><span class="classification-text">UNCLASSIFIED//FOUO</span></div>
+{% if class_status|stringformat:"s" == "UNCLASSIFIED" %}
+<div class="classification-bar-fouo"><span class="classification-text">UNCLASSIFIED</span></div>
 {% elif class_status|stringformat:"s" == "CONFIDENTIAL" %}
 <div class="classification-bar-confidential"><span class="classification-text">CONFIDENTIAL</span></div>
 {% elif class_status|stringformat:"s" == "SECRET" %}

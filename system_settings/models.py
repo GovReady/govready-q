@@ -1,9 +1,11 @@
 from django.db import models
 
+# This is just a bare minimum for demo. Needs to be elaborated upon. Classified intentionally left out because it has complicated implications.
+
 
 class Classification(models.Model):
     CLASS_STATUS = (
-        ('FOUO', 'fouo'),
+        ('UNCLASSIFIED', 'unclassified'),
         ('CONFIDENTIAL', 'confidential'),
         ('SECRET', 'secret'),
         ('TOPSECRET', 'top secret'),
@@ -12,7 +14,7 @@ class Classification(models.Model):
     status = models.CharField(
         max_length=16,
         choices=CLASS_STATUS,
-        default='FOUO',)
+        default='UNCLASSIFIED',)
 
     def __str__(self):
         #return get_status_display()
