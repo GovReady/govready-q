@@ -8,6 +8,20 @@ v999 (March XX, 2021)
 
 * Filter System Asessment Result Deployment dropdown to only display System's deployments.
 
+**UI changes**
+
+* Polish SAR summary page: add action buttons, use details tag, other improvements.
+* Polish SAR list page: include deployment name.
+
+**Developer changes**
+
+* Create `tools/simple_sar_server` to generate synthetic System Assessment Results (summary) data for testing the assessment pages.
+* Display assessment name in Assessment model admin list.
+
+**Data changes**
+
+* Update SAR test data.
+
 v0.9.3.1 (March 23, 2021)
 ----------------------------
 

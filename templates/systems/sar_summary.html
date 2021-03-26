@@ -1,8 +1,9 @@
-{% extends "base.html" %}
+{% extends "project-base.html" %}
 {% load humanize %}
 {% load guardian_tags %}
 {% load static %}
 {% load q %}
+{% load system_tags %}
 
 {% block title %}
 System Assessment Results
@@ -10,10 +11,9 @@ System Assessment Results
 
 {% block head %}
 {{block.super}}
+{% include "controls/_style-controls.html" %}
 <style>
   /* New styles for project dashboard elements */
-  .last-login { font-size:.8em;}
-
   .status { font-size:3em; color:#2D3337;}
   .status-success { font-size:3em; color:green;}
   .status-warning { font-size:3em; color:red;}
@@ -44,26 +44,38 @@ System Assessment Results
   .portfolio-table { width:100%;}
   .portfolio-table-component { font-size: 1.2em; font-weight:bold; padding:0; margin:0;}
   .portfolio-table-component-desc { font-size: .8em; }
+
+  details {
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    padding: .5em .5em 0;
+  }
+
+  summary {
+      font-weight: bold;
+      margin: -.5em -.5em 0;
+      padding: .5em;
+  }
+
+  .sar-item-details {
+    margin: 0px 0px 20px 0px;
+  }
 </style>
 {% endblock %}
 
-{% block body %}
+<!-- action buttons included from project-base.html -->
+<!-- authoring_tool_enabled included from project-base.html -->
+
+{% block body_content %}
 
 <div  class="systems-top">
-  <div class="container">
+  <div class="tab-content">
 
-  <div class="row">
-    <div id="above-tab-content" class="row">
-      <!-- Page Title-->
-      <div class="systems-title">
-          <h2 class="control-heading">
-            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ sar.system.root_element.name }}</a> &gt; System Assessment Results > {{ sar.name }} Summary
-          </h2>
-      </div>
+    <div class="row">
+      <div class="col-md-12"><h2>"{{ sar.name }}" assessment of "{{ sar.deployment.name }}" deployment</h2></div>
+      <div class="col-md-12">Added {{ sar.created }} {% if sar.description %}- {{ sar.description }}{% endif %}</div>
+      <p>&nbsp;</p>
     </div>
-  </div><!--/row-->
-    <p>&nbsp;</p>
-
     <div class="row">
         <div class="col-md-3"><div class="status-box"><h2 class="status">{{ sar_items|length }}</h2> <span class="status-small">total assessments</span></div></div>
         <div class="col-md-3"><div class="status-box"><h2 class="status-success">{{ summary.pass }}</h2> <span class="status-small">total tests passed</span></div></div>
@@ -74,14 +86,29 @@ System Assessment Results
     <p>&nbsp;</p>
 
     {% for item in sar_items %}
-        <pre>{{ item.id }} {{ item.name }} <a href="http://google.com" target="_blank">view</a></pre>
+      <div class="row">
+          <div class="col-md-12">
+            <details class="sar-item-details">
+                <summary>{{ item.ip }} - {{ item.pass }} passed &nbsp;&nbsp; {{ item.fail }} failed &nbsp;&nbsp;  {{ item.description }}</summary>
+                <ul>
+                  <li>{{ item.uuid }}</li>
+                  <li>Pass: {{ item.pass }} passed</li>
+                  <li>Fail: {{ item.fail }}</li>
+                </ul>
+            </details>
+          </div>
+      </div>
+
     {% endfor %}
+
     <div class="row">
         <div class="col-md-12">
-            <h2>System Assessment Results JSON file</h2>
-            <pre>{{ assessment_results_json }}</pre>
+          <details>
+              <summary>System Assessment Results Raw Data</summary>
+              <pre>{{ assessment_results_json }}</pre>
+          </details>
         </div>
-  </div>
+    </div>
 </div>
 
 {% endblock %}

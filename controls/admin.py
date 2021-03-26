@@ -82,7 +82,7 @@ class DeploymentAdmin(SimpleHistoryAdmin, ExportCsvMixin):
         return obj.deployment.uuid
 
 class SystemAssessmentResultAdmin(admin.ModelAdmin):
-    list_display = ('id', 'system', 'deployment')
+    list_display = ('id', 'name', 'system', 'deployment')
 
 
 admin.site.register(ImportRecord, ImportRecordAdmin)

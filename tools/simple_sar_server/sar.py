@@ -22,16 +22,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def mk_sar(self):
 
         sar = {
-            "id": "{random.randint(20431, 34554)}",
+            "id": f"{random.randint(20431, 34554)}",
             "name": "oscap-scan",
             "description": "SCAP scan Results",
-            "ip": f"10.10.0.{random.randint(2, 250)}",
+            "ip": f"10.10.0.{str(random.randint(2, 250))}",
             "uuid": f"{str(uuid.uuid4())}",
             "pass": random.randint(200, 300),
             "fail": random.randint(0, 20),
             "error": random.randint(0, 4)
         }
-        print(sar)
 
         return sar
 
@@ -48,7 +47,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 "version": "0.1",
                 "sar": sar_list
         }
-        # print(data)
 
         # Send the JSON response
         self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))

@@ -3049,7 +3049,8 @@ def view_system_assessment_result_summary(request, system_id, sar_id=None):
     project = system.projects.all()[0]
     sar = get_object_or_404(SystemAssessmentResult, pk=sar_id) if sar_id else None
 
-    sar_items = [item for item in sar.assessment_results] if sar.assessment_results != None else []
+    # Get assessment targets results from wrapped SAR data
+    sar_items = [item for item in sar.assessment_results['sar']] if sar.assessment_results != None else []
 
     # Get summary pass fail across all assessment results included collection
     # TODO: note high/low category
