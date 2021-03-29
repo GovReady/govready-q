@@ -41,7 +41,7 @@
                                 <!-- <label for="component">Producer Component</label> -->
                                 <input type="hidden" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
                                        onchange="$('#producer_element-panel_num-title').text($(this).val());" value="{{ element.name }}">
-                            </div>
+                            </div><br /><br />
                             <div class="form-group">
                                 <label for="control-selection">Control</label>
                                 <select class="form-control control-select" id="sid_control_panel_num" name="sid" style="width:580px;" onchange="set_catalog_key($('#sid_control_panel_num option:selected').text(), '#sid_class_panel_num');return false;">

@@ -6,7 +6,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %} - GovReady-Q</title>
+        <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %}</title>
 
         {% comment %}
         <meta name="description" content="">
@@ -14,7 +14,7 @@
         <link rel="shortcut icon" href='{% static "img/brand/favicon.ico" %}' type="image/x-icon">
         <link rel="icon" href='{% static "img/brand/favicon.ico" %}' type="image/x-icon">
 
-        
+
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap.min.css" %}">
         <link rel="stylesheet" href="{% static "css/google-fonts.css" %}">
         <link rel="stylesheet" href="{% static "css/govready-q.css" %}">
@@ -79,11 +79,7 @@
           <div class="row">
             <div class="col-sm-12">
               <div class="row footer-row">
-                <div class="col-xs-3">&copy; GovReady PBC {% now "Y" %}</div>
-                <div class="col-xs-2 center-text"><a href={% url 'privacy_terms_love' 'privacy' %}>Privacy Policy</a></div>
-                <div class="col-xs-2 center-text"><a href={% url 'privacy_terms_love' 'terms-of-service' %}>Terms of Service</a></div>
-                <div class="col-xs-2 center-text" ><a href={% url 'privacy_terms_love' 'love-assessments' %}>Support</a></div>
-                <div class="col-xs-3 right-text">{{APP_VERSION_STRING}}</div>
+              {% include "footer.html" %}
             </div>
           </div>
         </div>

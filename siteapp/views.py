@@ -25,7 +25,7 @@ from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
 
 from controls.models import Element, System, Statement, Poam, Deployment
-from system_settings.models import SystemSettings, Classification
+from system_settings.models import SystemSettings, Classification, Sitename
 
 
 from .forms import PortfolioForm, ProjectForm
@@ -56,6 +56,7 @@ def home_user(request):
 
     return render(request, "home-user.html", {
         "content": "some content",
+        "sitename" : Sitename.objects.last(),
         "users": User.objects.all(),
         "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
         "projects_access": Project.get_projects_with_read_priv(request.user, excludes={"contained_in_folders": None}),
@@ -143,6 +144,7 @@ def homepage(request):
 
     return render(request, "index.html", {
         "hide_registration": SystemSettings.hide_registration,
+        "sitename" : Sitename.objects.last(),
         "signup_form": signup_form,
         "portfolio_form": portfolio_form,
         "login_form": login_form,
