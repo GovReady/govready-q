@@ -4,6 +4,9 @@ GovReady-Q Release Notes
 v999 (March XX, 2021)
 ----------------------------
 
+**Bug fixes**
+
+* Make sure new users are granted `view app source` permission when user account created via SSO proxy.
 
 v0.9.3.1 (March 23, 2021)
 ----------------------------
