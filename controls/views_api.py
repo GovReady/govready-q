@@ -1,6 +1,6 @@
 from itertools import groupby
 import logging
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import datetime, timezone
 from uuid import uuid4
 from django.conf import settings
@@ -45,8 +45,6 @@ def manage_system_assessment_result_api(request, system_id, sar_id=None, methods
     #  localhost:8000/api/v1/systems/86/assessment/new
     #
 
-    from collections import OrderedDict
-
     # Get user from API key.
     api_key = request.META.get("HTTP_AUTHORIZATION", "").strip()
     if len(api_key) < 32: # prevent null values from matching against users without api keys
@@ -66,12 +64,15 @@ def manage_system_assessment_result_api(request, system_id, sar_id=None, methods
     # - Maybe create a blank sar then upload to that ID: create sar, get sar_id, post to that sar_id
     # - should we post with UUID? match with name?
     # - sari = get_object_or_404(SystemAssessmentResult, pk=sar_id) if sar_id else None
+
+    sar = json.loads(request.POST.get('sar_json'))
     if request.method == 'POST':
         sar = SystemAssessmentResult(
-                name=request.POST.get('name'),
+                name=sar["name"],
                 system_id=request.POST.get('system_id'),
                 deployment_id=request.POST.get('deployment_id'),
-                assessment_results=json.loads(request.FILES.get('data').read().decode("utf8", "replace"))
+                assessment_results=sar
+                # assessment_results=json.loads(request.FILES.get('data').read().decode("utf8", "replace"))
             )
         # Need to check of person has access to post to system?
         # Can user view this system?

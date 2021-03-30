@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 ########################################################
 #
 # A simple Python webserver to generate random
@@ -34,23 +36,63 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         return sar
 
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-Type', 'application/json')
-        self.end_headers()
+    def do_GET(self, method=None):
 
-        # Generate a random small number of endpoint assessments
-        sar_list = []
-        for endpoints in range(0,random.randint(1, 4)):
-            sar_list.append(self.mk_sar())
-        data = {"schema": "GovReadySimpleSAR",
-                "version": "0.1",
-                "sar": sar_list
-        }
+        if self.path == "/":
+            """Reply with sample sar"""
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
 
-        # Send the JSON response
-        self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
+            # Generate a random small number of endpoint assessments
+            sar_list = []
+            for endpoints in range(0,random.randint(1, 4)):
+                sar_list.append(self.mk_sar())
+            data = {"schema": "GovReadySimpleSAR",
+                    "version": "0.2",
+                    "name": random.choice([f"Weekly Scan {random.randint(1, 50)}",
+                                           f"Daily Scan {random.randint(1, 365)}",
+                                           f"Build Scan {random.randint(25, 100)}"
+                                         ]),
+                    "system_id": 132,
+                    "sar": sar_list,
+                    "assessment-results": {},
+                    "uuid": "14d593bf-38e9-4702-9367-9e11081f79e1",
+                    "metadata": {
+                        "title": random.choice([f"Weekly Scan {random.randint(1, 50)}",
+                                                f"Daily Scan {random.randint(1, 365)}",
+                                                f"Build Scan {random.randint(25, 100)}"
+                                               ]),
+                        "published": "dateTime-with-timezone",
+                        "last-modified": "dateTime-with-timezone",
+                        "schema": "GovReadySimpleSAR",
+                        "system_id": 132,
+                        "version": "0.2"
+                    }
+            }
 
+            # Send the JSON response
+            self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
+
+        elif self.path == "/hello":
+            """Reply with "hello"""""
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+
+            data = {"message":"hello"}
+            # Send the JSON response
+            self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
+
+        else:
+            """Reply with Path not found"""
+            self.send_response(404)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+
+            data = {"message":"Path not found"}
+            # Send the JSON response
+            self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
 httpd = HTTPServer(('localhost', 8888), SimpleHTTPRequestHandler)
 httpd.serve_forever()

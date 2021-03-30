@@ -15,7 +15,8 @@ v999 (March XX, 2021)
 
 **Developer changes**
 
-* Create `tools/simple_sar_server` to generate synthetic System Assessment Results (summary) data for testing the assessment pages.
+* Create `tools/simple_sar_server/sar.py` to generate synthetic System Assessment Results (summary) data for testing the assessment pages.
+* Create `tools/simple_sar_server/sar_etl.py` as example middleware to transform a SAR to a format GovReady-Q can interpret.
 * Display assessment name in Assessment model admin list.
 
 **Data changes**
