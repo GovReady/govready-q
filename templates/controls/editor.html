@@ -307,9 +307,9 @@
 
                     <!-- Add component button -->
                     <div id="add-control-smt" class="" style="margin-top: 50px;">
-                        <h3>
-                            <button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt({{ impl_smts|length }})">Add statement</button>
-                        </h3>
+
+                            <button type="submit" id="new_component_statement" class="small btn btn-md btn-success" onclick="add_smt({{ impl_smts|length }})">Add statement</button>
+
                     </div>
 
 
@@ -322,7 +322,7 @@
                                     <label for="component">Add existing component statements</label>&nbsp;&nbsp;
                                     <input type="text" class="form-control" id="producer_element_search" name="text" placeholder="Name of component"
                                            onchange="search_components($(this).val(), {{ system.id }})">
-                                </div>
+                                </div><br /><br />
                                 <div class="form-group" class="pull-right">
                                     <select name="selected_producer_element_form_id" id="selected_producer_element_form_id" style="width:340px;">
                                             <option value="Add existing component statements">Add existing component statements</option>
@@ -339,7 +339,7 @@
                                 </div>
 
                             <!-- Search for related components -->
-                            <button type="submit" id="add_related_statements" class="small btn btn-sm btn-success" style="color: white;" onclick="show_related_controls({{ system.id }}); return false;">
+                            <button type="submit" id="add_related_statements" class="small btn btn-sm btn-success" onclick="show_related_controls({{ system.id }}); return false;">
                                 Submit for related
                             </button>
                         </form>
@@ -398,7 +398,7 @@
 
                                 <div class="modal-footer">
                                     <label><input type="checkbox" class="selectall">Select all</label>
-                                    <button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="return check_for_selection()">Submit component statements</button>
+                                    <button type="submit" class="small btn btn-sm btn-success" onclick="return check_for_selection()">Submit component statements</button>
                                     <a href="#" class="btn btn-white" data-dismiss="modal">Close</a>
                                 </div>
                             </div><!-- /.modal-content -->

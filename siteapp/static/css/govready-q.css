@@ -38,6 +38,7 @@ body, blockquote {
 
 
 
+
 h1, h2 {
   font-family: 'Lato', sans-serif;
   font-weight: bold;
@@ -399,3 +400,21 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
       -ms-user-select: all;      /* IE 10+ */
       user-select: all;          /* Likely future */
   }
+
+
+  /* this keeps buttons from being too big */
+  .btn { font-size: 12px;}
+  .btn-app-sm { font-size:12px;}
+  .btn { white-space: normal; }
+  .btn.btn-sm { font-size: 12px; }
+  .btn.btn-xs { font-size: .8em; }
+  .project-button-finished { color: #1A1A1A; }
+
+  /* misc tweaks */
+.navbar .notification.unread a span { font-weight: bold; }
+.glyphicon-globe { color: #888; }
+.portfolio-glyphicons { font-size: 8em; color: #D9D9D9; }
+.modal-body select  { padding:3px; }
+
+#component-detail-content { background:#ffffff; }
+.row-control { background:#ffffff;}
