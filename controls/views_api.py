@@ -69,6 +69,7 @@ def manage_system_assessment_result_api(request, system_id, sar_id=None, methods
     if request.method == 'POST':
         sar = SystemAssessmentResult(
                 name=sar["name"],
+                description=sar["description"],
                 system_id=request.POST.get('system_id'),
                 deployment_id=request.POST.get('deployment_id'),
                 assessment_results=sar

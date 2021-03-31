@@ -232,7 +232,7 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 
 .project-row-style { margin-bottom:1em; }
 .action-row { margin-bottom: 1em; }
-.project-body-block { margin-top: 1em; }
+.project-body-block {}
 
 .project-text { margin: 1em 0; }
 .project-glyphicon-ok { color: #96B; } /* this is not good */

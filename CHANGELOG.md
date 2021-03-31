@@ -12,6 +12,7 @@ v999 (March XX, 2021)
 
 * Polish SAR summary page: add action buttons, use details tag, other improvements.
 * Polish SAR list page: include deployment name.
+* Polish Deployment inventory detail page.
 
 **Developer changes**
 

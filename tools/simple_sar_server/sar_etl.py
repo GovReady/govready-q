@@ -6,7 +6,7 @@
 # assessment results
 #
 # Usage:
-#   python sar_etl.py <apikey> <sar_url>
+#   python sar_etl.py <apikey> <sar_service_url>
 #
 # Example:
 #   python sar_etl.py eCXZbZwmBrtD5hgrJ8ptmJfvDA5vlDcc http://localhost:8888/
@@ -43,7 +43,7 @@ import random
 import uuid
 
 # Default constants
-GOVREADYURL = "http://localhost:8000"
+GOVREADYHOST = "http://localhost:8000"
 SPACER = "\n====\n"
 
 # Gracefully exit on control-C
@@ -75,7 +75,6 @@ def main(apikey,sar_url):
 
     # Set parameters
     # apikey = get_args()
-    print("apikey", apikey)
     # Set system_id, deployment_id
     system_id = 132
     deployment_id = 226
@@ -110,12 +109,13 @@ def main(apikey,sar_url):
               }
 
     # Set GovReady URL
-    gr_url = f"http://localhost:8000/api/v1/systems/{system_id}/assessment/new"
+    gr_api_url = f"{GOVREADYHOST}/api/v1/systems/{system_id}/assessment/new"
 
     # Post to GovReady
-    req = request.Request( gr_url, data=data, headers=headers, method="POST" );
+    req = request.Request( gr_api_url, data=data, headers=headers, method="POST" );
     response = request.urlopen(req)
     response.read()
+    print(response.read())
 
 if __name__ == "__main__":
     main()

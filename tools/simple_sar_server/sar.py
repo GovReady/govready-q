@@ -54,6 +54,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                            f"Daily Scan {random.randint(1, 365)}",
                                            f"Build Scan {random.randint(25, 100)}"
                                          ]),
+                    "description": None,
                     "system_id": 132,
                     "sar": sar_list,
                     "assessment-results": {},
@@ -70,6 +71,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         "version": "0.2"
                     }
             }
+
+            # Temporarily set descriptio to name
+            data["description"] = data["name"]
 
             # Send the JSON response
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))

@@ -45,16 +45,19 @@ System Assessment Results
   .portfolio-table-component { font-size: 1.2em; font-weight:bold; padding:0; margin:0;}
   .portfolio-table-component-desc { font-size: .8em; }
 
+  summary {
+    font-weight: bold;
+    margin: -.5em -.5em 0;
+    padding: .5em;
+    /*border:none;*/
+    outline: none;
+    cursor: pointer;
+  }
+
   details {
     border: 1px solid #aaa;
     border-radius: 4px;
     padding: .5em .5em 0;
-  }
-
-  summary {
-      font-weight: bold;
-      margin: -.5em -.5em 0;
-      padding: .5em;
   }
 
   .sar-item-details {
@@ -76,6 +79,7 @@ System Assessment Results
       <div class="col-md-12">Added {{ sar.created }} {% if sar.description %}- {{ sar.description }}{% endif %}</div>
       <p>&nbsp;</p>
     </div>
+
     <div class="row">
         <div class="col-md-3"><div class="status-box"><h2 class="status">{{ sar_items|length }}</h2> <span class="status-small">total assessments</span></div></div>
         <div class="col-md-3"><div class="status-box"><h2 class="status-success">{{ summary.pass }}</h2> <span class="status-small">total tests passed</span></div></div>
@@ -101,14 +105,14 @@ System Assessment Results
 
     {% endfor %}
 
-    <div class="row">
+    <!-- <div class="row">
         <div class="col-md-12">
           <details>
               <summary>System Assessment Results Raw Data</summary>
               <pre>{{ assessment_results_json }}</pre>
           </details>
         </div>
-    </div>
+    </div> -->
 </div>
 
 {% endblock %}
