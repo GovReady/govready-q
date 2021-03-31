@@ -75,7 +75,7 @@ System Assessment Results
   <div class="tab-content">
 
     <div class="row">
-      <div class="col-md-12"><h2>"{{ sar.name }}" assessment of "{{ sar.deployment.name }}" deployment</h2></div>
+      <div class="col-md-12"><h2>"{{ sar.name }}" assessment summary{% if sar.deployment.name  %} of "{{ sar.deployment.name }}" deployment{% endif %}</h2></div>
       <div class="col-md-12">Added {{ sar.created }} {% if sar.description %}- {{ sar.description }}{% endif %}</div>
       <p>&nbsp;</p>
     </div>

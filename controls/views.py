@@ -3023,7 +3023,7 @@ def system_assessment_results_list(request, system_id=None):
         # Retrieve primary system Project
         # Temporarily assume only one project and get first project
         project = system.projects.all()[0]
-        sars = system.system_assessment_result.all().order_by(Lower('name'))
+        sars = system.system_assessment_result.all().order_by('created').reverse()
 
         # Return the controls
         context = {

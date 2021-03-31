@@ -13,10 +13,15 @@
 #
 #######################################################
 
+# Parse command-line arguments
+import click
+
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 import json
 import random
 import uuid
+from pprint import pprint
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -38,7 +43,22 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self, method=None):
 
-        if self.path == "/":
+        # Parse path
+        # print("urlparse(self.path)", urlparse(self.path))
+        parsed_path = urlparse(self.path)
+        # print("parsed_path", parsed_path)
+        # Parse query params
+        # print("parsed_path.query",parsed_path.query)
+        params = parse_qs(parsed_path.query)
+        print("** params", params)
+        # params are received as arrays, so get first element in array
+        system_id = params.get('system_id', [0])[0]
+        deployment_uuid = params.get('deployment_uuid', ['None'])[0]
+        if deployment_uuid == 'None':
+            deployment_uuid = None
+
+        # Route and handle request
+        if parsed_path.path == "/":
             """Reply with sample sar"""
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -50,35 +70,32 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 sar_list.append(self.mk_sar())
             data = {"schema": "GovReadySimpleSAR",
                     "version": "0.2",
-                    "name": random.choice([f"Weekly Scan {random.randint(1, 50)}",
-                                           f"Daily Scan {random.randint(1, 365)}",
-                                           f"Build Scan {random.randint(25, 100)}"
-                                         ]),
-                    "description": None,
-                    "system_id": 132,
                     "sar": sar_list,
                     "assessment-results": {},
-                    "uuid": "14d593bf-38e9-4702-9367-9e11081f79e1",
+                    "uuid": f"{str(uuid.uuid4())}",
                     "metadata": {
                         "title": random.choice([f"Weekly Scan {random.randint(1, 50)}",
                                                 f"Daily Scan {random.randint(1, 365)}",
                                                 f"Build Scan {random.randint(25, 100)}"
                                                ]),
+                        "description": None,
                         "published": "dateTime-with-timezone",
                         "last-modified": "dateTime-with-timezone",
                         "schema": "GovReadySimpleSAR",
-                        "system_id": 132,
-                        "version": "0.2"
+                        "version": "0.2",
+                        "system_id": system_id,
+                        "deployment_uuid": deployment_uuid
                     }
             }
 
-            # Temporarily set descriptio to name
-            data["description"] = data["name"]
+            # Temporarily set descriptio to title
+            data["metadata"]["description"] = data["metadata"]["title"]
+            pprint(data)
 
             # Send the JSON response
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
-        elif self.path == "/hello":
+        elif parsed_path.path == "/hello":
             """Reply with "hello"""""
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -98,5 +115,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Send the JSON response
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
-httpd = HTTPServer(('localhost', 8888), SimpleHTTPRequestHandler)
-httpd.serve_forever()
+def main():
+    httpd = HTTPServer(('localhost', 8888), SimpleHTTPRequestHandler)
+    httpd.serve_forever()
+
+if __name__ == "__main__":
+    main()

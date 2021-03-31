@@ -6,19 +6,18 @@
 # assessment results
 #
 # Usage:
-#   python sar_etl.py <apikey> <sar_service_url>
+#   python sar_etl.py <apikey> <sar_service_url> [-s <system_id>] [-d <deployment_uuid>]
 #
 # Example:
-#   python sar_etl.py eCXZbZwmBrtD5hgrJ8ptmJfvDA5vlDcc http://localhost:8888/
+#   python sar_etl.py eCXZbZwmBrtD5hgrJ8ptmJfvDA5vlDcc http://localhost:8888/ -s 132 -d f7b0d84e-397c-43de-bb1f-421afa467993
 # Accessing:
 #   curl localhost:8888
 #
-# Usage: install.py [--help] [--non-interactive] [--verbose]
 #
 # Optional arguments:
 #   -h, --help             show this help message and exit
-#   -a, --apikey           api_key for authenticating to GovReady-Q
-#   -t, --sar_url          URL of SAR service
+#   -d                     deployment uuid
+#   -s                     system id
 #   -v, --verbose          output more information
 #
 ################################################################
@@ -70,29 +69,43 @@ class ReturncodeNonZeroError(Exception):
 @click.command()
 @click.argument('apikey', default=None)
 @click.argument('sar_url', default=None)
-def main(apikey,sar_url):
-    # print("sar_url",sar_url, apikey)
+@click.option('-s', default=None)
+@click.option('-d', default=None)
+def main(apikey,sar_url, s, d):
 
-    # Set parameters
-    # apikey = get_args()
-    # Set system_id, deployment_id
-    system_id = 132
-    deployment_id = 226
+    # Set system_id, deployment_uuid
+    system_id = s
+    deployment_uuid = d
+    # deployment_id = 226
+
+    #build query
+    url_query = f"?system_id={system_id}&deployment_uuid={deployment_uuid}"
 
     # Get SAR from SAR Service
-    handler = request.urlopen(sar_url);
+    print(SPACER)
+    print(f"Retrieving SAR from service: {sar_url}{url_query}")
+    handler = request.urlopen(f"{sar_url}{url_query}")
     sar = json.loads(handler.read().decode( 'utf-8' ));
     # print(sar)
 
+    system_id = sar["metadata"]["system_id"]
+
+    if deployment_uuid is not None:
+        d_uuid_uuid = uuid.UUID(f'urn:uuid:{deployment_uuid}')
+    else:
+        d_uuid_uuid = None
     # Submit sar data to GovReady-q API
     data = {
-        "system_id": sar["system_id"],
-        "deployment_id": deployment_id,
+        "system_id": system_id,
+        "deployment_uuid": d_uuid_uuid,
         "sar_json": json.dumps(sar)
     }
+
     from pprint import pprint
+    # pprint(data)
     data = bytes( parse.urlencode( data ).encode() )
 
+    # POST retrieved SAR data to GovReady-Q via API
     """
     curl --header "Authorization: <api_key>" \
     -F "name=test_sar_api" \
@@ -100,7 +113,6 @@ def main(apikey,sar_url):
     -F "deployment_id=23" \
     -F "data=@controls/data/test_data/test_sar1.json" \
     localhost:8000/api/v1/systems/86/assessment/new
-
     """
 
     # Prepare headers
@@ -111,10 +123,15 @@ def main(apikey,sar_url):
     # Set GovReady URL
     gr_api_url = f"{GOVREADYHOST}/api/v1/systems/{system_id}/assessment/new"
 
+    print(SPACER)
+    print(f"Posting retrieved SAR to: {gr_api_url}")
+
     # Post to GovReady
     req = request.Request( gr_api_url, data=data, headers=headers, method="POST" );
     response = request.urlopen(req)
     response.read()
+
+    print(SPACER)
     print(response.read())
 
 if __name__ == "__main__":

@@ -24,6 +24,7 @@ Deployment Inventory
     <div class="row">
       <div class="col-md-12"><h2>"{{ deployment.name }}" deployment</h2></div>
       <div class="col-md-12">Added {{ deployment.created }} {% if deployment.description %}- {{ deployment.description }}{% endif %}</div>
+      <div class="col-md-12"><span class="small">uuid: {{ deployment.uuid }}</span></div>
     </div>
     <div>&nbsp;</div>
 
