@@ -251,11 +251,12 @@ if not environment.get('db'):
 elif isinstance(environment['db'], str):
 	# Set up the database using a connection string.
 	import dj_database_url
-	DATABASES['default'] = dj_database_url.parse(environment['db'], conn_max_age=600)
+	DATABASES['default'] = dj_database_url.parse(environment['db'], conn_max_age=0)
+	DATABASES['default']['ATOMIC_REQUESTS'] = True
 else:
 	# Enable database connection pooling (unless overridden in the
 	# environment settings).
-	DATABASES['default']['CONN_MAX_AGE'] = 60
+	DATABASES['default']['CONN_MAX_AGE'] = 0
 	DATABASES['default'].update(environment['db'])
 
 # Setup the cache. The default is a LocMemCache.
