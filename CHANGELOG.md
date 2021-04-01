@@ -8,7 +8,11 @@ v999 (March XX, 2021)
 
 **Bug fixes**
 
+
 * Change database settings to close connections after each request and set all transactions to atomic by default.
+
+* Make sure new users are granted `view app source` permission when user account created via SSO proxy.
+
 
 v0.9.3.1 (March 23, 2021)
 ----------------------------
