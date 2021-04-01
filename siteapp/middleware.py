@@ -3,6 +3,7 @@ from django.conf import settings
 from django.shortcuts import render
 
 from django.urls import reverse
+from django.contrib.auth.models import Permission
 import django.contrib.auth.backends
 import django.contrib.auth.middleware
 
@@ -103,6 +104,12 @@ class ProxyHeaderUserAuthenticationBackend(django.contrib.auth.backends.RemoteUs
                 user_portfolio.save()
                 # Grant owner permissions on new portfolio to user
                 user_portfolio.assign_owner_permissions(user)
+
+            # Make sure user has permission to view app sources and thus see available compliance apps
+            # New users may not have permission to view app sources, so add permission if user does not have it
+            if not user.has_perm("guidedmodules.view_appsource"):
+                user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
+                user.save()
 
         # Return.
         return user

@@ -79,6 +79,8 @@ def homepage(request):
     signup_form.fields['username'].widget.attrs.pop("autofocus", None)
     login_form.fields['login'].widget.attrs.pop("autofocus", None)
 
+    # Sign / Register new user here and create account
+    # NOTE: When GovReady-Q is in SSO trusting mode, new users accounts are created in siteapp/middelware.py ProxyHeaderUserAuthenticationBackend
     if SIGNUP in request.path or request.POST.get("action") == SIGNUP:
         signup_form = SignupForm(request.POST)
         portfolio_form = PortfolioSignupForm(request.POST)
