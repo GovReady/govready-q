@@ -421,8 +421,6 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 #component-detail-content { background:#ffffff; }
 .row-control { background:#ffffff;}
 
-
-
 /* this is a temporary solution for the navbar being too wide before collapsing to a hamburger. Now it will collapse at 1102px instead of 768px. */
 @media (max-width: 1102px) {
     .navbar-header {
