@@ -78,11 +78,11 @@ if "host" in environment:
 	print("WARNING: Use of 'host' environment parameter deprecated. Please use 'govready-url' environment parameter in future.")
 if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
 	ALLOWED_HOSTS.append(GOVREADY_URL.hostname)
-print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)
 # Support multiple hosts if set
 # `allowed_hosts` must be an ARRAY
 if "allowed_hosts" in environment:
 	ALLOWED_HOSTS.extend(environment["allowed_hosts"])
+print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)
 
 # allauth requires the use of the sites framework.
 SITE_ID = 1
