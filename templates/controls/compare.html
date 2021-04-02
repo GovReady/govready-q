@@ -137,7 +137,7 @@ Remove contextbar from top of page
             <p>The control {{ control.id }} was not found in the control catalog.</p>
           </div>
         {% endif %}
-      
+
       </div>
 
       <div role="tabpanel" class="tab-pane" id="combined">
@@ -165,7 +165,7 @@ Remove contextbar from top of page
 
       <div role="tabpanel" class="tab-pane" id="common_controls">
         <h3>Common Controls - DC2 vs Cloud Factory</h3>
-        
+
         <div id="common-list-from" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6" style="border-right:2px solid #888;">
         <div id="control-description" class="control-text"><h4>Migrating To: Cloud Factory</h4></div>
           {% if control.title is not None %}
@@ -255,7 +255,7 @@ Remove contextbar from top of page
 
       <div role="tabpanel" class="tab-pane" id="component_controls">
           <div id="control-description" class="control-text"><h3>Component Implementations Statements - DC2 vs Cloud Factory</h3></div>
-          
+
           <div id="smt-list-from" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6" style="border-right:2px solid #888;">
             <h4>Migrating From: DC2</h4>
             {% for smt in impl_smts %}
@@ -272,7 +272,7 @@ Remove contextbar from top of page
 
               <div>
                 <form id="smt_{{ forloop.counter }}" class="smt_form">
-                  
+
                     <!-- Never change name of the producer element already associated with a statement -->
                     <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
                     <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
@@ -326,7 +326,7 @@ Remove contextbar from top of page
 
               <div>
                 <form id="smt_{{ forloop.counter }}" class="smt_form">
-                  
+
                     <!-- Never change name of the producer element already associated with a statement -->
                     <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
                     <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
@@ -362,7 +362,7 @@ Remove contextbar from top of page
 
             {% endfor %}
           </div><!--/smt-list-->
-          <div><h3><button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt({{ impl_smts|length }})">Add component statement</button></h3></div>
+          <div><button type="submit" id="new_component_statement" class="small btn btn-md btn-success" onclick="add_smt({{ impl_smts|length }})">Add component statement</button></div>
 </div>
 
     </div>
@@ -395,7 +395,7 @@ Remove contextbar from top of page
         }
 
         // View combined implementation statement
-        
+
         function update_combined_smt() {
           // Read through existing statements and combine into single statement
           combined_smt = $( ".smt_form textarea[name=body]" ).map(function(){return this.value}).get().join("\n\n");
@@ -424,7 +424,7 @@ Remove contextbar from top of page
                   <label for="component">Producer Component</label>
                   <input type="text" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
                     onchange="$('#producer_element-panel_num-title').text($(this).val());">
-                </div>
+                </div><br /><br />
                 <div class="form-group">
                   <input type="hidden" id="smt_id" name="smt_id" value="">
                   <label for="statement">Statement</label>
