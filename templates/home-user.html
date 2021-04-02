@@ -99,6 +99,7 @@ Your Compliance Projects
 {% block contextbar %}{% endblock %}
 
 {% block body %}
+<body class="splash-bg">
 <div class="projects-top">
 
 <div class="container">
@@ -107,7 +108,7 @@ Your Compliance Projects
   <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#" class=" btn btn-success">Start a project</a>
 </div>
 
-<h2>Welcome to {{ sitename }}</h2>
+<h2>Welcome to {% if sitename %}{{sitename}}{% else %}GovReady-Q{% endif %}</h2>
 
 <p>Assess, test, and authorize together</p>
 
