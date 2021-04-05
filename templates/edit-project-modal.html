@@ -9,8 +9,8 @@
                 {% csrf_token %}
                 <div class="modal-body">
                     <label for="project_title">Project Title: </label>
-                    <input id="project_title" type="text" name="project_title" placeholder="{{ project.title }}" value="{{ project.title }}">
-                    <br>
+                    <input id="project_title" type="text" name="project_title" placeholder="{{ project.title }}" value="{{ project.title }}" size="50">
+                    <br><br />
                     <label for="project_version">Project Version: </label>
                     <input id="project_version" type="text" name="project_version" maxlength="100" placeholder="{{ project.root_task.module.spec.version }}" value="{{ project.root_task.module.spec.version }}">
                 </div>
