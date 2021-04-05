@@ -28,7 +28,8 @@ add_viewappsource_permission.short_description = "Add View Appsource permission 
 
 class UserAdmin(contribauthadmin.UserAdmin):
     ordering = ('username',)
-    list_display = ('id', 'email', 'date_joined', 'notifemails_enabled', 'notifemails_last_notif_id') # base has first_name, etc. fields that we don't have on our model
+    list_display = ('id', 'username', 'email', 'date_joined', 'notifemails_enabled', 'notifemails_last_notif_id') # base has first_name, etc. fields that we don't have on our model
+    search_fields = ('id', 'username', 'email', 'role', 'description')
     actions = [add_viewappsource_permission]
     pass
 
@@ -146,6 +147,7 @@ class ProjectMembershipAdmin(admin.ModelAdmin):
 
 class PortfolioAdmin(GuardedModelAdmin):
     list_display = ('title', 'description')
+    search_fields = ('title', 'description')
     fields = ('title', 'description')
 
 class SupportAdmin(admin.ModelAdmin):

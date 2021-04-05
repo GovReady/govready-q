@@ -24,18 +24,19 @@ class ExportCsvMixin:
 
     export_as_csv.short_description = "Export Selected as CSV"
 
-
 class ImportRecordAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('created', 'uuid')
     actions = ["export_as_csv"]
 
 class StatementAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     list_display = ('id', 'sid', 'sid_class', 'producer_element', 'statement_type', 'uuid')
+    search_fields = ('id', 'sid', 'sid_class', 'producer_element', 'uuid')
     actions = ["export_as_csv"]
     readonly_fields = ('created', 'updated', 'uuid')
 
 class ElementAdmin(GuardedModelAdmin, ExportCsvMixin):
     list_display = ('name', 'full_name', 'id', 'uuid')
+    search_fields = ('name', 'full_name', 'uuid', 'id')
     actions = ["export_as_csv"]
 
 class ElementControlAdmin(admin.ModelAdmin, ExportCsvMixin):
@@ -45,6 +46,7 @@ class ElementControlAdmin(admin.ModelAdmin, ExportCsvMixin):
 
 class ElementRoleAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('id', 'role', 'description')
+    search_fields = ('role', 'description')
     actions = ["export_as_csv"]
     readonly_fields = ('created', 'updated')
 
@@ -65,7 +67,8 @@ class ElementCommonControlAdmin(admin.ModelAdmin, ExportCsvMixin):
     actions = ["export_as_csv"]
 
 class PoamAdmin(admin.ModelAdmin, ExportCsvMixin):
-    list_display = ('id', 'statement')
+    list_display = ('id', 'poam_id', 'statement', 'controls', 'uuid')
+    search_fields = ('id', 'poam_id', 'statement', 'controls', 'uuid')
     actions = ["export_as_csv"]
 
     def uuid(self, obj):
@@ -76,13 +79,15 @@ class PoamAdmin(admin.ModelAdmin, ExportCsvMixin):
 
 class DeploymentAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     list_display = ('id', 'name', 'system')
+    search_fields = ('id', 'name', 'uuid')
     actions = ["export_as_csv"]
 
     def uuid(self, obj):
         return obj.deployment.uuid
 
 class SystemAssessmentResultAdmin(admin.ModelAdmin):
-    list_display = ('id', 'system', 'deployment')
+    list_display = ('id', 'name', 'system', 'deployment', 'uuid')
+    search_fields = ('id', 'name', 'system', 'deployment', 'uuid')
 
 
 admin.site.register(ImportRecord, ImportRecordAdmin)
