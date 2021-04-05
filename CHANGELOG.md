@@ -1,8 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (March XX, 2021)
-----------------------------
+v999 (April XX, 2021)
+---------------------
+
+[Add changes here]
+
+v0.9.3.2 (April 1st, 2021)
+--------------------------
 
 * Added sitename model, separated content (splash.html) on index page from index.html and footer.html as well for branding purposes. Removed erroneous tags and cleaned up some CSS. Breadcrumb (context-bar) is hidden on index page now.
 
@@ -15,7 +20,7 @@ v999 (March XX, 2021)
 
 
 v0.9.3.1 (March 23, 2021)
-----------------------------
+-------------------------
 
 **Feature changes**
 
