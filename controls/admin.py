@@ -35,7 +35,7 @@ class StatementAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     readonly_fields = ('created', 'updated', 'uuid')
 
 class ElementAdmin(GuardedModelAdmin, ExportCsvMixin):
-    list_display = ('name', 'full_name', 'id', 'uuid')
+    list_display = ('name', 'full_name', 'element_type', 'id', 'uuid')
     search_fields = ('name', 'full_name', 'uuid', 'id')
     actions = ["export_as_csv"]
 
