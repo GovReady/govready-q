@@ -1,0 +1,117 @@
+id: speedy_ssp_basic_info
+title: Speedy SSP Basic Info
+introduction:
+  format: markdown
+  template: |
+    This is the Speedy SSP module for GovReady-Q.
+
+
+    The Speedy SSP module can be used to generate a quick, no-nonsense SSP. Let's gather some essential information about your IT System.
+
+questions:
+- id: system_name
+  title: System Name
+  prompt: What is the name of your IT System?
+  type: text
+  help: Enter the full or official name, not an acronym.
+  actions:
+    - value: "*"
+      action: system/update_system_and_project_name/name
+      comment: Update system name and project name
+
+- id: internal_customer
+  title: Internal or External Application
+  prompt: |
+    Is this system internal or external to your organization?
+
+
+    Is this system an internal application or an external, client facing application?
+  type: choice
+  choices:
+  - key: internal
+    text: Internal
+    help: System is stored on one of this organization's environments.
+  - key: external
+    text: External
+    help: System is stored or being managed on an external environment, like in a customer's environment.
+
+- id: identity_management
+  title: Identity and Access Management
+  prompt: |
+    What identity and access management software do you use?
+
+
+    You answered in the Basic Info section that {{system_name}} is hosted internally within this organization. What tool manages identity and access credentials?
+  type: choice
+  choices:
+  - key: awsiam
+    text: AWS IAM
+  - key: active_directory
+    text: Microsoft Active Directory
+  impute:
+  - condition: internal_customer != 'internal'
+    value: ~
+  actions:
+    - value: awsiam
+      action: element/add_role/AWSIAM
+      comment: Add elements assigned AWS IAM to selected components
+    - value: awsiam
+      action: element/del_role/MicrosoftActiveDirectory
+      comment: Delete elements assigned Microsoft Active Directory from selected components
+    - value: active_directory
+      action: element/add_role/MicrosoftActiveDirectory
+      comment: Add elements assigned Microsoft Active Directory to selected components
+    - value: active_directory
+      action: element/del_role/AWSIAM
+      comment: Delete elements assigned AWS IAM from selected components
+
+- id: training
+  title: Training
+  prompt: |
+    Which service does {{system_name}} use to manage team training?
+  type: choice
+  choices:
+  - key: cybrary
+    text: Cybrary
+    help: Cybrary is a cybersecurity and IT workforce development platform.
+  - key: ilias
+    text: ILIAS
+    help: ILIAS is an open-source web-based learning management system. It supports learning content management and tools for collaboration, communication, evaluation and assessment.
+  actions:
+    - value: cybrary
+      action: element/add_role/Cybrary
+      comment: Add elements assigned Cybrary to selected components
+    - value: cybrary
+      action: element/del_role/ILIAS
+      comment: Delete elements assigned ILIAS from selected components
+    - value: ilias
+      action: element/add_role/ILIAS
+      comment: Add elements assigned ILIAS to selected components
+    - value: ilias
+      action: element/del_role/Cybrary
+      comment: Delete elements assigned Cybrary from selected components
+
+- id: fisma_level
+  title: FISMA Level
+  prompt: What is {{system_name}}'s tentative FISMA compliance level?
+  type: choice
+  choices:
+  - key: Low
+    text: Low
+    help: Low impact indicates that the loss of confidentiality, integrity, or availability is expected to have a limited adverse effect on organizational operations, organizational assets, or individuals.
+  - key: Moderate
+    text: Moderate
+    help: Moderate impact indicates that the loss of confidentiality, integrity, or availability is expected to have a serious adverse effect on organizational operations, organizational assets, or individuals.
+  - key: High
+    text: High
+    help: High impact indicates the loss of confidentiality, integrity, or availability is expected to have a severe or catastrophic adverse effect on organizational operations, organizational assets, or individuals.
+  actions:
+    - value: Low
+      action: system/assign_baseline/NIST_SP-800-53_rev4=+=low
+      comment: Assign 800-53 Rev 4 Low baseline set of controls to a system
+    - value: Moderate
+      action: system/assign_baseline/NIST_SP-800-53_rev4=+=moderate
+      comment: Assign 800-53 Rev 4 Moderate baseline set of controls to a system
+    - value: High
+      action: system/assign_baseline/NIST_SP-800-53_rev4=+=high
+      comment: Assign 800-53 Rev 4 High baseline set of controls to a system

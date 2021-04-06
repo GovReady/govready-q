@@ -12,7 +12,7 @@ from jsonfield import JSONField
 from natsort import natsorted
 
 from siteapp.model_mixins.tags import TagModelMixin
-from .oscal import Catalogs, Catalog
+from controls.oscal import Catalogs, Catalog
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
 from copy import deepcopy
@@ -215,6 +215,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
     description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=True, null=True)
     element_type = models.CharField(max_length=150, help_text="Component type", unique=False, blank=True, null=True)
+    roles = models.ManyToManyField('ElementRole', related_name='elements', blank=True, help_text="Roles assigned to the Element")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
@@ -259,22 +260,58 @@ class Element(auto_prefetch.Model, TagModelMixin):
         except:
             return False
 
+    @transaction.atomic
+    def remove_element_control(self, oscal_ctl_id, oscal_catalog_key):
+        """Remove a selected control from a system.root_element"""
+
+        try:
+            if ElementControl.objects.filter(element=self, oscal_ctl_id=oscal_ctl_id, oscal_catalog_key=oscal_catalog_key).exists():
+                ElementControl.objects.get(element=self, oscal_ctl_id=oscal_ctl_id, oscal_catalog_key=oscal_catalog_key).delete()
+            result = True
+        except:
+            result = False
+
+        return result
+
+    @transaction.atomic
     def assign_baseline_controls(self, user, baselines_key, baseline_name):
-        """Assign set of controls from baseline to an element"""
+        """Assign set of controls from baseline to system.root_element"""
 
         # Usage
             # s = System.objects.get(pk=20)
-            # s.root_element.assign_baseline_controls('NIST_SP-800-53_rev4', 'low')
+            # s.root_element.assign_baseline_controls(user, 's', 'low')
 
-        can_assign_controls = user.has_perm('change_element', self)
+        # Get system's existing selected controls and build list control ids
+        selected_controls_cur = self.controls.all()
+        selected_controls_ids_cur = set([f"{sc.oscal_ctl_id}=+={sc.oscal_catalog_key}" for sc in selected_controls_cur])
+
+        # Create object to track controls added, removed, and no_change in existing selected controls
+        changed_controls = {"add": [], "remove": [], "no_change": []}
+
         # Does user have edit permissions on system?
-        if  can_assign_controls:
-            from controls.models import Baselines
+        can_assign_controls = user.has_perm('change_element', self)
+        if can_assign_controls:
             bs = Baselines()
             controls = bs.get_baseline_controls(baselines_key, baseline_name)
             for oscal_ctl_id in controls:
-                ec = ElementControl(element=self, oscal_ctl_id=oscal_ctl_id, oscal_catalog_key=baselines_key)
-                ec.save()
+                if f"{oscal_ctl_id}=+={baselines_key}" in selected_controls_ids_cur:
+                    # Control already in selected, just append to 'no_change' list
+                    changed_controls['no_change'].append(f"{oscal_ctl_id}=+={baselines_key}")
+                    next
+                else:
+                    # Control in in selected, add control to selected controls and append to 'add' list
+                    ec = ElementControl(element=self, oscal_ctl_id=oscal_ctl_id, oscal_catalog_key=baselines_key)
+                    ec.save()
+                    changed_controls['add'].append(f"{oscal_ctl_id}=+={baselines_key}")
+            # We are done adding new controls to selected
+            # Now remove controls previously selected but not in new baseline
+            selected_controls_ids_new = set([f"{oscal_ctl_id}=+={baselines_key}" for oscal_ctl_id in controls])
+            for scc in selected_controls_ids_cur:
+                if scc not in selected_controls_ids_new:
+                    oscal_ctl_id_rm = scc.split("=+=")[0]
+                    remove_result = self.remove_element_control(oscal_ctl_id_rm, baselines_key)
+                    if remove_result:
+                        changed_controls['remove'].append(scc)
             return True
         else:
             # print("User does not have permission to assign selected controls to element's system.")
@@ -402,6 +439,19 @@ class ElementControl(auto_prefetch.Model):
     #     # Error checking
     #     return impl_smt
 
+class ElementRole(auto_prefetch.Model):
+    role = models.CharField(max_length=250, help_text="Common name or acronym of the role", unique=True, blank=False, null=False)
+    description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=False, null=False)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    def __str__(self):
+        return "'%s id=%d'" % (self.role, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "'%s id=%d'" % (self.role, self.id)
+
 class System(auto_prefetch.Model):
     root_element = auto_prefetch.ForeignKey(Element, related_name="system", on_delete=models.CASCADE, help_text="The Element that is this System. Element must be type [Application, General Support System]")
     fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=True, null=True)
@@ -446,6 +496,29 @@ class System(auto_prefetch.Model):
             return True
         except:
             return False
+
+    def add_control(self, catalog_key, control_id):
+         """Add ElementControl (e.g., selected control) to a system"""
+
+         control = ElementControl(element=self.root_element,
+                                  oscal_catalog_key=catalog_key,
+                                  oscal_ctl_id=control_id
+                                 )
+         control.save()
+         return control
+
+    def remove_control(self, control_id):
+        """Remove ElementControl (e.g., selected control) from a system"""
+        control = ElementControl.objects.get(pk=control_id)
+
+        # Delete Control Statements
+        self.root_element.statements_consumed.filter(statement_type="control_implementation",
+                                                     sid_class=control.oscal_catalog_key,
+                                                     sid=control.oscal_ctl_id
+                                                     ).delete()
+
+        control.delete()
+        return control
 
     @property
     def smts_common_controls_as_dict(self):
@@ -524,7 +597,8 @@ class System(auto_prefetch.Model):
             # Poor performance, at least in some instances, appears to being caused by `smt.producer_element.name`
             # parameter in the below statement.
             if smt.producer_element:
-                smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i>\n{status_str}\n\n{smt.body}\n\n"
+                smt_formatted = smt.body.replace('\n','<br/>')
+                smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i><br/>{status_str}<br/><br/>{smt_formatted}<br/><br/>"
             # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
             # for testing purposes, the loop runs 3x faster
             # The reference `smt.producer_element.name` appears to be calling the database and creating poor performance

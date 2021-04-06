@@ -178,7 +178,7 @@
     <div class="row">
       <div class="col-md-3">
         <div class="status-box">
-          <h2 class="status">{{ controls_status_count.Addressed }} of {{ project.system.control_implementation_as_dict|length }}</h2>
+          <h2 class="status">{{ controls_status_count.Addressed }} of {{ project.system.root_element.controls.all|length }}</h2>
           <span class="status-small">controls addressed</span>
         </div>
       </div>

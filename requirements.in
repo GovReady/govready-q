@@ -18,11 +18,12 @@ graphviz # MIT License
 fs # BSD License
 PyGithub # LGPL License
 GitPython # BSD License
-Pygments==2.7.3 # BSD License
+Pygments==2.7.4 # BSD License
 termcolor # MIT License
 xxhash # BSD License
 importlib-resources<2,>=1.0 # Apache License
 pyinstrument==3.2.0 # BSD License
+
 jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages

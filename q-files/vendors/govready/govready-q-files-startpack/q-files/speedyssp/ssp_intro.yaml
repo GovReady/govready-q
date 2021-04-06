@@ -1,0 +1,19 @@
+id: ssp_intro
+title: System Security Plan
+
+questions:
+- id: q1
+  title: Overview
+  prompt: |
+    Draft System Security Plan
+
+
+    A System Security Plan provides a detailed description of your IT System
+    and how you are providing controls on the system.
+
+    We've prepared a draft System Security Plan based on what you've told us about your system.
+  type: interstitial
+
+output:
+- templates/ssp_v1.md
+- templates/ssp_v1_oscal_json.md

@@ -167,11 +167,13 @@
             <div id="search-form-container" class="pull-right" style="margin: 12px 12px 0px 0px;">
               <form action="{% url 'component_library_component' element_id=element.id %}" method="GET">
                   <div class="form-inline pull-right create-nav">
-                      <a id="search-reset" href="{% url 'component_library_component' element_id=element.id %}" class="btn btn-danger btn-xs">Reset</a>
                       <div class="form-group">
                           <div class="input-group">
-                              <div class="input-group-addon">search</div>
-                              <input name="search" value="{{ request.GET.search }}" type="text" placeholder="Search by control">
+                              <input id="searchbox" name="search" value="{{ request.GET.search }}" type="text" placeholder="search control">
+                              <span id="searchicon" class="glyphicon glyphicon-search" href="{% url 'component_library' %}"></span>
+                              {% if request.GET.search %}
+                                <a id="searchclear" class="glyphicon glyphicon-remove" href="{% url 'component_library_component' element_id=element.id %}"></a>
+                              {% endif %}
                           </div>
                       </div>
                       <div>
@@ -291,7 +293,7 @@
             {% endfor %}
           </div><!--/smt-list-->
         <div>
-          <button type="submit" id="new_component_statement" class="small btn btn-xs btn-success" style="color: white;" onclick="add_smt({{ impl_smts|length }})">Add component statement</button>
+          <button type="submit" id="new_component_statement" class="small btn btn-xs btn-success" onclick="add_smt({{ impl_smts|length }})">Add component statement</button>
         </div>
 
 
@@ -341,8 +343,10 @@
 
 
           $(".control-select").select2({
+
+                  language: { inputTooShort: function() { return 'Please enter your search'; } },
                   ajax: {
-                      url: "/controls/api/controlsselect/",
+                      url: '{% url 'api_controls_select' %}',
                       dataType: 'json',
                       delay: 250,
                       data: function(params) {
@@ -351,15 +355,6 @@
                           };
                       },
                       processResults: function(data, params) {
-                        console.log(data.data.controls.length)
-                        // data.data.controls.forEach(function(item, index, array) {
-                        //   console.log(item, index)
-                        // });
-                        console.log("params: "+params);
-                          // parse the results into the format expected by Select2
-                          // since we are using custom formatting functions we do not need to
-                          // alter the remote JSON data, except to indicate that infinite
-                          // scrolling can be used
                           var resData = [];
                           data.data.controls.forEach(function(value) {
                               if (value.display_text.indexOf(params.term) != -1)
@@ -374,7 +369,8 @@
                               })
                           };
                       },
-                      cache: true
+                      // Note: Not caching 1st/full listing so results always reflect the latest
+                      cache: false
                   },
                   minimumInputLength: 1
               });
