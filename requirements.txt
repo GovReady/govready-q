@@ -222,7 +222,12 @@ django==3.1.8 \
     #   django-guardian
     #   django-model-utils
     #   django-notifications-hq
+    #   djangorestframework
     #   jsonfield
+djangorestframework==3.12.4 \
+    --hash=sha256:6d1d59f623a5ad0509fe0d6bfe93cbdfe17b8116ebc8eda86d45f6e16e819aaf \
+    --hash=sha256:f747949a8ddac876e879190df194b925c177cdeb725a099db1460872f7c0a7f2
+    # via -r requirements.in
 dnspython==2.1.0 \
     --hash=sha256:95d12f6ef0317118d2a1a6fc49aac65ffec7eb8087474158f42f26a639135216 \
     --hash=sha256:e4a87f0b573201a0f3727fa18a516b055fd1107e0e5477cded4a2de497df1dd4
