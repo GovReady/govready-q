@@ -41,6 +41,7 @@ whitenoise # MIT License
 django-guardian # MIT License
 django-simple-history # BSD License
 django-auto-prefetch # MIT License
+djangorestframework # BSD License
 
 
 # Python Packages Developed by GovReady and/or Josh
