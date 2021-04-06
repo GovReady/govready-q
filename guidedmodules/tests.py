@@ -2,11 +2,8 @@ from django.contrib.auth.models import Permission
 from django.core.files import File
 from django.db.models import Q
 from django.test import TestCase
-from django.utils.crypto import get_random_string
-
 from siteapp.enums.assets import AssetTypeEnum
 from siteapp.models import Organization, Project, User, ProjectAsset
-from siteapp.tests import SeleniumTest, wait_for_sleep_after
 from .app_loading import load_app_into_database
 from .models import Module, Task, AppVersion
 from .module_logic import *

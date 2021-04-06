@@ -1310,10 +1310,16 @@ def new_folder(request):
     return JsonResponse({ "status": "ok", "id": f.id, "title": f.title })
 
 def project_admin_login_post_required(f):
+
     # Wrap the function to do authorization and change arguments.
     def g(request, project_id, *args):
-        # Get project, check authorization.
-        project = get_object_or_404(Project, id=project_id)
+
+        if not isinstance(project_id, Project):
+            # Get project, check authorization.
+            project = get_object_or_404(Project, id=project_id)
+        else:
+            project = project_id
+
         has_owner_project_portfolio_permissions = request.user.has_perm('can_grant_portfolio_owner_permission', project.portfolio)
         if request.user not in project.get_admins() and not has_owner_project_portfolio_permissions:
             return HttpResponseForbidden()
@@ -1329,7 +1335,7 @@ def project_admin_login_post_required(f):
 
     return g
 
-
+#@project_admin_login_post_required
 def rename_project(request, project):
     # Update the project's title, which is actually updating its root_task's title_override.
     # If the title isn't changing, don't store it. If the title is set to empty, clear the
