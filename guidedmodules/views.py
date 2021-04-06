@@ -15,7 +15,7 @@ import guidedmodules.module_logic as module_logic
 import guidedmodules.answer_validation as answer_validation
 from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership
-from siteapp.forms import ProjectForm
+from siteapp.forms import AddProjectForm
 from controls.models import Element, ElementRole, Statement
 
 import fs, fs.errors
@@ -976,7 +976,7 @@ def show_question(request, task, answered, context, q):
         "is_question_page": True,
     })
     context.update({
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
     })
     return render(request, "question.html", context)
 
@@ -1185,7 +1185,7 @@ def task_finished(request, task, answered, context, *unused_args):
         "next_module": next_module,
         "next_module_spec": next_module_spec,
         "gr_pdf_generator": settings.GR_PDF_GENERATOR,
-        "project_form": ProjectForm(request.user, initial={'portfolio': task.project.portfolio.id}) if task.project.portfolio else ProjectForm(request.user)
+        "project_form": AddProjectForm(request.user, initial={'portfolio': task.project.portfolio.id}) if task.project.portfolio else AddProjectForm(request.user)
     })
     return render(request, "task-finished.html", context)
 
