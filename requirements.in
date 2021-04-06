@@ -78,6 +78,7 @@ parsel # BSD License
 
 # Documentation only
 m2r # MIT License
+sphinx # BSD License
 sphinxcontrib-contentui # MIT License
 # Temporarily pinned.
 

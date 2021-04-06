@@ -1,5 +1,6 @@
 import re
 import sys
+import glob
 from .settings import *
 
 INSTALLED_APPS += [
@@ -122,11 +123,18 @@ MAILGUN_API_KEY = environment.get('mailgun_api_key', '') # for the incoming mail
 
 VALIDATE_EMAIL_DELIVERABILITY = True
 
+# sphinx has a hard time finding VERSION
+if glob.glob('../VERSION') != []:
+    version_filepath = glob.glob('../VERSION')[0]
+else:
+    version_filepath = "VERSION"
+
+
 # Get the version of this software from the VERSION file which has up to two lines.
 # The first line is a version string for display. The second line is the git commit
 # hash that the build was based on. If the second line isn't present, we use git to
 # get the hash of current HEAD, plus a marker if there are local modifications.
-with open("VERSION") as f:
+with open(version_filepath) as f:
     APP_VERSION_STRING = f.readline().strip()
     APP_VERSION_COMMIT = f.readline().strip()
 if not APP_VERSION_COMMIT and os.path.exists(".git"):
