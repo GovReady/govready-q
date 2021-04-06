@@ -977,9 +977,11 @@ def project_edit(request, project_id):
             project_module = Module.objects.get(id=project.root_task.module.id)
             # Change project version
             project_version = request.POST.get("project_version", "").strip() or None
+            project_version_comment = request.POST.get("project_version_comment", "").strip() or None
 
-            # ordered dict fields dont have attributes, they have keys.
+            # Adding project version and comment
             project.version = project_version
+            project.version_comment = project_version_comment
             project.save()
 
             # Change compliance app version
