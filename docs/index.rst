@@ -11,6 +11,7 @@ Welcome to GovReady-Q's documentation!
    :caption: Contents:
 
    controls/controls.rst
+   deployment/deployment.rst
    discussion/discussion.rst
    guidedmodules/guidedmodules.rst
    loadtesting/loadtesting.rst
