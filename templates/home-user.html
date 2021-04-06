@@ -16,6 +16,7 @@ Your Compliance Projects
 
 {% block body %}
 {% load static %}
+<body class="splash-bg">
 <div class="projects-top">
 
 <div class="container">
@@ -24,7 +25,7 @@ Your Compliance Projects
 <!--  <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#" class=" btn btn-success">Start a project</a>-->
 </div>
 
-<h2 class="home">Welcome to your Governance, Risk Management, and Compliance tool</h2>
+<h2 class="home">Welcome to {% if sitename %}{{sitename}}{% else %}GovReady-Q{% endif %}</h2>
 
 <div class="row">
 
@@ -47,8 +48,6 @@ Your Compliance Projects
 </div>
 </div>
 
-
-
 <!-- start module -->
   <div class="col-md-12">
     <div class="home-box home-hover">
@@ -69,66 +68,49 @@ Your Compliance Projects
    </div>
   </div>
 
-
-
 <!-- start module -->
 <div class="col-md-12">
   <div class="home-box home-hover">
     <div class="home-icon"><img src="{% static "img/icons/home-components.png" %}" style="width:75px;"></div>
-{% if total_comps > 0 %}
-<h4 class="home">You've got {{ total_comps }} components!</h4>
-{% else %}
-<h4 class="home">You don't have any component yet!</h4>
-{% endif %}
- <p>Components are the building blocks of a System Security Plan. You can add additional components by importing OSCAL files or by <a id="component-new" href="{% url 'new_element' %}">creating a component</a> yourself.</p>
-<span class="home-view-link"><a href="{% url 'component_library' %}">View component library</a></span>
- </div>
+    {% if total_comps > 0 %}
+      <h4 class="home">You've got {{ total_comps }} components!</h4>
+    {% else %}
+      <h4 class="home">You don't have any component yet!</h4>
+    {% endif %}
+    <p>Components are the building blocks of a System Security Plan. You can add additional components by importing OSCAL files or by <a id="component-new" href="{% url 'new_element' %}">creating a component</a> yourself.</p>
+    <span class="home-view-link"><a href="{% url 'component_library' %}">View component library</a></span>
+  </div>
 </div>
-
-
 
 <!-- start module -->
   <div class="col-md-12">
     <div class="home-box home-hover">
       <div class="home-icon"><img src="{% static "img/icons/home-gears.png" %}" style="width:75px;"></div>
-    <h4 class="home">Get to know GovReady-Q</h4>
-<p>Check out our documentation to learn how to take full advantage of the GovReady-Q GRC tool.</p>
+      <h4 class="home">Get to know GovReady-Q</h4>
+      <p>Check out our documentation to learn how to take full advantage of the GovReady-Q GRC tool.</p>
       <span class="home-view-link"><a href="https://govready-q.readthedocs.org" target="_new">View the documentation</a></span>
-         </div>
-
-        </div>
+    </div>
+  </div>
 
 <!-- This is not yet operational (it will replace the "govready documentation" box eventually)...
   <div class="col-md-6">
     <div class="home-box home-hover">
       <div class="home-icon"><img src="{% static "img/icons/home-catalogs.png" %}" style="width:75px;"></div>
-   {% if catalogs_access|length < 1 %}
-   <h4 class="home">You do not currently have access to any catalogs.</h4>
-   {% else %}
-   <h4 class="home">You have access to {{ catalogs|length }} catalog{{ catalogs|pluralize }}</h4>
-   {% endif %}
-   <p>Catalogs provide specific guidance for implementing security controls.</p>
-
-   <ol class="home-list">
-   <li>Control catalog here</li>
-   </ol>
-<span class="home-view-link"><a href="#">View the control catalog</a></span>
-   </div>
-
+      {% if catalogs_access|length < 1 %}
+        <h4 class="home">You do not currently have access to any catalogs.</h4>
+      {% else %}
+        <h4 class="home">You have access to {{ catalogs|length }} catalog{{ catalogs|pluralize }}</h4>
+      {% endif %}
+      <p>Catalogs provide specific guidance for implementing security controls.</p>
+      <ol class="home-list">
+        <li>Control catalog here</li>
+      </ol>
+      <span class="home-view-link"><a href="#">View the control catalog</a></span>
+    </div>
   </div>
 -->
 </div>
 
-
-
-
-
-
-
-
-
-
 <!-- Display grid of options -->
-
 
 {% endblock %}

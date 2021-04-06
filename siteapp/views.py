@@ -25,7 +25,7 @@ from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
 
 from controls.models import Element, System, Statement, Poam, Deployment
-from system_settings.models import SystemSettings
+from system_settings.models import SystemSettings, Classification, Sitename
 
 
 from .forms import PortfolioForm, ProjectForm
@@ -56,6 +56,7 @@ def home_user(request):
 
     return render(request, "home-user.html", {
         "content": "some content",
+        "sitename" : Sitename.objects.last(),
         "users": User.objects.all(),
         "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
         "projects_access": Project.get_projects_with_read_priv(request.user, excludes={"contained_in_folders": None}),
@@ -82,6 +83,8 @@ def homepage(request):
     signup_form.fields['username'].widget.attrs.pop("autofocus", None)
     login_form.fields['login'].widget.attrs.pop("autofocus", None)
 
+    # Sign / Register new user here and create account
+    # NOTE: When GovReady-Q is in SSO trusting mode, new users accounts are created in siteapp/middelware.py ProxyHeaderUserAuthenticationBackend
     if SIGNUP in request.path or request.POST.get("action") == SIGNUP:
         signup_form = SignupForm(request.POST)
         portfolio_form = PortfolioSignupForm(request.POST)
@@ -147,6 +150,7 @@ def homepage(request):
 
     return render(request, "index.html", {
         "hide_registration": SystemSettings.hide_registration,
+        "sitename" : Sitename.objects.last(),
         "signup_form": signup_form,
         "portfolio_form": portfolio_form,
         "login_form": login_form,
@@ -956,6 +960,8 @@ def project(request, project):
         "projects": Project.objects.all(),
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
+
+        "class_status" : Classification.objects.last(),
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
         "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),

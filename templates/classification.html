@@ -1,0 +1,59 @@
+<!--
+  SF-710: RGB:   0, 122,  51 / HEX: #007a33 | https://www.pantone.com/color-finder/356-C
+  SF-708: RGB:   0,  51, 160 / HEX: #0033a0 | https://www.pantone.com/color-finder/286-C
+  SF-707: RGB: 200,  16,  46 / HEX: #c8102e | https://www.pantone.com/color-finder/186-C
+  SF-706: RGB: 255, 103,  31 / HEX: #ff671f | https://www.pantone.com/color-finder/165-C
+  SF-712: RGB: 247, 234,  72 / HEX: #f7ea48 | https://www.pantone.com/color-finder/101-C
+  SF-709: RGB: 193, 167, 226 / HEX: #c1a7e2 | https://www.pantone.com/color-finder/264-C
+
+      Default (UNCLASSIFIED)
+
+      CONFIDENTIAL
+      message='CONFIDENTIAL'
+      fgcolor='#FFFFFF'
+      bgcolor='#0033A0'
+
+      SECRET
+      message='SECRET'
+      fgcolor='#FFFFFF'
+      bgcolor='#C8102E'
+
+      TOP SECRET
+      message='TOP SECRET'
+      fgcolor='#FFFFFF'
+      bgcolor='#FF671F'
+
+      TOP SECRET//SCI
+      message='TOP SECRET//SCI'
+  	  fgcolor="#000000'
+      bgcolor='#F7EA48'
+
+      CLASSIFIED
+      message='CLASSIFIED'
+      fgcolor="#000000"
+
+-->
+
+<style>
+  .classification-bar-fouo { background-color:#007A33; padding:2px 0 2px 0; }
+  .classification-bar-confidential { background-color:#0033A0; padding:2px 0 2px 0; }
+  .classification-bar-secret { background-color:#C8102E; padding:2px 0 2px 0; }
+  .classification-bar-topsecret { background-color:#FF671F; padding:2px 0 2px 0; }
+  .classification-text { display:block; text-align: center; font-size: .6em; color: #fff; }
+</style>
+
+{# This is just a bare minimum for demo. Needs to be elaborated upon. Classified intentionally left out because it has complicated implications. #}
+
+{% if class_status %}
+{% if class_status|stringformat:"s" == "UNCLASSIFIED" %}
+<div class="classification-bar-fouo"><span class="classification-text">UNCLASSIFIED</span></div>
+{% elif class_status|stringformat:"s" == "CONFIDENTIAL" %}
+<div class="classification-bar-confidential"><span class="classification-text">CONFIDENTIAL</span></div>
+{% elif class_status|stringformat:"s" == "SECRET" %}
+<div class="classification-bar-secret"><span class="classification-text">SECRET</span></div>
+{% elif class_status|stringformat:"s" == "TOPSECRET" %}
+<div class="classification-bar-topsecret"><span class="classification-text">TOP SECRET</span></div>
+{% else %}
+<!-- no classification bar needed -->
+{% endif %}
+{% endif %}

@@ -18,7 +18,7 @@ body, blockquote {
 }
 
 #context-bar {
-  padding: 14px 0 8px 0;
+  padding: 25px 0 8px 0;
   margin-bottom: 8px;
 }
 
@@ -33,7 +33,10 @@ body, blockquote {
   color: black;
 }
 
+
+
 .glyphicon-globe { color: #888; }
+
 
 
 
@@ -390,3 +393,77 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
     padding-bottom: 8px;
     margin-top: -20px;
   }
+
+/* displays OSCAL in a scrolling div */
+  .display-oscal {
+    overflow: scroll;
+    height:500px;
+    word-wrap: break-word;
+    display:block;
+    margin: 2em;
+    padding: 1em;
+    border:1px solid #D9D9D9;
+    overflow-wrap: break-word;
+    width: 95%;
+    -webkit-user-select: all;  /* Chrome all / Safari all */
+      -moz-user-select: all;     /* Firefox all */
+      -ms-user-select: all;      /* IE 10+ */
+      user-select: all;          /* Likely future */
+  }
+
+
+  /* this keeps buttons from being too big */
+  .btn { font-size: 12px;}
+  .btn-app-sm { font-size:12px;}
+  .btn { white-space: normal; }
+  .btn.btn-sm { font-size: 12px; }
+  .btn.btn-xs { font-size: .8em; }
+  .project-button-finished { color: #1A1A1A; }
+
+  /* misc tweaks */
+.navbar .notification.unread a span { font-weight: bold; }
+.glyphicon-globe { color: #888; }
+.portfolio-glyphicons { font-size: 8em; color: #D9D9D9; }
+.modal-body select  { padding:3px; }
+
+#component-detail-content { background:#ffffff; }
+.row-control { background:#ffffff;}
+
+/* this is a temporary solution for the navbar being too wide before collapsing to a hamburger. Now it will collapse at 1102px instead of 768px. */
+@media (max-width: 1102px) {
+    .navbar-header {
+        float: none;
+    }
+    .navbar-toggle {
+        display: block;
+    }
+    .navbar-collapse {
+        border-top: 1px solid transparent;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .navbar-collapse.collapse {
+        display: none!important;
+    }
+    .navbar-nav {
+        float: none!important;
+        margin: 7.5px -15px;
+    }
+    .navbar-nav>li {
+        float: none;
+    }
+    .navbar-nav>li>a {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .navbar-text {
+        float: none;
+        margin: 15px 0;
+    }
+    /* since 3.1.0 */
+    .navbar-collapse.collapse.in {
+        display: block!important;
+    }
+    .collapsing {
+        overflow: hidden!important;
+    }
+}
