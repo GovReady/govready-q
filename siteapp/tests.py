@@ -16,18 +16,24 @@ import pathlib
 import re
 import tempfile
 import time
-from unittest.case import skip
+import unittest
+
+from django.contrib.auth import authenticate
+from django.test.client import RequestFactory
 
 import selenium.webdriver
+from django.urls import reverse
 from selenium.common.exceptions import WebDriverException
 from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
 from django.utils.crypto import get_random_string
 
+from guidedmodules.tests import TestCaseWithFixtureData
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
 from siteapp.settings import HEADLESS, DOS
+from siteapp.views import project_edit
 from tools.utils.linux_to_dos import convert_w
 
 
@@ -1376,3 +1382,39 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # self._test_api_get(["question_types_text", "q_text_with_default"], "I am a kiwi.")
         # # email-address
         # self.assertRegex(self.browser.title, "Next Question: email-address")
+
+
+class ProjectTests(TestCaseWithFixtureData):
+    """
+    Test various project views
+    """
+    def setUp(self):
+        super().setUp()
+        # Every test needs access to the request factory.
+        self.factory = RequestFactory()
+
+
+    def test_project_edit(self):
+        """
+        Testing the edit of a project title, version, version comment, and compliance app version.
+        """
+
+        self.assertEqual(self.project.title, 'I want to answer some questions on Q.')
+        self.assertEqual(self.project.root_task.module.spec['version'], '1.0.1')
+        self.assertEqual(self.project.version, None)
+        self.assertEqual(self.project.version_comment, None)
+
+        proj_id = self.project.id
+        request_body = {'project_title': ['Test Project v2'], 'complianceapp_version': ['1.1.2'],
+                                'project_version': ['1.1'], 'project_version_comment': ['A new comment!']}
+
+        post_request = self.factory.post(f'/projects/{proj_id}/__edit', request_body)
+        response  = project_edit(post_request, proj_id)
+        self.assertEqual(response.status_code, 302)
+
+        # The now updated project
+        edit_project = Project.objects.get(id=proj_id)
+        self.assertEqual(edit_project.title, 'Test Project v2')
+        self.assertEqual(edit_project.root_task.module.spec['version'], '1.1.2')
+        self.assertEqual(edit_project.version, "1.1")
+        self.assertEqual(edit_project.version_comment, "A new comment!")

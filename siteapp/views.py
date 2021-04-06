@@ -988,11 +988,11 @@ def project_edit(request, project_id):
             complianceapp_version = request.POST.get("complianceapp_version", "").strip() or None
 
             # ordered dict fields dont have attributes, they have keys.
-            project_module.spec['complianceapp_version'] = complianceapp_version
+            project_module.spec['version'] = complianceapp_version
             project_module.save()
 
             # Will rename project if new title is present
-            rename_project(request, project.id)
+            rename_project(request, project)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
@@ -1329,7 +1329,7 @@ def project_admin_login_post_required(f):
 
     return g
 
-@project_admin_login_post_required
+
 def rename_project(request, project):
     # Update the project's title, which is actually updating its root_task's title_override.
     # If the title isn't changing, don't store it. If the title is set to empty, clear the
