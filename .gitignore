@@ -117,3 +117,4 @@ sonar-project.properties
 _notes/
 
 env_var.sh
+deployment/local/ssh

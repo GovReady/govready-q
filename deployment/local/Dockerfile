@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Set up the locale.
 RUN apt-get update && \
-  apt-get install -y locales openssh-sftp-server openssh-server xvfb libfontconfig wkhtmltopdf sudo apt-get install libmariadbclient-dev && \
+  apt-get install -y locales openssh-sftp-server openssh-server xvfb libfontconfig libmariadbclient-dev && \
   echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
   dpkg-reconfigure locales && \
   update-locale LANG=en_US.UTF-8
@@ -17,10 +17,6 @@ ENV LANGUAGE=en_US:en
 
 RUN echo "root:root" | chpasswd && \
   mkdir /var/run/sshd
-
-# SSH setting
-COPY deployment/local/ssh /etc/ssh
-RUN chmod -R 400 /etc/ssh
 
 # Set up the timezone.
 RUN apt-get install -y --no-install-recommends tzdata && \
@@ -38,6 +34,7 @@ RUN apt-get -y install \
 # Put the Python source code here.
 WORKDIR /usr/src/app
 
+RUN apt-get update && apt-get install -y wkhtmltopdf;
 
 # Upgrade pip to version 20.1+ - IMPORTANT
 RUN python3 -m pip install --upgrade pip
