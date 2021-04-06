@@ -1,12 +1,11 @@
 mkdir -p local
 
-if [ -f "local/first_run.lock" ]; then
-    echo "[ + ] Execution of first_run previously completed.  Skipping."
-else
-    echo "[ + ] Executing first_run"
-    python3 install.py --non-interactive --docker
-    touch local/first_run.lock
-fi
+echo "[ + ] Setting up SSH for remote Interpreter use"
+/usr/sbin/sshd
+export -p > deployment/local/remote_interpreter/env_var.sh
+
+echo "[ + ] Preparing Django Application"
+python3 install.py --non-interactive --docker
 
 # Start server
 echo "[ + ] Starting server"

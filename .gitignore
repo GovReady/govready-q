@@ -116,3 +116,4 @@ sonar-project.properties
 # notes
 _notes/
 
+env_var.sh

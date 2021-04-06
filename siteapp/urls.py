@@ -24,7 +24,7 @@ urlpatterns = [
 
     # Django admin site
     url(r'^admin/', admin.site.urls),
-
+    url(r'^media/', include('dbstorage.urls')),
     # apps
     url(r"^tasks/", include("guidedmodules.urls")),
     url(r"^discussion/", include("discussion.urls")),

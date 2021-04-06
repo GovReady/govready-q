@@ -1,0 +1,4 @@
+{
+   "_comment_": "This file is JSON syntax and will be loaded by ssh-import-id to obtain the URL string, which defaults to launchpad.net.  The following URL *must* be an https address with a valid, signed certificate!!!  %s is the variable that will be filled by the ssh-import-id utility.",
+   "URL": "https://launchpad.net/~%s/+sshkeys"
+}
