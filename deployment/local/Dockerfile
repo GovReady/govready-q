@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Set up the locale.
 RUN apt-get update && \
-  apt-get install -y locales openssh-sftp-server openssh-server xvfb libfontconfig wkhtmltopdf && \
+  apt-get install -y locales openssh-sftp-server openssh-server xvfb libfontconfig wkhtmltopdf sudo apt-get install libmariadbclient-dev && \
   echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
   dpkg-reconfigure locales && \
   update-locale LANG=en_US.UTF-8
