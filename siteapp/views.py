@@ -37,6 +37,13 @@ from .notifications_helpers import *
 
 import sys
 import logging
+
+from siteapp.serializers import UserSerializer, ProjectSerializer
+from rest_framework import serializers
+from rest_framework import viewsets
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
 logging.basicConfig()
 import structlog
 from structlog import get_logger
@@ -153,6 +160,37 @@ def homepage(request):
         "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
     })
 
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class ProjectViewSet(viewsets.ModelViewSet):
+    url = serializers.HyperlinkedIdentityField(view_name="siteapp:task-detail")
+
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+
+    def post(self, request):
+
+        form = EditProjectForm(request.POST)
+        if form.is_valid():
+            # project to update
+            project = Project.objects.get(id=request.POST["project_id"])
+            # project module to update
+            project_module = Module.objects.get(id=project.root_task.module.id)
+            # Change project version
+            version = request.POST.get("project_version", "").strip() or None
+
+            # ordered dict fields dont have attributes, they have keys.
+            project_module.spec['version'] = version
+            project_module.save()
+
+            # Will rename project if new title is present
+            rename_project(request, project.id)
+
+            return Response(version)
+            #return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 def debug(request):
     # Raise Exception to see session information
@@ -964,6 +1002,7 @@ def project(request, project):
         "import_project_form": ImportProjectForm()
     })
 
+@api_view()
 def project_edit(request, project_id):
 
     if request.method == 'POST':
