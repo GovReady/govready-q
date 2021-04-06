@@ -976,17 +976,25 @@ def project_edit(request, project_id):
             # project module to update
             project_module = Module.objects.get(id=project.root_task.module.id)
             # Change project version
-            version = request.POST.get("project_version", "").strip() or None
+            project_version = request.POST.get("project_version", "").strip() or None
+            project_version_comment = request.POST.get("project_version_comment", "").strip() or None
+
+            # Adding project version and comment
+            project.version = project_version
+            project.version_comment = project_version_comment
+            project.save()
+
+            # Change compliance app version
+            complianceapp_version = request.POST.get("complianceapp_version", "").strip() or None
 
             # ordered dict fields dont have attributes, they have keys.
-            project_module.spec['version'] = version
+            project_module.spec['version'] = complianceapp_version
             project_module.save()
 
             # Will rename project if new title is present
-            rename_project(request, project.id)
+            rename_project(request, project)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
-
 
 @project_read_required
 def project_settings(request, project):
@@ -1302,10 +1310,16 @@ def new_folder(request):
     return JsonResponse({ "status": "ok", "id": f.id, "title": f.title })
 
 def project_admin_login_post_required(f):
+
     # Wrap the function to do authorization and change arguments.
     def g(request, project_id, *args):
-        # Get project, check authorization.
-        project = get_object_or_404(Project, id=project_id)
+
+        if not isinstance(project_id, Project):
+            # Get project, check authorization.
+            project = get_object_or_404(Project, id=project_id)
+        else:
+            project = project_id
+
         has_owner_project_portfolio_permissions = request.user.has_perm('can_grant_portfolio_owner_permission', project.portfolio)
         if request.user not in project.get_admins() and not has_owner_project_portfolio_permissions:
             return HttpResponseForbidden()
@@ -1321,7 +1335,7 @@ def project_admin_login_post_required(f):
 
     return g
 
-@project_admin_login_post_required
+#@project_admin_login_post_required
 def rename_project(request, project):
     # Update the project's title, which is actually updating its root_task's title_override.
     # If the title isn't changing, don't store it. If the title is set to empty, clear the

@@ -106,6 +106,7 @@ THIRD_PARTY_APPS = [
 	'allauth.account',
 	'allauth.socialaccount',
 	'simple_history',
+	'rest_framework',
 	# add any allauth social providers as you like
 ]
 

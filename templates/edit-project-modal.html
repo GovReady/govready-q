@@ -11,8 +11,14 @@
                     <label for="project_title">Project Title: </label>
                     <input id="project_title" type="text" name="project_title" placeholder="{{ project.title }}" value="{{ project.title }}" size="50" required>
                     <br><br />
+                    <label for="complianceapp_version">Compliance App Version: </label>
+                    <input id="complianceapp_version" type="text" name="complianceapp_version" maxlength="100" placeholder="{{ project.root_task.module.spec.version }}" value="{{ project.root_task.module.spec.version }}" required>
+                    <br><br />
                     <label for="project_version">Project Version: </label>
-                    <input id="project_version" type="text" name="project_version" maxlength="100" placeholder="{{ project.root_task.module.spec.version }}" value="{{ project.root_task.module.spec.version }}" required>
+                    <input id="project_version" type="text" name="project_version" maxlength="100" placeholder="{{ project.version }}" value="{{ project.version }}" required>
+                    <br><br />
+                    <label for="project_version_comment">Project Version Comment: </label>
+                    <input id="project_version_comment" type="text" name="project_version_comment" maxlength="100" placeholder="{{ project.version_comment }}" value="{{ project.version_comment }}" required>
                 </div>
 
                 <div class="modal-footer">
