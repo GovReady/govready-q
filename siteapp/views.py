@@ -976,17 +976,23 @@ def project_edit(request, project_id):
             # project module to update
             project_module = Module.objects.get(id=project.root_task.module.id)
             # Change project version
-            version = request.POST.get("project_version", "").strip() or None
+            project_version = request.POST.get("project_version", "").strip() or None
 
             # ordered dict fields dont have attributes, they have keys.
-            project_module.spec['version'] = version
+            project.version = project_version
+            project.save()
+
+            # Change compliance app version
+            complianceapp_version = request.POST.get("complianceapp_version", "").strip() or None
+
+            # ordered dict fields dont have attributes, they have keys.
+            project_module.spec['complianceapp_version'] = complianceapp_version
             project_module.save()
 
             # Will rename project if new title is present
             rename_project(request, project.id)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
-
 
 @project_read_required
 def project_settings(request, project):

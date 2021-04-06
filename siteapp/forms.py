@@ -11,6 +11,7 @@ class EditProjectForm(ModelForm):
         fields = ['root_task']
         project_title = forms.CharField(label='Project Title', max_length=200)
         project_version = forms.CharField(label='Project Version', max_length=200)
+        complianceapp_version = forms.CharField(label='Compliance App Version', max_length=200)
 
 
 class AddProjectForm(ModelForm):
