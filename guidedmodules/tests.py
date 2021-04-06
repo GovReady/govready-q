@@ -770,7 +770,7 @@ class ImportExportTests(TestCaseWithFixtureData):
         # Add New SSP Template Assets
         assets = []
         for i in range(10):
-            assets.append(ProjectAsset(title=f"Test Template {i}", asset_type=AssetTypeEnum.SSP_EXPORT,
+            assets.append(ProjectAsset(title=f"Test Template {i}", asset_type=AssetTypeEnum.SSP_EXPORT.name,
                                        description=f"Test Description - {i}",
                                        file=File(open('assets/system-reference.docx', 'rb')),
                                        project_id=self.project.pk))

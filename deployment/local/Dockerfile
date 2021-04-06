@@ -6,13 +6,17 @@ RUN apt-get update
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Set up the locale.
-RUN apt-get install -y locales && \
+RUN apt-get update && \
+  apt-get install -y locales openssh-sftp-server openssh-server xvfb libfontconfig libmariadbclient-dev && \
   echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
   dpkg-reconfigure locales && \
   update-locale LANG=en_US.UTF-8
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 ENV LANGUAGE=en_US:en
+
+RUN echo "root:root" | chpasswd && \
+  mkdir /var/run/sshd
 
 # Set up the timezone.
 RUN apt-get install -y --no-install-recommends tzdata && \
@@ -30,13 +34,11 @@ RUN apt-get -y install \
 # Put the Python source code here.
 WORKDIR /usr/src/app
 
+RUN apt-get update && apt-get install -y wkhtmltopdf;
 
 # Upgrade pip to version 20.1+ - IMPORTANT
 RUN python3 -m pip install --upgrade pip
 RUN pip3 install ipdb
-
-# install wkhtmltopdf for generating PDFs, thumbnails
-RUN apt-get -y install xvfb libfontconfig wkhtmltopdf
 
 # This directory must be present for the AppSource created by our
 # first_run script. The directory only has something in it if
