@@ -171,26 +171,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
-    def post(self, request):
 
-        form = EditProjectForm(request.POST)
-        if form.is_valid():
-            # project to update
-            project = Project.objects.get(id=request.POST["project_id"])
-            # project module to update
-            project_module = Module.objects.get(id=project.root_task.module.id)
-            # Change project version
-            version = request.POST.get("project_version", "").strip() or None
-
-            # ordered dict fields dont have attributes, they have keys.
-            project_module.spec['version'] = version
-            project_module.save()
-
-            # Will rename project if new title is present
-            rename_project(request, project.id)
-
-            return Response(version)
-            #return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 def debug(request):
     # Raise Exception to see session information
@@ -198,7 +179,7 @@ def debug(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect("/projects")
 
-    from .views_landing import homepage
+    from siteapp.views_landing import homepage
     return homepage(request)
 
 def assign_project_lifecycle_stage(projects):
@@ -1002,7 +983,7 @@ def project(request, project):
         "import_project_form": ImportProjectForm()
     })
 
-@api_view()
+#@api_view()
 def project_edit(request, project_id):
 
     if request.method == 'POST':
@@ -1012,8 +993,6 @@ def project_edit(request, project_id):
 
             # project to update
             project = Project.objects.get(id=project_id)
-            # project module to update
-            project_module = Module.objects.get(id=project.root_task.module.id)
             # Change project version
             project_version = request.POST.get("project_version", "").strip() or None
             project_version_comment = request.POST.get("project_version_comment", "").strip() or None
@@ -1022,13 +1001,6 @@ def project_edit(request, project_id):
             project.version = project_version
             project.version_comment = project_version_comment
             project.save()
-
-            # Change compliance app version
-            complianceapp_version = request.POST.get("complianceapp_version", "").strip() or None
-
-            # ordered dict fields dont have attributes, they have keys.
-            project_module.spec['version'] = complianceapp_version
-            project_module.save()
 
             # Will rename project if new title is present
             rename_project(request, project)

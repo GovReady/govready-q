@@ -1400,12 +1400,11 @@ class ProjectTests(TestCaseWithFixtureData):
         """
 
         self.assertEqual(self.project.title, 'I want to answer some questions on Q.')
-        self.assertEqual(self.project.root_task.module.spec['version'], '1.0.1')
         self.assertEqual(self.project.version, None)
         self.assertEqual(self.project.version_comment, None)
 
         proj_id = self.project.id
-        request_body = {'project_title': ['Test Project v2'], 'complianceapp_version': ['1.1.2'],
+        request_body = {'project_title': ['Test Project v2'],
                                 'project_version': ['1.1'], 'project_version_comment': ['A new comment!']}
 
         post_request = self.factory.post(f'/projects/{proj_id}/__edit', request_body)
@@ -1415,6 +1414,5 @@ class ProjectTests(TestCaseWithFixtureData):
         # The now updated project
         edit_project = Project.objects.get(id=proj_id)
         self.assertEqual(edit_project.title, 'Test Project v2')
-        self.assertEqual(edit_project.root_task.module.spec['version'], '1.1.2')
         self.assertEqual(edit_project.version, "1.1")
         self.assertEqual(edit_project.version_comment, "A new comment!")
