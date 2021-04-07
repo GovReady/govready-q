@@ -105,12 +105,6 @@ jobs:
     - store_artifacts:
         path: htmlcov
 
-    # Snyk ignore
-    - snyk/ignore:
-        token-variable: SNYK_API_TOKEN
-        project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
-        additional-arguments: "--id=SNYK-PYTHON-CRYPTOGRAPHY-1022152 --expiry=2021-04-30 --reason='No current complete fix available.'"
-
     # Snyk Scan
     - run: pip install -r requirements_util.txt
     - snyk/scan:
@@ -126,4 +120,4 @@ jobs:
     - snyk/scan:
         token-variable: SNYK_API_TOKEN
         project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
-        additional-arguments: "--file=requirements.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all
+        additional-arguments: "--file=requirements.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
