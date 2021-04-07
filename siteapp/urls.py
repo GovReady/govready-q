@@ -1,6 +1,11 @@
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.conf import settings
+from django.urls import path
+from rest_framework import routers
+from rest_framework import serializers
+from siteapp.views import UserViewSet
+from siteapp.views import ProjectViewSet
 
 admin.autodiscover()
 
@@ -10,6 +15,12 @@ import siteapp.views_landing as views_landing
 import siteapp.views_health as views_health
 from .good_settings_helpers import signup_wrapper
 from .settings import *
+
+
+# Routers provide a way of automatically determining the URL conf.
+router = routers.DefaultRouter()
+router.register(r'users', UserViewSet)
+router.register(r'projects', ProjectViewSet)
 
 urlpatterns = [
     url(r"^(?![\s\S])$", views.home_user, name="home_user"),
@@ -21,6 +32,10 @@ urlpatterns = [
 
     # incoming email hook for responses to notifications
     url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook, name='notifications'),
+
+    # Django rest framework
+    path('api/', include(router.urls)),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
     # Django admin site
     url(r'^admin/', admin.site.urls),
