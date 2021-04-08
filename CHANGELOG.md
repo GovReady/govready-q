@@ -131,6 +131,10 @@ Include all required static files `siteapp/static` directory as part of GovReady
 * Update 3-column statement layout's "edit" into a glyphicon pencil pulled all the way right, remove extra lines and other small changes.
 * Update 3-column statement layout to include column headings.
 * Conditionally display remarks in component library using HTML details tag.
+* Display tags associated with components (components must currently be set in Django admin.)
+
+New, better install process written in Python.
+Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
 * Style searchbox on component library and component library detail page to use search glyphicon to indicate search and remove glyphicon within search box to clear search results.
 * Separate user home page (e.g., "/") page from `/project` page to provide a better first use and login experience.
 * Display number of projects and portfolios on the new user home page.
@@ -143,7 +147,8 @@ Include all required static files `siteapp/static` directory as part of GovReady
 * New, better install process written in Python.
 * Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
 * Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
-* Now including all static files as part of distribution.
+* Now including all static files pre-collected as part of distribution.
+* Added tag models, views, urls, migrations for reusability. First model to get tags is Controls.models.Element.
 * Adds Snyk Security Scans to CircleCi scanned items include python requirements files requirements.txt, requirements_util.txt, and requirements_mysql.txt.
 
 **Bug fixes**

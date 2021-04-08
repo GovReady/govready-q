@@ -7,6 +7,9 @@ from rest_framework import serializers
 from siteapp.views import UserViewSet
 from siteapp.views import ProjectViewSet
 
+from .model_mixins.tags import build_tag_urls
+from .models import Project
+
 admin.autodiscover()
 
 import controls.views_api
@@ -67,6 +70,7 @@ urlpatterns = [
     url(r'^projects/(\d+)/__import$', views.import_project_questionnaire, name="import_project_questionnaire"),
     url(r'^projects/(\d+)/__upgrade$', views.upgrade_project, name="upgrade_project"),
     url(r'^projects/(\d+)/__move$', views.move_project, name="move_project"),
+    *build_tag_urls(r"^projects/(\d+)/", model=Project), # Tag Urls
     url(r'^projects/(\d+)/assets/(\d+)/__update$', views.update_project_asset,
         name="update_project_assets"),
     url(r'^projects/(\d+)/(?:[\w\-]+)()$', views.project, name="view_project"), # must be last because regex matches some previous URLs
@@ -113,6 +117,11 @@ urlpatterns = [
     url(r'^health/request-headers$', views_health.request_headers),
     url(r'^health/request$', views_health.request),
     url(r'^health/debug$', views.debug, name="debug"),
+
+
+    url(r'^tags/_save$', views.create_tag),
+    url(r'^tags/(\d+)/_delete$', views.delete_tag),
+    url(r'^tags/$', views.list_tags),
 ]
 
 if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS:
