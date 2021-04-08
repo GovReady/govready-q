@@ -78,11 +78,11 @@ if "host" in environment:
 	print("WARNING: Use of 'host' environment parameter deprecated. Please use 'govready-url' environment parameter in future.")
 if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
 	ALLOWED_HOSTS.append(GOVREADY_URL.hostname)
-print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)
 # Support multiple hosts if set
 # `allowed_hosts` must be an ARRAY
 if "allowed_hosts" in environment:
 	ALLOWED_HOSTS.extend(environment["allowed_hosts"])
+print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)
 
 # allauth requires the use of the sites framework.
 SITE_ID = 1
@@ -106,11 +106,22 @@ THIRD_PARTY_APPS = [
 	'allauth.account',
 	'allauth.socialaccount',
 	'simple_history',
+	'rest_framework',
 	# add any allauth social providers as you like
 ]
 
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+		'rest_framework.permissions.IsAuthenticated'
+	],
+	'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+	'PAGE_SIZE': 10
+}
 
 # profile every request and save the HTML output to the folder profiles
 if DEBUG:
@@ -251,11 +262,12 @@ if not environment.get('db'):
 elif isinstance(environment['db'], str):
 	# Set up the database using a connection string.
 	import dj_database_url
-	DATABASES['default'] = dj_database_url.parse(environment['db'], conn_max_age=600)
+	DATABASES['default'] = dj_database_url.parse(environment['db'], conn_max_age=0)
+	DATABASES['default']['ATOMIC_REQUESTS'] = True
 else:
 	# Enable database connection pooling (unless overridden in the
 	# environment settings).
-	DATABASES['default']['CONN_MAX_AGE'] = 60
+	DATABASES['default']['CONN_MAX_AGE'] = 0
 	DATABASES['default'].update(environment['db'])
 
 # Setup the cache. The default is a LocMemCache.

@@ -1,12 +1,19 @@
 mkdir -p local
 
-if [ -f "local/first_run.lock" ]; then
-    echo "[ + ] Execution of first_run previously completed.  Skipping."
-else
-    echo "[ + ] Executing first_run"
-    python3 install.py --non-interactive --docker
-    touch local/first_run.lock
+echo "[ + ] Setting up SSH for remote Interpreter use"
+if [[ ! -d /usr/src/app/deployment/local/ssh ]]; then
+    echo "Configuring SSH Daemon"
+    mkdir /usr/src/app/deployment/local/ssh
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
+    ssh-keygen -A
+    chmod -R 400 /etc/ssh
+    cp /etc/ssh /usr/src/app/deployment/local -r
 fi
+/usr/sbin/sshd
+export -p > deployment/local/remote_interpreter/env_var.sh
+
+echo "[ + ] Preparing Django Application"
+python3 install.py --non-interactive --docker
 
 # Start server
 echo "[ + ] Starting server"

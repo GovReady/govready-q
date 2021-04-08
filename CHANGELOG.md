@@ -1,8 +1,19 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (March XX, 2021)
-----------------------------
+v999 (April XX, 2021)
+---------------------
+**Feature changes**
+* Added support for Remote Interpreter on IDEs for the local Docker deployment.
+
+**Bug fixes**
+* User now has the ability to edit uploaded files via the admin panel.
+* File names now updated properly for all Asset models in the event of an update.
+ 
+
+v0.9.3.2 (April 1st, 2021)
+--------------------------
+
 * Added sitename model, separated content (splash.html) on index page from index.html and footer.html as well for branding purposes. Removed erroneous tags and cleaned up some CSS. Breadcrumb (context-bar) is hidden on index page now.
 
 
@@ -28,11 +39,14 @@ v999 (March XX, 2021)
 
 **Bug fixes**
 
+
+* Change database settings to close connections after each request and set all transactions to atomic by default.
+
 * Make sure new users are granted `view app source` permission when user account created via SSO proxy.
 
 
 v0.9.3.1 (March 23, 2021)
-----------------------------
+-------------------------
 
 **Feature changes**
 

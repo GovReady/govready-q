@@ -1,6 +1,11 @@
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.conf import settings
+from django.urls import path
+from rest_framework import routers
+from rest_framework import serializers
+from siteapp.views import UserViewSet
+from siteapp.views import ProjectViewSet
 
 admin.autodiscover()
 
@@ -10,6 +15,12 @@ import siteapp.views_landing as views_landing
 import siteapp.views_health as views_health
 from .good_settings_helpers import signup_wrapper
 from .settings import *
+
+
+# Routers provide a way of automatically determining the URL conf.
+router = routers.DefaultRouter()
+router.register(r'users', UserViewSet)
+router.register(r'projects', ProjectViewSet)
 
 urlpatterns = [
     url(r"^(?![\s\S])$", views.home_user, name="home_user"),
@@ -22,9 +33,13 @@ urlpatterns = [
     # incoming email hook for responses to notifications
     url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook, name='notifications'),
 
+    # Django rest framework
+    path('api/', include(router.urls)),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+
     # Django admin site
     url(r'^admin/', admin.site.urls),
-
+    url(r'^media/', include('dbstorage.urls')),
     # apps
     url(r"^tasks/", include("guidedmodules.urls")),
     url(r"^discussion/", include("discussion.urls")),
@@ -42,9 +57,10 @@ urlpatterns = [
     url(r'^library/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
 
     # projects
+
     url(r"^projects$", views.ProjectList.as_view(), name="projects"),
     url(r"^projects/lifecycle$", views.project_list_lifecycle, name="projects_lifecycle"),
-    url(r'^projects/(\d+)/__rename$', views.rename_project, name="rename_project"),
+    url(r'^projects/(?P<project_id>.*)/__edit$', views.project_edit, name="edit_project"),
     url(r'^projects/(\d+)/__delete$', views.delete_project, name="delete_project"),
     url(r'^projects/(\d+)/__admins$', views.make_revoke_project_admin, name="make_revoke_project_admin"),
     url(r'^projects/(\d+)/__export$', views.export_project_questionnaire, name="export_project_questionnaire"),
@@ -53,7 +69,7 @@ urlpatterns = [
     url(r'^projects/(\d+)/__move$', views.move_project, name="move_project"),
     url(r'^projects/(\d+)/assets/(\d+)/__update$', views.update_project_asset,
         name="update_project_assets"),
-    url(r'^projects/(\d+)/(?:[\w\-]+)()$', views.project), # must be last because regex matches some previous URLs
+    url(r'^projects/(\d+)/(?:[\w\-]+)()$', views.project, name="view_project"), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/settings)$', views.project_settings, name="project_settings"),
     url(r'^projects/(\d+)/(?:[\w\-]+)(/startapps)$', views.project_start_apps), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/list)$', views.project_list_all_answers), # must be last because regex matches some previous URLs
