@@ -135,7 +135,7 @@ Your Compliance Projects
           <div class="glyphicon glyphicon glyphicon-folder-open"></div>
         </div>
         <div class="col-md-9">
-          <h3><a href="/portfolios">You have access to {{ portfolios|length }} portfolio{{ portfolios|pluralize }}</a></h3>
+          <h3><a href={% url 'list_portfolios' %}>You have access to {{ portfolios|length }} portfolio{{ portfolios|pluralize }}</a></h3>
           <p>Portfolios are a way to organize and manage related projects.</p>
           <p><a href={% url 'new_portfolio' %}>Create a Portfolio</a></p>
         </div>
