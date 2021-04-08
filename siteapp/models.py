@@ -602,7 +602,7 @@ class Project(TagModelMixin):
         project = super().save(**kwargs)
         if need_to_add_asset:
             from django.core.files import File
-            ProjectAsset.objects.create(title="System Template", asset_type=AssetTypeEnum.SSP_EXPORT,
+            ProjectAsset.objects.create(title="System Template", asset_type=AssetTypeEnum.SSP_EXPORT.name,
                                         description="Standard template provided by the system",
                                         file=File(open('assets/system-reference.docx', 'rb')),
                                         project_id=self.pk)
@@ -1476,6 +1476,7 @@ class Asset(models.Model):
     def save(self, **kwargs):
         if self.file:
             self.content_hash = hash_file(self.file)
+            self.filename = self.file.name
         return super().save(**kwargs)
 
     class Meta:

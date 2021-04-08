@@ -18,6 +18,7 @@ services:
       - ../..:/usr/src/app
     ports:
       - "8000:8000"
+      - "2222:22"
     stdin_open: true
     tty: true
     restart: always

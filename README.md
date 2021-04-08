@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/GovReady/govready-q/tree/master.svg?style=svg)](https://circleci.com/gh/GovReady/govready-q/tree/master)
+[![CircleCI](https://circleci.com/gh/GovReady/govready-q/tree/main.svg?style=svg)](https://circleci.com/gh/GovReady/govready-q/tree/main)
 
 # GovReady-Q Compliance Server
 

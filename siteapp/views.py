@@ -32,7 +32,7 @@ from controls.models import Element, System, Statement, Poam, Deployment
 from system_settings.models import SystemSettings, Classification, Sitename
 
 
-from .forms import PortfolioForm, ProjectForm
+from .forms import PortfolioForm, AddProjectForm, EditProjectForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
 from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, Tag, ProjectAsset
@@ -41,6 +41,13 @@ from .notifications_helpers import *
 
 import sys
 import logging
+
+from siteapp.serializers import UserSerializer, ProjectSerializer
+from rest_framework import serializers
+from rest_framework import viewsets
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
 logging.basicConfig()
 import structlog
 from structlog import get_logger
@@ -62,7 +69,7 @@ def home_user(request):
         "content": "some content",
         "sitename" : Sitename.objects.last(),
         "users": User.objects.all(),
-        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
+        "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
         "projects_access": Project.get_projects_with_read_priv(request.user, excludes={"contained_in_folders": None}),
         "import_project_form": ImportProjectForm(),
         "portfolios": request.user.portfolio_list(),
@@ -158,13 +165,25 @@ def homepage(request):
     })
 
 
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class ProjectViewSet(viewsets.ModelViewSet):
+    url = serializers.HyperlinkedIdentityField(view_name="siteapp:task-detail")
+
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+
+
+
 def debug(request):
     # Raise Exception to see session information
     raise Exception()
     if request.user.is_authenticated:
         return HttpResponseRedirect("/projects")
 
-    from .views_landing import homepage
+    from siteapp.views_landing import homepage
     return homepage(request)
 
 def assign_project_lifecycle_stage(projects):
@@ -254,7 +273,7 @@ class ProjectList(ListView):
         context['projects_access'] = Project.get_projects_with_read_priv(
             self.request.user,
             excludes={"contained_in_folders": None})
-        context['project_form'] = ProjectForm(self.request.user)
+        context['project_form'] = AddProjectForm(self.request.user)
         return context
 
 def project_list_lifecycle(request):
@@ -288,7 +307,7 @@ def project_list_lifecycle(request):
     return render(request, "projects_lifecycle_original.html", {
         "lifecycles": lifecycles,
         "projects": projects,
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
     })
 
 def get_compliance_apps_catalog_for_user(user):
@@ -511,7 +530,7 @@ def apps_catalog(request):
         "filter_description": filter_description,
         "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
         "authoring_tool_enabled": authoring_tool_enabled,
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
     })
 
 @login_required
@@ -602,7 +621,7 @@ def apps_catalog_item(request, source_slug, app_name):
     return render(request, "app-store-item.html", {
         "app": app_catalog_info,
         "error": error,
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
         "source_slug": source_slug,
         "portfolio": portfolio
     })
@@ -964,9 +983,33 @@ def project(request, project):
         "class_status" : Classification.objects.last(),
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
-        "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
+        "project_form": AddProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
         "import_project_form": ImportProjectForm()
     })
+
+#@api_view()
+def project_edit(request, project_id):
+
+    if request.method == 'POST':
+
+        form = EditProjectForm(request.POST)
+        if form.is_valid():
+
+            # project to update
+            project = Project.objects.get(id=project_id)
+            # Change project version
+            project_version = request.POST.get("project_version", "").strip() or None
+            project_version_comment = request.POST.get("project_version_comment", "").strip() or None
+
+            # Adding project version and comment
+            project.version = project_version
+            project.version_comment = project_version_comment
+            project.save()
+
+            # Will rename project if new title is present
+            rename_project(request, project)
+
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 @project_read_required
 def project_settings(request, project):
@@ -1027,7 +1070,7 @@ def project_settings(request, project):
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
 
-        "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
+        "project_form": AddProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
         "import_project_form": ImportProjectForm()
     })
 
@@ -1282,10 +1325,16 @@ def new_folder(request):
     return JsonResponse({ "status": "ok", "id": f.id, "title": f.title })
 
 def project_admin_login_post_required(f):
+
     # Wrap the function to do authorization and change arguments.
     def g(request, project_id, *args):
-        # Get project, check authorization.
-        project = get_object_or_404(Project, id=project_id)
+
+        if not isinstance(project_id, Project):
+            # Get project, check authorization.
+            project = get_object_or_404(Project, id=project_id)
+        else:
+            project = project_id
+
         has_owner_project_portfolio_permissions = request.user.has_perm('can_grant_portfolio_owner_permission', project.portfolio)
         if request.user not in project.get_admins() and not has_owner_project_portfolio_permissions:
             return HttpResponseForbidden()
@@ -1301,12 +1350,14 @@ def project_admin_login_post_required(f):
 
     return g
 
-@project_admin_login_post_required
+#@project_admin_login_post_required
 def rename_project(request, project):
     # Update the project's title, which is actually updating its root_task's title_override.
     # If the title isn't changing, don't store it. If the title is set to empty, clear the
     # override.
-    title = request.POST.get("title", "").strip() or None
+    title = request.POST.get("project_title", "").strip() or None
+    if title == None:
+        return
     project.root_task.title_override = title
     project.root_task.save()
     # Update name of linked System root.element if exists
@@ -1314,7 +1365,7 @@ def rename_project(request, project):
         project.system.root_element.name = title
         project.system.root_element.save()
     project.root_task.on_answer_changed()
-    return JsonResponse({ "status": "ok" })
+
 
 def move_project(request, project_id):
     """Move project to a new portfolio
@@ -1471,7 +1522,7 @@ def import_project_questionnaire(request, project):
     return render(request, "project-import-finished.html", {
         "project": project,
         "log": log_output,
-        "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
+        "project_form": AddProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
     })
 
 def project_start_apps(request, *args):
@@ -1584,7 +1635,7 @@ def portfolio_list(request):
 
     return render(request, "portfolios/index.html", {
         "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None,
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
     })
 
 @login_required
@@ -1612,7 +1663,7 @@ def new_portfolio(request):
         form = PortfolioForm()
     return render(request, 'portfolios/form.html', {
         'form': form,
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
     })
 
 @login_required
@@ -1744,7 +1795,7 @@ def portfolio_projects(request, pk):
   projects = Project.objects.filter(portfolio=portfolio).exclude(is_organization_project=True).order_by('-created')
   user_projects = [project for project in projects if request.user.has_perm('view_project', project)]
   anonymous_user = User.objects.get(username='AnonymousUser')
-  project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
+  project_form = AddProjectForm(request.user, initial={'portfolio': portfolio.id})
   return render(request, "portfolios/detail.html", {
       "portfolio": portfolio,
       "projects": projects if request.user.has_perm('view_portfolio', portfolio) else user_projects,
