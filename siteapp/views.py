@@ -66,7 +66,6 @@ def home_user(request):
         return HttpResponseRedirect("/login")
 
     return render(request, "home-user.html", {
-        "content": "some content",
         "sitename" : Sitename.objects.last(),
         "users": User.objects.all(),
         "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),

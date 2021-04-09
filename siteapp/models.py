@@ -577,7 +577,7 @@ class Project(TagModelMixin):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
-    version = models.CharField(max_length=32, unique=False, blank=True, null=True,
+    version = models.CharField(max_length=32, unique=False, blank=True, null=True, default="1.0",
                                help_text="Project's version identifier")
     version_comment = models.TextField(unique=False, blank=True, null=True,
                                        help_text="Project's version comment")
