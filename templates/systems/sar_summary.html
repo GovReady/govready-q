@@ -94,11 +94,17 @@ System Assessment Results
           <div class="col-md-12">
             <details class="sar-item-details">
                 <summary>{{ item.ip }} - {{ item.pass }} passed &nbsp;&nbsp; {{ item.fail }} failed &nbsp;&nbsp;  {{ item.description }}</summary>
-                <ul>
-                  <li>{{ item.uuid }}</li>
-                  <li>Pass: {{ item.pass }} passed</li>
-                  <li>Fail: {{ item.fail }}</li>
-                </ul>
+                <table>
+                  {% for k, v in item.items %}
+                    <tr>
+                      {% if k == "url_link" %}
+                        <td><b>{{ k }}:&nbsp;</b></td><td><a href="{{ v }}">{{ v }}</a></td>
+                      {% else %}
+                        <td><b>{{ k }}:&nbsp;</b></td><td>{{ v }}</td>
+                      {% endif %}
+                    </tr>
+                  {% endfor %}
+                </table>
             </details>
           </div>
       </div>
