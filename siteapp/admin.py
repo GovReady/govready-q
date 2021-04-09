@@ -5,7 +5,7 @@ from guardian.admin import GuardedModelAdmin
 import django.contrib.auth.admin as contribauthadmin
 
 from .models import User, Organization, OrganizationalSetting, Folder, Project, ProjectMembership, Portfolio, Support, \
-    Asset, ProjectAsset
+    Tag, Asset, ProjectAsset
 from notifications.models import Notification
 
 def all_user_fields_still_exist(fieldlist):
@@ -154,6 +154,10 @@ class SupportAdmin(admin.ModelAdmin):
   list_display = ('id', 'email',)
   fields = ('text', 'email', 'phone', 'url')
 
+class TagAdmin(admin.ModelAdmin):
+  list_display = ('label', 'system_created')
+  fields = ('label', 'system_created')
+
 class ProjectAssetAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'asset_type', 'description', 'project', 'default', 'title', 'filename', 'created', 'updated')
     readonly_fields = ('content_hash', 'filename', )
@@ -172,5 +176,5 @@ admin.site.register(Portfolio, PortfolioAdmin)
 admin.site.unregister(Notification)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(Support, SupportAdmin)
+admin.site.register(Tag, TagAdmin)
 admin.site.register(ProjectAsset, ProjectAssetAdmin)
-

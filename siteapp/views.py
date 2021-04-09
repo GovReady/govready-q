@@ -1,4 +1,7 @@
+import json
 import random
+
+from django.core import serializers
 from django.db import IntegrityError
 from datetime import datetime
 from django.conf import settings
@@ -6,6 +9,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Permission
 from django.db import transaction
+from django.db.models import Q
 from django.forms import ModelForm, model_to_dict
 from django.http import (Http404, HttpResponse, HttpResponseForbidden,
                          HttpResponseNotAllowed, HttpResponseRedirect,
@@ -31,12 +35,19 @@ from system_settings.models import SystemSettings, Classification, Sitename
 from .forms import PortfolioForm, AddProjectForm, EditProjectForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
-from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, ProjectAsset
+from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, Tag, ProjectAsset
 from .forms import PortfolioSignupForm
 from .notifications_helpers import *
 
 import sys
 import logging
+
+from siteapp.serializers import UserSerializer, ProjectSerializer
+from rest_framework import serializers
+from rest_framework import viewsets
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
 logging.basicConfig()
 import structlog
 from structlog import get_logger
@@ -153,13 +164,25 @@ def homepage(request):
     })
 
 
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class ProjectViewSet(viewsets.ModelViewSet):
+    url = serializers.HyperlinkedIdentityField(view_name="siteapp:task-detail")
+
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+
+
+
 def debug(request):
     # Raise Exception to see session information
     raise Exception()
     if request.user.is_authenticated:
         return HttpResponseRedirect("/projects")
 
-    from .views_landing import homepage
+    from siteapp.views_landing import homepage
     return homepage(request)
 
 def assign_project_lifecycle_stage(projects):
@@ -963,6 +986,7 @@ def project(request, project):
         "import_project_form": ImportProjectForm()
     })
 
+#@api_view()
 def project_edit(request, project_id):
 
     if request.method == 'POST':
@@ -972,8 +996,6 @@ def project_edit(request, project_id):
 
             # project to update
             project = Project.objects.get(id=project_id)
-            # project module to update
-            project_module = Module.objects.get(id=project.root_task.module.id)
             # Change project version
             project_version = request.POST.get("project_version", "").strip() or None
             project_version_comment = request.POST.get("project_version_comment", "").strip() or None
@@ -982,13 +1004,6 @@ def project_edit(request, project_id):
             project.version = project_version
             project.version_comment = project_version_comment
             project.save()
-
-            # Change compliance app version
-            complianceapp_version = request.POST.get("complianceapp_version", "").strip() or None
-
-            # ordered dict fields dont have attributes, they have keys.
-            project_module.spec['version'] = complianceapp_version
-            project_module.save()
 
             # Will rename project if new title is present
             rename_project(request, project)
@@ -2278,7 +2293,7 @@ def support(request):
         support = support_results[0]
     else:
         support = {
-            "text": "This page has not be set up. Please have admin set up page in Djano admin.",
+            "text": "This page has not be set up. Please have admin set up page in Django admin.",
             "email": None,
             "phone": None,
             "url": None
@@ -2299,6 +2314,37 @@ def sso_logout(request):
     html = "<html><body><pre>{}</pre></body></html>".format(output)
     return HttpResponse(html)
 
+@login_required
+def list_tags(request):
+    starts_with = request.GET.get('search')
+    response_data = []
+    query = Q()
+    if starts_with:
+        query = Q(label__startswith=starts_with)
+    for tag in Tag.objects.filter(query).iterator():
+        response_data.append(tag.serialize())
+    return JsonResponse({"status": "ok", "data": response_data})
+
+@login_required
+def create_tag(request):
+    label = request.POST.get("label")
+    if not label:
+        return JsonResponse({"status": "error", "message": "Missing Label in data"}, status=400)
+    try:
+        tag = Tag.objects.create(label=label, system_created=False)
+    except IntegrityError:
+        return JsonResponse({"status": "error", "message": f"Tag ({label}) already exists"}, status=400)
+    response_data = json.loads(serializers.serialize('json', [tag]))[0]
+    return JsonResponse({"status": "ok", "data": response_data}, status=201)
+
+@login_required
+def delete_tag(request, tag_id):
+    try:
+        tag = Tag.objects.get(id=tag_id)
+        tag.delete()
+    except Tag.DoesNotExist:
+        return JsonResponse({"status": "error", "message": f"Tag does not exist"}, status=404)
+    return JsonResponse({"status": "ok"})
 
 # @project_admin_login_post_required
 def update_project_asset(request, project_id, asset_id):
