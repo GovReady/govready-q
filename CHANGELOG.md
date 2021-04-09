@@ -6,10 +6,13 @@ v999 (April XX, 2021)
 **Feature changes**
 * Added support for Remote Interpreter on IDEs for the local Docker deployment.
 
+**UI changes**
+* Add "Help" link to global navbar.
+* Remove caret glyphicons from global navbar.
+
 **Bug fixes**
 * User now has the ability to edit uploaded files via the admin panel.
 * File names now updated properly for all Asset models in the event of an update.
- 
 
 v0.9.3.2 (April 1st, 2021)
 --------------------------

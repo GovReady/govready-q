@@ -55,6 +55,15 @@
         <li><a href="/settings" id="menu-settings" aria-label="Settings" tooltip="Settings"><span class="glyphicon glyphicon-cog" aria-label="Settings" tooltip="Settings"></span></a></li>
         {% endif %}
 
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="user-menu-dropdown">Help
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="https://govready-q.readthedocs.io/en/latest/" target="_blank" id="help-govready-q-docs">GovReady-Q documentation</a></li>
+            <li><a href="https://github.com/GovReady/govready-q/issues" target="_blank" >Open an issue in GitHub</a></li>
+          </ul>
+        </li>
+
         {% if not user.is_anonymous %}{% include "navbar-notifications.html" %}{% endif %}
 
         {% if request.user.is_authenticated %}
@@ -66,7 +75,6 @@
                 {% endif %}
               {% endwith %}
               {{request.user}}
-              <span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
               <li><a href="{{user.user_settings_task_create_if_doesnt_exist.get_absolute_url}}" id="user-menu-account-settings">Account Settings</a></li>
