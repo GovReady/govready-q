@@ -61,8 +61,8 @@ System Assessment Results
   }
 
   .sar-item-details { margin: 0px 0px 20px 0px; }
-  .sar-item-details table { border-collapse: separate; border-spacing: 0 12px; max-width: 700px; margin: auto; }
-  .sar-item-details td { padding: 8px; }
+  .sar-item-details table { border-collapse: separate; border-spacing: 0 12px; min-width: 600px; max-width: 700px; margin-left: 5%; }
+  .sar-item-details td.sar-item-key { min-width: 20%; padding: 8px; }
   .sar-item-details td.sar-item-value { background-color: rgb(250,250,250); border: 1px solid rgb(235,235,235); }
 </style>
 {% endblock %}
@@ -99,9 +99,9 @@ System Assessment Results
                   {% for k, v in item.items %}
                     <tr>
                       {% if "http://" in v or "https://" in v %}
-                        <td class="pull-right">{{ k }}&nbsp;&nbsp;</td><td class="sar-item-value"><a href="{{ v }}">{{ v }}</a></td>
+                        <td class="sar-item-key pull-right">{{ k }}&nbsp;&nbsp;</td><td class="sar-item-value"><a href="{{ v }}">{{ v }}</a></td>
                       {% else %}
-                        <td class="pull-right">{{ k }}&nbsp;&nbsp;</td><td class="sar-item-value">{{ v }}</td>
+                        <td class="sar-item-key pull-right">{{ k }}&nbsp;&nbsp;</td><td class="sar-item-value">{{ v }}</td>
                       {% endif %}
                     </tr>
                   {% endfor %}
