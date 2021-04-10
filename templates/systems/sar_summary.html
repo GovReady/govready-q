@@ -46,7 +46,7 @@ System Assessment Results
   .portfolio-table-component-desc { font-size: .8em; }
 
   summary {
-    font-weight: bold;
+    font-weight: normal;
     margin: -.5em -.5em 0;
     padding: .5em;
     /*border:none;*/
@@ -60,6 +60,7 @@ System Assessment Results
     padding: .5em .5em 0;
   }
 
+  .sar-item-summary-label { border: 1px solid #bbb; border-radius: 16px; color: #666; padding: 0px 6px 0px 6px; font-size: .9em;}
   .sar-item-details { margin: 0px 0px 20px 0px; }
   .sar-item-details table { border-collapse: separate; border-spacing: 0 12px; min-width: 600px; max-width: 700px; margin-left: 5%; }
   .sar-item-details td.sar-item-key { min-width: 20%; padding: 8px; }
@@ -94,12 +95,19 @@ System Assessment Results
       <div class="row">
           <div class="col-md-12">
             <details class="sar-item-details">
-                <summary>{{ item.ip }} - {{ item.pass }} passed &nbsp;&nbsp; {{ item.fail }} failed &nbsp;&nbsp;  {{ item.description }}</summary>
+                <summary>
+                  {% if item.ip %}<span class="sar-item-summary-label">{{ item.ip }}</span>{% endif %}
+                  {% if item.agent %}<span class="sar-item-summary-label">agent {{ item.agent }}</span>{% endif %}
+                  {% if item.policy_id %}<span class="sar-item-summary-label">{{ item.policy_id }}</span>{% endif %}
+                  <span class="sar-item-summary-label">{{ item.pass }} passed</span> <span class="sar-item-summary-label">{{ item.fail }} failed</span>
+                  {% if item.invalid %}<span class="sar-item-summary-label">{{ item.invalid }} invalid</span>{% endif %}
+                  {% if item.description %}<div>{{ item.description }}</div>{% endif %}
+                </summary>
                 <table>
                   {% for k, v in item.items %}
                     <tr>
                       {% if "http://" in v or "https://" in v %}
-                        <td class="sar-item-key pull-right">{{ k }}&nbsp;&nbsp;</td><td class="sar-item-value"><a href="{{ v }}">{{ v }}</a></td>
+                        <td class="sar-item-key pull-right">{{ k }}&nbsp;&nbsp;</td><td class="sar-item-value"><a href="{{ v }}" target="_blank">{{ v }}</a></td>
                       {% else %}
                         <td class="sar-item-key pull-right">{{ k }}&nbsp;&nbsp;</td><td class="sar-item-value">{{ v }}</td>
                       {% endif %}
