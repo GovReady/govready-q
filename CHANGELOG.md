@@ -9,6 +9,7 @@ v999 (April XX, 2021)
 **UI changes**
 * Add "Help" link to global navbar.
 * Remove caret glyphicons from global navbar.
+* Make conditional admin "Settings" link in global navbar a dropdown menu to include link to Django database admin.
 
 **Bug fixes**
 * User now has the ability to edit uploaded files via the admin panel.
