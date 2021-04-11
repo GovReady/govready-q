@@ -97,18 +97,6 @@
                         <input type="hidden" name="q" value="{{task.project.root_task.id}}/{{next_module_spec.id}}">
                     {% endif %}
                     <div class="btn btn-success">Continue to {{next_module_spec.title}} &raquo;</div>
-
-                    {# Other options #}
-                    {# Include default link to the project page #}
-                    <a id="return-to-project" href="{{task.project.get_absolute_url}}#tab={{answers_question.question.spec.tab|slugify}}/{{answers_question.question.spec.group|slugify}}/{{answers_question.question.key|slugify}}/{{task.id}}" class="btn btn-default">
-                      Return to project
-                    </a>
-                    {# Reviewer's approval page #}
-                    {% if can_review %}
-                      <a id="btn-review-answers" href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">Review and approve answers</a>
-                    {% endif %}
-
-
                   </form>
                   <br>
                 {% endif %}
@@ -205,7 +193,15 @@
               <a role="button" data-toggle="collapse" data-parent="#accordion" href="#your-answers-body" aria-expanded="true" aria-controls="your-answers-body">
                 {{ task.title }} Module Summary
               </a>
+
+              <span class="pull-right">
+                {# Reviewer's approval page #}
+                {% if can_review %}
+                  <a id="btn-review-answers" class="btn-link" href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">Review and approve answers</a>
+                {% endif %}
+              </span>
             </h4>
+
           </div>
           <div id="your-answers-body" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="your-answers-title">
             <div class="panel-body output-document">
