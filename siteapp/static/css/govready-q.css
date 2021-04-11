@@ -131,7 +131,7 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 .btn-sm { width:95%; max-width:200px;  } /* this makes the action buttons all the same width.
 
 /* misc templates */
-.task-progress-project-truncate { margin: 12px 0 12px 6px; text-align: left;  }
+.task-progress-project-truncate { margin: 12px auto 12px auto; text-align: center; }
 .task-progress-project-url { color:#444; }
 .task-progress-project-group { margin: 0 0 6px 0; padding: 2px; font-size: 1.0em;text-align:left; }
 .task-progress-project-question { font-size: 10px; line-height: 120%; padding-left: 2em; color: #222; }

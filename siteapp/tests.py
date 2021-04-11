@@ -508,7 +508,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Answer the questions.
 
         # Introduction screen.
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Next Question: Introduction"))
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Next Question: Module Introduction"))
         var_sleep(.5)
         wait_for_sleep_after(lambda: self.click_element("#save-button"))
 
@@ -596,7 +596,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
         wait_for_sleep_after(lambda: self.click_element('#question-simple_module') )# go to the task page
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Next Question: Introduction") )# user is on the task page
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Next Question: Module Introduction") )# user is on the task page
 
         # reset_login()
 
@@ -644,7 +644,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # self._start_task()
 
         # # Move past the introduction screen.
-        # self.assertRegex(self.browser.title, "Next Question: Introduction")
+        # self.assertRegex(self.browser.title, "Next Question: Module Introduction")
         # self.click_element("#save-button")
         # var_sleep(.8) # wait for page to reload
 
@@ -913,7 +913,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.click_element('#question-question_types_text'))
 
         # Introduction screen.
-        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.assertRegex(self.browser.title, "Next Question: Module Introduction")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -1022,7 +1022,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question-question_types_choice')
 
         # Introduction screen.
-        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.assertRegex(self.browser.title, "Next Question: Module Introduction")
         wait_for_sleep_after(lambda: self.click_element("#save-button"))
         var_sleep(.5)
 
@@ -1076,7 +1076,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # Introduction screen.
         var_sleep(0.75)
-        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.assertRegex(self.browser.title, "Next Question: Module Introduction")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -1227,7 +1227,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question-question_types_media')
 
         # Introduction screen.
-        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.assertRegex(self.browser.title, "Next Question: Module Introduction")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -1266,7 +1266,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(1.5)
 
         # Introduction screen.
-        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.assertRegex(self.browser.title, "Next Question: Module Introduction")
         self.click_element("#save-button")
         var_sleep(.75)
 
@@ -1400,7 +1400,7 @@ class ProjectTests(TestCaseWithFixtureData):
         """
 
         self.assertEqual(self.project.title, 'I want to answer some questions on Q.')
-        self.assertEqual(self.project.version, None)
+        self.assertEqual(self.project.version, "1.0")
         self.assertEqual(self.project.version_comment, None)
 
         proj_id = self.project.id
