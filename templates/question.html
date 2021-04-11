@@ -355,6 +355,22 @@ Next Question: {{q.spec.title}} | {{task.title}}
               {% endif %}
               </div>
 
+            {% elif q.spec.type == "action" %}
+              <div class="question-action">
+                <div class="small"><i>Answering "Yes" will change data related to the system.</i></div>
+                <div class="radio">
+                  <label>
+                    <input name="value" value="no"  type="radio" {% if answer == "no" %}checked{% endif %}> No
+                  </label>
+                </div>
+                <div class="radio">
+                  <label>
+                    <input name="value" value="yes" type="radio" {% if answer == "yes" %}checked{% endif %}> Yes
+                  </label>
+                </div>
+                <p class="help-block">{{q.spec.help}}</p>
+              </div>
+
             {% elif q.spec.type == "datagrid" %}
               <div id="jsGrid"></div>
               <div class="question-datagrid">
@@ -733,7 +749,8 @@ $(function() {
       return false;
     }
 
-    {% elif q.spec.type == "choice" or q.spec.type == "yesno" or q.spec.type == "module" %}
+    {% elif q.spec.type == "choice" or q.spec.type == "yesno" or
+            q.spec.type == "module" or q.spec.type == "action" %}
 
     function validate_answer() {
         var val = $('#question input[type="radio"]:checked').val();

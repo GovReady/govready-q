@@ -616,6 +616,8 @@ class ModuleQuestion(models.Model):
             # import json
             # return "An array containing " + ", ".join(json.dumps(field['key']) for field in self.spec["fields"]) + "."
             return "datagrid self.spec"
+        if self.spec["type"] == "action":
+            return "A status"
         return ""
 
 class Task(models.Model):
@@ -2068,6 +2070,11 @@ class TaskAnswerHistory(models.Model):
             elif q.spec["type"] == "module-set":
                 # Return the array of answers.
                 return value
+
+        # If question is an action type
+        elif q.spec["type"] == "action":
+            # stuff
+            return "action_question_info"
 
         # The "file" question type is answered by a blob that is uploaded
         # by the user. The stored_value field is not used. Instead the

@@ -3,13 +3,22 @@ GovReady-Q Release Notes
 
 v999 (April XX, 2021)
 ---------------------
+
+GovReady-Q now supports Action question type for better management of actions from questionnaires.
+
 **Feature changes**
+
 * Added support for Remote Interpreter on IDEs for the local Docker deployment.
+* Add distinct question type "action" to replace embedded actions in a question. Needed to handle actions related to questions with imputed answers. Also better communicates actions to users.
 
 **Bug fixes**
+
 * User now has the ability to edit uploaded files via the admin panel.
 * File names now updated properly for all Asset models in the event of an update.
- 
+
+**Developer changes**
+
+* Refactor question actions into a new `action` question type to better handle user actions associated with answers that are imputed and to better communicate actions users.
 
 v0.9.3.2 (April 1st, 2021)
 --------------------------

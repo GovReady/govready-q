@@ -430,22 +430,22 @@ class RenderTests(TestCaseWithFixtureData):
         test("q_password.text", "1234", "1234")
         test("q_password", None, escape("<password>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_password.text", None, escape("<not answered>"))
-        
+
         test("q_email_address", "invalid@govready.com", "invalid@govready.com")
         test("q_email_address.text", "invalid@govready.com", "invalid@govready.com")
         test("q_email_address", None, escape("<email-address>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_email_address.text", None, escape("<not answered>"))
-        
+
         test("q_url", "https://www.govready.com?unit#test", "https://www.govready.com?unit#test")
         test("q_url.text", "https://www.govready.com?unit#test", "https://www.govready.com?unit#test")
         test("q_url", None, escape("<url>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_url.text", None, escape("<not answered>"))
-        
+
         test("q_longtext", "This is a paragraph.\n\nThis is another paragraph.", "This is a paragraph.</p>\n<p>This is another paragraph.", 'This is a paragraph.\n\nThis is another paragraph.') # renders w/ Markdown, but impute condition gives it raw
         test("q_longtext.text", "This is a paragraph.\n\nThis is another paragraph.", "This is a paragraph.</p>\n<p>This is another paragraph.", 'This is a paragraph.\n\nThis is another paragraph.') # renders w/ Markdown, but impute condition gives it raw
         test("q_longtext", None, escape("<longtext>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_longtext.text", None, escape("<not answered>"))
-        
+
         test("q_date", "2016-10-28", "2016-10-28")
         test("q_date.text", "2016-10-28", "10/28/2016")
         test("q_date", None, escape("<date>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
@@ -497,6 +497,10 @@ class RenderTests(TestCaseWithFixtureData):
         # test("q_datagrid", None, "", # not answered appears as nothing selected
         #     template="{% for field in q_datagrid %}[{{field}}]{% endfor %}")
 
+    def test_render_action_questions(self):
+        def test(*args):
+            pass
+
     def test_render_numeric_questions(self):
         def test(*args):
             self._test_render_single_question_md("question_types_numeric", *args)
@@ -536,7 +540,6 @@ class RenderTests(TestCaseWithFixtureData):
         # Interstitial questions never have value.
         test("q_interstitial", None, escape("<interstitial>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_interstitial.text", None, escape("<not answered>"))
-
 
     def test_render_module_questions(self):
         def test(*args):
@@ -859,7 +862,7 @@ class ComplianceAppTests(TestCaseWithFixtureData):
         self.add_perm_fetch()
 
         self.assertIsNotNone(ComplianceAppTests.app_filter(self, self.role_bool()).first())
-        
+
     def test_available_to_organizations(self):
         """
         Testing the limitation of compliance app view by organization

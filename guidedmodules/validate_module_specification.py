@@ -151,7 +151,7 @@ def validate_question(mspec, spec):
     # Jinaj2 identifiers. http://jinja.pocoo.org/docs/2.9/api/#notes-on-identifiers
     if not re.match("^[a-zA-Z_][a-zA-Z0-9_]*$", spec["id"]):
         invalid("The question ID may only contain ASCII letters, numbers, and underscores, and the first character must be a letter or underscore.")
-        
+
     # Perform type conversions, validation, and fill in some defaults in the YAML
     # schema so that the values are ready to use in the database.
     if spec.get("type") == "multiple-choice":
@@ -182,6 +182,10 @@ def validate_question(mspec, spec):
             if not isinstance(spec["max"], int) or spec["max"] < spec["min"]:
                 invalid("max must be an integer greater than or equal to min")
 
+    elif spec.get("type") == "action":
+        # validate action question format
+        pass
+
     elif spec.get("type") in ("module", "module-set"):
         if "module-id" in spec:
             # Resolve the relative module ID to an absolute path relative
@@ -209,7 +213,7 @@ def validate_question(mspec, spec):
 
     if not isinstance(spec.get("title"), str):
         invalid("Question title is missing or has an invalid data type (must be a string).")
-    
+
     if spec.get("prompt") is None:
         # Prompts are optional in project and system modules but required elsewhere.
         if mspec.get("type") not in ("project", "system-project"):
@@ -266,7 +270,7 @@ def validate_question(mspec, spec):
                 env.from_string(rule["value"])
             except Exception as e:
                 invalid_rule("Impute condition value %s is an invalid Jinja2 template: %s." % (repr(rule["value"]), str(e)))
-    
+
     return spec
 
 

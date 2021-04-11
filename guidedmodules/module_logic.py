@@ -978,6 +978,11 @@ class HtmlAnswerRenderer:
 
             wrappertag = "div"
 
+        elif question is not None and question.spec["type"] == "action":
+            # Provide information regarding action taken
+            value = "action HtmlAnswerRenderer"
+            return value
+
         elif question is not None and question.spec["type"] == "file" \
             and hasattr(value, "file_data"):
             # Files turn into link tags, possibly containing a thumbnail

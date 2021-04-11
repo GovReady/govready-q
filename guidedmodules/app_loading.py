@@ -132,7 +132,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
     spec = available_modules[module_id]
 
     # Sanity check that the 'id' in the YAML file matches just the last
-    # part of the path of the module_id. This allows the IDs to be 
+    # part of the path of the module_id. This allows the IDs to be
     # relative to the path in which the module is found.
     if spec.get("id") != module_id.split('/')[-1]:
         raise ValidationError(module_id, "module", "Module 'id' field (%s) doesn't match source file path (\"%s\")." % (repr(spec.get("id")), module_id))
@@ -176,7 +176,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
     if m:
         # What is the difference between the app's module and the module in the database?
         change = is_module_changed(m, app.store.source, spec)
-    
+
         if change is None:
             # There is no difference, so we can go on immediately.
             pass
@@ -281,7 +281,7 @@ def update_question(m, definition_order, spec, log_status):
 
     if isnew:
         pass # print("Added", repr(q))
-    else:            
+    else:
         # Don't need to update the database (and we can avoid
         # bumping the .updated date) if the question's specification
         # is identifical to what's already stored.
@@ -424,6 +424,14 @@ def is_question_changed(mq, definition_order, spec, module_id_map=None):
             return "max was added."
         if mq.spec["max"] is not None and spec["max"] is not None and spec["max"] < mq.spec["max"]:
             return "max went down."
+
+    # Removal of an action.
+    if mq.spec["type"] in ("action"):
+        # def get_field_keys(fields): return { c.get("key") for c in fields }
+        # rm_fields = get_field_keys(mq.spec["fields"]) - get_field_keys(spec["fields"])
+        # if rm_fields:
+        #     return "One or more fields was removed: " + ", ".join(rm_fields) + "."
+        pass
 
     # Change in the module type if a module-type question, including
     # if the references module has been updated. spec has already

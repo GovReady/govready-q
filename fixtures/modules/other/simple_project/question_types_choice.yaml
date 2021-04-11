@@ -25,6 +25,18 @@ questions:
     prompt: Choose yes or no.
     type: yesno
 
+  - id: q_action
+    title: action
+    prompt: Take an action
+    type: action
+    actions:
+    - value: value_match_1
+      action: element/add_role/LDRnet
+      comment: Add elements assigned LDRnet to selected components
+    - value: value_match_2
+      action: element/del_role/ACRE
+      comment: Delete elements assigned ACRE from selected components
+
   - id: q_multiple_choice
     title: multiple-choice
     prompt: Choose some.

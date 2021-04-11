@@ -124,6 +124,11 @@ class question_input_parser:
             raise ValueError("Invalid input.")
         return None
 
+    def parse_action(question, value):
+        # action questions trigger actions
+
+        return "parse_action_return_stuff"
+
 
 class validator:
     # Validate that an answer is of the right data type and meets the
@@ -306,7 +311,7 @@ class validator:
                 raise ValueError("That's not an image file.")
 
             imspec = question.spec.get("image", {})
-            
+
             # Apply a size constraint and resize the image in-place.
             if imspec.get("max-size"):
                 # TODO: Validate the size width/height fields are integers.
@@ -337,5 +342,10 @@ class validator:
         # store None.
         if value is not None:
             raise ValueError("Invalid data type (%s)." % type(value))
+        return value
+
+    def validate_action(question, value):
+        #
+        value = "action value"
         return value
 

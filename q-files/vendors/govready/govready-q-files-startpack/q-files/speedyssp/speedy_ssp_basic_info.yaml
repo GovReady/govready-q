@@ -115,3 +115,22 @@ questions:
     - value: High
       action: system/assign_baseline/NIST_SP-800-53_rev4=+=high
       comment: Assign 800-53 Rev 4 High baseline set of controls to a system
+
+- id: fisma_level_action
+  title: FISMA Level Action
+  prompt: |
+    ACTION: Set system FISMA impact level to "{{fisma_level}}" now?
+
+
+    Adjust the System's selected controls to the {{fisma_level}} impact baseline?
+  type: action
+  actions:
+    - value: Low
+      action: system/assign_baseline/NIST_SP-800-53_rev4=+=low
+      comment: Assign 800-53 Rev 4 Low baseline set of controls to a system
+    - value: Moderate
+      action: system/assign_baseline/NIST_SP-800-53_rev4=+=moderate
+      comment: Assign 800-53 Rev 4 Moderate baseline set of controls to a system
+    - value: High
+      action: system/assign_baseline/NIST_SP-800-53_rev4=+=high
+      comment: Assign 800-53 Rev 4 High baseline set of controls to a system
