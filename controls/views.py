@@ -29,13 +29,13 @@ from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from urllib.parse import quote
 from guidedmodules.models import Task, Module, AppVersion, AppSource
-from siteapp.forms import ProjectForm
-from siteapp.models import Project
+from siteapp.model_mixins.tags import TagView
+from siteapp.models import Project, Tag
 from system_settings.models import SystemSettings
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
 from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
 from .forms import ElementEditForm
-from siteapp.forms import PortfolioForm, ProjectForm
+from siteapp.forms import PortfolioForm, AddProjectForm
 from .models import *
 from .utilities import *
 from simple_history.utils import update_change_reason
@@ -69,7 +69,7 @@ def catalogs(request):
 
     context = {
         "catalogs": Catalogs(),
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
     }
     return render(request, "controls/index-catalogs.html", context)
 
@@ -91,7 +91,7 @@ def catalog(request, catalog_key, system_id=None):
         "common_controls": None,
         "system": system,
         "control_groups": control_groups,
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
     }
     return render(request, "controls/index.html", context)
 
@@ -115,7 +115,7 @@ def group(request, catalog_key, g_id):
         "common_controls": None,
         "control_groups": control_groups,
         "group": group,
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
     }
     return render(request, "controls/index-group.html", context)
 
@@ -135,7 +135,7 @@ def control(request, catalog_key, cl_id):
     context = {
         "catalog": catalog,
         "control": cg_flat[cl_id.lower()],
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
     }
     return render(request, "controls/detail.html", context)
 
@@ -173,7 +173,7 @@ def controls_selected(request, system_id):
             "controls": controls,
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "project_form": ProjectForm(request.user),
+            "project_form": AddProjectForm(request.user),
         }
         return render(request, "systems/controls_selected.html", context)
     else:
@@ -297,7 +297,7 @@ def controls_updated(request, system_id):
             "controls": controls,
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "project_form": ProjectForm(request.user),
+            "project_form": AddProjectForm(request.user),
         }
         return render(request, "systems/controls_updated.html", context)
     else:
@@ -366,7 +366,7 @@ class SelectedComponentsList(ListView):
             context['project'] = project
             context['system'] = system
             context['elements'] = Element.objects.all().exclude(element_type='system')
-            context['project_form'] = ProjectForm(self.request.user)
+            context['project_form'] = AddProjectForm(self.request.user)
             return context
         else:
             # User does not have permission to this system
@@ -399,7 +399,7 @@ def component_library(request):
         "page_obj": page_obj,
         "import_form": ImportOSCALComponentForm(),
         "total_comps": Element.objects.exclude(element_type='system').count(),
-        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
+        "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
 
     return render(request, "components/component_library.html", context)
@@ -415,7 +415,7 @@ def import_records(request):
 
     context = {
         "import_components": import_components,
-        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
+        "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
 
     return render(request, "components/import_records.html", context)
@@ -429,7 +429,7 @@ def import_record_details(request, import_record_id):
     context = {
         "import_record": import_record,
         "component_statements": component_statements,
-        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
+        "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
     return render(request, "components/import_record_details.html", context)
 
@@ -818,7 +818,7 @@ def system_element(request, system_id, element_id):
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": opencontrol_string,
-            "project_form": ProjectForm(request.user),
+            "project_form": AddProjectForm(request.user),
         }
         return render(request, "systems/element_detail_tabs.html", context)
 
@@ -904,7 +904,7 @@ def component_library_component(request, element_id):
             "impl_smts": impl_smts,
             "is_admin": request.user.is_superuser,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
+            "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
         }
         return render(request, "components/element_detail_tabs.html", context)
 
@@ -952,7 +952,7 @@ def component_library_component(request, element_id):
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
-        "project_form": ProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
+        "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
     return render(request, "components/element_detail_tabs.html", context)
 
@@ -1575,7 +1575,7 @@ def editor(request, system_id, catalog_key, cl_id):
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": "opencontrol_string",
-            "project_form": ProjectForm(request.user),
+            "project_form": AddProjectForm(request.user),
             "elements": elements,
         }
         return render(request, "controls/editor.html", context)
@@ -1621,7 +1621,7 @@ def editor_compare(request, system_id, catalog_key, cl_id):
             "common_controls": common_controls,
             "ccp_name": ccp_name,
             "impl_smts": impl_smts,
-            "project_form": ProjectForm(request.user),
+            "project_form": AddProjectForm(request.user),
         }
         return render(request, "controls/compare.html", context)
     else:
@@ -2435,7 +2435,7 @@ def poams_list(request, system_id):
             "controls": controls,
             "poam_smts": poam_smts,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "project_form": ProjectForm(request.user),
+            "project_form": AddProjectForm(request.user),
         }
         return render(request, "systems/poams_list.html", context)
     else:
@@ -2481,7 +2481,7 @@ def new_poam(request, system_id):
                 'system': system,
                 'project': project,
                 'controls': controls,
-                "project_form": ProjectForm(request.user),
+                "project_form": AddProjectForm(request.user),
             })
     else:
         # User does not have permission to this system
@@ -2538,7 +2538,7 @@ def edit_poam(request, system_id, poam_id):
                 'project': project,
                 'controls': controls,
                 'poam_smt': poam_smt,
-                "project_form": ProjectForm(request.user),
+                "project_form": AddProjectForm(request.user),
             })
     else:
         # User does not have permission to this system
@@ -2891,7 +2891,7 @@ def system_deployments(request, system_id):
             "system": system,
             "project": project,
             "deployments": deployments,
-            "project_form": ProjectForm(request.user),
+            "project_form": AddProjectForm(request.user),
         }
         return render(request, "systems/deployments_list.html", context)
     else:
@@ -2938,7 +2938,7 @@ def manage_system_deployment(request, system_id, deployment_id=None):
     return render(request, 'systems/deployment_form.html', {
         "form": form,
         "deployment": di,
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
     })
 
 @login_required
@@ -2960,7 +2960,7 @@ def deployment_history(request, system_id, deployment_id=None):
         messages.add_message(request, messages.ERROR, f'The deployment id is not valid. Is this still a deployment in GovReady?')
     context = {
         "deployment": full_dpt_history,
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
         }
     return render(request, "systems/deployment_history.html", context)
 
@@ -3030,7 +3030,7 @@ def system_assessment_results_list(request, system_id=None):
             "system": system,
             "project": project,
             "sars": sars,
-            "project_form": ProjectForm(request.user),
+            "project_form": AddProjectForm(request.user),
         }
         return render(request, "systems/sar_list.html", context)
 
@@ -3063,7 +3063,7 @@ def view_system_assessment_result_summary(request, system_id, sar_id=None):
         "sar_items": sar_items,
         "assessment_results_json": json.dumps(sar.assessment_results, indent=4, sort_keys=True),
         "summary": summary,
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
     })
 
 @login_required
@@ -3106,7 +3106,7 @@ def manage_system_assessment_result(request, system_id, sar_id=None):
     return render(request, 'systems/sar_form.html', {
         'form': form,
         'system_id': system_id,
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
     })
 
 @login_required
@@ -3122,6 +3122,6 @@ def system_assessment_result_history(request, system_id, sar_id=None):
         messages.add_message(request, messages.ERROR, f'The system assessment result id is not valid. Is this still a system assessment result in GovReady?')
     context = {
         "deployment": full_sar_history,
-        "project_form": ProjectForm(request.user),
+        "project_form": AddProjectForm(request.user),
     }
     return render(request, "systems/sar_history.html", context)

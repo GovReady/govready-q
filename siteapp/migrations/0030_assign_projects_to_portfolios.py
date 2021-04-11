@@ -122,6 +122,7 @@ def forwards(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('discussion', '0001_initial'),
         ('siteapp', '0029_auto_20190801_2000'),
     ]
 

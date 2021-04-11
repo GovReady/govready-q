@@ -79,6 +79,7 @@ def run_optionally_verbose(args, timeout, verbose_flag):
     if verbose_flag:
         import time
         start = time.time()
+        print(f"Executing: {args}")
         p = subprocess.run(args, timeout=timeout)
         print("Elapsed time: {:1f} seconds.".format(time.time() - start))
     else:
@@ -134,7 +135,9 @@ def main():
 
         python_manage = ['./manage.py']
         if args.docker:
-            python_manage = ["python3", "manage.py"]
+            python_manage = [sys.executable, "manage.py"]
+        elif os.name == 'nt':
+            python_manage = [sys.executable, 'manage.py']
         
         print("Testing environment...\n")
 
@@ -285,6 +288,7 @@ def main():
         # Configure database (migrate, load_modules)
         print("Initializing/migrating database...")
         sys.stdout.flush()
+        print(python_manage)
         p = run_optionally_verbose([*python_manage, "migrate"], args.timeout, args.verbose)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)

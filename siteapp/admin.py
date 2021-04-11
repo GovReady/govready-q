@@ -5,7 +5,7 @@ from guardian.admin import GuardedModelAdmin
 import django.contrib.auth.admin as contribauthadmin
 
 from .models import User, Organization, OrganizationalSetting, Folder, Project, ProjectMembership, Portfolio, Support, \
-    Asset, ProjectAsset
+    Tag, Asset, ProjectAsset
 from notifications.models import Notification
 
 def all_user_fields_still_exist(fieldlist):
@@ -28,7 +28,8 @@ add_viewappsource_permission.short_description = "Add View Appsource permission 
 
 class UserAdmin(contribauthadmin.UserAdmin):
     ordering = ('username',)
-    list_display = ('id', 'email', 'date_joined', 'notifemails_enabled', 'notifemails_last_notif_id') # base has first_name, etc. fields that we don't have on our model
+    list_display = ('id', 'username', 'email', 'date_joined', 'notifemails_enabled', 'notifemails_last_notif_id') # base has first_name, etc. fields that we don't have on our model
+    search_fields = ('id', 'username', 'email', 'role', 'description')
     actions = [add_viewappsource_permission]
     pass
 
@@ -146,11 +147,16 @@ class ProjectMembershipAdmin(admin.ModelAdmin):
 
 class PortfolioAdmin(GuardedModelAdmin):
     list_display = ('title', 'description')
+    search_fields = ('title', 'description')
     fields = ('title', 'description')
 
 class SupportAdmin(admin.ModelAdmin):
   list_display = ('id', 'email',)
   fields = ('text', 'email', 'phone', 'url')
+
+class TagAdmin(admin.ModelAdmin):
+  list_display = ('label', 'system_created')
+  fields = ('label', 'system_created')
 
 class ProjectAssetAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'asset_type', 'description', 'project', 'default', 'title', 'filename', 'created', 'updated')
@@ -170,5 +176,5 @@ admin.site.register(Portfolio, PortfolioAdmin)
 admin.site.unregister(Notification)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(Support, SupportAdmin)
+admin.site.register(Tag, TagAdmin)
 admin.site.register(ProjectAsset, ProjectAssetAdmin)
-
