@@ -53,7 +53,7 @@
 
 <div class="row">
   <div id="focus-area-wrapper" class="col-xs-12 col-sm-12 col-md-9 col-lg-8">
-    <h1 class="task-done">...and we&rsquo;re done</h1>
+    <h1 class="task-done">Module Summary</h1>
     {% if top_of_page_output %}
       <div class="task-bottom-margin">
         {{top_of_page_output.html|safe}}
@@ -63,10 +63,86 @@
         {% if previous_page_type == "project" %}
           <p>This module was last updated on {{task.updated|date}}.</p>
         {% elif previous_page_type == "nquestion" %}
-          <p>You have completed the module.</p>
+          <p>You've reached the end of the {{ task.title}} module.</p>
         {% endif %}
       </div>
     {% endif %}
+
+
+      {% with answers_question=task.is_answer_to_unique %}
+        {% if answers_question and answers_question.task.editor == request.user %}
+          {% if task.project.is_account_project %}
+            {# there is nothing else in the account settings project #}
+            <p><a id="return-to-projects" href="/projects" class="btn btn-success">
+              Return to Projects &raquo;
+            </a></p>
+          {% else %}
+            {% if answers_question.task == answers_question.task.project.root_task %}
+              {# return to project #}
+              <p>
+                {# Show this form when we successfully determine next question #}
+                {% if next_module_spec %}
+                  {# Start a task directly using the module type in the specification. #}
+                  {% if not next_module_spec.protocol %}
+                  <form class="start-task" method="post" action="/tasks/start"
+                        onclick="$(this).submit();" style="cursor: pointer">
+                        {% csrf_token %}
+                        <input type="hidden" name="project" value="{{task.project.id}}"/>
+                        <input type="hidden" name="question" value="{{next_module_spec.id}}"/>
+                        <input type="hidden" name="previous" value="project"/>
+                    {% else %}
+                      {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
+                      <form method="get" action="{% url 'store' %}"
+                        onclick="$(this).submit();" style="cursor: pointer">
+                        <input type="hidden" name="q" value="{{task.project.root_task.id}}/{{next_module_spec.id}}">
+                    {% endif %}
+                    <div class="btn btn-success">Continue to {{next_module_spec.title}} &raquo;</div>
+
+                    {# Other options #}
+                    {# Include default link to the project page #}
+                    <a id="return-to-project" href="{{task.project.get_absolute_url}}#tab={{answers_question.question.spec.tab|slugify}}/{{answers_question.question.spec.group|slugify}}/{{answers_question.question.key|slugify}}/{{task.id}}" class="btn btn-default">
+                      Return to project
+                    </a>
+                    {# Reviewer's approval page #}
+                    {% if can_review %}
+                      <a id="btn-review-answers" href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">Review and approve answers</a>
+                    {% endif %}
+
+
+                  </form>
+                  <br>
+                {% endif %}
+
+              </p>
+            {% else %}
+              {# return to non-project parent task #}
+              <p><a id="return-to-supertask" href="{{answers_question.task.get_absolute_url}}" class="btn btn-success">
+                Continue Answering {{answers_question.task.title}} &raquo;
+              </a></p>
+            {% endif %}
+            {# TODO: Does module-set work correctly? #}
+            {% if answers_question.question.spec.type == "module-set" %}
+              <form method="post" action="/tasks/start" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="project" value="{{task.project.id}}"/>
+                <input type="hidden" name="question" value="{{answers_question.question.key}}"/>
+                <input type="hidden" name="previous" value="task"/>
+                <a href="#" onclick="$(this).parent('form').submit(); return false;" class="btn btn-success" title="Add Another {{answers_question.question.answer_type_module.title}} to {{answers_question.question.spec.title}}.">
+                  Start New {{answers_question.question.answer_type_module.title}} &raquo;
+                </a>
+              </form>
+            {% endif %}
+          {% endif %}
+        {% else %}
+          {# every task, except projects, are now subtasks of other tasks, so this only occurs if a task is a subtask to multiple super-tasks #}
+          <p><a href="{{task.project.get_absolute_url}}" class="btn btn-success">
+           {# we used to say 'with other modules in {{task.project.title}}' but there may not be any other modules #}
+            Continue &raquo;
+          </a></p>
+        {% endif %}
+      {% endwith %}
+
+
 
     <div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">
       {# output documents #}
@@ -105,8 +181,7 @@
                           {% elif document.format == "xml" %}
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/xml">OSCAL (xml)</a>&nbsp;&nbsp;
                           {% else %}
-                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (docx)</a><button id="projectAssetWordConfigButton" type="button" class="btn-xs btn-primary glyphicon glyphicon-cog" data-toggle="modal" data-target="#projectAssetWordConfig"
-                                                                                                                                           aria-label="Word (docx) Settings" tooltip="Word (docx) Settings" style="text-align: center; margin-right:10px; margin-left:5px;"></button>
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (docx)</a><button id="projectAssetWordConfigButton" type="button" class="btn-xs btn-primary glyphicon glyphicon-cog" data-toggle="modal" data-target="#projectAssetWordConfig" aria-label="Word (docx) Settings" tooltip="Word (docx) Settings" style="text-align: center; margin-right:10px; margin-left:5px;"></button>
                             {% if gr_pdf_generator == 'wkhtmltopdf' %}<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/pdf">PDF</a>&nbsp;&nbsp;{% endif %}
                             <!-- <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/odt">Open Office (odt)</a>&nbsp;&nbsp; -->
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/html">HTML</a>&nbsp;&nbsp;
@@ -128,7 +203,7 @@
           <div class="panel-heading" rol="tab" id="your-answers-title">
             <h4 class="panel-title">
               <a role="button" data-toggle="collapse" data-parent="#accordion" href="#your-answers-body" aria-expanded="true" aria-controls="your-answers-body">
-                Your Answers
+                {{ task.title }} Module Summary
               </a>
             </h4>
           </div>
@@ -179,76 +254,6 @@
 
     </div> <!-- /accordion -->
     <div id="continue-nav" class="task-answers">
-      {% with answers_question=task.is_answer_to_unique %}
-        {% if answers_question and answers_question.task.editor == request.user %}
-          {% if task.project.is_account_project %}
-            {# there is nothing else in the account settings project #}
-            <p><a id="return-to-projects" href="/projects" class="btn btn-success">
-              Return to Projects &raquo;
-            </a></p>
-          {% else %}
-            {% if answers_question.task == answers_question.task.project.root_task %}
-              {# return to project #}
-              <p>
-                {# Show this form when we successfully determine next question #}
-                {% if next_module_spec %}
-                  {# Start a task directly using the module type in the specification. #}
-                  {% if not next_module_spec.protocol %}
-                  <form class="start-task" method="post" action="/tasks/start"
-                        onclick="$(this).submit();" style="cursor: pointer">
-                        {% csrf_token %}
-                        <input type="hidden" name="project" value="{{task.project.id}}"/>
-                        <input type="hidden" name="question" value="{{next_module_spec.id}}"/>
-                        <input type="hidden" name="previous" value="project"/>
-                    {% else %}
-                      {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
-                      <form method="get" action="{% url 'store' %}"
-                        onclick="$(this).submit();" style="cursor: pointer">
-                        <input type="hidden" name="q" value="{{task.project.root_task.id}}/{{next_module_spec.id}}">
-                    {% endif %}
-                    <div class="btn btn-success">Continue to {{next_module_spec.title}} &raquo;</div>
-                  </form>
-                  <br>
-                {% endif %}
-                {# Include default link to the project page #}
-                <a id="return-to-project" href="{{task.project.get_absolute_url}}#tab={{answers_question.question.spec.tab|slugify}}/{{answers_question.question.spec.group|slugify}}/{{answers_question.question.key|slugify}}/{{task.id}}" class="btn btn-default">
-                  Return to project
-                </a>
-              </p>
-            {% else %}
-              {# return to non-project parent task #}
-              <p><a id="return-to-supertask" href="{{answers_question.task.get_absolute_url}}" class="btn btn-success">
-                Continue Answering {{answers_question.task.title}} &raquo;
-              </a></p>
-            {% endif %}
-            {# TODO: Does module-set work correctly? #}
-            {% if answers_question.question.spec.type == "module-set" %}
-              <form method="post" action="/tasks/start" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="project" value="{{task.project.id}}"/>
-                <input type="hidden" name="question" value="{{answers_question.question.key}}"/>
-                <input type="hidden" name="previous" value="task"/>
-                <a href="#" onclick="$(this).parent('form').submit(); return false;" class="btn btn-success" title="Add Another {{answers_question.question.answer_type_module.title}} to {{answers_question.question.spec.title}}.">
-                  Start New {{answers_question.question.answer_type_module.title}} &raquo;
-                </a>
-              </form>
-            {% endif %}
-          {% endif %}
-        {% else %}
-          {# every task, except projects, are now subtasks of other tasks, so this only occurs if a task is a subtask to multiple super-tasks #}
-          <p><a href="{{task.project.get_absolute_url}}" class="btn btn-success">
-           {# we used to say 'with other modules in {{task.project.title}}' but there may not be any other modules #}
-            Continue &raquo;
-          </a></p>
-        {% endif %}
-      {% endwith %}
-
-      {% if can_review %}
-        <p><a id="btn-review-answers" href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">
-          <em class="glyphicon glyphicon-list"></em>
-          Review &raquo;
-        </a></p>
-      {% endif %}
     </div> <!-- / continue panel -->
   </div> <!-- focus-area-wrapper -->
 
