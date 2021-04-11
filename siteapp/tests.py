@@ -1400,7 +1400,7 @@ class ProjectTests(TestCaseWithFixtureData):
         """
 
         self.assertEqual(self.project.title, 'I want to answer some questions on Q.')
-        self.assertEqual(self.project.version, None)
+        self.assertEqual(self.project.version, "1.0")
         self.assertEqual(self.project.version_comment, None)
 
         proj_id = self.project.id
