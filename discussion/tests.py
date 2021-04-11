@@ -188,7 +188,7 @@ class DiscussionTests(SeleniumTest):
         wait_for_sleep_after(lambda: self._start_task())# wait for page to reload
 
         # Move past the introduction screen.
-        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.assertRegex(self.browser.title, "Next Question: Module Introduction")
         self.click_element("#save-button")
         var_sleep(.8) # wait for page to reload
 
