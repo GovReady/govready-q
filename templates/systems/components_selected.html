@@ -50,6 +50,7 @@
                         </div>
                         <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
                             {% if component.description %}{{ component.description }}{% else %}<span class="not-provided">No description provided.</span>{% endif %}
+                            <div>{% for tag in component.tags.all %}<span class="component-tag">{{ tag.label }}</span> {% endfor %}</div>
                         </div>
                     {% with ctl_count=component.get_control_impl_smts_prototype_count %}
                         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">

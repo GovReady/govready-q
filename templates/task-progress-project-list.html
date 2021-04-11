@@ -1,12 +1,10 @@
 <div class="truncate task-progress-project-truncate">
-    PROJECT:&nbsp; <a href="{{task.project.get_absolute_url}}" class="task-progress-project-url">
-      {{task.project.title}}
-    </a>
-    {% if current_group %}
-    <br>
-    SECTION:&nbsp; <a href="{{task.project.get_absolute_url}}#{{current_group}}" class="task-progress-project-url">{{current_group}}
-    </a>
-    {% endif %}
+  <button id="btn-controls" class="btn btn-sm btn-default text-center" onclick="window.location = '{{task.project.get_absolute_url}}';">
+    <em class="glyphicon glyphicon-home"></em> Project Home</a>
+  </button>{% if current_group %}<br><button id="btn-controls" class="btn btn-sm btn-default text-center" onclick="window.location = '{{task.project.get_absolute_url}}#{{current_group}}';">
+      Section: {{current_group}}</a>
+  </button>
+  {% endif %}
 </div>
 
 <div>
@@ -25,7 +23,7 @@
             <li>&nbsp;</li>
             </div>
             <li>
-              <a href="{{task.get_absolute_url}}/finished">...and we&rsquo;re done</a>
+              <a href="{{task.get_absolute_url}}/finished">Module summary</a>
             </li>
           {% endif %}
           </ul>
