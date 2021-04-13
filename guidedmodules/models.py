@@ -114,7 +114,7 @@ class AppVersion(models.Model):
 
         # the field below is a NullBooleanField because the unique constraint doesn't kick in
         # for NULLs but does for False/True, and we want the constraint to apply only for True.
-    system_app = models.NullBooleanField(default=None, help_text="Set to True for AppVersions that are the current version of a system app that provides system-expected Modules. A constraint ensures that only one (source, name) pair can be true.")
+    system_app = models.BooleanField(null=True, default=None, help_text="Set to True for AppVersions that are the current version of a system app that provides system-expected Modules. A constraint ensures that only one (source, name) pair can be true.")
 
     catalog_metadata = JSONField(blank=True, help_text="The catalog metadata that was stored in the 'app' module.")
     version_number = models.CharField(blank=True, null=True, max_length=128, help_text="The version number of the compliance app.")
@@ -344,11 +344,17 @@ class Module(models.Model):
         # Exports this Module's metadata to a JSON-serializable Python data structure.
         # Called via siteapp.Project::export_json.
         from collections import OrderedDict
+        # Default spec version for the module when testing
+        spec_version = "999"
+        if 'version' in self.spec:
+            spec_version = self.spec['version']
+
         return serializer.serializeOnce(
             self,
             "module:" + self.app.source.slug + "/" + self.app.appname + "/" + self.module_name, # a preferred key, doesn't need to be unique here
             lambda : OrderedDict([  # "lambda :" makes this able to be evaluated lazily
                 ("key", self.module_name),
+                ("version", spec_version),
                 ("created", self.created.isoformat()),
                 ("modified", self.updated.isoformat()),
         ]))
