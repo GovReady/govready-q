@@ -76,6 +76,8 @@ ALLOWED_HOSTS = []
 if "host" in environment:
 	ALLOWED_HOSTS = [environment["host"].split(':')[0]]
 	print("WARNING: Use of 'host' environment parameter deprecated. Please use 'govready-url' environment parameter in future.")
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != "")
+	environment["host"] = GOVREADY_URL.hostname
 if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
 	ALLOWED_HOSTS.append(GOVREADY_URL.hostname)
 # Support multiple hosts if set
