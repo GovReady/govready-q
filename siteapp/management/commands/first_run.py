@@ -159,8 +159,8 @@ class Command(BaseCommand):
                 print("[INFO] Admin added to Help Squad and Reviewers")
 
         else:
-            # One or more superusers already exist
-            print("\n[INFO] Superuser(s) already exist, not creating default admin superuser. Did you specify 'govready_admins' in 'local/environment.json'? Are you connecting to a persistent database?\n")
+            # One or more superusers already exists
+            print("\n[INFO] Superuser(s) already exists, not creating default admin superuser. Did you specify 'govready_admins' in 'local/environment.json'? Are you connecting to a persistent database?\n")
 
         # Provide feedback to user
         print("GovReady-Q configuration complete.")
