@@ -10,6 +10,8 @@ v999 (April XX, 2021)
 * User now has the ability to edit uploaded files via the admin panel.
 * File names now updated properly for all Asset models in the event of an update.
  
+**Developer changes**
+* (fields.W903) NullBooleanField is deprecated. Support for it (except in historical migrations) will be removed in Django 4.0. Using BooleanField instead for `siteapp.Project.is_organization_project` and `guidedmodules.AppVersion.system_app`.
 
 v0.9.3.2 (April 1st, 2021)
 --------------------------
