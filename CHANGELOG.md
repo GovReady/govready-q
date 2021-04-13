@@ -3,13 +3,25 @@ GovReady-Q Release Notes
 
 v999 (April XX, 2021)
 ---------------------
+
 **Feature changes**
+
 * Added support for Remote Interpreter on IDEs for the local Docker deployment.
 
+**UI changes**
+
+* Add "Help" link to global navbar.
+* Remove caret glyphicons from global navbar.
+* Make conditional admin "Settings" link in global navbar a dropdown menu to include link to Django database admin.
+* Simplify task-finished page layout. Move navigation buttons to top.
+* Replace "...and we're done" language with "Module Summary".
+* Replace questions progress sidebar's project links with more obvious project buttons.
+
 **Bug fixes**
+
 * User now has the ability to edit uploaded files via the admin panel.
 * File names now updated properly for all Asset models in the event of an update.
- 
+
 **Developer changes**
 * (fields.W903) NullBooleanField is deprecated. Support for it (except in historical migrations) will be removed in Django 4.0. Using BooleanField instead for `siteapp.Project.is_organization_project` and `guidedmodules.AppVersion.system_app`.
 
