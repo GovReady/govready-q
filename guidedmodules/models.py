@@ -344,12 +344,17 @@ class Module(models.Model):
         # Exports this Module's metadata to a JSON-serializable Python data structure.
         # Called via siteapp.Project::export_json.
         from collections import OrderedDict
+        # Default spec version for the module when testing
+        spec_version = "999"
+        if 'version' in self.spec:
+            spec_version = self.spec['version']
+
         return serializer.serializeOnce(
             self,
             "module:" + self.app.source.slug + "/" + self.app.appname + "/" + self.module_name, # a preferred key, doesn't need to be unique here
             lambda : OrderedDict([  # "lambda :" makes this able to be evaluated lazily
                 ("key", self.module_name),
-                ("version", self.spec['version']),
+                ("version", spec_version),
                 ("created", self.created.isoformat()),
                 ("modified", self.updated.isoformat()),
         ]))
