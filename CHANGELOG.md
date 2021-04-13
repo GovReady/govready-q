@@ -4,6 +4,10 @@ GovReady-Q Release Notes
 v999 (April XX, 2021)
 ---------------------
 
+
+v0.9.3.3 (April 13, 2021)
+---------------------
+
 **Feature changes**
 
 * Added support for Remote Interpreter on IDEs for the local Docker deployment.
