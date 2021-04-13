@@ -349,6 +349,7 @@ class Module(models.Model):
             "module:" + self.app.source.slug + "/" + self.app.appname + "/" + self.module_name, # a preferred key, doesn't need to be unique here
             lambda : OrderedDict([  # "lambda :" makes this able to be evaluated lazily
                 ("key", self.module_name),
+                ("version", self.spec['version']),
                 ("created", self.created.isoformat()),
                 ("modified", self.updated.isoformat()),
         ]))

@@ -1000,6 +1000,8 @@ class Project(TagModelMixin):
         ])
         if serializer.include_metadata:
             ret["project"].update(OrderedDict([
+                ("version", self.version), # ignored in import
+                ("version_comment", self.version_comment), # ignored in import
                 ("created", self.created.isoformat()), # ignored in import
                 ("modified", self.updated.isoformat()), # ignored in import
             ]))
