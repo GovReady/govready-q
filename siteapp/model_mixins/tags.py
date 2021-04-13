@@ -1,7 +1,6 @@
 from django.db import models
 from django.http import JsonResponse
 
-
 class TagModelMixin(models.Model):
     tags = models.ManyToManyField("siteapp.Tag", related_name="%(class)s")
 
@@ -23,7 +22,6 @@ class TagModelMixin(models.Model):
 
     class Meta:
         abstract = True
-
 
 class TagView:
 
@@ -53,7 +51,6 @@ class TagView:
         for tag in model.objects.get(id=obj_id).tags.all().iterator():
             tags.append(tag.serialize())
         return JsonResponse({"status": "ok", "data": tags})
-
 
 def build_tag_urls(path_prefix, model):
     from django.conf.urls import url
