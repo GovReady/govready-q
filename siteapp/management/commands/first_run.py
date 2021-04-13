@@ -39,7 +39,7 @@ class Command(BaseCommand):
             org, result = Organization.objects.get_or_create(name="main", slug="main")
 
         # Install default AppSources and compliance apps if no AppSources installed
-        if len(AppSource.objects.all()) == 0:
+        if AppSource.objects.all().exists():
             # Create AppSources that we want.
             if os.path.exists("/mnt/q-files-host"):
                 # For our docker image.
