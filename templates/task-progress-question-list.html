@@ -1,6 +1,6 @@
 {% for q in context %}
-{% if not q.imputed or authoring_tool_enabled %}
-  <li id="link-to-question-{{q.key}}" 
+{% if not q.imputed %}
+  <li id="link-to-question-{{q.key}}"
       class="truncate
              {% if q.is_this_question %}this{% else %}other{% endif %}
              "

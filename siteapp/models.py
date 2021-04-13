@@ -18,9 +18,9 @@ from django.utils import crypto, timezone
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
-from controls.models import System, Element, OrgParams
 from jsonfield import JSONField
 
+from siteapp.model_mixins.tags import TagModelMixin
 from siteapp.enums.assets import AssetTypeEnum
 from siteapp.utils.uploads import hash_file
 
@@ -559,12 +559,12 @@ class Folder(models.Model):
         return Project.get_projects_with_read_priv(user,
             { "contained_in_folders": self })
 
-class Project(models.Model):
+class Project(TagModelMixin):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
     organization = models.ForeignKey(Organization, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Organization that this Project belongs to. User profiles (is_account_project is True) are not a part of any Organization.")
     portfolio = models.ForeignKey(Portfolio, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Portfolio that this Project belongs to.")
-    system = models.ForeignKey(System, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The System that this Project is about.")
-    is_organization_project = models.NullBooleanField(default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
+    system = models.ForeignKey("controls.System", blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The System that this Project is about.")
+    is_organization_project = models.BooleanField(null=True, default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
 
     is_account_project = models.BooleanField(default=False, help_text="Each User has one Project for account Tasks.")
 
@@ -577,7 +577,7 @@ class Project(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
-    version = models.CharField(max_length=32, unique=False, blank=True, null=True,
+    version = models.CharField(max_length=32, unique=False, blank=True, null=True, default="1.0",
                                help_text="Project's version identifier")
     version_comment = models.TextField(unique=False, blank=True, null=True,
                                        help_text="Project's version comment")
@@ -602,7 +602,7 @@ class Project(models.Model):
         project = super().save(**kwargs)
         if need_to_add_asset:
             from django.core.files import File
-            ProjectAsset.objects.create(title="System Template", asset_type=AssetTypeEnum.SSP_EXPORT,
+            ProjectAsset.objects.create(title="System Template", asset_type=AssetTypeEnum.SSP_EXPORT.name,
                                         description="Standard template provided by the system",
                                         file=File(open('assets/system-reference.docx', 'rb')),
                                         project_id=self.pk)
@@ -1000,6 +1000,8 @@ class Project(models.Model):
         ])
         if serializer.include_metadata:
             ret["project"].update(OrderedDict([
+                ("version", self.version), # ignored in import
+                ("version_comment", self.version_comment), # ignored in import
                 ("created", self.created.isoformat()), # ignored in import
                 ("modified", self.updated.isoformat()), # ignored in import
             ]))
@@ -1284,6 +1286,7 @@ class Project(models.Model):
         """
 
         # start with the baseline defaults
+        from controls.models import OrgParams
         default_params = OrgParams().get_params(self.get_default_parameter_name())
 
         # get the organizational settings into dict form
@@ -1444,6 +1447,18 @@ class Support(models.Model):
   def __str__(self):
     return "Support information"
 
+class Tag(models.Model):
+    label = models.CharField(max_length=100, unique=True, help_text="Label for tag")
+    system_created = models.BooleanField(default=True)
+
+    def __repr__(self):
+        return self.label
+
+    def __str__(self):
+        return self.label
+
+    def serialize(self):
+        return {"label": self.label, "system_created": self.system_created, "id": self.id}
 
 class Asset(models.Model):
     UPLOAD_TO = None  # Should be overriden when iheritted
@@ -1463,6 +1478,7 @@ class Asset(models.Model):
     def save(self, **kwargs):
         if self.file:
             self.content_hash = hash_file(self.file)
+            self.filename = self.file.name
         return super().save(**kwargs)
 
     class Meta:

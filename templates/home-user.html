@@ -99,6 +99,7 @@ Your Compliance Projects
 {% block contextbar %}{% endblock %}
 
 {% block body %}
+<body class="splash-bg">
 <div class="projects-top">
 
 <div class="container">
@@ -107,7 +108,7 @@ Your Compliance Projects
   <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#" class=" btn btn-success">Start a project</a>
 </div>
 
-<h2>Welcome to {{ sitename }}</h2>
+<h2>Welcome to {% if sitename %}{{sitename}}{% else %}GovReady-Q{% endif %}</h2>
 
 <p>Assess, test, and authorize together</p>
 
@@ -134,7 +135,7 @@ Your Compliance Projects
           <div class="glyphicon glyphicon glyphicon-folder-open"></div>
         </div>
         <div class="col-md-9">
-          <h3><a href="/portfolios">You have access to {{ portfolios|length }} portfolio{{ portfolios|pluralize }}</a></h3>
+          <h3><a href={% url 'list_portfolios' %}>You have access to {{ portfolios|length }} portfolio{{ portfolios|pluralize }}</a></h3>
           <p>Portfolios are a way to organize and manage related projects.</p>
           <p><a href={% url 'new_portfolio' %}>Create a Portfolio</a></p>
         </div>

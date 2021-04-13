@@ -2,11 +2,8 @@ from django.contrib.auth.models import Permission
 from django.core.files import File
 from django.db.models import Q
 from django.test import TestCase
-from django.utils.crypto import get_random_string
-
 from siteapp.enums.assets import AssetTypeEnum
 from siteapp.models import Organization, Project, User, ProjectAsset
-from siteapp.tests import SeleniumTest, wait_for_sleep_after
 from .app_loading import load_app_into_database
 from .models import Module, Task, AppVersion
 from .module_logic import *
@@ -42,7 +39,7 @@ class TestCaseWithFixtureData(TestCase):
         self.user = User.objects.create(username="unit.test", email='regular@example.org')
         self.superuser = User.objects.create_superuser(username="superunit.test", email='super@example.org')
         self.organization = Organization.objects.create(name="My Supreme Organization")
-        self.project = Project.objects.create(organization=self.organization)
+        self.project = Project.objects.create(organization=self.organization, version="1.0")
         self.project.root_task = Task.objects.create(module=Module.objects.get(app=self.fixture_app, module_name="app"), project=self.project, editor=self.user)
         self.project.save()
 
@@ -773,7 +770,7 @@ class ImportExportTests(TestCaseWithFixtureData):
         # Add New SSP Template Assets
         assets = []
         for i in range(10):
-            assets.append(ProjectAsset(title=f"Test Template {i}", asset_type=AssetTypeEnum.SSP_EXPORT,
+            assets.append(ProjectAsset(title=f"Test Template {i}", asset_type=AssetTypeEnum.SSP_EXPORT.name,
                                        description=f"Test Description - {i}",
                                        file=File(open('assets/system-reference.docx', 'rb')),
                                        project_id=self.project.pk))

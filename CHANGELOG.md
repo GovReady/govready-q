@@ -1,8 +1,42 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.3.3 (April 13, 2021)
+---------------------
+
+**Feature changes**
+
+* Added support for Remote Interpreter on IDEs for the local Docker deployment.
+
+**UI changes**
+
+* Add "Help" link to global navbar.
+* Remove caret glyphicons from global navbar.
+* Make conditional admin "Settings" link in global navbar a dropdown menu to include link to Django database admin.
+* Simplify task-finished page layout. Move navigation buttons to top.
+* Replace "...and we're done" language with "Module Summary".
+* Replace questions progress sidebar's project links with more obvious project buttons.
+
+**Bug fixes**
+
+* User now has the ability to edit uploaded files via the admin panel.
+* File names now updated properly for all Asset models in the event of an update.
+* Added a short README.md to each `modules/systems` folder (account, organization) to avoid seeing the README error when loading modules.
+
+**Developer changes**
+* (fields.W903) NullBooleanField is deprecated. Support for it (except in historical migrations) will be removed in Django 4.0. Using BooleanField instead for `siteapp.Project.is_organization_project` and `guidedmodules.AppVersion.system_app`.
+* Added version data for the project and the project's compliance app to the exported project json.
+
+**Install fixes**
+
+* Create portfolios for admins when passing in ADMIN setting for automated admin creation during install first-run.
+* Create default org 'main' if none exists earlier in the first-run process.
+* Fix adding admin user to Help Squad and Reviewers list.
+* Install default AppSources and compliance apps only if no AppSources installed.
+
+
 v0.9.3.2 (April 1st, 2021)
-----------------------------
+--------------------------
 
 * Added sitename model, separated content (splash.html) on index page from index.html and footer.html as well for branding purposes. Removed erroneous tags and cleaned up some CSS. Breadcrumb (context-bar) is hidden on index page now.
 
@@ -15,7 +49,7 @@ v0.9.3.2 (April 1st, 2021)
 
 
 v0.9.3.1 (March 23, 2021)
-----------------------------
+-------------------------
 
 **Feature changes**
 
@@ -121,6 +155,10 @@ Include all required static files `siteapp/static` directory as part of GovReady
 * Update 3-column statement layout's "edit" into a glyphicon pencil pulled all the way right, remove extra lines and other small changes.
 * Update 3-column statement layout to include column headings.
 * Conditionally display remarks in component library using HTML details tag.
+* Display tags associated with components (components must currently be set in Django admin.)
+
+New, better install process written in Python.
+Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
 * Style searchbox on component library and component library detail page to use search glyphicon to indicate search and remove glyphicon within search box to clear search results.
 * Separate user home page (e.g., "/") page from `/project` page to provide a better first use and login experience.
 * Display number of projects and portfolios on the new user home page.
@@ -133,7 +171,8 @@ Include all required static files `siteapp/static` directory as part of GovReady
 * New, better install process written in Python.
 * Include all required static files pre-collected in `static_root` directory as part of GovReady-Q distribution.
 * Replace shell script install script `install-govready-q.sh` with better Python install script `install.py`.
-* Now including all static files as part of distribution.
+* Now including all static files pre-collected as part of distribution.
+* Added tag models, views, urls, migrations for reusability. First model to get tags is Controls.models.Element.
 * Adds Snyk Security Scans to CircleCi scanned items include python requirements files requirements.txt, requirements_util.txt, and requirements_mysql.txt.
 
 **Bug fixes**
