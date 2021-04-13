@@ -22,6 +22,14 @@ v999 (April XX, 2021)
 * User now has the ability to edit uploaded files via the admin panel.
 * File names now updated properly for all Asset models in the event of an update.
 
+**Install fixes**
+
+* Create portfolios for admins when passing in ADMIN setting for automated admin creation during install first-run.
+* Create default org 'main' if none exists earlier in the first-run process.
+* Fix adding admin user to Help Squad and Reviewers list.
+* Install default AppSources and compliance apps only if no AppSources installed.
+
+
 v0.9.3.2 (April 1st, 2021)
 --------------------------
 
