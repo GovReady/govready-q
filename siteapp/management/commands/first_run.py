@@ -36,7 +36,7 @@ class Command(BaseCommand):
 
         # Create the default organization.
         if not Organization.objects.all().exists() and not Organization.objects.filter(name="main").exists():
-            org, result = Organization.objects.get_or_create(name="main", slug="main")
+            org = Organization.objects.create(name="main", slug="main")
 
         # Install default AppSources and compliance apps if no AppSources installed
         if AppSource.objects.all().exists():
