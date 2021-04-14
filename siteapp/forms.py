@@ -12,7 +12,6 @@ class EditProjectForm(ModelForm):
         project_title = forms.CharField(label='Project Title', max_length=200)
         project_version = forms.CharField(label='Project Version', max_length=200)
 
-
 class AddProjectForm(ModelForm):
     class Meta:
         model = Project

@@ -174,8 +174,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
-
-
 def debug(request):
     # Raise Exception to see session information
     raise Exception()

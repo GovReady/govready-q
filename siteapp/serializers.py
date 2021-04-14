@@ -3,7 +3,6 @@ from rest_framework import serializers
 from rest_framework import viewsets
 from siteapp.models import Project, User
 
-
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User

@@ -2,7 +2,14 @@ GovReady-Q Release Notes
 ========================
 
 v999 (April XX, 2021)
----------------------
+-------------------------
+
+
+[Add changes here]
+
+
+v0.9.3.3 (April 13, 2021)
+-------------------------
 
 **Feature changes**
 
@@ -26,6 +33,19 @@ v999 (April XX, 2021)
 
 * User now has the ability to edit uploaded files via the admin panel.
 * File names now updated properly for all Asset models in the event of an update.
+* Added a short README.md to each `modules/systems` folder (account, organization) to avoid seeing the README error when loading modules.
+
+**Developer changes**
+* (fields.W903) NullBooleanField is deprecated. Support for it (except in historical migrations) will be removed in Django 4.0. Using BooleanField instead for `siteapp.Project.is_organization_project` and `guidedmodules.AppVersion.system_app`.
+* Added version data for the project and the project's compliance app to the exported project json.
+
+**Install fixes**
+
+* Create portfolios for admins when passing in ADMIN setting for automated admin creation during install first-run.
+* Create default org 'main' if none exists earlier in the first-run process.
+* Fix adding admin user to Help Squad and Reviewers list.
+* Install default AppSources and compliance apps only if no AppSources installed.
+
 
 v0.9.3.2 (April 1st, 2021)
 --------------------------

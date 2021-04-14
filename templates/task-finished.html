@@ -312,13 +312,13 @@
 {% endblock %}
 
 {% block scripts %}
+  {% include "task-question-debug-links.html" %}
+
   {% if authoring_tool_enabled %}
   <script src="{% static "js/authoring_tool.js" %}"></script>
   {% endif %}
 
   <script src="{% static "vendor/push.js" %}"> </script>
-
-  {% include "task-question-debug-links.html" %}
 
   <script>
   // Allow templates to create Bootstrap 3 popovers.
