@@ -50,10 +50,15 @@
           <p>FEATURE NOTE: We are automating the assigning of control baselines by system categorization.
           Prior to feature completion, we humbly ask you manually select the desired control baseline...</p>
           <ul>
-            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='low' %}>Assign 800-53 rev4 Low Impact Baseline</a></li>
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key=catalog.catalog_key baseline_name='low' %}>Assign 800-53 rev4 Low Impact Baseline</a></li>
             <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='moderate' %}>Assign 800-53 rev4 Moderate Impact Baseline</a></li>
             <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='high' %}>Assign 800-53 rev4 High Impact Baseline</a></li>
             <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-171_rev1' baseline_name='cui' %}>Assign 800-171 rev1 Baseline</a></li>
+              {% for catalog in external_catalogs %}
+                              <li><a href={% url 'assign_baseline' system_id=system.id catalog_key=catalog.catalog_key  baseline_name='low' %}>Assign {{ catalog.catalog_key_display }} Low Impact Baseline</a></li>
+                              <li><a href={% url 'assign_baseline' system_id=system.id catalog_key=catalog.catalog_key  baseline_name='moderate' %}>Assign {{ catalog.catalog_key_display }} Moderate Impact Baseline</a></li>
+                              <li><a href={% url 'assign_baseline' system_id=system.id catalog_key=catalog.catalog_key  baseline_name='high' %}>Assign {{ catalog.catalog_key_display }} High Impact Baseline</a></li>
+              {% endfor %}
           </ul>
         </div>
       </div>

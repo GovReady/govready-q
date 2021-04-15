@@ -26,16 +26,16 @@ class Catalogs(object):
         self.catalog_keys = self._list_catalog_keys()
         self.index = self._build_index()
 
-    def extend_external_catalogs(self, catalog_info, type):
+    def extend_external_catalogs(self, catalog_info, extendtype):
         """
         Add external catalogs to list of catalogs
         """
         external_catalogs = [file for file in os.listdir(EXTERNAL_CATALOGS) if
                   file.endswith('.json')]
-        if type == "key":
+        if extendtype == "keys":
             keys = [key.split('_catalog.json')[0] for key in external_catalogs]
             catalog_info.extend(keys)
-        elif type == "files":
+        elif extendtype == "files":
             files = [file for file in external_catalogs]
             catalog_info.extend(files)
         return catalog_info
@@ -53,7 +53,7 @@ class Catalogs(object):
             Catalogs.NIST_SP_800_53_rev4,
             Catalogs.NIST_SP_800_53_rev5,
             Catalogs.NIST_SP_800_171_rev1
-        ], "key")
+        ], "keys")
 
     def _load_catalog_json(self, catalog_key):
         catalog = Catalog(catalog_key)
@@ -73,6 +73,12 @@ class Catalogs(object):
     def list(self):
         catalog_titles = [item['metadata']['title'] for item in self.index]
         return catalog_titles
+
+    def list_catalogs(self):
+        """
+        List catalog objects
+        """
+        return [Catalog(key) for key in Catalogs()._list_catalog_keys()]
 
 
 def uhash(obj):
