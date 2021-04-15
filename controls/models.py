@@ -757,7 +757,6 @@ class Baselines (object):
             # Check if there any external oscal baseline files
             try:
                 data_file = os.path.join(self.external_file_path, self.data_file)
-                print(f"FOUND DATA FILES{data_file}")
             except:
                 print("ERROR: {} does not exist".format(data_file))
                 return False
