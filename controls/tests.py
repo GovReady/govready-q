@@ -138,6 +138,8 @@ class ControlUITests(SeleniumTest):
         """
         Check the catalog listing method has the 3 default catalogs
         """
+
+        os.makedirs(EXTERNAL_CATALOGS, exist_ok=True)
         catalog_list = Catalogs().list_catalogs()
         self.assertEqual(len(catalog_list), 3)
 
