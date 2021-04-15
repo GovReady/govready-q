@@ -147,10 +147,10 @@ class ControlUITests(SeleniumTest):
         """
         Extending catalog file and key list
         """
-
+        os.makedirs(EXTERNAL_CATALOGS, exist_ok=True)
         with tempfile.TemporaryFile() as d:
             temp_file_name = os.path.join(EXTERNAL_CATALOGS, f'{d.name}_revtest_catalog.json')
-            os.makedirs(EXTERNAL_CATALOGS, exist_ok=True)
+
             # finding fixture data and dumping in the temp file
             test_catalog = os.getcwd() + "/fixtures/test_catalog.json"
             with open(test_catalog, 'r') as json_file:
@@ -179,10 +179,10 @@ class ControlUITests(SeleniumTest):
         """
         Extending baseline file and key list
         """
-
+        os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
         with tempfile.TemporaryFile() as d:
             temp_file_name = os.path.join(EXTERNAL_BASELINE_PATH, f'{d.name}_revtest_baseline.json')
-            os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
+
             # finding fixture data and dumping in the temp file
             test_baseline = os.getcwd() + "/fixtures/test_baseline.json"
             with open(test_baseline, 'r') as json_file:
