@@ -9,10 +9,10 @@
 # So we hard-code the Chromium binary using options.binary_location="/usr/bin/chromium-browser".
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
-import time
+import os
 import unittest
 from pathlib import PurePath
-
+import tempfile
 from django.test import TestCase
 from django.utils.text import slugify
 from selenium.common.exceptions import WebDriverException
@@ -28,7 +28,7 @@ from siteapp.models import User, Organization, OrganizationalSetting
 from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests, wait_for_sleep_after
 from system_settings.models import SystemSettings
 from controls.models import *
-from controls.oscal import Catalogs, Catalog
+from controls.oscal import Catalogs, Catalog, EXTERNAL_CATALOGS
 from siteapp.models import User, Project, Portfolio
 from system_settings.models import SystemSettings
 
@@ -129,12 +129,80 @@ class ControlUITests(SeleniumTest):
         wait_for_sleep_after(lambda: self.assertInNodeText("AU-2", "#control-heading"))
         wait_for_sleep_after(lambda: self.assertInNodeText("Audit Events", "#control-heading"))
 
-
     def test_control_enhancement_lookup(self):
         self.browser.get(self.url("/controls/catalogs/NIST_SP-800-53_rev4/control/AC-2 (4)"))
         self.assertInNodeText("AC-2 (4)", "#control-heading")
         self.assertInNodeText("Automated Audit Actions", "#control-heading")
 
+    def test_catalog_list(self):
+        """
+        Check the catalog listing method has the 3 default catalogs
+        """
+        catalog_list = Catalogs().list_catalogs()
+        self.assertEqual(len(catalog_list), 3)
+
+    def test_extend_external_catalogs(self):
+        """
+        Extending catalog file and key list
+        """
+
+        with tempfile.TemporaryFile() as d:
+            temp_file_name = os.path.join(EXTERNAL_CATALOGS, f'{d.name}_revtest_catalog.json')
+            os.makedirs(EXTERNAL_CATALOGS, exist_ok=True)
+            # finding fixture data and dumping in the temp file
+            test_catalog = os.getcwd() + "/fixtures/test_catalog.json"
+            with open(test_catalog, 'r') as json_file:
+                catalog_data = json.load(json_file)
+            with open(temp_file_name, 'w') as cred:
+                json.dump(catalog_data, cred)
+
+            extended_files = Catalogs.extend_external_catalogs(self, [
+                'NIST_SP-800-53_rev4_catalog.json',
+                'NIST_SP-800-53_rev5_catalog.json',
+                'NIST_SP-800-171_rev1_catalog.json'
+            ], "files")
+            # asserts...
+            self.assertEqual(len(extended_files), 4)
+
+            extended_keys = Catalogs.extend_external_catalogs(self, [
+                Catalogs.NIST_SP_800_53_rev4,
+                Catalogs.NIST_SP_800_53_rev5,
+                Catalogs.NIST_SP_800_171_rev1
+            ], "keys")
+            self.assertEqual(len(extended_keys), 4)
+            # Delete temp file
+            os.remove(temp_file_name)
+
+    def test_extend_external_baseline(self):
+        """
+        Extending baseline file and key list
+        """
+
+        with tempfile.TemporaryFile() as d:
+            temp_file_name = os.path.join(EXTERNAL_BASELINE_PATH, f'{d.name}_revtest_baseline.json')
+            os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
+            # finding fixture data and dumping in the temp file
+            test_baseline = os.getcwd() + "/fixtures/test_baseline.json"
+            with open(test_baseline, 'r') as json_file:
+                baseline_data = json.load(json_file)
+            with open(temp_file_name, 'w') as cred:
+                json.dump(baseline_data, cred)
+
+            extended_files = Baselines.extend_external_baselines(self, [
+            'NIST_SP-800-53_rev4_baselines.json',
+            'NIST_SP-800-171_rev1_baselines.json'
+        ], "files")
+            # asserts...
+            self.assertEqual(len(extended_files), 3)
+
+            extended_keys = Baselines.extend_external_baselines(self, [
+            'NIST_SP-800-53_rev4',
+            'NIST_SP-800-171_rev1'
+        ], "keys")
+
+            self.assertEqual(len(extended_keys), 3)
+        # Delete temp file
+        os.remove(temp_file_name)
 #####################################################################
 
 class ComponentUITests(OrganizationSiteFunctionalTests):
