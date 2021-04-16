@@ -33,12 +33,8 @@ class Catalogs(object):
         os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
         external_catalogs = [file for file in os.listdir(EXTERNAL_CATALOG_PATH) if
                   file.endswith('.json')]
-        if extendtype == "keys":
-            keys = [key.split('_catalog.json')[0] for key in external_catalogs]
-            catalog_info.extend(keys)
-        elif extendtype == "files":
-            files = [file for file in external_catalogs]
-            catalog_info.extend(files)
+        catalog_info = check_and_extend(catalog_info, external_catalogs, extendtype)
+
         return catalog_info
 
     def _list_catalog_files(self):
@@ -87,6 +83,17 @@ def uhash(obj):
     h = hash(obj)
     return h + sys.maxsize + 1
 
+def check_and_extend(values, external_values, extendtype):
+    """
+    Modularize value to extend
+    """
+    if extendtype == "keys":
+        keys = [key.split('_baselines.json')[0] for key in external_values]
+        values.extend(keys)
+    elif extendtype == "files":
+        files = [file for file in external_values]
+        values.extend(files)
+    return values
 
 class Catalog(object):
     """Represent a catalog"""

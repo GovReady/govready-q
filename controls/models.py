@@ -12,7 +12,7 @@ from jsonfield import JSONField
 from natsort import natsorted
 
 from siteapp.model_mixins.tags import TagModelMixin
-from controls.oscal import Catalogs, Catalog
+from controls.oscal import Catalogs, Catalog, check_and_extend
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
 from copy import deepcopy
@@ -786,6 +786,7 @@ class Baselines (object):
     def body(self):
         return self.legacy_imp_smt
 
+
     def extend_external_baselines(self, baseline_info, extendtype):
         """
         Add external baselines to list of baselines
@@ -794,13 +795,7 @@ class Baselines (object):
         external_baselines = [file for file in os.listdir(EXTERNAL_BASELINE_PATH) if
                   file.endswith('.json')]
 
-        if extendtype == "keys":
-            keys = [key.split('_baselines.json')[0] for key in external_baselines]
-            baseline_info.extend(keys)
-        elif extendtype == "files":
-            files = [file for file in external_baselines]
-            baseline_info.extend(files)
-
+        baseline_info = check_and_extend(baseline_info, external_baselines, extendtype)
         return baseline_info
 class OrgParams(object):
     """
