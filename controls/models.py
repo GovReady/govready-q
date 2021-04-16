@@ -795,7 +795,7 @@ class Baselines (object):
         external_baselines = [file for file in os.listdir(EXTERNAL_BASELINE_PATH) if
                   file.endswith('.json')]
 
-        baseline_info = check_and_extend(baseline_info, external_baselines, extendtype)
+        baseline_info = check_and_extend(baseline_info, external_baselines, extendtype, "_baselines")
         return baseline_info
 class OrgParams(object):
     """
