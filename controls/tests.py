@@ -28,7 +28,7 @@ from siteapp.models import User, Organization, OrganizationalSetting
 from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests, wait_for_sleep_after
 from system_settings.models import SystemSettings
 from controls.models import *
-from controls.oscal import Catalogs, Catalog, EXTERNAL_CATALOGS
+from controls.oscal import Catalogs, Catalog, EXTERNAL_CATALOG_PATH
 from siteapp.models import User, Project, Portfolio
 from system_settings.models import SystemSettings
 
@@ -139,7 +139,7 @@ class ControlUITests(SeleniumTest):
         Check the catalog listing method has the 3 default catalogs
         """
 
-        os.makedirs(EXTERNAL_CATALOGS, exist_ok=True)
+        os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
         catalog_list = Catalogs().list_catalogs()
         self.assertEqual(len(catalog_list), 3)
 
@@ -147,13 +147,10 @@ class ControlUITests(SeleniumTest):
         """
         Extending catalog file and key list
         """
-
-        wait_for_sleep_after(lambda: os.makedirs(EXTERNAL_CATALOGS, exist_ok=True))
-        if not os.path.exists(EXTERNAL_CATALOGS):
-            os.makedirs(EXTERNAL_CATALOGS, exist_ok=True)
+        os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
         with tempfile.TemporaryFile() as d:
-            temp_file_name = os.path.join(EXTERNAL_CATALOGS, f'{d.name}_revtest_catalog.json')
-
+            temp_file_name = os.path.join(EXTERNAL_CATALOG_PATH, f'{d.name}_revtest_catalog.json')
+            
             # finding fixture data and dumping in the temp file
             test_catalog = os.getcwd() + "/fixtures/test_catalog.json"
             with open(test_catalog, 'r') as json_file:
@@ -183,11 +180,9 @@ class ControlUITests(SeleniumTest):
         Extending baseline file and key list
         """
         os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
-        if not os.path.exists(EXTERNAL_BASELINE_PATH):
-            os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
         with tempfile.TemporaryFile() as d:
             temp_file_name = os.path.join(EXTERNAL_BASELINE_PATH, f'{d.name}_revtest_baseline.json')
-
+            
             # finding fixture data and dumping in the temp file
             test_baseline = os.getcwd() + "/fixtures/test_baseline.json"
             with open(test_baseline, 'r') as json_file:

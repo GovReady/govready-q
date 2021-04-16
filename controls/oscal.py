@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 
 CATALOG_PATH = os.path.join(os.path.dirname(__file__), 'data', 'catalogs')
-EXTERNAL_CATALOGS = os.path.join(f"{os.getcwd()}",'local', 'controls', 'data', 'catalogs')
+EXTERNAL_CATALOG_PATH = os.path.join(f"{os.getcwd()}",'local', 'controls', 'data', 'catalogs')
 
 class Catalogs(object):
     """Represent list of catalogs"""
@@ -20,7 +20,7 @@ class Catalogs(object):
 
     def __init__(self):
         global CATALOG_PATH
-        global EXTERNAL_CATALOGS
+        global EXTERNAL_CATALOG_PATH
         self.catalog_path = CATALOG_PATH
         # self.catalog = None
         self.catalog_keys = self._list_catalog_keys()
@@ -30,7 +30,8 @@ class Catalogs(object):
         """
         Add external catalogs to list of catalogs
         """
-        external_catalogs = [file for file in os.listdir(EXTERNAL_CATALOGS) if
+        os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
+        external_catalogs = [file for file in os.listdir(EXTERNAL_CATALOG_PATH) if
                   file.endswith('.json')]
         if extendtype == "keys":
             keys = [key.split('_catalog.json')[0] for key in external_catalogs]
@@ -118,11 +119,11 @@ class Catalog(object):
 
     def __init__(self, catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
         global CATALOG_PATH
-        global EXTERNAL_CATALOGS
+        global EXTERNAL_CATALOG_PATH
         self.catalog_key = catalog_key
         self.catalog_key_display = catalog_key.replace("_", " ")
         self.catalog_path = CATALOG_PATH
-        self.external_catalog_path = EXTERNAL_CATALOGS
+        self.external_catalog_path = EXTERNAL_CATALOG_PATH
         self.catalog_file = catalog_key + "_catalog.json"
         try:
             self.oscal = self._load_catalog_json()

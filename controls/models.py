@@ -790,6 +790,7 @@ class Baselines (object):
         """
         Add external baselines to list of baselines
         """
+        os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
         external_baselines = [file for file in os.listdir(EXTERNAL_BASELINE_PATH) if
                   file.endswith('.json')]
 

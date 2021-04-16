@@ -37,7 +37,6 @@ from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
 from .forms import ElementEditForm
 from siteapp.forms import PortfolioForm, AddProjectForm
 from .models import *
-from .oscal import EXTERNAL_CATALOGS
 from .utilities import *
 from simple_history.utils import update_change_reason
 import functools
