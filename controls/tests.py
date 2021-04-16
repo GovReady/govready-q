@@ -140,6 +140,7 @@ class ControlUITests(SeleniumTest):
         """
 
         os.makedirs(EXTERNAL_CATALOGS, exist_ok=True)
+        var_sleep(2)
         catalog_list = Catalogs().list_catalogs()
         self.assertEqual(len(catalog_list), 3)
 
@@ -148,6 +149,7 @@ class ControlUITests(SeleniumTest):
         Extending catalog file and key list
         """
         os.makedirs(EXTERNAL_CATALOGS, exist_ok=True)
+        var_sleep(2)
         with tempfile.TemporaryFile() as d:
             temp_file_name = os.path.join(EXTERNAL_CATALOGS, f'{d.name}_revtest_catalog.json')
 
@@ -180,6 +182,7 @@ class ControlUITests(SeleniumTest):
         Extending baseline file and key list
         """
         os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
+        var_sleep(2)
         with tempfile.TemporaryFile() as d:
             temp_file_name = os.path.join(EXTERNAL_BASELINE_PATH, f'{d.name}_revtest_baseline.json')
 
