@@ -132,11 +132,14 @@ def main():
         # Collect command line arguments, print help if necessary
         argparser = init_argparse();
         args = argparser.parse_args();
-
+        print(f"WHAT SYS exec {sys.executable}")
+        from platform import uname
         python_manage = ['./manage.py']
         if args.docker:
             python_manage = [sys.executable, "manage.py"]
         elif os.name == 'nt':
+            python_manage = [sys.executable, 'manage.py']
+        elif "windows" in uname().release:
             python_manage = [sys.executable, 'manage.py']
         
         print("Testing environment...\n")
