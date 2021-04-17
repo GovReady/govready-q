@@ -181,6 +181,9 @@ Compliance Apps
                       {% endwith %}
                       {% if 'portfolio' in forward_qsargs %}
                         <button type="submit" class="btn btn-success btn-sm btn-justified start-app">Add ►</button>
+                      {% else %}
+                        {# Configure start button to ask for portfolio if no portfolio is set #}
+                        <button type="submit" class="btn btn-success btn-sm btn-justified start-app" onclick="show_select_portfolio_modal('/store/{{ app.key|urlencode }}{{ forward_qsargs }}',''); return false;">Add ►</button>
                       {% endif %}
                   </form>
               {% endif %}

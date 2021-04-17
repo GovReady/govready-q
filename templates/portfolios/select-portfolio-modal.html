@@ -3,27 +3,40 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="invitation_modal_title">Select a Portfolio</h4>
+        <h4 class="modal-title" id="invitation_modal_title">In which portfolio should we put the project?</h4>
       </div>
-      <form action="{% url 'store' %}" role="form" method="get">
+      <form id="select_portfolio" action="{% url 'store' %}" role="form" method="get">
+          {% csrf_token %}
+          {% if app.organizations|length > 1 %}
+              <select id="app-org-select" class="" onchange="update_org_choice('{{ app.key }}/organization_{{ forloop.counter }}', event)">
+                  {% for org in app.organizations %}
+                      <option value="{{ org.slug }}">{{ org }}</option>
+                  {% endfor %}
+              </select>
+          {% endif %}
+          <input type="hidden" name="organization" value="{{ organization.slug }}">
         <div class="modal-body">
           <label for="id_portfolio">{{ project_form.portfolio.label }}</label>:&nbsp;
           {{ project_form.portfolio }}
-         </div>
-         <div class="modal-footer">
+        </div>
+        <div class="modal-footer">
            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
            <button id="select_portfolio_submit" class="btn btn-success btn-submit" type="submit">Start Project</button>
-          </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   </div>
 </div>
 
 {% block scripts %}
 <script>
-  function show_select_portfolio_modal(callback) {
+  function show_select_portfolio_modal(url, callback) {
     var m = $('#select_portfolio_modal');
+    if (url) {
+      $('#url').text(url);
+      $('#select_portfolio').attr('action', url);
+      $('#select_portfolio').attr('method', 'post');
+    }
     m.modal();
   }
 </script>

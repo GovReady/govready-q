@@ -5,7 +5,9 @@ v999 (April XX, 2021)
 -------------------------
 
 
-[Add changes here]
+**UI changes**
+
+* Prompt user for which portfolio to start project in if portfolio value not previously set before visiting project templates. Enables users to start a project from a blank link.
 
 
 v0.9.3.3 (April 13, 2021)

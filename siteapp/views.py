@@ -519,6 +519,9 @@ def apps_catalog(request):
             app["title"], # except if two apps differ only in case, sort case-sensitively
         ))
 
+    # Get the organization - temporarily assume 1 org
+    organization = Organization.objects.first()
+
     # If user is superuser, enable creating new apps
     authoring_tool_enabled = request.user.has_perm('guidedmodules.change_module')
 
@@ -528,6 +531,7 @@ def apps_catalog(request):
         "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
         "authoring_tool_enabled": authoring_tool_enabled,
         "project_form": AddProjectForm(request.user),
+        "organization": organization
     })
 
 @login_required
@@ -546,8 +550,13 @@ def apps_catalog_item(request, source_slug, app_name):
     # Get portfolio project should be included in.
     if request.GET.get("portfolio"):
       portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+    elif request.POST.get("portfolio"):
+      portfolio = Portfolio.objects.get(id=request.POST.get("portfolio"))
     else:
       portfolio = None
+
+    # Get the organization - temporarily assume 1 org
+    organization = Organization.objects.first()
 
     error = None
 
@@ -589,10 +598,11 @@ def apps_catalog_item(request, source_slug, app_name):
             task, q = get_task_question(request)
             if not app_satifies_interface(app_catalog_info, q):
                 raise ValueError("Invalid protocol.")
-
         # Get portfolio project should be included in.
         if request.GET.get("portfolio"):
           portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+        elif request.POST.get("portfolio"):
+          portfolio = Portfolio.objects.get(id=request.POST.get("portfolio"))
         else:
           portfolio = None
 
@@ -620,7 +630,8 @@ def apps_catalog_item(request, source_slug, app_name):
         "error": error,
         "project_form": AddProjectForm(request.user),
         "source_slug": source_slug,
-        "portfolio": portfolio
+        "portfolio": portfolio,
+        "organization": organization
     })
 
 def start_app(appver, organization, user, folder, task, q, portfolio):
