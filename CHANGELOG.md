@@ -5,7 +5,9 @@ v999 (April XX, 2021)
 -------------------------
 
 
-[Add changes here]
+**UI changes**
+
+* Add links for "forgot password" and "change password."
 
 
 v0.9.3.3 (April 13, 2021)
