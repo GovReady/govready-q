@@ -1,7 +1,7 @@
 from .settings import *
 
 
-if DEBUG:
+if DEBUG and not TESTING_MODE:
     MIDDLEWARE = [
         'querycount.middleware.QueryCountMiddleware',
         'nplusone.ext.django.NPlusOneMiddleware'
