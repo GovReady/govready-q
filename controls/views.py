@@ -1676,32 +1676,35 @@ def save_smt(request):
         if len(smt_id) > 0:
             # Look up existing Statement object
             statement = Statement.objects.get(pk=smt_id)
+            # Check if statement has the same sid class as the statement object
+            if statement.sid_class == form_values['sid_class']:
+                # Check user permissions
+                system = statement.consumer_element
+                if not request.user.has_perm('change_system', system):
+                    # User does not have write permissions
+                    # Log permission to save answer denied
+                    logger.info(
+                        event="save_smt permission_denied",
+                        object={"object": "statement", "id": statement.id},
+                        user={"id": request.user.id, "username": request.user.username}
+                    )
+                    return HttpResponseForbidden(
+                        "Permission denied. {} does not have change privileges to system and/or project.".format(
+                            request.user.username))
 
-            # Check user permissions
-            system = statement.consumer_element
-            if not request.user.has_perm('change_system', system):
-                # User does not have write permissions
-                # Log permission to save answer denied
-                logger.info(
-                    event="save_smt permission_denied",
-                    object={"object": "statement", "id": statement.id},
-                    user={"id": request.user.id, "username": request.user.username}
-                )
-                return HttpResponseForbidden(
-                    "Permission denied. {} does not have change privileges to system and/or project.".format(
-                        request.user.username))
-
-            if statement is None:
-                # Statement from received has an id no longer in the database.
-                # Report error. Alternatively, in future save as new Statement object
-                statement_status = "error"
-                statement_msg = "The id for this statement is no longer valid in the database."
-                return JsonResponse({"status": "error", "message": statement_msg})
-            # Update existing Statement object with received info
-            statement.pid = form_values['pid']
-            statement.body = form_values['body']
-            statement.remarks = form_values['remarks']
-            statement.status = form_values['status']
+                if statement is None:
+                    # Statement from received has an id no longer in the database.
+                    # Report error. Alternatively, in future save as new Statement object
+                    statement_status = "error"
+                    statement_msg = "The id for this statement is no longer valid in the database."
+                    return JsonResponse({"status": "error", "message": statement_msg})
+                # Update existing Statement object with received info
+                statement.pid = form_values['pid']
+                statement.body = form_values['body']
+                statement.remarks = form_values['remarks']
+                statement.status = form_values['status']
+            else:
+                new_statement = True
         else:
             # Create new Statement object
             statement = Statement(
@@ -1718,15 +1721,6 @@ def save_smt(request):
             # from human readable `NIST SP-800-53 rev4` to `NIST_SP-800-53_rev4`
             statement.sid_class = statement.sid_class.replace(" ","_")
 
-        # Save Statement object
-        try:
-            statement.save()
-            statement_status = "ok"
-            statement_msg = "Statement saved."
-        except Exception as e:
-            statement_status = "error"
-            statement_msg = "Statement save failed. Error reported {}".format(e)
-            return JsonResponse({"status": "error", "message": statement_msg})
 
         # Updating or saving a new producer_element?
         try:
@@ -1741,7 +1735,7 @@ def save_smt(request):
         except Exception as e:
             producer_element_status = "error"
             producer_element_msg = "Producer Element save failed. Error reported {}".format(e)
-            return JsonResponse({"status": "error", "message": producer_element_msg})
+            return JsonResponse({"status": producer_element_status, "message": producer_element_msg})
 
         # Associate Statement and Producer Element if creating new statement
         if new_statement:
@@ -1750,12 +1744,12 @@ def save_smt(request):
                 statement.save()
                 statement_element_status = "ok"
                 statement_element_msg = "Statement associated with Producer Element."
+                messages.add_message(request, messages.INFO, f"{statement_element_msg} {producer_element.id}.")
             except Exception as e:
                 statement_element_status = "error"
                 statement_element_msg = "Failed to associate statement with Producer Element {}".format(e)
                 return JsonResponse(
-                    {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg})
-
+                    {"status": statement_element_status, "message": statement_element_msg + " " + producer_element_msg + " " + statement_element_msg})
         # Create new Prototype Statement object on new statement creation (not statement edit)
         if new_statement:
             try:
@@ -1765,7 +1759,17 @@ def save_smt(request):
                 statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
                 return JsonResponse({"status": "error", "message": statement_msg})
 
-        messages.add_message(request, messages.INFO, f"Statement {smt_id} Saved")
+        # Save Statement object
+        try:
+            statement.save()
+            statement_msg = "Statement saved."
+            messages.add_message(request, messages.INFO, f"Statement {smt_id} Saved")
+        except Exception as e:
+            statement_status = "error"
+            statement_msg = "Statement save failed. Error reported {}".format(e)
+
+            return JsonResponse({"status": statement_status, "message": statement_msg})
+
         # Retain only prototype statement if statement is created in the component library
         # A statement of type `control_implementation` should only exists if associated a consumer_element.
         # When the statement is created in the component library, no consuming_element will exist.
@@ -1794,7 +1798,7 @@ def save_smt(request):
                     statement_consumer_status = "error"
                     statement_consumer_msg = "Failed to associate statement with System/Consumer Element {}".format(e)
                     return JsonResponse(
-                        {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_consumer_msg})
+                        {"status": statement_consumer_status, "message": statement_msg + " " + producer_element_msg + " " + statement_consumer_msg})
 
             # Serialize saved data object(s) to send back to update web page
             # The submitted form needs to be updated with the object primary keys (ids)
