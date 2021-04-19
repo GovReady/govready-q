@@ -1296,25 +1296,6 @@ def get_question_choice(question, key):
             return choice
     raise KeyError(repr(key) + " is not a choice")
 
-
-def clear_catalog_cache(key, parameter_values):
-    """
-    Clear a catalog cache if downloading with control catalog
-    """
-    catalog_instance_key = Catalog._catalog_instance_key(key, parameter_values)
-
-    if hasattr(catalog_instance_key, 'cache'):
-        del catalog_instance_key.cache
-    from django.db import connections, transaction
-    from django.core.cache import cache  # This is the memcache cache.
-    print(cache.keys())
-    # This works as advertised on the memcached cache:
-    cache.clear()
-    # This manually purges the SQLite cache:
-    cursor = connections['cache_database'].cursor()
-    cursor.execute('DELETE FROM cache_table')
-    transaction.commit_unless_managed(using='cache_database')
-
 class ModuleAnswers(object):
     """Represents a set of answers to a Task."""
 
@@ -1565,11 +1546,8 @@ class TemplateContext(Mapping):
                 for idx, key in enumerate(all_keys):
                 # Detect single control catalog from first control
                     try:
-                        #catalog_key = self.module_answers.task.project.system.root_element.controls.first().oscal_catalog_key
+                        parameter_values = self.module_answers.task.project.get_parameter_values(key)
 
-                        parameter_values = self.module_answers.task.project.get_parameter_values(key)#catalog_key
-                        # Need to clear to see updated control data
-                        #clear_catalog_cache(key, parameter_values)
                         sca = Catalog.GetInstance(catalog_key=key,
                                                   parameter_values=parameter_values)
                         if idx == 0:
