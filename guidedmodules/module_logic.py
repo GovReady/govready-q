@@ -1542,7 +1542,8 @@ class TemplateContext(Mapping):
                 from controls.oscal import Catalog
                 all_keys = list(set([controls.oscal_catalog_key for controls in
                                      self.module_answers.task.project.system.root_element.controls.all()]))
-
+                # Need default of None if there are no control catalogs present
+                control_catalog = None
                 for idx, key in enumerate(all_keys):
                 # Detect single control catalog from first control
                     try:
