@@ -1382,7 +1382,8 @@ def move_project(request, project_id):
 
     # Check if the user moving the project is a superuser or
     # if they are the owner of the project and have edit permissions in the target directory
-    if request.user.is_superuser or ((request.user in project.get_admins()) and 'change_portfolio' in get_perms(request.user, new_portfolio)):
+    owner = True if request.user.has_perm('can_grant_portfolio_owner_permission', cur_portfolio) else False
+    if request.user.is_superuser or ((request.user in project.get_admins()) or owner and 'change_portfolio' in get_perms(request.user, new_portfolio)):
         project.portfolio = new_portfolio
         project.save()
         # Give all current members of the project read access to target portfolio
