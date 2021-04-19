@@ -3,8 +3,9 @@ from django.contrib import admin
 from .models import SystemSettings, Classification, Sitename
 
 class SystemSettingsAdmin(admin.ModelAdmin):
-  list_display = ('setting', 'active')
-  fields = ('setting', 'active')
+  list_display = ('setting', 'active', 'value', 'value_type', 'description')
+  fields = ('setting', 'active', 'value', 'value_type', 'description')
+
 
 admin.site.register(SystemSettings, SystemSettingsAdmin)
 
