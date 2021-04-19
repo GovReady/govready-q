@@ -20,7 +20,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.generic import ListView
 from guardian.decorators import permission_required_or_403
-from guardian.shortcuts import get_perms_for_model, get perms, assign_perm
+from guardian.shortcuts import get_perms_for_model, get_perms, assign_perm
 
 from controls.forms import ImportProjectForm
 from controls.views import add_selected_components
@@ -1372,7 +1372,7 @@ def move_project(request, project_id):
     Returns:
         [JsonResponse]: Either an ok status or an error
     """
-      try:
+    try:
         new_portfolio_id = request.POST.get("new_portfolio", "").strip()
         project = get_object_or_404(Project, id=int(project_id))
         cur_portfolio = project.portfolio
@@ -1383,7 +1383,7 @@ def move_project(request, project_id):
     # Check if the user moving the project is a superuser or
     # if they are the owner of the project and have edit permissions in the target directory
     owner = True if request.user.has_perm('can_grant_portfolio_owner_permission', cur_portfolio) else False
-    if request.user.is_superuser or (request.user in project.get_admins() or owner and 'change_portfolio' in get_perms(request.user, new_portfolio)):
+    if request.user.is_superuser or ((request.user in project.get_admins() or owner) and 'change_portfolio' in get_perms(request.user, new_portfolio)):
         project.portfolio = new_portfolio
         project.save()
         # Give all current members of the project read access to target portfolio
