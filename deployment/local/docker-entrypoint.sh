@@ -12,9 +12,25 @@ fi
 /usr/sbin/sshd
 export -p > deployment/local/remote_interpreter/env_var.sh
 
-echo "[ + ] Preparing Django Application"
-python3 install.py --non-interactive --docker
 
-# Start server
+echo "[ + ] Running checks"
+pip3 install -r requirements.txt --ignore-installed
+
+echo "[ + ] Running checks"
+./manage.py check --deploy
+
+echo "[ + ] Migrating Database"
+./manage.py migrate
+
+echo "[ + ] Preparing Data"
+./manage.py load_modules
+./manage.py first_run --non-interactive > tmp/first_run.txt
+
+echo "[ + ] Setting up GovReady-Q sample project if none exists"
+./manage.py load_govready_ssp
+
+
+cat first_run.txt | python3 -c "import sys; data=sys.stdin.read(); import re; tmp=re.findall('Created administrator account \(username: (admin)\) with password: ([a-zA-Z0-9#?\!\@\$%^&*-]+)',data); print(f'Created Administrator Account - {tmp[0][0]} / {tmp[0][1]} - This is the only time you will see this message so make sure to write this down\!') if tmp else ''"
+
 echo "[ + ] Starting server"
-python3 manage.py runserver 0.0.0.0:8000
+./manage.py runserver 0.0.0.0:8000

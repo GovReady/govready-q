@@ -2,8 +2,10 @@
 FROM ubuntu:focal-20210119
 
 # Update package list.
-RUN apt-get update
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Add dos2unix for Windows support of deployments for the CRLF issues
+RUN apt-get update && apt-get install -y dos2unix
 
 # Set up the locale.
 RUN apt-get update && \
@@ -19,12 +21,12 @@ RUN echo "root:root" | chpasswd && \
   mkdir /var/run/sshd
 
 # Set up the timezone.
-RUN apt-get install -y --no-install-recommends tzdata && \
+RUN apt-get update && apt-get install -y --no-install-recommends tzdata && \
   ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
   dpkg-reconfigure tzdata
 
 # Install GovReady-Q prerequisites.
-RUN apt-get -y install \
+RUN apt-get update && apt-get -y install \
   unzip git curl jq \
   python3 python3-pip \
   python3-yaml \
@@ -45,3 +47,4 @@ RUN pip3 install ipdb
 # the container is launched with --mount.
 # --mount type=bind,source="$(pwd)",dst=/mnt/q-files-host
 RUN mkdir -p /mnt/q-files-host
+RUN find . -type f -print0 | xargs -0 dos2unix

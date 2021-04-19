@@ -2,12 +2,16 @@
 See [Installing GovReady-Q Compliance Server on Workstations for Development](https://govready-q.readthedocs.io/en/latest/deploy_local_dev.html) for detailed instructions.
 
 ## Local Dev
-1. Start
+1. Configure
+    - You can configure environment variables for this build by updating `govready-q.env`
+        - To prevent upstream changes between pulls - `git update-index --skip-worktree govready-q.env`
+        - If you want to allow upstream changes again - `git update-index --no-skip-worktree govready-q.env`
+2. Start
     -  `docker-compose up`
-2. Debugging
+3. Debugging
     - `docker attach govready_q`
     - use ipdb as you normally would
-3. Connect to Container
+4. Connect to Container
     - `docker exec -it govready_q /bin/bash`
     
     

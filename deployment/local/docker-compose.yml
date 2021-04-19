@@ -10,10 +10,8 @@ services:
       context: ../..
       dockerfile: deployment/local/Dockerfile
     command: /bin/bash -c /usr/src/app/deployment/local/docker-entrypoint.sh
-    environment:
-      - PORT=8000
-      - HTTPS=false
-      - DBURL=${GOVREADY_Q_DBURL-}
+    env_file:
+      - govready-q.env
     volumes:
       - ../..:/usr/src/app
     ports:
