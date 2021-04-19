@@ -22,3 +22,10 @@ questions:
     title: Example Module
     type: module
     module-id: example
+input:
+  - id: my_input_id
+    name: Input Name
+    type: oscal
+    path: assets/filename.json
+    group: OSCAL Components
+output: []

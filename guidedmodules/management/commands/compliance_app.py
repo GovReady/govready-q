@@ -45,7 +45,6 @@ class Command(BaseCommand):
 
             print("Created new AppSource", appsrc, "using local path", options["path"])
 
-        
         elif not options["appname"]:
             print("You must specify an app name, which should be a valid directory name (i.e. no spaces), or  or --path to create a new AppSource.")
 
