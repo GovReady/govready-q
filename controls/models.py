@@ -358,7 +358,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
 
     @property
     def selected_controls_oscal_ctl_ids(self):
-        """Return array of selectecd controls oscal ids"""
+        """Return array of selected controls oscal ids"""
         # oscal_ids = self.controls.all()
         oscal_ctl_ids = [control.oscal_ctl_id for control in self.controls.all()]
         # Sort
