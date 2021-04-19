@@ -4,9 +4,13 @@ GovReady-Q Release Notes
 v999 (April XX, 2021)
 -------------------------
 
+**UI changes**
 
-[Add changes here]
+* Display system impact level on project page.
 
+**Data changes**
+
+* Use statement type `fisma_impact_level` to track impact level of a system.
 
 v0.9.3.3 (April 13, 2021)
 -------------------------
