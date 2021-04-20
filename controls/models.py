@@ -639,7 +639,8 @@ class System(auto_prefetch.Model):
         elm = self.root_element
 
         counts = Statement.objects.filter(statement_type="control_implementation", status__in=status_list).values('status').order_by('status').annotate(count=Count('status'))
-        status_stats.update({r.status: r.count for r in counts})
+        status_stats.update({r['status']: r['count'] for r in counts})
+
         # TODO add index on statement status
         # Get overall controls addressed (e.g., covered)
         status_stats['Addressed'] = elm.statements_consumed.filter(statement_type="control_implementation").values('sid').distinct().count()
@@ -657,7 +658,7 @@ class System(auto_prefetch.Model):
         # Fetch all selected controls
         counts = Statement.objects.filter(statement_type="POAM", status__in=status_list).values('status').order_by('status').annotate(
             count=Count('status'))
-        status_stats.update({r.status: r.count for r in counts})
+        status_stats.update({r['status']: r['count'] for r in counts})
         # TODO add index on statement status
         return status_stats
 
