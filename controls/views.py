@@ -2821,8 +2821,6 @@ def project_export(request, project_id):
             impl_smts = element.statements_produced.filter(consumer_element=system_root_element)
             component = OSCALComponentSerializer(element, impl_smts).as_json()
             oscal_comps.append(component)
-
-
         poams = []
         poam_smts = system_root_element.statements_consumed.filter(statement_type="POAM").order_by('id')
         for smt in poam_smts:

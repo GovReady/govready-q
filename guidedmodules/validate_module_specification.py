@@ -39,7 +39,7 @@ def validate_module(spec, app, is_authoring_tool=False):
     if "introduction" in spec and spec.get("type") != "project":
         q = {
             "id": "_introduction",
-            "title": "Introduction",
+            "title": "Module Introduction",
             "type": "interstitial",
             "prompt": spec["introduction"]["template"],
         }

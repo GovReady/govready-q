@@ -6,10 +6,27 @@ v999 (April XX, 2021)
 
 GovReady-Q now supports Action question type for better management of actions from questionnaires.
 
+**Developer changes**
+
+* Refactor question actions into a new `action` question type to better handle user actions associated with answers that are imputed and to better communicate actions users.
+* Added a short README.md to each `modules/systems` folder (account, organization) to avoid seeing the README error when loading modules.
+
+v0.9.3.3 (April 13, 2021)
+-------------------------
+
 **Feature changes**
 
 * Added support for Remote Interpreter on IDEs for the local Docker deployment.
 * Add distinct question type "action" to replace embedded actions in a question. Needed to handle actions related to questions with imputed answers. Also better communicates actions to users.
+
+**UI changes**
+
+* Add "Help" link to global navbar.
+* Remove caret glyphicons from global navbar.
+* Make conditional admin "Settings" link in global navbar a dropdown menu to include link to Django database admin.
+* Simplify task-finished page layout. Move navigation buttons to top.
+* Replace "...and we're done" language with "Module Summary".
+* Replace questions progress sidebar's project links with more obvious project buttons.
 
 **Bug fixes**
 
@@ -17,8 +34,15 @@ GovReady-Q now supports Action question type for better management of actions fr
 * File names now updated properly for all Asset models in the event of an update.
 
 **Developer changes**
+* (fields.W903) NullBooleanField is deprecated. Support for it (except in historical migrations) will be removed in Django 4.0. Using BooleanField instead for `siteapp.Project.is_organization_project` and `guidedmodules.AppVersion.system_app`.
+* Added version data for the project and the project's compliance app to the exported project json.
 
-* Refactor question actions into a new `action` question type to better handle user actions associated with answers that are imputed and to better communicate actions users.
+**Install fixes**
+
+* Create portfolios for admins when passing in ADMIN setting for automated admin creation during install first-run.
+* Create default org 'main' if none exists earlier in the first-run process.
+* Fix adding admin user to Help Squad and Reviewers list.
+* Install default AppSources and compliance apps only if no AppSources installed.
 
 v0.9.3.2 (April 1st, 2021)
 --------------------------
