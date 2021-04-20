@@ -4,6 +4,10 @@ GovReady-Q Release Notes
 v999 (April XX, 2021)
 -------------------------
 
+**Developer changes**
+* Add ability for external catalogs and baselines to be used in GovReady-q projects through the two functions `extend_external_baselines` and `extend_external_catalogs`. This includes two new paths GovReady-q looks at which are EXTERNAL_BASELINE_PATH and EXTERNAL_CATALOG_PATH `~/govready-q/local/controls/data/<baselines/catalogs>`
+* Added a `list_catalogs()` method to `Catalog` in order to easily get the `Catalog` objects in a list.
+
 
 **Bug fixes**
 * Fixed some issues in code resulting in excessive SQL calls slowing down the application

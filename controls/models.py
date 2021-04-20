@@ -13,13 +13,14 @@ from jsonfield import JSONField
 from natsort import natsorted
 
 from siteapp.model_mixins.tags import TagModelMixin
-from controls.oscal import Catalogs, Catalog
+from controls.oscal import Catalogs, Catalog, check_and_extend
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
 from copy import deepcopy
 from django.db import transaction
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
+EXTERNAL_BASELINE_PATH = os.path.join(f"{os.getcwd()}",'local', 'controls', 'data', 'baselines')
 ORGPARAM_PATH = os.path.join(os.path.dirname(__file__),'data','org_defined_parameters')
 
 class ImportRecord(models.Model):
@@ -713,8 +714,9 @@ class ElementCommonControl(auto_prefetch.Model):
 class Baselines (object):
     """Represent list of baselines"""
     def __init__(self):
-        global BASELINE_PATH
+
         self.file_path = BASELINE_PATH
+        self.external_file_path = EXTERNAL_BASELINE_PATH
         self.baselines_keys = self._list_keys()
         # self.index = self._build_index()
 
@@ -728,18 +730,20 @@ class Baselines (object):
             # bs.get_baseline_controls('NIST_SP-800-53_rev4', 'moderate')
 
     def _list_files(self):
-        return [
+        return self.extend_external_baselines([
             'NIST_SP-800-53_rev4_baselines.json',
             # 'NIST_SP-800-53_rev5_baselines.json',
             'NIST_SP-800-171_rev1_baselines.json'
-        ]
+        ], "files")
+
 
     def _list_keys(self):
-        return [
+        return self.extend_external_baselines([
             'NIST_SP-800-53_rev4',
             # 'NIST_SP-800-53_rev5',
             'NIST_SP-800-171_rev1'
-        ]
+        ], "keys")
+
 
     def _load_json(self, baselines_key):
         """Read baseline file - JSON"""
@@ -748,8 +752,12 @@ class Baselines (object):
         data_file = os.path.join(self.file_path, self.data_file)
         # Does file exist?
         if not os.path.isfile(data_file):
-            print("ERROR: {} does not exist".format(data_file))
-            return False
+            # Check if there any external oscal baseline files
+            try:
+                data_file = os.path.join(self.external_file_path, self.data_file)
+            except:
+                print("ERROR: {} does not exist".format(data_file))
+                return False
         # Load file as json
         try:
             with open(data_file, 'r') as json_file:
@@ -776,6 +784,17 @@ class Baselines (object):
     def body(self):
         return self.legacy_imp_smt
 
+
+    def extend_external_baselines(self, baseline_info, extendtype):
+        """
+        Add external baselines to list of baselines
+        """
+        os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
+        external_baselines = [file for file in os.listdir(EXTERNAL_BASELINE_PATH) if
+                  file.endswith('.json')]
+
+        baseline_info = check_and_extend(baseline_info, external_baselines, extendtype, "_baselines")
+        return baseline_info
 class OrgParams(object):
     """
     Represent list of organizational defined parameters. Temporary
@@ -792,7 +811,6 @@ class OrgParams(object):
         return cls._singleton
 
     def init(self):
-        global ORGPARAM_PATH
         self.cache = {}
 
         path = Path(ORGPARAM_PATH)
