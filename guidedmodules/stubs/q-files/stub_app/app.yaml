@@ -24,8 +24,8 @@ questions:
     module-id: example
 input:
   - id: my_input_id
-    name: Input Name
+    name: My Component
     type: oscal
-    path: assets/filename.json
+    path: components/my_component.json
     group: OSCAL Components
 output: []
