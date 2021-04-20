@@ -1457,47 +1457,15 @@ def controls_selected_export_xacta_xslx(request, system_id):
 def editor(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
-    cl_id = oscalize_control_id(cl_id)
-    catalog_key = oscalize_catalog_key(catalog_key)
-
-    # # Get control catalog
-    # catalog = Catalog(catalog_key)
-    #
-    # # TODO: maybe catalogs could provide an API that returns a set of
-    # # control ids instead?
-    #
-    # cg_flat = catalog.get_flattened_controls_all_as_dict()
-
-
-
-    # Retrieve identified System
-    system = System.objects.get(id=system_id)
+    cl_id, catalog_key, system = get_editor_system(cl_id, catalog_key, system_id)
 
     # Retrieve related statements if user has permission on system
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.first()
-        # if len(projects) > 0:
-        #     project = projects[0]
-        # Retrieve any related CommonControls
-        # CRITICAL TODO: Filter by sid and by system.root_element
-
-        # Retrieve organizational parameter settings for this catalog
-        # We need to grab the catalog again.
-
-        parameter_values = project.get_parameter_values(catalog_key)
-        catalog = Catalog(catalog_key, parameter_values=parameter_values)
-        cg_flat = catalog.get_flattened_controls_all_as_dict()
-        # If control id does not exist in catalog
-        if cl_id.lower() not in cg_flat:
-            return render(request, "controls/detail.html", {"catalog": catalog, "control": {}})
-
-        # Get and return the control
-
-        # Retrieve any related Implementation Statements filtering by control and system.root_element
-        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key).order_by('pid')
-
+        project, catalog, cg_flat, impl_smts = get_editor_data(request, system, catalog_key, cl_id)
+        print(project.id)
+        print(cg_flat.keys())
+        print(len(impl_smts))
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
         of = {
@@ -1577,43 +1545,56 @@ def editor(request, system_id, catalog_key, cl_id):
         # User does not have permission to this system
         raise Http404
 
+def get_editor_data(request, system, catalog_key, cl_id):
+    """
+    Get data for editor views
+    """
+
+    # Retrieve related statements if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.first()
+        parameter_values = project.get_parameter_values(catalog_key)
+        catalog = Catalog(catalog_key, parameter_values=parameter_values)
+        cg_flat = catalog.get_flattened_controls_all_as_dict()
+        # If control id does not exist in catalog
+        if cl_id.lower() not in cg_flat:
+            return render(request, "controls/detail.html", {"catalog": catalog, "control": {}})
+
+        # Get and return the control
+        # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog
+        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key).order_by('pid')
+        return project, catalog, cg_flat, impl_smts
+
+def get_editor_system(cl_id, catalog_key, system_id):
+    """
+    Retrieves oscalized control id and catalog key. Also system object from system id.
+    """
+
+    cl_id = oscalize_control_id(cl_id)
+
+    catalog_key = oscalize_catalog_key(catalog_key)
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+
+    return cl_id, catalog_key, system
+
 @login_required
 def editor_compare(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
-    cl_id = oscalize_control_id(cl_id)
+    cl_id, catalog_key, system = get_editor_system(cl_id, catalog_key, system_id)
 
-    # Get control catalog
-    catalog = Catalog(catalog_key)
-    cg_flat = catalog.get_flattened_controls_all_as_dict()
-    # If control id does not exist in catalog
-    if cl_id.lower() not in cg_flat:
-        return render(request, "controls/detail.html", {"catalog": catalog,"control": {}})
-
-    # Retrieve identified System
-    system = System.objects.get(id=system_id)
     # Retrieve related statements if owner has permission on system
     if request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
-        # Retrieve any related CommonControls
-        common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
-        ccp_name = None
-        if common_controls:
-            cc = common_controls[0]
-            ccp_name = cc.common_control_provider.name
-        # Get and return the control
-
-        # Retrieve any related Implementation Statements
-        impl_smts = Statement.objects.filter(sid=cl_id)
+        project, catalog, cg_flat, impl_smts = get_editor_data(request, system, catalog_key, cl_id)
         context = {
             "system": system,
             "project": project,
             "catalog": catalog,
             "control": cg_flat[cl_id.lower()],
-            "common_controls": common_controls,
-            "ccp_name": ccp_name,
             "impl_smts": impl_smts,
             "project_form": AddProjectForm(request.user),
         }
