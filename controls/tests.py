@@ -974,56 +974,6 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
     Testing the whole import of project JSON which will form a new system, project, and set of components and their statements.
     """
 
-    def test_new_project_json_import(self):
-        """
-        Testing the import of a new project through JSON
-        """
-
-        # login as the first user and create a new project
-        self._login()
-        self._new_project()
-
-        # Checks the number of projects and components before the import
-        project_count_before_import = Project.objects.all().count()
-
-        self.assertEqual(project_count_before_import, 3)
-        self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 0)
-
-        ## Import a new project
-        # click import project button, opening the modal
-        self.click_element("#btn-import-project")
-        ## select through the modal information needed and browse for the import needed
-        self.select_option_by_visible_text("#id_appsource_compapp", "project")
-        # The selection variable found by id
-        select = Select(self.browser.find_element_by_id("id_appsource_compapp"))
-        # Select the last option by index
-        selectLen = len(select.options)
-        select.select_by_index(selectLen - 1)
-        self.browser.find_element_by_id("id_importcheck").click()
-
-        file_input = self.browser.find_element_by_css_selector("#id_file")
-
-        file_path = os.getcwd() + "/fixtures/test_project_import_data.json"
-        # convert filepath if necessary and send keys
-        self.filepath_conversion(file_input, file_path, "sendkeys")
-        select = Select(self.browser.find_element_by_id("id_appsource_version_id"))
-        # Select the last option by index
-        selectLen = len(select.options)
-        select.select_by_index(selectLen - 1)
-        self.browser.find_element_by_id("import_component_submit").click()
-        # Should be incremented by one compared to earlier
-        project_count_after_import = Project.objects.all().count()
-
-        # Has the correct name?
-        self.assertEqual(Project.objects.all()[project_count_after_import -1 ].title, "New Test Project")
-
-        # Components and their statements?
-        self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 1)
-        try:
-            self.assertEqual(Statement.objects.all().count(), 3)
-        except:
-            self.assertEqual(Statement.objects.all().count(), 6)
-
     def test_update_project_json_import(self):
         """
         Testing the update of a project through project JSON import and ingestion of components and their statements
@@ -1040,14 +990,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         ## Update current project
         # click import project button, opening the modal
         self.click_element("#btn-import-project")
-        ## select through the modal information needed and browse for the import needed
-        self.select_option_by_visible_text("#id_appsource_compapp", "project")
 
-        # The selection variable found by id
-        select = Select(self.browser.find_element_by_id("id_appsource_version_id"))
-        # Select the last option by index
-        selectLen = len(select.options)
-        select.select_by_index(selectLen - 1)
 
         file_input = self.browser.find_element_by_css_selector("#id_file")
 
@@ -1063,10 +1006,11 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.assertEqual(Project.objects.all()[project_num - 1].title, "New Test Project"))
         # Components and their statements?
         self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 1)
+        self.assertEqual(Element.objects.all().exclude(element_type='system')[0].name, "SecGet, Endpoint Security System")
         try:
-            self.assertEqual(Statement.objects.all().count(), 3)
+            self.assertEqual(Statement.objects.all().count(), 4)
         except:
-            self.assertEqual(Statement.objects.all().count(), 6)
+            self.assertEqual(Statement.objects.all().count(), 8)
 
     def test_project_json_export(self):
         """
@@ -1085,7 +1029,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         file_system = os.listdir(os.getcwd())
         # Assert there is a file
         for file_name in file_system:
-            if file_name ==project_title:
+            if file_name == project_title:
                 project_title = file_name
 
         self.assertIn(file_name, file_system)
