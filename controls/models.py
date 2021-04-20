@@ -715,8 +715,7 @@ class ElementCommonControl(auto_prefetch.Model):
 class Baselines (object):
     """Represent list of baselines"""
     def __init__(self):
-        global BASELINE_PATH
-        global EXTERNAL_BASELINE_PATH
+
         self.file_path = BASELINE_PATH
         self.external_file_path = EXTERNAL_BASELINE_PATH
         self.baselines_keys = self._list_keys()
@@ -813,7 +812,6 @@ class OrgParams(object):
         return cls._singleton
 
     def init(self):
-        global ORGPARAM_PATH
         self.cache = {}
 
         path = Path(ORGPARAM_PATH)

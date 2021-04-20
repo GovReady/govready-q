@@ -19,8 +19,6 @@ class Catalogs(object):
     NIST_SP_800_171_rev1 = 'NIST_SP-800-171_rev1'
 
     def __init__(self):
-        global CATALOG_PATH
-        global EXTERNAL_CATALOG_PATH
         self.catalog_path = CATALOG_PATH
         # self.catalog = None
         self.catalog_keys = self._list_catalog_keys()
@@ -125,8 +123,6 @@ class Catalog(object):
         return catalog_instance_key.replace('-', '_')
 
     def __init__(self, catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
-        global CATALOG_PATH
-        global EXTERNAL_CATALOG_PATH
         self.catalog_key = catalog_key
         self.catalog_key_display = catalog_key.replace("_", " ")
         self.catalog_path = CATALOG_PATH
