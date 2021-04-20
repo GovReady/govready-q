@@ -44,6 +44,15 @@ class HelperMixin:
         self.ROOT_DIR = os.path.abspath(os.path.join(os.getcwd(), '..'))
         signal.signal(signal.SIGINT, self.signal_handler)
         self.kill_captured = False
+        self.check_if_docker_is_started()
+
+    def check_if_docker_is_started(self):
+
+        def offline():
+            Prompt.error("Docker Engine is offline.  Please start before continuing.")
+            sys.exit(1)
+
+        self.execute("docker info", {}, display_stdout=False, show_notice=False, on_error_fn=offline)
 
     def create_secret(self):
         import secrets
@@ -83,7 +92,7 @@ class HelperMixin:
             proc.start()
             self.BACKGROUND_PROCS.append(proc)
         else:
-            with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,  # stderr=subprocess.STDOUT,
+            with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                   bufsize=0, env=env) as proc:
                 for line in proc.stdout:
                     formatted = line.rstrip().decode('utf-8', 'ignore')

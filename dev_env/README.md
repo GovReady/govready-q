@@ -53,14 +53,31 @@ This also assumes you can run as root/administrator.  This is due to ports being
 - Code is synced in realtime.  Your code changes will be reflected on the host and will not be lost.
 
 
-## Notes of Mention
+## FAQ
 
-The following will be ran EVERY run:
+What runs every time in `python run.py dev`?
     
     - migrations : We need to apply migrations between branches
     - pip installs: We cannot assume libraries will remain static between branches
     
-Docker eating too much RAM:
+Docker is eating too much RAM.  What can I do?
     
     Windows
-    - https://medium.com/@lewwybogus/how-to-stop-wsl2-from-hogging-all-your-ram-with-docker-d7846b9c5b37      
+    - https://medium.com/@lewwybogus/how-to-stop-wsl2-from-hogging-all-your-ram-with-docker-d7846b9c5b37
+    
+How are my changes propagated to and from the container?      
+
+    - In the "dev_env/docker/docker-compose.yaml" we have a volume set to "../..:/usr/src/app" under govready-q.  This sets up a bi-driectional mount.  
+    - Any changes to the host will affect the container and any changes to the container will affect the host.
+    
+When do I rebuild the container?
+
+    - This happens automatically.  If a change is detected in the Dockerfile, the next time you restart it will rebuild the container.
+    
+How do I see logs or interact with a debugger?
+
+    - See "4. Debugging" under How To.  
+    
+How do I run management commands or interact with the container?
+
+    - See "5. Connect to Container under How To.  

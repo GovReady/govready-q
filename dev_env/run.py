@@ -11,7 +11,7 @@ if __name__ == '__main__':
     parser.add_argument('--clean', help='Will wipe the database and other artifacts for a clean run', action='store_true')
 
     args = vars(parser.parse_args())
-    valid_actions = ['init','dev', 'remove', 'wipedb']
+    valid_actions = ['init', 'dev', 'remove', 'wipedb']
     if args['action'] not in valid_actions:
         Prompt.error(f"{args['action']} is not a valid choice.  Choices: {valid_actions}.  "
                      f"Leave blank to run stack.", close=True)
