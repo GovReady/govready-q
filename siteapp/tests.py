@@ -1452,46 +1452,4 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         # test poams
         self.click_element('#status-box-poams')
         wait_for_sleep_after( lambda: self.assertInNodeText("POA&Ms", ".systems-selected-items") )
-        # var_sleep(20.5)
-
-
-    # def test_create_portfolios(self):
-    #     # Create a new account
-    #     self.browser.get(self.url("/"))
-    #     self.click_element('#tab-register')
-    #     self._fill_in_signup_form("test+account@q.govready.com", "portfolio_user")
-    #     self.click_element("#signup-button")
-
-    #     # Go to portfolio page
-    #     self.browser.get(self.url("/portfolios"))
-
-    #     # Navigate to portfolio created on signup
-    #     self.click_element_with_link_text("portfolio-user")
-
-    #     # Test creating a portfolio using the form
-    #     # Navigate to the portfolio form
-    #     wait_for_sleep_after(lambda: self.click_element_with_link_text("Portfolios"))
-    #     # Click Create Portfolio button
-    #     self.click_element("#new-portfolio")
-    #     var_sleep(0.5)
-    #     # Fill in form
-    #     wait_for_sleep_after(lambda: self.fill_field("#id_title", "Test 1"))
-    #     self.fill_field("#id_description", "Test 1 portfolio")
-    #     # Submit form
-    #     self.click_element("#create-portfolio-button")
-    #     # Test we are on portfolio page we just created
-    #     wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q"))
-
-    #     # Test we cannot create a portfolio with the same name
-    #     # Navigate to the portfolio form
-    #     self.click_element_with_link_text("Portfolios")
-    #     # Click Create Portfolio button
-    #     self.click_element("#new-portfolio")
-    #     var_sleep(0.5)
-    #     # Fill in form
-    #     wait_for_sleep_after(lambda: self.fill_field("#id_title", "Test 1"))
-    #     self.fill_field("#id_description", "Test 1 portfolio")
-    #     # Submit form
-    #     self.click_element("#create-portfolio-button")
-        # We should get an error
 
