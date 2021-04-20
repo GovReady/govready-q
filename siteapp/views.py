@@ -20,7 +20,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.generic import ListView
 from guardian.decorators import permission_required_or_403
-from guardian.shortcuts import get_perms_for_model
+from guardian.shortcuts import get_perms_for_model, get_perms, assign_perm
 
 from controls.forms import ImportProjectForm
 from controls.views import add_selected_components
@@ -1403,15 +1403,25 @@ def move_project(request, project_id):
     request ([HttpRequest]): The network request
     project_id ([int|str]): The id of the project
     Returns:
-        [JsonResponse]: Either a ok status or an error
+        [JsonResponse]: Either an ok status or an error
     """
     try:
-        new_portfolio_id = request.POST.get("new_portfolio", "").strip() or None
+        new_portfolio_id = request.POST.get("new_portfolio", "").strip()
         project = get_object_or_404(Project, id=int(project_id))
         cur_portfolio = project.portfolio
         new_portfolio = get_object_or_404(Portfolio, id=int(new_portfolio_id))
+    except:
+        return JsonResponse({"status": "error", "message": "Portfolio entered does not exist."})
+
+    # Check if the user moving the project is a superuser or
+    # if they are the owner of the project and have edit permissions in the target directory
+    owner = True if request.user.has_perm('can_grant_portfolio_owner_permission', cur_portfolio) else False
+    if request.user.is_superuser or ((request.user in project.get_admins() or owner) and 'change_portfolio' in get_perms(request.user, new_portfolio)):
         project.portfolio = new_portfolio
         project.save()
+        # Give all current members of the project read access to target portfolio
+        for member in project.get_members():
+            assign_perm('view_portfolio', member, new_portfolio)
         # Log successful project move to a different portfolio
         logger.info(
             event="move_project_different_portfolio successful",
@@ -1419,21 +1429,16 @@ def move_project(request, project_id):
             from_portfolio={"portfolio_title": cur_portfolio.title, "id": cur_portfolio.id},
             to_portfolio={"portfolio_title": new_portfolio.title, "id": new_portfolio.id}
         )
-        # message = "Project {} successfully moved to portfolio {}".format(project, new_portfolio.title)
-        # messages.add_message(request, messages.INFO, message)
-        return JsonResponse({"status": "ok"})
-    except:
-        # Log unsuccessful project move to a different portfolio
+
+        return JsonResponse({ "status": "ok" })
+    else:
         logger.info(
-            event="move_project_different_portfolio successful",
-            object={"project_id": project.id, "new_portfolio_id": new_portfolio.id},
+            event="move_project_different_portfolio unsuccessful",
+            object={"project_id": project.id,"new_portfolio_id": new_portfolio.id},
             from_portfolio={"portfolio_title": cur_portfolio.title, "id": cur_portfolio.id},
             to_portfolio={"portfolio_title": new_portfolio.title, "id": new_portfolio.id}
         )
-        # message = "Project {} failed moved to portfolio {}".format(project, new_portfolio.title)
-        # messages.add_message(request, messages.ERROR, message)
-        return JsonResponse({"status": "error", "message": sys.exc_info()})
-
+        return JsonResponse({ "status": "error", "message": "User does not have permission to move this project." })
 
 @project_admin_login_post_required
 def upgrade_project(request, project):
