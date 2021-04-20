@@ -199,7 +199,7 @@
                                                                        #B2E0B2 0 235deg);"> </h2>
           <span class="status-small">{{ percent_compliant_100|floatformat:2 }}% compliance (unassessed)</span>
           <br/>
-          <span class="status-small">
+          <span id="systems-fisma-impact-level" class="status-small">
             {% if impact_level %}
               mission impact: <b>{{ impact_level|lower }}</b>
               {% else %}
