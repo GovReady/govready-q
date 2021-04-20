@@ -4,11 +4,13 @@ GovReady-Q Release Notes
 v999 (April XX, 2021)
 -------------------------
 
+**UI changes**
+
+* Link mini-dashboards on project page to sensible related pages.
 
 **Data changes**
 
 * Update stub_app used by complianca_app command for generating compliance app to include "input" and "output" section; and to have folders for templates, utils, and components.
-
 
 v0.9.3.3 (April 13, 2021)
 -------------------------
