@@ -1,9 +1,11 @@
+#!/bin/bash
+
 mkdir -p local
 
 echo "[ + ] Setting up SSH for remote Interpreter use"
 if [[ ! -d /usr/src/app/dev_env/docker/ssh ]]; then
     echo "Configuring SSH Daemon"
-    mkdir /usr/src/app/dev_env/docker/ssh
+    mkdir -p /usr/src/app/dev_env/docker/ssh
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
     ssh-keygen -A
     chmod -R 400 /etc/ssh
