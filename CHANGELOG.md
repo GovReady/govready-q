@@ -4,6 +4,8 @@ GovReady-Q Release Notes
 v999 (April XX, 2021)
 -------------------------
 
+v0.9.3.4 (April 20, 2021)
+-------------------------
 
 **Bug fixes**
 * Fixed some issues in code resulting in excessive SQL calls slowing down the application
@@ -11,7 +13,6 @@ v999 (April XX, 2021)
 **UI changes**
 
 * Link mini-dashboards on project page to sensible related pages.
-
 
 
 v0.9.3.3 (April 13, 2021)
