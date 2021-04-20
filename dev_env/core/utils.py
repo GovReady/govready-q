@@ -52,7 +52,8 @@ class HelperMixin:
             Prompt.error("Docker Engine is offline.  Please start before continuing.")
             sys.exit(1)
 
-        self.execute("docker info", {}, display_stdout=False, show_notice=False, on_error_fn=offline)
+        self.execute("docker info", {}, display_stdout=False, show_notice=False, on_error_fn=offline,
+                     display_stderr=False)
 
     def create_secret(self):
         import secrets
@@ -71,7 +72,7 @@ class HelperMixin:
             proc.terminate()
 
     def execute(self, cmd, env_dict, display_stdout=True, on_error_fn=None, show_env=False, show_notice=True,
-                exit_on_fail=True, threaded=False):
+                exit_on_fail=True, threaded=False, display_stderr=True):
         env = os.environ.copy()
         normalized_dict = {}
         for key, value in env_dict.items():
@@ -92,8 +93,10 @@ class HelperMixin:
             proc.start()
             self.BACKGROUND_PROCS.append(proc)
         else:
-            with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                  bufsize=0, env=env) as proc:
+            args = dict(stdout=subprocess.PIPE, bufsize=0, env=env)
+            if not display_stderr:
+                args.update(dict(stderr=subprocess.DEVNULL))
+            with subprocess.Popen(cmd, **args) as proc:
                 for line in proc.stdout:
                     formatted = line.rstrip().decode('utf-8', 'ignore')
                     output += formatted
@@ -131,7 +134,7 @@ class Runner(HelperMixin, ABC):
     REQUIRED_PORTS = []  # Verifies to see if ports are available
 
     def execute(self, cmd, env_dict=None, display_stdout=True, on_error_fn=None, show_env=False, show_notice=True,
-                exit_on_fail=True, threaded=False):
+                exit_on_fail=True, threaded=False, display_stderr=True):
         if not env_dict:
             env_dict = {}
         return super().execute(cmd,
@@ -140,6 +143,7 @@ class Runner(HelperMixin, ABC):
                                show_notice=show_notice,
                                threaded=threaded,
                                exit_on_fail=exit_on_fail,
+                               display_stderr=display_stderr,
                                on_error_fn=on_error_fn if on_error_fn else self.on_fail, show_env=show_env)
 
     def check_ports(self, raise_exception=True):
