@@ -5,7 +5,8 @@ v999 (April XX, 2021)
 -------------------------
 
 
-[Add changes here]
+**Developer changes**
+* Developers can now use `docker` & `docker-compose` to deploy a local environment.  This allows devs to work on any Operating System.  Instructions can be found at `dev_env/README.md` folder. 
 
 
 v0.9.3.3 (April 13, 2021)
