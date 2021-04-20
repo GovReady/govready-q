@@ -5,7 +5,8 @@ v999 (April XX, 2021)
 -------------------------
 
 
-[Add changes here]
+**Bug fixes**
+* Fixed some issues in code resulting in excessive SQL calls slowing down the application
 
 
 v0.9.3.3 (April 13, 2021)
