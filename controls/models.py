@@ -3,6 +3,7 @@ import os
 import json
 import auto_prefetch
 from django.db import models
+from django.db.models import Count
 from django.utils.functional import cached_property
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
@@ -633,14 +634,14 @@ class System(auto_prefetch.Model):
         """Retrieve counts of control status"""
 
         status_list = ['Not Implemented', 'Planned', 'Partially Implemented', 'Implemented', 'Unknown']
-        status_stats = {}
+        status_stats = {status: 0 for status in status_list}
         # Fetch all selected controls
         elm = self.root_element
-        for status in status_list:
-            # Get the smts_control_implementations ordered by part, e.g. pid
-            status_stats[status] = elm.statements_consumed.filter(statement_type="control_implementation", status=status).count()
-        # TODO add index on statement status
 
+        counts = Statement.objects.filter(statement_type="control_implementation", status__in=status_list).values('status').order_by('status').annotate(count=Count('status'))
+        status_stats.update({r['status']: r['count'] for r in counts})
+
+        # TODO add index on statement status
         # Get overall controls addressed (e.g., covered)
         status_stats['Addressed'] = elm.statements_consumed.filter(statement_type="control_implementation").values('sid').distinct().count()
         return status_stats
@@ -653,13 +654,11 @@ class System(auto_prefetch.Model):
         status_list = ['Open', 'Closed', "In Progress"]
         # TODO
         # Get a unique filter of status list and gather on that...
-        status_stats = {}
+        status_stats = {status: 0 for status in status_list}
         # Fetch all selected controls
-        elm = self.root_element
-        for status in status_list:
-            # Get the smts_control_implementations ordered by part, e.g. pid
-            status_stats[status] = elm.statements_consumed.filter(statement_type="POAM",
-                                                                  status__iexact=status).count()
+        counts = Statement.objects.filter(statement_type="POAM", status__in=status_list).values('status').order_by('status').annotate(
+            count=Count('status'))
+        status_stats.update({r['status']: r['count'] for r in counts})
         # TODO add index on statement status
         return status_stats
 
