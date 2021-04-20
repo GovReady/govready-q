@@ -84,7 +84,7 @@ if "allowed_hosts" in environment:
 	ALLOWED_HOSTS.extend(environment["allowed_hosts"])
 
 if DEBUG and 'localhost' in ALLOWED_HOSTS:
-	ALLOWED_HOSTS = ['*']
+	ALLOWED_HOSTS.extend(['*'])
 
 print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)
 
