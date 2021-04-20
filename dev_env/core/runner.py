@@ -47,6 +47,7 @@ class DockerCompose(Runner):
         Prompt.warning(f"Access application via Browser: {Colors.CYAN}{self.config['govready-url']}")
         Prompt.warning(f"View logs & debug by running: {Colors.CYAN}docker attach govready_q_dev")
         Prompt.warning(f"Connect to container: {Colors.CYAN}docker exec -it govready_q_dev /bin/bash")
+        Prompt.warning(f"Testing: {Colors.CYAN}docker exec -it govready_q_dev ./manage.py test")
 
         creds_path = os.path.join(self.ROOT_DIR, 'local/admin.creds.json')
         if auto_admin:
