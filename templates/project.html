@@ -177,19 +177,19 @@
 {% block body_content %}
     <div class="row">
       <div class="col-md-3">
-        <div id="status-box-controls" class="status-box" onclick="window.location.assign('/systems/{{project.system.id}}/controls/selected')" style="cursor: pointer;">
+        <div id="status-box-controls" class="status-box" onclick="window.location.assign('{% url 'controls_selected' system_id=project.system.id %}')" style="cursor: pointer;">
           <h2 class="status">{{ controls_status_count.Addressed }} of {{ project.system.root_element.controls.all|length }}</h2>
           <span class="status-small">controls addressed</span>
         </div>
       </div>
       <div class="col-md-3">
-        <div id="status-box-components" class="status-box" onclick="window.location.assign('/systems/{{project.system.id}}/components/selected')" style="cursor: pointer;">
+        <div id="status-box-components" class="status-box" onclick="window.location.assign('{% url 'components_selected' system_id=project.system.id %}')" style="cursor: pointer;">
           <h2 class="status">{{ project.system.get_producer_elements|length }}</h2>
           <span class="status-small">system components</span>
         </div>
       </div>
       <div class="col-md-3">
-        <div id="status-box-poams" class="status-box" onclick="window.location.assign('/systems/{{project.system.id}}/poams')" style="cursor: pointer;">
+        <div id="status-box-poams" class="status-box" onclick="window.location.assign('{% url 'poams_list' system_id=project.system.id %}')" style="cursor: pointer;">
           <h2 class="status">{{ poam_status_count.Open }}</h2> <span class="status-small">open POA&Ms</span>
         </div>
       </div>
