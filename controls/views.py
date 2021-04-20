@@ -1460,17 +1460,15 @@ def editor(request, system_id, catalog_key, cl_id):
     cl_id = oscalize_control_id(cl_id)
     catalog_key = oscalize_catalog_key(catalog_key)
 
-    # Get control catalog
-    catalog = Catalog(catalog_key)
+    # # Get control catalog
+    # catalog = Catalog(catalog_key)
+    #
+    # # TODO: maybe catalogs could provide an API that returns a set of
+    # # control ids instead?
+    #
+    # cg_flat = catalog.get_flattened_controls_all_as_dict()
 
-    # TODO: maybe catalogs could provide an API that returns a set of
-    # control ids instead?
 
-    cg_flat = catalog.get_flattened_controls_all_as_dict()
-
-    # If control id does not exist in catalog
-    if cl_id.lower() not in cg_flat:
-        return render(request, "controls/detail.html", {"catalog": catalog,"control": {}})
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
@@ -1479,7 +1477,7 @@ def editor(request, system_id, catalog_key, cl_id):
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
         # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
+        project = system.projects.first()
         # if len(projects) > 0:
         #     project = projects[0]
         # Retrieve any related CommonControls
@@ -1491,16 +1489,14 @@ def editor(request, system_id, catalog_key, cl_id):
         parameter_values = project.get_parameter_values(catalog_key)
         catalog = Catalog(catalog_key, parameter_values=parameter_values)
         cg_flat = catalog.get_flattened_controls_all_as_dict()
+        # If control id does not exist in catalog
+        if cl_id.lower() not in cg_flat:
+            return render(request, "controls/detail.html", {"catalog": catalog, "control": {}})
 
-        common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
-        ccp_name = None
-        if common_controls:
-            cc = common_controls[0]
-            ccp_name = cc.common_control_provider.name
         # Get and return the control
 
         # Retrieve any related Implementation Statements filtering by control and system.root_element
-        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element).order_by('pid')
+        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key).order_by('pid')
 
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
@@ -1567,8 +1563,6 @@ def editor(request, system_id, catalog_key, cl_id):
             "project": project,
             "catalog": catalog,
             "control": cg_flat[cl_id.lower()],
-            "common_controls": common_controls,
-            "ccp_name": ccp_name,
             "impl_smts": impl_smts,
             "impl_statuses": impl_statuses,
             "combined_smt": combined_smt,
