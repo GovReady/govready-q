@@ -1417,11 +1417,6 @@ class ProjectTests(TestCaseWithFixtureData):
 class ProjectPageTests(OrganizationSiteFunctionalTests):
     """ Tests for Project page """
 
-    def setUp(self):
-        super().setUp()
-        # Every test needs access to the request factory.
-        self.factory = RequestFactory()
-
     def test_mini_dashboard(self):
         """ Tests for project page mini compliance dashboard """
 
@@ -1437,7 +1432,7 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self.assertInNodeText("POA&Ms", "#status-box-poams")
         self.assertInNodeText("compliance", "#status-box-compliance-piechart")
 
-        # mini-dashobard links
+        # mini-dashbard links
         self.click_element('#status-box-controls')
         wait_for_sleep_after( lambda: self.assertInNodeText("Selected controls", ".systems-selected-items") )
         # click project button
