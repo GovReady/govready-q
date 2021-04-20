@@ -81,3 +81,10 @@ How do I see logs or interact with a debugger?
 How do I run management commands or interact with the container?
 
     - See "5. Connect to Container under How To.  
+    
+I just switched branches and my database is out of sync.  What do I do?
+
+    - Exit the existing run by hitting "ctrl-c"
+    - Run: python run.py dev --clean
+    - This will clean up all artifacts and will wipe the existing database
+    
