@@ -790,8 +790,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.click_element("#create-portfolio-button")
         wait_for_sleep_after(lambda:  self.assertRegex(self.browser.title, "Security Projects"))
 
-
-
     def test_grant_portfolio_access(self):
         # Grant another member access to portfolio
         self._login()
@@ -1383,7 +1381,6 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # # email-address
         # self.assertRegex(self.browser.title, "Next Question: email-address")
 
-
 class ProjectTests(TestCaseWithFixtureData):
     """
     Test various project views
@@ -1416,3 +1413,85 @@ class ProjectTests(TestCaseWithFixtureData):
         self.assertEqual(edit_project.title, 'Test Project v2')
         self.assertEqual(edit_project.version, "1.1")
         self.assertEqual(edit_project.version_comment, "A new comment!")
+
+class ProjectPageTests(OrganizationSiteFunctionalTests):
+    """ Tests for Project page """
+
+    def setUp(self):
+        super().setUp()
+        # Every test needs access to the request factory.
+        self.factory = RequestFactory()
+
+    def test_mini_dashboard(self):
+        """ Tests for project page mini compliance dashboard """
+
+        # Log in, create a new project.
+        self._login()
+        self._new_project()
+        # On project page?
+        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+
+        # mini-dashboard content
+        self.assertInNodeText("controls", "#status-box-controls")
+        self.assertInNodeText("components", "#status-box-components")
+        self.assertInNodeText("POA&Ms", "#status-box-poams")
+        self.assertInNodeText("compliance", "#status-box-compliance-piechart")
+
+        # mini-dashobard links
+        self.click_element('#status-box-controls')
+        wait_for_sleep_after( lambda: self.assertInNodeText("Selected controls", ".systems-selected-items") )
+        # click project button
+        self.click_element('#btn-project-home')
+        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+        # test components
+        self.click_element('#status-box-components')
+        wait_for_sleep_after( lambda: self.assertInNodeText("Selected components", ".systems-selected-items") )
+        # click project button
+        self.click_element('#btn-project-home')
+        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+        # test poams
+        self.click_element('#status-box-poams')
+        wait_for_sleep_after( lambda: self.assertInNodeText("POA&Ms", ".systems-selected-items") )
+        # var_sleep(20.5)
+
+
+    # def test_create_portfolios(self):
+    #     # Create a new account
+    #     self.browser.get(self.url("/"))
+    #     self.click_element('#tab-register')
+    #     self._fill_in_signup_form("test+account@q.govready.com", "portfolio_user")
+    #     self.click_element("#signup-button")
+
+    #     # Go to portfolio page
+    #     self.browser.get(self.url("/portfolios"))
+
+    #     # Navigate to portfolio created on signup
+    #     self.click_element_with_link_text("portfolio-user")
+
+    #     # Test creating a portfolio using the form
+    #     # Navigate to the portfolio form
+    #     wait_for_sleep_after(lambda: self.click_element_with_link_text("Portfolios"))
+    #     # Click Create Portfolio button
+    #     self.click_element("#new-portfolio")
+    #     var_sleep(0.5)
+    #     # Fill in form
+    #     wait_for_sleep_after(lambda: self.fill_field("#id_title", "Test 1"))
+    #     self.fill_field("#id_description", "Test 1 portfolio")
+    #     # Submit form
+    #     self.click_element("#create-portfolio-button")
+    #     # Test we are on portfolio page we just created
+    #     wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q"))
+
+    #     # Test we cannot create a portfolio with the same name
+    #     # Navigate to the portfolio form
+    #     self.click_element_with_link_text("Portfolios")
+    #     # Click Create Portfolio button
+    #     self.click_element("#new-portfolio")
+    #     var_sleep(0.5)
+    #     # Fill in form
+    #     wait_for_sleep_after(lambda: self.fill_field("#id_title", "Test 1"))
+    #     self.fill_field("#id_description", "Test 1 portfolio")
+    #     # Submit form
+    #     self.click_element("#create-portfolio-button")
+        # We should get an error
+

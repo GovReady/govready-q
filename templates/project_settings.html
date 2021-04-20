@@ -146,7 +146,7 @@ h3.question-group-title {
 {% block action_buttons %}
   <div class="btn-group" role="group" aria-label="action buttons group">
     {% if project.system is not None %}
-      <button id="btn-controls" class="btn btn-sm btn-default" onclick="window.location = '{{ project.get_absolute_url }}';">
+      <button id="btn-project-home" class="btn btn-sm btn-default" onclick="window.location = '{{ project.get_absolute_url }}';">
         <em class="glyphicon glyphicon-home"></em> Project Home</a>
       </button>
       <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
