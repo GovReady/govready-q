@@ -4,14 +4,15 @@ from core.prompts import Prompt
 from core.runner import DockerCompose
 
 if __name__ == '__main__':
+    valid_actions = ['init', 'dev', 'remove', 'wipedb']
+
     parser = argparse.ArgumentParser(description='GovReadyQ Local Development')
-    parser.add_argument('action', help='The action to take', default=None, nargs='?')
+    parser.add_argument('action', help=f'The action to take.  Options: {valid_actions}')
     parser.add_argument('--clean', help='Will wipe the database and other artifacts for a clean run', action='store_true')
 
     args = vars(parser.parse_args())
-    valid_actions = ['init', 'remove', 'wipedb', None]
+    valid_actions = ['init','dev', 'remove', 'wipedb']
     if args['action'] not in valid_actions:
-        valid_actions = [x for x in valid_actions if x]
         Prompt.error(f"{args['action']} is not a valid choice.  Choices: {valid_actions}.  "
                      f"Leave blank to run stack.", close=True)
 

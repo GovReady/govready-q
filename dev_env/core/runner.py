@@ -47,17 +47,21 @@ class DockerCompose(Runner):
         Prompt.warning(f"Access application via Browser: {Colors.CYAN}{self.config['govready-url']}")
         Prompt.warning(f"View logs & debug by running: {Colors.CYAN}docker attach govready_q_dev")
         Prompt.warning(f"Connect to container: {Colors.CYAN}docker exec -it govready_q_dev /bin/bash")
+
+        creds_path = os.path.join(self.ROOT_DIR, 'local/admin.creds.json')
         if auto_admin:
-            with open(os.path.join(self.ROOT_DIR, 'local/admin.creds.json'), 'w') as f:
+            with open(creds_path, 'w') as f:
                 json.dump({"username": auto_admin[0][0], "password": auto_admin[0][1]}, f)
         else:
-            with open(os.path.join(self.ROOT_DIR, 'local/admin.creds.json'), 'r') as f:
-                creds = json.load(f)
-            auto_admin = [[creds['username'], creds['password']]]
+            if os.path.exists(creds_path):
+                with open(creds_path, 'r') as f:
+                    creds = json.load(f)
+                auto_admin = [[creds['username'], creds['password']]]
 
-        Prompt.warning(f"Administrator Account - "
-                       f"{Colors.CYAN}{auto_admin[0][0]} / {auto_admin[0][1]} - {Colors.FAIL}"
-                       f" This is stored in local/admin.creds.json")
+        if auto_admin:
+            Prompt.warning(f"Administrator Account - "
+                           f"{Colors.CYAN}{auto_admin[0][0]} / {auto_admin[0][1]} - {Colors.FAIL}"
+                           f" This is stored in local/admin.creds.json")
 
     def on_sig_kill(self):
         self.execute(cmd="docker-compose down --remove-orphans  --rmi all")
