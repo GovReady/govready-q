@@ -627,7 +627,7 @@ class ComponentImporter(object):
             statements = Statement.objects.filter(producer_element=component)
             for statement in statements:
                 statement.import_record = new_import_record
-                statement.save()
+                #statement.save()
             component.import_record = new_import_record
             component.save()
 
@@ -1672,7 +1672,7 @@ def save_smt(request):
                     # Report error. Alternatively, in future save as new Statement object
                     statement_status = "error"
                     statement_msg = "The id for this statement is no longer valid in the database."
-                    return JsonResponse({"status": "error", "message": statement_msg})
+                    return JsonResponse({"status": statement_status, "message": statement_msg})
                 # Update existing Statement object with received info
                 statement.pid = form_values['pid']
                 statement.body = form_values['body']
@@ -1716,7 +1716,7 @@ def save_smt(request):
         if new_statement:
             try:
                 statement.producer_element = producer_element
-                statement.save()
+                #statement.save()
                 statement_element_status = "ok"
                 statement_element_msg = "Statement associated with Producer Element."
                 messages.add_message(request, messages.INFO, f"{statement_element_msg} {producer_element.id}.")
@@ -1733,17 +1733,6 @@ def save_smt(request):
                 statement_status = "error"
                 statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
                 return JsonResponse({"status": "error", "message": statement_msg})
-
-        # Save Statement object
-        try:
-            statement.save()
-            statement_msg = "Statement saved."
-            messages.add_message(request, messages.INFO, f"Statement {smt_id} Saved")
-        except Exception as e:
-            statement_status = "error"
-            statement_msg = "Statement save failed. Error reported {}".format(e)
-
-            return JsonResponse({"status": statement_status, "message": statement_msg})
 
         # Retain only prototype statement if statement is created in the component library
         # A statement of type `control_implementation` should only exists if associated a consumer_element.
@@ -1766,9 +1755,8 @@ def save_smt(request):
             if new_statement and system_id is not None:
                 try:
                     statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
-                    statement.save()
-                    statement_consumer_status = "ok"
-                    statement_consumer_msg = "Statement associated with System/Consumer Element."
+                    #statement.save()
+                    statement_msg = "Statement associated with System/Consumer Element."
                 except Exception as e:
                     statement_consumer_status = "error"
                     statement_consumer_msg = "Failed to associate statement with System/Consumer Element {}".format(e)
@@ -1781,6 +1769,16 @@ def save_smt(request):
             from django.core import serializers
             serialized_obj = serializers.serialize('json', [statement, ])
 
+    # Save Statement object
+    try:
+        statement.save()
+        statement_msg = "Statement saved."
+        messages.add_message(request, messages.INFO, f"Statement {smt_id} Saved")
+    except Exception as e:
+        statement_status = "error"
+        statement_msg = "Statement save failed. Error reported {}".format(e)
+
+        return JsonResponse({"status": statement_status, "message": statement_msg})
     # Return successful save result to web page's Ajax request
     return JsonResponse(
         {"status": "success", "message": statement_msg + " " + producer_element_msg + " " + statement_del_msg,
