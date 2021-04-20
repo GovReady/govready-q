@@ -12,6 +12,7 @@ from jsonfield import JSONField
 from natsort import natsorted
 
 from siteapp.model_mixins.tags import TagModelMixin
+from controls.enums.statements import StatementTypeEnum
 from controls.oscal import Catalogs, Catalog
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
@@ -49,7 +50,7 @@ class Statement(auto_prefetch.Model):
     sid_class = models.CharField(max_length=200, help_text="Statement identifier 'class' such as 'NIST_SP-800-53_rev4' or other OSCAL catalog name Control ID.", unique=False, blank=True, null=True)
     pid = models.CharField(max_length=20, help_text="Statement part identifier such as 'h' or 'h.1' or other part key", unique=False, blank=True, null=True)
     body = models.TextField(help_text="The statement itself", unique=False, blank=True, null=True)
-    statement_type = models.CharField(max_length=150, help_text="Statement type.", unique=False, blank=True, null=True)
+    statement_type = models.CharField(max_length=150, help_text="Statement type.", unique=False, blank=True, null=True, choices=StatementTypeEnum.choices())
     remarks = models.TextField(help_text="Remarks about the statement.", unique=False, blank=True, null=True)
     status = models.CharField(max_length=100, help_text="The status of the statement.", unique=False, blank=True, null=True)
     version = models.CharField(max_length=20, help_text="Optional version number.", unique=False, blank=True, null=True)
