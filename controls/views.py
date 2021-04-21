@@ -1469,9 +1469,7 @@ def editor(request, system_id, catalog_key, cl_id):
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
         project, catalog, cg_flat, impl_smts = get_editor_data(request, system, catalog_key, cl_id)
-        print(project.id)
-        print(cg_flat.keys())
-        print(len(impl_smts))
+
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
         of = {
