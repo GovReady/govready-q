@@ -38,13 +38,17 @@ logging.config.dictConfig({
             # Avoid double logging because of root logger
             'propagate': False,
         },
-## Add if necessary
-##        # Prevent noisy modules from logging to non-console loggers (if any)
-##        'noisy_module': {
-##            'level': 'ERROR',
-##            'handlers': ['console'],
-##            'propagate': False,
-##        },
+        'nplusone': {
+            'handlers': ['console'],
+            'level': 'WARN',
+        },
+        ## Add if necessary
+        ##        # Prevent noisy modules from logging to non-console loggers (if any)
+        ##        'noisy_module': {
+        ##            'level': 'ERROR',
+        ##            'handlers': ['console'],
+        ##            'propagate': False,
+        ##        },
         # Default runserver request logging
         # 'django.server': DEFAULT_LOGGING['loggers']['django.server'],
     },
