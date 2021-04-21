@@ -13,8 +13,7 @@ if __name__ == '__main__':
     args = vars(parser.parse_args())
     valid_actions = ['init', 'dev', 'remove', 'wipedb']
     if args['action'] not in valid_actions:
-        Prompt.error(f"{args['action']} is not a valid choice.  Choices: {valid_actions}.  "
-                     f"Leave blank to run stack.", close=True)
+        Prompt.error(f"{args['action']} is not a valid choice.  Choices: {valid_actions}.", close=True)
 
     compose = DockerCompose()
     if args['clean']:

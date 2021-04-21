@@ -17,18 +17,19 @@ class DockerCompose(Runner):
             "branding": "",
             "db": "postgres://postgres:PASSWORD@postgres_dev:5432/govready_q",
             "debug": True,
+            "enable_toolbar": False,
             "email": {},
             "govready_cms_api_auth": "",
             "govready-url": "http://localhost:8000",
             "mailgun_api_key": "",
-            "memcached": "",
+            "memcached": False,
             "secret-key": self.create_secret(),
             "gr-pdf-generator": "wkhtmltopdf",
             "gr-img-generator": "wkhtmltopdf",
             "single-organization": "",
             "static": "static_root",
             "syslog": "",
-            "trust-user-authentication-headers": ""
+            "trust-user-authentication-headers": {}
         }
         with open("docker/environment.json", 'w') as f:
             json.dump(config, f, indent=4, sort_keys=True)
