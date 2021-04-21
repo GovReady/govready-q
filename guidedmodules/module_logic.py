@@ -86,7 +86,6 @@ def walk_module_questions(module, callback):
 
         # Run the callback and get its state.
         state = callback(q, state, dependencies[q])
-
         # Remember the state in case we encounter it later.
         processed_questions[q.key] = dict(state) # clone
 
@@ -614,7 +613,7 @@ def render_content(content, answers, output_format, source,
                 varname = m.group(1)
                 expr = m.group(2)
 
-                # print("%for: expr = ", expr)
+                # print(print"%for: expr = ", expr)
                 condition_func = compile_jinja2_expression(expr)
                 if output_format == "PARSE_ONLY":
                     return value

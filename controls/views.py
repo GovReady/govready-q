@@ -166,11 +166,17 @@ def controls_selected(request, system_id):
                 impl_smts_count[c.oscal_ctl_id] = len(
                     system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
 
+        # Get list of catalog objects
+        catalog_list = Catalogs().list_catalogs()
+        # Remove the 3 nist catalogs that are hard-coded already in template
+        external_catalogs = [catalog for catalog in catalog_list if catalog.catalog_key not in ['NIST_SP-800-53_rev4', 'NIST_SP-800-53_rev5', 'NIST_SP-800-171_rev1' ]]
+
         # Return the controls
         context = {
             "system": system,
             "project": project,
             "controls": controls,
+            "external_catalogs": external_catalogs,
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "project_form": AddProjectForm(request.user),
@@ -2683,9 +2689,7 @@ def project_import(request, project_id):
     # Retrieve identified System
     system = System.objects.get(id=system_id)
     system_root_element = system.root_element
-    # TODO: deprecated need. Should consider removing throughout
-    #src = AppSource.objects.get(id=request.POST["appsource_compapp"])
-   # app = AppVersion.objects.get(source=src, id=request.POST["appsource_version_id"])
+
     # Retrieve identified System
     if request.method == 'POST':
         project_data = request.POST['json_content']
@@ -2693,17 +2697,14 @@ def project_import(request, project_id):
         #module_name = json.loads(project_data).get('project').get('module').get('key')
         title = json.loads(project_data).get('project').get('title')
         system_root_element.name = title
-        importcheck = False
-        if "importcheck" in request.POST:
-            importcheck = request.POST["importcheck"]
 
-        # We are just updating the current project
-        if importcheck == False:
-            logger.info(
-                event="project JSON import update",
-                object={"object": "project", "id": project.id, "title": project.title},
-                user={"id": request.user.id, "username": request.user.username}
-            )
+
+
+        logger.info(
+            event="project JSON import update",
+            object={"object": "project", "id": project.id, "title": project.title},
+            user={"id": request.user.id, "username": request.user.username}
+        )
         messages.add_message(request, messages.INFO, f'Updated project with id : {project.id}.')
 
         #Import questionnaire data
