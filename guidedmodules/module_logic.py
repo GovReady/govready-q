@@ -1545,22 +1545,29 @@ class TemplateContext(Mapping):
                                          self.module_answers.task.project.system.root_element.controls.all()]))
                 except:
                     all_keys = []
-                # Need default of None if there are no control catalogs present
-                control_catalog = None
-                for idx, key in enumerate(all_keys):
-                # Detect single control catalog from first control
-                    try:
-                        parameter_values = self.module_answers.task.project.get_parameter_values(key)
+                # Need default if there are no control catalogs present
+                control_catalog = []
+                # If there are multiple catalogs
+                if len(all_keys) > 1:
+                    for idx, key in enumerate(all_keys):
+                    # Detect single control catalog from first control
+                        try:
+                            parameter_values = self.module_answers.task.project.get_parameter_values(key)
 
-                        sca = Catalog.GetInstance(catalog_key=key,
+                            sca = Catalog.GetInstance(catalog_key=key,
+                                                      parameter_values=parameter_values)
+                            control_catalog.append(sca.flattened_controls_all_as_dict_list)
+                        except:
+                            control_catalog = None
+                # If there is one catalog
+                elif len(all_keys) == 1:
+                    try:
+                        parameter_values = self.module_answers.task.project.get_parameter_values(all_keys[0])
+                        sca = Catalog.GetInstance(catalog_key=all_keys[0],
                                                   parameter_values=parameter_values)
-                        if idx == 0:
-                            control_catalog = sca.flattened_controls_all_as_dict
-                        else:
-                            control_catalog.update(sca.flattened_controls_all_as_dict)
+                        control_catalog = sca.flattened_controls_all_as_dict
                     except:
                         control_catalog = None
-
                 return control_catalog
             if item == "system":
                 # Retrieve the system object associated with this project

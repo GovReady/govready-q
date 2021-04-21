@@ -120,6 +120,7 @@ class Catalog(object):
         # have different organizational defined parameters.
         self.parameter_values = parameter_values
         self.flattened_controls_all_as_dict = self.get_flattened_controls_all_as_dict()
+        self.flattened_controls_all_as_dict_list = self.get_flattened_controls_all_as_dict_list()
         self.parameters_by_control = self._cache_parameters_by_control()
 
     def _load_catalog_json(self):
@@ -339,11 +340,11 @@ class Catalog(object):
             "description_print": description_print,
             "guidance": self.get_control_prose_as_markdown(control, part_types={"guidance"}),
             "catalog_file": self.catalog_file,
+            "catalog_key": self.catalog_file.split('_catalog.json')[0],
             "catalog_id": self.catalog_id,
             "sort_id": self.get_control_property_by_name(control, "sort-id"),
             "label": self.get_control_property_by_name(control, "label")
         }
-        # cl_dict = {"id": "te-1", "title": "Test Control"}
         return cl_dict
 
     def get_flattened_controls_all_as_dict(self):
@@ -357,6 +358,16 @@ class Catalog(object):
             cl_all_dict[cl_dict['id']] = cl_dict
         return cl_all_dict
 
+    def get_flattened_controls_all_as_dict_list(self):
+        """Return all control dictionary in a nested Python list"""
+        # Create an empty list
+        cl_all_list = []
+        # Get all the controls
+        for cl in self.get_controls_all():
+            # Get flattened control and add to list of controls
+            cl_dict = self.get_flattened_control_as_dict(cl)
+            cl_all_list.append(cl_dict)
+        return cl_all_list
     def _cache_parameters_by_control(self):
         cache = defaultdict(list)
         if self.oscal:
