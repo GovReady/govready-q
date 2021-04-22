@@ -32,7 +32,7 @@ logger = get_logger()
 
 @login_required
 def new_task(request):
-    # Create a new task by answering a module question of a project rook task.
+    # Create a new task by answering a module question of a project root task.
     project = get_object_or_404(Project, id=request.POST["project"])
 
     # Can the user create a task within this project?

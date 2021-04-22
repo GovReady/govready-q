@@ -14,7 +14,7 @@ v999 (April XX, 2021)
 
 **Bug fixes**
 
-* Replace me
+* Immediately assign change project perms to user starting project and fix issue that non-admin users were not executing modifications to a project the user started such as setting baseline controls.
 
 **Developer changes**
 
