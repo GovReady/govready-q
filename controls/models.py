@@ -520,6 +520,25 @@ class System(auto_prefetch.Model):
         control.delete()
         return control
 
+    @transaction.atomic
+    def set_fisma_impact_level(self, fisma_impact_level):
+        """Assign FISMA impact level to system"""
+
+        # Get or create the fisma_impact_level smt for system's root_element; should only have 1 statement
+        smt, created = Statement.objects.get_or_create(statement_type="fisma_impact_level", producer_element=self.root_element, consumer_element=self.root_element)
+        smt.body = fisma_impact_level
+        smt.save()
+        return fisma_impact_level
+
+    @property
+    def get_fisma_impact_level(self):
+        """Assign FISMA impact level to system"""
+
+        # Get or create the fisma_impact_level smt for system's root_element; should only have 1 statement
+        smt, created = Statement.objects.get_or_create(statement_type="fisma_impact_level", producer_element=self.root_element, consumer_element=self.root_element)
+        fisma_impact_level = smt.body
+        return fisma_impact_level
+
     @property
     def smts_common_controls_as_dict(self):
         common_controls = self.root_element.common_controls.all()
