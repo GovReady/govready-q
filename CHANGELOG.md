@@ -18,7 +18,7 @@ v999 (April XX, 2021)
 
 **Developer changes**
 
-* Replace me
+* Provide better error reporting on import component schema validation; report actual validation error to standout.
 
 **Data changes**
 
