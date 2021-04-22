@@ -25,7 +25,6 @@ if __name__ == '__main__':
     elif args['action'] == 'wipedb':
         compose.wipe_db()
     else:
- 
         compose.run()
         compose.on_complete()
         compose.cleanup()
