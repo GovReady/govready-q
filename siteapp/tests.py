@@ -1465,10 +1465,11 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         # Update impact level
         # Get project.system.root_element to attach statement holding fisma impact level
         project = self.current_project
-        r_elmt = project.system.root_element
-        # Add statement to project.system.root_element of type `fisma_impact_level`
-        smt = Statement(producer_element=r_elmt, consumer_element=r_elmt, statement_type="fisma_impact_level", body="Low")
-        smt.save()
+        fil = "Low"
+        # Test change and test system fisma_impact_level set/get methods
+        project.system.set_fisma_impact_level(fil)
+        # Check value changed worked
+        self.assertEqual(project.system.get_fisma_impact_level, fil)
         # Refresh project page
         self.click_element('#btn-project-home')
         # See if project page has changed
