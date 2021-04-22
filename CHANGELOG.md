@@ -4,11 +4,38 @@ GovReady-Q Release Notes
 v999 (April XX, 2021)
 -------------------------
 
+**Feature changes**
+
+* Replace me
+
+**UI changes**
+
+* Replace me
+
+**Bug fixes**
+
+* Replace me
+
+**Developer changes**
+
+* Provide better error reporting on import component schema validation; report actual validation error to standout.
+
+**Data changes**
+
+* Replace me
+
+**Install changes**
+
+* Replace me
+
+
+v0.9.3.4 (April 20, 2021)
+-------------------------
+
 **Developer changes**
 
 * Add ability for external catalogs and baselines to be used in GovReady-q projects through the two functions `extend_external_baselines` and `extend_external_catalogs`. This includes two new paths GovReady-q looks at which are EXTERNAL_BASELINE_PATH and EXTERNAL_CATALOG_PATH `~/govready-q/local/controls/data/<baselines/catalogs>`
 * Added a `list_catalogs()` method to `Catalog` in order to easily get the `Catalog` objects in a list.
-* Provide better error reporting on import component schema validation; report actual validation error to standout.
 
 **Bug fixes**
 
@@ -17,6 +44,7 @@ v999 (April XX, 2021)
 **UI changes**
 
 * Link mini-dashboards on project page to sensible related pages.
+
 
 v0.9.3.3 (April 13, 2021)
 -------------------------
