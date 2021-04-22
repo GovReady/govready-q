@@ -197,7 +197,15 @@
         <div id="status-box-compliance-piechart" class="status-box-invisible">
           <h2 class="piechart" style="background-image: conic-gradient(#E1F8E2 {{ approx_compliance_degrees }}deg,
                                                                        #B2E0B2 0 235deg);"> </h2>
-          <span class="status-small">{{ percent_compliant_100|floatformat:2 }}% compliance (unassessed)<span>
+          <span class="status-small">{{ percent_compliant_100|floatformat:2 }}% compliance (unassessed)</span>
+          <br/>
+          <span id="systems-fisma-impact-level" class="status-small">
+            {% if impact_level %}
+              Mission Impact: <b>{{ impact_level|upper }}</b>
+              {% else %}
+              Mission Impact: <b>Not Categorized</b>
+            {% endif %}
+          </span>
         </div>
       </div>
     </div>

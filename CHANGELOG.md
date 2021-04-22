@@ -18,7 +18,15 @@ v999 (April XX, 2021)
 
 **Developer changes**
 
-* Replace me
+
+* Set system fisma_impact_level as part of question action to set baseline. Also add fisma_impact_level set/get methods to System model.
+
+**Bug fixes**
+
+* Properly filter system POA&M stat to only count POA&Ms for system.
+
+* Provide better error reporting on import component schema validation; report actual validation error to standout.
+
 
 **Data changes**
 
@@ -43,9 +51,13 @@ v0.9.3.4 (April 20, 2021)
 
 **UI changes**
 
-**UI changes**
+* Display system impact level on project page.
 
 * Link mini-dashboards on project page to sensible related pages.
+
+**Data changes**
+
+* Use statement type `fisma_impact_level` to track impact level of a system.
 
 
 v0.9.3.3 (April 13, 2021)

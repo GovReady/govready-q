@@ -970,10 +970,18 @@ def project(request, project):
     if approx_compliance_degrees > 358:
         approx_compliance_degrees = 358
 
+    # Fetch statement defining FISMA impact level if set
+    impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type="fisma_impact_level")
+    if len(impact_level_smts) > 0:
+        impact_level = impact_level_smts[0].body
+    else:
+        impact_level = None
+
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
+        "impact_level": impact_level,
 
         "controls_status_count": project.system.controls_status_count,
         "poam_status_count": project.system.poam_status_count,

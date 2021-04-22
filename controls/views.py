@@ -651,7 +651,7 @@ class ComponentImporter(object):
             validate(instance=oscal_json, schema=oscal_json_schema)
             return True
         except (SchemaError, SchemaValidationError) as e:
-            logger.info(e)
+            logger.error(e._contents())
             return False
 
     def create_components(self, oscal_json):
