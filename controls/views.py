@@ -633,7 +633,7 @@ class ComponentImporter(object):
             statements = Statement.objects.filter(producer_element=component)
             for statement in statements:
                 statement.import_record = new_import_record
-                statement.save()
+                #statement.save()
             component.import_record = new_import_record
             component.save()
 
@@ -1463,50 +1463,12 @@ def controls_selected_export_xacta_xslx(request, system_id):
 def editor(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
-    cl_id = oscalize_control_id(cl_id)
-    catalog_key = oscalize_catalog_key(catalog_key)
-
-    # Get control catalog
-    catalog = Catalog(catalog_key)
-
-    # TODO: maybe catalogs could provide an API that returns a set of
-    # control ids instead?
-
-    cg_flat = catalog.get_flattened_controls_all_as_dict()
-
-    # If control id does not exist in catalog
-    if cl_id.lower() not in cg_flat:
-        return render(request, "controls/detail.html", {"catalog": catalog,"control": {}})
-
-    # Retrieve identified System
-    system = System.objects.get(id=system_id)
+    cl_id, catalog_key, system = get_editor_system(cl_id, catalog_key, system_id)
 
     # Retrieve related statements if user has permission on system
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
-        # if len(projects) > 0:
-        #     project = projects[0]
-        # Retrieve any related CommonControls
-        # CRITICAL TODO: Filter by sid and by system.root_element
-
-        # Retrieve organizational parameter settings for this catalog
-        # We need to grab the catalog again.
-
-        parameter_values = project.get_parameter_values(catalog_key)
-        catalog = Catalog(catalog_key, parameter_values=parameter_values)
-        cg_flat = catalog.get_flattened_controls_all_as_dict()
-
-        common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
-        ccp_name = None
-        if common_controls:
-            cc = common_controls[0]
-            ccp_name = cc.common_control_provider.name
-        # Get and return the control
-
-        # Retrieve any related Implementation Statements filtering by control and system.root_element
-        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element).order_by('pid')
+        project, catalog, cg_flat, impl_smts = get_editor_data(request, system, catalog_key, cl_id)
 
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
@@ -1573,8 +1535,6 @@ def editor(request, system_id, catalog_key, cl_id):
             "project": project,
             "catalog": catalog,
             "control": cg_flat[cl_id.lower()],
-            "common_controls": common_controls,
-            "ccp_name": ccp_name,
             "impl_smts": impl_smts,
             "impl_statuses": impl_statuses,
             "combined_smt": combined_smt,
@@ -1589,43 +1549,56 @@ def editor(request, system_id, catalog_key, cl_id):
         # User does not have permission to this system
         raise Http404
 
+def get_editor_data(request, system, catalog_key, cl_id):
+    """
+    Get data for editor views
+    """
+
+    # Retrieve related statements if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.first()
+        parameter_values = project.get_parameter_values(catalog_key)
+        catalog = Catalog(catalog_key, parameter_values=parameter_values)
+        cg_flat = catalog.get_flattened_controls_all_as_dict()
+        # If control id does not exist in catalog
+        if cl_id.lower() not in cg_flat:
+            return render(request, "controls/detail.html", {"catalog": catalog, "control": {}})
+
+        # Get and return the control
+        # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog
+        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key).order_by('pid')
+        return project, catalog, cg_flat, impl_smts
+
+def get_editor_system(cl_id, catalog_key, system_id):
+    """
+    Retrieves oscalized control id and catalog key. Also system object from system id.
+    """
+
+    cl_id = oscalize_control_id(cl_id)
+
+    catalog_key = oscalize_catalog_key(catalog_key)
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+
+    return cl_id, catalog_key, system
+
 @login_required
 def editor_compare(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
-    cl_id = oscalize_control_id(cl_id)
+    cl_id, catalog_key, system = get_editor_system(cl_id, catalog_key, system_id)
 
-    # Get control catalog
-    catalog = Catalog(catalog_key)
-    cg_flat = catalog.get_flattened_controls_all_as_dict()
-    # If control id does not exist in catalog
-    if cl_id.lower() not in cg_flat:
-        return render(request, "controls/detail.html", {"catalog": catalog,"control": {}})
-
-    # Retrieve identified System
-    system = System.objects.get(id=system_id)
     # Retrieve related statements if owner has permission on system
     if request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
-        # Retrieve any related CommonControls
-        common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
-        ccp_name = None
-        if common_controls:
-            cc = common_controls[0]
-            ccp_name = cc.common_control_provider.name
-        # Get and return the control
-
-        # Retrieve any related Implementation Statements
-        impl_smts = Statement.objects.filter(sid=cl_id)
+        project, catalog, cg_flat, impl_smts = get_editor_data(request, system, catalog_key, cl_id)
         context = {
             "system": system,
             "project": project,
             "catalog": catalog,
             "control": cg_flat[cl_id.lower()],
-            "common_controls": common_controls,
-            "ccp_name": ccp_name,
             "impl_smts": impl_smts,
             "project_form": AddProjectForm(request.user),
         }
@@ -1682,32 +1655,35 @@ def save_smt(request):
         if len(smt_id) > 0:
             # Look up existing Statement object
             statement = Statement.objects.get(pk=smt_id)
+            # Check if statement has the same sid class as the statement object
+            if statement.sid_class == form_values['sid_class']:
+                # Check user permissions
+                system = statement.consumer_element
+                if not request.user.has_perm('change_system', system):
+                    # User does not have write permissions
+                    # Log permission to save answer denied
+                    logger.info(
+                        event="save_smt permission_denied",
+                        object={"object": "statement", "id": statement.id},
+                        user={"id": request.user.id, "username": request.user.username}
+                    )
+                    return HttpResponseForbidden(
+                        "Permission denied. {} does not have change privileges to system and/or project.".format(
+                            request.user.username))
 
-            # Check user permissions
-            system = statement.consumer_element
-            if not request.user.has_perm('change_system', system):
-                # User does not have write permissions
-                # Log permission to save answer denied
-                logger.info(
-                    event="save_smt permission_denied",
-                    object={"object": "statement", "id": statement.id},
-                    user={"id": request.user.id, "username": request.user.username}
-                )
-                return HttpResponseForbidden(
-                    "Permission denied. {} does not have change privileges to system and/or project.".format(
-                        request.user.username))
-
-            if statement is None:
-                # Statement from received has an id no longer in the database.
-                # Report error. Alternatively, in future save as new Statement object
-                statement_status = "error"
-                statement_msg = "The id for this statement is no longer valid in the database."
-                return JsonResponse({"status": "error", "message": statement_msg})
-            # Update existing Statement object with received info
-            statement.pid = form_values['pid']
-            statement.body = form_values['body']
-            statement.remarks = form_values['remarks']
-            statement.status = form_values['status']
+                if statement is None:
+                    # Statement from received has an id no longer in the database.
+                    # Report error. Alternatively, in future save as new Statement object
+                    statement_status = "error"
+                    statement_msg = "The id for this statement is no longer valid in the database."
+                    return JsonResponse({"status": statement_status, "message": statement_msg})
+                # Update existing Statement object with received info
+                statement.pid = form_values['pid']
+                statement.body = form_values['body']
+                statement.remarks = form_values['remarks']
+                statement.status = form_values['status']
+            else:
+                new_statement = True
         else:
             # Create new Statement object
             statement = Statement(
@@ -1724,15 +1700,6 @@ def save_smt(request):
             # from human readable `NIST SP-800-53 rev4` to `NIST_SP-800-53_rev4`
             statement.sid_class = statement.sid_class.replace(" ","_")
 
-        # Save Statement object
-        try:
-            statement.save()
-            statement_status = "ok"
-            statement_msg = "Statement saved."
-        except Exception as e:
-            statement_status = "error"
-            statement_msg = "Statement save failed. Error reported {}".format(e)
-            return JsonResponse({"status": "error", "message": statement_msg})
 
         # Updating or saving a new producer_element?
         try:
@@ -1747,21 +1714,21 @@ def save_smt(request):
         except Exception as e:
             producer_element_status = "error"
             producer_element_msg = "Producer Element save failed. Error reported {}".format(e)
-            return JsonResponse({"status": "error", "message": producer_element_msg})
+            return JsonResponse({"status": producer_element_status, "message": producer_element_msg})
 
         # Associate Statement and Producer Element if creating new statement
         if new_statement:
             try:
                 statement.producer_element = producer_element
-                statement.save()
+                #statement.save()
                 statement_element_status = "ok"
                 statement_element_msg = "Statement associated with Producer Element."
+                messages.add_message(request, messages.INFO, f"{statement_element_msg} {producer_element.id}.")
             except Exception as e:
                 statement_element_status = "error"
                 statement_element_msg = "Failed to associate statement with Producer Element {}".format(e)
                 return JsonResponse(
-                    {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg})
-
+                    {"status": statement_element_status, "message": statement_element_msg + " " + producer_element_msg + " " + statement_element_msg})
         # Create new Prototype Statement object on new statement creation (not statement edit)
         if new_statement:
             try:
@@ -1771,7 +1738,6 @@ def save_smt(request):
                 statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
                 return JsonResponse({"status": "error", "message": statement_msg})
 
-        messages.add_message(request, messages.INFO, f"Statement {smt_id} Saved")
         # Retain only prototype statement if statement is created in the component library
         # A statement of type `control_implementation` should only exists if associated a consumer_element.
         # When the statement is created in the component library, no consuming_element will exist.
@@ -1793,14 +1759,13 @@ def save_smt(request):
             if new_statement and system_id is not None:
                 try:
                     statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
-                    statement.save()
-                    statement_consumer_status = "ok"
-                    statement_consumer_msg = "Statement associated with System/Consumer Element."
+                    #statement.save()
+                    statement_msg = "Statement associated with System/Consumer Element."
                 except Exception as e:
                     statement_consumer_status = "error"
                     statement_consumer_msg = "Failed to associate statement with System/Consumer Element {}".format(e)
                     return JsonResponse(
-                        {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_consumer_msg})
+                        {"status": statement_consumer_status, "message": statement_msg + " " + producer_element_msg + " " + statement_consumer_msg})
 
             # Serialize saved data object(s) to send back to update web page
             # The submitted form needs to be updated with the object primary keys (ids)
@@ -1808,6 +1773,16 @@ def save_smt(request):
             from django.core import serializers
             serialized_obj = serializers.serialize('json', [statement, ])
 
+    # Save Statement object
+    try:
+        statement.save()
+        statement_msg = "Statement saved."
+        messages.add_message(request, messages.INFO, f"Statement {smt_id} Saved")
+    except Exception as e:
+        statement_status = "error"
+        statement_msg = "Statement save failed. Error reported {}".format(e)
+
+        return JsonResponse({"status": statement_status, "message": statement_msg})
     # Return successful save result to web page's Ajax request
     return JsonResponse(
         {"status": "success", "message": statement_msg + " " + producer_element_msg + " " + statement_del_msg,
