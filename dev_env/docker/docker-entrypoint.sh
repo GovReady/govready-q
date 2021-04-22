@@ -10,6 +10,8 @@ if [[ ! -d /usr/src/app/dev_env/docker/ssh ]]; then
     ssh-keygen -A
     chmod -R 400 /etc/ssh
     cp /etc/ssh /usr/src/app/dev_env/docker -r
+else
+    cp /usr/src/app/dev_env/docker/ssh/* /etc/ssh  -r
 fi
 /usr/sbin/sshd
 export -p > /usr/src/app/dev_env/docker/remote_interpreter/env_var.sh
