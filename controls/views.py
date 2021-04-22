@@ -350,7 +350,7 @@ class SelectedComponentsList(ListView):
     template_name = 'systems/components_selected.html'
     context_object_name = 'system_elements'
     ordering = ['name']
-    paginate_by = 5
+    paginate_by = 25
 
     def get_queryset(self):
         """
@@ -368,7 +368,7 @@ class SelectedComponentsList(ListView):
         if self.request.user.has_perm('view_system', system):
             # Retrieve primary system Project
             # Temporarily assume only one project and get first project
-            project = system.projects.all()[0]
+            project = system.projects.first()
             context['project'] = project
             context['system'] = system
             context['elements'] = Element.objects.all().exclude(element_type='system')
