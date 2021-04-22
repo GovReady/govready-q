@@ -82,6 +82,10 @@ if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != "") and (GOVREADY_URL.hos
 # `allowed_hosts` must be an ARRAY
 if "allowed_hosts" in environment:
 	ALLOWED_HOSTS.extend(environment["allowed_hosts"])
+
+if DEBUG and 'localhost' in ALLOWED_HOSTS:
+	ALLOWED_HOSTS.extend(['*'])
+
 print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)
 
 # allauth requires the use of the sites framework.
@@ -463,3 +467,6 @@ from .settings_application import *
 
 # Load logging configuration from settings_logging.py.
 from .settings_logging import *
+
+# Profiling.
+from .settings_profiling import *

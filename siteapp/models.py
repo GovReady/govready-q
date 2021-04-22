@@ -33,13 +33,19 @@ logger = get_logger()
 class User(AbstractUser):
     # Additional user profile data.
 
-    notifemails_enabled = models.IntegerField(default=0, choices=[(0, "As They Happen"), (1, "Don't Email")], help_text="How often to email the user notification emails.")
-    notifemails_last_notif_id = models.PositiveIntegerField(default=0, help_text="The primary key of the last notifications.Notification sent by email.")
-    notifemails_last_at = models.DateTimeField(blank=True, null=True, default=None, help_text="The time when the last notification email was sent to the user.")
+    notifemails_enabled = models.IntegerField(default=0, choices=[(0, "As They Happen"), (1, "Don't Email")],
+                                              help_text="How often to email the user notification emails.")
+    notifemails_last_notif_id = models.PositiveIntegerField(default=0,
+                                                            help_text="The primary key of the last notifications.Notification sent by email.")
+    notifemails_last_at = models.DateTimeField(blank=True, null=True, default=None,
+                                               help_text="The time when the last notification email was sent to the user.")
 
-    api_key_ro = models.CharField(max_length=32, blank=True, null=True, unique=True, help_text="The user's API key with read-only permission.")
-    api_key_rw = models.CharField(max_length=32, blank=True, null=True, unique=True, help_text="The user's API key with read-write permission.")
-    api_key_wo = models.CharField(max_length=32, blank=True, null=True, unique=True, help_text="The user's API key with write-only permission.")
+    api_key_ro = models.CharField(max_length=32, blank=True, null=True, unique=True,
+                                  help_text="The user's API key with read-only permission.")
+    api_key_rw = models.CharField(max_length=32, blank=True, null=True, unique=True,
+                                  help_text="The user's API key with read-write permission.")
+    api_key_wo = models.CharField(max_length=32, blank=True, null=True, unique=True,
+                                  help_text="The user's API key with write-only permission.")
 
     # Methods
 
@@ -72,11 +78,12 @@ class User(AbstractUser):
         # * user_settings_dict, which holds that Task's current answers as a dict, if the Task was created
 
         # Get the account projects of all of the users in batch.
-        account_project_root_tasks = { }
+        account_project_root_tasks = {}
+
         for pm in ProjectMembership.objects.filter(
-            user__in=users,
-            project__is_account_project=True)\
-            .select_related("project", "project__root_task", "project__root_task__module"):
+                user__in=users,
+                project__is_account_project=True) \
+                .select_related("project", "project__root_task", "user"):
             account_project_root_tasks[pm.user] = pm.project.root_task
 
         # Get the account_settings answer object for all of the account projects in batch.
@@ -84,23 +91,27 @@ class User(AbstractUser):
         # in each account project. This gives us the whole history of answers. Take the
         # most recent (reverse sort + take first) for each project.
         from guidedmodules.models import TaskAnswerHistory
-        account_project_settings = { }
-        for ansh in TaskAnswerHistory.objects\
-            .filter(
-                taskanswer__task__in=account_project_root_tasks.values(),
-                taskanswer__question__key="account_settings",
-            )\
-            .select_related("taskanswer__task__module", "taskanswer__question", "answered_by")\
-            .prefetch_related("answered_by_task__module__questions")\
-            .order_by('-id'):
+        account_project_settings = {}
+
+        history = TaskAnswerHistory.objects.select_related("taskanswer__task") \
+                    .prefetch_related("answered_by_task") \
+                    .filter(taskanswer__task__in=account_project_root_tasks.values(),
+                            taskanswer__question__key="account_settings") \
+                    .order_by('-id').values('taskanswer__task', 'answered_by_task')
+
+        from guidedmodules.models import Task
+        tasks = {task.id: task for task in Task.objects.filter(id__in=[x['taskanswer__task'] for x in history])}
+        answered_by_tasks = {task.id: task for task in Task.objects.select_related('module').filter(id__in=[x['answered_by_task'] for x in history])}
+        for ansh in history:
             account_project_settings.setdefault(
-                ansh.taskanswer.task,
-                ansh.answered_by_task.first()
+                tasks[ansh['taskanswer__task']],
+                answered_by_tasks[ansh['answered_by_task']],
             )
 
         # Get all of the current answers for the settings tasks.
+
         from guidedmodules.models import Task
-        settings = { }
+        settings = {}
         for task, question, answer in Task.get_all_current_answer_records(account_project_settings.values()):
             settings.setdefault(task, {})[question.key] = (answer.get_value() if answer else None)
 
@@ -111,7 +122,7 @@ class User(AbstractUser):
 
         # Apply a standard sort.
         if sort:
-            users.sort(key = lambda user : user.name_and_email())
+            users.sort(key=lambda user: user.name_and_email())
 
     def preload_profile(self):
         # Prep this user's cached state.
@@ -146,8 +157,8 @@ class User(AbstractUser):
         # Get an existing account project.
         pm = ProjectMembership.objects.filter(
             user=self,
-            project__is_account_project=True)\
-            .select_related("project", "project__root_task", "project__root_task__module")\
+            project__is_account_project=True) \
+            .select_related("project", "project__root_task", "project__root_task__module") \
             .first()
         if pm:
             return pm.project
@@ -189,8 +200,8 @@ class User(AbstractUser):
         import xxhash, base64
         payload = pic['content_dataurl']
         fingerprint = base64.urlsafe_b64encode(
-                        xxhash.xxh64(payload).digest()
-                       ).decode('ascii').rstrip("=")
+            xxhash.xxh64(payload).digest()
+        ).decode('ascii').rstrip("=")
         return settings.SITE_ROOT_URL + "/media/users/%d/photo/%s" % (
             self.id,
             fingerprint
@@ -219,7 +230,7 @@ class User(AbstractUser):
             del profile["picture"]["content_dataurl"]
         except:
             logger.warning(event="render_context_dict",
-                msg="Failed to delete profile picture content_dataurl")
+                           msg="Failed to delete profile picture content_dataurl")
 
         # Add username to profile
         profile["username"] = self.username
@@ -227,6 +238,7 @@ class User(AbstractUser):
         return profile
 
     random_colors = ('#5cb85c', '#337ab7', '#AFB', '#ABF', '#FAB', '#FBA', '#BAF', '#BFA')
+
     def get_avatar_fallback_css(self):
         # Compute a non-cryptographic hash over the user ID and username to generate
         # a stable set of random bytes to use to select CSS styles.
@@ -243,13 +255,13 @@ class User(AbstractUser):
             "css": "background: {color1}; background: linear-gradient({color1}, {color2}); color: black;"
                 .format(color1=color1, color2=color2),
             "text": self.username[0:2].upper(),
-            }
+        }
 
     def reset_api_keys(self):
-       self.api_key_ro = crypto.get_random_string(32)
-       self.api_key_rw = crypto.get_random_string(32)
-       self.api_key_wo = crypto.get_random_string(32)
-       self.save()
+        self.api_key_ro = crypto.get_random_string(32)
+        self.api_key_rw = crypto.get_random_string(32)
+        self.api_key_wo = crypto.get_random_string(32)
+        self.save()
 
     def get_api_keys(self):
         # Initialize on first use.
@@ -289,13 +301,13 @@ class User(AbstractUser):
         portfolio.assign_owner_permissions(self)
         logger.info(
             event="new_portfolio",
-            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+            object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
             user={"id": self.id, "username": self.username}
         )
         portfolio.assign_owner_permissions(self)
         logger.info(
             event="new_portfolio assign_owner_permissions",
-            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+            object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
             user={"id": self.id, "username": self.username}
         )
         return portfolio
@@ -303,11 +315,12 @@ class User(AbstractUser):
     def get_portfolios_from_projects(self):
         projects = get_objects_for_user(self, 'siteapp.view_project')
         portfolio_list = projects.values_list('portfolio', flat=True)
-        portfolios = Portfolio.objects.filter(id__in=portfolio_list)
+        portfolios = Portfolio.objects.select_related('projects').filter(id__in=portfolio_list)
         return portfolios
 
-#import factory
-#from siteapp.models import User
+
+# import factory
+# from siteapp.models import User
 
 # class UserFactory(factory.Factory):
 #     class Meta:
@@ -319,24 +332,31 @@ class User(AbstractUser):
 #     email = "test+user@q.govready.com"
 
 from django.contrib.auth.backends import ModelBackend
+
+
 class DirectLoginBackend(ModelBackend):
     # Register in settings.py!
     # Django can't log a user in without their pwd. In views::accept_invitation
     # we log a user in when they demonstrate ownership of an email address.
     supports_object_permissions = False
     supports_anonymous_user = False
+
     def authenticate(self, user_object=None):
         return user_object
 
 
 subdomain_regex = r"^([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])$"
 
+
 class Organization(models.Model):
     name = models.CharField(max_length=255, help_text="The display name of the Organization.")
-    slug = models.CharField(max_length=32, unique=True, help_text="A URL-safe abbreviation for the Organization.", validators=[RegexValidator(regex=subdomain_regex)])
+    slug = models.CharField(max_length=32, unique=True, help_text="A URL-safe abbreviation for the Organization.",
+                            validators=[RegexValidator(regex=subdomain_regex)])
 
-    help_squad = models.ManyToManyField(User, blank=True, related_name="in_help_squad_of", help_text="Users who are invited to all new discussions in this Organization.")
-    reviewers = models.ManyToManyField(User, blank=True, related_name="is_reviewer_of", help_text="Users who are permitted to change the reviewed state of task answers.")
+    help_squad = models.ManyToManyField(User, blank=True, related_name="in_help_squad_of",
+                                        help_text="Users who are invited to all new discussions in this Organization.")
+    reviewers = models.ManyToManyField(User, blank=True, related_name="is_reviewer_of",
+                                       help_text="Users who are permitted to change the reviewed state of task answers.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -389,11 +409,11 @@ class Organization(models.Model):
                 logo = profile.get("logo")
             else:
                 logo = None
-            cache.set(cache_key, logo, 60*10) # 10 minutes
+            cache.set(cache_key, logo, 60 * 10)  # 10 minutes
         return logo
 
     @staticmethod
-    def create(admin_user=None, **kargs): # admin_user is a required kwarg
+    def create(admin_user=None, **kargs):  # admin_user is a required kwarg
         # See admin.py::OrganizationAdmin also.
 
         assert admin_user
@@ -421,6 +441,7 @@ class Organization(models.Model):
         settings = self.org_setting.filter(catalog_key=catalog_key)
         return dict((setting.parameter_key, setting.value) for setting in settings)
 
+
 class OrganizationalSetting(models.Model):
     """
     Captures an organizationally-defined setting for a parameterized control
@@ -438,6 +459,7 @@ class OrganizationalSetting(models.Model):
     def __str__(self):
         org_name = (self.organization and self.organization.name) or 'none'
         return f"OrganizationalSetting({org_name}, {self.catalog_key}, {self.parameter_key})"
+
 
 class Portfolio(models.Model):
     title = models.CharField(max_length=255, help_text="The title of this Portfolio.", unique=True)
@@ -500,16 +522,20 @@ class Portfolio(models.Model):
     def can_invite_others(self, user):
         return user.has_perm('can_grant_portfolio_owner_permission', self)
 
+
 class Folder(models.Model):
     """A folder is a collection of Projects."""
 
-    organization = models.ForeignKey(Organization, related_name="folders", on_delete=models.CASCADE, help_text="The Organization that this project belongs to.")
+    organization = models.ForeignKey(Organization, related_name="folders", on_delete=models.CASCADE,
+                                     help_text="The Organization that this project belongs to.")
 
     title = models.CharField(max_length=255, help_text="The title of this Folder.")
     description = models.CharField(max_length=512, blank=True, help_text="A description of this Folder.")
 
-    admin_users = models.ManyToManyField(User, blank=True, related_name="admin_of_folders", help_text="Users who have admin privs to the folder besides those who are admins of projects within the folder.")
-    projects = models.ManyToManyField("Project", blank=True, related_name="contained_in_folders", help_text="The Projects that are listed within this Folder.")
+    admin_users = models.ManyToManyField(User, blank=True, related_name="admin_of_folders",
+                                         help_text="Users who have admin privs to the folder besides those who are admins of projects within the folder.")
+    projects = models.ManyToManyField("Project", blank=True, related_name="contained_in_folders",
+                                      help_text="The Projects that are listed within this Folder.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -541,13 +567,13 @@ class Folder(models.Model):
         # Get all Folders that this user has privs to rename and add
         # new Projects to.
         return (
-            Folder.objects.filter(admin_users=user)
-            | Folder.objects\
-            .filter(
-                projects__organization=organization,
-                projects__members__user=user,
-                projects__members__is_admin=True))\
-            .filter(organization=organization)\
+                Folder.objects.filter(admin_users=user)
+                | Folder.objects \
+                .filter(
+            projects__organization=organization,
+            projects__members__user=user,
+            projects__members__is_admin=True)) \
+            .filter(organization=organization) \
             .distinct()
 
     def has_read_priv(self, user):
@@ -557,21 +583,29 @@ class Folder(models.Model):
         # Get the projects that are in the folder that the user can see. This also handily
         # sets user_is_admin on the projects.
         return Project.get_projects_with_read_priv(user,
-            { "contained_in_folders": self })
+                                                   {"contained_in_folders": self})
+
 
 class Project(TagModelMixin):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
-    organization = models.ForeignKey(Organization, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Organization that this Project belongs to. User profiles (is_account_project is True) are not a part of any Organization.")
-    portfolio = models.ForeignKey(Portfolio, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Portfolio that this Project belongs to.")
-    system = models.ForeignKey("controls.System", blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The System that this Project is about.")
-    is_organization_project = models.BooleanField(null=True, default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
+    organization = models.ForeignKey(Organization, blank=True, null=True, related_name="projects",
+                                     on_delete=models.CASCADE,
+                                     help_text="The Organization that this Project belongs to. User profiles (is_account_project is True) are not a part of any Organization.")
+    portfolio = models.ForeignKey(Portfolio, blank=True, null=True, related_name="projects", on_delete=models.CASCADE,
+                                  help_text="The Portfolio that this Project belongs to.")
+    system = models.ForeignKey("controls.System", blank=True, null=True, related_name="projects",
+                               on_delete=models.CASCADE, help_text="The System that this Project is about.")
+    is_organization_project = models.BooleanField(null=True, default=None,
+                                                  help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
 
     is_account_project = models.BooleanField(default=False, help_text="Each User has one Project for account Tasks.")
 
-        # the root_task has to be nullable because the Task itself has a non-null
-        # field that refers back to this Project, and one must be NULL until the
-        # other instance is created
-    root_task = models.ForeignKey('guidedmodules.Task', blank=True, null=True, related_name="root_of", on_delete=models.CASCADE, help_text="All Projects have a 'root Task' (e.g., 'guidedmodules.task'). The root Task defines important information about Project.")
+    # the root_task has to be nullable because the Task itself has a non-null
+    # field that refers back to this Project, and one must be NULL until the
+    # other instance is created
+    root_task = models.ForeignKey('guidedmodules.Task', blank=True, null=True, related_name="root_of",
+                                  on_delete=models.CASCADE,
+                                  help_text="All Projects have a 'root Task' (e.g., 'guidedmodules.task'). The root Task defines important information about Project.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -583,7 +617,7 @@ class Project(TagModelMixin):
                                        help_text="Project's version comment")
 
     class Meta:
-        unique_together = [('organization', 'is_organization_project')] # ensures only one can be true
+        unique_together = [('organization', 'is_organization_project')]  # ensures only one can be true
 
     def __str__(self):
         # For the admin, notification strings
@@ -598,7 +632,7 @@ class Project(TagModelMixin):
         return "<Project %d %s>" % (self.id, self.title[0:30])
 
     def save(self, **kwargs):
-        need_to_add_asset = self.pk is None   # ensures only runs on first Save.
+        need_to_add_asset = self.pk is None  # ensures only runs on first Save.
         project = super().save(**kwargs)
         if need_to_add_asset:
             from django.core.files import File
@@ -656,7 +690,6 @@ class Project(TagModelMixin):
 
         return len(projects) == len(has_admin_on)
 
-
     def is_deletable(self):
         return not self.is_organization_project and not self.is_account_project
 
@@ -681,7 +714,9 @@ class Project(TagModelMixin):
     def get_owner_domains(self):
         # Utility function for the admin/debugging to quickly see the domain
         # names in the email addresses of the admins of this project.
-        return ", ".join(sorted(m.user.email.split("@", 1)[1] for m in ProjectMembership.objects.filter(project=self, is_admin=True) if m.user.email and "@" in m.user.email))
+        return ", ".join(sorted(
+            m.user.email.split("@", 1)[1] for m in ProjectMembership.objects.filter(project=self, is_admin=True) if
+            m.user.email and "@" in m.user.email))
 
     def has_read_priv(self, user):
         # Who can see this project?
@@ -725,7 +760,7 @@ class Project(TagModelMixin):
         from discussion.models import Discussion
         from collections import defaultdict
 
-        participants = defaultdict(lambda : {
+        participants = defaultdict(lambda: {
             "is_member": False,
             "is_admin": False,
             "editor_of": [],
@@ -738,7 +773,7 @@ class Project(TagModelMixin):
             participants[pm.user]["is_admin"] = pm.is_admin
         for task in Task.objects.filter(project=self).select_related("editor"):
             participants[task.editor]["editor_of"].append(task)
-        discussions = Discussion.get_for_all(TaskAnswer.objects.filter(task__project=self, task__deleted_at=None))\
+        discussions = Discussion.get_for_all(TaskAnswer.objects.filter(task__project=self, task__deleted_at=None)) \
             .prefetch_related("guests")
         for d in discussions:
             for user in d.guests.all():
@@ -759,7 +794,7 @@ class Project(TagModelMixin):
             info["role"] = "; ".join(descr)
 
         # Return sorted by username.
-        return sorted(participants.items(), key = lambda kv : kv[0].username)
+        return sorted(participants.items(), key=lambda kv: kv[0].username)
 
     @staticmethod
     def get_projects_with_read_priv(user, filters={}, excludes={}):
@@ -773,12 +808,12 @@ class Project(TagModelMixin):
             return projects
 
         # Add all of the Projects the user is a member of.
-        for pm in ProjectMembership.objects\
-            .filter(user=user)\
-            .filter(**{ "project__"+k: v for k, v in filters.items() })\
-            .exclude(**{ "project__"+k: v for k, v in excludes.items() })\
-            .select_related('project__root_task__module')\
-            .prefetch_related('project__root_task__module__questions'):
+        for pm in ProjectMembership.objects \
+                .filter(user=user) \
+                .filter(**{"project__" + k: v for k, v in filters.items()}) \
+                .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
+                .select_related('project__root_task__module', 'project__portfolio') \
+                .prefetch_related('project__root_task__module'):
             projects.add(pm.project)
             if pm.is_admin:
                 # Annotate with whether the user is an admin of the project.
@@ -787,23 +822,22 @@ class Project(TagModelMixin):
         # Add projects that the user is the editor of a task in, even if
         # the user isn't a team member of that project.
         from guidedmodules.models import Task
-        for task in Task.get_all_tasks_readable_by(user)\
-            .filter(**{ "project__"+k: v for k, v in filters.items() })\
-            .exclude(**{ "project__"+k: v for k, v in excludes.items() })\
-            .order_by('-created')\
-            .select_related('project__root_task__module')\
-            .prefetch_related('project__root_task__module__questions'):
+        for task in Task.get_all_tasks_readable_by(user) \
+                .filter(**{"project__" + k: v for k, v in filters.items()}) \
+                .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
+                .order_by('-created') \
+                .select_related('project__root_task__module', 'project__portfolio') \
+                .prefetch_related('project__root_task__module'):
             projects.add(task.project)
 
         # Add projects that the user is participating in a Discussion in
         # as a guest.
         from discussion.models import Discussion
         for d in Discussion.objects.filter(guests=user):
-            if d.attached_to is not None: # because it is generic there is no cascaded delete and the Discussion can become dangling
+            if d.attached_to is not None:  # because it is generic there is no cascaded delete and the Discussion can become dangling
                 if not filters or d.attached_to.task.project in Project.objects.filter(**filters):
                     if not excludes or d.attached_to.task.project not in Project.objects.exclude(**filters):
                         projects.add(d.attached_to.task.project)
-
 
         # Add projects the user has permissions for
         for project in Project.objects.all():
@@ -812,7 +846,7 @@ class Project(TagModelMixin):
                 projects.add(project)
 
         # Add projects the user has permissions for through a portfolio
-        for portfolio in Portfolio.objects.all():
+        for portfolio in Portfolio.objects.prefetch_related('projects').all():
             user_permissions = get_user_perms(user, portfolio)
             if len(user_permissions):
                 for project in portfolio.projects.all():
@@ -823,7 +857,7 @@ class Project(TagModelMixin):
         projects -= system_projects
 
         # Sort.
-        projects = sorted(projects, key = lambda x : x.updated, reverse=True)
+        projects = sorted(projects, key=lambda x: x.updated, reverse=True)
 
         return projects
 
@@ -845,10 +879,10 @@ class Project(TagModelMixin):
             task for task in
             Task.get_all_tasks_readable_by(user)
                 .filter(project=self, editor=user) \
-                .order_by('-updated')\
+                .order_by('-updated') \
                 .select_related('project')
             if not task.is_finished()
-               and task != self.root_task ]
+               and task != self.root_task]
 
     def set_root_task(self, module, editor, expected_module_type="project"):
         # create task and set it as the project root task
@@ -886,12 +920,13 @@ class Project(TagModelMixin):
             if d.attached_to is not None and d.attached_to.task.project == self:
                 if not d.attached_to.task.deleted_at:
                     yield d
-    
+
     def get_invitation_verb_inf(self, invitation):
         into_new_task_question_id = invitation.target_info.get('into_new_task_question_id')
         if into_new_task_question_id:
             from guidedmodules.models import ModuleQuestion
-            return ("to edit a new module %s in" % ModuleQuestion.objects.get(id=into_new_task_question_id).spec["title"])
+            return ("to edit a new module %s in" % ModuleQuestion.objects.get(id=into_new_task_question_id).spec[
+                "title"])
         elif invitation.target_info.get('what') == 'join-team':
             return "to join the project"
         raise ValueError()
@@ -899,7 +934,7 @@ class Project(TagModelMixin):
     def get_invitation_verb_past(self, invitation):
         into_new_task_question_id = invitation.target_info.get('into_new_task_question_id')
         if into_new_task_question_id:
-            pass # because .target is rewritten to the task, this never occurs
+            pass  # because .target is rewritten to the task, this never occurs
         elif invitation.target_info.get('what') == 'join-team':
             return "joined the project"
         raise ValueError()
@@ -907,7 +942,9 @@ class Project(TagModelMixin):
     def is_invitation_valid(self, invitation):
         # Invitations to create a new Task remain valid so long as the
         # inviting user is a member of the project or has view or edit permissions.
-        if invitation.from_user.has_perm('view_project', self) or invitation.from_user.has_perm('edit_project', self) or ProjectMembership.objects.filter(project=self, user=invitation.from_user).exists():
+        if invitation.from_user.has_perm('view_project', self) or invitation.from_user.has_perm('edit_project',
+                                                                                                self) or ProjectMembership.objects.filter(
+            project=self, user=invitation.from_user).exists():
             return True
 
     def accept_invitation(self, invitation, add_message):
@@ -928,7 +965,7 @@ class Project(TagModelMixin):
         elif invitation.into_project:
             # This was handled by siteapp.views.accept_invitation.
             pass
-        
+
         else:
             # What was this invitation for?
             raise ValueError()
@@ -957,15 +994,17 @@ class Project(TagModelMixin):
         # needs to be changed.
         class Serializer:
             def __init__(self):
-                self.objects = { }
-                self.keys = { }
+                self.objects = {}
+                self.keys = {}
                 self.include_file_content = include_file_content
                 self.include_metadata = include_metadata
+
             def get_schema(self):
                 if self.include_metadata:
                     return "GovReady Q Project Export Data 1.0"
                 else:
                     return "GovReady Q Project API 1.0"
+
             def serializeOnce(self, object, preferred_key, serialize_func):
                 if object not in self.objects:
                     # This is the first use of this object instance.
@@ -995,15 +1034,15 @@ class Project(TagModelMixin):
         # Serialize this Project metadata.
         from collections import OrderedDict
         ret = OrderedDict([
-            ("schema", serializer.get_schema()), # serialization format
+            ("schema", serializer.get_schema()),  # serialization format
             ("project", OrderedDict()),
         ])
         if serializer.include_metadata:
             ret["project"].update(OrderedDict([
-                ("version", self.version), # ignored in import
-                ("version_comment", self.version_comment), # ignored in import
-                ("created", self.created.isoformat()), # ignored in import
-                ("modified", self.updated.isoformat()), # ignored in import
+                ("version", self.version),  # ignored in import
+                ("version_comment", self.version_comment),  # ignored in import
+                ("created", self.created.isoformat()),  # ignored in import
+                ("modified", self.updated.isoformat()),  # ignored in import
             ]))
 
         # Add metadata from the root task but don't overwrite existing fields
@@ -1029,13 +1068,13 @@ class Project(TagModelMixin):
         if not isinstance(data, dict):
             logger("Invalid data type for argument.")
             return False
-        
+
         # Create a deserialization helper.
         class Deserializer:
             def __init__(self):
                 self.user = user
                 self.answer_method = answer_method
-                self.ref_map = { }
+                self.ref_map = {}
                 self.logger = logger
                 self.log_nesting_level = 0
 
@@ -1048,7 +1087,7 @@ class Project(TagModelMixin):
                     raise ValueError("Data does not look like it was exported from this application.")
 
             def log(self, msg):
-                self.logger((" * "*self.log_nesting_level) + msg)
+                self.logger((" * " * self.log_nesting_level) + msg)
 
             def deserializeOnce(self, dictdata, deserialize_func):
                 # If dictdata is a reference to something we've already
@@ -1065,7 +1104,7 @@ class Project(TagModelMixin):
                 if isinstance(dictdata, dict):
                     if isinstance(dictdata.get("__referenceId__"), str):
                         self.ref_map[dictdata["__referenceId__"]] = ret
-                        
+
                 return ret
 
         try:
@@ -1095,7 +1134,7 @@ class Project(TagModelMixin):
         # Get the URL to the data API for this Project.
         import urllib.parse
         return urllib.parse.urljoin(settings.SITE_ROOT_URL,
-            "/api/v1//projects/{id}/answers".format(id=self.id))
+                                    "/api/v1//projects/{id}/answers".format(id=self.id))
 
     @property
     def available_root_task_versions_for_upgrade(self):
@@ -1108,12 +1147,12 @@ class Project(TagModelMixin):
         # Get the AppVersion instances that match the filters.
         app_versions = AppVersion.objects.filter(
             source=self.root_task.module.source,
-            appname=self.root_task.module.app.appname)\
+            appname=self.root_task.module.app.appname) \
             .exclude(version_number=None)
 
         # Sort available versions.
         from packaging import version
-        app_versions = sorted(app_versions, key = lambda av : version.parse(av.version_number))
+        app_versions = sorted(app_versions, key=lambda av: version.parse(av.version_number))
         return app_versions
 
     def is_safe_upgrade(self, new_app):
@@ -1147,8 +1186,8 @@ class Project(TagModelMixin):
         # app with the same name) so that when checking module-type questions, we can know
         # to expect certain ID changes. Here we need all of the modules in the app regardless
         # of whether they are in use.
-        old_modules_all = { m.module_name: m for m in old_app.modules.all() }
-        new_modules_all = { m.module_name: m for m in new_app.modules.all() }
+        old_modules_all = {m.module_name: m for m in old_app.modules.all()}
+        new_modules_all = {m.module_name: m for m in new_app.modules.all()}
         module_id_map = {
             old_modules_all[m].id: new_modules_all[m].id
             for m in set(old_modules_all) & set(new_modules_all)
@@ -1172,7 +1211,7 @@ class Project(TagModelMixin):
 
                 changed = is_module_changed(old_module, new_app.source, spec, module_id_map=module_id_map)
                 if changed in (None, False):
-                # if changed in (None, False, 'The module version number changed, forcing a reload.'):
+                    # if changed in (None, False, 'The module version number changed, forcing a reload.'):
                     # 'None' signals no changes.
                     # 'False' means no incompatible changes.
                     # 'The module version number changed, forcing a reload.' means only the version number has changed
@@ -1230,9 +1269,9 @@ class Project(TagModelMixin):
         # Task, since multiple Tasks within the Project might use the same Module.
         # It would be even faster to use bulk_update added in Django 2.2 (https://docs.djangoproject.com/en/3.1/ref/models/querysets/#bulk-update).
         for m in old_modules.keys():
-            Task.objects\
+            Task.objects \
                 .filter(project=self,
-                        module=old_modules[m])\
+                        module=old_modules[m]) \
                 .update(module=new_modules[m])
 
         # Additionally, each TaskAnswer is updated to point to the corresponding
@@ -1240,8 +1279,8 @@ class Project(TagModelMixin):
 
         # Get the ModuleQuestions in use by this Project, and make a mapping from
         # (module name, question key) to ModuleQuestion,
-        old_module_questions = ModuleQuestion.objects\
-            .select_related('module')\
+        old_module_questions = ModuleQuestion.objects \
+            .select_related('module') \
             .filter(taskanswer__task__project=self).distinct()
         old_module_questions = {
             (q.module.module_name, q.key): q
@@ -1249,8 +1288,8 @@ class Project(TagModelMixin):
         }
 
         # Get the corresponding ModuleQuestionss in the new app, and make a similar mapping.
-        new_module_questions = ModuleQuestion.objects\
-            .select_related('module')\
+        new_module_questions = ModuleQuestion.objects \
+            .select_related('module') \
             .filter(module__app=new_app)
         new_module_questions = {
             (q.module.module_name, q.key): q
@@ -1264,14 +1303,13 @@ class Project(TagModelMixin):
         # multiple Tasks for the same Module. See the comment about using bulk_update
         # above.
         for key in old_module_questions.keys():
-            TaskAnswer.objects\
+            TaskAnswer.objects \
                 .filter(task__project=self,
-                        question=old_module_questions[key])\
+                        question=old_module_questions[key]) \
                 .update(question=new_module_questions[key])
             print("Updating {}".format(new_module_questions[key]))
         print("Update complete.")
         return True
-
 
     def get_default_parameter_name(self):
         # TODO: using 'mod_fedramp', but somehow we need to determine
@@ -1295,8 +1333,10 @@ class Project(TagModelMixin):
         # merge and return
         return ChainMap(org_params, default_params)
 
+
 class ProjectMembership(models.Model):
-    project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE, help_text="The Project this is defining membership for.")
+    project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE,
+                                help_text="The Project this is defining membership for.")
     user = models.ForeignKey(User, on_delete=models.CASCADE, help_text="The user that is a member of the Project.")
     is_admin = models.BooleanField(default=False, help_text="Is the user an administrator of the Project?")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -1305,36 +1345,51 @@ class ProjectMembership(models.Model):
     class Meta:
         unique_together = [('project', 'user')]
 
+
 class Invitation(models.Model):
     # who is sending the invitation
-    from_user = models.ForeignKey(User, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The User who sent the invitation.")
-    from_project = models.ForeignKey(Project, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The Project within which the invitation exists.", blank=True, null=True)
-    from_portfolio = models.ForeignKey(Portfolio, related_name="portfolio_invitations_sent", on_delete=models.CASCADE, help_text="The Portfolio within which the invitation exists.", blank=True, null=True)
+    from_user = models.ForeignKey(User, related_name="invitations_sent", on_delete=models.CASCADE,
+                                  help_text="The User who sent the invitation.")
+    from_project = models.ForeignKey(Project, related_name="invitations_sent", on_delete=models.CASCADE,
+                                     help_text="The Project within which the invitation exists.", blank=True, null=True)
+    from_portfolio = models.ForeignKey(Portfolio, related_name="portfolio_invitations_sent", on_delete=models.CASCADE,
+                                       help_text="The Portfolio within which the invitation exists.", blank=True,
+                                       null=True)
 
     # what is the recipient being invited to?
-    into_project = models.BooleanField(default=False, help_text="Whether the user being invited is being invited to join from_project.")
+    into_project = models.BooleanField(default=False,
+                                       help_text="Whether the user being invited is being invited to join from_project.")
     target_content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
     target_object_id = models.PositiveIntegerField()
     target = GenericForeignKey('target_content_type', 'target_object_id')
     target_info = JSONField(blank=True, help_text="Additional information about the target of the invitation.")
 
     # who is the recipient of the invitation?
-    to_user = models.ForeignKey(User, related_name="invitations_received", blank=True, null=True, on_delete=models.CASCADE, help_text="The user who the invitation was sent to, if to an existing user.")
-    to_email = models.CharField(max_length=255, blank=True, null=True, help_text="The email address the invitation was sent to, if to a non-existing user.")
+    to_user = models.ForeignKey(User, related_name="invitations_received", blank=True, null=True,
+                                on_delete=models.CASCADE,
+                                help_text="The user who the invitation was sent to, if to an existing user.")
+    to_email = models.CharField(max_length=255, blank=True, null=True,
+                                help_text="The email address the invitation was sent to, if to a non-existing user.")
 
     # personalization
     text = models.TextField(blank=True, help_text="The personalized text of the invitation.")
 
     # what state is this invitation in?
-    sent_at = models.DateTimeField(blank=True, null=True, help_text="If the invitation has been sent by email, when it was sent.")
-    accepted_at = models.DateTimeField(blank=True, null=True, help_text="If the invitation has been accepted, when it was accepted.")
-    revoked_at = models.DateTimeField(blank=True, null=True, help_text="If the invitation has been revoked, when it was revoked.")
+    sent_at = models.DateTimeField(blank=True, null=True,
+                                   help_text="If the invitation has been sent by email, when it was sent.")
+    accepted_at = models.DateTimeField(blank=True, null=True,
+                                       help_text="If the invitation has been accepted, when it was accepted.")
+    revoked_at = models.DateTimeField(blank=True, null=True,
+                                      help_text="If the invitation has been revoked, when it was revoked.")
 
     # what resulted from this invitation?
-    accepted_user = models.ForeignKey(User, related_name="invitations_accepted", blank=True, null=True, on_delete=models.CASCADE, help_text="The user that accepted the invitation (i.e. if the invitation was by email address and an account was created).")
+    accepted_user = models.ForeignKey(User, related_name="invitations_accepted", blank=True, null=True,
+                                      on_delete=models.CASCADE,
+                                      help_text="The user that accepted the invitation (i.e. if the invitation was by email address and an account was created).")
 
     # random string to generate unique code for recipient
-    email_invitation_code = models.CharField(max_length=64, blank=True, help_text="For emails, a unique verification code.")
+    email_invitation_code = models.CharField(max_length=64, blank=True,
+                                             help_text="For emails, a unique verification code.")
 
     # bookkeeping
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -1352,7 +1407,7 @@ class Invitation(models.Model):
     def save(self, *args, **kwargs):
         # On first save, generate the invitation code.
         if not self.id:
-           self.email_invitation_code = crypto.get_random_string(24)
+            self.email_invitation_code = crypto.get_random_string(24)
         super(Invitation, self).save(*args, **kwargs)
 
     @staticmethod
@@ -1362,8 +1417,8 @@ class Invitation(models.Model):
         if len(exclude_users) > 0:
             for u in exclude_users:
                 names_to_exclude.append(u.username)
-        users = [{ "id": user.id, "name": str(user) }
-                for user in User.objects.exclude(username__in=names_to_exclude)]
+        users = [{"id": user.id, "name": str(user)}
+                 for user in User.objects.exclude(username__in=names_to_exclude)]
         return {
             "model_id": model.id,
             "model_title": model.title,
@@ -1384,7 +1439,7 @@ class Invitation(models.Model):
 
     def purpose_verb(self):
         return \
-              ("to join the project team and " if self.into_project and not self.is_target_the_project() else "") \
+            ("to join the project team and " if self.into_project and not self.is_target_the_project() else "") \
             + self.target.get_invitation_verb_inf(self)
 
     def is_target_the_project(self):
@@ -1428,6 +1483,7 @@ class Invitation(models.Model):
             return True
 
         return False
+
     is_expired.boolean = True
 
     def is_redirect_valid(self):
@@ -1436,16 +1492,19 @@ class Invitation(models.Model):
     def get_redirect_url(self):
         return self.target.get_invitation_redirect_url(self)
 
+
 class Support(models.Model):
-  """Model for support information for support page for install of GovReady"""
+    """Model for support information for support page for install of GovReady"""
 
-  email = models.EmailField(max_length=254, unique=False, blank=True, null=True, help_text="Support email address")
-  phone = models.CharField(max_length=24, unique=False, blank=True, null=True, help_text="Support phone number")
-  text = models.TextField(unique=False, blank=True, null=True, help_text="Text or HTML content to appear at top of support page")
-  url = models.URLField(max_length=200, unique=False, blank=True, null=True, help_text="Support url")
+    email = models.EmailField(max_length=254, unique=False, blank=True, null=True, help_text="Support email address")
+    phone = models.CharField(max_length=24, unique=False, blank=True, null=True, help_text="Support phone number")
+    text = models.TextField(unique=False, blank=True, null=True,
+                            help_text="Text or HTML content to appear at top of support page")
+    url = models.URLField(max_length=200, unique=False, blank=True, null=True, help_text="Support url")
 
-  def __str__(self):
-    return "Support information"
+    def __str__(self):
+        return "Support information"
+
 
 class Tag(models.Model):
     label = models.CharField(max_length=100, unique=True, help_text="Label for tag")
@@ -1460,10 +1519,12 @@ class Tag(models.Model):
     def serialize(self):
         return {"label": self.label, "system_created": self.system_created, "id": self.id}
 
+
 class Asset(models.Model):
     UPLOAD_TO = None  # Should be overriden when iheritted
     title = models.CharField(max_length=255, help_text="The title of this asset.")
-    asset_type = models.CharField(max_length=150, help_text="Asset type.", unique=False, choices=AssetTypeEnum.choices())
+    asset_type = models.CharField(max_length=150, help_text="Asset type.", unique=False,
+                                  choices=AssetTypeEnum.choices())
     content_hash = models.CharField(max_length=128,
                                     help_text="A hash of the asset binary content, as provided by the source.")
     description = models.TextField(blank=True, null=True)
