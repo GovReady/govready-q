@@ -791,8 +791,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.click_element("#create-portfolio-button")
         wait_for_sleep_after(lambda:  self.assertRegex(self.browser.title, "Security Projects"))
 
-
-
     def test_grant_portfolio_access(self):
         # Grant another member access to portfolio
         self._login()
@@ -1384,7 +1382,6 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # # email-address
         # self.assertRegex(self.browser.title, "Next Question: email-address")
 
-
 class ProjectTests(TestCaseWithFixtureData):
     """
     Test various project views
@@ -1417,3 +1414,38 @@ class ProjectTests(TestCaseWithFixtureData):
         self.assertEqual(edit_project.title, 'Test Project v2')
         self.assertEqual(edit_project.version, "1.1")
         self.assertEqual(edit_project.version_comment, "A new comment!")
+
+class ProjectPageTests(OrganizationSiteFunctionalTests):
+    """ Tests for Project page """
+
+    def test_mini_dashboard(self):
+        """ Tests for project page mini compliance dashboard """
+
+        # Log in, create a new project.
+        self._login()
+        self._new_project()
+        # On project page?
+        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+
+        # mini-dashboard content
+        self.assertInNodeText("controls", "#status-box-controls")
+        self.assertInNodeText("components", "#status-box-components")
+        self.assertInNodeText("POA&Ms", "#status-box-poams")
+        self.assertInNodeText("compliance", "#status-box-compliance-piechart")
+
+        # mini-dashbard links
+        self.click_element('#status-box-controls')
+        wait_for_sleep_after( lambda: self.assertInNodeText("Selected controls", ".systems-selected-items") )
+        # click project button
+        self.click_element('#btn-project-home')
+        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+        # test components
+        self.click_element('#status-box-components')
+        wait_for_sleep_after( lambda: self.assertInNodeText("Selected components", ".systems-selected-items") )
+        # click project button
+        self.click_element('#btn-project-home')
+        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+        # test poams
+        self.click_element('#status-box-poams')
+        wait_for_sleep_after( lambda: self.assertInNodeText("POA&Ms", ".systems-selected-items") )
+

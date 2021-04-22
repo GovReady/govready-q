@@ -23,17 +23,26 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
 logging.basicConfig()
 logger = get_logger()
 
+
 class AppSource(models.Model):
-    is_system_source = models.BooleanField(default=False, help_text="This field is set to True for a single AppSource that holds the system modules such as user profiles.")
-    slug = models.CharField(max_length=200, unique=True, help_text="A unique URL-safe string that names this AppSource.")
+    is_system_source = models.BooleanField(default=False,
+                                           help_text="This field is set to True for a single AppSource that holds the system modules such as user profiles.")
+    slug = models.CharField(max_length=200, unique=True,
+                            help_text="A unique URL-safe string that names this AppSource.")
     spec = JSONField(help_text="A load_modules ModuleRepository spec.", load_kwargs={'object_pairs_hook': OrderedDict})
 
-    trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
-    available_to_all = models.BooleanField(default=True, help_text="Turn off to restrict the Modules loaded from this source to particular organizations.")
-    available_to_all_individuals = models.BooleanField(default=True, help_text="Turn off to restrict the Modules loaded from this source to particular individuals.")
-    available_to_orgs = models.ManyToManyField(Organization, blank=True, help_text="If available_to_all is False, list the Organizations that can start projects defined by Modules provided by this AppSource.")
-    available_to_individual = models.ManyToManyField(User, blank=True, related_name="individual", help_text="If available_to_all_individuals is False, list the individuals who can start projects defined by Modules provided by this AppSource.")
-    available_to_role = models.BooleanField(default=True, help_text="Turn off to restrict the ability to start projects defined by Modules provided by this AppSource.")
+    trust_assets = models.BooleanField(default=False,
+                                       help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
+    available_to_all = models.BooleanField(default=True,
+                                           help_text="Turn off to restrict the Modules loaded from this source to particular organizations.")
+    available_to_all_individuals = models.BooleanField(default=True,
+                                                       help_text="Turn off to restrict the Modules loaded from this source to particular individuals.")
+    available_to_orgs = models.ManyToManyField(Organization, blank=True,
+                                               help_text="If available_to_all is False, list the Organizations that can start projects defined by Modules provided by this AppSource.")
+    available_to_individual = models.ManyToManyField(User, blank=True, related_name="individual",
+                                                     help_text="If available_to_all_individuals is False, list the individuals who can start projects defined by Modules provided by this AppSource.")
+    available_to_role = models.BooleanField(default=True,
+                                            help_text="Turn off to restrict the ability to start projects defined by Modules provided by this AppSource.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -67,7 +76,7 @@ class AppSource(models.Model):
                 url = urlunsplit((scheme, host, path, query, fragment))
             except Exception:
                 url = "<invalid url>"
-            return url + ("@"+self.spec["branch"] if self.spec.get("branch") else "")
+            return url + ("@" + self.spec["branch"] if self.spec.get("branch") else "")
         if self.spec["type"] == "github":
             return "github.com/%s" % self.spec.get("repo")
 
@@ -108,19 +117,25 @@ class AppSource(models.Model):
             appver.save()
         return appver
 
+
 class AppVersion(models.Model):
-    source = models.ForeignKey(AppSource, related_name="appversions", on_delete=models.CASCADE, help_text="The source repository where this AppVersion came from.")
+    source = models.ForeignKey(AppSource, related_name="appversions", on_delete=models.CASCADE,
+                               help_text="The source repository where this AppVersion came from.")
     appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppSource.")
 
-        # the field below is a NullBooleanField because the unique constraint doesn't kick in
-        # for NULLs but does for False/True, and we want the constraint to apply only for True.
-    system_app = models.BooleanField(null=True, default=None, help_text="Set to True for AppVersions that are the current version of a system app that provides system-expected Modules. A constraint ensures that only one (source, name) pair can be true.")
+    # the field below is a NullBooleanField because the unique constraint doesn't kick in
+    # for NULLs but does for False/True, and we want the constraint to apply only for True.
+    system_app = models.BooleanField(null=True, default=None,
+                                     help_text="Set to True for AppVersions that are the current version of a system app that provides system-expected Modules. A constraint ensures that only one (source, name) pair can be true.")
 
     catalog_metadata = JSONField(blank=True, help_text="The catalog metadata that was stored in the 'app' module.")
-    version_number = models.CharField(blank=True, null=True, max_length=128, help_text="The version number of the compliance app.")
-    version_name = models.CharField(blank=True, null=True, max_length=128, help_text="The name of this version/release of the compliance app.")
+    version_number = models.CharField(blank=True, null=True, max_length=128,
+                                      help_text="The version number of the compliance app.")
+    version_name = models.CharField(blank=True, null=True, max_length=128,
+                                    help_text="The name of this version/release of the compliance app.")
 
-    input_files = models.ManyToManyField('guidedmodules.AppInput', blank=True, help_text="The inputs linked to this pack.")
+    input_files = models.ManyToManyField('guidedmodules.AppInput', blank=True,
+                                         help_text="The inputs linked to this pack.")
     input_paths = JSONField(
         help_text="A dictionary mapping file paths to the content_hashes of inputs included in the inputs field of this instance.",
         blank=True, null=True)
@@ -130,10 +145,13 @@ class AppVersion(models.Model):
                                        help_text="Are inputs trusted? Inputs include OSCAL components and statements that will be served on our domain.")
 
     asset_files = models.ManyToManyField('guidedmodules.ModuleAsset', help_text="The assets linked to this pack.")
-    asset_paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
-    trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
+    asset_paths = JSONField(
+        help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
+    trust_assets = models.BooleanField(default=False,
+                                       help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
 
-    show_in_catalog = models.BooleanField(default=False, help_text='Whether to show this AppVersion in the compliane app catalog, which allows users to start the app.')
+    show_in_catalog = models.BooleanField(default=False,
+                                          help_text='Whether to show this AppVersion in the compliane app catalog, which allows users to start the app.')
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -204,12 +222,15 @@ class AppVersion(models.Model):
         user = User.objects.filter(id=userid).first()
         role_bool = user.has_perm("guidedmodules.view_appsource")
 
-        return AppVersion.objects\
-            .filter(show_in_catalog=True)\
+        return AppVersion.objects \
+            .prefetch_related('modules')\
+            .select_related('source')\
+            .filter(show_in_catalog=True) \
             .filter(source__is_system_source=False) \
-            .filter(Q(source__available_to_role=role_bool))\
-            .filter(Q(source__available_to_all_individuals=True) | Q(source__available_to_individual=userid))\
+            .filter(Q(source__available_to_role=role_bool)) \
+            .filter(Q(source__available_to_all_individuals=True) | Q(source__available_to_individual=userid)) \
             .filter(Q(source__available_to_all=True) | Q(source__available_to_orgs=organization))
+
 
 def extract_catalog_metadata(app_module, migration=None):
     # Note that this function is used in migration 0044 and so
@@ -243,6 +264,7 @@ def extract_catalog_metadata(app_module, migration=None):
             if field in app_module.app.catalog_metadata:
                 del app_module.app.catalog_metadata[field]
 
+
 def recombine_catalog_metadata(app_module):
     # Note that this function is used in migration 0044 and so
     # must be compatible to run in the migration and must be
@@ -265,12 +287,13 @@ def recombine_catalog_metadata(app_module):
     # differ, in which case leave them in the catalog dict where
     # they take precedence.
     for field in ("title", "icon"):
-        if   field in ret \
-         and field in app_module.spec \
-         and app_module.spec[field] == ret[field]:
+        if field in ret \
+                and field in app_module.spec \
+                and app_module.spec[field] == ret[field]:
             del ret[field]
 
     return ret
+
 
 class AppInput(models.Model):
     source = models.ForeignKey(AppSource, related_name="inputs", on_delete=models.CASCADE,
@@ -278,8 +301,9 @@ class AppInput(models.Model):
     app = models.ForeignKey(AppVersion, null=True, related_name="inputs", on_delete=models.CASCADE,
                             help_text="The AppVersion that this input is a part of.")
     input_name = models.SlugField(max_length=200,
-                                   help_text="A slug-like identifier for the input that is unique within the AppVersion app.")
-    content_hash = models.CharField(max_length=64, help_text="A hash of the input binary content, as provided by the source.")
+                                  help_text="A slug-like identifier for the input that is unique within the AppVersion app.")
+    content_hash = models.CharField(max_length=64,
+                                    help_text="A hash of the input binary content, as provided by the source.")
     file = models.FileField(upload_to='guidedmodules/app-inputs', help_text="The input file.")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -297,12 +321,16 @@ class AppInput(models.Model):
 
 
 class Module(models.Model):
-    source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")
-    app = models.ForeignKey(AppVersion, null=True, related_name="modules", on_delete=models.CASCADE, help_text="The AppVersion that this Module is a part of. Null for legacy Modules created before we had this field.")
+    source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE,
+                               help_text="The source of this module definition.")
+    app = models.ForeignKey(AppVersion, null=True, related_name="modules", on_delete=models.CASCADE,
+                            help_text="The AppVersion that this Module is a part of. Null for legacy Modules created before we had this field.")
 
-    module_name = models.SlugField(max_length=200, help_text="A slug-like identifier for the Module that is unique within the AppVersion app.")
+    module_name = models.SlugField(max_length=200,
+                                   help_text="A slug-like identifier for the Module that is unique within the AppVersion app.")
 
-    superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, help_text="This field is no longer used. When a Module is superseded by a new version, this points to the newer version.")
+    superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL,
+                                      help_text="This field is no longer used. When a Module is superseded by a new version, this points to the newer version.")
 
     spec = JSONField(help_text="Module definition data.", load_kwargs={'object_pairs_hook': OrderedDict})
 
@@ -316,12 +344,14 @@ class Module(models.Model):
 
     def __str__(self):
         # For the admin.
-        return "<%s(%d)/%s(%d)/%s(%d)>" % (self.source, self.source.id, self.app.appname, self.app.id, self.module_name, self.id )
+        return "<%s(%d)/%s(%d)/%s(%d)>" % (
+            self.source, self.source.id, self.app.appname, self.app.id, self.module_name, self.id)
         # return "%s Module=\"name: %s, id:%d\"" % (self.app, self.module_name, self.id)
 
     def __repr__(self):
         # For debugging.
-        return "<%s(%d)/%s(%d)/%s(%d)>" % (self.source, self.source.id, self.app.appname, self.app.id, self.module_name, self.id )
+        return "<%s(%d)/%s(%d)/%s(%d)>" % (
+            self.source, self.source.id, self.app.appname, self.app.id, self.module_name, self.id)
         # return "<Module [%d] %s %s (%s)>" % (self.id, self.module_name, self.spec.get("title", "<No Title>")[0:30], self.app)
 
     def save(self):
@@ -351,13 +381,14 @@ class Module(models.Model):
 
         return serializer.serializeOnce(
             self,
-            "module:" + self.app.source.slug + "/" + self.app.appname + "/" + self.module_name, # a preferred key, doesn't need to be unique here
-            lambda : OrderedDict([  # "lambda :" makes this able to be evaluated lazily
+            "module:" + self.app.source.slug + "/" + self.app.appname + "/" + self.module_name,
+            # a preferred key, doesn't need to be unique here
+            lambda: OrderedDict([  # "lambda :" makes this able to be evaluated lazily
                 ("key", self.module_name),
                 ("version", spec_version),
                 ("created", self.created.isoformat()),
                 ("modified", self.updated.isoformat()),
-        ]))
+            ]))
 
     @staticmethod
     def BuildNetworkDiagram(start_nodes, config):
@@ -367,12 +398,12 @@ class Module(models.Model):
         g = Digraph(name=config['name'])
         seen_nodes = set()
         stack = list(start_nodes)
-        node_id = lambda node : str((type(node), node.id))
+        node_id = lambda node: str((type(node), node.id))
         while len(stack) > 0:
             # pop the next node
             node = stack.pop()
-            if node in seen_nodes: continue # already did this node
-            seen_nodes.add(node) # mark as visited
+            if node in seen_nodes: continue  # already did this node
+            seen_nodes.add(node)  # mark as visited
 
             # Create the node.
             g.node(
@@ -389,7 +420,7 @@ class Module(models.Model):
                         node_id(node),
                         node_id(n),
                         label=edge_type,
-                        )
+                    )
                     stack.append(n)
 
         if not seen_nodes:
@@ -409,16 +440,16 @@ class Module(models.Model):
             {
                 'name': 'Module Usage',
                 Module: {
-                    "label": lambda node : str(node),
-                    "edges": lambda node : { "answer-to": node.is_type_of_answer_to.all() },
-                    "attrs": lambda node : { "color": "red" },
-                    "tooltip": lambda node : node.spec['title'],
+                    "label": lambda node: str(node),
+                    "edges": lambda node: {"answer-to": node.is_type_of_answer_to.all()},
+                    "attrs": lambda node: {"color": "red"},
+                    "tooltip": lambda node: node.spec['title'],
                 },
                 ModuleQuestion: {
-                    "label": lambda node : node.key,
-                    "edges": lambda node : { "in": [node.module] },
-                    "attrs": lambda node : { "color": "blue" },
-                    "tooltip": lambda node : node.spec['title'],
+                    "label": lambda node: node.key,
+                    "edges": lambda node: {"in": [node.module]},
+                    "attrs": lambda node: {"color": "blue"},
+                    "tooltip": lambda node: node.spec['title'],
                 }
             })
 
@@ -426,34 +457,38 @@ class Module(models.Model):
         # For the admin.
         from .module_logic import get_all_question_dependencies, get_question_dependencies_with_type
         _, root_questions = get_all_question_dependencies(self)
+
         def get_question_dependencies(node):
-            ret = { }
+            ret = {}
             for edge_type, n2 in get_question_dependencies_with_type(node):
                 ret.setdefault(edge_type, []).append(n2)
             return ret
+
         return Module.BuildNetworkDiagram(
             root_questions,
             {
                 'name': 'Question Dependencies',
                 ModuleQuestion: {
-                    "label": lambda node : node.key,
-                    "edges": lambda node : get_question_dependencies(node),
-                    "attrs": lambda node : { },
-                    "tooltip": lambda node : node.spec['title'],
+                    "label": lambda node: node.key,
+                    "edges": lambda node: get_question_dependencies(node),
+                    "attrs": lambda node: {},
+                    "tooltip": lambda node: node.spec['title'],
                 }
             })
 
     def is_authoring_tool_enabled(self, user):
         # legacy Modules don't have self.app set
         return self.app is not None and self.app.is_authoring_tool_enabled(user)
+
     def get_referenceable_modules(self):
         # Return the modules that can be referenced by this
         # one in YAML as an answer type. That's any Module
         # defined in the same AppVersion that isn't "type: project".
-        if self.app is None: return # legacy Module not associated with an AppVersion
+        if self.app is None: return  # legacy Module not associated with an AppVersion
         for m in self.app.modules.all():
             if m.spec.get("type") == "project": continue
             yield m
+
     def getReferenceTo(self, target):
         # Get the string that you would put in a YAML file to reference the
         # target module. target must be in get_referenceable_modules.
@@ -476,7 +511,7 @@ class Module(models.Model):
         spec["questions"] = []
         for i, q in enumerate(self.questions.order_by('definition_order')):
             if i == 0 and q.key == "_introduction":
-                spec["introduction"] = { "format": "markdown", "template": q.spec["prompt"] }
+                spec["introduction"] = {"format": "markdown", "template": q.spec["prompt"]}
                 continue
 
             # TODO: get RTYAML fixed to recognize '\r\n' as well as '\n'
@@ -508,7 +543,7 @@ class Module(models.Model):
         spec["questions"] = []
         for i, q in enumerate(self.questions.order_by('definition_order')):
             if i == 0 and q.key == "_introduction":
-                spec["introduction"] = { "format": "markdown", "template": q.spec["prompt"] }
+                spec["introduction"] = {"format": "markdown", "template": q.spec["prompt"]}
                 continue
 
             # TODO: get RTYAML fixed to recognize '\r\n' as well as '\n'
@@ -532,9 +567,11 @@ class Module(models.Model):
                 with open(fn, "w") as f:
                     f.write(rtyaml.dump(spec))
 
+
 class ModuleAsset(models.Model):
     source = models.ForeignKey(AppSource, on_delete=models.CASCADE, help_text="The source of the asset.")
-    content_hash = models.CharField(max_length=64, help_text="A hash of the asset binary content, as provided by the source.")
+    content_hash = models.CharField(max_length=64,
+                                    help_text="A hash of the asset binary content, as provided by the source.")
     file = models.FileField(upload_to='guidedmodules/module-assets', help_text="The attached file.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -553,13 +590,18 @@ class ModuleAsset(models.Model):
         # For debugging.
         return "<ModuleAsset [%d] %s from %s>" % (self.id, self.file.name, self.source)
 
+
 class ModuleQuestion(models.Model):
-    module = models.ForeignKey(Module, related_name="questions", on_delete=models.CASCADE, help_text="The Module that this ModuleQuestion is a part of.")
+    module = models.ForeignKey(Module, related_name="questions", on_delete=models.CASCADE,
+                               help_text="The Module that this ModuleQuestion is a part of.")
     key = models.SlugField(max_length=100, help_text="A slug-like identifier for the question.")
 
-    definition_order = models.IntegerField(help_text="An integer giving the order in which this question is defined by the Module.")
+    definition_order = models.IntegerField(
+        help_text="An integer giving the order in which this question is defined by the Module.")
     spec = JSONField(help_text="Module definition data.", load_kwargs={'object_pairs_hook': OrderedDict})
-    answer_type_module = models.ForeignKey(Module, blank=True, null=True, related_name="is_type_of_answer_to", on_delete=models.PROTECT, help_text="For module and module-set typed questions, this is the Module that Tasks that answer this question must be for.")
+    answer_type_module = models.ForeignKey(Module, blank=True, null=True, related_name="is_type_of_answer_to",
+                                           on_delete=models.PROTECT,
+                                           help_text="For module and module-set typed questions, this is the Module that Tasks that answer this question must be for.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -581,7 +623,7 @@ class ModuleQuestion(models.Model):
         buf = io.StringIO()
         wr = csv.writer(buf, delimiter="|")
         for choice in self.spec.get("choices", []):
-            wr.writerow([ choice.get("key") or "", choice.get("text") or "", choice.get("help") or "" ])
+            wr.writerow([choice.get("key") or "", choice.get("text") or "", choice.get("help") or ""])
         return buf.getvalue()
 
     @staticmethod
@@ -617,26 +659,35 @@ class ModuleQuestion(models.Model):
             return "One of " + ", ".join(json.dumps(choice['key']) for choice in self.spec["choices"]) + "."
         if self.spec["type"] == "multiple-choice":
             import json
-            return "An array containing " + ", ".join(json.dumps(choice['key']) for choice in self.spec["choices"]) + "."
+            return "An array containing " + ", ".join(
+                json.dumps(choice['key']) for choice in self.spec["choices"]) + "."
         if self.spec["type"] == "datagrid":
             # import json
             # return "An array containing " + ", ".join(json.dumps(field['key']) for field in self.spec["fields"]) + "."
             return "datagrid self.spec"
         return ""
 
+
 class Task(models.Model):
-    project = models.ForeignKey(Project, related_name="tasks", on_delete=models.CASCADE, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
-    title_override = models.CharField(max_length=256, blank=True, null=True, help_text="The title of this Task if overriding the computed instance-name or Module.title default.")
-    editor = models.ForeignKey(User, related_name="tasks_editor_of", on_delete=models.PROTECT, help_text="The user that has primary responsibility for completing this Task.")
+    project = models.ForeignKey(Project, related_name="tasks", on_delete=models.CASCADE,
+                                help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
+    title_override = models.CharField(max_length=256, blank=True, null=True,
+                                      help_text="The title of this Task if overriding the computed instance-name or Module.title default.")
+    editor = models.ForeignKey(User, related_name="tasks_editor_of", on_delete=models.PROTECT,
+                               help_text="The user that has primary responsibility for completing this Task.")
     module = models.ForeignKey(Module, on_delete=models.PROTECT, help_text="The Module that this Task is answering.")
     notes = models.TextField(blank=True, help_text="Notes set by the user about why they are completing this task.")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
-    deleted_at = models.DateTimeField(blank=True, null=True, db_index=True, help_text="If 'deleted' by a user, the date & time the Task was deleted.")
-    cached_state = JSONField(blank=True, default=None, help_text="Cached value storing whether the Task is finished, its computed title, and other state that depends on question answers.")
+    deleted_at = models.DateTimeField(blank=True, null=True, db_index=True,
+                                      help_text="If 'deleted' by a user, the date & time the Task was deleted.")
+    cached_state = JSONField(blank=True, default=None,
+                             help_text="Cached value storing whether the Task is finished, its computed title, and other state that depends on question answers.")
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
-    invitation_history = models.ManyToManyField('siteapp.Invitation', blank=True, help_text="The history of accepted invitations that had this Task as a target.")
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Task, used to synchronize Task content between systems.")
+    invitation_history = models.ManyToManyField('siteapp.Invitation', blank=True,
+                                                help_text="The history of accepted invitations that had this Task as a target.")
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False,
+                            help_text="A UUID (a unique identifier) for this Task, used to synchronize Task content between systems.")
 
     class Meta:
         index_together = [
@@ -665,7 +716,7 @@ class Task(models.Model):
             module=task.module,
             project=task.project,
             task=task,
-            answer=parent_task_answer, # the TaskAnswer that the new Task is an answer to
+            answer=parent_task_answer,  # the TaskAnswer that the new Task is an answer to
         )
 
         return task
@@ -700,7 +751,8 @@ class Task(models.Model):
 
     def get_static_asset_image_data_url(self, asset_path, max_image_size):
         if asset_path not in self.module.app.asset_paths:
-            print("ERROR: '" + "{}".format(self.project) + "' - asset_path '" + asset_path + "'' is not in module.app.asset_paths")
+            print("ERROR: '" + "{}".format(
+                self.project) + "' - asset_path '" + asset_path + "'' is not in module.app.asset_paths")
             return "/error/image/asset_path[" + asset_path + "]/not-in-module.app.asset_paths"
         if self.module.app is None or asset_path not in self.module.app.asset_paths:
             # This path is not an asset.
@@ -711,9 +763,9 @@ class Task(models.Model):
                 return image_to_dataurl(f, max_image_size)
             except:
                 # image processing error
-                print("ERROR: '" + "{}".format(self.project) + "' - asset_path '" + asset_path + "'' has invalid image data.")
+                print("ERROR: '" + "{}".format(
+                    self.project) + "' - asset_path '" + asset_path + "'' has invalid image data.")
                 return "/error/image/asset_path[" + asset_path + "]/image-processing-error."
-
 
     # ANSWERS
 
@@ -730,21 +782,24 @@ class Task(models.Model):
         # Among tuples for a particular Task, the tuples are in order of ModuleQuestion.definition_order.
 
         # Batch load all of the current answers of the tasks.
-        current_answers = { } # Question => TaskAnswerHistory
-        for ansh in \
-            (TaskAnswerHistory.objects
-                .filter(taskanswer__task__in=tasks)
-                .order_by('-id')
-                .select_related('taskanswer', 'taskanswer__task', 'taskanswer__question', 'answered_by')
-                .prefetch_related('answered_by_task')
-                .prefetch_related("answered_by_task__module__app__source")
-                .prefetch_related("answered_by_task__module__questions")):\
-            current_answers.setdefault((ansh.taskanswer.task, ansh.taskanswer.question), ansh)
+        current_answers = {}
+        history = TaskAnswerHistory.objects \
+            .select_related('taskanswer', 'taskanswer__question') \
+            .filter(taskanswer__task__in=tasks) \
+            .order_by('-id')
+
+        tasks_ = {task.id: task for task in
+                 Task.objects.select_related('module', 'project').filter(id__in=history.values_list("taskanswer__task_id", flat=True))}
+        questions = {question.id: question for question in
+                     ModuleQuestion.objects.select_related('module').filter(id__in=history.values_list('taskanswer__question_id', flat=True))}
+
+        for ansh in history:
+            current_answers.setdefault((tasks_.get(ansh.taskanswer.task_id), questions.get(ansh.taskanswer.question_id)), ansh)
 
         # Batch load all of the ModuleQuestions.
-        questions = ModuleQuestion.objects.filter(module__in={ task.module for task in tasks })\
+        questions = ModuleQuestion.objects.prefetch_related('answer_type_module__questions').select_related('module') \
+            .filter(module__in={task.module for task in tasks}) \
             .order_by("definition_order")
-
         # Iterate over the tasks and their questions in order...
         for task in tasks:
             for question in questions:
@@ -752,6 +807,7 @@ class Task(models.Model):
                 if question.module != task.module: continue
 
                 # Get the latest TaskAnswerHistory instance, if there is any.
+
                 answer = current_answers.get((task, question), None)
 
                 # If the answer is marked as cleared, then treat as if it had
@@ -764,7 +820,7 @@ class Task(models.Model):
 
     def get_current_answer_records(self):
         for task, question, answer in \
-            Task.get_all_current_answer_records([self]):
+                Task.get_all_current_answer_records([self]):
             yield (question, answer)
 
     def get_answers(self):
@@ -794,10 +850,10 @@ class Task(models.Model):
         return value
 
     def get_last_modification(self):
-        ans = TaskAnswerHistory.objects\
-                .filter(taskanswer__task=self)\
-                .order_by('-id')\
-                .first()
+        ans = TaskAnswerHistory.objects \
+            .filter(taskanswer__task=self) \
+            .order_by('-id') \
+            .first()
         return ans
 
     # STATE
@@ -808,7 +864,7 @@ class Task(models.Model):
     def _get_cached_state(self, key, refresh_func):
         # Initialize the cached_state field if it is null.
         if not isinstance(self.cached_state, dict):
-            self.cached_state = { }
+            self.cached_state = {}
 
         # Handle a cache miss --- call refresh_func() and
         # then save it to cached_state (and save to the db).
@@ -850,11 +906,12 @@ class Task(models.Model):
                             if not item.task.is_finished():
                                 return False
             return True
+
         return self._get_cached_state("is_finished", compute_is_finished)
 
     def get_progress_percent(self):
-         answered, total = self.get_progress_percent_tuple()
-         return (answered/total*100) if (total > 0) else 100
+        answered, total = self.get_progress_percent_tuple()
+        return (answered / total * 100) if (total > 0) else 100
 
     def get_progress_percent_tuple(self):
         def compute_progress_percent():
@@ -884,14 +941,14 @@ class Task(models.Model):
                     num_questions += 1
 
             return (num_answered, num_questions)
-        return self._get_cached_state("progress_percent_tuple", compute_progress_percent)
 
+        return self._get_cached_state("progress_percent_tuple", compute_progress_percent)
 
     # This method is called any time an answer to any of this Task's questions
     # is changed, or for questions that are answered by sub-tasks, and if any
     # of their answers changed too, recursively.
     def on_answer_changed(self):
-        Task.clear_state({ self })
+        Task.clear_state({self})
 
     # Do the work of clearing the cached_state of a set of Tasks.
     # * Clear the Tasks' cached_state field and bump their 'updated' time so
@@ -912,20 +969,20 @@ class Task(models.Model):
 
             # Add Tasks whose current answers include any of these Tasks. First
             # find TaskAnswerHistory records that reference the tasks....
-            ans = TaskAnswerHistory.objects.filter(answered_by_task__in=target_tasks)\
+            ans = TaskAnswerHistory.objects.filter(answered_by_task__in=target_tasks) \
                 .select_related("taskanswer__task")
 
             # Then find the IDs of the *current* answers of any of those questions.
-            curans = list(TaskAnswer.objects\
-                .filter(id__in={ a.taskanswer.id for a in ans })\
-                .annotate(current_answer_id=models.Max('answer_history__id'))\
-                .values_list('current_answer_id', flat=True))
+            curans = list(TaskAnswer.objects \
+                          .filter(id__in={a.taskanswer.id for a in ans}) \
+                          .annotate(current_answer_id=models.Max('answer_history__id')) \
+                          .values_list('current_answer_id', flat=True))
 
             # And filter so we only have current answers remaining.
             ans = ans.filter(id__in=curans)
 
             # Add Tasks in the same Project as any of the Tasks seen so far.
-            for task in Task.objects.filter(project__in={ t.project_id for t in target_tasks }):
+            for task in Task.objects.filter(project__in={t.project_id for t in target_tasks}):
                 new_tasks.add(task)
 
             new_tasks -= tasks
@@ -933,9 +990,8 @@ class Task(models.Model):
             target_tasks = new_tasks
 
         # Clear cached_state
-        tasks_qs = Task.objects.filter(id__in={ t.id for t in tasks })
+        tasks_qs = Task.objects.filter(id__in={t.id for t in tasks})
         tasks_qs.update(cached_state=None, updated=timezone.now())
-
 
     def get_status_display(self):
         # Is this task done?
@@ -952,7 +1008,7 @@ class Task(models.Model):
         tasks = Task.objects.filter(
             models.Q(editor=user) | models.Q(project__members__user=user),
             deleted_at=None,
-            ).distinct()
+        ).distinct()
 
         if recursive:
             # Add in all tasks that these tasks refer to via answers to questions.
@@ -1014,7 +1070,8 @@ class Task(models.Model):
         return None
 
     def has_read_priv(self, user, allow_access_to_deleted=False):
-        return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) in ("READ", "WRITE") or self.project.has_read_priv(user)
+        return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) in (
+            "READ", "WRITE") or self.project.has_read_priv(user)
 
     def has_write_priv(self, user, allow_access_to_deleted=False):
         """Return True if user has write privilege on task"""
@@ -1024,7 +1081,9 @@ class Task(models.Model):
         if len(project_user_permissions) == 1 and user.has_perm('view_project', self.project):
             # User only has view_project permission
             return False
-        return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) == "WRITE" or self.project.has_write_priv(user)
+        return self.get_access_level(user,
+                                     allow_access_to_deleted=allow_access_to_deleted) == "WRITE" or self.project.has_write_priv(
+            user)
 
     def has_review_priv(self, user):
         if self.project.organization is None:
@@ -1075,9 +1134,9 @@ class Task(models.Model):
         return {
             "body":
                 self.project.root_task.render_field("invitation_to_task_interstitial",
-                    invitation=invitation,
-                    task=self,
-                ),
+                                                    invitation=invitation,
+                                                    task=self,
+                                                    ),
             "continue_text": "Start " + self.title,
             "alt_url": self.project.get_absolute_url(),
             "alt_text": "Learn more about " + self.project.title,
@@ -1122,7 +1181,7 @@ class Task(models.Model):
 
         # Render the instance-name template if its rendered value is not cached.
         if self.cached_state is None:
-            self.cached_state = { }
+            self.cached_state = {}
         if "title" not in self.cached_state:
 
             if Task.IS_COMPUTING_TITLE:
@@ -1143,15 +1202,14 @@ class Task(models.Model):
 
         return self.cached_state["title"]
 
-
     def render_introduction(self):
         # Project tasks have an introduction field.
         return self.render_field("introduction")
 
     def render_invitation_message(self):
         return self.render_simple_string("invitation-message",
-            'Can you take over answering %s for %s and let me know when it is done?'
-                % (self.title, self.project.title))
+                                         'Can you take over answering %s for %s and let me know when it is done?'
+                                         % (self.title, self.project.title))
 
     def render_simple_string(self, field, default, **kwargs):
         try:
@@ -1160,7 +1218,7 @@ class Task(models.Model):
                     "template": self.module.spec[field],
                     "format": "text",
                 },
-                self.get_answers().with_extended_info(), # get answers + imputed answers
+                self.get_answers().with_extended_info(),  # get answers + imputed answers
                 "text",
                 "%s %s" % (repr(self.module), field),
                 **kwargs
@@ -1202,7 +1260,7 @@ class Task(models.Model):
             "oscal_yaml": ("markdown_github", "md", "text/plain"),
             "oscal_xml": ("markdown_github", "md", "text/plain"),
             "docx": ("docx", "docx", "application/octet-stream"),
-            #"odt": ("odt", "odt", "application/octet-stream"),
+            # "odt": ("odt", "odt", "application/octet-stream"),
         }
 
         if download_format not in format_opts:
@@ -1236,7 +1294,7 @@ class Task(models.Model):
             # just looked it up by index.
             document_id = "{:05d}".format(document_id)
         else:
-            raise Exception() # can't occur
+            raise Exception()  # can't occur
         filename = document_id + "." + file_extension
 
         if download_format == "markdown" and doc["format"] == "markdown":
@@ -1274,13 +1332,13 @@ class Task(models.Model):
                 html = doc["html"]
                 html = '<meta charset="UTF-8" />' + html
 
-                import subprocess # nosec
+                import subprocess  # nosec
                 cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltopdf",
-                    "-q", # else errors go to stdout
-                    "--disable-javascript",
-                    "--encoding", "UTF-8",
-                    "-s", "Letter", # page size
-                    "-", "-"]
+                       "-q",  # else errors go to stdout
+                       "--disable-javascript",
+                       "--encoding", "UTF-8",
+                       "-s", "Letter",  # page size
+                       "-", "-"]
                 with subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
                     stdout, stderr = proc.communicate(
                         html.encode("utf8"),
@@ -1305,7 +1363,7 @@ class Task(models.Model):
                                                        default_if_not_exist="assets/default-ssp-template.docx")
             # odt and some other formats cannot pipe to stdout, so we always
             # generate a temporary file.
-            import tempfile, os.path, subprocess # nosec
+            import tempfile, os.path, subprocess  # nosec
             with tempfile.TemporaryDirectory() as tempdir:
                 # convert from HTML to something else, writing to a temporary file
                 outfn = os.path.join(tempdir, filename)
@@ -1320,10 +1378,11 @@ class Task(models.Model):
                 # NOTE: we need to make the pandoc cmd flexible, so non-ssp don't use the ssp yaml file.
                 # Right now, all generated docx files will include the ssp yaml.
 
-                with subprocess.Popen(# nosec
-                    ["pandoc", "-f", "html", "-s", "--metadata-file=assets/ssp-cover.yaml", "--toc", "--toc-depth=2", "--reference-doc", template, "-t", pandoc_format, "-o", outfn],
-                    stdin=subprocess.PIPE
-                    ) as proc:
+                with subprocess.Popen(  # nosec
+                        ["pandoc", "-f", "html", "-s", "--metadata-file=assets/ssp-cover.yaml", "--toc",
+                         "--toc-depth=2", "--reference-doc", template, "-t", pandoc_format, "-o", outfn],
+                        stdin=subprocess.PIPE
+                ) as proc:
                     proc.communicate(
                         doc["html"].encode("utf8"),
                         timeout=30)
@@ -1339,11 +1398,10 @@ class Task(models.Model):
         if not snippet: return None
         return render_content(
             snippet,
-            self.get_answers().with_extended_info(), # get answers + imputed answers
+            self.get_answers().with_extended_info(),  # get answers + imputed answers
             "html",
             "%s snippet" % repr(self.module)
         )
-
 
     def get_app_icon_url(self):
         if not hasattr(self, "_get_app_icon_url"):
@@ -1374,19 +1432,16 @@ class Task(models.Model):
 
         # Get the ModuleQuestion from the question_id.
         if isinstance(question, ModuleQuestion):
-            qfilter = { "": question } # instance
+            qfilter = {"": question}  # instance
         else:
-            qfilter = { "__key": question } # string key
+            qfilter = {"__key": question}  # string key
 
         # Optimize for the sub-task already existing. Query directly for
         # the most recent TaskAnswerHistory record.
-        ansh = TaskAnswerHistory.objects\
-            .filter(taskanswer__task=self, **{ "taskanswer__question"+k: v for k, v in qfilter.items() })\
-            .select_related("taskanswer__task__module", "taskanswer__question", "answered_by")\
-            .prefetch_related("answered_by_task__module__questions")\
-            .order_by('-id')\
+        ansh = TaskAnswerHistory.objects \
+            .filter(taskanswer__task=self, **{"taskanswer__question" + k: v for k, v in qfilter.items()}) \
+            .order_by('-id') \
             .first()
-
         if ansh:
             # This question is answered.
             ans = ansh.taskanswer
@@ -1402,8 +1457,8 @@ class Task(models.Model):
 
             # Get or create a TaskAnswer for that question. The TaskAnswer
             # may exist even if a TaskAnswerHistory doesn't.
-            q = question if   isinstance(question, ModuleQuestion)\
-                         else self.module.questions.get(key=question)
+            q = question if isinstance(question, ModuleQuestion) \
+                else self.module.questions.get(key=question)
             ans, _ = TaskAnswer.objects.select_related("question").get_or_create(task=self, question=q)
 
         # Get or create a TaskAnswerHistory for that TaskAnswer. For
@@ -1429,7 +1484,7 @@ class Task(models.Model):
 
             # Create the Task.
             task = Task.create(
-                parent_task_answer=ans, # for instrumentation only, doesn't go into Task instance
+                parent_task_answer=ans,  # for instrumentation only, doesn't go into Task instance
                 project=self.project,
                 editor=user,
                 module=module)
@@ -1485,7 +1540,8 @@ class Task(models.Model):
         def build_dict():
             if serializer.include_metadata:
                 return OrderedDict([
-                    ("id", str(self.uuid)), # a uuid.UUID instance is JSON-serializable but let's just make it a string so there are no surprises
+                    ("id", str(self.uuid)),
+                    # a uuid.UUID instance is JSON-serializable but let's just make it a string so there are no surprises
                     ("title", self.title),
                     ("created", self.created.isoformat()),
                     ("modified", self.updated.isoformat()),
@@ -1517,7 +1573,8 @@ class Task(models.Model):
 
         return serializer.serializeOnce(
             self,
-            "task:" + str(self.uuid), # used to create a unique key if the Task is attempted to be serialzied more than once
+            "task:" + str(self.uuid),
+            # used to create a unique key if the Task is attempted to be serialzied more than once
             build_dict)
 
     @staticmethod
@@ -1539,7 +1596,8 @@ class Task(models.Model):
             # If there's a Task in the system with the UUID found in the incoming
             # data, use that, assuming the user has write permission on it and it
             # is a part of the same organization as the question it answers.
-            task = Task.objects.filter(uuid=data["id"], project__organization=for_question.task.project.organization).first()
+            task = Task.objects.filter(uuid=data["id"],
+                                       project__organization=for_question.task.project.organization).first()
             if task:
                 deserializer.log("Linking to & updating existing answers in %s (%s)." % (task.title, data['id']))
                 if not task.has_write_priv(deserializer.user):
@@ -1550,12 +1608,12 @@ class Task(models.Model):
                 # The UUID doesn't correspond with anything in the database, so
                 # create a new task.
                 task = Task.create(
-                    parent_task_answer=for_question, # for instrumentation only, doesn't go into Task instance
+                    parent_task_answer=for_question,  # for instrumentation only, doesn't go into Task instance
                     editor=deserializer.user,
                     project=for_question.task.project,
                     module=for_question.question.answer_type_module,
-                    uuid=data['id'], # preserve the UUID from the incoming data
-                    )
+                    uuid=data['id'],  # preserve the UUID from the incoming data
+                )
                 deserializer.log("Created %s (%s)." % (task.title, data['id']))
 
             # Recursively fill in the answers to the newly created task.
@@ -1632,7 +1690,8 @@ class Task(models.Model):
 
                 # Ensure the data type matches the current question specification.
                 if answer and q.spec["type"] != answer.get("questionType"):
-                    deserializer.log("'%s' has a different data type than what is expected in this project, so it is being skipped." % qname)
+                    deserializer.log(
+                        "'%s' has a different data type than what is expected in this project, so it is being skipped." % qname)
                     continue
 
                 if answer is None or "value" not in answer:
@@ -1676,7 +1735,8 @@ class Task(models.Model):
             value, answered_by_tasks, answered_by_file, subtasks_updated = prep_fields
 
             # And save the answer.
-            if taskanswer.save_answer(value, answered_by_tasks, answered_by_file, deserializer.user, deserializer.answer_method):
+            if taskanswer.save_answer(value, answered_by_tasks, answered_by_file, deserializer.user,
+                                      deserializer.answer_method):
                 deserializer.log("'%s' was updated." % qname)
                 did_update_any_questions = True
             elif not subtasks_updated:
@@ -1692,9 +1752,12 @@ class Task(models.Model):
 
         return did_update_any_questions
 
+
 class TaskAnswer(models.Model):
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="answers", help_text="The Task that this TaskAnswer is a part of.")
-    question = models.ForeignKey(ModuleQuestion, on_delete=models.PROTECT, help_text="The question (within the Task's Module) that this TaskAnswer is answering.")
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="answers",
+                             help_text="The Task that this TaskAnswer is a part of.")
+    question = models.ForeignKey(ModuleQuestion, on_delete=models.PROTECT,
+                                 help_text="The question (within the Task's Module) that this TaskAnswer is answering.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by editors working on this question.")
 
@@ -1719,9 +1782,9 @@ class TaskAnswer(models.Model):
 
     def get_current_answer(self):
         # The current answer is the one with the highest primary key.
-        return self.answer_history\
-            .prefetch_related("answered_by_task__module__questions")\
-            .order_by('-id')\
+        return self.answer_history \
+            .prefetch_related("answered_by_task__module__questions") \
+            .order_by('-id') \
             .first()
 
     def has_answer(self):
@@ -1774,7 +1837,7 @@ class TaskAnswer(models.Model):
                 "date": answer.created,
                 "html":
                     ("<a href='javascript:alert(\"Profile link here.\")'>%s</a> "
-                    % html.escape(who['name']))
+                     % html.escape(who['name']))
                     + vp + ".",
                 "user": who,
                 "user_is_in_text": True,
@@ -1792,13 +1855,13 @@ class TaskAnswer(models.Model):
             })
 
         # Sort.
-        history.sort(key = lambda item : item["date"])
+        history.sort(key=lambda item: item["date"])
 
         # render events for easier client-side processing
         for item in history:
             item["date_relative"] = reldate(item["date"], timezone.now()) + " ago"
             item["date_posix"] = item["date"].timestamp()
-            del item["date"] # not JSON serializable
+            del item["date"]  # not JSON serializable
 
         return history
 
@@ -1824,9 +1887,9 @@ class TaskAnswer(models.Model):
         return True
 
     def save_answer(self,
-        value, answered_by_tasks, answered_by_file,
-        user, method,
-        skipped_reason=None, unsure=False):
+                    value, answered_by_tasks, answered_by_file,
+                    user, method,
+                    skipped_reason=None, unsure=False):
 
         # Save the answer and return True if the answer was changed (vs was not
         # updated because the value matched the value of the existing answer).
@@ -1853,12 +1916,12 @@ class TaskAnswer(models.Model):
 
         value_encoding = None
         if current_answer and not current_answer.cleared \
-            and value == current_answer.stored_value \
-            and value_encoding == current_answer.stored_encoding \
-            and set(answered_by_tasks) == set(current_answer.answered_by_task.all()) \
-            and are_files_same() \
-            and skipped_reason == current_answer.skipped_reason \
-            and unsure == current_answer.unsure:
+                and value == current_answer.stored_value \
+                and value_encoding == current_answer.stored_encoding \
+                and set(answered_by_tasks) == set(current_answer.answered_by_task.all()) \
+                and are_files_same() \
+                and skipped_reason == current_answer.skipped_reason \
+                and unsure == current_answer.unsure:
             return False
 
         # The answer is new or changing. Create a new record for it.
@@ -1946,7 +2009,8 @@ class TaskAnswer(models.Model):
         # plus anyone in the same organization.
         organization = self.task.project.organization
         mentionable_users = set(discussion.get_all_participants()) \
-                          | set(User.objects.filter(projectmembership__project__organization=self.task.project.organization).distinct())
+                            | set(
+            User.objects.filter(projectmembership__project__organization=self.task.project.organization).distinct())
         User.preload_profiles(mentionable_users)
         return {
             # @-mention participants in the discussion and other
@@ -1975,16 +2039,16 @@ class TaskAnswer(models.Model):
         # help crew members to this discussion. See siteapp.views.send_invitation
         # for how to construct Invitations.
         from siteapp.models import Invitation
-        self.extra = self.extra or { } # ensure initialized
+        self.extra = self.extra or {}  # ensure initialized
         if not self.extra.get("invited-help-squad"):
             anyone_invited = False
             for user in self.task.project.organization.help_squad.all():
-                if user in self.get_notification_watchers(): continue # no need to invite
+                if user in self.get_notification_watchers(): continue  # no need to invite
                 inv = Invitation.objects.create(
                     from_user=comment.user,
                     from_project=self.task.project,
                     target=comment.discussion,
-                    target_info={ "what": "invite-guest" },
+                    target_info={"what": "invite-guest"},
                     to_user=user,
                     text="The organization's help squad is being automatically invited to help with the following comment:\n\n" + comment.text,
                 )
@@ -1994,27 +2058,40 @@ class TaskAnswer(models.Model):
                 self.extra["invited-help-squad"] = timezone.now()
                 self.save()
 
+
 class TaskAnswerHistory(models.Model):
-    taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE, help_text="The TaskAnswer that this is an answer to.")
+    taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE,
+                                   help_text="The TaskAnswer that this is an answer to.")
 
     answered_by = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that provided this answer.")
-    answered_by_method = models.CharField(max_length=3, choices=[("web", "Web"), ("imp", "Import"), ("api", "API"), ("del", ("Task Deletion"))], help_text="How this answer was submitted, via the website by a user, via the Export/Import mechanism, or via an API programmatically.")
+    answered_by_method = models.CharField(max_length=3, choices=[("web", "Web"), ("imp", "Import"), ("api", "API"),
+                                                                 ("del", ("Task Deletion"))],
+                                          help_text="How this answer was submitted, via the website by a user, via the Export/Import mechanism, or via an API programmatically.")
 
-    stored_value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
-    stored_encoding = JSONField(blank=True, null=True, default=None, help_text="If not null, this field describes how stored_value is encoded and/or encrypted.")
+    stored_value = JSONField(blank=True,
+                             help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
+    stored_encoding = JSONField(blank=True, null=True, default=None,
+                                help_text="If not null, this field describes how stored_value is encoded and/or encrypted.")
 
-    answered_by_task = models.ManyToManyField(Task, blank=True, related_name="is_answer_to", help_text="A Task or Tasks that supplies the answer for this question (of type 'module' or 'module-set').")
+    answered_by_task = models.ManyToManyField(Task, blank=True, related_name="is_answer_to",
+                                              help_text="A Task or Tasks that supplies the answer for this question (of type 'module' or 'module-set').")
     answered_by_file = models.FileField(upload_to='q/files', blank=True, null=True)
 
-    skipped_reason = models.CharField(max_length=24, blank=True, null=True, choices=[("dont-know", "Don't Know"), ("doesnt-apply", "Doesn't Apply"), ("come-back", "Come Back Later")], help_text="The reason no answer was given.")
-    unsure = models.BooleanField(default=False, help_text="A flag for if the user wasn't sure the answer is correct and should come back to it later.")
+    skipped_reason = models.CharField(max_length=24, blank=True, null=True,
+                                      choices=[("dont-know", "Don't Know"), ("doesnt-apply", "Doesn't Apply"),
+                                               ("come-back", "Come Back Later")],
+                                      help_text="The reason no answer was given.")
+    unsure = models.BooleanField(default=False,
+                                 help_text="A flag for if the user wasn't sure the answer is correct and should come back to it later.")
 
-    cleared = models.BooleanField(default=False, help_text="Set to True to indicate that the user wants to clear their answer. This is different from a null-valued answer, which means not applicable/don't know/skip.")
+    cleared = models.BooleanField(default=False,
+                                  help_text="Set to True to indicate that the user wants to clear their answer. This is different from a null-valued answer, which means not applicable/don't know/skip.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by the user completing this TaskAnswerHistory.")
 
     REVIEW_CHOICES = [(0, 'Not Reviewed'), (1, 'Reviewed'), (2, 'Approved')]
-    reviewed = models.IntegerField(default=0, choices=REVIEW_CHOICES, help_text="Whether this answer has been reviewed and/or approved. All new answers begin with zero. Positive values represent review steps in the organization's workflow.")
+    reviewed = models.IntegerField(default=0, choices=REVIEW_CHOICES,
+                                   help_text="Whether this answer has been reviewed and/or approved. All new answers begin with zero. Positive values represent review steps in the organization's workflow.")
 
     thumbnail = models.FileField(upload_to='q/thumbnails', blank=True, null=True)
 
@@ -2107,9 +2184,9 @@ class TaskAnswerHistory(models.Model):
             # we haven't exposed that url route.
             import urllib
             url = self.taskanswer.task.get_absolute_url() \
-                + "/question/" + urllib.parse.quote(self.taskanswer.question.key) \
-                + "/history/" + str(self.id) \
-                + "/media"
+                  + "/question/" + urllib.parse.quote(self.taskanswer.question.key) \
+                  + "/history/" + str(self.id) \
+                  + "/media"
 
             # Make it an absolute URL so that when we expose it through
             # the API it makes sense.
@@ -2129,31 +2206,33 @@ class TaskAnswerHistory(models.Model):
                 if settings.GR_IMG_GENERATOR == 'wkhtmltopdf':
                     if sf.mime_type == "text/html":
                         # Use wkhtmltoimage.
-                        import subprocess # nosec
+                        import subprocess  # nosec
                         try:
                             # Pipe to subprocess.
                             # xvfb is required to run wkhtmltopdf in headless mode on Debian, see https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2037#issuecomment-62019521.
                             cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltoimage",
-                                    "-q", # else errors go to stdout
-                                    "--disable-javascript",
-                                    "-f", "png",
-                                    # "--disable-smart-width", - generates a warning on stdout that qt is unpatched, which happens in headless mode
-                                    "--zoom", ".7",
-                                    "--width", "700",
-                                    "--height", str(int(700*9/16)),
-                                    "-", "-"]
+                                   "-q",  # else errors go to stdout
+                                   "--disable-javascript",
+                                   "-f", "png",
+                                   # "--disable-smart-width", - generates a warning on stdout that qt is unpatched, which happens in headless mode
+                                   "--zoom", ".7",
+                                   "--width", "700",
+                                   "--height", str(int(700 * 9 / 16)),
+                                   "-", "-"]
                             with subprocess.Popen(cmd,
-                                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                                ) as proc:
+                                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                                  stderr=subprocess.DEVNULL,
+                                                  ) as proc:
                                 stdout, stderr = proc.communicate(
                                     self.answered_by_file.read(),
                                     timeout=10)
-                                if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
+                                if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode,
+                                                                                             ' '.join(cmd))
 
                             # Store PNG.
                             from django.core.files.base import ContentFile
                             value = ContentFile(stdout)
-                            value.name = "thumbnail.png" # needs a name for the storage backend?
+                            value.name = "thumbnail.png"  # needs a name for the storage backend?
                             self.thumbnail = value
                             self.save(update_fields=["thumbnail"])
                         except subprocess.CalledProcessError as e:
@@ -2261,7 +2340,7 @@ class TaskAnswerHistory(models.Model):
             elif q.spec["type"] in ("choice", "multiple-choice"):
                 # Get the 'text' values for the choices.
                 human_readable_text_key = "text"
-                choices = { c["key"]: c["text"] for c in q.spec["choices"] }
+                choices = {c["key"]: c["text"] for c in q.spec["choices"]}
                 if q.spec["type"] == "choice":
                     human_readable_text = choices.get(value)
                 elif q.spec["type"] == "multiple-choice":
@@ -2270,7 +2349,7 @@ class TaskAnswerHistory(models.Model):
             elif q.spec["type"] in ("datagrid"):
                 # Get the 'text' values for the choices.
                 human_readable_text_key = "text"
-                fields = { c["key"]: c["text"] for c in q.spec["fields"] }
+                fields = {c["key"]: c["text"] for c in q.spec["fields"]}
                 if q.spec["type"] == "datagrid":
                     # human_readable_text = [fields.get(v) for v in value]
                     human_readable_text = "datagrid_fix human_readable_text"
@@ -2296,7 +2375,7 @@ class TaskAnswerHistory(models.Model):
                 ret["answeredByMethod"] = str(self.answered_by_method)
             else:
                 ret["imputed"] = True
-            ret["questionType"] = q.spec["type"] # so that deserialization can validate the value
+            ret["questionType"] = q.spec["type"]  # so that deserialization can validate the value
             ret["value"] = value
             if human_readable_text is not None:
                 ret[human_readable_text_key] = human_readable_text
@@ -2340,7 +2419,7 @@ class TaskAnswerHistory(models.Model):
                         deserializer.log_nesting_level -= 1
                         deserializer.log("Finished importing '{}'.".format(taskanswer.question.spec['title']))
                     answered_by_tasks.add(task)
-                    subtasks_updated = True # TODO: Should be False if task existed and no change made.
+                    subtasks_updated = True  # TODO: Should be False if task existed and no change made.
 
                 # Skip updating this question if there was any error fetching
                 # a Task.
@@ -2363,9 +2442,10 @@ class TaskAnswerHistory(models.Model):
                 if q.spec["type"] == "module-set":
                     answered_by_tasks |= set(taskanswer.get_current_answer().answered_by_task.all())
 
-                for task in value: # loop over Tasks that are the answer to a module-set question, or just the one
+                for task in value:  # loop over Tasks that are the answer to a module-set question, or just the one
                     try:
-                        t = Task.get_or_create_subtask(taskanswer.task, deserializer.user, taskanswer.question.key, create=True)
+                        t = Task.get_or_create_subtask(taskanswer.task, deserializer.user, taskanswer.question.key,
+                                                       create=True)
                     except ValueError:
                         # Can't create sub-Task because question specifies a
                         # protocol and not a module.
@@ -2387,7 +2467,6 @@ class TaskAnswerHistory(models.Model):
                     deserializer.log_nesting_level -= 1
                     deserializer.log("Finished importing '{}'.".format(taskanswer.question.spec['title']))
 
-
             # Reset this variable so stored_value is set to None.
             value = None
 
@@ -2397,6 +2476,7 @@ class TaskAnswerHistory(models.Model):
             value = None
 
         return value, answered_by_tasks, answered_by_file, subtasks_updated
+
 
 class InstrumentationEvent(models.Model):
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
@@ -2419,6 +2499,7 @@ class InstrumentationEvent(models.Model):
             ('project', 'event_type', 'event_time'),
             ('module', 'event_type', 'event_time'),
         ]
+
 
 def image_to_dataurl(f, size):
     from PIL import Image

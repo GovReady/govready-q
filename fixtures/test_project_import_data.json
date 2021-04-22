@@ -194,60 +194,34 @@
   "component-definitions": [
     {
       "component-definition": {
-        "uuid": "a678cb99-4d06-4d7e-b2d5-02a89f928412",
+        "uuid": "ed11c58f-0331-496e-985a-550b9fa2963d",
         "metadata": {
-          "title": "AWS Component-to-Control Narratives",
-          "published": "2021-01-06T17:39:05+00:00",
-          "last-modified": "2020-12-27T18:37:58+00:00",
+          "title": "SecGet, Endpoint Security System",
+          "published": "2021-04-16T17:08:22+00:00",
+          "last-modified": "2021-03-21T19:50:44+00:00",
           "version": "string",
-          "oscal-version": "1.0.0-milestone2"
+          "oscal-version": "1.0.0-rc1"
         },
         "components": {
-          "b882a10b-8aaf-4059-8611-40a8ad78bb9d": {
-            "title": "AWS",
-            "type": "software",
-            "description": "",
+          "3c946801-e6c2-49d8-b053-6908550a0f58": {
+            "title": "SecGet, Endpoint Security System",
+            "type": "system_element",
+            "description": "Endpoint security is the practice of securing endpoints or entry points of end-user devices such as desktops, laptops, and mobile devices from being exploited by malicious actors and campaigns. Endpoint security systems protect these endpoints.",
             "control-implementations": [
               {
-                "uuid": "c319c8b6-043d-4a44-b508-464aefa40d2c",
+                "uuid": "5823a5ed-58c7-4210-abf7-78882dd1f458",
                 "source": "NIST_SP-800-53_rev4",
                 "description": "Partial implementation of NIST_SP-800-53_rev4",
                 "implemented-requirements": [
                   {
-                    "uuid": "a678cb99-4d06-4d7e-b2d5-02a89f92841d",
+                    "uuid": "19f5bda5-be0f-4698-9ca7-40164e3e8a1e",
                     "control-id": "ac-1",
                     "description": "",
                     "remarks": "",
                     "statements": {
-                      "ac-1_smt.a": {
-                        "uuid": "f5a991c6-55a2-405d-b0a4-5c0ee33e2ea5",
-                        "description": "an example AWS component",
-                        "remarks": ""
-                      }
-                    }
-                  },
-                  {
-                    "uuid": "96904b50-f383-49d9-b759-29873d6e15b5",
-                    "control-id": "ac-2",
-                    "description": "",
-                    "remarks": "",
-                    "statements": {
-                      "ac-2_smt.a": {
-                        "uuid": "4106aa12-34fe-4675-b80a-89f94bd70ee1",
-                        "description": "yes",
-                        "remarks": ""
-                      }
-                    }
-                  },
-                  {
-                    "uuid": "56e329a9-53b9-47de-a897-fe2c481069b8",
-                    "control-id": "ac-2.5",
-                    "description": "",
-                    "remarks": "",
-                    "statements": {
-                      "ac-2.5_smt.a": {
-                        "uuid": "40c93833-0384-4461-bf39-0fa5d7c3333f",
-                        "description": "yes",
+                      "ac-1_smt": {
+                        "uuid": "f5d98625-7bba-4142-a86e-993fd63ca037",
+                        "description": "SecGet leverage access control NGA procedures...",
                         "remarks": ""
                       }
                     }
@@ -257,6 +231,48 @@
             ]
           }
         }
+      }
+    }
+  ],
+  "poams": [
+    {
+      "controls": "CM-3",
+      "milestones": "",
+      "poam_id": 1,
+      "remediation_plan": "",
+      "risk_rating_original": null,
+      "risk_rating_adjusted": null,
+      "scheduled_completion_date": null,
+      "weakness_detection_source": "aaa",
+      "weakness_name": "description!klklk",
+      "weakness_source_identifier": null,
+      "poam_group": null,
+      "statement": {
+        "body": "description!222",
+        "remarks": null,
+        "version": null,
+        "status": "Open",
+        "uuid": "dafbb543-38ef-4e1d-bdc7-60481ac1523a"
+      }
+    },
+    {
+      "controls": "CM-3",
+      "milestones": "",
+      "poam_id": 1,
+      "remediation_plan": "",
+      "risk_rating_original": null,
+      "risk_rating_adjusted": null,
+      "scheduled_completion_date": null,
+      "weakness_detection_source": "aaa",
+      "weakness_name": "description!.lpop",
+      "weakness_source_identifier": null,
+      "poam_group": null,
+      "statement": {
+        "body": "description!222test",
+        "remarks": null,
+        "version": null,
+        "status": "Open",
+        "uuid": "2b5b673a-26ef-4147-a5ae-c61a980b77cb"
       }
     }
   ]
