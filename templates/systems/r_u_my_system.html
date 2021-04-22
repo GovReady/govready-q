@@ -6,61 +6,54 @@
 {% load system_tags %}
 
 {% block title %}
-Deployment Inventory
+  Are you my system?
 {% endblock %}
 
 {% block head %}
 {{block.super}}
 {% include "controls/_style-controls.html" %}
-<style>
-</style>
 {% endblock %}
 
 <!-- action buttons included from project-base.html -->
 <!-- authoring_tool_enabled included from project-base.html -->
 
 {% block body_content %}
-<div  class="systems-top">
-    <div class="row">
-      <div class="col-md-12"><h2>"{{ deployment.name }}" deployment</h2></div>
-      <div class="col-md-12">Added {{ deployment.created }} {% if deployment.description %}- {{ deployment.description }}{% endif %}</div>
-      <div class="col-md-12"><span class="small">uuid: {{ deployment.uuid }}</span></div>
-    </div>
-    <div>&nbsp;</div>
-
-    <div class="row rows-header">
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam">Inventory Items</div>
-        <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">&nbsp;</div>
+<div class="systems-top">
+    <div id="tab-content" class="row rows-header">
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 systems-poam">Deployments</div>
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">&nbsp;</div>
         <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+          <a href="/systems/{{ system.id }}/deployment/new" class="btn btn-sm btn-success systems-element-button">New Deployment</a>
           <span class="glyphicon glyphicon-download-alt pull-right systems-poam-glyphicon"
                 style="cursor: pointer;"
                 onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
         </div>
     </div>
-    {% if inventory_items|length < 1 %}
+    {% if deployments|length < 1 %}
       <div id="tab-content" class="row row-control">
         <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-          <p>No inventory items are currently identified for this deployment.</p>
+          <p>No Deployments are currently identified for this system.</p>
         </div>
       </div>
     {% else %}
-      {% for item in inventory_items %}
-        <div id="tab-content" class="row row-control">
+      {% for deployment in deployments %}
+        <div id="deployment-{{deployment.id}}" class="row row-control">
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                {{ item.id }}
+                <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/inventory">{{ deployment.name }}</a>
+            </div>
+            <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                {{ deployment.description }}
             </div>
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                {{ item.name }}
-            </div>
-            <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
-                {{ item.description }}
+              &nbsp;
             </div>
             <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                <!-- {% if item.scan.time %}
-                assessment: {{ item.scan.time }}
-                {% else %}
-                assessment: not available
-                {% endif %} -->
+                {{ deployment.updated|timesince}} ago
+            </div>
+            <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+                <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/edit" title="Edit deployment" aria-label="Edit deployment" ><span class="glyphicon glyphicon-pencil"></span></a>
+                &nbsp;
+                <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/history" title="View deployment history" aria-label="View deployment history" ><span class="glyphicon glyphicon-calendar"></span></a>
             </div>
         </div>
       {% endfor %}

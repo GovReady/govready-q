@@ -651,7 +651,7 @@ class ComponentImporter(object):
             validate(instance=oscal_json, schema=oscal_json_schema)
             return True
         except (SchemaError, SchemaValidationError) as e:
-            logger.info(e)
+            logger.error(e._contents())
             return False
 
     def create_components(self, oscal_json):
@@ -3022,7 +3022,7 @@ def system_assessment_results_list(request, system_id=None):
         # Retrieve primary system Project
         # Temporarily assume only one project and get first project
         project = system.projects.all()[0]
-        sars = system.system_assessment_result.all().order_by(Lower('name'))
+        sars = system.system_assessment_result.all().order_by('created').reverse()
 
         # Return the controls
         context = {
@@ -3048,7 +3048,8 @@ def view_system_assessment_result_summary(request, system_id, sar_id=None):
     project = system.projects.all()[0]
     sar = get_object_or_404(SystemAssessmentResult, pk=sar_id) if sar_id else None
 
-    sar_items = [item for item in sar.assessment_results] if sar.assessment_results != None else []
+    # Get assessment targets results from wrapped SAR data
+    sar_items = [item for item in sar.assessment_results['sar']] if sar.assessment_results != None else []
 
     # Get summary pass fail across all assessment results included collection
     # TODO: note high/low category
@@ -3101,6 +3102,8 @@ def manage_system_assessment_result(request, system_id, sar_id=None):
         if sari is None:
             sari = SystemAssessmentResult(system_id=system_id)
         form = SystemAssessmentResultForm(instance=sari)
+        # Filter deployments to current system
+        form.fields["deployment"].queryset = Deployment.objects.filter(system__id=system_id)
 
     return render(request, 'systems/sar_form.html', {
         'form': form,

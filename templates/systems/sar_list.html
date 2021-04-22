@@ -6,7 +6,7 @@
 {% load system_tags %}
 
 {% block title %}
-  POA&Ms
+Assessment List
 {% endblock %}
 
 {% block head %}
@@ -18,7 +18,7 @@
 <!-- authoring_tool_enabled included from project-base.html -->
 
 {% block body_content %}
-<div  class="systems-top">
+<div class="systems-top">
     <div id="tab-content" class="row rows-header">
         <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 systems-poam">System Assessment Results</div>
         <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">&nbsp;</div>
@@ -36,18 +36,22 @@
       {% for item in sars %}
         <div id="tab-content" class="row row-control">
             <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                <a class="portfolio-project-link" href="/systems/{{ system.id }}/sar/{{ item.id }}/view">{{ item.name }}</a>
-            </div>
-            <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
-                {% if item.description %}{{ item.description }}{% else %}<span class="not-provided">No description provided.</span>{% endif %}
-            </div>
-            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                {{ item.updated|timesince}} ago
+                <small><a class="portfolio-project-link" href="/systems/{{ system.id }}/sar/{{ item.id }}/view">{{ item.name }}</a></small>
             </div>
             <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+                <small>{{ item.deployment.name }}</small>
+            </div>
+            <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                <small>{% if item.description %}{{ item.description }}{% else %}<span class="not-provided">No description provided.</span>{% endif %}</small>
+            </div>
+            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                <small>{{ item.updated|timesince}} ago</small>
+            </div>
+            <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+              <span class="pull-right">
                 <a class="portfolio-project-link" href="/systems/{{ system.id }}/sar/{{ item.id }}/edit" title="Edit system assessment result" aria-label="Edit SAR" ><span class="glyphicon glyphicon-pencil"></span></a>
-                &nbsp;
                 <a class="portfolio-project-link" href="/systems/{{ system.id }}/sar/{{ item.id }}/history" title="View system assessment result history" aria-label="View deployment history" ><span class="glyphicon glyphicon-calendar"></span></a>
+              </span>
             </div>
         </div>
       {% endfor %}
