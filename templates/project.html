@@ -201,7 +201,7 @@
           <br/>
           <span id="systems-fisma-impact-level" class="status-small">
             {% if impact_level %}
-              Mission Impact: <b>{{ impact_level|upper }}</b>
+              Mission Impact: <b>{{ impact_level|lower }}</b>
               {% else %}
               Mission Impact: <b>Not Categorized</b>
             {% endif %}
