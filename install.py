@@ -116,7 +116,10 @@ def create_environment_json(path):
     "static": "static_root",
     "secret-key": secret_key,
     "test_visible": False,
-    "debug": True
+    "debug": True,
+    "session_security_expire_at_browser_close" : True,
+    "session_security_warn_after" : 1200,
+    "session_security_expire_after" : 1800
     }
     # Create local directory
     if not os.path.exists('local'):
