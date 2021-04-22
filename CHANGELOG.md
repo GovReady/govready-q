@@ -10,7 +10,7 @@ v999 (April XX, 2021)
 
 **UI changes**
 
-* Replace me
+* Rearrange Create | Import | Manage component buttons; put "Manage Import Records" button last.
 
 **Bug fixes**
 
@@ -27,7 +27,6 @@ v999 (April XX, 2021)
 **Install changes**
 
 * Replace me
-
 
 v0.9.3.4 (April 20, 2021)
 -------------------------
