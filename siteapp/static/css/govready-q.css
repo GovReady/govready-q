@@ -343,7 +343,7 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 .systems-title { float: left;}
 .systems-link { color: black; }
 .systems-control-lookup { float: right; }
-.systems-selected-components { font-size: 14pt; font-weight: bold;}
+.systems-selected-items { font-size: 14pt; font-weight: bold;}
 .systems-control-heading { float: left; padding: 0 0 0 0em; }
 .systems-smt-list { width: 90%; }
 
