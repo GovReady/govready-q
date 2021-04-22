@@ -22,7 +22,7 @@ v999 (April XX, 2021)
 
 **Data changes**
 
-* Update stub_app used by complianca_app command for generating compliance app to include "input" and "output" section; and to have folders for templates, utils, and components.
+* Update stub_app used by compliance_app command for generating compliance app to include "input" and "output" section; and to have folders for templates, utils, and components.
 
 * Replace me
 
@@ -49,7 +49,7 @@ v0.9.3.4 (April 20, 2021)
 
 **Data changes**
 
-* Update stub_app used by complianca_app command for generating compliance app to include "input" and "output" section; and to have folders for templates, utils, and components.
+* Update stub_app used by compliance_app command for generating compliance app to include "input" and "output" section; and to have folders for templates, utils, and components.
 
 v0.9.3.3 (April 13, 2021)
 -------------------------
