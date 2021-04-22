@@ -1460,7 +1460,7 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
 
         # Display imact level testing
         # New project should not be categorized
-        self.assertInNodeText("not categorized", "#systems-fisma-impact-level")
+        self.assertInNodeText("Mission Impact: Not Categorized", "#systems-fisma-impact-level")
 
         # Update impact level
         # Get project.system.root_element to attach statement holding fisma impact level
