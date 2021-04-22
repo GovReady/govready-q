@@ -13,6 +13,7 @@ from jsonfield import JSONField
 from natsort import natsorted
 
 from siteapp.model_mixins.tags import TagModelMixin
+from controls.enums.statements import StatementTypeEnum
 from controls.oscal import Catalogs, Catalog, check_and_extend
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
@@ -51,7 +52,7 @@ class Statement(auto_prefetch.Model):
     sid_class = models.CharField(max_length=200, help_text="Statement identifier 'class' such as 'NIST_SP-800-53_rev4' or other OSCAL catalog name Control ID.", unique=False, blank=True, null=True)
     pid = models.CharField(max_length=20, help_text="Statement part identifier such as 'h' or 'h.1' or other part key", unique=False, blank=True, null=True)
     body = models.TextField(help_text="The statement itself", unique=False, blank=True, null=True)
-    statement_type = models.CharField(max_length=150, help_text="Statement type.", unique=False, blank=True, null=True)
+    statement_type = models.CharField(max_length=150, help_text="Statement type.", unique=False, blank=True, null=True, choices=StatementTypeEnum.choices())
     remarks = models.TextField(help_text="Remarks about the statement.", unique=False, blank=True, null=True)
     status = models.CharField(max_length=100, help_text="The status of the statement.", unique=False, blank=True, null=True)
     version = models.CharField(max_length=20, help_text="Optional version number.", unique=False, blank=True, null=True)
@@ -360,7 +361,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
 
     @property
     def selected_controls_oscal_ctl_ids(self):
-        """Return array of selectecd controls oscal ids"""
+        """Return array of selected controls oscal ids"""
         # oscal_ids = self.controls.all()
         oscal_ctl_ids = [control.oscal_ctl_id for control in self.controls.all()]
         # Sort
@@ -522,6 +523,25 @@ class System(auto_prefetch.Model):
         control.delete()
         return control
 
+    @transaction.atomic
+    def set_fisma_impact_level(self, fisma_impact_level):
+        """Assign FISMA impact level to system"""
+
+        # Get or create the fisma_impact_level smt for system's root_element; should only have 1 statement
+        smt, created = Statement.objects.get_or_create(statement_type="fisma_impact_level", producer_element=self.root_element,consumer_element=self.root_element)
+        smt.body = fisma_impact_level
+        smt.save()
+        return fisma_impact_level
+
+    @property
+    def get_fisma_impact_level(self):
+        """Assign FISMA impact level to system"""
+
+        # Get or create the fisma_impact_level smt for system's root_element; should only have 1 statement
+        smt, created = Statement.objects.get_or_create(statement_type="fisma_impact_level", producer_element=self.root_element,consumer_element=self.root_element)
+        fisma_impact_level = smt.body
+        return fisma_impact_level
+
     @property
     def smts_common_controls_as_dict(self):
         common_controls = self.root_element.common_controls.all()
@@ -656,8 +676,8 @@ class System(auto_prefetch.Model):
         # TODO
         # Get a unique filter of status list and gather on that...
         status_stats = {status: 0 for status in status_list}
-        # Fetch all selected controls
-        counts = Statement.objects.filter(statement_type="POAM", status__in=status_list).values('status').order_by('status').annotate(
+        # Fetch all system POA&Ms
+        counts = Statement.objects.filter(statement_type="POAM", consumer_element=self.root_element, status__in=status_list).values('status').order_by('status').annotate(
             count=Count('status'))
         status_stats.update({r['status']: r['count'] for r in counts})
         # TODO add index on statement status
