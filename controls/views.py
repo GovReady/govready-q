@@ -350,7 +350,7 @@ class SelectedComponentsList(ListView):
     template_name = 'systems/components_selected.html'
     context_object_name = 'system_elements'
     ordering = ['name']
-    paginate_by = 5
+    paginate_by = 50
 
     def get_queryset(self):
         """
