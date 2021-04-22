@@ -10,7 +10,7 @@ v999 (April XX, 2021)
 
 **UI changes**
 
-* Replace me
+* Add links for "forgot password" and "change password".
 
 **Bug fixes**
 
@@ -52,6 +52,7 @@ v0.9.3.4 (April 20, 2021)
 **UI changes**
 
 * Display system impact level on project page.
+
 * Link mini-dashboards on project page to sensible related pages.
 
 **Data changes**
