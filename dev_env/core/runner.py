@@ -29,6 +29,7 @@ class DockerCompose(Runner):
             "single-organization": "",
             "static": "static_root",
             "syslog": "",
+            "test_visible": False,
             "trust-user-authentication-headers": {}
         }
         with open("docker/environment.json", 'w') as f:
