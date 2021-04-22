@@ -318,7 +318,7 @@
 
                     {% if can_start_task %}
 
-                      {# We need one of three forms here. If this is a module-type question and it's been answered already (it has a Task answer), then we simply link to that Task. Otherwise if it's not answered or if it's a module-set type quesion that can be answered multiple times, we show a form. If the question is answered by a particular module, clicking the icon submits a form that creates a new Task and redirects to it. If this question instead has a "protocol" field, then the user is simply redirected to the Apps Catalog and is presented with apps that satisfy the protocol. #}
+                      {# We need one of three forms here. If this is a module-type question and it's been answered already (it has a Task answer), then we simply link to that Task. Otherwise if it's not answered or if it's a module-set type question that can be answered multiple times, we show a form. If the question is answered by a particular module, clicking the icon submits a form that creates a new Task and redirects to it. If this question instead has a "protocol" field, then the user is simply redirected to the Apps Catalog and is presented with apps that satisfy the protocol. #}
 
                       {% if not q.can_start_new_task %}
                         {# This is a module-type question that has been started. Clicking the question doesn't start a new task --- instead, it's just a link to the started Task. #}
