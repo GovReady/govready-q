@@ -32,7 +32,7 @@ logger = get_logger()
 
 @login_required
 def new_task(request):
-    # Create a new task by answering a module question of a project rook task.
+    # Create a new task by answering a module question of a project root task.
     project = get_object_or_404(Project, id=request.POST["project"])
 
     # Can the user create a task within this project?
@@ -467,14 +467,34 @@ def save_answer(request, task, answered, context, __):
                         # Split a_filter into catalog and baseline
                         catalog, baseline = a_filter.split("=+=")
                         if catalog is None or baseline is None:
-                            # Problem, we did not get two value
+                            # Problem, we did not get two values
                             print("Problem - assign_baseline a_filter did not produce catalog, baseline", a_filter)
                         #element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'moderate')
                         system.root_element.assign_baseline_controls(request.user, catalog, baseline)
                         catalog_display = catalog.replace("_", " ")
                         messages.add_message(request, messages.INFO,
                                                      f'I\'ve set the control baseline to "{catalog_display} {baseline}."')
-                        # TODO Log setting baseline
+                        # Log setting baseline
+                        logger.info(
+                            event=f"system assign_baseline {baseline}",
+                            object={"object": "system", "id": system.id, "name": system.root_element.name},
+                            user={"id": request.user.id, "username": request.user.username}
+                        )
+                        # Set fisma_impact_level statement
+                        if baseline.lower() in ["low", "moderate", "high"]:
+                            fisma_impact_level = system.set_fisma_impact_level(baseline)
+                            if fisma_impact_level == baseline.lower():
+                                messages.add_message(request, messages.INFO,
+                                                              f'I\'ve set the system FISMA impact level to "{fisma_impact_level}.')
+                                # Log setting fisma_impact_level
+                                logger.info(
+                                    event=f"system assign_fisma_impact_level {fisma_impact_level}",
+                                    object={"object": "system", "id": system.id, "name": system.root_element.name},
+                                    user={"id": request.user.id, "username": request.user.username}
+                                )
+                            else:
+                                messages.add_message(request, messages.ERROR,
+                                                              f'I failed to set the system FISMA impact level to "{baseline}."')
 
 
                     # Update name of system and project
@@ -570,7 +590,7 @@ def save_answer(request, task, answered, context, __):
                                 Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation").delete()
                                 messages.add_message(request, messages.INFO,
                                                      f'I\'ve deleted "{producer_element.name}" and its {smts_assigned_count} control implementation statements from the system.')
- 
+
 
     # Form a JSON response to the AJAX request and indicate the
     # URL to redirect to, to load the next question.

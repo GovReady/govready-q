@@ -42,13 +42,16 @@ SPACER = "\n====\n"
 # Gracefully exit on control-C
 signal.signal(signal.SIGINT, lambda signal_number, current_stack_frame: sys.exit(0))
 
+
 # Define a fatal error handler
 class FatalError(Exception):
     pass
 
+
 # Define a halted error handler
 class HaltedError(Exception):
     pass
+
 
 # Define a non-zero return code error handler
 class ReturncodeNonZeroError(Exception):
@@ -59,15 +62,19 @@ class ReturncodeNonZeroError(Exception):
         super(ReturncodeNonZeroError, self).__init__(msg)
         self.completed_process = completed_process
 
+
 # Set up argparse
 def init_argparse():
-    parser = argparse.ArgumentParser(description='Quickly set up a new GovReady-Q instance from a freshly-cloned repository.')
+    parser = argparse.ArgumentParser(
+        description='Quickly set up a new GovReady-Q instance from a freshly-cloned repository.')
     parser.add_argument('--non-interactive', '-n', action='store_true', help='run without terminal interaction')
-    parser.add_argument('--timeout', '-t', type=int, default=120, help='seconds to allow external programs to run (default=120)')
+    parser.add_argument('--timeout', '-t', type=int, default=120,
+                        help='seconds to allow external programs to run (default=120)')
     parser.add_argument('--user', '-u', action='store_true', help='do pip install with --user flag')
     parser.add_argument('--verbose', '-v', action='count', default=0, help='output more information')
     parser.add_argument('--docker', '-d', action='store_true', help='runs with docker installation')
     return parser
+
 
 ################################################################
 #
@@ -86,6 +93,7 @@ def run_optionally_verbose(args, timeout, verbose_flag):
         p = subprocess.run(args, timeout=timeout, stdout=PIPE, stderr=PIPE)
     return p
 
+
 def check_has_command(command_array):
     try:
         # hardcode timeout to 5 seconds; if checking command takes longer than that, something is really wrong
@@ -93,6 +101,7 @@ def check_has_command(command_array):
         return True
     except FileNotFoundError as err:
         return False
+
 
 # checks if a package is out of date
 # if okay, returns (True, None, None)
@@ -106,17 +115,18 @@ def check_package_version(package_name):
             return False, package['version'], package['latest_version']
     return True, None, None
 
+
 def create_environment_json(path):
     import secrets
     alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
     secret_key = ''.join(secrets.choice(alphabet) for i in range(50))
     # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
     environment = {
-    "govready-url": GOVREADYURL,
-    "static": "static_root",
-    "secret-key": secret_key,
-    "test_visible": False,
-    "debug": True
+        "govready-url": GOVREADYURL,
+        "static": "static_root",
+        "secret-key": secret_key,
+        "test_visible": False,
+        "debug": True
     }
     # Create local directory
     if not os.path.exists('local'):
@@ -124,6 +134,7 @@ def create_environment_json(path):
     # Create local/envionment.json file
     with open(path, 'w') as f:
         f.write(json.dumps(environment, sort_keys=True, indent=2))
+
 
 def main():
     print(">>>>>>>>>> Welcome to the GovReady-Q Installer <<<<<<<<<\n")
@@ -138,7 +149,7 @@ def main():
             python_manage = [sys.executable, "manage.py"]
         elif os.name == 'nt':
             python_manage = [sys.executable, 'manage.py']
-        
+
         print("Testing environment...\n")
 
         # Print machine information
@@ -149,7 +160,7 @@ def main():
 
         # Test version of Python
         ver = sys.version_info
-        print("Python version is {}.{}.{}.".format(ver[0],ver[1],ver[2]))
+        print("Python version is {}.{}.{}.".format(ver[0], ver[1], ver[2]))
 
         if sys.version_info >= (3, 6):
             print("+ Python version is >= 3.6.")
@@ -160,7 +171,7 @@ def main():
             if args.non_interactive:
                 reply = ''
             else:
-                reply = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0],ver[1],ver[2]))
+                reply = input("Continue install with Python {}.{}.{} (y/n)? ".format(ver[0], ver[1], ver[2]))
             if len(reply) == 0 or reply[0].lower() != "y":
                 raise HaltedError("Python version is < 3.8")
 
@@ -211,7 +222,9 @@ def main():
             else:
                 reply = input("Continue install with outdated pip (y/n)? ")
             if len(reply) == 0 or reply[0].lower() != "y":
-                raise HaltedError("pip is not up to date ({} vs. {}).\n\nSuggested fix: Run 'pip install --upgrade pip'".format(pip_current, pip_latest))
+                raise HaltedError(
+                    "pip is not up to date ({} vs. {}).\n\nSuggested fix: Run 'pip install --upgrade pip'".format(
+                        pip_current, pip_latest))
 
         # Print spacer
         print(SPACER)
@@ -259,7 +272,6 @@ def main():
 
             # Print spacer
             print(SPACER)
-
 
         # Create the local/environment.json file, if it is missing (it generally will be)
         # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
@@ -321,7 +333,8 @@ def main():
         # Run first_run non-interactively
         print("Setting up system and creating Administrator user if none exists...")
         sys.stdout.flush()
-        p = subprocess.run([*python_manage, "first_run", "--non-interactive"], timeout=args.timeout, stdout=PIPE, stderr=PIPE)
+        p = subprocess.run([*python_manage, "first_run", "--non-interactive"], timeout=args.timeout, stdout=PIPE,
+                           stderr=PIPE)
         if p.returncode != 0:
             raise ReturncodeNonZeroError(p)
         if args.verbose:
@@ -377,17 +390,21 @@ To start GovReady-Q, run:
 
     except ReturncodeNonZeroError as err:
         p = err.completed_process
-        sys.stderr.write("\n\nFatal error, exiting: external program or script {} returned error code {}.\n\n".format(p.args, p.returncode))
+        sys.stderr.write("\n\nFatal error, exiting: external program or script {} returned error code {}.\n\n".format(p.args,
+                                                                                                                      p.returncode))
         # diagnose stdout and stdout to see if we can find an obvious problem
         # (add more checks here as appropriate)
         # check for missing Xcode Command Line Tools (macOS)
-        if p.stderr and 'xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun' in p.stderr.decode('utf-8'):
+        if p.stderr and 'xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun' in p.stderr.decode(
+                'utf-8'):
             sys.stderr.write("Suggested fix (see documentation): You need to do 'xcode-select --install'.\n\n")
         sys.exit(1)
 
     except subprocess.TimeoutExpired as err:
-        sys.stderr.write("\n\nFatal error, exiting: external program or script {} took longer than {:.1f} seconds.\n\n".format(err.cmd, err.timeout))
-        sys.stderr.write("Suggested fix: run again with '--timeout {}'.\n\n".format(max(args.timeout+120, 600)))
+        sys.stderr.write(
+            "\n\nFatal error, exiting: external program or script {} took longer than {:.1f} seconds.\n\n".format(err.cmd,
+                                                                                                                  err.timeout))
+        sys.stderr.write("Suggested fix: run again with '--timeout {}'.\n\n".format(max(args.timeout + 120, 600)))
         sys.exit(1)
 
     except HaltedError as err:
@@ -400,8 +417,10 @@ To start GovReady-Q, run:
 
     # catch all errors
     except Exception as err:
-        sys.stderr.write('\n\nFatal error, exiting: unrecognized error on line {}, "{}".\n\n'.format(sys.exc_info()[2].tb_lineno, err));
+        sys.stderr.write(
+            '\n\nFatal error, exiting: unrecognized error on line {}, "{}".\n\n'.format(sys.exc_info()[2].tb_lineno, err));
         sys.exit(1)
+
 
 if __name__ == "__main__":
     exit(main())

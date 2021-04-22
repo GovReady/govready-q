@@ -1,0 +1,157 @@
+id: technical_information
+title: Technical Information
+
+questions:
+
+- id: info_type_intro
+  title: Introduction
+  prompt: |
+    What are information types? And how are they categorized?
+
+    Information types are kinds of commonly used data highlighted by NIST SP 800-60, Volumes I and II.
+    In this section, we will describe how the information type is being used and will categorize the information by its
+    confidentiality, integrity, and availability sensitivity levels.
+  type: interstitial
+
+- id: info_type_table_01
+  title: Sensitivity Categorization of Information Types
+  prompt: |
+    List every information type the IT system uses. Include each info type's NIST identifier.
+
+    Evaluate the information types' confidentiality, integrity, and availability levels.
+
+  type: datagrid
+  fields:
+    - key: Information Type
+      text: Information Type
+    - key: NIST 800-60 Identifier
+      text: NIST 800-60 Identifier
+    - key: Confidentiality
+      text: Confidentiality
+    - key: Integrity
+      text: Integrity
+    - key: Availability
+      text: Availability
+  min: 0
+  max: ~
+
+- id: security_impact_level
+  title: Security Impact Level
+  prompt: |
+    What are the security impacts (Low, Moderate, or High) of all of information types?
+
+    Based on the previous question, what are the high marks for each of the security objectives? 
+
+  type: datagrid
+  fields:
+    - key: Confidentiality
+      text: Confidentiality
+    - key: Integrity
+      text: Integrity
+    - key: Availability
+      text: Availability
+  min: 0
+  max: ~
+
+- id: security_impact_users
+  title: Types of Users
+  prompt: |
+    Who are the IT system's users? Their roles? Their authorized privileges? Their functions performed?
+
+    All personnel have their status categorized with a sensitivity level in accordance with PS-2.  Personnel (employees or contractors) of service providers are considered Internal Users.  All other users are considered External Users.
+
+  type: datagrid
+  fields:
+    - key: Role
+      text: Role
+    - key: Internal or External
+      text: Internal or External
+    - key: Priviliged (P), Non-Priviliged (NP), or No Logical Access (NLA)
+      text: Priviliged (P), Non-Priviliged (NP), or No Logical Access (NLA)
+    - key: Sensitivity Level
+      text: Sensitivity Level
+    - key: Authorized Privileges
+      text: Authorized Privileges
+    - key: Functions Performed
+      text: Functions Performed
+  min: 0
+  max: ~
+
+- id: ports_protocols_services
+  title: Ports, Protocols, and Services
+  prompt: |
+    What are the ports, protocols, and services for the IT system? 
+
+  type: datagrid
+  fields:
+    - key: Ports(TCP/UDP)
+      text: Ports(TCP/UDP)
+    - key: Protocols
+      text: Protocols
+    - key: Services
+      text: Services
+    - key: Purpose
+      text: Purpose
+    - key: Used By
+      text: Used By
+  min: 0
+  max: ~
+
+- id: system_interconnections
+  title: System Interconnections
+  prompt: |
+    Where does the IT system connect with other systems?
+
+  type: datagrid
+  fields:
+    - key: SP* IP Address and Interface
+      text: SP* IP Address and Interface
+    - key: External Organization Name and IP Address of System
+      text: External Organization Name and IP Address of System
+    - key: External Point of Conract and Phone Number
+      text: External Point of Conract and Phone Number
+    - key: Connection Security (IPSec, VPN, SSL, Certificates, Secure Files Transfer, etc)
+      text: Connection Security (IPSec, VPN, SSL, Certificates, Secure Files Transfer, etc)
+    - key: Data Direction (incoming, outgoing, or both)
+      text: Data Direction (incoming, outgoing, or both)
+    - key: Information Being Transmitted
+      text: Information Being Transmitted
+    - key: Port of Circuit Numbers
+      text: Port of Circuit Numbers
+  min: 0
+
+- id: laws_regulations
+  title: Laws and Regulations
+  prompt: |
+    What are the laws and regulations pertaining to this IT system?
+
+  type: datagrid
+  fields:
+    - key: Identification Number
+      text: Identification Number
+    - key: Title
+      text: Title
+    - key: Date
+      text: Date
+    - key: Link
+      text: Link
+  min: 0
+  max: ~
+
+- id: standards_guidance
+  title: Standards and Guidance
+  prompt: |
+    What are the standards and guidance pertaining to this IT system?
+
+  type: datagrid
+  fields:
+    - key: Identification Number
+      text: Identification Number
+    - key: Title
+      text: Title
+    - key: Date
+      text: Date
+    - key: Link
+      text: Link
+  min: 0
+  max: ~

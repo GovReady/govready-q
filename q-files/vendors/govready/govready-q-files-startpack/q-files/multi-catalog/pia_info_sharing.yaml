@@ -1,0 +1,90 @@
+id: pia_info_sharing
+title: Privacy Impact Assessment (Information Sharing)
+
+questions:
+
+- id: q1
+  title: External Sharing
+  prompt: |
+    Is information shared outside of the agency as part of the normal
+    agency operations? 
+
+    If so, identify the organization(s) and how the
+    information is accessed and how it is to be used.
+
+    Discuss the external Departmental sharing of information (for example,
+    CBP to FBI). Identify the name or names of the federal agencies and foreign
+    governments. 
+
+    For state or local government agencies, or private sector organizations list
+    the general types rather than the specific names. 
+  examples:
+    - example: |
+        Customs and Border Protection may share biographic
+        information on an individual with the Federal Bureau of Investigation in order for
+        FBI to conduct a background check. Alternatively, USVISIT may share
+        biographic and biometric information with the intelligence community in order to
+        identify possible terrorists.
+    - example: |
+        The program shares information with state fusion centers that
+        have a posted privacy policy. In particular, discuss any international agreements
+        that require information sharing as part of normal agency operations.
+  type: longtext
+
+- id: q2
+  title: External Sharing, SORN
+  prompt: |
+    Describe how the external sharing listed in the previous question is compatible with the SORN noted previously.
+  examples:
+    - example: |
+        Routine use H allows DHS to share biographic information with
+        the FBI to conduct a background check. This is compatible with the original
+        collection because the Immigration and Naturalization Act (INA) requires that
+        USCIS determine whether an individual has committed any disqualifying crimes.
+        Without checking with the FBI, DHS would be unable to meet this requirement of
+        the law. 
+    
+  type: longtext
+
+- id: q3
+  title: Re-dissemination
+  prompt: |
+    Does the project place limitations on re-dissemination?
+
+    Describe any limitations that may be placed on external agencies further
+    sharing the information provided by DHS. In some instances, the external agency
+    may have a duty to share the information, for example through the information
+    sharing environment. But, before disclosing the information to the individual the
+    external agency is required to verify with DHS.
+
+  type: longtext
+
+- id: q4
+  title: Record of Discolsure
+  prompt: |
+    List what information is retained as part of the accounting
+    requirement.
+
+    A separate system does not need to be created to meet the
+    accounting requirement, but the program must be able to recreate the information
+    noted above to demonstrate compliance. If the project does not, explain why not. 
+
+  type: longtext
+
+- id: q5
+  title: PIA, Related to Information Sharing
+  prompt: |
+    Discuss the privacy risks associated with the sharing of information
+    outside of the Department. 
+
+    How were those risks mitigated?
+    Discuss whether access controls have been implemented and whether
+    audit logs are regularly reviewed to ensure appropriate sharing outside of the
+    Department. For example, is there a Memorandum Of Understanding (MOU),
+    contract, or agreement in place with outside agencies or foreign governments.
+    Discuss how the sharing of information outside of the Department is
+    compatible with the stated purpose and use of the original collection.
+  type: longtext
+
+output:
+- templates/pia_info_sharing.md

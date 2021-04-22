@@ -1,0 +1,14 @@
+id: mou_doc
+title: Memorandum of Understanding (Document)
+
+questions:
+- id: q1
+  title: Overview
+  prompt: |
+    Memorandum of Understanding Document
+
+    Using the information provided, we have prepared a Memorandum of Understanding between {{project.system_info.system_org}} and {{project.mou_intro.q3}}.
+  type: interstitial
+
+output:
+- templates/mou_printable.md

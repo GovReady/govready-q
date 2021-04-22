@@ -1,0 +1,87 @@
+id: pia_auditing_accountability
+title: Privacy Impact Assessment (Auditing and Accountability)
+
+questions:
+
+- id: q1
+  title: Information Used in Accordance with PIA
+  prompt: |
+    How does the project ensure that the information is used in
+    accordance with stated practices in this PIA?
+
+    Auditing measures are recommended and should be discussed, but other
+    possible technical and policy safeguards such as information sharing protocols,
+    special access restrictions, and other controls should be discussed here as well.
+    
+    Do the audit measures discussed above include the ability to identify
+    specific records each user can access? Describe the different roles in general
+    terms that have been created to provide access to the project information. For
+    example, certain users may have "read-only" access while others may be
+    permitted to make certain amendments or changes to the information.
+
+    Explain whether the project conducts self audits, third party audits,
+    reviews by the Office of Inspector General or Government Accountability Office
+    (GAO).
+
+    Does the IT system have automated tools to indicate when information is
+    possibly being misused?
+  examples:
+    - example: |
+        If certain celebrity records are accessed, a supervisor is notified
+        and reviews to ensure that the records were properly used. 
+  type: longtext
+
+- id: q2
+  title: Privacy Training
+  prompt: |
+    Describe what privacy training is provided to users either
+    generally or specifically relevant to the project.
+
+    DHS offers privacy and security training. Each project may offer training
+    specific to the project, which touches on information handling procedures and
+    sensitivity of information. Discuss how individuals who have access to PII are
+    trained to appropriately handle it.
+
+    Explain what controls are in place to ensure that users of the system have
+    completed training relevant to the project.
+  type: longtext
+
+- id: q3
+  title: Determining Access
+  prompt: |
+    What procedures are in place to determine which users may
+    access the information and how does the project determine who
+    has access?
+
+    Describe the process and authorization by which an individual receives
+    access to the information held by the project, both electronic and paper based
+    records. Identify users from other agencies who may have access to the project
+    information and under what roles these individuals have such access. Describe the
+    different roles in general terms that have been created that permit access to such
+    project information.
+
+    Specifically, if remote access to the system is allowed or external storage
+    or communication devices interact with the system, describe any measures in
+    place to secure the transmission and storage of data (e.g., encryption and/or twofactor authentication).
+  examples:
+    - example: |
+        Certain users may have "read-only" access while others may be
+        permitted to make certain amendments or changes to the information.
+  type: longtext
+
+- id: q4
+  title: Approve Information Sharing
+  prompt: |
+    How does the project review and approve information sharing
+    agreements, MOUs, new uses of the information, new access to the
+    system by organizations within DHS and outside?
+
+  examples:
+    - example: |
+        All MOUs are reviewed by the program manager, component
+        Privacy Officer, and counsel and then sent to DHS for formal review.
+  type: longtext
+
+output:
+- templates/pia_auditing_accountability.md
+
