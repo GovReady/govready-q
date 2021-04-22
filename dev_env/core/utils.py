@@ -93,7 +93,7 @@ class HelperMixin:
             proc.start()
             self.BACKGROUND_PROCS.append(proc)
         else:
-            args = dict(stdout=subprocess.PIPE, bufsize=0, env=env)
+            args = dict(stdout=subprocess.PIPE, bufsize=0, env=env, shell=True)
             if not display_stderr:
                 args.update(dict(stderr=subprocess.DEVNULL))
             with subprocess.Popen(cmd, **args) as proc:
