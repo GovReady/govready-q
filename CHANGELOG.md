@@ -75,6 +75,11 @@ v0.9.3.3 (April 13, 2021)
 * Simplify task-finished page layout. Move navigation buttons to top.
 * Replace "...and we're done" language with "Module Summary".
 * Replace questions progress sidebar's project links with more obvious project buttons.
+* Display all summary values of a SAR result for each inventory item.
+
+**Developer changes**
+
+* Add `tools/simple_sar_server/wazuh_etl.py` to support Wazuh SCA results in SAR pipeline.
 
 **Bug fixes**
 
@@ -98,6 +103,27 @@ v0.9.3.2 (April 1st, 2021)
 --------------------------
 
 * Added sitename model, separated content (splash.html) on index page from index.html and footer.html as well for branding purposes. Removed erroneous tags and cleaned up some CSS. Breadcrumb (context-bar) is hidden on index page now.
+
+
+**UI changes**
+
+* Filter System Asessment Result Deployment dropdown to only display System's deployments.
+
+**UI changes**
+
+* Polish SAR summary page: add action buttons, use details tag, other improvements.
+* Polish SAR list page: include deployment name.
+* Polish Deployment inventory detail page.
+
+**Developer changes**
+
+* Create `tools/simple_sar_server/sar.py` to generate synthetic System Assessment Results (summary) data for testing the assessment pages.
+* Create `tools/simple_sar_server/sar_etl.py` as example middleware to transform a SAR to a format GovReady-Q can interpret.
+* Display assessment name in Assessment model admin list.
+
+**Data changes**
+
+* Update SAR test data.
 
 **Bug fixes**
 
