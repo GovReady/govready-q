@@ -32,7 +32,7 @@ logger = get_logger()
 
 @login_required
 def new_task(request):
-    # Create a new task by answering a module question of a project rook task.
+    # Create a new task by answering a module question of a project root task.
     project = get_object_or_404(Project, id=request.POST["project"])
 
     # Can the user create a task within this project?
@@ -570,7 +570,7 @@ def save_answer(request, task, answered, context, __):
                                 Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation").delete()
                                 messages.add_message(request, messages.INFO,
                                                      f'I\'ve deleted "{producer_element.name}" and its {smts_assigned_count} control implementation statements from the system.')
- 
+
 
     # Form a JSON response to the AJAX request and indicate the
     # URL to redirect to, to load the next question.
