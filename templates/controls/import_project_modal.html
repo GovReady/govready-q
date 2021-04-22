@@ -11,18 +11,13 @@
                   <input type="hidden" name="import_name" value=""/>
                 <div class="modal-body">
                     {{ import_project_form.file }}
-                    <label for="{{ import_project_form.appsource_compapp.id }}">{{ import_project_form.appsource_compapp.label }}:</label>
-                    {{ import_project_form.appsource_compapp }}
-                    <label for="{{ import_project_form.appsource_version_id.id }}">{{ import_project_form.appsource_version_id.label }}:</label>
-                    {{ import_project_form.appsource_version_id }}
+
                     <label for="{{ import_project_form.json_content.id_auto }}">{{ import_project_form.json_content.label }}:</label>
                     {{ import_project_form.json_content }}
 
                     <div class="modal-footer">
                         <input id="import_component_submit" class="btn btn-success btn-submit" type="submit" value="Import"/>
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                        {{ import_project_form.importcheck }}
-                        {{ import_project_form.importcheck.label }}
                         <img id="import_loading_spinner" src="{% static "img/icons/spinner.gif" %}"/>
                     </div>
                 </div>

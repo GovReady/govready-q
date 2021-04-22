@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 
 CATALOG_PATH = os.path.join(os.path.dirname(__file__), 'data', 'catalogs')
-
+EXTERNAL_CATALOG_PATH = os.path.join(f"{os.getcwd()}",'local', 'controls', 'data', 'catalogs')
 
 class Catalogs(object):
     """Represent list of catalogs"""
@@ -19,29 +19,40 @@ class Catalogs(object):
     NIST_SP_800_171_rev1 = 'NIST_SP-800-171_rev1'
 
     def __init__(self):
-        global CATALOG_PATH
         self.catalog_path = CATALOG_PATH
         # self.catalog = None
         self.catalog_keys = self._list_catalog_keys()
         self.index = self._build_index()
 
+    def extend_external_catalogs(self, catalog_info, extendtype):
+        """
+        Add external catalogs to list of catalogs
+        """
+        os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
+        external_catalogs = [file for file in os.listdir(EXTERNAL_CATALOG_PATH) if
+                  file.endswith('.json')]
+        catalog_info = check_and_extend(catalog_info, external_catalogs, extendtype, "_catalog")
+
+        return catalog_info
+
     def _list_catalog_files(self):
-        return [
+        return self.extend_external_catalogs([
             'NIST_SP-800-53_rev4_catalog.json',
             'NIST_SP-800-53_rev5_catalog.json',
             'NIST_SP-800-171_rev1_catalog.json'
-        ]
+        ], "files")
 
     def _list_catalog_keys(self):
-        return [
+
+        return self.extend_external_catalogs([
             Catalogs.NIST_SP_800_53_rev4,
             Catalogs.NIST_SP_800_53_rev5,
             Catalogs.NIST_SP_800_171_rev1
-        ]
+        ], "keys")
 
     def _load_catalog_json(self, catalog_key):
         catalog = Catalog(catalog_key)
-        # print(catalog_key, catalog._load_catalog_json())
+        #print(catalog_key, catalog._load_catalog_json())
         return catalog._load_catalog_json()
 
     def _build_index(self):
@@ -58,12 +69,29 @@ class Catalogs(object):
         catalog_titles = [item['metadata']['title'] for item in self.index]
         return catalog_titles
 
+    def list_catalogs(self):
+        """
+        List catalog objects
+        """
+        return [Catalog(key) for key in Catalogs()._list_catalog_keys()]
+
 
 def uhash(obj):
     """Return a positive hash code"""
     h = hash(obj)
     return h + sys.maxsize + 1
 
+def check_and_extend(values, external_values, extendtype, splitter):
+    """
+    Modularize value to extend
+    """
+    if extendtype == "keys":
+        keys = [key.split(f'{splitter}.json')[0] for key in external_values]
+        values.extend(keys)
+    elif extendtype == "files":
+        files = [file for file in external_values]
+        values.extend(files)
+    return values
 
 class Catalog(object):
     """Represent a catalog"""
@@ -95,10 +123,10 @@ class Catalog(object):
         return catalog_instance_key.replace('-', '_')
 
     def __init__(self, catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
-        global CATALOG_PATH
         self.catalog_key = catalog_key
         self.catalog_key_display = catalog_key.replace("_", " ")
         self.catalog_path = CATALOG_PATH
+        self.external_catalog_path = EXTERNAL_CATALOG_PATH
         self.catalog_file = catalog_key + "_catalog.json"
         try:
             self.oscal = self._load_catalog_json()
@@ -127,8 +155,12 @@ class Catalog(object):
         catalog_file = os.path.join(self.catalog_path, self.catalog_file)
         # Does file exist?
         if not os.path.isfile(catalog_file):
-            print(f"ERROR: {catalog_file} does not exist")
-            return False
+            # Check if there any external oscal catalog files
+            try:
+                catalog_file = os.path.join(self.external_catalog_path, self.catalog_file)
+            except:
+                print(f"ERROR: {catalog_file} does not exist")
+                return False
         # Load file as json
         with open(catalog_file, 'r') as json_file:
             data = json.load(json_file)

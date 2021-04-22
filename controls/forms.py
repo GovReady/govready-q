@@ -111,9 +111,6 @@ class ImportProjectForm(forms.Form):
         required=False
     )
     json_content = forms.CharField(label='Project (JSON)', widget=forms.Textarea(), help_text="The JSON necessary for importing a project.")
-    importcheck =  forms.BooleanField(label="Import as a new project", required=False, help_text="If checked the current import will become a new project.")
-    appsource_version_id = forms.ModelMultipleChoiceField(queryset=AppVersion.objects.all(),label="Select the app name of the App Source", help_text="An app name is assigned to each app version")
-    appsource_compapp = forms.ModelMultipleChoiceField(queryset=AppSource.objects.all(),label="Choose the compliance app from your App Source", help_text="Need the App Source compliance app.")
 
 class DeploymentForm(ModelForm):
 

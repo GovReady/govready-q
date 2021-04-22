@@ -72,8 +72,8 @@ def oscalize_catalog_key(catalogkey):
     # A default catalog key
     if catalogkey=='':
         catalogkey = 'NIST_SP-800-53_rev4'
-    # Handle improperly formatted control id
-    if catalogkey.count("_") > 2:
+    # Handle the default improperly formatted control id
+    if catalogkey.count("_") > 2 and "800" in catalogkey:
         split_key_list = catalogkey.split("_800_")
         catalogkey = split_key_list[0] + "-800-" + split_key_list[1]
 
