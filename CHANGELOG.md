@@ -18,11 +18,15 @@ v999 (April XX, 2021)
 
 **Developer changes**
 
+
 * Set system fisma_impact_level as part of question action to set baseline. Also add fisma_impact_level set/get methods to System model.
 
 **Bug fixes**
 
 * Properly filter system POA&M stat to only count POA&Ms for system.
+
+* Provide better error reporting on import component schema validation; report actual validation error to standout.
+
 
 **Data changes**
 
