@@ -4,10 +4,6 @@ GovReady-Q Release Notes
 v999 (April XX, 2021)
 -------------------------
 
-**Feature changes**
-
-* Replace me
-
 **UI changes**
 
 * Add links for "forgot password" and "change password".
@@ -16,25 +12,21 @@ v999 (April XX, 2021)
 
 * Immediately assign change project perms to user starting project and fix issue that non-admin users were not executing modifications to a project the user started such as setting baseline controls.
 
-**Developer changes**
-
-
-* Set system fisma_impact_level as part of question action to set baseline. Also add fisma_impact_level set/get methods to System model.
-
-**Bug fixes**
-
 * Properly filter system POA&M stat to only count POA&Ms for system.
 
 * Provide better error reporting on import component schema validation; report actual validation error to standout.
 
+**Developer changes**
+
+* Developers can now use `docker` & `docker-compose` to deploy a local environment.  This allows devs to work on any Operating System.  Instructions can be found at `dev_env/README.md` folder. 
+
+* Set system fisma_impact_level as part of question action to set baseline. Also add fisma_impact_level set/get methods to System model.
+
+* Display system impact level on project page.
 
 **Data changes**
 
-* Replace me
-
-**Install changes**
-
-* Replace me
+* Use statement type `fisma_impact_level` to track impact level of a system.
 
 
 v0.9.3.4 (April 20, 2021)
@@ -51,14 +43,7 @@ v0.9.3.4 (April 20, 2021)
 
 **UI changes**
 
-* Display system impact level on project page.
-
 * Link mini-dashboards on project page to sensible related pages.
-
-**Data changes**
-
-* Use statement type `fisma_impact_level` to track impact level of a system.
-
 
 v0.9.3.3 (April 13, 2021)
 -------------------------

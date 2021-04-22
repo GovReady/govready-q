@@ -2,8 +2,10 @@
 FROM ubuntu:focal-20210119
 
 # Update package list.
-RUN apt-get update
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Add dos2unix for Windows support of deployments for the CRLF issues
+RUN apt-get update && apt-get install -y dos2unix
 
 # Set up the locale.
 RUN apt-get update && \
@@ -19,17 +21,30 @@ RUN echo "root:root" | chpasswd && \
   mkdir /var/run/sshd
 
 # Set up the timezone.
-RUN apt-get install -y --no-install-recommends tzdata && \
+RUN apt-get update && apt-get install -y --no-install-recommends tzdata && \
   ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
   dpkg-reconfigure tzdata
 
 # Install GovReady-Q prerequisites.
-RUN apt-get -y install \
+RUN apt-get update && apt-get -y install \
   unzip git curl jq \
   python3 python3-pip \
   python3-yaml \
   graphviz pandoc \
   gunicorn
+
+ENV CHROME_VERSION "google-chrome-stable"
+RUN sed -i -- 's&deb http://deb.debian.org/debian jessie-updates main&#deb http://deb.debian.org/debian jessie-updates main&g' /etc/apt/sources.list \
+  && apt-get update && apt-get install wget -y
+ENV CHROME_VERSION "google-chrome-stable"
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+  && echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list \
+  && apt-get update && apt-get -qqy install ${CHROME_VERSION:-google-chrome-stable}
+
+# Chromium for Headless Selenium tests
+RUN wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip \
+    && unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
+ENV DISPLAY=:99
 
 # Put the Python source code here.
 WORKDIR /usr/src/app
@@ -45,3 +60,4 @@ RUN pip3 install ipdb
 # the container is launched with --mount.
 # --mount type=bind,source="$(pwd)",dst=/mnt/q-files-host
 RUN mkdir -p /mnt/q-files-host
+RUN find . -type f -print0 | xargs -0 dos2unix

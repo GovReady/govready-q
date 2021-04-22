@@ -108,6 +108,7 @@ class SeleniumTest(StaticLiveServerTestCase):
 
         if HEADLESS:
             options.add_argument('--headless')
+            options.add_argument('--no-sandbox')
 
         # Set up selenium Chrome browser for Windows or Linux
         if DOS:
