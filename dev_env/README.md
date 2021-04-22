@@ -11,7 +11,7 @@ This also assumes you can run as root/administrator.  This is due to ports being
 ## How To
 1. Configure
 
-    To modify Govready-Q settings, you'll need to `generate an environment.json` to pass to the container.
+    To modify Govready-Q settings, you'll need to generate an `environment.json` to pass to the container.
     - `python run.py init` - This will generate `docker/environment.json` 
         * Note: If you don't do this, it will auto-generate one on start of stack
     - Simply change any value to modify your environment
