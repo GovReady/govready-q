@@ -163,7 +163,7 @@ class ControlUITests(SeleniumTest):
                 'NIST_SP-800-53_rev5_catalog.json',
                 'NIST_SP-800-171_rev1_catalog.json'
             ], "files")
-            # asserts...
+
             self.assertEqual(len(extended_files), 4)
 
             extended_keys = Catalogs.extend_external_catalogs(self, [
@@ -194,7 +194,7 @@ class ControlUITests(SeleniumTest):
             'NIST_SP-800-53_rev4_baselines.json',
             'NIST_SP-800-171_rev1_baselines.json'
         ], "files")
-            # asserts...
+
             self.assertEqual(len(extended_files), 3)
 
             extended_keys = Baselines.extend_external_baselines(self, [
