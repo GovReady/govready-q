@@ -117,4 +117,5 @@ sonar-project.properties
 _notes/
 
 env_var.sh
-deployment/local/ssh
+dev_env/docker/ssh/
+environment.json
