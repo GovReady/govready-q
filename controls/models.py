@@ -536,10 +536,8 @@ class System(auto_prefetch.Model):
         """Assign FISMA impact level to system"""
 
         # Get or create the fisma_impact_level smt for system's root_element; should only have 1 statement
-        smt, created = Statement.objects.get_or_create(statement_type="fisma_impact_level", producer_element=self.root_element,consumer_element=self.root_element)
-        smt.body = fisma_impact_level
-        smt.save()
-        return fisma_impact_level
+        smt = Statement.objects.create(statement_type="fisma_impact_level", producer_element=self.root_element,consumer_element=self.root_element, body=fisma_impact_level)
+        return fisma_impact_level, smt
 
     @property
     def get_fisma_impact_level(self):

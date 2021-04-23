@@ -1475,4 +1475,6 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self.click_element('#btn-project-home')
         # See if project page has changed
         wait_for_sleep_after( lambda: self.assertInNodeText("low", "#systems-fisma-impact-level") )
+        impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type="fisma_impact_level")
+        self.assertEqual(impact_level_smts.count(), 1)
 

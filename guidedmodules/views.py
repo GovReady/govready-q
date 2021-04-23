@@ -482,14 +482,14 @@ def save_answer(request, task, answered, context, __):
                         )
                         # Set fisma_impact_level statement
                         if baseline.lower() in ["low", "moderate", "high"]:
-                            fisma_impact_level = system.set_fisma_impact_level(baseline)
+                            fisma_impact_level, smt = system.set_fisma_impact_level(baseline)
                             if fisma_impact_level == baseline.lower():
                                 messages.add_message(request, messages.INFO,
                                                               f'I\'ve set the system FISMA impact level to "{fisma_impact_level}.')
                                 # Log setting fisma_impact_level
                                 logger.info(
                                     event=f"system assign_fisma_impact_level {fisma_impact_level}",
-                                    object={"object": "system", "id": system.id, "name": system.root_element.name},
+                                    object={"object": "system", "id": system.id, "name": system.root_element.name, "statementid": smt.id},
                                     user={"id": request.user.id, "username": request.user.username}
                                 )
                             else:
