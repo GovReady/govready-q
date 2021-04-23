@@ -7,6 +7,7 @@ v999 (April XX, 2021)
 **UI changes**
 
 * Add links for "forgot password" and "change password".
+* Add control titles to component control listing pages.
 
 **Bug fixes**
 
@@ -15,6 +16,8 @@ v999 (April XX, 2021)
 * Properly filter system POA&M stat to only count POA&Ms for system.
 
 * Provide better error reporting on import component schema validation; report actual validation error to standout.
+
+* Fix N+1 slow display of component control statements with many statements.
 
 **Developer changes**
 

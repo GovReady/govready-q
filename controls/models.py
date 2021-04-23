@@ -87,19 +87,27 @@ class Statement(auto_prefetch.Model):
     @property
     def catalog_control(self):
         """Return the control content from the catalog"""
+
         # Get instance of the control catalog
         catalog = Catalog.GetInstance(catalog_key=self.sid_class)
         # Look up control by ID
         return catalog.get_control_by_id(self.sid)
 
-    @property
+    @cached_property
     def catalog_control_as_dict(self):
         """Return the control content from the catalog"""
+
         # Get instance of the control catalog
         catalog = Catalog.GetInstance(catalog_key=self.sid_class)
-        catalog_control_dict = catalog.get_flattened_controls_all_as_dict()
         # Look up control by ID
-        return catalog_control_dict[self.sid]
+        catalog_control_dict = catalog.get_flattened_control_as_dict(self.catalog_control)
+        return catalog_control_dict
+
+    @cached_property
+    def control_title(self):
+        """Return the control title"""
+
+        return self.catalog_control_as_dict['title']
 
     def create_prototype(self):
         """Creates a prototype statement from an existing statement and prototype object"""
