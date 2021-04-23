@@ -738,7 +738,7 @@ class ComponentImporter(object):
                         sid_class=catalog_key,
                         pid=get_control_statement_part(stmnt_id),
                         body=description,
-                        statement_type="control_implementation_prototype",
+                        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
                         remarks=remarks,
                         status=implemented_control['status'] if 'status' in implemented_control else None,
                         producer_element=parent_component,
@@ -778,7 +778,7 @@ def add_selected_components(system, import_record):
         for imported_component in imported_components:
             # Loop through element's prototype statements and add to control implementation statements
             for smt in Statement.objects.filter(producer_element_id=imported_component.id,
-                                                statement_type="control_implementation_prototype"):
+                                                statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value):
                 # Add all existing control statements for a component to a system even if system does not use controls.
                 # This guarantees that control statements are associated.
                 # The selected controls will serve as the primary filter on what content to display.
@@ -898,11 +898,11 @@ def component_library_component(request, element_id):
     smt_query = request.GET.get('search')
 
     if smt_query:
-        impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type="control_implementation_prototype")
+        impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
     else:
         # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
-        impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
+        impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
 
     if len(impl_smts) < 1:
         context = {
@@ -1962,7 +1962,7 @@ def add_system_component(request, system_id):
         # Redirect to selected element page
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
-    smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype")
+    smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
 
     # Component does not have any statements of type control_implementation_prototype to
     # add to system. So we cannot add the component (element) to the system.
@@ -1974,14 +1974,14 @@ def add_system_component(request, system_id):
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
     # Loop through element's prototype statements and add to control implementation statements
-    for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
+    for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value):
         # Add all existing control statements for a component to a system even if system does not use controls.
         # This guarantees that control statements are associated.
         # The selected controls will serve as the primary filter on what content to display.
         smt.create_instance_from_prototype(system.root_element.id)
 
     # Make sure some controls were added to the system. Report error otherwise.
-    smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation")
+    smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
 
     smts_added_count = len(smts_added)
     if smts_added_count > 0:
@@ -2211,7 +2211,7 @@ class EditorAutocomplete(View):
                 for related_element in form_values['relatedcomps']:
 
                     # Look up the element
-                    for smt in Statement.objects.filter(id=related_element, statement_type="control_implementation"):
+                    for smt in Statement.objects.filter(id=related_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value):
                         logger.info(
                             f"Adding an element with the id {smt.id} and sid class {smt.sid} to system_id {system_id}")
                         # Only add statements for controls selected for system

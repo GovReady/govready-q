@@ -29,6 +29,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
 from django.utils.crypto import get_random_string
 
+from controls.enums.statements import StatementTypeEnum
 from guidedmodules.tests import TestCaseWithFixtureData
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
@@ -1475,6 +1476,6 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self.click_element('#btn-project-home')
         # See if project page has changed
         wait_for_sleep_after( lambda: self.assertInNodeText("low", "#systems-fisma-impact-level") )
-        impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type="fisma_impact_level")
+        impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
         self.assertEqual(impact_level_smts.count(), 1)
 
