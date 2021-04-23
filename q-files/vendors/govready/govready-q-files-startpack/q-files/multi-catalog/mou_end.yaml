@@ -1,0 +1,85 @@
+id: mou_end
+title: Memorandum of Understanding (Ending)
+
+questions:
+
+- id: q1
+  title: MOU Ending Overview
+  prompt: |
+    MOU Ending
+
+    The purpose of this module is to collect security and program management information for a partnership between the system owners of {{project.system_info.system_name}} and {{project.mou_intro.q2}}.
+    The following questions are all pre-populated with MOU content from NIST Special Publication 800-47. Feel free to customize to your liking.
+  type: interstitial
+
+- id: q2
+  title: Interconnection Security Agreement
+  prompt: |
+    Include a brief summary of the creation of an Interconnection Security Agreement for between {{project.system_info.system_org}} and {{project.mou_intro.q3}}.
+
+  default: |
+    The technical details of the interconnection will be documented in an Interconnection Security Agreement (ISA). The parties agree to work together to develop
+     the ISA, which must be signed by both parties before the interconnection is activated. Proposed changes to either system or the interconnecting medium will 
+     be reviewed and evaluated to determine the potential impact on the interconnection. The ISA will be renegotiated before changes are implemented. Signatories
+      to the ISA shall be the DAA for each system.
+  type: longtext
+
+- id: q3
+  title: Security
+  prompt: |
+    Include a brief statement regarding the security partnership of system owners for {{project.system_info.system_org}} and {{project.mou_intro.q3}}.
+
+  default: |
+    Both parties agree to work together to ensure the joint security of the connected systems and the data they store, process, and transmit, as specified
+     in the ISA. Each party certifies that its respective system is designed, managed, and operated in compliance with all relevant federal laws, regulations,
+      and policies. 
+  type: longtext
+
+- id: q4
+  title: Cost Considerations
+  prompt: |
+    Include a brief statement regarding the cost considerations of managing {{project.system_info.system_org}} and {{project.mou_intro.q3}}.
+
+  default: |
+    Both parties agree to work together to ensure the joint security of the connected systems and the data they store, process, and transmit, as specified 
+    in the ISA. Each party certifies that its respective system is designed, managed, and operated in compliance with all relevant federal laws, regulations,
+     and policies. 
+  type: longtext
+
+- id: q5
+  title: Timeline
+  prompt: |
+    Include a brief statement regarding the timeline of managing {{project.system_info.system_org}} and {{project.mou_intro.q3}}.
+
+  default: |
+    This agreement will remain in effect for one (1) year after the last date on either signature in the signature block below. 
+    After one (1) year, this agreement will expire without further action. If the parties wish to extend this agreement, they may do so by reviewing,
+     updating, and reauthorizing this agreement. The newly signed agreement should explicitly supersede this agreement, which should be referenced by
+      title and date. If one or both of the parties wish to terminate this agreement prematurely, they may do so upon 30 days' advanced notice or in
+       the event of a security incident that necessitates an immediate response.
+  type: longtext 
+
+- id: q6
+  title: Signing Official for {{project.system_info.system_org}}
+  prompt: |
+    Who will be signing the Memorandum of Understanding on behalf of {{project.system_info.system_org}}?
+  type: text
+
+- id: q7
+  title: Signing Official for {{project.mou_intro.q3}}
+  prompt: |
+    Who will be signing the Memorandum of Understanding on behalf of {{project.mou_intro.q3}}?
+  type: text
+
+- id: q8
+  title: Date
+  prompt: |
+    Final Date?
+
+    What date will this MOU be submitted?
+  type: date
+
+
+
+
+    

@@ -279,7 +279,7 @@
                                                     <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
                                                     <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
                                                     <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
-                                                    <input type="hidden" id="sid_class" name="sid_class" value="{{ control.sid_class }}">
+                                                    <input type="hidden" id="sid_class" name="sid_class" value="{{ catalog.catalog_key }}">
                                                     <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
                                                     <div class="modal-footer">
                                                         <div id="success-msg-smt_{{ forloop.counter }}" style="display: inline; margin-right: 20px; color: gray;"></div>
@@ -463,8 +463,6 @@
             $(dataarray).each(function (i, field) {
                 dataObj[field.name] = field.value;
             });
-            console.log("datadata", dataObj['producer_element_name'])
-
             // send data via ajax to be saved
             ajax_with_indicator({
                 url: "/controls/smt/_save/",
