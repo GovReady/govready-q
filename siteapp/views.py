@@ -22,6 +22,7 @@ from django.views.generic import ListView
 from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model, get_perms, assign_perm
 
+from controls.enums.statements import StatementTypeEnum
 from controls.forms import ImportProjectForm
 from controls.views import add_selected_components
 from discussion.models import Discussion
@@ -972,7 +973,7 @@ def project(request, project):
         approx_compliance_degrees = 358
 
     # Fetch statement defining FISMA impact level if set
-    impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type="fisma_impact_level")
+    impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
     if len(impact_level_smts) > 0:
         impact_level = impact_level_smts[0].body
     else:
