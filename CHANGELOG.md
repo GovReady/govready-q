@@ -6,8 +6,12 @@ v999 (April XX, 2021)
 
 **UI changes**
 
+* Rearrange Create | Import | Manage component buttons; put "Manage Import Records" button last.
+
 * Add links for "forgot password" and "change password".
+
 * Add control titles to component control listing pages.
+
 
 **Bug fixes**
 
@@ -30,7 +34,6 @@ v999 (April XX, 2021)
 **Data changes**
 
 * Use statement type `fisma_impact_level` to track impact level of a system.
-
 
 v0.9.3.4 (April 20, 2021)
 -------------------------
