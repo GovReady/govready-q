@@ -8,6 +8,7 @@ v999 (April XX, 2021)
 
 * Add links for "forgot password" and "change password".
 * Add control titles to component control listing pages.
+* Display control catalog guidance text in `details` tag next to component control implementation statements.
 
 **Bug fixes**
 
