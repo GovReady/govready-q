@@ -12,6 +12,8 @@ v999 (April XX, 2021)
 
 * Add control titles to component control listing pages.
 
+* Left align text in project action buttons.
+
 
 **Bug fixes**
 
@@ -27,7 +29,7 @@ v999 (April XX, 2021)
 
 * Update stub_app used by compliance_app command for generating compliance app to include "input" and "output" section; and to have folders for templates, utils, and components.
 
-* Developers can now use `docker` & `docker-compose` to deploy a local environment.  This allows devs to work on any Operating System.  Instructions can be found at `dev_env/README.md` folder. 
+* Developers can now use `docker` & `docker-compose` to deploy a local environment.  This allows devs to work on any Operating System.  Instructions can be found at `dev_env/README.md` folder.
 
 * Set system fisma_impact_level as part of question action to set baseline. Also add fisma_impact_level set/get methods to System model.
 
