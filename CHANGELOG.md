@@ -12,8 +12,7 @@ v999 (April XX, 2021)
 
 * Add control titles to component control listing pages.
 
-* Left align text in project action buttons.
-
+* Improve project pages appearance: descrease action button width and left align text; widen from 9 to 10 columns main content.
 
 **Bug fixes**
 
