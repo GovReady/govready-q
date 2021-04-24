@@ -32,10 +32,10 @@ if environment.get("trust-user-authentication-headers"):
     # Because regular authentication is disabled, before setting this setting
     # you should ensure you'll be able to log in with the proxy using the
     # username of an admin account that is already registered.
-    MIDDLEWARE.append('siteapp.middleware.ProxyHeaderUserAuthenticationMiddleware') # must be after AuthenticationMiddleware but before OrganizationSubdomainMiddleware
+    MIDDLEWARE.append('siteapp.middleware.misc.ProxyHeaderUserAuthenticationMiddleware') # must be after AuthenticationMiddleware but before OrganizationSubdomainMiddleware
     AUTHENTICATION_BACKENDS.remove('django.contrib.auth.backends.ModelBackend') # disable the standard login backends
     AUTHENTICATION_BACKENDS.remove('allauth.account.auth_backends.AuthenticationBackend')
-    AUTHENTICATION_BACKENDS.append('siteapp.middleware.ProxyHeaderUserAuthenticationBackend') # add backend for this method
+    AUTHENTICATION_BACKENDS.append('siteapp.middleware.misc.ProxyHeaderUserAuthenticationBackend') # add backend for this method
     PROXY_HEADER_AUTHENTICATION_HEADERS = environment["trust-user-authentication-headers"]
     print("Trusting authentication headers:", PROXY_HEADER_AUTHENTICATION_HEADERS)
     LOGOUT_REDIRECT_URL = "/sso-logout"
@@ -67,12 +67,12 @@ else:
 
 MIDDLEWARE += [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'siteapp.middleware.ContentSecurityPolicyMiddleware',
+    'siteapp.middleware.misc.ContentSecurityPolicyMiddleware',
     'guidedmodules.middleware.InstrumentQuestionPageLoadTimes',
 ]
 
 TEMPLATES[0]['OPTIONS']['context_processors'] += [
-    'siteapp.middleware.QTemplateContextProcessor',
+    'siteapp.middleware.misc.QTemplateContextProcessor',
 ]
 
 AUTHENTICATION_BACKENDS += ['siteapp.models.DirectLoginBackend']

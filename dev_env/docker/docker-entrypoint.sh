@@ -10,6 +10,8 @@ if [[ ! -d /usr/src/app/dev_env/docker/ssh ]]; then
     ssh-keygen -A
     chmod -R 400 /etc/ssh
     cp /etc/ssh /usr/src/app/dev_env/docker -r
+else
+    cp /usr/src/app/dev_env/docker/ssh/* /etc/ssh  -r
 fi
 /usr/sbin/sshd
 export -p > /usr/src/app/dev_env/docker/remote_interpreter/env_var.sh
@@ -18,9 +20,6 @@ ln -sf /usr/src/app/dev_env/docker/environment.json /usr/src/app/local/environme
 
 echo "[ + ] Running checks"
 pip3 install -r requirements.txt --ignore-installed
-
-echo "[ + ] Running checks"
-./manage.py check --deploy
 
 echo "[ + ] Migrating Database"
 ./manage.py migrate

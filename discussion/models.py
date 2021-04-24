@@ -4,40 +4,44 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from jsonfield import JSONField
+
+from api.base.models import BaseModel
 from siteapp.models import User
 from .validators import validate_file_extension
 
 
-class Discussion(models.Model):
-    organization = models.ForeignKey('siteapp.Organization', related_name="discussions", on_delete=models.CASCADE, help_text="The Organization that this Discussion belongs to.")
+class Discussion(BaseModel):
+    organization = models.ForeignKey('siteapp.Organization', related_name="discussions", on_delete=models.CASCADE,
+                                     help_text="The Organization that this Discussion belongs to.")
 
     attached_to_content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
     attached_to_object_id = models.PositiveIntegerField()
     attached_to = GenericForeignKey('attached_to_content_type', 'attached_to_object_id')
 
-    guests = models.ManyToManyField(User, related_name="guest_in_discussions", blank=True, help_text="Additional Users who are participating in this chat, besides those that are implicit discussion members via the Discussion's attached_to object.")
+    guests = models.ManyToManyField(User, related_name="guest_in_discussions", blank=True,
+                                    help_text="Additional Users who are participating in this chat, besides those that are implicit discussion members via the Discussion's attached_to object.")
 
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     class Meta:
-      unique_together = ('attached_to_content_type', 'attached_to_object_id')
+        unique_together = ('attached_to_content_type', 'attached_to_object_id')
 
     @staticmethod
     def get_for(org, object, create=False, must_exist=False):
         content_type = ContentType.objects.get_for_model(object)
         if create:
-            return Discussion.objects.get_or_create(organization=org, attached_to_content_type=content_type, attached_to_object_id=object.id)[0]
+            return Discussion.objects.get_or_create(organization=org, attached_to_content_type=content_type,
+                                                    attached_to_object_id=object.id)[0]
         elif not must_exist:
-            return Discussion.objects.filter(attached_to_content_type=content_type, attached_to_object_id=object.id).first()
+            return Discussion.objects.filter(attached_to_content_type=content_type,
+                                             attached_to_object_id=object.id).first()
         else:
             return Discussion.objects.get(attached_to_content_type=content_type, attached_to_object_id=object.id)
 
     @staticmethod
     def get_for_all(objects):
         if objects.count() == 0:
-            return Discussion.objects.none() # empty QuerySet
+            return Discussion.objects.none()  # empty QuerySet
         content_type = ContentType.objects.get_for_model(objects.first())
         return Discussion.objects.filter(attached_to_content_type=content_type, attached_to_object_id__in=objects)
 
@@ -94,9 +98,9 @@ class Discussion(models.Model):
         comments = list(self.comments
             .select_related('user')
             .filter(
-                id__gt=comments_since,
-                deleted=False,
-                draft=False))
+            id__gt=comments_since,
+            deleted=False,
+            draft=False))
 
         # Speed up rendering by allowing Discussion-level data to be cached on the
         # Discussion instance.
@@ -105,7 +109,7 @@ class Discussion(models.Model):
         # Batch load user information. For the user's own draft, load the requesting user's info too.
         # Don't use a set to uniquify Users since the comments may have different User instances and
         # we want to fill in info for all of them.
-        User.preload_profiles([ c.user for c in comments ] + [ user ])
+        User.preload_profiles([c.user for c in comments] + [user])
 
         # Add.
         events.extend([
@@ -114,15 +118,15 @@ class Discussion(models.Model):
         ])
 
         # Sort by date, since we are interleaving two sources of events.
-        events.sort(key = lambda item : item["date_posix"])
+        events.sort(key=lambda item: item["date_posix"])
 
         # Is there a draft in progress?
         draft = None
         if user:
             draft = self.comments.filter(user=user, draft=True).first()
             if draft:
-                draft.user = user # reuse instance for caching via User.preload_profiles
-                draft.discussion = self # reuse instance for caching
+                draft.user = user  # reuse instance for caching via User.preload_profiles
+                draft.discussion = self  # reuse instance for caching
                 draft = draft.render_context_dict(user)
 
         # Get the initial state of the discussion to populate the HTML.
@@ -135,7 +139,7 @@ class Discussion(models.Model):
                 "can_invite": self.can_invite_guests(user),
                 "can_comment": self.can_comment(user),
             },
-            "guests": [ user.render_context_dict() for user in self.guests.all() ],
+            "guests": [user.render_context_dict() for user in self.guests.all()],
             "events": events,
             "autocomplete": self.get_autocompletes(user),
             "draft": draft,
@@ -150,7 +154,7 @@ class Discussion(models.Model):
 
         # Validate. Allow empty drafts so attachments can attach to them.
         if not is_draft:
-            text = text.rstrip() # don't lstrip because markdown is sensitive to initial whitespace
+            text = text.rstrip()  # don't lstrip because markdown is sensitive to initial whitespace
             if text.strip() == "":
                 raise ValueError("No comment entered.")
 
@@ -163,7 +167,7 @@ class Discussion(models.Model):
             extra={
                 "post_method": post_method,
             }
-            )
+        )
 
         # If not a draft...
         if not is_draft:
@@ -174,7 +178,7 @@ class Discussion(models.Model):
     ##
 
     def is_public(self):
-        return getattr(self.attached_to_obj, 'is_discussion_public', lambda : False)
+        return getattr(self.attached_to_obj, 'is_discussion_public', lambda: False)
 
     def can_comment(self, user):
         return user is not None and self.is_participant(user)
@@ -219,12 +223,13 @@ class Discussion(models.Model):
         if self.attached_to_obj is None or self.attached_to_obj.is_discussion_deleted():
             return set()
         return set(self.attached_to_obj.get_notification_watchers()) \
-            | set(self.guests.all())
+               | set(self.guests.all())
 
     def get_notification_link(self, notification):
         if notification.data and notification.data.get("comment_id"):
-            return self.attached_to_obj.get_absolute_url() + "#discussion-comment-" + str(notification.data.get("comment_id"))
-        return None # fall back to default behavior
+            return self.attached_to_obj.get_absolute_url() + "#discussion-comment-" + str(
+                notification.data.get("comment_id"))
+        return None  # fall back to default behavior
 
     def post_notification_reply(self, notification, user, message):
         # This is called via incoming mail routing when a user replies to a notification
@@ -246,19 +251,22 @@ class Discussion(models.Model):
             self._get_autocompletes = self.attached_to_obj.get_discussion_autocompletes(self)
         return self._get_autocompletes
 
-class Comment(models.Model):
-    discussion = models.ForeignKey(Discussion, related_name="comments", on_delete=models.CASCADE, help_text="The Discussion that this comment is attached to.")
-    replies_to = models.ForeignKey('self', blank=True, null=True, related_name="replies", on_delete=models.CASCADE, help_text="If this is a reply to a Comment, the Comment that this is in reply to.")
+
+class Comment(BaseModel):
+    discussion = models.ForeignKey(Discussion, related_name="comments", on_delete=models.CASCADE,
+                                   help_text="The Discussion that this comment is attached to.")
+    replies_to = models.ForeignKey('self', blank=True, null=True, related_name="replies", on_delete=models.CASCADE,
+                                   help_text="If this is a reply to a Comment, the Comment that this is in reply to.")
     user = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user making a comment.")
 
-    emojis = models.CharField(max_length=256, blank=True, null=True, help_text="A comma-separated list of emoji names that the user is reacting with.")
+    emojis = models.CharField(max_length=256, blank=True, null=True,
+                              help_text="A comma-separated list of emoji names that the user is reacting with.")
     text = models.TextField(blank=True, help_text="The text of the user's comment.")
-    proposed_answer = JSONField(blank=True, null=True, help_text="A proposed answer to the question that this discussion is about.")
+    proposed_answer = JSONField(blank=True, null=True,
+                                help_text="A proposed answer to the question that this discussion is about.")
     draft = models.BooleanField(default=False, help_text="Set to true if the comment is a draft.")
     deleted = models.BooleanField(default=False, help_text="Set to true if the comment has been 'deleted'.")
 
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     class Meta:
@@ -342,9 +350,10 @@ class Comment(models.Model):
         for user in mentioned_users - discussion_participants:
             inv = Invitation.objects.create(
                 from_user=self.user,
-                from_project=self.discussion.attached_to_obj.task.project, # TODO: Breaks abstraction, assumes attached_to => TaskAnswer.
+                from_project=self.discussion.attached_to_obj.task.project,
+                # TODO: Breaks abstraction, assumes attached_to => TaskAnswer.
                 target=self.discussion,
-                target_info={ "what": "invite-guest" },
+                target_info={"what": "invite-guest"},
                 to_user=user,
                 text="{} mentioned you in a discussion:\n\n{}".format(self.user, self.text),
             )
@@ -356,9 +365,9 @@ class Comment(models.Model):
 
     def push_history(self, field):
         if not isinstance(self.extra, dict):
-            self.extra = { }
+            self.extra = {}
         self.extra.setdefault("history", []).append({
-            "when": timezone.now().isoformat(), # make JSON-serializable
+            "when": timezone.now().isoformat(),  # make JSON-serializable
             "previous-" + field: getattr(self, field),
         })
 
@@ -400,38 +409,45 @@ class Comment(models.Model):
             "user": self.user.render_context_dict(),
             "user_role": get_user_role(),
             "date_relative": reldate(self.created, timezone.now()) + " ago",
-            "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
+            "date_posix": self.created.timestamp(),  # POSIX time, seconds since the epoch, in UTC
             "text": self.text,
-            "text_rendered": render_text(self.text, autocompletes=self.discussion.get_autocompletes(whose_asking), comment=self),
+            "text_rendered": render_text(self.text, autocompletes=self.discussion.get_autocompletes(whose_asking),
+                                         comment=self),
             "notification_text": notification_text(),
             "emojis": self.emojis.split(",") if self.emojis else None,
         }
 
-class Attachment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user uploading this attachment.")
-    comment = models.ForeignKey(Comment, blank=True, null=True, related_name="attachments", on_delete=models.CASCADE, help_text="The Comment that this Attachment is attached to. Null when the file has been uploaded before the Comment has been saved.")
-    file = models.FileField(upload_to='discussion/attachments', validators=[validate_file_extension], help_text="The attached file.")
 
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
+class Attachment(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user uploading this attachment.")
+    comment = models.ForeignKey(Comment, blank=True, null=True, related_name="attachments", on_delete=models.CASCADE,
+                                help_text="The Comment that this Attachment is attached to. Null when the file has been uploaded before the Comment has been saved.")
+    file = models.FileField(upload_to='discussion/attachments', validators=[validate_file_extension],
+                            help_text="The attached file.")
+
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     def get_absolute_url(self):
         return reverse("discussion-attachment", args=[self.id])
 
+
 def reldate(date, ref=None):
     import dateutil.relativedelta
     rd = dateutil.relativedelta.relativedelta(ref or timezone.now(), date)
+
     def r(n, unit):
         return str(n) + " " + unit + ("s" if n != 1 else "")
+
     def c(*rs):
         return ", ".join(r(*s) for s in rs)
+
     if rd.months >= 1: return c((rd.months, "month"), (rd.days, "day"))
-    if rd.days >= 7: return c((rd.days, "day"),)
+    if rd.days >= 7: return c((rd.days, "day"), )
     if rd.days >= 1: return c((rd.days, "day"), (rd.hours, "hour"))
     if rd.hours >= 1: return c((rd.hours, "hour"), (rd.minutes, "minute"))
-    if rd.minutes >= 1: return c((rd.minutes, "minute"),)
-    return c((rd.seconds, "second"),)
+    if rd.minutes >= 1: return c((rd.minutes, "minute"), )
+    return c((rd.seconds, "second"), )
+
 
 def render_text(text, autocompletes=None, comment=None, unwrap_p=False):
     # Render comment text into HTML.
@@ -441,7 +457,7 @@ def render_text(text, autocompletes=None, comment=None, unwrap_p=False):
     # Put @-mentions in bold.
     if autocompletes:
         text, _ = match_autocompletes(text, autocompletes,
-            lambda text : "**" + text + "**")
+                                      lambda text: "**" + text + "**")
 
     # Rewrite attachment:### URLs.
     if comment is not None:
@@ -450,18 +466,20 @@ def render_text(text, autocompletes=None, comment=None, unwrap_p=False):
                 return Attachment.objects.get(id=attachment_id.group(1)).get_absolute_url()
             except:
                 return "about:blank"
+
         text = re.sub("(?<=\()attachment:(\d+)(?=\))", get_attachment_url, text)
 
     # Render to HTML as if CommonMark.
     import commonmark
     parsed = commonmark.Parser().parse(text)
-    text = commonmark.HtmlRenderer({ "safe": True }).render(parsed)
+    text = commonmark.HtmlRenderer({"safe": True}).render(parsed)
 
     if unwrap_p:
         # If it's a single paragraph, unwrap it.
         text = re.sub(r"^<p>(.*)</p>$", r"\1", text)
 
     return text
+
 
 def match_autocompletes(text, autocompletes, replace_mentions=None):
     import re
@@ -488,16 +506,17 @@ def match_autocompletes(text, autocompletes, replace_mentions=None):
     pattern = r"(?<!\w)" + pattern + r"(?!\w)"
 
     # Create a reverse-mapping.
-    reverse_mapping = { }
+    reverse_mapping = {}
     for char, items in autocompletes.items():
         for item in items:
             reverse_mapping[(char, item['tag'])] = item
 
     # Find what was mentioned.
     mentioned_users = set()
+
     def replace_func(m):
         char, tag = (m.group(0)[:1], m.group(0)[1:])
-        if char == "\\": # was escaped
+        if char == "\\":  # was escaped
             char, tag = (m.group(0)[1:2], m.group(0)[2:])
         item = reverse_mapping[(char, tag)]
         if item.get("user_id"):
@@ -506,6 +525,7 @@ def match_autocompletes(text, autocompletes, replace_mentions=None):
             if replace_mentions:
                 return replace_mentions(m.group(0))
         return m.group(0)
+
     text = re.sub(pattern, replace_func, text)
 
     return (text, mentioned_users)

@@ -10,6 +10,9 @@ if DEBUG and not TESTING_MODE:
     INSTALLED_APPS += [
         'nplusone.ext.django'
     ]
+
+    import logging
+
     NPLUSONE_LOGGER = logging.getLogger('nplusone')
     NPLUSONE_LOG_LEVEL = logging.WARN
 

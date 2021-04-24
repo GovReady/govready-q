@@ -1,55 +1,82 @@
-import logging.config
-import os
-from django.utils.log import DEFAULT_LOGGING
+import sys
 
-# Disable Django's logging setup
-LOGGING_CONFIG = None
-
-LOGLEVEL = os.environ.get('LOGLEVEL', 'info').upper()
-
-logging.config.dictConfig({
+LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'console': {
-            # exact format is not important, this is the minimum information
-            'format': '%(asctime)s %(name)s level %(levelname)s %(message)s',
+        'main': {
+            'format': '[%(asctime)s] <%(module)s.py %(levelname)s> %(message)s',
+            'datefmt': '%d/%b/%Y %H:%M:%S',
         },
-        'django.server': DEFAULT_LOGGING['formatters']['django.server'],
+        'core': {
+            'format': '[%(asctime)s][Duration:%(run_time)s][Status Code:%(status_code)s][User:%(user)s] %(request_method)s %(request_path)s ReqBody:[%(request_body)s]',
+            'datefmt': '%d/%b/%Y %H:%M:%S',
+        },
+        "json": {
+            '()': 'json_log_formatter.JSONFormatter',
+        }
+    },
+
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        }
     },
     'handlers': {
-        # console logs to stderr
         'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
-            'formatter': 'console',
         },
-        'django.server': DEFAULT_LOGGING['handlers']['django.server'],
+        'log_to_stdout': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'stream': sys.stdout,
+            'formatter': 'main',
+        },
+        'core_handler': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'stream': sys.stdout,
+            'formatter': 'core',
+        },
+        'json_handler': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'stream': sys.stdout,
+            'formatter': 'json',
+        }
     },
     'loggers': {
-        # default for all undefined Python modules
-        '': {
-            'level': 'INFO',
-            'handlers': ['console'],
+        # '': {
+        #     'handlers': ['core_handler'],
+        #     'level': 'DEBUG',
+        #     'propagate': True
+        # },
+        'main': {
+            'handlers': ['log_to_stdout'],
+            'level': 'DEBUG',
         },
-        # Our application code
-        'siteapp': {
-            'level': LOGLEVEL,
-            'handlers': ['console'],
-            # Avoid double logging because of root logger
-            'propagate': False,
+        'core': {
+            'handlers': ['core_handler'],
+            'level': 'DEBUG',
+        },
+        'core_json': {
+            'handlers': ['json_handler'],
+            'level': 'DEBUG',
         },
         'nplusone': {
             'handlers': ['console'],
             'level': 'WARN',
         },
-        ## Add if necessary
-        ##        # Prevent noisy modules from logging to non-console loggers (if any)
-        ##        'noisy_module': {
-        ##            'level': 'ERROR',
-        ##            'handlers': ['console'],
-        ##            'propagate': False,
-        ##        },
-        # Default runserver request logging
-        # 'django.server': DEFAULT_LOGGING['loggers']['django.server'],
+        # 'django.db.backends': {
+        #     'level': 'DEBUG',
+        #     'handlers': ['dev'],
+        # },
+        'django': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
     },
-})
+}

@@ -1,51 +1,32 @@
 import json
-import random
+import logging
+from datetime import datetime
 
+from django.contrib import messages
+from django.contrib.auth.models import Permission
 from django.core import serializers
 from django.db import IntegrityError
-from datetime import datetime
-from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Permission
 from django.db import transaction
 from django.db.models import Q
-from django.forms import ModelForm, model_to_dict
 from django.http import (Http404, HttpResponse, HttpResponseForbidden,
-                         HttpResponseNotAllowed, HttpResponseRedirect,
-                         JsonResponse)
+                         HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.generic import ListView
-from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model, get_perms, assign_perm
 
 from controls.forms import ImportProjectForm
+from controls.models import Element, System, Deployment
 from controls.views import add_selected_components
 from discussion.models import Discussion
-from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
+from guidedmodules.models import (ModuleQuestion, ProjectMembership,
                                   Task)
-
-from controls.models import Element, System, Statement, Poam, Deployment
 from system_settings.models import SystemSettings, Classification, Sitename
-
 from .forms import PortfolioForm, AddProjectForm, EditProjectForm
-from .good_settings_helpers import \
-    AllauthAccountAdapter  # ensure monkey-patch is loaded
-from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, Tag, ProjectAsset
 from .forms import PortfolioSignupForm
+from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, Tag, ProjectAsset
 from .notifications_helpers import *
-
-import sys
-import logging
-
-from siteapp.serializers import UserSerializer, ProjectSerializer
-from rest_framework import serializers
-from rest_framework import viewsets
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 
 logging.basicConfig()
 import structlog
@@ -169,18 +150,6 @@ def homepage(request):
         "login_form": login_form,
         "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
     })
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
-class ProjectViewSet(viewsets.ModelViewSet):
-    url = serializers.HyperlinkedIdentityField(view_name="siteapp:task-detail")
-
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
 
 
 def debug(request):
@@ -553,7 +522,6 @@ def apps_catalog(request):
 def apps_catalog_item(request, source_slug, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
-    from guidedmodules.models import AppSource
     catalog, _ = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
     for app_catalog_info in catalog:
         if app_catalog_info["key"] == source_slug + "/" + app_name:
@@ -645,8 +613,6 @@ def apps_catalog_item(request, source_slug, app_name):
 
 
 def start_app(appver, organization, user, folder, task, q, portfolio):
-    from guidedmodules.app_loading import load_app_into_database
-
     # Begin a transaction to create the Module and Task instances for the app.
     with transaction.atomic():
         # Create project.
@@ -2083,9 +2049,8 @@ def accept_invitation(request, code=None):
 
 
 def accept_invitation_do_accept(request, inv):
-    from django.contrib.auth import authenticate, login, logout
+    from django.contrib.auth import logout
     from django.http import HttpResponseRedirect
-    import urllib.parse
 
     # Can't accept if this object has expired. Warn the user but
     # send them to the homepage.

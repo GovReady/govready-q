@@ -8,7 +8,6 @@ from structlog.stdlib import LoggerFactory
 from typing import Dict
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -20,6 +19,8 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_users_with_perms, remove_perm)
 from jsonfield import JSONField
 
+from api.base.models import BaseModel
+from siteapp.enums.access_level import AccessLevelEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from siteapp.enums.assets import AssetTypeEnum
 from siteapp.utils.uploads import hash_file
@@ -30,7 +31,7 @@ structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
 
 
-class User(AbstractUser):
+class User(AbstractUser, BaseModel):
     # Additional user profile data.
 
     notifemails_enabled = models.IntegerField(default=0, choices=[(0, "As They Happen"), (1, "Don't Email")],
@@ -48,6 +49,9 @@ class User(AbstractUser):
                                   help_text="The user's API key with write-only permission.")
 
     # Methods
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.access_level = AccessLevelEnum.READ_WRITE  # Default Login Setting.  API overrides to token specific access
 
     def __str__(self):
         # name = self._get_setting("name")
@@ -70,6 +74,14 @@ class User(AbstractUser):
             return self.email
         else:
             return "Anonymous User Without Email Address"
+
+    @property
+    def access_level(self):
+        return self._access_level
+
+    @access_level.setter
+    def access_level(self, value):
+        self._access_level = value
 
     @staticmethod
     def preload_profiles(users, sort=False):
@@ -94,14 +106,15 @@ class User(AbstractUser):
         account_project_settings = {}
 
         history = TaskAnswerHistory.objects.select_related("taskanswer__task") \
-                    .prefetch_related("answered_by_task") \
-                    .filter(taskanswer__task__in=account_project_root_tasks.values(),
-                            taskanswer__question__key="account_settings") \
-                    .order_by('-id').values('taskanswer__task', 'answered_by_task')
+            .prefetch_related("answered_by_task") \
+            .filter(taskanswer__task__in=account_project_root_tasks.values(),
+                    taskanswer__question__key="account_settings") \
+            .order_by('-id').values('taskanswer__task', 'answered_by_task')
 
         from guidedmodules.models import Task
         tasks = {task.id: task for task in Task.objects.filter(id__in=[x['taskanswer__task'] for x in history])}
-        answered_by_tasks = {task.id: task for task in Task.objects.select_related('module').filter(id__in=[x['answered_by_task'] for x in history])}
+        answered_by_tasks = {task.id: task for task in Task.objects.select_related('module').filter(
+            id__in=[x['answered_by_task'] for x in history])}
         for ansh in history:
             account_project_settings.setdefault(
                 tasks[ansh['taskanswer__task']],
@@ -348,7 +361,7 @@ class DirectLoginBackend(ModelBackend):
 subdomain_regex = r"^([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])$"
 
 
-class Organization(models.Model):
+class Organization(BaseModel):
     name = models.CharField(max_length=255, help_text="The display name of the Organization.")
     slug = models.CharField(max_length=32, unique=True, help_text="A URL-safe abbreviation for the Organization.",
                             validators=[RegexValidator(regex=subdomain_regex)])
@@ -358,8 +371,6 @@ class Organization(models.Model):
     reviewers = models.ManyToManyField(User, blank=True, related_name="is_reviewer_of",
                                        help_text="Users who are permitted to change the reviewed state of task answers.")
 
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(default={}, blank=True, help_text="Additional information stored with this object.")
 
     def __str__(self):
@@ -442,7 +453,7 @@ class Organization(models.Model):
         return dict((setting.parameter_key, setting.value) for setting in settings)
 
 
-class OrganizationalSetting(models.Model):
+class OrganizationalSetting(BaseModel):
     """
     Captures an organizationally-defined setting for a parameterized control
     in a catalog.
@@ -461,11 +472,9 @@ class OrganizationalSetting(models.Model):
         return f"OrganizationalSetting({org_name}, {self.catalog_key}, {self.parameter_key})"
 
 
-class Portfolio(models.Model):
+class Portfolio(BaseModel):
     title = models.CharField(max_length=255, help_text="The title of this Portfolio.", unique=True)
     description = models.CharField(max_length=512, blank=True, help_text="A description of this Portfolio.")
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         permissions = [
@@ -523,7 +532,7 @@ class Portfolio(models.Model):
         return user.has_perm('can_grant_portfolio_owner_permission', self)
 
 
-class Folder(models.Model):
+class Folder(BaseModel):
     """A folder is a collection of Projects."""
 
     organization = models.ForeignKey(Organization, related_name="folders", on_delete=models.CASCADE,
@@ -537,8 +546,6 @@ class Folder(models.Model):
     projects = models.ManyToManyField("Project", blank=True, related_name="contained_in_folders",
                                       help_text="The Projects that are listed within this Folder.")
 
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     def __str__(self):
@@ -586,7 +593,7 @@ class Folder(models.Model):
                                                    {"contained_in_folders": self})
 
 
-class Project(TagModelMixin):
+class Project(TagModelMixin, BaseModel):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
     organization = models.ForeignKey(Organization, blank=True, null=True, related_name="projects",
                                      on_delete=models.CASCADE,
@@ -607,8 +614,6 @@ class Project(TagModelMixin):
                                   on_delete=models.CASCADE,
                                   help_text="All Projects have a 'root Task' (e.g., 'guidedmodules.task'). The root Task defines important information about Project.")
 
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     version = models.CharField(max_length=32, unique=False, blank=True, null=True, default="1.0",
@@ -1334,19 +1339,17 @@ class Project(TagModelMixin):
         return ChainMap(org_params, default_params)
 
 
-class ProjectMembership(models.Model):
+class ProjectMembership(BaseModel):
     project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE,
                                 help_text="The Project this is defining membership for.")
     user = models.ForeignKey(User, on_delete=models.CASCADE, help_text="The user that is a member of the Project.")
     is_admin = models.BooleanField(default=False, help_text="Is the user an administrator of the Project?")
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
 
     class Meta:
         unique_together = [('project', 'user')]
 
 
-class Invitation(models.Model):
+class Invitation(BaseModel):
     # who is sending the invitation
     from_user = models.ForeignKey(User, related_name="invitations_sent", on_delete=models.CASCADE,
                                   help_text="The User who sent the invitation.")
@@ -1392,8 +1395,6 @@ class Invitation(models.Model):
                                              help_text="For emails, a unique verification code.")
 
     # bookkeeping
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     def __str__(self):
@@ -1493,7 +1494,7 @@ class Invitation(models.Model):
         return self.target.get_invitation_redirect_url(self)
 
 
-class Support(models.Model):
+class Support(BaseModel):
     """Model for support information for support page for install of GovReady"""
 
     email = models.EmailField(max_length=254, unique=False, blank=True, null=True, help_text="Support email address")
@@ -1506,7 +1507,7 @@ class Support(models.Model):
         return "Support information"
 
 
-class Tag(models.Model):
+class Tag(BaseModel):
     label = models.CharField(max_length=100, unique=True, help_text="Label for tag")
     system_created = models.BooleanField(default=True)
 
@@ -1520,7 +1521,7 @@ class Tag(models.Model):
         return {"label": self.label, "system_created": self.system_created, "id": self.id}
 
 
-class Asset(models.Model):
+class Asset(BaseModel):
     UPLOAD_TO = None  # Should be overriden when iheritted
     title = models.CharField(max_length=255, help_text="The title of this asset.")
     asset_type = models.CharField(max_length=150, help_text="Asset type.", unique=False,
@@ -1530,8 +1531,6 @@ class Asset(models.Model):
     description = models.TextField(blank=True, null=True)
     filename = models.CharField(max_length=255)
     file = models.FileField(upload_to=UPLOAD_TO, help_text="The attached file.")
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
     uuid = models.UUIDField(default=uuid.uuid4, editable=False,
                             help_text="A UUID (a unique identifier) for this Asset.")
