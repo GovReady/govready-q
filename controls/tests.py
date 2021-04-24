@@ -163,7 +163,7 @@ class ControlUITests(SeleniumTest):
                 'NIST_SP-800-53_rev5_catalog.json',
                 'NIST_SP-800-171_rev1_catalog.json'
             ], "files")
-            # asserts...
+
             self.assertEqual(len(extended_files), 4)
 
             extended_keys = Catalogs.extend_external_catalogs(self, [
@@ -194,7 +194,7 @@ class ControlUITests(SeleniumTest):
             'NIST_SP-800-53_rev4_baselines.json',
             'NIST_SP-800-171_rev1_baselines.json'
         ], "files")
-            # asserts...
+
             self.assertEqual(len(extended_files), 3)
 
             extended_keys = Baselines.extend_external_baselines(self, [
@@ -307,7 +307,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         element_count_before_import = Element.objects.filter(element_type="system_element").count()
         statement_count_before_import = Statement.objects.filter(
-            statement_type="control_implementation_prototype").count()
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
 
         # Verify that the contents got copied correctly from the file to the textfield
         try:
@@ -329,7 +329,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         element_count_after_import = Element.objects.filter(element_type="system_element").count()
         self.assertEqual(element_count_before_import, element_count_after_import)
 
-        statement_count_after_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
         self.assertEqual(statement_count_before_import, statement_count_after_import)
 
     def test_component_import_oscal_json(self):
@@ -338,7 +338,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.browser.get(url)
 
         element_count_before_import = Element.objects.filter(element_type="system_element").count()
-        statement_count_before_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        statement_count_before_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
 
         # Test initial import of Component(s) and Statement(s)
         self.click_element('a#component-import-oscal')
@@ -353,7 +353,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 2, element_count_after_import))
 
-        statement_count_after_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
         self.assertEqual(statement_count_before_import + 4, statement_count_after_import)
         # Test file contains 6 Statements, but only 4 get imported
         # because one has an improper Catalog
@@ -382,7 +382,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.assertEqual(duplicate_import_element_count, 1)
 
         statement_count_after_duplicate_import = Statement.objects.filter(
-            statement_type="control_implementation_prototype").count()
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
         self.assertEqual(statement_count_after_import + 4, statement_count_after_duplicate_import)
 
     def test_import_tracker(self):
@@ -498,7 +498,7 @@ class StatementUnitTests(TestCase):
             sid = "au.3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is a test statement.",
-            statement_type = "control_implementation",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
             status = "Implemented"
         )
         smt.save()
@@ -562,7 +562,7 @@ class ElementUnitTests(TestCase):
             sid = "au-3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is the first test statement.",
-            statement_type = "control_implementation_prototype",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value,
             status = "Implemented",
             producer_element = e
         )
@@ -571,7 +571,7 @@ class ElementUnitTests(TestCase):
             sid = "au-4",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is the first test statement.",
-            statement_type = "control_implementation_prototype",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value,
             status = "Implemented",
             producer_element = e
         )
@@ -1031,7 +1031,7 @@ class ControlTestHelper(object):
             sid_class='NIST_SP-800-53_rev4',
             pid='a',
             body='This is a sample statement',
-            statement_type="control_implementation_prototype",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
             producer_element=component,
             import_record=import_record,
         )

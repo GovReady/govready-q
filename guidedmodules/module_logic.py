@@ -324,7 +324,7 @@ def oscal_context(answers):
 
     # collect all the control implementation statements
     statements = system.root_element.statements_consumed \
-                                    .filter(statement_type="control_implementation") \
+                                    .filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value) \
                                     .order_by('sid')
 
     # and all the project's organizational parameters

@@ -6,9 +6,14 @@ v999 (April XX, 2021)
 
 **UI changes**
 
+* Rearrange Create | Import | Manage component buttons; put "Manage Import Records" button last.
+
 * Add links for "forgot password" and "change password".
 * Add control titles to component control listing pages.
 * Display control catalog guidance text in `details` tag next to component control implementation statements.
+
+* Add control titles to component control listing pages.
+
 
 **Bug fixes**
 
@@ -22,6 +27,8 @@ v999 (April XX, 2021)
 
 **Developer changes**
 
+* Update stub_app used by compliance_app command for generating compliance app to include "input" and "output" section; and to have folders for templates, utils, and components.
+
 * Developers can now use `docker` & `docker-compose` to deploy a local environment.  This allows devs to work on any Operating System.  Instructions can be found at `dev_env/README.md` folder. 
 
 * Set system fisma_impact_level as part of question action to set baseline. Also add fisma_impact_level set/get methods to System model.
@@ -31,7 +38,6 @@ v999 (April XX, 2021)
 **Data changes**
 
 * Use statement type `fisma_impact_level` to track impact level of a system.
-
 
 v0.9.3.4 (April 20, 2021)
 -------------------------
