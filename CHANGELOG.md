@@ -13,6 +13,8 @@ v999 (April XX, 2021)
 * Add control titles to component control listing pages.
 
 
+* Search component library by tag content and make component tags clickable.
+
 **Bug fixes**
 
 * Immediately assign change project perms to user starting project and fix issue that non-admin users were not executing modifications to a project the user started such as setting baseline controls.
