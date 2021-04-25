@@ -758,6 +758,28 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             for import_record in import_records:
                 add_selected_components(system, import_record)
 
+
+        # Create POA&Ms for project
+        if user.has_perm('change_system', system):
+            # Get the poams file from app
+            input_files = appver.input_files.filter(app=appver, input_type='poam')
+            print("input_files", input_files)
+            # Load file from path
+            try:
+                fs = app.get_fs()
+                with fs.open(file_path, "rb") as file:
+                    oscal_content = file.read()
+            except OSError:
+                logger.error(event="load_app_input", msg="Failed to find or load an app input.")
+                raise FileNotFoundError
+            except IntegrityError as e:
+                if 'unique constraint' in e.message:
+                    logger.error(event="load_app_input",
+                                 msg="Integrity error. Do components with same UUIDs already exist?")
+                else:
+                    logger.error(event="load_app_input", msg=f"Integrity error. {e.message}")
+                raise IntegrityError
+
         else:
             # User does not have write permissions
             logger.info(

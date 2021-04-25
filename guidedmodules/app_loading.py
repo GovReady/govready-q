@@ -506,6 +506,7 @@ def load_app_inputs_into_database(app, appinst):
         app_input, is_new = AppInput.objects.get_or_create(
             source=source,
             content_hash=file_hash,
+            input_type=input_item['type']
         )
         if is_new:
             # Set the new file content.
@@ -513,8 +514,8 @@ def load_app_inputs_into_database(app, appinst):
             app_input.file.save(file_path, ContentFile(content_loader()))
             app_input.save()
 
-        if input_item["type"] == "oscal":  # Only supporting OSCAL input currently
-        # Load file from path
+        if input_item["type"] == "oscal":
+            # Load file from path
             try:
                 fs = app.get_fs()
                 with fs.open(file_path, "rb") as file:
@@ -531,6 +532,27 @@ def load_app_inputs_into_database(app, appinst):
             else:
                 from controls.views import ComponentImporter
                 import_record = ComponentImporter().import_components_as_json(file_path, oscal_content)
+                if import_record is not None:
+                    appinst.input_artifacts.add(import_record)
+        if input_item["type"] == "poam":
+            # Load file from path
+            try:
+                fs = app.get_fs()
+                with fs.open(file_path, "rb") as file:
+                    oscal_content = file.read()
+            except OSError:
+                logger.error(event="load_app_input", msg="Failed to find or load an app input.")
+                raise FileNotFoundError
+            except IntegrityError as e:
+                if 'unique constraint' in e.message:
+                    logger.error(event="load_app_input", msg="Integrity error. Do components with same UUIDs already exist?")
+                else:
+                    logger.error(event="load_app_input", msg=f"Integrity error. {e.message}")
+                raise IntegrityError
+            else:
+                from controls.views import PoamImporter
+                import_record = PoamImporter().import_poams_as_json(file_path, oscal_content)
+
                 if import_record is not None:
                     appinst.input_artifacts.add(import_record)
 

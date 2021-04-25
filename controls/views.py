@@ -639,7 +639,6 @@ class ComponentImporter(object):
 
         return new_import_record
 
-
     def validate_oscal_json(self, oscal_json):
         """Validates the JSON object is valid OSCAL format"""
 
@@ -769,6 +768,95 @@ class ComponentImporter(object):
             catalog = Catalog.GetInstance(catalog_key)
             control = catalog.get_control_by_id(control_id)
             return True if control is not None else False
+
+class PoamImporter(object):
+
+    def import_poams_as_json(self, import_name, json_object, request=None):
+        """Imports Components from a JSON object
+
+        @type import_name: str
+        @param import_name: Name of import file (if it exists)
+        @type json_object: dict
+        @param json_object: Poam attributes from JSON object
+        @rtype: ImportRecord if success, bool (false) if failure
+        @returns: ImportRecord linked to the created components (if success) or False if failure
+        """
+
+        # Validates the format of the JSON object
+        try:
+            poam_json = json.loads(json_object)
+        except ValueError:
+            if request is not None:
+                messages.add_message(request, messages.ERROR, f"Invalid JSON. Component(s) not created.")
+            logger.info(f"Invalid JSON. Component(s) not created.")
+            return False
+        # if self.validate_oscal_json(oscal_json):
+        if True:
+            # Returns list of created poams
+            # created_poams = self.create_poams(poam_json)
+            # new_import_record = self.create_import_record(import_name, created_poams)
+            return new_import_record
+        else:
+            if request is not None:
+                messages.add_message(request, messages.ERROR, f"Invalid OSCAL. POA&M(s) not created.")
+                logger.info(f"Invalid JSON. POA&M(s) not created.")
+            return False
+
+    def create_import_record(self, import_name, created_poams):
+        """Associates poams statements to an import record
+
+        @type import_name: str
+        @param import_name: Name of import file (if it exists)
+        @type poams: list
+        @param poams: List of poams
+        @rtype: ImportRecord
+        @returns: New ImportRecord object with poams and statements associated
+        """
+
+        new_import_record = ImportRecord.objects.create(name=import_name)
+        poams = Poam.objects.filter()
+        # for poam in poams:
+        #     statements = Statement.objects.filter(producer_element=component)
+        #     for statement in statements:
+        #         statement.import_record = new_import_record
+        #         #statement.save()
+        #     component.import_record = new_import_record
+        #     component.save()
+
+        return new_import_record
+
+    def create_poams(self, poam_json):
+        """Creates Poams from valid POA&M JSON"""
+
+        poams_created = []
+        poams = poam_json['poams']
+        for p in poams[0:2]:
+            new_poam = self.create_component(p)
+            if new_poam is not None:
+                poams_created.append(new_poam)
+
+        return poams_created
+
+    def create_poam(self, poam_object):
+        """Creates a component from a JSON dict
+
+        @type poam_object: dict
+        @param poam_object: POAM attributes from JSON object
+        @rtype: Poam
+        @returns: Poam object if created, None otherwise
+        """
+
+        new_poam = poam.objects.create(
+            weakness_name=poam_object['weakness_name'],
+            group=poam_object['group'],
+            body=poam_object['body'] if 'body' in poam_object else '',
+            # Poams are statements of type poam
+            statement_type="poam"
+        )
+
+        logger.info(f"Component {new_poam.name} created with UUID {new_poam.uuid}.")
+        return new_poam
+
 
 def add_selected_components(system, import_record):
         """Add a component from the library or a compliance app to the project and its statements using the import record"""
