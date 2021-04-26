@@ -60,6 +60,8 @@ v0.9.3.4 (April 20, 2021)
 * Added a `list_catalogs()` method to `Catalog` in order to easily get the `Catalog` objects in a list.
 
 * Allow moving projects between portfolios only by users with appropriate permissions.
+  
+* Introducing profiling with nplusone to assist in preventing N+1 views.
 
 **Bug fixes**
 
