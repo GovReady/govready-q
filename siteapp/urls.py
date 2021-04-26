@@ -122,6 +122,8 @@ urlpatterns = [
     url(r'^tags/_save$', views.create_tag),
     url(r'^tags/(\d+)/_delete$', views.delete_tag),
     url(r'^tags/$', views.list_tags),
+
+    # Session
     url(r'session_security/', include('session_security.urls')),
 ]
 

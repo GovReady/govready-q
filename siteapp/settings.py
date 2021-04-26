@@ -8,7 +8,7 @@
 import os, os.path, json
 from platform import uname, system
 from django.core.exceptions import ValidationError
-#from system_settings.models import SystemSettings
+
 # What's the name of the app containing this file? That determines
 # the module for the main URLconf etc.
 primary_app = os.path.basename(os.path.dirname(__file__))
@@ -409,13 +409,9 @@ X_FRAME_OPTIONS = 'DENY' # don't allow site to be embedded in iframes
 # Session security and inactivity timeout. Logout user after certain period of inactivity.
 # By default user is warned at 20 minutes that session is about to expire and if user does not perform any mouse/keyboard activity
 # the session expires 10 minutes later (total of 30 minutes).
-warn_after = 85800
-expire_after = 86400
-expire_at_browser_close = True
-
-SESSION_EXPIRE_AT_BROWSER_CLOSE = environment['session_security_expire_at_browser_close'] if not DEBUG else expire_at_browser_close
-SESSION_SECURITY_WARN_AFTER = environment['session_security_warn_after'] if not DEBUG else warn_after
-SESSION_SECURITY_EXPIRE_AFTER = environment['session_security_expire_after'] if not DEBUG else expire_after
+SESSION_EXPIRE_AT_BROWSER_CLOSE = environment['session_security_expire_at_browser_close'] if not DEBUG else True
+SESSION_SECURITY_WARN_AFTER = environment['session_security_warn_after'] if not DEBUG else 85800
+SESSION_SECURITY_EXPIRE_AFTER = environment['session_security_expire_after'] if not DEBUG else 86400
 
 # Put static files in the virtual path "/static/". When the "static"
 # environment setting is present, then it's a local directory path

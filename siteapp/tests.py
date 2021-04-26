@@ -507,7 +507,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self._login()
         ping_url = self.url("/session_security/ping/?idleFor=0")
         response = self.client_get(ping_url)
-        #self.browser.get(ping_url)
+
         self.assertTrue(response.status_code==200)
         self.assertTrue(response.content==b'0')
 
