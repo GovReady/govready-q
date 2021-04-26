@@ -125,6 +125,7 @@ class SeleniumTest(StaticLiveServerTestCase):
 
         if DOCKER:
             if HEADLESS:
+                options.add_argument('--no-sandbox')
                 cls.browser = selenium.webdriver.Chrome(chrome_options=options)
             else:
                 cls.browser = selenium.webdriver.Remote(command_executor='http://selenium-hub:4444/wd/hub',

@@ -491,7 +491,7 @@ DOCKER = get_environment_bool("docker")
 
 if not DOCKER:
     # Depreciated
-    HEADLESS = get_environment_bool("test_visible")
+    HEADLESS = not get_environment_bool("test_visible")
     SELENIUM_BROWSER = "chrome"
 else:
     HEADLESS = get_environment_bool("selenium-headless")
