@@ -1,0 +1,46 @@
+{
+    "schema": "GovReadySimpleSAR",
+    "version": "0.1",
+    "sar": [
+        {
+            "id": "34463",
+            "name": "oscap-scan",
+            "description": "SCAP scan Results",
+            "ip": "10.10.0.183",
+            "uuid": "b0b84f42-d510-42b8-a1da-3b586985193e",
+            "pass": 210,
+            "fail": 8,
+            "error": 1
+        },
+        {
+            "id": "22901",
+            "name": "oscap-scan",
+            "description": "SCAP scan Results",
+            "ip": "10.10.0.2",
+            "uuid": "12b98b74-29d2-4610-96d8-5b82555da320",
+            "pass": 212,
+            "fail": 11,
+            "error": 0
+        },
+        {
+            "id": "24820",
+            "name": "oscap-scan",
+            "description": "SCAP scan Results",
+            "ip": "10.10.0.198",
+            "uuid": "efc7c3c8-2df0-4c91-9a3e-7cf3b4a65acc",
+            "pass": 201,
+            "fail": 7,
+            "error": 4
+        },
+        {
+            "id": "22454",
+            "name": "oscap-scan",
+            "description": "SCAP scan Results",
+            "ip": "10.10.0.131",
+            "uuid": "0c40430b-e818-48e2-b413-b6d62bdd96b2",
+            "pass": 278,
+            "fail": 8,
+            "error": 4
+        }
+    ]
+}

@@ -3,6 +3,7 @@ import os
 import json
 import auto_prefetch
 from django.db import models
+from django.db.models import Count
 from django.utils.functional import cached_property
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
@@ -12,13 +13,15 @@ from jsonfield import JSONField
 from natsort import natsorted
 
 from siteapp.model_mixins.tags import TagModelMixin
-from controls.oscal import Catalogs, Catalog
+from controls.enums.statements import StatementTypeEnum
+from controls.oscal import Catalogs, Catalog, check_and_extend
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
 from copy import deepcopy
 from django.db import transaction
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
+EXTERNAL_BASELINE_PATH = os.path.join(f"{os.getcwd()}",'local', 'controls', 'data', 'baselines')
 ORGPARAM_PATH = os.path.join(os.path.dirname(__file__),'data','org_defined_parameters')
 
 class ImportRecord(models.Model):
@@ -49,7 +52,7 @@ class Statement(auto_prefetch.Model):
     sid_class = models.CharField(max_length=200, help_text="Statement identifier 'class' such as 'NIST_SP-800-53_rev4' or other OSCAL catalog name Control ID.", unique=False, blank=True, null=True)
     pid = models.CharField(max_length=20, help_text="Statement part identifier such as 'h' or 'h.1' or other part key", unique=False, blank=True, null=True)
     body = models.TextField(help_text="The statement itself", unique=False, blank=True, null=True)
-    statement_type = models.CharField(max_length=150, help_text="Statement type.", unique=False, blank=True, null=True)
+    statement_type = models.CharField(max_length=150, help_text="Statement type.", unique=False, blank=True, null=True, choices=StatementTypeEnum.choices())
     remarks = models.TextField(help_text="Remarks about the statement.", unique=False, blank=True, null=True)
     status = models.CharField(max_length=100, help_text="The status of the statement.", unique=False, blank=True, null=True)
     version = models.CharField(max_length=20, help_text="Optional version number.", unique=False, blank=True, null=True)
@@ -84,19 +87,27 @@ class Statement(auto_prefetch.Model):
     @property
     def catalog_control(self):
         """Return the control content from the catalog"""
+
         # Get instance of the control catalog
         catalog = Catalog.GetInstance(catalog_key=self.sid_class)
         # Look up control by ID
         return catalog.get_control_by_id(self.sid)
 
-    @property
+    @cached_property
     def catalog_control_as_dict(self):
         """Return the control content from the catalog"""
+
         # Get instance of the control catalog
         catalog = Catalog.GetInstance(catalog_key=self.sid_class)
-        catalog_control_dict = catalog.get_flattened_controls_all_as_dict()
         # Look up control by ID
-        return catalog_control_dict[self.sid]
+        catalog_control_dict = catalog.get_flattened_control_as_dict(self.catalog_control)
+        return catalog_control_dict
+
+    @cached_property
+    def control_title(self):
+        """Return the control title"""
+
+        return self.catalog_control_as_dict['title']
 
     def create_prototype(self):
         """Creates a prototype statement from an existing statement and prototype object"""
@@ -106,7 +117,7 @@ class Statement(auto_prefetch.Model):
             return self.prototype
             # check if prototype content is the same, report error if not, or overwrite if permission approved
         prototype = deepcopy(self)
-        prototype.statement_type="control_implementation_prototype"
+        prototype.statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value
         prototype.consumer_element_id = None
         prototype.id = None
         prototype.save()
@@ -123,7 +134,7 @@ class Statement(auto_prefetch.Model):
         # System already has instance of the control_implementation statement
         # TODO: write check for this logic
         # Get all statements for consumer element so we can identify
-        smts_existing = Statement.objects.filter(consumer_element__id = consumer_element_id, statement_type = "control_implementation").select_related('prototype')
+        smts_existing = Statement.objects.filter(consumer_element__id = consumer_element_id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).select_related('prototype')
 
         # Get prototype ids for all consumer element statements
         smts_existing_prototype_ids = [smt.prototype.id for smt in smts_existing]
@@ -134,7 +145,7 @@ class Statement(auto_prefetch.Model):
         #     # check if prototype content is the same, report error if not, or overwrite if permission approved
 
         instance = deepcopy(self)
-        instance.statement_type="control_implementation"
+        instance.statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value
         instance.consumer_element_id = consumer_element_id
         instance.id = None
         # Set prototype attribute to newly created instance
@@ -233,7 +244,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
     #    e.statements_consumed.all()
     #
     # Retrieve statements that are control implementations
-    #    e.statements_consumed.filter(statement_type="control_implementation")
+    #    e.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
 
     def __str__(self):
         return "'%s id=%d'" % (self.name, self.id)
@@ -326,7 +337,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
     def get_control_impl_smts_prototype_count(self):
         """Return count of statements with this element as producer_element"""
 
-        smt_count = Statement.objects.filter(producer_element=self, statement_type="control_implementation_prototype").count()
+        smt_count = Statement.objects.filter(producer_element=self, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
 
         return smt_count
 
@@ -358,7 +369,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
 
     @property
     def selected_controls_oscal_ctl_ids(self):
-        """Return array of selectecd controls oscal ids"""
+        """Return array of selected controls oscal ids"""
         # oscal_ids = self.controls.all()
         oscal_ctl_ids = [control.oscal_ctl_id for control in self.controls.all()]
         # Sort
@@ -459,7 +470,7 @@ class System(auto_prefetch.Model):
     # Notes
     # Retrieve system implementation statements
     #   system = System.objects.get(pk=2)
-    #   system.root_element.statements_consumed.filter(statement_type="control_implementation")
+    #   system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
     #
     # Retrieve system common controls statements
     #   system = System.objects.get(pk=2)
@@ -512,13 +523,30 @@ class System(auto_prefetch.Model):
         control = ElementControl.objects.get(pk=control_id)
 
         # Delete Control Statements
-        self.root_element.statements_consumed.filter(statement_type="control_implementation",
+        self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
                                                      sid_class=control.oscal_catalog_key,
                                                      sid=control.oscal_ctl_id
                                                      ).delete()
 
         control.delete()
         return control
+
+    @transaction.atomic
+    def set_fisma_impact_level(self, fisma_impact_level):
+        """Assign FISMA impact level to system"""
+
+        # Get or create the fisma_impact_level smt for system's root_element; should only have 1 statement
+        smt = Statement.objects.create(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value, producer_element=self.root_element,consumer_element=self.root_element, body=fisma_impact_level)
+        return fisma_impact_level, smt
+
+    @property
+    def get_fisma_impact_level(self):
+        """Assign FISMA impact level to system"""
+
+        # Get or create the fisma_impact_level smt for system's root_element; should only have 1 statement
+        smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value, producer_element=self.root_element,consumer_element=self.root_element)
+        fisma_impact_level = smt.body
+        return fisma_impact_level
 
     @property
     def smts_common_controls_as_dict(self):
@@ -533,7 +561,7 @@ class System(auto_prefetch.Model):
 
     @property
     def smts_control_implementation_as_dict(self):
-        smts = self.root_element.statements_consumed.filter(statement_type="control_implementation").order_by('pid')
+        smts = self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).order_by('pid')
         smts_as_dict = {}
         for smt in smts:
             if smt.sid in smts_as_dict:
@@ -550,7 +578,7 @@ class System(auto_prefetch.Model):
         elm = self.root_element
         selected_controls = elm.controls.all().values("oscal_ctl_id", "uuid")
         # Get the smts_control_implementations ordered by part, e.g. pid
-        smts = elm.statements_consumed.filter(statement_type="control_implementation").order_by('pid')
+        smts = elm.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).order_by('pid')
 
         smts_as_dict = {}
 
@@ -633,16 +661,16 @@ class System(auto_prefetch.Model):
         """Retrieve counts of control status"""
 
         status_list = ['Not Implemented', 'Planned', 'Partially Implemented', 'Implemented', 'Unknown']
-        status_stats = {}
+        status_stats = {status: 0 for status in status_list}
         # Fetch all selected controls
         elm = self.root_element
-        for status in status_list:
-            # Get the smts_control_implementations ordered by part, e.g. pid
-            status_stats[status] = elm.statements_consumed.filter(statement_type="control_implementation", status=status).count()
-        # TODO add index on statement status
 
+        counts = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value, status__in=status_list).values('status').order_by('status').annotate(count=Count('status'))
+        status_stats.update({r['status']: r['count'] for r in counts})
+
+        # TODO add index on statement status
         # Get overall controls addressed (e.g., covered)
-        status_stats['Addressed'] = elm.statements_consumed.filter(statement_type="control_implementation").values('sid').distinct().count()
+        status_stats['Addressed'] = elm.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).values('sid').distinct().count()
         return status_stats
 
     @cached_property
@@ -653,13 +681,11 @@ class System(auto_prefetch.Model):
         status_list = ['Open', 'Closed', "In Progress"]
         # TODO
         # Get a unique filter of status list and gather on that...
-        status_stats = {}
-        # Fetch all selected controls
-        elm = self.root_element
-        for status in status_list:
-            # Get the smts_control_implementations ordered by part, e.g. pid
-            status_stats[status] = elm.statements_consumed.filter(statement_type="POAM",
-                                                                  status__iexact=status).count()
+        status_stats = {status: 0 for status in status_list}
+        # Fetch all system POA&Ms
+        counts = Statement.objects.filter(statement_type="POAM", consumer_element=self.root_element, status__in=status_list).values('status').order_by('status').annotate(
+            count=Count('status'))
+        status_stats.update({r['status']: r['count'] for r in counts})
         # TODO add index on statement status
         return status_stats
 
@@ -714,8 +740,9 @@ class ElementCommonControl(auto_prefetch.Model):
 class Baselines (object):
     """Represent list of baselines"""
     def __init__(self):
-        global BASELINE_PATH
+
         self.file_path = BASELINE_PATH
+        self.external_file_path = EXTERNAL_BASELINE_PATH
         self.baselines_keys = self._list_keys()
         # self.index = self._build_index()
 
@@ -729,18 +756,20 @@ class Baselines (object):
             # bs.get_baseline_controls('NIST_SP-800-53_rev4', 'moderate')
 
     def _list_files(self):
-        return [
+        return self.extend_external_baselines([
             'NIST_SP-800-53_rev4_baselines.json',
             # 'NIST_SP-800-53_rev5_baselines.json',
             'NIST_SP-800-171_rev1_baselines.json'
-        ]
+        ], "files")
+
 
     def _list_keys(self):
-        return [
+        return self.extend_external_baselines([
             'NIST_SP-800-53_rev4',
             # 'NIST_SP-800-53_rev5',
             'NIST_SP-800-171_rev1'
-        ]
+        ], "keys")
+
 
     def _load_json(self, baselines_key):
         """Read baseline file - JSON"""
@@ -749,8 +778,12 @@ class Baselines (object):
         data_file = os.path.join(self.file_path, self.data_file)
         # Does file exist?
         if not os.path.isfile(data_file):
-            print("ERROR: {} does not exist".format(data_file))
-            return False
+            # Check if there any external oscal baseline files
+            try:
+                data_file = os.path.join(self.external_file_path, self.data_file)
+            except:
+                print("ERROR: {} does not exist".format(data_file))
+                return False
         # Load file as json
         try:
             with open(data_file, 'r') as json_file:
@@ -777,6 +810,17 @@ class Baselines (object):
     def body(self):
         return self.legacy_imp_smt
 
+
+    def extend_external_baselines(self, baseline_info, extendtype):
+        """
+        Add external baselines to list of baselines
+        """
+        os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
+        external_baselines = [file for file in os.listdir(EXTERNAL_BASELINE_PATH) if
+                  file.endswith('.json')]
+
+        baseline_info = check_and_extend(baseline_info, external_baselines, extendtype, "_baselines")
+        return baseline_info
 class OrgParams(object):
     """
     Represent list of organizational defined parameters. Temporary
@@ -793,7 +837,6 @@ class OrgParams(object):
         return cls._singleton
 
     def init(self):
-        global ORGPARAM_PATH
         self.cache = {}
 
         path = Path(ORGPARAM_PATH)

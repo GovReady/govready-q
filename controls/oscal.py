@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 
 CATALOG_PATH = os.path.join(os.path.dirname(__file__), 'data', 'catalogs')
-
+EXTERNAL_CATALOG_PATH = os.path.join(f"{os.getcwd()}",'local', 'controls', 'data', 'catalogs')
 
 class Catalogs(object):
     """Represent list of catalogs"""
@@ -19,29 +19,40 @@ class Catalogs(object):
     NIST_SP_800_171_rev1 = 'NIST_SP-800-171_rev1'
 
     def __init__(self):
-        global CATALOG_PATH
         self.catalog_path = CATALOG_PATH
         # self.catalog = None
         self.catalog_keys = self._list_catalog_keys()
         self.index = self._build_index()
 
+    def extend_external_catalogs(self, catalog_info, extendtype):
+        """
+        Add external catalogs to list of catalogs
+        """
+        os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
+        external_catalogs = [file for file in os.listdir(EXTERNAL_CATALOG_PATH) if
+                  file.endswith('.json')]
+        catalog_info = check_and_extend(catalog_info, external_catalogs, extendtype, "_catalog")
+
+        return catalog_info
+
     def _list_catalog_files(self):
-        return [
+        return self.extend_external_catalogs([
             'NIST_SP-800-53_rev4_catalog.json',
             'NIST_SP-800-53_rev5_catalog.json',
             'NIST_SP-800-171_rev1_catalog.json'
-        ]
+        ], "files")
 
     def _list_catalog_keys(self):
-        return [
+
+        return self.extend_external_catalogs([
             Catalogs.NIST_SP_800_53_rev4,
             Catalogs.NIST_SP_800_53_rev5,
             Catalogs.NIST_SP_800_171_rev1
-        ]
+        ], "keys")
 
     def _load_catalog_json(self, catalog_key):
         catalog = Catalog(catalog_key)
-        # print(catalog_key, catalog._load_catalog_json())
+        #print(catalog_key, catalog._load_catalog_json())
         return catalog._load_catalog_json()
 
     def _build_index(self):
@@ -58,12 +69,29 @@ class Catalogs(object):
         catalog_titles = [item['metadata']['title'] for item in self.index]
         return catalog_titles
 
+    def list_catalogs(self):
+        """
+        List catalog objects
+        """
+        return [Catalog(key) for key in Catalogs()._list_catalog_keys()]
+
 
 def uhash(obj):
     """Return a positive hash code"""
     h = hash(obj)
     return h + sys.maxsize + 1
 
+def check_and_extend(values, external_values, extendtype, splitter):
+    """
+    Modularize value to extend
+    """
+    if extendtype == "keys":
+        keys = [key.split(f'{splitter}.json')[0] for key in external_values]
+        values.extend(keys)
+    elif extendtype == "files":
+        files = [file for file in external_values]
+        values.extend(files)
+    return values
 
 class Catalog(object):
     """Represent a catalog"""
@@ -95,10 +123,10 @@ class Catalog(object):
         return catalog_instance_key.replace('-', '_')
 
     def __init__(self, catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
-        global CATALOG_PATH
         self.catalog_key = catalog_key
         self.catalog_key_display = catalog_key.replace("_", " ")
         self.catalog_path = CATALOG_PATH
+        self.external_catalog_path = EXTERNAL_CATALOG_PATH
         self.catalog_file = catalog_key + "_catalog.json"
         try:
             self.oscal = self._load_catalog_json()
@@ -120,6 +148,7 @@ class Catalog(object):
         # have different organizational defined parameters.
         self.parameter_values = parameter_values
         self.flattened_controls_all_as_dict = self.get_flattened_controls_all_as_dict()
+        self.flattened_controls_all_as_dict_list = self.get_flattened_controls_all_as_dict_list()
         self.parameters_by_control = self._cache_parameters_by_control()
 
     def _load_catalog_json(self):
@@ -127,8 +156,12 @@ class Catalog(object):
         catalog_file = os.path.join(self.catalog_path, self.catalog_file)
         # Does file exist?
         if not os.path.isfile(catalog_file):
-            print(f"ERROR: {catalog_file} does not exist")
-            return False
+            # Check if there any external oscal catalog files
+            try:
+                catalog_file = os.path.join(self.external_catalog_path, self.catalog_file)
+            except:
+                print(f"ERROR: {catalog_file} does not exist")
+                return False
         # Load file as json
         with open(catalog_file, 'r') as json_file:
             data = json.load(json_file)
@@ -339,11 +372,11 @@ class Catalog(object):
             "description_print": description_print,
             "guidance": self.get_control_prose_as_markdown(control, part_types={"guidance"}),
             "catalog_file": self.catalog_file,
+            "catalog_key": self.catalog_file.split('_catalog.json')[0],
             "catalog_id": self.catalog_id,
             "sort_id": self.get_control_property_by_name(control, "sort-id"),
             "label": self.get_control_property_by_name(control, "label")
         }
-        # cl_dict = {"id": "te-1", "title": "Test Control"}
         return cl_dict
 
     def get_flattened_controls_all_as_dict(self):
@@ -357,6 +390,16 @@ class Catalog(object):
             cl_all_dict[cl_dict['id']] = cl_dict
         return cl_all_dict
 
+    def get_flattened_controls_all_as_dict_list(self):
+        """Return all control dictionary in a nested Python list"""
+        # Create an empty list
+        cl_all_list = []
+        # Get all the controls
+        for cl in self.get_controls_all():
+            # Get flattened control and add to list of controls
+            cl_dict = self.get_flattened_control_as_dict(cl)
+            cl_all_list.append(cl_dict)
+        return cl_all_list
     def _cache_parameters_by_control(self):
         cache = defaultdict(list)
         if self.oscal:

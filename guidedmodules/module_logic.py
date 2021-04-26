@@ -86,7 +86,6 @@ def walk_module_questions(module, callback):
 
         # Run the callback and get its state.
         state = callback(q, state, dependencies[q])
-
         # Remember the state in case we encounter it later.
         processed_questions[q.key] = dict(state) # clone
 
@@ -325,7 +324,7 @@ def oscal_context(answers):
 
     # collect all the control implementation statements
     statements = system.root_element.statements_consumed \
-                                    .filter(statement_type="control_implementation") \
+                                    .filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value) \
                                     .order_by('sid')
 
     # and all the project's organizational parameters
@@ -614,7 +613,7 @@ def render_content(content, answers, output_format, source,
                 varname = m.group(1)
                 expr = m.group(2)
 
-                # print("%for: expr = ", expr)
+                # print(print"%for: expr = ", expr)
                 condition_func = compile_jinja2_expression(expr)
                 if output_format == "PARSE_ONLY":
                     return value
@@ -1540,15 +1539,34 @@ class TemplateContext(Mapping):
                 # Retrieve a Django dictionary of dictionaries object of full control catalog
 
                 from controls.oscal import Catalog
-                # Detect single control catalog from first control
                 try:
-                    catalog_key = self.module_answers.task.project.system.root_element.controls.first().oscal_catalog_key
-                    parameter_values = self.module_answers.task.project.get_parameter_values(catalog_key)
-                    sca = Catalog.GetInstance(catalog_key=catalog_key,
-                                              parameter_values=parameter_values)
-                    control_catalog = sca.flattened_controls_all_as_dict
+                    all_keys = list(set([controls.oscal_catalog_key for controls in
+                                         self.module_answers.task.project.system.root_element.controls.all()]))
                 except:
-                    control_catalog = None
+                    all_keys = []
+                # Need default if there are no control catalogs present
+                control_catalog = []
+                # If there are multiple catalogs
+                if len(all_keys) > 1:
+                    for idx, key in enumerate(all_keys):
+                    # Detect single control catalog from first control
+                        try:
+                            parameter_values = self.module_answers.task.project.get_parameter_values(key)
+
+                            sca = Catalog.GetInstance(catalog_key=key,
+                                                      parameter_values=parameter_values)
+                            control_catalog.append(sca.flattened_controls_all_as_dict_list)
+                        except:
+                            control_catalog = None
+                # If there is one catalog
+                elif len(all_keys) == 1:
+                    try:
+                        parameter_values = self.module_answers.task.project.get_parameter_values(all_keys[0])
+                        sca = Catalog.GetInstance(catalog_key=all_keys[0],
+                                                  parameter_values=parameter_values)
+                        control_catalog = sca.flattened_controls_all_as_dict
+                    except:
+                        control_catalog = None
                 return control_catalog
             if item == "system":
                 # Retrieve the system object associated with this project

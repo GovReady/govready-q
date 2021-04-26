@@ -1,0 +1,93 @@
+id: pia_intro
+title: Privacy Impact Assessment (Overview)
+
+questions:
+
+- id: q1
+  title: Overview
+  prompt: |
+    What is a "Privacy Impact Assessment?"
+
+    A Privacy Impact Assessment (PIA) is a decision tool used by organizations to identify and mitigate privacy risks. It answers what personally identifiable information is being collected, why the information is being collected, and how that information will be collected, used, and stored.
+  type: interstitial
+
+- id: contact_person
+  title: Contact Person for PIA
+  prompt: |
+    What is the name of the main point of contact for this PIA?
+  type: text
+
+- id: contact_person_phone
+  title: Contact Person's Phone
+  prompt: |
+    What is {{contact_person}}'s primary phone contact?
+  type: text
+
+- id: q2
+  title: PIA Abstract
+  prompt: |
+    Provide a paragraph summary that describes the system. 
+
+    The abstract is composed of a minimum of three senteces. It should conform to the following format:
+
+      • First sentence should include the name of the component and the system,
+        technology, pilot, rule, program, or other collection. 
+
+      • Second sentence should be a brief description of the project and its function.
+
+      • Third sentence should explain the reason the program is being created and why
+      the PIA is required. This sentence should embody the same analysis that caused
+      the project to be identified as a “privacy sensitive system” in the PTA, such as the
+      project requires PII or the technology is privacy sensitive. 
+  type: longtext
+  default: See System Description:{{project.system_info.system_description}}
+
+- id: q3
+  title: PIA Overview
+  prompt: |
+    Next, we will build the PIA Overview. 
+
+    It is the foundation for the entire PIA. The overview provides the context and background necessary to understand the project's purpose and mission.
+  type: interstitial
+
+- id: q4
+  title: PIA Overview, Purpose
+  prompt: |
+    Describe the purpose of the system, the name of the system owner, the authorizing legislation, and how it relates to the organizational mission.
+  type: longtext
+
+- id: q5
+  title: PIA Overview, Collection
+  prompt: |
+    Describe how the project collects and uses PII, including a typical transaction that
+    details the life cycle from collection to disposal of the PII.  
+  type: longtext
+
+- id: q6
+  title: PIA Overview, Risk Mitigation
+  prompt: |
+    Describe the recommendation for how the program has taken steps to protect
+    privacy and mitigate the risks described in the previous bullet. 
+
+    Do not list every privacy risk in the succeeding analysis sections. Rather, provide a holistic
+    view of the risks to privacy.
+  type: longtext
+
+- id: q7
+  title: PIA Overview, Other Considerations
+  prompt: |
+    Below, please add additional information based on the suggestions below, if applicable.
+
+    Describe the funding mechanism (contract, inter-agency agreement) that the project will operate under.
+
+    Describe any routine information sharing conducted by the project both within the organization and with external sharing partners and how such external sharing is compatible with the original collection of the information.
+
+    Analyze the major potential privacy risks identified in the analysis sections of the PIA and discuss overall privacy impact of the program on individuals; and
+    
+    Identify the technology used and provide a brief description of how it collects
+    information for the project. 
+  type: longtext
+
+output:
+- templates/pia_intro.html
+- templates/pia_overview_content.md

@@ -1,6 +1,6 @@
 from itertools import groupby
 import logging
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import datetime, timezone
 from uuid import uuid4
 from django.conf import settings
@@ -45,8 +45,6 @@ def manage_system_assessment_result_api(request, system_id, sar_id=None, methods
     #  localhost:8000/api/v1/systems/86/assessment/new
     #
 
-    from collections import OrderedDict
-
     # Get user from API key.
     api_key = request.META.get("HTTP_AUTHORIZATION", "").strip()
     if len(api_key) < 32: # prevent null values from matching against users without api keys
@@ -66,51 +64,45 @@ def manage_system_assessment_result_api(request, system_id, sar_id=None, methods
     # - Maybe create a blank sar then upload to that ID: create sar, get sar_id, post to that sar_id
     # - should we post with UUID? match with name?
     # - sari = get_object_or_404(SystemAssessmentResult, pk=sar_id) if sar_id else None
+
+    sar = json.loads(request.POST.get('sar_json'))
+
     if request.method == 'POST':
-        sar = SystemAssessmentResult(
-                name=request.POST.get('name'),
-                system_id=request.POST.get('system_id'),
-                deployment_id=request.POST.get('deployment_id'),
-                assessment_results=json.loads(request.FILES.get('data').read().decode("utf8", "replace"))
-            )
+
         # Need to check of person has access to post to system?
         # Can user view this system?
         system = System.objects.get(id=request.POST.get('system_id'))
         # if not request.user.has_perm('view_system', system):
         #     # User does not have permission to this system
         #     raise Http404
+
+        # TODO Gracefully handle no System ID sent
+
+        # Determine deployment_id from deployment_uuid
+        deployment_uuid=request.POST.get('deployment_uuid')
+        if deployment_uuid is None or deployment_uuid == "None":
+            # When deployment is not defined, leave blank and attach SAR to system only
+            deployment = None
+            deployment_id = None
+        else:
+            deployment = Deployment.objects.get(uuid=deployment_uuid)
+            deployment_id = deployment.id
+        # TODO Make sure deployment is associated with system
+
+        sar = SystemAssessmentResult(
+                name=sar["metadata"]["title"],
+                description=sar["metadata"]["description"],
+                system_id=request.POST.get('system_id'),
+                deployment_id=deployment_id,
+                assessment_results=sar
+                # assessment_results=json.loads(request.FILES.get('data').read().decode("utf8", "replace"))
+            )
         sar.save()
-        # messages.add_message(request, messages.INFO, f'System assessment result "{sar.name}" created.')
         logger.info(
             event="create_system_assessment_result",
             object={"object": "system_assessment_result", "id": sar.id, "name":sar.name},
             # user={"id": request.user.id, "username": request.user.username}
         )
-
-        # form = SystemAssessmentResultForm(request.POST, instance=sari)
-        # if form.is_valid():
-        #     form.save()
-        #     sar = form.instance
-        #     # Create message to display to user
-        #     if sari:
-        #         messages.add_message(request, messages.INFO, f'System assessment result "{sar.name}" edited.')
-        #         logger.info(
-        #             event="edit_system_assessment_result",
-        #             object={"object": "system_assessment_result", "id": sar.id, "name":sar.name},
-        #             user={"id": request.user.id, "username": request.user.username}
-        #         )
-        #     else:
-        #         messages.add_message(request, messages.INFO, f'System assessment result "{sar.name}" created.')
-        #         logger.info(
-        #             event="create_system_assessment_result",
-        #             object={"object": "system_assessment_result", "id": sar.id, "name":sar.name},
-        #             user={"id": request.user.id, "username": request.user.username}
-        #         )
-        #     return redirect('system_assessment_results_list', system_id=system_id)
-#     else:
-#         if sari is None:
-#             sari = SystemAssessmentResult(system_id=system_id)
-#         form = SystemAssessmentResultForm(instance=sari)
 
     # Send simple response
     # TODO: Improve the response

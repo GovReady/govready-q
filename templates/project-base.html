@@ -76,7 +76,7 @@
       {% block action_buttons %}
         <div class="btn-group" role="group" aria-label="action buttons group">
           {% if project.system is not None %}
-            <button id="btn-controls" class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url}}';">
+            <button id="btn-project-home" class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url}}';">
               <em class="glyphicon glyphicon-home"></em> Project Home</a>
             </button>
             <button id="btn-controls" class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
@@ -232,9 +232,13 @@
             {{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}
 
           </div>
+          <div>
+            Project ID: {{ project.id }} &nbsp;&nbsp;
+            {% if project.system %}System ID: {{ project.system.id }}{% endif %}
+          </div>
           {% endif %}
           {% endif %}
-          <div class="clearfix"></div>
+          <div>&nbsp;</div>
         </div>
         <div class="col-sm-2">
           <div id="btn-edit-title" class="center-text">
@@ -262,7 +266,7 @@
         {% endif %}
       {% endif %}
 
-      <div class="project-body-block">
+      <div class="project-body-block"
       {% block body_content %}
       {% endblock %}
       </div>

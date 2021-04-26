@@ -3,6 +3,8 @@
 from django.db import migrations
 
 # Data migration to create prototype statements for all existing control_implementation statements
+from controls.enums.statements import StatementTypeEnum
+
 
 def create_prototype_statements(apps, schema_editor):
     # We can't import the Statement model directly as it may be a newer
@@ -27,7 +29,7 @@ def create_prototype_statements(apps, schema_editor):
         else:
             # Create a prototype statement for the control_implementation_statement
             prototype = deepcopy(statement)
-            prototype.statement_type="control_implementation_prototype"
+            prototype.statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value
             prototype.consumer_element_id = None
             prototype.id = None
             prototype.save()
@@ -40,7 +42,7 @@ def remove_prototype_statements(apps, schema_editor):
     # version than this migration expects. We use the historical version.
     apps.get_model("controls", "Statement")\
         .objects\
-        .filter(statement_type='control_implementation_prototype')\
+        .filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)\
         .delete()
 
 class Migration(migrations.Migration):

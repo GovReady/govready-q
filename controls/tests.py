@@ -9,10 +9,10 @@
 # So we hard-code the Chromium binary using options.binary_location="/usr/bin/chromium-browser".
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
-import time
+import os
 import unittest
 from pathlib import PurePath
-
+import tempfile
 from django.test import TestCase
 from django.utils.text import slugify
 from selenium.common.exceptions import WebDriverException
@@ -28,7 +28,7 @@ from siteapp.models import User, Organization, OrganizationalSetting
 from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests, wait_for_sleep_after
 from system_settings.models import SystemSettings
 from controls.models import *
-from controls.oscal import Catalogs, Catalog
+from controls.oscal import Catalogs, Catalog, EXTERNAL_CATALOG_PATH
 from siteapp.models import User, Project, Portfolio
 from system_settings.models import SystemSettings
 
@@ -129,12 +129,82 @@ class ControlUITests(SeleniumTest):
         wait_for_sleep_after(lambda: self.assertInNodeText("AU-2", "#control-heading"))
         wait_for_sleep_after(lambda: self.assertInNodeText("Audit Events", "#control-heading"))
 
-
     def test_control_enhancement_lookup(self):
         self.browser.get(self.url("/controls/catalogs/NIST_SP-800-53_rev4/control/AC-2 (4)"))
         self.assertInNodeText("AC-2 (4)", "#control-heading")
         self.assertInNodeText("Automated Audit Actions", "#control-heading")
 
+    def test_catalog_list(self):
+        """
+        Check the catalog listing method has the 3 default catalogs
+        """
+
+        os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
+        catalog_list = Catalogs().list_catalogs()
+        self.assertEqual(len(catalog_list), 3)
+
+    def test_extend_external_catalogs(self):
+        """
+        Extending catalog file and key list
+        """
+        os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
+        with tempfile.TemporaryFile() as d:
+            temp_file_name = os.path.join(EXTERNAL_CATALOG_PATH, f'{d.name}_revtest_catalog.json')
+            
+            # finding fixture data and dumping in the temp file
+            test_catalog = os.getcwd() + "/fixtures/test_catalog.json"
+            with open(test_catalog, 'r') as json_file:
+                catalog_data = json.load(json_file)
+            with open(temp_file_name, 'w') as cred:
+                json.dump(catalog_data, cred)
+
+            extended_files = Catalogs.extend_external_catalogs(self, [
+                'NIST_SP-800-53_rev4_catalog.json',
+                'NIST_SP-800-53_rev5_catalog.json',
+                'NIST_SP-800-171_rev1_catalog.json'
+            ], "files")
+
+            self.assertEqual(len(extended_files), 4)
+
+            extended_keys = Catalogs.extend_external_catalogs(self, [
+                Catalogs.NIST_SP_800_53_rev4,
+                Catalogs.NIST_SP_800_53_rev5,
+                Catalogs.NIST_SP_800_171_rev1
+            ], "keys")
+            self.assertEqual(len(extended_keys), 4)
+            # Delete temp file
+            os.remove(temp_file_name)
+
+    def test_extend_external_baseline(self):
+        """
+        Extending baseline file and key list
+        """
+        os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
+        with tempfile.TemporaryFile() as d:
+            temp_file_name = os.path.join(EXTERNAL_BASELINE_PATH, f'{d.name}_revtest_baseline.json')
+            
+            # finding fixture data and dumping in the temp file
+            test_baseline = os.getcwd() + "/fixtures/test_baseline.json"
+            with open(test_baseline, 'r') as json_file:
+                baseline_data = json.load(json_file)
+            with open(temp_file_name, 'w') as cred:
+                json.dump(baseline_data, cred)
+
+            extended_files = Baselines.extend_external_baselines(self, [
+            'NIST_SP-800-53_rev4_baselines.json',
+            'NIST_SP-800-171_rev1_baselines.json'
+        ], "files")
+
+            self.assertEqual(len(extended_files), 3)
+
+            extended_keys = Baselines.extend_external_baselines(self, [
+            'NIST_SP-800-53_rev4',
+            'NIST_SP-800-171_rev1'
+        ], "keys")
+
+            self.assertEqual(len(extended_keys), 3)
+        # Delete temp file
+        os.remove(temp_file_name)
 #####################################################################
 
 class ComponentUITests(OrganizationSiteFunctionalTests):
@@ -237,7 +307,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         element_count_before_import = Element.objects.filter(element_type="system_element").count()
         statement_count_before_import = Statement.objects.filter(
-            statement_type="control_implementation_prototype").count()
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
 
         # Verify that the contents got copied correctly from the file to the textfield
         try:
@@ -259,7 +329,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         element_count_after_import = Element.objects.filter(element_type="system_element").count()
         self.assertEqual(element_count_before_import, element_count_after_import)
 
-        statement_count_after_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
         self.assertEqual(statement_count_before_import, statement_count_after_import)
 
     def test_component_import_oscal_json(self):
@@ -268,7 +338,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.browser.get(url)
 
         element_count_before_import = Element.objects.filter(element_type="system_element").count()
-        statement_count_before_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        statement_count_before_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
 
         # Test initial import of Component(s) and Statement(s)
         self.click_element('a#component-import-oscal')
@@ -283,7 +353,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 2, element_count_after_import))
 
-        statement_count_after_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
         self.assertEqual(statement_count_before_import + 4, statement_count_after_import)
         # Test file contains 6 Statements, but only 4 get imported
         # because one has an improper Catalog
@@ -312,7 +382,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.assertEqual(duplicate_import_element_count, 1)
 
         statement_count_after_duplicate_import = Statement.objects.filter(
-            statement_type="control_implementation_prototype").count()
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
         self.assertEqual(statement_count_after_import + 4, statement_count_after_duplicate_import)
 
     def test_import_tracker(self):
@@ -428,7 +498,7 @@ class StatementUnitTests(TestCase):
             sid = "au.3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is a test statement.",
-            statement_type = "control_implementation",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
             status = "Implemented"
         )
         smt.save()
@@ -492,7 +562,7 @@ class ElementUnitTests(TestCase):
             sid = "au-3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is the first test statement.",
-            statement_type = "control_implementation_prototype",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value,
             status = "Implemented",
             producer_element = e
         )
@@ -501,7 +571,7 @@ class ElementUnitTests(TestCase):
             sid = "au-4",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is the first test statement.",
-            statement_type = "control_implementation_prototype",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value,
             status = "Implemented",
             producer_element = e
         )
@@ -961,7 +1031,7 @@ class ControlTestHelper(object):
             sid_class='NIST_SP-800-53_rev4',
             pid='a',
             body='This is a sample statement',
-            statement_type="control_implementation_prototype",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
             producer_element=component,
             import_record=import_record,
         )
@@ -973,56 +1043,6 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
     """
     Testing the whole import of project JSON which will form a new system, project, and set of components and their statements.
     """
-
-    def test_new_project_json_import(self):
-        """
-        Testing the import of a new project through JSON
-        """
-
-        # login as the first user and create a new project
-        self._login()
-        self._new_project()
-
-        # Checks the number of projects and components before the import
-        project_count_before_import = Project.objects.all().count()
-
-        self.assertEqual(project_count_before_import, 3)
-        self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 0)
-
-        ## Import a new project
-        # click import project button, opening the modal
-        self.click_element("#btn-import-project")
-        ## select through the modal information needed and browse for the import needed
-        self.select_option_by_visible_text("#id_appsource_compapp", "project")
-        # The selection variable found by id
-        select = Select(self.browser.find_element_by_id("id_appsource_compapp"))
-        # Select the last option by index
-        selectLen = len(select.options)
-        select.select_by_index(selectLen - 1)
-        self.browser.find_element_by_id("id_importcheck").click()
-
-        file_input = self.browser.find_element_by_css_selector("#id_file")
-
-        file_path = os.getcwd() + "/fixtures/test_project_import_data.json"
-        # convert filepath if necessary and send keys
-        self.filepath_conversion(file_input, file_path, "sendkeys")
-        select = Select(self.browser.find_element_by_id("id_appsource_version_id"))
-        # Select the last option by index
-        selectLen = len(select.options)
-        select.select_by_index(selectLen - 1)
-        self.browser.find_element_by_id("import_component_submit").click()
-        # Should be incremented by one compared to earlier
-        project_count_after_import = Project.objects.all().count()
-
-        # Has the correct name?
-        self.assertEqual(Project.objects.all()[project_count_after_import -1 ].title, "New Test Project")
-
-        # Components and their statements?
-        self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 1)
-        try:
-            self.assertEqual(Statement.objects.all().count(), 3)
-        except:
-            self.assertEqual(Statement.objects.all().count(), 6)
 
     def test_update_project_json_import(self):
         """
@@ -1040,14 +1060,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         ## Update current project
         # click import project button, opening the modal
         self.click_element("#btn-import-project")
-        ## select through the modal information needed and browse for the import needed
-        self.select_option_by_visible_text("#id_appsource_compapp", "project")
 
-        # The selection variable found by id
-        select = Select(self.browser.find_element_by_id("id_appsource_version_id"))
-        # Select the last option by index
-        selectLen = len(select.options)
-        select.select_by_index(selectLen - 1)
 
         file_input = self.browser.find_element_by_css_selector("#id_file")
 
@@ -1063,10 +1076,11 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.assertEqual(Project.objects.all()[project_num - 1].title, "New Test Project"))
         # Components and their statements?
         self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 1)
+        self.assertEqual(Element.objects.all().exclude(element_type='system')[0].name, "SecGet, Endpoint Security System")
         try:
-            self.assertEqual(Statement.objects.all().count(), 3)
+            self.assertEqual(Statement.objects.all().count(), 4)
         except:
-            self.assertEqual(Statement.objects.all().count(), 6)
+            self.assertEqual(Statement.objects.all().count(), 8)
 
     def test_project_json_export(self):
         """
@@ -1085,7 +1099,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         file_system = os.listdir(os.getcwd())
         # Assert there is a file
         for file_name in file_system:
-            if file_name ==project_title:
+            if file_name == project_title:
                 project_title = file_name
 
         self.assertIn(file_name, file_system)

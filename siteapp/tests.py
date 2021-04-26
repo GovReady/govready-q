@@ -30,9 +30,11 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
 from django.utils.crypto import get_random_string
 
+from controls.enums.statements import StatementTypeEnum
 from guidedmodules.tests import TestCaseWithFixtureData
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
+from controls.models import Statement, Element
 from siteapp.settings import HEADLESS, DOS
 from siteapp.views import project_edit
 from tools.utils.linux_to_dos import convert_w
@@ -108,6 +110,7 @@ class SeleniumTest(StaticLiveServerTestCase):
 
         if HEADLESS:
             options.add_argument('--headless')
+            options.add_argument('--no-sandbox')
 
         # Set up selenium Chrome browser for Windows or Linux
         if DOS:
@@ -802,8 +805,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.click_element("#create-portfolio-button")
         wait_for_sleep_after(lambda:  self.assertRegex(self.browser.title, "Security Projects"))
 
-
-
     def test_grant_portfolio_access(self):
         # Grant another member access to portfolio
         self._login()
@@ -1395,7 +1396,6 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # # email-address
         # self.assertRegex(self.browser.title, "Next Question: email-address")
 
-
 class ProjectTests(TestCaseWithFixtureData):
     """
     Test various project views
@@ -1428,3 +1428,66 @@ class ProjectTests(TestCaseWithFixtureData):
         self.assertEqual(edit_project.title, 'Test Project v2')
         self.assertEqual(edit_project.version, "1.1")
         self.assertEqual(edit_project.version_comment, "A new comment!")
+
+class ProjectPageTests(OrganizationSiteFunctionalTests):
+    """ Tests for Project page """
+
+    def test_mini_dashboard(self):
+        """ Tests for project page mini compliance dashboard """
+
+        # Log in, create a new project.
+        self._login()
+        self._new_project()
+        # On project page?
+        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+
+        # mini-dashboard content
+        self.assertInNodeText("controls", "#status-box-controls")
+        self.assertInNodeText("components", "#status-box-components")
+        self.assertInNodeText("POA&Ms", "#status-box-poams")
+        self.assertInNodeText("compliance", "#status-box-compliance-piechart")
+
+        # mini-dashbard links
+        self.click_element('#status-box-controls')
+        wait_for_sleep_after( lambda: self.assertInNodeText("Selected controls", ".systems-selected-items") )
+        # click project button
+        self.click_element('#btn-project-home')
+        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+        # test components
+        self.click_element('#status-box-components')
+        wait_for_sleep_after( lambda: self.assertInNodeText("Selected components", ".systems-selected-items") )
+        # click project button
+        self.click_element('#btn-project-home')
+        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+        # test poams
+        self.click_element('#status-box-poams')
+        wait_for_sleep_after( lambda: self.assertInNodeText("POA&Ms", ".systems-selected-items") )
+
+    def test_display_impact_level(self):
+        """ Tests for project page mini compliance dashboard """
+
+        # Log in, create a new project.
+        self._login()
+        self._new_project()
+        # On project page?
+        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+
+        # Display imact level testing
+        # New project should not be categorized
+        self.assertInNodeText("Mission Impact: Not Categorized", "#systems-fisma-impact-level")
+
+        # Update impact level
+        # Get project.system.root_element to attach statement holding fisma impact level
+        project = self.current_project
+        fil = "Low"
+        # Test change and test system fisma_impact_level set/get methods
+        project.system.set_fisma_impact_level(fil)
+        # Check value changed worked
+        self.assertEqual(project.system.get_fisma_impact_level, fil)
+        # Refresh project page
+        self.click_element('#btn-project-home')
+        # See if project page has changed
+        wait_for_sleep_after( lambda: self.assertInNodeText("low", "#systems-fisma-impact-level") )
+        impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
+        self.assertEqual(impact_level_smts.count(), 1)
+

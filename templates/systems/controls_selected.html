@@ -21,7 +21,7 @@
 
   <div class="systems-top">
     <div id="tab-content" class="row rows-header">
-        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4"><span class="systems-selected-components">Selected controls</span></div>
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4"><span class="systems-selected-items">Selected controls</span></div>
         <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
           <form id="add-control" class="form-inline pull-right" method="post"
                 action="{%  url 'system_controls_add' system_id=system.id %}">
@@ -54,6 +54,11 @@
             <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='moderate' %}>Assign 800-53 rev4 Moderate Impact Baseline</a></li>
             <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='high' %}>Assign 800-53 rev4 High Impact Baseline</a></li>
             <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-171_rev1' baseline_name='cui' %}>Assign 800-171 rev1 Baseline</a></li>
+              {% for catalog in external_catalogs %}
+                              <li><a href={% url 'assign_baseline' system_id=system.id catalog_key=catalog.catalog_key  baseline_name='low' %}>Assign {{ catalog.catalog_key_display }} Low Impact Baseline</a></li>
+                              <li><a href={% url 'assign_baseline' system_id=system.id catalog_key=catalog.catalog_key  baseline_name='moderate' %}>Assign {{ catalog.catalog_key_display }} Moderate Impact Baseline</a></li>
+                              <li><a href={% url 'assign_baseline' system_id=system.id catalog_key=catalog.catalog_key  baseline_name='high' %}>Assign {{ catalog.catalog_key_display }} High Impact Baseline</a></li>
+              {% endfor %}
           </ul>
         </div>
       </div>

@@ -22,6 +22,9 @@ bandit==1.7.0 \
     --hash=sha256:216be4d044209fa06cf2a3e51b319769a51be8318140659719aa7a115c35ed07 \
     --hash=sha256:8a4c7415254d75df8ff3c3b15cfe9042ecee628a1e40b44c15a98890fbfc2608
     # via -r requirements.in
+blinker==1.4 \
+    --hash=sha256:471aee25f3992bd325afa3772f1063dbdbbca947a041b8b89466dc00d606f8b6
+    # via nplusone
 certifi==2020.12.5 \
     --hash=sha256:1a4995114262bffbc2413b159f2a1a480c969de6e6eb13ee966d470af86af59c \
     --hash=sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830
@@ -192,6 +195,10 @@ django-debug-toolbar==3.2.1 \
     --hash=sha256:a5ff2a54f24bf88286f9872836081078f4baa843dc3735ee88524e89f8821e33 \
     --hash=sha256:e759e63e3fe2d3110e0e519639c166816368701eab4a47fed75d7de7018467b9
     # via -r requirements.in
+django-extensions==3.1.2 \
+    --hash=sha256:081828e985485662f62a22340c1506e37989d14b927652079a5b7cd84a82368b \
+    --hash=sha256:17f85f4dcdd5eea09b8c4f0bad8f0370bf2db6d03e61b431fa7103fee29888de
+    # via -r requirements.in
 django-guardian==2.3.0 \
     --hash=sha256:0e70706c6cda88ddaf8849bddb525b8df49de05ba0798d4b3506049f0d95cbc8 \
     --hash=sha256:ed2de26e4defb800919c5749fb1bbe370d72829fbd72895b6cf4f7f1a7607e1b
@@ -213,6 +220,9 @@ django-session-security==2.6.6 \
 django-simple-history==3.0.0 \
     --hash=sha256:66fe76c560054be393c52b1799661e104fbe372918d37d151e5d41c676158118 \
     --hash=sha256:a312adfe8fbec4c450b08e641b11249a8a589a7e7d1ba2404764b8b5bed53552
+django-querycount==0.7.0 \
+    --hash=sha256:8f5123d78716ff0704f2373e746a7200b8d8417798ce4a99bf2de87e3768f9ce
+    # via -r requirements.in
     # via -r requirements.in
 django==3.1.8 \
     --hash=sha256:c348b3ddc452bf4b62361f0752f71a339140c777ebea3cdaaaa8fdb7f417a862 \
@@ -222,6 +232,7 @@ django==3.1.8 \
     #   django-allauth
     #   django-bootstrap3
     #   django-debug-toolbar
+    #   django-extensions
     #   django-guardian
     #   django-model-utils
     #   django-notifications-hq
@@ -508,6 +519,10 @@ natsort==7.1.1 \
     --hash=sha256:00c603a42365830c4722a2eb7663a25919551217ec09a243d3399fa8dd4ac403 \
     --hash=sha256:d0f4fc06ca163fa4a5ef638d9bf111c67f65eedcc7920f98dec08e489045b67e
     # via -r requirements.in
+nplusone==1.0.0 \
+    --hash=sha256:1726c0a10c0aa7eabb04e24db2882ff97b6b7ee29d729a8d97dcbd12ef5a5651 \
+    --hash=sha256:96b1e6e29e6af3e71b67d0cc012a5ec8c97c6a2f5399f4ba41a2bbe0e253a9ac
+    # via -r requirements.in
 oauthlib==3.1.0 \
     --hash=sha256:bee41cc35fcca6e988463cacc3bcb8a96224f470ca547e697b604cc697b2f889 \
     --hash=sha256:df884cd6cbe20e32633f1db1072e9356f53638e4361bef4e8b03c9127c9328ea
@@ -774,6 +789,7 @@ six==1.15.0 \
     #   fs
     #   html5lib
     #   jsonschema
+    #   nplusone
     #   parsel
     #   python-dateutil
     #   w3lib
