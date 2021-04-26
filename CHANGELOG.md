@@ -14,6 +14,9 @@ v999 (April XX, 2021)
 
 * Add control titles to component control listing pages.
 
+* Better notify users when project implementation statement differs from certified by displaying notice in third column of control detail pages.
+
+* Improve language notifying users that project implementation statement differs from certified. Only difference notice is clickable now.
 
 * Search component library by tag content and make component tags clickable.
 
