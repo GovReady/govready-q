@@ -61,13 +61,25 @@ logger = get_logger()
 LOGIN = "login"
 SIGNUP = "signup"
 
+def get_site_theme():
+    """Retrieve site theme from database"""
+
+    if Sitename.objects.exists():
+        sn = Sitename.objects.first()
+        if sn.theme in settings.THEME_DIRS:
+            theme = f"{sn.theme}/"
+        else:
+            theme = ""
+    else:
+        theme = ""
+    return theme
 
 def home_user(request):
     # If the user is logged in, then redirect them to the projects page.
     if not request.user.is_authenticated:
         return HttpResponseRedirect("/login")
 
-    return render(request, "home-user.html", {
+    return render(request, [f"{get_site_theme()}home-user.html", "home-user.html"], {
         "sitename": Sitename.objects.last(),
         "users": User.objects.all(),
         "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),

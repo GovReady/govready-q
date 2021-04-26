@@ -21,6 +21,7 @@ class Classification(models.Model):
 
 class Sitename(models.Model):
     sitename = models.CharField(max_length=128)
+    theme = models.CharField(max_length=128, null=True, blank=True, help_text="Set site theme.")
     def __str__(self):
         return f'{self.sitename}'
 

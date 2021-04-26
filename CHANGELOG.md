@@ -33,6 +33,8 @@ v999 (April XX, 2021)
 
 * Display system impact level on project page.
 
+* Replace branding with support for multiple, dynamic themes.
+
 **Data changes**
 
 * Use statement type `fisma_impact_level` to track impact level of a system.

@@ -6,6 +6,10 @@ apps/
 static_root/*
 !static_root/README.md
 branding/
+themes/*
+!themes/README.md
+!themes/govready/*
+!themes/default/*
 
 # generated files
 .bash_history

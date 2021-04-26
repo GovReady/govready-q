@@ -170,6 +170,8 @@ TEMPLATES = [
 				'django.contrib.auth.context_processors.auth',
 				'django.contrib.messages.context_processors.messages',
 				'django.template.context_processors.request', # allauth
+				'siteapp.context_processors.get_theme',
+				'siteapp.context_processors.get_current_year_to_context',
 			],
 			'loaders': [
 					'django.template.loaders.filesystem.Loader',
@@ -453,12 +455,16 @@ elif "host" in environment and "https" in environment:
 else:
 	print("CRITICAL: No parameters set to determine SITE_ROOT_URL.")
 
-# Enable custom branding. If "branding" is set, it's the name of an
-# app to add and whose templates supersede the built-in templates.
+# Custom branding replaced by dynamic themes
 if environment.get("branding"):
-	INSTALLED_APPS.append(environment["branding"])
-	TEMPLATES[0].setdefault('DIRS', [])\
-		.insert(0, os.path.join(environment["branding"], 'templates'))
+	print("WARNING: 'branding' environment parameter deprecated. Branding replaced by themes dynamically set in Django admin.")
+# Enable themes
+THEME_DIR = "themes"
+# get theme directories
+THEME_DIRS = os.listdir(THEME_DIR)
+for td in THEME_DIRS:
+	INSTALLED_APPS.append(f"{THEME_DIR}.{td}")
+	TEMPLATES[0].setdefault('DIRS', []).append(os.path.join(THEME_DIR, td, 'templates'))
 
 HEADLESS = False if environment.get("test_visible") else True
 DOS = True if system() == "Windows" or 'Microsoft' in uname().release else False
