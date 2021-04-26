@@ -22,6 +22,7 @@ from django.contrib.auth import authenticate
 from django.test.client import RequestFactory
 
 import selenium.webdriver
+from selenium.webdriver.remote.command import Command
 from django.urls import reverse
 from selenium.common.exceptions import WebDriverException
 from django.contrib.auth.models import Permission
@@ -262,6 +263,9 @@ class SupportPageTests(SeleniumTest):
         self.assertInNodeText("support@govready.com", "#support_content")
 
 class LandingSiteFunctionalTests(SeleniumTest):
+    def setUp(self):
+        super().setUp()
+
     def test_homepage(self):
         self.browser.get(self.url("/"))
         self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
@@ -501,6 +505,14 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         wait_for_sleep_after(lambda: self.browser.get(self.url("/love-assessments")))
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Love Assessments"))
+
+    def test_session_timeout(self):
+        self._login()
+        ping_url = self.url("/session_security/ping/?idleFor=0")
+        response = self.client_get(ping_url)
+
+        self.assertTrue(response.status_code==200)
+        self.assertTrue(response.content==b'0')
 
     def test_simple_module(self):
         # Log in and create a new project and start its task.

@@ -214,12 +214,15 @@ django-notifications-hq==1.6 \
     --hash=sha256:debeb71b7076b08487b40bf07664d1cc43b9977c4480bbc969b30236dda7a461 \
     --hash=sha256:dfc6f8bd4034ceae91143bc3802ddfb6e276eaec90e63dd23e2584c052561576
     # via -r requirements.in
+django-session-security==2.6.6 \
+    --hash=sha256:3b263e16e21e0a1d0e91a2b4c44c48d2ee3aeb86e8c4c33d72ef7f5ac1204a1b
+    # via -r requirements.in
+django-simple-history==3.0.0 \
+    --hash=sha256:66fe76c560054be393c52b1799661e104fbe372918d37d151e5d41c676158118 \
+    --hash=sha256:a312adfe8fbec4c450b08e641b11249a8a589a7e7d1ba2404764b8b5bed53552
 django-querycount==0.7.0 \
     --hash=sha256:8f5123d78716ff0704f2373e746a7200b8d8417798ce4a99bf2de87e3768f9ce
     # via -r requirements.in
-django-simple-history==2.12.0 \
-    --hash=sha256:3b7bf6bfbcf973afca123c5786c72b917ed4d92d7bf3b6cb70fe2e3850e763a3 \
-    --hash=sha256:e7e830cb7a768dc90d6ba0507f8023f889bcb62fe31a08f18fac102c55eec539
     # via -r requirements.in
 django==3.1.8 \
     --hash=sha256:c348b3ddc452bf4b62361f0752f71a339140c777ebea3cdaaaa8fdb7f417a862 \
@@ -233,6 +236,7 @@ django==3.1.8 \
     #   django-guardian
     #   django-model-utils
     #   django-notifications-hq
+    #   django-session-security
     #   djangorestframework
     #   jsonfield
 djangorestframework==3.12.4 \
@@ -782,7 +786,6 @@ six==1.15.0 \
     --hash=sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced
     # via
     #   bandit
-    #   django-simple-history
     #   fs
     #   html5lib
     #   jsonschema

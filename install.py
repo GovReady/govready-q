@@ -122,11 +122,14 @@ def create_environment_json(path):
     secret_key = ''.join(secrets.choice(alphabet) for i in range(50))
     # NOTE: `environment` here refers to locally-created environment data object and not OS-level environment variables
     environment = {
-        "govready-url": GOVREADYURL,
-        "static": "static_root",
-        "secret-key": secret_key,
-        "test_visible": False,
-        "debug": True
+    "govready-url": GOVREADYURL,
+    "static": "static_root",
+    "secret-key": secret_key,
+    "test_visible": False,
+    "debug": True,
+    "session_security_expire_at_browser_close" : True,
+    "session_security_warn_after" : 1200,
+    "session_security_expire_after" : 1800
     }
     # Create local directory
     if not os.path.exists('local'):

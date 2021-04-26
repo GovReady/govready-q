@@ -8,6 +8,7 @@
 import os, os.path, json
 from platform import uname, system
 from django.core.exceptions import ValidationError
+
 # What's the name of the app containing this file? That determines
 # the module for the main URLconf etc.
 primary_app = os.path.basename(os.path.dirname(__file__))
@@ -102,6 +103,7 @@ DJANGO_APPS = [
 	'django.contrib.messages',
 	'django.contrib.humanize',
 	'django.contrib.admindocs',
+	'session_security',
 
 ]
 THIRD_PARTY_APPS = [
@@ -145,6 +147,7 @@ MIDDLEWARE = [
 	'simple_history.middleware.HistoryRequestMiddleware',
 	'pyinstrument.middleware.ProfilerMiddleware',
 	#'django.middleware.cache.FetchFromCacheMiddleware',
+	'session_security.middleware.SessionSecurityMiddleware',
 ]
 # The cache connection to use for the cache middleware.
 #CACHE_MIDDLEWARE_ALIAS='default'
@@ -406,6 +409,13 @@ else:
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY' # don't allow site to be embedded in iframes
+
+# Session security and inactivity timeout. Logout user after certain period of inactivity.
+# By default user is warned at 20 minutes that session is about to expire and if user does not perform any mouse/keyboard activity
+# the session expires 10 minutes later (total of 30 minutes).
+SESSION_EXPIRE_AT_BROWSER_CLOSE = environment['session_security_expire_at_browser_close'] if not DEBUG else True
+SESSION_SECURITY_WARN_AFTER = environment['session_security_warn_after'] if not DEBUG else 85800
+SESSION_SECURITY_EXPIRE_AFTER = environment['session_security_expire_after'] if not DEBUG else 86400
 
 # Put static files in the virtual path "/static/". When the "static"
 # environment setting is present, then it's a local directory path
