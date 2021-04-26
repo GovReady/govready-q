@@ -49,6 +49,7 @@ JSON-log-formatter==0.2.0 # MIT License
 djangorestframework==3.12.4 # BSD License
 djangorestframework-filters==1.0.0.dev0 # MIT License
 drf-yasg==1.20.0 # BSD License
+djangorestframework-recursive==0.1.2 # ISC License
 
 # Python Packages Developed by GovReady and/or Josh
 rtyaml # CC0

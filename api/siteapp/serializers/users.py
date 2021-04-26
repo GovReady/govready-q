@@ -1,14 +1,8 @@
-from api.base.serializers.base import BaseSerializer
+from api.base.serializers.types import ReadOnlySerializer
 from siteapp.models import User
 
 
-class UserSerializer(BaseSerializer):
+class SimpleUserSerializer(ReadOnlySerializer):
     class Meta:
         model = User
-        fields = ['url', 'username', 'email', 'is_staff']
-
-
-class UserSerializer2(BaseSerializer):
-    class Meta:
-        model = User
-        fields = ['url', ]
+        fields = ['url', 'username', 'email', 'is_staff', 'notifemails_enabled']

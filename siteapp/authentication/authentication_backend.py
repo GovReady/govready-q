@@ -25,7 +25,6 @@ class APITokenBackend(authentication.BaseAuthentication):
             api_key = header[-1]
             try:
                 user = User.objects.get(Q(api_key_rw=api_key) | Q(api_key_ro=api_key) | Q(api_key_wo=api_key))
-                # request.session['idempresa'] = idempresaValue
                 if user.api_key_ro == api_key:
                     user.access_level = AccessLevelEnum.READ_ONLY
                 elif user.api_key_wo == api_key:

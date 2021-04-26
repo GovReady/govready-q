@@ -24,8 +24,11 @@ class ForeignKeyJoin(object):
                     for fk in child_fks:
                         fks.append("{}__{}".format(formatted, fk.column))
                     for prefetch in child_prefetches:
-                        prefetches.append("{}__{}".format(
-                            formatted, prefetch.prefetch_to))
+                        try:
+                            prefetches.append("{}__{}".format(
+                                formatted, prefetch.prefetch_to))
+                        except AttributeError:
+                            raise Exception(f"Developer Action - {prefetch} incorrectly configured.")
                 else:
                     formatted = "{}__{}".format(self.column, join.prefetch_to)
                     prefetches.append(formatted)

@@ -9,7 +9,12 @@ from core.utils import Runner
 
 
 class DockerCompose(Runner):
-    REQUIRED_PORTS = [8000]
+    REQUIRED_PORTS = [5432, 8000]
+
+    compose_files = ['docker-compose.yml']
+
+    def build_docker_compose_command(self):
+        return f"docker-compose {' '.join([f'-f {x}' for x in self.compose_files])}"
 
     def generate_config(self):
         config = {
@@ -29,7 +34,8 @@ class DockerCompose(Runner):
             "single-organization": "",
             "static": "static_root",
             "syslog": "",
-            "test_visible": False,
+            "selenium-headless": True,
+            "selenium-grid-browser": "chrome",
             "trust-user-authentication-headers": {}
         }
         with open("docker/environment.json", 'w') as f:
@@ -47,9 +53,9 @@ class DockerCompose(Runner):
         print()
 
         Prompt.warning(f"Access application via Browser: {Colors.CYAN}{self.config['govready-url']}")
-        Prompt.warning(f"View logs & debug by running: {Colors.CYAN}docker attach govready_q_dev")
-        Prompt.warning(f"Connect to container: {Colors.CYAN}docker exec -it govready_q_dev /bin/bash")
-        Prompt.warning(f"Testing: {Colors.CYAN}docker exec -it govready_q_dev ./manage.py test")
+        Prompt.warning(f"View logs & debug by running: {Colors.CYAN}docker attach govready-q-dev")
+        Prompt.warning(f"Connect to container: {Colors.CYAN}docker exec -it govready-q-dev /bin/bash")
+        Prompt.warning(f"Testing: {Colors.CYAN}docker exec -it govready-q-dev ./manage.py test")
 
         creds_path = os.path.join(self.ROOT_DIR, 'local/admin.creds.json')
         if auto_admin:
@@ -67,16 +73,16 @@ class DockerCompose(Runner):
                            f" This is stored in local/admin.creds.json")
 
     def on_sig_kill(self):
-        self.execute(cmd="docker-compose down --remove-orphans  --rmi all")
+        self.execute(cmd=f"{self.build_docker_compose_command()} down --remove-orphans  --rmi all")
 
     def remove(self):
         os.chdir(f"docker")
-        self.execute(cmd=f"docker-compose down --remove-orphans  --rmi all")
+        self.execute(cmd=f"{self.build_docker_compose_command()} down --remove-orphans  --rmi all")
 
     def wipe_db(self):
         cwd = os.getcwd()
         os.chdir(f"docker")
-        self.execute(cmd=f"docker-compose down --remove-orphans  --rmi all -v")
+        self.execute(cmd=f"{self.build_docker_compose_command()} down --remove-orphans  --rmi all -v")
         file_path = os.path.abspath(os.path.join(self.ROOT_DIR, "local"))
         if os.path.exists(file_path):
             shutil.rmtree(file_path)
@@ -91,15 +97,38 @@ class DockerCompose(Runner):
                 self.config = json.load(f)
 
         os.chdir(f"docker")
-        self.execute(cmd=f"docker-compose down --remove-orphans  --rmi all")
+        self.execute(
+            cmd=f"{self.build_docker_compose_command()} down --remove-orphans  --rmi all")
+
+        selenium_grid_map = {
+            "grid": {"port": 4444, "file": "selenium/selenium-hub.yml"},
+            "chrome": {"port": 6900, "file": "selenium/selenium-chrome.yml"},
+            # "edge": {"port": 6901, "file": "selenium/selenium-edge.yml"},
+            "firefox": {"port": 6902, "file": "selenium/selenium-firefox.yml"},
+            "opera": {"port": 6903, "file": "selenium/selenium-opera.yml"},
+        }
+
+        if not self.config['selenium-headless']:
+            browser = self.config.get('selenium-grid-browser')
+            if not browser or browser not in selenium_grid_map:
+                del selenium_grid_map['grid']
+                Prompt.error(f"If Selenium isn't running as Headless, then you must declare a valid browser type: "
+                             f"{selenium_grid_map.keys()}")
+            self.REQUIRED_PORTS.append(8001)  # Live server for selenium tests
+            self.REQUIRED_PORTS.append(selenium_grid_map['grid']['port'])
+            self.compose_files.append(selenium_grid_map['grid']['file'])
+            self.REQUIRED_PORTS.append(selenium_grid_map[browser]['port'])
+            self.compose_files.append(selenium_grid_map[browser]['file'])
+
         self.check_ports()
-        self.execute(cmd=f"docker-compose build --parallel", show_env=True)
-        self.execute(cmd=f"docker-compose up -d", show_env=True)
+        self.execute(cmd=f"{self.build_docker_compose_command()} build --parallel", show_env=True)
+        self.execute(cmd=f"{self.build_docker_compose_command()} up -d",
+                     show_env=True)
         self.execute(cmd=f"docker-compose logs -f", show_env=True, threaded=True)
 
         Prompt.warning("Waiting for stack to come up...")
         while True:
-            status = self.check_if_container_is_ready("govready_q_dev")
+            status = self.check_if_container_is_ready("govready-q-dev")
             if status == '"healthy"':
                 break
             time.sleep(1)

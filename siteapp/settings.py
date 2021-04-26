@@ -482,7 +482,21 @@ if environment.get("branding"):
     TEMPLATES[0].setdefault('DIRS', []) \
         .insert(0, os.path.join(environment["branding"], 'templates'))
 
-HEADLESS = False if environment.get("test_visible") else True
+
+def get_environment_bool(var, default=False):
+    return True if os.getenv(var, default) in [True, "True", "TRUE", "true"] else False
+
+
+DOCKER = get_environment_bool("docker")
+
+if not DOCKER:
+    # Depreciated
+    HEADLESS = get_environment_bool("test_visible")
+    SELENIUM_BROWSER = "chrome"
+else:
+    HEADLESS = get_environment_bool("selenium-headless")
+    SELENIUM_BROWSER = environment.get("selenium-grid-browser", "chrome")
+
 DOS = True if system() == "Windows" or 'Microsoft' in uname().release else False
 # Load all additional settings from settings_application.py.
 from .settings_application import *

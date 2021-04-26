@@ -31,7 +31,7 @@ class LoggingMiddleware:
 
     def get_body(self, request):
         if request.content_type == 'application/x-www-form-urlencoded':
-            fields = request.body.decode('utf-8').strip().split('&')
+            fields = request.body.decode('utf-8', 'ignore').strip().split('&')
             data = {}
             for field in fields:
                 key, value = field.split('=')
@@ -41,8 +41,8 @@ class LoggingMiddleware:
             try:
                 return json.loads(request.body)
             except Exception:
-                return request.body.decode('utf-8').strip()
-        return request.body.decode('utf-8').strip()
+                return request.body.decode('utf-8', 'ignore').strip()
+        return request.body.decode('utf-8', 'ignore').strip()
 
     def extract_log_info(self, request, response=None, exception=None):
         """Extract appropriate log info from requests/responses/exceptions."""

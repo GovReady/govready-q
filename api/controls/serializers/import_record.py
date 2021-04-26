@@ -1,11 +1,11 @@
-from api.base.serializers.base import BaseSerializer
-from controls.models import Element
+from api.base.serializers.types import ReadOnlySerializer
+from controls.models import ImportRecord
 
 
-class ImportRecordSerializer(BaseSerializer):
+class SimpleImportRecordSerializer(ReadOnlySerializer):
 
     class Meta:
-        model = Element
-        fields = BaseSerializer.Meta.fields + ['name', 'uuid']
+        model = ImportRecord
+        fields = ['name', 'uuid']
 
 

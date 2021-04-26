@@ -1,14 +1,10 @@
 from api.base.views.base import SerializerClasses
-from api.base.views.viewsets import ReadWriteViewSet
-from api.siteapp.serializers.projects import DetailedProjectSerializer
+from api.base.views.viewsets import ReadOnlyViewSet
+from api.siteapp.serializers.projects import DetailedProjectsSerializer, SimpleProjectsSerializer
 from siteapp.models import Project
 
 
-class ProjectViewSet(ReadWriteViewSet):
-
+class ProjectViewSet(ReadOnlyViewSet):
     queryset = Project.objects.all()
-    serializer_classes = SerializerClasses(retrieve=DetailedProjectSerializer,
-                                           list=DetailedProjectSerializer,
-                                           create=DetailedProjectSerializer,
-                                           update=DetailedProjectSerializer,
-                                           destroy=DetailedProjectSerializer)
+    serializer_classes = SerializerClasses(retrieve=DetailedProjectsSerializer,
+                                           list=SimpleProjectsSerializer)

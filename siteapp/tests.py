@@ -28,12 +28,13 @@ from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
 from django.utils.crypto import get_random_string
+from selenium.webdriver import DesiredCapabilities
 
 from guidedmodules.tests import TestCaseWithFixtureData
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
 from controls.models import Statement, Element
-from siteapp.settings import HEADLESS, DOS
+from siteapp.settings import HEADLESS, DOS, DOCKER, SELENIUM_BROWSER
 from siteapp.views import project_edit
 from tools.utils.linux_to_dos import convert_w
 
@@ -43,7 +44,8 @@ def var_sleep(duration):
     Tweak sleep globally by multiple, a fraction, or depend on env
     '''
     from time import sleep
-    sleep(duration*2)
+    sleep(duration * 2)
+
 
 def wait_for_sleep_after(fn):
     MAX_WAIT = 20
@@ -56,11 +58,17 @@ def wait_for_sleep_after(fn):
                 raise e
             time.sleep(0.5)
 
+
 class SeleniumTest(StaticLiveServerTestCase):
     window_geometry = (1200, 1200)
 
     @classmethod
     def setUpClass(cls):
+        if DOCKER and not HEADLESS:
+            # Prevents auto localhost:random_port for remote docker selenium-grid
+            cls.port = 8001
+            cls.host = "govready-q-dev"
+
         super(SeleniumTest, cls).setUpClass()
 
         # Override the email backend so that we can capture sent emails.
@@ -71,7 +79,7 @@ class SeleniumTest(StaticLiveServerTestCase):
         # because they may not be set or set properly in the local environment's
         # non-test settings for the URL assigned by the LiveServerTestCase server.
         # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
-        settings.ALLOWED_HOSTS = ['localhost', 'testserver']
+        settings.ALLOWED_HOSTS = ['localhost', 'testserver', 'govready-q-dev']
         settings.SITE_ROOT_URL = cls.live_server_url
         settings.DEBUG = True
 
@@ -84,11 +92,17 @@ class SeleniumTest(StaticLiveServerTestCase):
 
         # Start a headless browser.
 
-        options = selenium.webdriver.ChromeOptions()
-        options.add_argument("--disable-dev-shm-usage")  #overcome limited resource problems
-        options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
+        option_map = {
+            "chrome": (selenium.webdriver.ChromeOptions, DesiredCapabilities.CHROME),
+            "firefox": (selenium.webdriver.FirefoxOptions, DesiredCapabilities.FIREFOX),
+            "opera": (selenium.webdriver.ChromeOptions, DesiredCapabilities.OPERA),
+        }
+        option = option_map[SELENIUM_BROWSER]
+        options = option[0]()
+        options.add_argument("--disable-dev-shm-usage")  # overcome limited resource problems
+        options.add_argument("disable-infobars")  # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
-            options.add_argument("start-maximized") # too small screens make clicking some things difficult
+            options.add_argument("start-maximized")  # too small screens make clicking some things difficult
         else:
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
 
@@ -99,30 +113,39 @@ class SeleniumTest(StaticLiveServerTestCase):
             tempfile.tempdir = convert_w(os.getcwd())
         # enable Selenium support for downloads
         cls.download_path = pathlib.Path(tempfile.gettempdir())
-        options.add_experimental_option("prefs", {
-            "download.default_directory": str(cls.download_path),
-            "download.prompt_for_download": False,
-            "download.directory_upgrade": True,
-            "safebrowsing.enabled": True
-        })
-
+        if hasattr(options, 'add_experimental_option'):
+            options.add_experimental_option("prefs", {
+                "download.default_directory": str(cls.download_path),
+                "download.prompt_for_download": False,
+                "download.directory_upgrade": True,
+                "safebrowsing.enabled": True
+            })
         if HEADLESS:
             options.add_argument('--headless')
-            options.add_argument('--no-sandbox')
 
-        # Set up selenium Chrome browser for Windows or Linux
-        if DOS:
-            # TODO: Find out a way to get chromedriver implicit executable path in WSL
-            cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
+        if DOCKER:
+            if HEADLESS:
+                cls.browser = selenium.webdriver.Chrome(chrome_options=options)
+            else:
+                cls.browser = selenium.webdriver.Remote(command_executor='http://selenium-hub:4444/wd/hub',
+                                                        desired_capabilities=option[1],
+                                                        options=options)
         else:
-            cls.browser = selenium.webdriver.Chrome(chrome_options=options)
+            # Depreciated
+            # Set up selenium Chrome browser for Windows or Linux
+            if DOS:
+                # TODO: Find out a way to get chromedriver implicit executable path in WSL
+                cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
+            else:
+                cls.browser = selenium.webdriver.Chrome(chrome_options=options)
 
-        cls.browser.implicitly_wait(3) # seconds
+        cls.browser.implicitly_wait(5)  # seconds
 
         # Clean up and quit tests if Q is in SSO mode
         if getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', None):
             print("Cannot run tests.")
-            print("Tests will not run when IAM Proxy enabled (e.g., when `local/environment.json` sets `trust-user-authentication-headers` parameter.)")
+            print(
+                "Tests will not run when IAM Proxy enabled (e.g., when `local/environment.json` sets `trust-user-authentication-headers` parameter.)")
             cls.browser.quit()
             super(SeleniumTest, cls).tearDownClass()
             exit()
@@ -171,7 +194,8 @@ class SeleniumTest(StaticLiveServerTestCase):
         # ensure element is on screen or else it can't be clicked
         # see https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
         elem = self.browser.find_element_by_css_selector(css_selector)
-        self.browser.execute_script("arguments[0].scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });", elem)
+        self.browser.execute_script(
+            "arguments[0].scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });", elem)
         elem.click()
 
     def find_selected_option(self, css_selector):
@@ -190,11 +214,12 @@ class SeleniumTest(StaticLiveServerTestCase):
 
     def _getNodeText(self, css_selector):
         node_text = self.browser.find_element_by_css_selector(css_selector).text
-        node_text = re.sub(r"\s+", " ", node_text) # normalize whitespace
+        node_text = re.sub(r"\s+", " ", node_text)  # normalize whitespace
         return node_text
 
     def assertInNodeText(self, search_text, css_selector):
         self.assertIn(search_text, self._getNodeText(css_selector))
+
     def assertNotInNodeText(self, search_text, css_selector):
         self.assertNotIn(search_text, self._getNodeText(css_selector))
 
@@ -236,6 +261,7 @@ class SeleniumTest(StaticLiveServerTestCase):
                 self.fill_field(file_input, filepath)
         return filepath
 
+
 #####################################################################
 
 class SupportPageTests(SeleniumTest):
@@ -260,10 +286,12 @@ class SupportPageTests(SeleniumTest):
         self.assertInNodeText("Updated support text.", "#support_content")
         self.assertInNodeText("support@govready.com", "#support_content")
 
+
 class LandingSiteFunctionalTests(SeleniumTest):
     def test_homepage(self):
         self.browser.get(self.url("/"))
         self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
+
 
 class OrganizationSiteFunctionalTests(SeleniumTest):
 
@@ -280,23 +308,23 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             print(f"Exception: {ex}")
             print(f"App Sources:{AppSource.objects.all()}")
         AppSource.objects.get_or_create(
-              # this one exists on first db load because it's created by
-              # migrations, but because the testing framework seems to
-              # get rid of it after the first test in this class
+            # this one exists on first db load because it's created by
+            # migrations, but because the testing framework seems to
+            # get rid of it after the first test in this class
             slug="system",
             is_system_source=True,
             defaults={
-                "spec": { # required system projects
+                "spec": {  # required system projects
                     "type": "local",
                     "path": "fixtures/modules/system",
                 }
             }
         )
-        load_modules().handle() # load system modules
+        load_modules().handle()  # load system modules
 
         AppSource.objects.get_or_create(
             slug="project",
-            spec={ # contains a test project
+            spec={  # contains a test project
                 "type": "local",
                 "path": "fixtures/modules/other",
             },
@@ -329,10 +357,10 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Create the Organization.
         try:
             self.org = Organization.create(name="Our Organization", slug="testorg",
-                admin_user=self.user)
+                                           admin_user=self.user)
         except:
             self.org = Organization.create(name="Our Organization", slug="testorg2",
-                                                          admin_user=self.user)
+                                           admin_user=self.user)
 
         # Grant the user permission to change the review state of answers.
         self.org.reviewers.add(self.user)
@@ -370,14 +398,14 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         mb, isnew = ProjectMembership.objects.get_or_create(
             user=self.user2,
             project=self.org.get_organization_project(),
-            )
+        )
 
     def client_get(self, *args, **kwargs):
         resp = self.client.get(
             *args,
             **kwargs)
         self.assertEqual(resp.status_code, 200, msg=repr(resp))
-        return resp # .content.decode("utf8")
+        return resp  # .content.decode("utf8")
 
     def _login(self, username=None, password=None):
         # Fill in the login form and submit. Use self.user's credentials
@@ -418,6 +446,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         from guidedmodules.models import Task
         return Task.objects.get(id=re.search(r"/tasks/(\d+)/", self.browser.current_url).group(1))
 
+
 class GeneralTests(OrganizationSiteFunctionalTests):
 
     def _accept_invitation(self, username):
@@ -430,7 +459,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         m = re.search(invitation_url_pattern, invitation_body)
         self.browser.get(m.group(0))
         # Since we're not logged in, we hit the invitation splash page.
-        wait_for_sleep_after(lambda:  self.click_element('#button-sign-in'))
+        wait_for_sleep_after(lambda: self.click_element('#button-sign-in'))
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Sign In"))
 
         # TODO check if the below should still be happening
@@ -454,11 +483,13 @@ class GeneralTests(OrganizationSiteFunctionalTests):
     def test_login(self):
         # Test that a wrong pwd doesn't log us in.
         self._login(password=get_random_string(4))
-        self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
+        self.assertInNodeText("The username and/or password you specified are not correct.",
+                              "form#login_form .alert-danger")
 
         # Test that a wrong username doesn't log us in.
         self._login(username="notme")
-        self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
+        self.assertInNodeText("The username and/or password you specified are not correct.",
+                              "form#login_form .alert-danger")
 
         # Log in as a new user, log out, then log in a second time.
         # We should only get the account settings questions on the
@@ -475,7 +506,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # self.click_element('#user-menu-dropdown')
         wait_for_sleep_after(lambda: self.click_element('#user-menu-dropdown'))
         wait_for_sleep_after(lambda: self.click_element('#user-menu-account-settings'))
-        var_sleep(.5) # wait for page to open
+        var_sleep(.5)  # wait for page to open
         wait_for_sleep_after(lambda: self.assertIn("Introduction | GovReady Account Settings", self.browser.title))
 
         #  # - The user is looking at the Introduction page.
@@ -530,7 +561,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Mark the answer as reviewed then test that it was saved.
         wait_for_sleep_after(lambda: self.click_element(".task-" + str(task.id) + "-answer-q1-review-1"))
 
-        var_sleep(.5) # wait for ajax
+        var_sleep(.5)  # wait for ajax
         for question, answer in task.get_current_answer_records():
             if question.key == "q1":
                 self.assertEqual(answer.reviewed, 1)
@@ -558,7 +589,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         def do_invitation(username):
             start_invitation(username)
-            var_sleep(.5) # wait for invitation to be sent
+            var_sleep(.5)  # wait for invitation to be sent
 
             # Log out and accept the invitation as an anonymous user.
             self.browser.get(self.url("/accounts/logout/"))
@@ -582,38 +613,42 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Test an invalid email address.
         start_invitation("example")
-        wait_for_sleep_after(lambda: self.assertInNodeText("The email address is not valid.", "#global_modal") )# make sure we get a stern message.
-        wait_for_sleep_after(lambda: self.click_element("#global_modal button") )# dismiss the warning.
+        wait_for_sleep_after(lambda: self.assertInNodeText("The email address is not valid.",
+                                                           "#global_modal"))  # make sure we get a stern message.
+        wait_for_sleep_after(lambda: self.click_element("#global_modal button"))  # dismiss the warning.
 
-        wait_for_sleep_after(lambda: self.click_element("#btn-show-project-invite") )# Re-open the invite box.
-        self.browser.execute_script("invite_user_into_project()") # See comment above.
+        wait_for_sleep_after(lambda: self.click_element("#btn-show-project-invite"))  # Re-open the invite box.
+        self.browser.execute_script("invite_user_into_project()")  # See comment above.
         # Toggle field to invite user by email
 
-        wait_for_sleep_after(lambda: self.browser.execute_script("$('#invite-user-email').parent().toggle(true)") )
-        var_sleep(3)# Adding to avoid lock
+        wait_for_sleep_after(lambda: self.browser.execute_script("$('#invite-user-email').parent().toggle(true)"))
+        var_sleep(3)  # Adding to avoid lock
         do_invitation(self.user2.email)
         self.fill_field("#id_login", self.user2.username)
         self.fill_field("#id_password", self.user2.clear_password)
         self.click_element("form button.primaryAction")
 
-        self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
-        wait_for_sleep_after(lambda: self.click_element('#question-simple_module') )# go to the task page
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Next Question: Module Introduction") )# user is on the task page
+        self.assertRegex(self.browser.title, "I want to answer some questions on Q")  # user is on the project page
+        wait_for_sleep_after(lambda: self.click_element('#question-simple_module'))  # go to the task page
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title,
+                                                      "Next Question: Module Introduction"))  # user is on the task page
 
         # reset_login()
 
         # Test an invitation to take over editing a task but without joining the project.
         var_sleep(.5)
-        wait_for_sleep_after(lambda: self.click_element("#save-button"))# pass over the Introductory question because the Help link is suppressed on interstitials
-        wait_for_sleep_after(lambda: self.click_element('#transfer-editorship'))# Toggle field to invite user by email
+        wait_for_sleep_after(lambda: self.click_element(
+            "#save-button"))  # pass over the Introductory question because the Help link is suppressed on interstitials
+        wait_for_sleep_after(lambda: self.click_element('#transfer-editorship'))  # Toggle field to invite user by email
 
         self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
-        wait_for_sleep_after(lambda: do_invitation(self.user3.email))# Toggle field to invite user by email
+        wait_for_sleep_after(lambda: do_invitation(self.user3.email))  # Toggle field to invite user by email
 
         self.fill_field("#id_login", self.user3.username)
         self.fill_field("#id_password", self.user3.clear_password)
         self.click_element("form button.primaryAction")
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Next Question: The Question"))# user is on the task page
+        wait_for_sleep_after(
+            lambda: self.assertRegex(self.browser.title, "Next Question: The Question"))  # user is on the task page
 
         # Test assigning existing user to a project.
         reset_login()
@@ -631,84 +666,86 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Select username "me3"
         wait_for_sleep_after(lambda: self.select_option_by_visible_text('#invite-user-select', "me3"))
         wait_for_sleep_after(lambda: self.click_element("#invite_submit_btn"))
-        wait_for_sleep_after(lambda:  self.assertTrue("× me3 granted edit permission to project." == self._getNodeText(".alert-info")))
+        wait_for_sleep_after(
+            lambda: self.assertTrue("× me3 granted edit permission to project." == self._getNodeText(".alert-info")))
 
         # reset_login()
 
         # Invitations to join discussions are tested in test_discussion.
 
     # def test_discussion(self):
-        # from siteapp.management.commands.send_notification_emails import Command as send_notification_emails
+    # from siteapp.management.commands.send_notification_emails import Command as send_notification_emails
 
-        # # Log in and create a new project.
-        # self._login()
-        # self._new_project()
-        # self._start_task()
+    # # Log in and create a new project.
+    # self._login()
+    # self._new_project()
+    # self._start_task()
 
-        # # Move past the introduction screen.
-        # self.assertRegex(self.browser.title, "Next Question: Module Introduction")
-        # self.click_element("#save-button")
-        # var_sleep(.8) # wait for page to reload
+    # # Move past the introduction screen.
+    # self.assertRegex(self.browser.title, "Next Question: Module Introduction")
+    # self.click_element("#save-button")
+    # var_sleep(.8) # wait for page to reload
 
-        # # We're now on the first actual question.
-        # # Start a team conversation.
-        # self.click_element("#start-a-discussion")
-        # self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
-        # var_sleep(.5) # wait for options to slideDown
-        # self.click_element("#discussion .comment-input button.btn-primary")
+    # # We're now on the first actual question.
+    # # Start a team conversation.
+    # self.click_element("#start-a-discussion")
+    # self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
+    # var_sleep(.5) # wait for options to slideDown
+    # self.click_element("#discussion .comment-input button.btn-primary")
 
-        # # Invite a guest to join.
-        # var_sleep(.5) # wait for the you-are-alone div to show
-        # self.click_element("#discussion-you-are-alone a")
-        # self.fill_field("#invitation_modal #invite-user-email", "invited-user@q.govready.com")
-        # self.click_element("#invitation_modal button.btn-submit")
-        # var_sleep(1) # wait for invitation to be sent
+    # # Invite a guest to join.
+    # var_sleep(.5) # wait for the you-are-alone div to show
+    # self.click_element("#discussion-you-are-alone a")
+    # self.fill_field("#invitation_modal #invite-user-email", "invited-user@q.govready.com")
+    # self.click_element("#invitation_modal button.btn-submit")
+    # var_sleep(1) # wait for invitation to be sent
 
-        # # Now we become that guest. Log out.
-        # # Then accept the invitation as an anonymous user.
-        # self.browser.get(self.url("/accounts/logout/"))
-        # self._accept_invitation("test+account@q.govready.com")
-        # var_sleep(1) # wait for the invitation to be accepted
+    # # Now we become that guest. Log out.
+    # # Then accept the invitation as an anonymous user.
+    # self.browser.get(self.url("/accounts/logout/"))
+    # self._accept_invitation("test+account@q.govready.com")
+    # var_sleep(1) # wait for the invitation to be accepted
 
-        # # Check that the original user received a notification that the invited user
-        # # accepted the invitation.
-        # send_notification_emails().send_new_emails()
-        # self.assertRegex(self.pop_email().body, "accepted your invitation to join the discussion")
+    # # Check that the original user received a notification that the invited user
+    # # accepted the invitation.
+    # send_notification_emails().send_new_emails()
+    # self.assertRegex(self.pop_email().body, "accepted your invitation to join the discussion")
 
-        # # This takes the user directly to the discussion they were invited to join.
-        # # Leave a comment.
+    # # This takes the user directly to the discussion they were invited to join.
+    # # Leave a comment.
 
-        # self.fill_field("#discussion-your-comment", "Yes, @me, I am here!\n\nI am here with you!")
-        # self.click_element("#discussion .comment-input button.btn-primary")
-        # var_sleep(.5) # wait for it to submit
+    # self.fill_field("#discussion-your-comment", "Yes, @me, I am here!\n\nI am here with you!")
+    # self.click_element("#discussion .comment-input button.btn-primary")
+    # var_sleep(.5) # wait for it to submit
 
-        # # Test that a notification was sent to the main user.
-        # from notifications.models import Notification
-        # self.assertTrue(Notification.objects.filter(
-        #     recipient=self.user,
-        #     verb="mentioned you in a comment on").exists())
+    # # Test that a notification was sent to the main user.
+    # from notifications.models import Notification
+    # self.assertTrue(Notification.objects.filter(
+    #     recipient=self.user,
+    #     verb="mentioned you in a comment on").exists())
 
-        # # Test that the notification is emailed out to the main user.
-        # send_notification_emails().send_new_emails()
-        # notification_email_body = self.pop_email().body
-        # self.assertRegex(notification_email_body, "mentioned you in")
+    # # Test that the notification is emailed out to the main user.
+    # send_notification_emails().send_new_emails()
+    # notification_email_body = self.pop_email().body
+    # self.assertRegex(notification_email_body, "mentioned you in")
 
-        # # Leave an emoji reaction on the initial user's comment.
-        # self.click_element(".react-with-emoji")
-        # var_sleep(.5) # emoji selector shows
-        # self.click_element("#emoji-selector .emoji[data-emoji-name=heart]") # makes active
-        # self.click_element("body") # closes emoji panel and submits via ajax
-        # var_sleep(.5) # emoji reaction submitted
+    # # Leave an emoji reaction on the initial user's comment.
+    # self.click_element(".react-with-emoji")
+    # var_sleep(.5) # emoji selector shows
+    # self.click_element("#emoji-selector .emoji[data-emoji-name=heart]") # makes active
+    # self.click_element("body") # closes emoji panel and submits via ajax
+    # var_sleep(.5) # emoji reaction submitted
 
-        # # Log back in as the original user.
-        # discussion_page = self.browser.current_url
-        # self.browser.get(self.url("/accounts/logout/"))
-        # self._login()
-        # self.browser.get(discussion_page)
+    # # Log back in as the original user.
+    # discussion_page = self.browser.current_url
+    # self.browser.get(self.url("/accounts/logout/"))
+    # self._login()
+    # self.browser.get(discussion_page)
 
-        # # Test that we can see the comment and the reaction.
-        # self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
-        # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
+    # # Test that we can see the comment and the reaction.
+    # self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
+    # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
+
 
 class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
@@ -763,7 +800,8 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # We should get an error
 
         # test error
-        wait_for_sleep_after(lambda: self.assertIn("Portfolio name Test 1 not available.", self._getNodeText("div.alert.alert-danger.alert-dismissable.alert-link")))
+        wait_for_sleep_after(lambda: self.assertIn("Portfolio name Test 1 not available.", self._getNodeText(
+            "div.alert.alert-danger.alert-dismissable.alert-link")))
         # Test uniqueness with case insensitivity
         # Navigate to the portfolio form
         self.click_element_with_link_text("Portfolios")
@@ -777,7 +815,8 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # We should get an error
         var_sleep(0.5)
         # test error
-        wait_for_sleep_after(lambda: self.assertIn("Portfolio name test 1 not available.", self._getNodeText("div.alert.alert-danger.alert-dismissable.alert-link")))
+        wait_for_sleep_after(lambda: self.assertIn("Portfolio name test 1 not available.", self._getNodeText(
+            "div.alert.alert-danger.alert-dismissable.alert-link")))
 
     def test_create_portfolio_project(self):
         # Create new project within portfolio
@@ -790,7 +829,7 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_title", "Security Projects")
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
-        wait_for_sleep_after(lambda:  self.assertRegex(self.browser.title, "Security Projects"))
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Security Projects"))
 
     def test_grant_portfolio_access(self):
         # Grant another member access to portfolio
@@ -808,7 +847,7 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         var_sleep(0.5)
         wait_for_sleep_after(lambda: self.assertInNodeText("me2 (Owner)", "#portfolio-member-me2"))
 
-       # Grant another member access to portfolio
+        # Grant another member access to portfolio
         self.click_element("#grant-portfolio-access")
         self.select_option_by_visible_text('#invite-user-select', 'me3')
         self.click_element("#invitation_modal button.btn-submit")
@@ -820,20 +859,20 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.assertNodeNotVisible("#portfolio-member-me3")
 
     def test_move_project_create(self):
-            """Test moving a project to another portfolio"""
-            initial_porfolio = Portfolio.objects.create(title="Portfolio 1")
-            new_portfolio = Portfolio.objects.create(title="Portfolio 2")
-            project = Project.objects.create(portfolio=initial_porfolio)
-            project.portfolio = initial_porfolio
-            self.assertIsNotNone(initial_porfolio.id)
-            self.assertIsNotNone(new_portfolio.id)
-            self.assertIsNotNone(project.id)
-            self.assertIsNotNone(project.portfolio.id)
-            self.assertEqual(project.portfolio.title,"Portfolio 1")
-            project.portfolio = new_portfolio
-            self.assertEqual(project.portfolio.title,"Portfolio 2")
-            project.delete()
-            self.assertTrue(project.id is None)
+        """Test moving a project to another portfolio"""
+        initial_porfolio = Portfolio.objects.create(title="Portfolio 1")
+        new_portfolio = Portfolio.objects.create(title="Portfolio 2")
+        project = Project.objects.create(portfolio=initial_porfolio)
+        project.portfolio = initial_porfolio
+        self.assertIsNotNone(initial_porfolio.id)
+        self.assertIsNotNone(new_portfolio.id)
+        self.assertIsNotNone(project.id)
+        self.assertIsNotNone(project.portfolio.id)
+        self.assertEqual(project.portfolio.title, "Portfolio 1")
+        project.portfolio = new_portfolio
+        self.assertEqual(project.portfolio.title, "Portfolio 2")
+        project.delete()
+        self.assertTrue(project.id is None)
 
     def test_edit_portfolio(self):
         """
@@ -891,16 +930,17 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # Verify 'deleted' message is correct
         self.assertIn("The portfolio 'me' has been deleted.", self._getNodeText("div.alert.fade.in.alert-info"))
 
+
 class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def _test_api_get(self, path, expected_value):
         resp = self.client_get(
-                "/api/v1/projects/" + str(self.current_project.id) + "/answers",
-                HTTP_AUTHORIZATION=self.user.api_key_rw)
+            "/api/v1/projects/" + str(self.current_project.id) + "/answers",
+            HTTP_AUTHORIZATION=self.user.api_key_rw)
         resp = resp.json()
         self.assertTrue(isinstance(resp, dict))
         self.assertEqual(resp.get("schema"), "GovReady Q Project API 1.0")
-        for p in ["project"]+path:
+        for p in ["project"] + path:
             self.assertTrue(isinstance(resp, dict))
             self.assertIn(p, resp)
             resp = resp[p]
@@ -922,7 +962,8 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(1)
 
         # text
-        wait_for_sleep_after(lambda: self.assertIn("| Test The Text Input Question Types - GovReady-Q", self.browser.title))
+        wait_for_sleep_after(
+            lambda: self.assertIn("| Test The Text Input Question Types - GovReady-Q", self.browser.title))
         wait_for_sleep_after(lambda: self.fill_field("#inputctrl", "This is some text."))
         self.click_element("#save-button")
         var_sleep(.5)
@@ -947,8 +988,9 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # test a bad address
         self.fill_field("#inputctrl", "a@a")
         self.click_element("#save-button")
-        wait_for_sleep_after(lambda: self.assertInNodeText("is not valid.", "#global_modal p"))# make sure we get a stern message.
-        wait_for_sleep_after(lambda: self.click_element("#global_modal button"))# dismiss the warning.
+        wait_for_sleep_after(
+            lambda: self.assertInNodeText("is not valid.", "#global_modal p"))  # make sure we get a stern message.
+        wait_for_sleep_after(lambda: self.click_element("#global_modal button"))  # dismiss the warning.
         var_sleep(.5)
 
         # test a good address
@@ -979,15 +1021,19 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.fill_field("#inputctrl .ql-editor", "This is a paragraph.\n\nThis is another paragraph.")
         self.click_element("#save-button")
         var_sleep(1.0)
-        self._test_api_get(["question_types_text", "q_longtext"], 'This is a paragraph\\.\n\n\n\nThis is another paragraph\\.')
-        self._test_api_get(["question_types_text", "q_longtext.html"], "<p>This is a paragraph.</p>\n<p>This is another paragraph.</p>")
+        self._test_api_get(["question_types_text", "q_longtext"],
+                           'This is a paragraph\\.\n\n\n\nThis is another paragraph\\.')
+        self._test_api_get(["question_types_text", "q_longtext.html"],
+                           "<p>This is a paragraph.</p>\n<p>This is another paragraph.</p>")
 
         # longtext w/ default
         self.assertRegex(self.browser.title, "Next Question: longtext_with_default")
         self.click_element("#save-button")
         var_sleep(.5)
-        self._test_api_get(["question_types_text", "q_longtext_with_default"], "Peaches are sweet\\.\n\nThat\\'s why I write two paragraphs about peaches\\.")
-        self._test_api_get(["question_types_text", "q_longtext_with_default.html"], "<p>Peaches are sweet.</p>\n<p>That's why I write two paragraphs about peaches.</p>")
+        self._test_api_get(["question_types_text", "q_longtext_with_default"],
+                           "Peaches are sweet\\.\n\nThat\\'s why I write two paragraphs about peaches\\.")
+        self._test_api_get(["question_types_text", "q_longtext_with_default.html"],
+                           "<p>Peaches are sweet.</p>\n<p>That's why I write two paragraphs about peaches.</p>")
 
         # date
         self.assertRegex(self.browser.title, "Next Question: date")
@@ -998,8 +1044,9 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.select_option("select[name='value_day']", "31")
         self.click_element("#save-button")
 
-        wait_for_sleep_after(lambda: self.assertInNodeText("day is out of range for month", "#global_modal p"))# make sure we get a stern message.
-        self.click_element("#global_modal button") # dismiss the warning.
+        wait_for_sleep_after(lambda: self.assertInNodeText("day is out of range for month",
+                                                           "#global_modal p"))  # make sure we get a stern message.
+        self.click_element("#global_modal button")  # dismiss the warning.
 
         # test a good date
         self.select_option("select[name='value_year']", "2016")
@@ -1007,7 +1054,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.select_option("select[name='value_day']", "22")
         self.click_element("#save-button")
         var_sleep(.5)
-        self._test_api_get(["question_types_text", "q_date"], "2016-08-22") # make sure we get a stern message.
+        self._test_api_get(["question_types_text", "q_date"], "2016-08-22")  # make sure we get a stern message.
 
         # Finished.
         self.assertRegex(self.browser.title, "^Test The Text Input Question Types - ")
@@ -1092,17 +1139,18 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#save-button")
         var_sleep(.5)
 
-        wait_for_sleep_after(lambda: self.assertInNodeText("Invalid input. Must be a whole number.", "#global_modal p"))# make sure we get a stern message.
-        self.click_element("#global_modal button") # dismiss the warning.
+        wait_for_sleep_after(lambda: self.assertInNodeText("Invalid input. Must be a whole number.",
+                                                           "#global_modal p"))  # make sure we get a stern message.
+        self.click_element("#global_modal button")  # dismiss the warning.
 
         # Test a string.
         self.clear_and_fill_field("#inputctrl", "asdf")
         self.click_element("#save-button")
 
-
         # This is caught by the browser itself, so we don't have to dismiss anything.
         # Make sure we haven't moved past the url page.
-        wait_for_sleep_after(lambda: self.assertIn("| Test The Numeric Question Types - GovReady-Q", self.browser.title))
+        wait_for_sleep_after(
+            lambda: self.assertIn("| Test The Numeric Question Types - GovReady-Q", self.browser.title))
 
         # Test a good integer.
         wait_for_sleep_after(lambda: self.clear_and_fill_field("#inputctrl", "5000"))
@@ -1117,15 +1165,17 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.clear_and_fill_field("#inputctrl", "0")
         self.click_element("#save-button")
 
-        wait_for_sleep_after(lambda: self.assertInNodeText("Must be at least 1.", "#global_modal p"))# make sure we get a stern message.
-        self.click_element("#global_modal button") # dismiss the warning.
+        wait_for_sleep_after(lambda: self.assertInNodeText("Must be at least 1.",
+                                                           "#global_modal p"))  # make sure we get a stern message.
+        self.click_element("#global_modal button")  # dismiss the warning.
 
         # Test a too-large number
         self.clear_and_fill_field("#inputctrl", "27")
         self.click_element("#save-button")
 
-        wait_for_sleep_after(lambda: self.assertInNodeText("Must be at most 10.", "#global_modal p"))  # make sure we get a stern message.
-        self.click_element("#global_modal button") # dismiss the warning.
+        wait_for_sleep_after(lambda: self.assertInNodeText("Must be at most 10.",
+                                                           "#global_modal p"))  # make sure we get a stern message.
+        self.click_element("#global_modal button")  # dismiss the warning.
 
         # Test a non-integer.
         self.clear_and_fill_field("#inputctrl", "1.01")
@@ -1153,22 +1203,25 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.clear_and_fill_field("#inputctrl", "0")
         self.click_element("#save-button")
 
-        wait_for_sleep_after(lambda: self.assertInNodeText("Must be at least 1.", "#global_modal p"))# make sure we get a stern message.
-        self.click_element("#global_modal button") # dismiss the warning.
+        wait_for_sleep_after(lambda: self.assertInNodeText("Must be at least 1.",
+                                                           "#global_modal p"))  # make sure we get a stern message.
+        self.click_element("#global_modal button")  # dismiss the warning.
 
         # Test a too-large number
         self.clear_and_fill_field("#inputctrl", "15000")
         self.click_element("#save-button")
 
-        wait_for_sleep_after(lambda: self.assertInNodeText("Must be at most 10000.", "#global_modal p") )# make sure we get a stern message.
-        self.click_element("#global_modal button") # dismiss the warning.
+        wait_for_sleep_after(lambda: self.assertInNodeText("Must be at most 10000.",
+                                                           "#global_modal p"))  # make sure we get a stern message.
+        self.click_element("#global_modal button")  # dismiss the warning.
 
         # Test a non-integer.
         self.clear_and_fill_field("#inputctrl", "1.01")
         self.click_element("#save-button")
 
-        wait_for_sleep_after(lambda: self.assertInNodeText("Invalid input. Must be a whole number.", "#global_modal p"))# make sure we get a stern message.
-        self.click_element("#global_modal button") # dismiss the warning.
+        wait_for_sleep_after(lambda: self.assertInNodeText("Invalid input. Must be a whole number.",
+                                                           "#global_modal p"))  # make sure we get a stern message.
+        self.click_element("#global_modal button")  # dismiss the warning.
 
         # Test a good integer that has a comma in it.
         self.clear_and_fill_field("#inputctrl", "1,234")
@@ -1201,15 +1254,17 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.clear_and_fill_field("#inputctrl", "0.01")
         self.click_element("#save-button")
 
-        wait_for_sleep_after(lambda: self.assertInNodeText("Must be at least 1.", "#global_modal p"))# make sure we get a stern message.
-        self.click_element("#global_modal button") # dismiss the warning.
+        wait_for_sleep_after(lambda: self.assertInNodeText("Must be at least 1.",
+                                                           "#global_modal p"))  # make sure we get a stern message.
+        self.click_element("#global_modal button")  # dismiss the warning.
 
         # Test a number that's too large.
         self.clear_and_fill_field("#inputctrl", "1000")
         self.click_element("#save-button")
 
-        wait_for_sleep_after(lambda: self.assertInNodeText("Must be at most 100.", "#global_modal p"))# make sure we get a stern message.
-        self.click_element("#global_modal button") # dismiss the warning.
+        wait_for_sleep_after(lambda: self.assertInNodeText("Must be at most 100.",
+                                                           "#global_modal p"))  # make sure we get a stern message.
+        self.click_element("#global_modal button")  # dismiss the warning.
 
         # Test a real number.
         self.clear_and_fill_field("#inputctrl", "23.051")
@@ -1232,7 +1287,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         # file upload
-        wait_for_sleep_after(lambda:  self.assertIn("| Test The Media Question Types - GovReady-Q", self.browser.title))
+        wait_for_sleep_after(lambda: self.assertIn("| Test The Media Question Types - GovReady-Q", self.browser.title))
 
         # Click interstitial "Got it" button
         self.click_element("#save-button")
@@ -1301,11 +1356,13 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         do_submodule("My first answer.")
         self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
+
         # Go back to the question and start a second answer.
         def change_answer():
-            print("change_answer() - self.click_element(\"#link-to-question-q_module a\")") #debug
+            print("change_answer() - self.click_element(\"#link-to-question-q_module a\")")  # debug
             self.click_element("#link-to-question-q_module a")
             var_sleep(3)
+
         change_answer()
         self.assertIn("| Test The Module Question Types - GovReady-Q", self.browser.title)
         self.click_element('#question input[name="value"][value="__new"]')
@@ -1329,6 +1386,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#save-button")
         var_sleep(.5)
         self.assertRegex(self.browser.title, "Test The Module Question Types - ")
+
 
 class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
 
@@ -1383,15 +1441,16 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # # email-address
         # self.assertRegex(self.browser.title, "Next Question: email-address")
 
+
 class ProjectTests(TestCaseWithFixtureData):
     """
     Test various project views
     """
+
     def setUp(self):
         super().setUp()
         # Every test needs access to the request factory.
         self.factory = RequestFactory()
-
 
     def test_project_edit(self):
         """
@@ -1404,10 +1463,10 @@ class ProjectTests(TestCaseWithFixtureData):
 
         proj_id = self.project.id
         request_body = {'project_title': ['Test Project v2'],
-                                'project_version': ['1.1'], 'project_version_comment': ['A new comment!']}
+                        'project_version': ['1.1'], 'project_version_comment': ['A new comment!']}
 
         post_request = self.factory.post(f'/projects/{proj_id}/__edit', request_body)
-        response  = project_edit(post_request, proj_id)
+        response = project_edit(post_request, proj_id)
         self.assertEqual(response.status_code, 302)
 
         # The now updated project
@@ -1415,6 +1474,7 @@ class ProjectTests(TestCaseWithFixtureData):
         self.assertEqual(edit_project.title, 'Test Project v2')
         self.assertEqual(edit_project.version, "1.1")
         self.assertEqual(edit_project.version_comment, "A new comment!")
+
 
 class ProjectPageTests(OrganizationSiteFunctionalTests):
     """ Tests for Project page """
@@ -1426,7 +1486,7 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self._login()
         self._new_project()
         # On project page?
-        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
 
         # mini-dashboard content
         self.assertInNodeText("controls", "#status-box-controls")
@@ -1436,19 +1496,19 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
 
         # mini-dashbard links
         self.click_element('#status-box-controls')
-        wait_for_sleep_after( lambda: self.assertInNodeText("Selected controls", ".systems-selected-items") )
+        wait_for_sleep_after(lambda: self.assertInNodeText("Selected controls", ".systems-selected-items"))
         # click project button
         self.click_element('#btn-project-home')
-        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
         # test components
         self.click_element('#status-box-components')
-        wait_for_sleep_after( lambda: self.assertInNodeText("Selected components", ".systems-selected-items") )
+        wait_for_sleep_after(lambda: self.assertInNodeText("Selected components", ".systems-selected-items"))
         # click project button
         self.click_element('#btn-project-home')
-        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
         # test poams
         self.click_element('#status-box-poams')
-        wait_for_sleep_after( lambda: self.assertInNodeText("POA&Ms", ".systems-selected-items") )
+        wait_for_sleep_after(lambda: self.assertInNodeText("POA&Ms", ".systems-selected-items"))
 
     def test_display_impact_level(self):
         """ Tests for project page mini compliance dashboard """
@@ -1457,7 +1517,7 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self._login()
         self._new_project()
         # On project page?
-        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
 
         # Display imact level testing
         # New project should not be categorized
@@ -1474,5 +1534,4 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         # Refresh project page
         self.click_element('#btn-project-home')
         # See if project page has changed
-        wait_for_sleep_after( lambda: self.assertInNodeText("low", "#systems-fisma-impact-level") )
-
+        wait_for_sleep_after(lambda: self.assertInNodeText("low", "#systems-fisma-impact-level"))
