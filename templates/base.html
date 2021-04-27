@@ -148,6 +148,10 @@
     <script src="{% static "js/main.js" %}"></script>
     <script src="{% static "vendor/bootstrap-helpers.js" %}"></script>
     <script src="{% static "vendor/jsgrid/jsgrid.min.js" %}"></script>
+    <script src="{% static "vendor/react/react.min.js" %}"></script>
+    <script src="{% static "vendor/react/react-dom.min.js" %}"></script>
+    <script src="{% static "vendor/react/babel.min.js" %}"></script>
+    <script type="text/babel" src="{% static "js/react/components.js" %}"></script>
     <script>
     $(document).ajaxSend(function(event, xhr, settings) { if (!/^https?:.*/.test(settings.url)) xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}"); });
     </script>
