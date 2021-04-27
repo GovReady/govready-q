@@ -7,8 +7,6 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.response import Response
 
-from api.base.views.base import BaseViewSet
-
 
 class CustomCreateModelMixin(CreateModelMixin):
     def perform_create(self, serializer):
@@ -93,7 +91,7 @@ class CustomRetrieveModelMixin(RetrieveModelMixin):
 class CustomUpdateModelMixin:
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
-        serializer_class = self.get_serializer_class('create')
+        serializer_class = self.get_serializer_class('update')
         instance = self.get_object(serializer_class=serializer_class)
         serializer = self.get_serializer(
             serializer_class, instance, data=request.data, partial=partial)
@@ -117,7 +115,7 @@ class CustomUpdateModelMixin:
 class CustomDestroyModelMixin(DestroyModelMixin):
 
     def destroy(self, request, *args, **kwargs):
-        serializer_class = self.get_serializer_class('create')
+        serializer_class = self.get_serializer_class('destroy')
         instance = self.get_object(serializer_class=serializer_class)
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,7 +1,10 @@
+from rest_framework.relations import PrimaryKeyRelatedField
+
 from api.base.serializers.types import ReadOnlySerializer, WriteOnlySerializer
 from api.controls.serializers.import_record import SimpleImportRecordSerializer
-from api.siteapp.serializers.tags import TagSerializer
+from api.siteapp.serializers.tags import SimpleTagSerializer
 from controls.models import Element, ElementRole, ElementControl
+from siteapp.models import Tag
 
 
 class SimpleElementRoleSerializer(ReadOnlySerializer):
@@ -19,21 +22,11 @@ class SimpleElementSerializer(ReadOnlySerializer):
 class DetailedElementSerializer(SimpleElementSerializer):
     import_record = SimpleImportRecordSerializer()
     roles = SimpleElementRoleSerializer(many=True)
-    tags = TagSerializer(many=True)
+    tags = SimpleTagSerializer(many=True)
 
     class Meta:
         model = Element
         fields = SimpleElementSerializer.Meta.fields + ['roles', 'import_record', 'tags']
-
-
-class WriteElementSerializer(WriteOnlySerializer):
-    # import_record = SimpleImportRecordSerializer()
-    # roles = SimpleElementRoleSerializer(many=True)
-    # tags = TagSerializer(many=True)
-
-    class Meta:
-        model = Element
-        fields = ['name']
 
 
 class SimpleElementControlSerializer(ReadOnlySerializer):
@@ -49,3 +42,10 @@ class DetailedElementControlSerializer(SimpleElementControlSerializer):
         model = ElementControl
         fields = SimpleElementControlSerializer.Meta.fields + ['element']
 
+
+class WriteElementTagsSerializer(WriteOnlySerializer):
+    tag_ids = PrimaryKeyRelatedField(source='tags', many=True, queryset=Tag.objects)
+
+    class Meta:
+        model = Element
+        fields = ['tag_ids']

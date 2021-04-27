@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from django.db.models import Q
+from django.db.models.fields.related_descriptors import ManyToManyDescriptor
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
@@ -93,6 +94,8 @@ class BaseViewSet(GenericViewSet):
 
     def get_serializer(self, serializer=None, *args, **kwargs):
         if not serializer:
+            serializer = self.get_serializer_class()
+        if not serializer:
             return super().get_serializer()
         else:
             kwargs['context'] = self.get_serializer_context()
@@ -111,18 +114,28 @@ class BaseViewSet(GenericViewSet):
 
         if self.NESTED_ROUTER_PKS:
             for item in self.NESTED_ROUTER_PKS:
-                if '.' in item['model_field']:
-                    queryset = queryset.filter(Q(**{"{}".format(item['model_field'].replace('.', '__')):
-                                                        self.kwargs[item['pk']]}))
-                else:
-                    queryset = queryset.filter(Q(**{"{}_id".format(item['model_field']): self.kwargs[item['pk']]}))
+                if self.kwargs.get(item['pk']):
+                    if '.' in item['model_field'] or \
+                            isinstance(getattr(queryset.model, item['model_field']), ManyToManyDescriptor):
+                        queryset = queryset.filter(Q(**{"{}".format(item['model_field'].replace('.', '__')):
+                                                            self.kwargs[item['pk']]}))
+                    else:
+                        queryset = queryset.filter(Q(**{"{}_id".format(item['model_field']): self.kwargs[item['pk']]}))
             return queryset
         return queryset.distinct()
 
-    def get_object(self, serializer_class):
+    def get_object(self, serializer_class=None):
+        if not serializer_class:
+            serializer_class = self.get_serializer_class()
         queryset = self.get_queryset(serializer_class=serializer_class)
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
         filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
         obj = get_object_or_404(queryset, **filter_kwargs)
         self.check_object_permissions(self.request, obj)
         return obj
+
+    def validate_serializer_and_get_object(self, request):
+        instance = self.get_object()
+        serializer = self.get_serializer(None, instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return instance, serializer.validated_data

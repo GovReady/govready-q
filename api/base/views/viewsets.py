@@ -23,3 +23,10 @@ class WriteOnlyViewSet(BaseViewSet,
                        CustomUpdateModelMixin,
                        CustomDestroyModelMixin):
     pass
+
+
+class ReadUpdateViewSet(BaseViewSet,
+                        CustomRetrieveModelMixin,
+                        CustomUpdateModelMixin,
+                        CustomListModelMixin):
+    pass

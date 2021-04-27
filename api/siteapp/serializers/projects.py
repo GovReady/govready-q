@@ -1,12 +1,14 @@
-from api.base.serializers.types import ReadOnlySerializer
-from api.controls.serializers.system import DetailedSystemSerializer
-from api.guidedmodules.serializers.tasks import DetailedTaskSerializer
+from rest_framework.relations import PrimaryKeyRelatedField
+
+from api.base.serializers.types import ReadOnlySerializer, WriteOnlySerializer
+from api.controls.serializers.system import SimpleSystemSerializer
+from api.guidedmodules.serializers.tasks import DetailedTaskSerializer, SimpleTaskSerializer
 from api.siteapp.serializers.assets import AssetMixinSerializer
 from api.siteapp.serializers.organizations import DetailedOrganizationSerializer
 from api.siteapp.serializers.portfolios import SimplePortfolioSerializer
-from api.siteapp.serializers.tags import TagSerializer
+from api.siteapp.serializers.tags import SimpleTagSerializer
 from api.siteapp.serializers.users import SimpleUserSerializer
-from siteapp.models import Project, ProjectMembership, ProjectAsset
+from siteapp.models import Project, ProjectMembership, ProjectAsset, Tag
 
 
 class SimpleProjectsSerializer(ReadOnlySerializer):
@@ -18,13 +20,13 @@ class SimpleProjectsSerializer(ReadOnlySerializer):
 class DetailedProjectsSerializer(SimpleProjectsSerializer):
     organization = DetailedOrganizationSerializer()
     portfolio = SimplePortfolioSerializer()
-    tags = TagSerializer(many=True)
-    system = DetailedSystemSerializer()
-    root_task = DetailedTaskSerializer()
+    tags = SimpleTagSerializer(many=True)
+    system = SimpleSystemSerializer()
+    root_task = SimpleTaskSerializer()
 
     class Meta:
         model = Project
-        fields = SimpleProjectsSerializer.Meta.fields + ['organization', 'portfolio',  'system', 'root_task', 'tags']
+        fields = SimpleProjectsSerializer.Meta.fields + ['organization', 'portfolio',  'system', 'tags', 'root_task']
 
 
 class SimpleProjectMembershipSerializer(ReadOnlySerializer):
@@ -48,3 +50,11 @@ class DetailedProjectAssetSerializer(AssetMixinSerializer):
     class Meta:
         model = ProjectAsset
         fields = AssetMixinSerializer.Meta.fields + ['project', 'default']
+
+
+class WriteProjectTagsSerializer(WriteOnlySerializer):
+    tag_ids = PrimaryKeyRelatedField(source='tags', many=True, queryset=Tag.objects)
+
+    class Meta:
+        model = Project
+        fields = ['tag_ids']

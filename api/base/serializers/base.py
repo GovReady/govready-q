@@ -22,11 +22,22 @@ class ForeignKeyJoin(object):
                     fks.append(formatted)
                     child_fks, child_prefetches = join.build_joins()
                     for fk in child_fks:
-                        fks.append("{}__{}".format(formatted, fk.column))
+                        try:
+                            if isinstance(fk, str):
+                                fks.append("{}__{}".format(formatted, fk))
+                            else:
+                                fks.append("{}__{}".format(formatted, fk.column))
+                        except:
+                            import ipdb; ipdb.set_trace()
+                            pass
                     for prefetch in child_prefetches:
                         try:
-                            prefetches.append("{}__{}".format(
-                                formatted, prefetch.prefetch_to))
+                            if isinstance(fk, str):
+                                prefetches.append("{}__{}".format(
+                                    formatted, prefetch))
+                            else:
+                                prefetches.append("{}__{}".format(
+                                    formatted, prefetch.prefetch_to))
                         except AttributeError:
                             raise Exception(f"Developer Action - {prefetch} incorrectly configured.")
                 else:
@@ -128,7 +139,7 @@ class BaseSerializer(SerializerOptimizer,  serializers.ModelSerializer):
     def get_related_field_from_route(self, validated_data):
         for nested_item in self.context['view'].NESTED_ROUTER_PKS:
             pk = self.context['view'].kwargs[nested_item['pk']]
-            validated_data[nested_item['column']] = nested_item['model'].objects.get(id=pk)
+            validated_data[nested_item['model_field']] = nested_item['model'].objects.get(id=pk)
         return validated_data
 
     def update(self, instance, validated_data):

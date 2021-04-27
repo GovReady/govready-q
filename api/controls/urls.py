@@ -16,5 +16,5 @@ systems_router.register(r'poams', SystemPoamViewSet, basename='systems-poams')
 
 urlpatterns = [
     url(r'^', include(router.urls)),
-    url(r'^', include(systems_router.urls)),
+    url(r'^', include(systems_router.urls))
 ]
