@@ -1974,7 +1974,7 @@ def add_system_component(request, system_id):
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
     # Loop through element's prototype statements and add to control implementation statements
-    for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value):
+    for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value):
         # Add all existing control statements for a component to a system even if system does not use controls.
         # This guarantees that control statements are associated.
         # The selected controls will serve as the primary filter on what content to display.
