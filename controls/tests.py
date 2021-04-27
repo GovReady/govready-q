@@ -307,7 +307,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         element_count_before_import = Element.objects.filter(element_type="system_element").count()
         statement_count_before_import = Statement.objects.filter(
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
 
         # Verify that the contents got copied correctly from the file to the textfield
         try:
@@ -329,7 +329,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         element_count_after_import = Element.objects.filter(element_type="system_element").count()
         self.assertEqual(element_count_before_import, element_count_after_import)
 
-        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
+        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
         self.assertEqual(statement_count_before_import, statement_count_after_import)
 
     def test_component_import_oscal_json(self):
@@ -338,7 +338,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.browser.get(url)
 
         element_count_before_import = Element.objects.filter(element_type="system_element").count()
-        statement_count_before_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
+        statement_count_before_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
 
         # Test initial import of Component(s) and Statement(s)
         self.click_element('a#component-import-oscal')
@@ -353,7 +353,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 2, element_count_after_import))
 
-        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
+        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
         self.assertEqual(statement_count_before_import + 4, statement_count_after_import)
         # Test file contains 6 Statements, but only 4 get imported
         # because one has an improper Catalog
@@ -382,7 +382,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.assertEqual(duplicate_import_element_count, 1)
 
         statement_count_after_duplicate_import = Statement.objects.filter(
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
         self.assertEqual(statement_count_after_import + 4, statement_count_after_duplicate_import)
 
     def test_import_tracker(self):

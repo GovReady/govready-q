@@ -117,7 +117,7 @@ class Statement(auto_prefetch.Model):
             return self.prototype
             # check if prototype content is the same, report error if not, or overwrite if permission approved
         prototype = deepcopy(self)
-        prototype.statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value
+        prototype.statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value
         prototype.consumer_element_id = None
         prototype.id = None
         prototype.save()
@@ -337,7 +337,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
     def get_control_impl_smts_prototype_count(self):
         """Return count of statements with this element as producer_element"""
 
-        smt_count = Statement.objects.filter(producer_element=self, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).count()
+        smt_count = Statement.objects.filter(producer_element=self, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
 
         return smt_count
 

@@ -7,9 +7,11 @@ v999 (April XX, 2021)
 **UI changes**
 
 * Rearrange Create | Import | Manage component buttons; put "Manage Import Records" button last.
-
+  
 * Add links for "forgot password" and "change password".
+  
 * Add control titles to component control listing pages.
+  
 * Display control catalog guidance text in `details` tag next to component control implementation statements.
 
 * Add control titles to component control listing pages.
@@ -19,6 +21,8 @@ v999 (April XX, 2021)
 * Improve language notifying users that project implementation statement differs from certified. Only difference notice is clickable now.
 
 * Search component library by tag content and make component tags clickable.
+
+* Displays an alert 10 minutes before session ends. Automatically navigates to login page after the session timing out.
 
 **Bug fixes**
 
@@ -39,6 +43,8 @@ v999 (April XX, 2021)
 * Set system fisma_impact_level as part of question action to set baseline. Also add fisma_impact_level set/get methods to System model.
 
 * Display system impact level on project page.
+  
+* Introduce django-session-security package to allow for setting session time out and alert.
 
 **Data changes**
 
@@ -50,7 +56,12 @@ v0.9.3.4 (April 20, 2021)
 **Developer changes**
 
 * Add ability for external catalogs and baselines to be used in GovReady-q projects through the two functions `extend_external_baselines` and `extend_external_catalogs`. This includes two new paths GovReady-q looks at which are EXTERNAL_BASELINE_PATH and EXTERNAL_CATALOG_PATH `~/govready-q/local/controls/data/<baselines/catalogs>`
+
 * Added a `list_catalogs()` method to `Catalog` in order to easily get the `Catalog` objects in a list.
+
+* Allow moving projects between portfolios only by users with appropriate permissions.
+  
+* Introducing profiling with nplusone to assist in preventing N+1 views.
 
 **Bug fixes**
 
@@ -59,6 +70,8 @@ v0.9.3.4 (April 20, 2021)
 **UI changes**
 
 * Link mini-dashboards on project page to sensible related pages.
+
+* Improved messaging for the move_project function when user does not have the correct permissions.
 
 v0.9.3.3 (April 13, 2021)
 -------------------------
