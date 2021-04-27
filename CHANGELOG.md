@@ -22,8 +22,6 @@ v999 (April XX, 2021)
 
 * Search component library by tag content and make component tags clickable.
 
-* Displays an alert 10 minutes before session ends. Automatically navigates to login page after the session timing out.
-
 **Bug fixes**
 
 * Immediately assign change project perms to user starting project and fix issue that non-admin users were not executing modifications to a project the user started such as setting baseline controls.
