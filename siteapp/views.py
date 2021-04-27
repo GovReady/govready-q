@@ -481,7 +481,6 @@ def apps_catalog(request):
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
     catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
-
     # Group by category from catalog metadata.
     from collections import defaultdict
     catalog_by_category = defaultdict(lambda: {"title": None, "apps": []})

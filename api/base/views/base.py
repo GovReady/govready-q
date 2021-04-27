@@ -111,12 +111,11 @@ class BaseViewSet(GenericViewSet):
 
         if self.NESTED_ROUTER_PKS:
             for item in self.NESTED_ROUTER_PKS:
-                if item.get('skip_validation', False):
-                    queryset = queryset.filter(
-                        Q(**{"{}".format(item['column']): self.kwargs[item['pk']]}))
+                if '.' in item['model_field']:
+                    queryset = queryset.filter(Q(**{"{}".format(item['model_field'].replace('.', '__')):
+                                                        self.kwargs[item['pk']]}))
                 else:
-                    queryset = queryset.filter(
-                        Q(**{"{}_id".format(item['column']): self.kwargs[item['pk']]}))
+                    queryset = queryset.filter(Q(**{"{}_id".format(item['model_field']): self.kwargs[item['pk']]}))
             return queryset
         return queryset.distinct()
 

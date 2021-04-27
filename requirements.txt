@@ -252,6 +252,7 @@ django==3.1.8 \
     #   django-notifications-hq
     #   djangorestframework
     #   djangorestframework-recursive
+    #   drf-nested-routers
     #   drf-yasg
     #   jsonfield
 djangorestframework-filters==1.0.0.dev0 \
@@ -269,6 +270,7 @@ djangorestframework==3.12.4 \
     #   -r requirements.in
     #   djangorestframework-filters
     #   djangorestframework-recursive
+    #   drf-nested-routers
     #   drf-yasg
 dnspython==2.1.0 \
     --hash=sha256:95d12f6ef0317118d2a1a6fc49aac65ffec7eb8087474158f42f26a639135216 \
@@ -284,6 +286,10 @@ dparse==0.5.1 \
     --hash=sha256:a1b5f169102e1c894f9a7d5ccf6f9402a836a5d24be80a986c7ce9eaed78f367 \
     --hash=sha256:e953a25e44ebb60a5c6efc2add4420c177f1d8404509da88da9729202f306994
     # via safety
+drf-nested-routers==0.93.3 \
+    --hash=sha256:5bbb394ce382d8392cb7eb1e24eb8ad169bf095b22b8275b8f0f1e6697000434 \
+    --hash=sha256:84e946cd486e9ec1fea12a6ca114adc0c68389ccc66e55f6c0c23ce31362485d
+    # via -r requirements.in
 drf-yasg==1.20.0 \
     --hash=sha256:8b72e5b1875931a8d11af407be3a9a5ba8776541492947a0df5bafda6b7f8267 \
     --hash=sha256:d50f197c7f02545d0b736df88c6d5cf874f8fea2507ad85ad7de6ae5bf2d9e5a
