@@ -9,7 +9,7 @@ INSTALLED_APPS += [
     'notifications',
     'dbstorage',
     'guardian',
-
+    'frontend',
     'siteapp',
     'guidedmodules',
     'discussion',

@@ -8,17 +8,19 @@ services:
     container_name: govready-q-dev
     build:
       context: ../..
-      dockerfile: dev_env/docker/Dockerfile
-    command: /bin/bash -c /usr/src/app/dev_env/docker/docker-entrypoint.sh
+      dockerfile: dev_env/docker/images/backend/Dockerfile
+    command: /bin/bash -c /usr/src/app/dev_env/docker/images/backend/docker-entrypoint.sh
     volumes:
       - ../..:/usr/src/app
     depends_on:
+      frontend:
+        condition: service_healthy
       postgres:
         condition: service_healthy
     environment:
       - docker=True
     healthcheck:
-      test: python3 /usr/src/app/dev_env/docker/govready_healthcheck.py
+      test: python3 /usr/src/app/dev_env/docker/images/backend/healthcheck.py
       interval: 10s
       timeout: 5s
       retries: 15
@@ -29,6 +31,24 @@ services:
     stdin_open: true
     tty: true
     restart: always
+    networks:
+      - q_network
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ../..
+      dockerfile: dev_env/docker/images/frontend/Dockerfile
+    command: /bin/sh -c /usr/src/app/dev_env/docker/images/frontend/docker-entrypoint.sh
+    volumes:
+      - ../..:/usr/src/app
+    healthcheck:
+      test: sh -c "if [ ! -f /usr/src/app/frontend/static/main.js ]; then exit 1 ; else exit 0; fi"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    stdin_open: true
+    tty: true
     networks:
       - q_network
 
@@ -43,6 +63,8 @@ services:
         target: /pg-data
         volume:
           nocopy: false
+    depends_on:
+      - frontend
     environment:
       POSTGRES_DB: govready_q
       POSTGRES_PASSWORD: PASSWORD
