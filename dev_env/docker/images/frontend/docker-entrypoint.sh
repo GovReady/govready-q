@@ -10,7 +10,10 @@ fi
 
 mkdir -p static
 
-npm i
+# Installs based on the package-lock.json.
+#npm --max-old-space-size=2048 ci --prefer-offline --no-audit --progress=false
+
+npm install --prefer-offline --no-audit --progress=false
 
 echo "[ + ] Starting Webpack"
-npm run dev
+npm --max-old-space-size=2048 run dev

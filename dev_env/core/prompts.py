@@ -45,11 +45,11 @@ class Prompt:
         return int(value)
 
     @staticmethod
-    def question_banner(title, first=False):
+    def title_banner(title, first=False):
         if not first:
             print()
         print(f"{Colors.HEADER}[-]{title}{Colors.ENDC}")
-        print("="*35)
+        print("="*70)
 
     @staticmethod
     def warning(message):

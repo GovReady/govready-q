@@ -406,6 +406,7 @@ greenlet==1.0.0 \
     --hash=sha256:f97d83049715fd9dec7911860ecf0e17b48d8725de01e45de07d8ac0bd5bc378
     # via gevent
 gunicorn==20.1.0 \
+    --hash=sha256:9dcc4547dbb1cb284accfb15ab5667a0e5d1881cc443e0677b4882a4067a807e \
     --hash=sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8
     # via -r requirements.in
 html5lib==1.1 \
@@ -738,9 +739,9 @@ pyinstrument==3.2.0 \
     --hash=sha256:266a02d874799a8e06889ed9030dcef518b61c7a8e64a3a0ad0754645f901285 \
     --hash=sha256:ce8fef6ea88349f0060b6d974483fd64d2c061346e6b78bca6357509a5121665
     # via -r requirements.in
-pyjwt[crypto]==2.0.1 \
-    --hash=sha256:a5c70a06e1f33d81ef25eecd50d50bd30e34de1ca8b2b9fa3fe0daaabcf69bf7 \
-    --hash=sha256:b70b15f89dc69b993d8a8d32c299032d5355c82f9b5b7e851d1a6d706dffe847
+pyjwt[crypto]==2.1.0 \
+    --hash=sha256:934d73fbba91b0483d3857d1aff50e96b2a892384ee2c17417ed3203f173fca1 \
+    --hash=sha256:fba44e7898bbca160a2b2b501f492824fc8382485d3a6f11ba5d0c1937ce6130
     # via
     #   django-allauth
     #   pygithub

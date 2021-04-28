@@ -13,6 +13,13 @@ class DockerCompose(Runner):
 
     compose_files = ['docker-compose.yml']
 
+    def wait_for_service_to_be_ready(self, name):
+        while True:
+            status = self.check_if_container_is_ready(name)
+            if status == '"healthy"':
+                break
+            time.sleep(1)
+
     def build_docker_compose_command(self):
         return f"docker-compose {' '.join([f'-f {x}' for x in self.compose_files])}"
 
@@ -51,7 +58,7 @@ class DockerCompose(Runner):
         auto_admin = re.findall(
             'Created administrator account \(username: (admin)\) with password: ([a-zA-Z0-9#?!@$%^&*-]+)', logs)
         print()
-
+        Prompt.title_banner(f"Service - Backend - Django Application", True)
         Prompt.warning(f"Access application via Browser: {Colors.CYAN}{self.config['govready-url']}")
         Prompt.warning(f"View logs & debug by running: {Colors.CYAN}docker attach govready-q-dev")
         Prompt.warning(f"Connect to container: {Colors.CYAN}docker exec -it govready-q-dev /bin/bash")
@@ -71,6 +78,15 @@ class DockerCompose(Runner):
             Prompt.warning(f"Administrator Account - "
                            f"{Colors.CYAN}{auto_admin[0][0]} / {auto_admin[0][1]} - {Colors.FAIL}"
                            f" This is stored in local/admin.creds.json")
+
+        Prompt.title_banner(f"Service - Frontend - Webpack")
+        Prompt.warning(f"View logs & debug by running: {Colors.CYAN}docker attach frontend")
+        Prompt.warning(f"Connect to container: {Colors.CYAN}docker exec -it frontend /bin/sh")
+
+        Prompt.title_banner(f"Service - Database - Postgres")
+        Prompt.warning(f"View logs & debug by running: {Colors.CYAN}docker attach postgres_dev")
+        Prompt.warning(f"Connect to container: {Colors.CYAN}docker exec -it postgres_dev /bin/bash")
+        Prompt.warning(f"Connection String: {Colors.CYAN}{self.config['db'].replace('postgres_dev', 'localhost')}")
 
     def on_sig_kill(self):
         self.execute(cmd=f"{self.build_docker_compose_command()} down --remove-orphans  --rmi all")
@@ -127,8 +143,6 @@ class DockerCompose(Runner):
         self.execute(cmd=f"docker-compose logs -f", show_env=True, threaded=True)
 
         Prompt.warning("Waiting for stack to come up...")
-        while True:
-            status = self.check_if_container_is_ready("govready-q-dev")
-            if status == '"healthy"':
-                break
-            time.sleep(1)
+        self.wait_for_service_to_be_ready("govready-q-dev")
+        self.wait_for_service_to_be_ready("frontend")
+

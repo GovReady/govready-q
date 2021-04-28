@@ -22,8 +22,8 @@ class ContentSecurityPolicyMiddleware:
         # * we might be using inline scripts in some of our modules' output documents
         # * we're definitely using inline scripts and CSS throughout our templates, but that could be refactored
         response = self.next_middleware(request)
-        response['Content-Security-Policy'] = \
-            "default-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+        # response['Content-Security-Policy'] = \
+        #     "default-src 'self'  data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
         return response
 
 
