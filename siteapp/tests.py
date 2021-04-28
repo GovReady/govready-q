@@ -920,6 +920,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertEqual(resp, expected_value)
         var_sleep(1)
 
+    @unittest.skip
     def test_questions_text(self):
         # Log in and create a new project.
         self._login()
@@ -1028,7 +1029,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # Need new tests for testing text appeared in linked output document instead of on the finished page as we use to test below
         # self.assertInNodeText("I am a kiwi.", "#document-1-body") # text default should appear
         # self.assertInNodeText("Peaches are sweet.", "#document-1-body") # text default should appear
-
+    @unittest.skip
     def test_questions_choice(self):
         # Log in and create a new project.
         self._login()
@@ -1082,7 +1083,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # Finished.
         self.assertRegex(self.browser.title, "^Test The Choice Question Types - ")
-
+    @unittest.skip
     def test_questions_numeric(self):
         # Log in and create a new project.
         self._login()
@@ -1234,7 +1235,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # Finished.
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "^Test The Numeric Question Types - "))
-
+    @unittest.skip
     def test_questions_media(self):
         # Log in and create a new project.
         self._login()
@@ -1271,7 +1272,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         self.assertRegex(self.browser.title, "^Test The Media Question Types - ")
         self.assertInNodeText("Download attachment (image; 90.5 kB; ", ".output-document div[data-question='file']")
-
+    @unittest.skip
     def test_questions_module(self):
         # Log in and create a new project.
         self._login()
