@@ -1052,12 +1052,13 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         wait_for_sleep_after(lambda: self._test_api_get(["question_types_choice", "q_choice"], "choice2"))
         self._test_api_get(["question_types_choice", "q_choice.text"], "Choice 2")
+        var_sleep(1)
 
         # yesno
         self.assertRegex(self.browser.title, "Next Question: yesno")
         self.click_element('#question input[name="value"][value="yes"]')
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1)
         wait_for_sleep_after(lambda: self._test_api_get(["question_types_choice", "q_yesno"], "yes"))
         self._test_api_get(["question_types_choice", "q_yesno.text"], "Yes")
 
@@ -1066,7 +1067,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question input[name="value"][value="choice1"]')
         self.click_element('#question input[name="value"][value="choice3"]')
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1)
         self._test_api_get(["question_types_choice", "q_multiple_choice"], ["choice1", "choice3"])
         self._test_api_get(["question_types_choice", "q_multiple_choice.text"], ["Choice 1", "Choice 3"])
 
