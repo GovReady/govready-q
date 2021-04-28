@@ -918,6 +918,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             self.assertIn(p, resp)
             resp = resp[p]
         self.assertEqual(resp, expected_value)
+        var_sleep(1)
 
     def test_questions_text(self):
         # Log in and create a new project.
@@ -1047,16 +1048,17 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertIn("| Test The Choice Question Types - GovReady-Q", self.browser.title)
         self.click_element('#question input[name="value"][value="choice2"]')
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1.5)
 
         wait_for_sleep_after(lambda: self._test_api_get(["question_types_choice", "q_choice"], "choice2"))
         self._test_api_get(["question_types_choice", "q_choice.text"], "Choice 2")
+        var_sleep(1)
 
         # yesno
         self.assertRegex(self.browser.title, "Next Question: yesno")
         self.click_element('#question input[name="value"][value="yes"]')
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1)
         wait_for_sleep_after(lambda: self._test_api_get(["question_types_choice", "q_yesno"], "yes"))
         self._test_api_get(["question_types_choice", "q_yesno.text"], "Yes")
 
@@ -1065,7 +1067,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question input[name="value"][value="choice1"]')
         self.click_element('#question input[name="value"][value="choice3"]')
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1)
         self._test_api_get(["question_types_choice", "q_multiple_choice"], ["choice1", "choice3"])
         self._test_api_get(["question_types_choice", "q_multiple_choice.text"], ["Choice 1", "Choice 3"])
 
@@ -1103,7 +1105,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # Test a non-integer.
         self.clear_and_fill_field("#inputctrl", "1.01")
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1.5)
 
         wait_for_sleep_after(lambda: self.assertInNodeText("Invalid input. Must be a whole number.", "#global_modal p"))# make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
