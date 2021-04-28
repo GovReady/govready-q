@@ -89,6 +89,9 @@ markupsafe==1.1.1 # BSD 3
 # Excel exports
 openpyxl # MIT License
 
+# Session timeout & security
+django-session-security # MIT License
+
 # Profiling
 nplusone==1.0.0 # MIT License
 django-querycount==0.7.0 # MIT License

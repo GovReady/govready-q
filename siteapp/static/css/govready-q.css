@@ -235,7 +235,7 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 
 .project-row-style { margin-bottom:1em; }
 .action-row { margin-bottom: 1em; }
-.project-body-block { margin-top: 1em; }
+.project-body-block {}
 
 .project-text { margin: 1em 0; }
 .project-glyphicon-ok { color: #96B; } /* this is not good */
@@ -264,6 +264,7 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 
 .project-main { float: right; margin: 0 0.5em 0em 5em; }
 .project-top { margin-top: 15px; }
+.project-image { width: 20px; float: left; margin: 4px 0 5px 8px; }
 
 .project-list-text { font-size: 90%; font-weight: 400; margin: 2em 0 .5em -2px; }
 .project-list-text-item { color: #666; }
@@ -303,6 +304,15 @@ a#delete-import.btn {float: right; margin-top: 1em;}
 form #id_json_content { width: 100%; overflow: auto !important; } /* The !important is to fix a bug with textareas not allowing scrolling. */
 
 .component-tag { font-size: 0.7em; color: #999; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; }
+.component-tag a { color: #999; }
+
+details summary { cursor: pointer; }
+details summary > * { display: inline; }
+
+.component-control-description { white-space: pre-wrap; max-height: 200px !important;overflow-y: scroll; }
+#component-detail-content { border-left:1px solid #ccc; border-right:1px solid #ccc; border-bottom:1px solid #ccc; border-radius: 0; padding: 0 0 8px 12px; }
+/*details > summary::before { content: '▶'; }*/
+/*details[open] > summary::before { content: '▼'; }*/
 
 /* Import Form fields */
 form #id_appsource_version_id { width: 100%; overflow: auto !important; }
@@ -337,6 +347,7 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 
 /* MISC */
 .love-assessments { max-width: 650px; }
+.pagination a { color: rgb(88, 144, 191); }
 
 /* systems */
 .systems-top { margin-top: 30px; }
@@ -420,6 +431,7 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 .modal-body select  { padding:3px; }
 
 #component-detail-content { background:#ffffff; }
+
 .row-control { background:#ffffff;}
 
 /* this is a temporary solution for the navbar being too wide before collapsing to a hamburger. Now it will collapse at 1102px instead of 768px. */

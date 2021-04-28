@@ -1,0 +1,73 @@
+id: pia_notice
+title: Privacy Impact Assessment (Notice)
+
+questions:
+
+- id: q1
+  title: Notice Before Collection
+  prompt: |
+    How does the project provide individuals notice prior to the
+    collection of information? If notice is not provided, explain why
+    not. 
+
+    In many cases, agencies provide written or oral notice before they collect
+    information from individuals. That notice may include a posted privacy policy, a
+    Privacy Act statement on forms, a PIA, or a SORN published in the Federal
+    Register. 
+
+    Describe what notice was provided to the individuals whose information
+    is collected by this project. If notice was provided in the Federal Register
+    provide the citation, (e.g. XX FR XXXX, Date).
+
+    If notice was provided in a Privacy Act statement, attach a copy of the
+    notice for review. Describe how the notice provided for the collection of
+    information is adequate to inform those impacted.
+
+    Consult your privacy office and legal counsel on issues concerning the
+    notice to the public for an information collection such as a form.
+    
+    If notice was not provided, explain why. For certain law enforcement
+    projects, notice may not be appropriate – this section of the PIA would then
+    explain how providing direct notice to the individual at the time of collection
+    would undermine the law enforcement mission. 
+  type: longtext
+
+- id: q2
+  title: User Consent
+  prompt: |
+    What opportunities are available for individuals to consent to
+    uses, decline to provide information, or opt out of the project? 
+
+    This question is directed at whether the individual from or about whom
+    information is collected can decline to provide the information and if so, whether
+    the consequences of providing the information are included in the notice.
+
+    Additionally, state whether an individual may provide consent for specific
+    uses or whether consent is given to cover all uses (current or potential) of his/her
+    information. If specific consent is permitted or required, how does the individual
+    consent to each use?
+
+    If notice is provided to explain how an individual may exercise the right to
+    consent to particular uses or decline to provide information describe the process.
+    If this is not an option, explain why not. In some cases, declining to provide
+    information simply means the individual chooses not to participate in the project.
+
+  type: longtext
+
+- id: q3
+  title: Related to Notice
+  prompt: |
+    Discuss how the notice provided corresponds to the purpose of the project
+    and the stated uses. 
+
+    Discuss how the notice given for the initial collection is
+    consistent with the stated use(s) of the information. 
+
+    Describe how the project has
+    mitigated the risks associated with potentially insufficient notice and opportunity
+    to decline or consent. 
+
+  type: longtext
+
+output:
+- templates/pia_notice.md
