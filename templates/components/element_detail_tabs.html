@@ -161,6 +161,7 @@
               No description exists for this component.
             {% endif %}
             <div>{% for tag in element.tags.all %}<span class="component-tag">{{ tag.label }}</span> {% endfor %}</div>
+            <div id="edit-tags"></div>
           </div>
           <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
 
@@ -335,6 +336,9 @@
 {% endblock %}
 
 {% block scripts %}
+      <script>
+        window.renderElementTags();
+      </script>
       <script>
         // Adds statement form to page
         function add_smt(smt_count) {
