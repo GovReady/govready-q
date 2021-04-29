@@ -22,6 +22,7 @@ from django.views.generic import ListView
 from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model, get_perms, assign_perm
 
+from controls.enums.statements import StatementTypeEnum
 from controls.forms import ImportProjectForm
 from controls.views import add_selected_components
 from discussion.models import Discussion
@@ -695,7 +696,29 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             object={"object": "element", "id": element.id, "name": element.name},
             user={"id": user.id, "username": user.username}
         )
-        # Add deault deployments to system
+
+        # Add user as the first admin of project.
+        ProjectMembership.objects.create(
+            project=project,
+            user=user,
+            is_admin=True)
+        # Grant owner permissions on root_element to user
+        element.assign_owner_permissions(user)
+        # Log ownership assignment
+        logger.info(
+            event="new_element new_system assign_owner_permissions",
+            object={"object": "element", "id": element.id, "name": element.name},
+            user={"id": user.id, "username": user.username}
+        )
+        system.assign_owner_permissions(user)
+        # Log ownership assignment
+        logger.info(
+            event="new_system assign_owner_permissions",
+            object={"object": "system", "id": system.root_element.id, "name": system.root_element.name},
+            user={"id": user.id, "username": user.username}
+        )
+
+        # Add default deployments to system
         deployment = Deployment(name="Blueprint", description="Reference system archictecture design", system=system)
         deployment.save()
         deployment = Deployment(name="Dev", description="Development environment deployment", system=system)
@@ -743,27 +766,6 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             )
 
         # TODO: Assign default org parameters
-
-        # Add user as the first admin.
-        ProjectMembership.objects.create(
-            project=project,
-            user=user,
-            is_admin=True)
-        # Grant owner permissions on root_element to user
-        element.assign_owner_permissions(user)
-        # Log ownership assignment
-        logger.info(
-            event="new_element new_system assign_owner_permissions",
-            object={"object": "element", "id": element.id, "name": element.name},
-            user={"id": user.id, "username": user.username}
-        )
-        system.assign_owner_permissions(user)
-        # Log ownership assignment
-        logger.info(
-            event="new_system assign_owner_permissions",
-            object={"object": "system", "id": system.root_element.id, "name": system.root_element.name},
-            user={"id": user.id, "username": user.username}
-        )
 
         if task and q:
             # It will also answer a task's question.
@@ -970,10 +972,18 @@ def project(request, project):
     if approx_compliance_degrees > 358:
         approx_compliance_degrees = 358
 
+    # Fetch statement defining FISMA impact level if set
+    impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
+    if len(impact_level_smts) > 0:
+        impact_level = impact_level_smts[0].body
+    else:
+        impact_level = None
+
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
+        "impact_level": impact_level,
 
         "controls_status_count": project.system.controls_status_count,
         "poam_status_count": project.system.poam_status_count,

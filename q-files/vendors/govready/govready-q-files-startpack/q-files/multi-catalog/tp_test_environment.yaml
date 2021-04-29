@@ -1,0 +1,19 @@
+id: tp_test_environment
+title: Test Environment
+internal:
+  snippets:
+  - snippet: |
+      Update the Test Environment snippet
+introduction:
+  format: markdown
+  template: Update the Test Environment introduction content.
+output: []
+questions:
+- id: q1
+  title: Test completion criteria
+  prompt: |
+    What is the Test Completion Criteria?
+    The team needs to agree up front the definition of a successful.
+    If all the high level bugs have been addressed we can move forward
+    with deployment.
+  type: longtext

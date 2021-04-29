@@ -8,6 +8,7 @@ from django.db import transaction
 
 import re
 
+from controls.enums.statements import StatementTypeEnum
 from discussion.validators import validate_file_extension
 from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
 
@@ -32,7 +33,7 @@ logger = get_logger()
 
 @login_required
 def new_task(request):
-    # Create a new task by answering a module question of a project rook task.
+    # Create a new task by answering a module question of a project root task.
     project = get_object_or_404(Project, id=request.POST["project"])
 
     # Can the user create a task within this project?
@@ -467,14 +468,34 @@ def save_answer(request, task, answered, context, __):
                         # Split a_filter into catalog and baseline
                         catalog, baseline = a_filter.split("=+=")
                         if catalog is None or baseline is None:
-                            # Problem, we did not get two value
+                            # Problem, we did not get two values
                             print("Problem - assign_baseline a_filter did not produce catalog, baseline", a_filter)
                         #element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'moderate')
                         system.root_element.assign_baseline_controls(request.user, catalog, baseline)
                         catalog_display = catalog.replace("_", " ")
                         messages.add_message(request, messages.INFO,
                                                      f'I\'ve set the control baseline to "{catalog_display} {baseline}."')
-                        # TODO Log setting baseline
+                        # Log setting baseline
+                        logger.info(
+                            event=f"system assign_baseline {baseline}",
+                            object={"object": "system", "id": system.id, "name": system.root_element.name},
+                            user={"id": request.user.id, "username": request.user.username}
+                        )
+                        # Set fisma_impact_level statement
+                        if baseline.lower() in ["low", "moderate", "high"]:
+                            fisma_impact_level, smt = system.set_fisma_impact_level(baseline)
+                            if fisma_impact_level == baseline.lower():
+                                messages.add_message(request, messages.INFO,
+                                                              f'I\'ve set the system FISMA impact level to "{fisma_impact_level}.')
+                                # Log setting fisma_impact_level
+                                logger.info(
+                                    event=f"system assign_fisma_impact_level {fisma_impact_level}",
+                                    object={"object": "system", "id": system.id, "name": system.root_element.name, "statementid": smt.id},
+                                    user={"id": request.user.id, "username": request.user.username}
+                                )
+                            else:
+                                messages.add_message(request, messages.ERROR,
+                                                              f'I failed to set the system FISMA impact level to "{baseline}."')
 
 
                     # Update name of system and project
@@ -530,7 +551,7 @@ def save_answer(request, task, answered, context, __):
                                 # Go to next element
                                 continue
 
-                            smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype")
+                            smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
 
                             # Component does not have any statements of type control_implementation_prototype to
                             # add to system. So we cannot add the component (element) to the system.
@@ -544,14 +565,14 @@ def save_answer(request, task, answered, context, __):
                             # If we get here, we are going to add the element to the system
                             # We add an element to a system by adding copies of the element's statements
                             # Loop through element's prototype statements and add to control implementation statements
-                            for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
+                            for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value):
                                 # Add all existing control statements for a component to a system even if system does not use controls.
                                 # This guarantees that control statements are associated.
                                 # The selected controls will serve as the primary filter on what content to display.
                                 smt.create_instance_from_prototype(system.root_element.id)
 
                             # Get a count of control statements added to the system.
-                            smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation")
+                            smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
                             smts_added_count = len(smts_added)
                             # Prepare message
                             if smts_added_count > 0:
@@ -565,12 +586,12 @@ def save_answer(request, task, answered, context, __):
                     if a_verb == "del_role":
                         for producer_element in elements_with_role:
                             # Delete component from system
-                            smts_assigned_count = len(Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation"))
+                            smts_assigned_count = len(Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value))
                             if smts_assigned_count > 0:
-                                Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation").delete()
+                                Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).delete()
                                 messages.add_message(request, messages.INFO,
                                                      f'I\'ve deleted "{producer_element.name}" and its {smts_assigned_count} control implementation statements from the system.')
- 
+
 
     # Form a JSON response to the AJAX request and indicate the
     # URL to redirect to, to load the next question.

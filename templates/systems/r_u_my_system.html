@@ -1,0 +1,89 @@
+{% extends "project-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+{% load system_tags %}
+
+{% block title %}
+  Are you my system?
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+<!-- action buttons included from project-base.html -->
+<!-- authoring_tool_enabled included from project-base.html -->
+
+{% block body_content %}
+<div class="systems-top">
+    <div id="tab-content" class="row rows-header">
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 systems-poam">Deployments</div>
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">&nbsp;</div>
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+          <a href="/systems/{{ system.id }}/deployment/new" class="btn btn-sm btn-success systems-element-button">New Deployment</a>
+          <span class="glyphicon glyphicon-download-alt pull-right systems-poam-glyphicon"
+                style="cursor: pointer;"
+                onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
+        </div>
+    </div>
+    {% if deployments|length < 1 %}
+      <div id="tab-content" class="row row-control">
+        <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+          <p>No Deployments are currently identified for this system.</p>
+        </div>
+      </div>
+    {% else %}
+      {% for deployment in deployments %}
+        <div id="deployment-{{deployment.id}}" class="row row-control">
+            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/inventory">{{ deployment.name }}</a>
+            </div>
+            <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                {{ deployment.description }}
+            </div>
+            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+              &nbsp;
+            </div>
+            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                {{ deployment.updated|timesince}} ago
+            </div>
+            <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+                <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/edit" title="Edit deployment" aria-label="Edit deployment" ><span class="glyphicon glyphicon-pencil"></span></a>
+                &nbsp;
+                <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/history" title="View deployment history" aria-label="View deployment history" ><span class="glyphicon glyphicon-calendar"></span></a>
+            </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // The download button shows a modal to ask what file format to download in.
+  function download_document(document_id, system_id) {
+    var dom = $("<div><p>Select download format:</p>"
+      + "<select class=form-control>"
+      + "<option value='xlsx'>Microsoft Excel Spreadsheet</option>"
+      + "<option value='csv'>CSV Text File</option>"
+      + "</select>"
+      + "</div>");
+    show_modal_confirm("Download Document", dom, "Download", function() {
+      var format = dom.find("select").val();
+      switch(format) {
+        case "xlsx":
+          window.location = "/systems/" + system_id + "/deployments/export/xlsx";
+          break;
+        case "csv":
+          window.location = "/systems/" + system_id + "/deployments/export/csv";
+          break;
+      }
+    });
+  }
+</script>
+
+{% endblock %}

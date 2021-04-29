@@ -1,0 +1,57 @@
+version: '3'
+networks:
+  q_network:
+    driver: bridge
+
+services:
+  govready-q:
+    container_name: govready_q_dev
+    build:
+      context: ../..
+      dockerfile: dev_env/docker/Dockerfile
+    command: /bin/bash -c /usr/src/app/dev_env/docker/docker-entrypoint.sh
+    volumes:
+      - ../..:/usr/src/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail -s http://localhost:8000 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    ports:
+      - "8000:8000"
+      - "2222:22"
+    stdin_open: true
+    tty: true
+    restart: always
+    networks:
+      - q_network
+
+  postgres:
+    container_name: postgres_dev
+    image: postgres:13.2-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - type: volume
+        source: pg-data
+        target: /pg-data
+        volume:
+          nocopy: false
+    environment:
+      POSTGRES_DB: govready_q
+      POSTGRES_PASSWORD: PASSWORD
+      POSTGRES_HOST_AUTH_METHOD: trust
+      PGDATA: /pg-data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - q_network
+
+volumes:
+   pg-data:
