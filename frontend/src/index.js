@@ -1,2 +1,1 @@
-import './components/elements-detail-tabs';
-
+import './components/element-detail-tabs/component';

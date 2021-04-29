@@ -302,7 +302,7 @@ a#delete-import.btn {float: right; margin-top: 1em;}
 
 form #id_json_content { width: 100%; overflow: auto !important; } /* The !important is to fix a bug with textareas not allowing scrolling. */
 
-.component-tag { font-size: 0.7em; color: #999; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; }
+.component-tag { font-size: 0.7em; color: #999; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; margin-right: 2px; }
 
 /* Import Form fields */
 form #id_appsource_version_id { width: 100%; overflow: auto !important; }

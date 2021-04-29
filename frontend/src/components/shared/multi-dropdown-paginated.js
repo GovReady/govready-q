@@ -7,7 +7,7 @@ import axios from "axios";
 export class MultiDropdownPaginated extends Component {
   constructor(props) {
     super(props);
-    
+
     this.state = {
       selected: props.selected
     }
@@ -15,11 +15,11 @@ export class MultiDropdownPaginated extends Component {
 
   componentDidMount = () => {
     // console.log('mount', this.state)
-  }
+  };
 
   componentDidUpdate = () => {
     this.props.onChange(this.state.selected);
-  }
+  };
 
   loadOptions = async (searchQuery, loadedOptions, { page }) => {
     let params = { params: { page: page, count: this.props.pageSize } };
@@ -33,7 +33,7 @@ export class MultiDropdownPaginated extends Component {
 
     return {
       options: response.data.map(obj => {
-        return { value: obj.id, label: obj.label, data: obj }
+        return { value: obj.id, label: obj[this.props.displayKey], data: obj }
       }),
       hasMore: response.pages.next_page != null,
       additional: {
@@ -44,7 +44,7 @@ export class MultiDropdownPaginated extends Component {
 
   setOptions = (options) => {
     this.setState({ selected: options });
-  }
+  };
 
   render = () => {
     return (
@@ -74,6 +74,7 @@ MultiDropdownPaginated.propTypes = {
   filterBy: PropTypes.string.isRequired,
   pageSize: PropTypes.number,
   debounceTimeout: PropTypes.number,
+  displayKey: PropTypes.string.isRequired
 };
 
 MultiDropdownPaginated.defaultProps = {

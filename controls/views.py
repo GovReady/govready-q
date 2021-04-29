@@ -28,6 +28,8 @@ from django.urls import reverse
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from urllib.parse import quote
+
+from api.siteapp.serializers.tags import SimpleTagSerializer
 from guidedmodules.models import Task, Module, AppVersion, AppSource
 from siteapp.model_mixins.tags import TagView
 from siteapp.models import Project, Tag
@@ -959,6 +961,7 @@ def component_library_component(request, element_id):
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
         "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
+        "tags": json.dumps(SimpleTagSerializer(element.tags, many=True).data)
     }
     return render(request, "components/element_detail_tabs.html", context)
 

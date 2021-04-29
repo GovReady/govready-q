@@ -160,7 +160,7 @@
             {% else %}
               No description exists for this component.
             {% endif %}
-            <div>{% for tag in element.tags.all %}<span class="component-tag">{{ tag.label }}</span> {% endfor %}</div>
+            <div id="show-tags"></div>
             <div id="edit-tags"></div>
           </div>
           <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
@@ -337,7 +337,7 @@
 
 {% block scripts %}
       <script>
-        window.renderElementTags();
+        window.renderElementTags({{ tags | safe }});
       </script>
       <script>
         // Adds statement form to page
