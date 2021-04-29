@@ -2,28 +2,29 @@ import React from 'react';
 import { MultiDropdownPaginated } from "../shared/multi-dropdown-paginated";
 import * as ReactDOM from "react-dom";
 import { PropTypes } from "prop-types";
-import {componentTagsStateSlice} from "./slice"
+import { componentTagsStateSlice } from "./slice"
 import { Provider } from "react-redux";
 import store from "./../../store";
 import { useSelector, useDispatch } from 'react-redux'
 const { setTags } = componentTagsStateSlice.actions;
+import { Tag } from '@trussworks/react-uswds'
 
 const ElementTags = () => {
     const tags = useSelector((state) => state.componentTags.value);
 
     return (
         <div>
-            {tags.map(tag => <span key={tag.id} className={"component-tag"}>{tag.label} </span>)}
+            {tags.map(tag => <Tag key={tag.id}>{tag.label}</Tag>)}
         </div>
     )
 };
 
-const ElementTagsEdit = ({tags}) => {
+const ElementTagsEdit = ({ tags }) => {
     tags = tags.map(tag => { return { label: tag.label, value: tag.id, data: tag } });
     const dispatch = useDispatch();
 
     let onChange = (selected) => {
-        dispatch(setTags(selected.map(item=>item.data)));
+        dispatch(setTags(selected.map(item => item.data)));
         console.log('set tags to these ids', selected.map(item => item.data.id))
     };
 
@@ -54,7 +55,7 @@ function renderElementTags(existingTags) {
 
     ReactDOM.render(
         <Provider store={store}>
-            <ElementTagsEdit tags={existingTags}/>
+            <ElementTagsEdit tags={existingTags} />
         </Provider>,
         document.getElementById('edit-tags')
     );
