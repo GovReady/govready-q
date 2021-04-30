@@ -1,4 +1,3 @@
 import './index.css'
-import './components/element-detail-tabs/component';
-
-
+import './components/elements/element-detail-tabs/component';
+import './components/projects/project-view/component';

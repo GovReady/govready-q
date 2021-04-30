@@ -3,7 +3,8 @@ import {
     getDefaultMiddleware
 } from "@reduxjs/toolkit";
 
-import {componentTagsStateSlice} from "./components/element-detail-tabs/slice"
+import {componentTagsStateSlice} from "./components/elements/element-detail-tabs/slice"
+import {projectTagsStateSlice} from "./components/projects/project-view/slice";
 
 const middleware = [
     ...getDefaultMiddleware(),
@@ -12,7 +13,8 @@ const middleware = [
 
 const store = configureStore({
     reducer: {
-        componentTags: componentTagsStateSlice.reducer
+        componentTags: componentTagsStateSlice.reducer,
+        projectTags: projectTagsStateSlice.reducer
     },
     middleware,
 });

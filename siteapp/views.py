@@ -16,6 +16,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.generic import ListView
 from guardian.shortcuts import get_perms_for_model, get_perms, assign_perm
 
+from api.siteapp.serializers.tags import SimpleTagSerializer
 from controls.forms import ImportProjectForm
 from controls.models import Element, System, Deployment
 from controls.views import add_selected_components
@@ -979,7 +980,8 @@ def project(request, project):
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
         "project_form": AddProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
-        "import_project_form": ImportProjectForm()
+        "import_project_form": ImportProjectForm(),
+        "tags": json.dumps(SimpleTagSerializer(project.tags, many=True).data)
     })
 
 #@api_view()

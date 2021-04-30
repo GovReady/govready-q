@@ -11,6 +11,9 @@
 {% block head %}
 {{block.super}}
 <style>
+    #content {
+        display: none;
+    }
 
   #focus-area-wrapper {
     padding: 2em 2em 3em 2em;
@@ -175,323 +178,326 @@
 <!-- authoring_tool_enabled included from project-base.html -->
 
 {% block body_content %}
-    <div class="row">
-      <div class="col-md-3">
-        <div id="status-box-controls" class="status-box" onclick="window.location.assign('{% url 'controls_selected' system_id=project.system.id %}')" style="cursor: pointer;">
-          <h2 class="status">{{ controls_status_count.Addressed }} of {{ project.system.root_element.controls.all|length }}</h2>
-          <span class="status-small">controls addressed</span>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div id="status-box-components" class="status-box" onclick="window.location.assign('{% url 'components_selected' system_id=project.system.id %}')" style="cursor: pointer;">
-          <h2 class="status">{{ project.system.get_producer_elements|length }}</h2>
-          <span class="status-small">system components</span>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div id="status-box-poams" class="status-box" onclick="window.location.assign('{% url 'poams_list' system_id=project.system.id %}')" style="cursor: pointer;">
-          <h2 class="status">{{ poam_status_count.Open }}</h2> <span class="status-small">open POA&Ms</span>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div id="status-box-compliance-piechart" class="status-box-invisible">
-          <h2 class="piechart" style="background-image: conic-gradient(#E1F8E2 {{ approx_compliance_degrees }}deg,
-                                                                       #B2E0B2 0 235deg);"> </h2>
-          <span class="status-small">{{ percent_compliant_100|floatformat:2 }}% compliance (unassessed)</span>
-          <br/>
-          <span id="systems-fisma-impact-level" class="status-small">
-            {% if impact_level %}
-              Mission Impact: <b>{{ impact_level|lower }}</b>
-              {% else %}
-              Mission Impact: <b>Not Categorized</b>
-            {% endif %}
-          </span>
-        </div>
-      </div>
-    </div>
-  {% if enable_experimental_evidence %}
-    <!-- <div style="text-align: right;"><a href="#">view more</a></div> -->
-    <!--
-    <div class="row">
-      <div class="col-md-12">
-        <div>
-          <table style="width:100%;">
-            <tr style="border-bottom:1px solid #ccc;">
-              <td>
-                <span style="font-size:1.3em;">Project Timeline</span>
-              </td>
-              <td>
-                <span style="display:block; text-align: right; font-size:1em; color:#262626;"><strong>Start:</strong> 10/14/20&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<strong>Status:</strong> 65% @  12/18/20&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<strong>Projected Completion:</strong> 01/22/21</span>
-              </td>
-            </tr>
-            <tr>
-              <td colspan="2" style="width:100%;">
-                <table style="background:#E1F8E2; width:100%; margin-top:1em;">
-                  <tr>
-                    <td style="background:#B2E0B2; border-right:2px solid #fff; padding:5px; ">&nbsp;</td>
-                    <td style="background:#B2E0B2; border-right:2px solid #fff; padding:5px;">&nbsp;</td>
-                    <td style="background:#B2E0B2; border-right:2px solid #fff; padding:5px;">&nbsp;</td>
-                    <td style="background:#E1F8E2; border-right:2px solid #fff; padding:5px;">&nbsp;</td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-    </div>
-    -->
-    <div class="row" style="margin-top:0.3em;">
-      <div class="col-md-4">
-        <div style="padding:10px 0 40px 0;">
-          <span class="status-section-header">Description</span>
-            <p>
-                This system provides important services to the organization.
-                This system provides important services to the organization.
-                This system provides important services to the organization... (<a href="#">view more</a>)
-            </p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div style="padding:10px 0 10px 0;">
-          <span class="status-section-header">To do next</span>
-            <ul style="list-style-type: none;">
-              <li><input type="checkbox"></input><span class="input-todo">Review OSCAL import</span></li>
-              <li><input type="checkbox"></input><span class="input-todo">Approve CISCO ASA Firewall component</span></li>
-              <li><input type="checkbox"></input><span class="input-todo">Export OSCAL for Jeff at InitTech</span></li>
-                {# <li><input type="checkbox"></input><span class="input-todo">Submit SSP</span></li>#}
-            </ul>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div style="padding:10px 0 40px 0;">
-          <span class="status-section-header">Recently changed</span>
-            <ul>
-              <li>Tiffany edited CISCO ASA Firewall component</li>
-              <li>1 component updated. (<a href="#">view changes</a>)</li>
-              <li>2 components added. (<a href="#">view additions</a>)</li>
-              <li>John left <a href="#">a comment</a> on your Project. </li>
-            </ul>
-        </div>
-      </div>
-    </div>
-  {% endif %}
-  <div><p>&nbsp;</p></div>
-    <div class="row">
-      <div class="col-sm-12" class="project-row-style">
-        <span class="status-section-header">Questionnaires / Compliance App</span>
-        {% if project.root_task.module.spec.introduction %}
-            {#<p class="project-text">#}
-              {#{{project.root_task.render_introduction|safe}}#}
-            {#</p>#}
-        {% endif %}
-
-        {% if project.root_task.module.spec.is_app_stub %}
-          {# This project is tied to an app that has not yet been imported. #}
-          <h2>Activate App</h2>
-          <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
-        {% endif %}
-      </div>
-    </div>
-    <div class="row">
-    {% with ncolumns=columns|length %}
-    {% for column in columns %}
-      <div class="col-md-{{12|div:ncolumns|floatformat:0}}">
-        <div class="question-column">
-            {% if column.title %}
-              <h2 class="question-column-title">{{column.title}}</h2>
-            {% endif %}
-
-            {% for group in column.groups %}
-            {% if group.title %}<div><a id="{{group.title}}"></a>&nbsp;</div>{% endif %}
-            <div class="question-group">
-
-              {% if group.title %}
-              <h3 class="question-group-title">{{group.title}}</h3>
-              {% endif %}
-
-              <div class="row">
-
-              {% for q in group.questions %}
-                <div id="question-{{q.question.key}}"
-                  {% if q.task  %}data-task-id="{{q.task.id}}"{% endif %}
-                  class="
-                    {# The layout of the project page is either a grid of components or a vertical list of components. #}
-                    {% if layout_mode == "grid" %}col-sm-3 col-lg-2{% else %}col-xs-12{% endif %}
-                    question
-                    "
-                    >
-
-                    {# The user may not have permission to actually start a Task, however. If not, show the same UI but without the form element that actually makes the request to start the Task. #}
-
-                    {% if can_start_task %}
-
-                      {# We need one of three forms here. If this is a module-type question and it's been answered already (it has a Task answer), then we simply link to that Task. Otherwise if it's not answered or if it's a module-set type question that can be answered multiple times, we show a form. If the question is answered by a particular module, clicking the icon submits a form that creates a new Task and redirects to it. If this question instead has a "protocol" field, then the user is simply redirected to the Apps Catalog and is presented with apps that satisfy the protocol. #}
-
-                      {% if not q.can_start_new_task %}
-                        {# This is a module-type question that has been started. Clicking the question doesn't start a new task --- instead, it's just a link to the started Task. #}
-
-                        {# Link to the Task. #}
-                        {# This is a module-type question that has been answered already (e.g., it has a Task answer). We are making the display of the information about the module one big link. Here we open the link tag and put everything that follows, including the progress bar and the buttons will clickable. #}
-                        <a href="{{q.task.get_absolute_url}}" style="display: block;">
-
-                      {% elif not q.question.spec.protocol %}
-                        {# Start a task directly using the module type in the specification. #}
-                        <form class="start-task" method="post" action="/tasks/start"
-                          onclick="$(this).submit();" style="cursor: pointer">
-                          {% csrf_token %}
-                          <input type="hidden" name="project" value="{{project.id}}"/>
-                          <input type="hidden" name="question" value="{{q.question.key}}"/>
-                          <input type="hidden" name="previous" value="project"/>
-
-                      {% else %}
-                        {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
-                        <form method="get" action="{% url 'store' %}" onclick="$(this).submit();" style="cursor: pointer">
-                          <input type="hidden" name="portfolio" id="id_portfolio" value="{{ project.portfolio.id }}">
-                          <input type="hidden" name="q" value="{{project.root_task.id}}/{{q.question.key}}">
-                      {% endif %}
-                    {% endif %}
-
-                    {# Once again, different HTML depending on the layout mode being used. For rows, start a new Bootstrap row and put the icon in the first column div. #}
-                    {% if layout_mode == "rows" %}
-                      <div class="row">
-                      <div class="col-sm-2">
-                    {% endif %}
-
-                    {% if authoring_tool_enabled %}
-                      {# Pencil icon to edit this question. #}
-                      <div class="authoring-tool-edit-question authoring-tool-hidden" data-key="{{q.question.key}}">
-                        <span class="glyphicon glyphicon-pencil"></span>
-                      </div>
-                    {% endif %}
-
-                    {% if not q.hide_icon %}
-                    <div class="question-icon project-question-icon">
-                        {# Show a checkmark if the question has been answered, can only be answered once (i.e. is a module-type question), and its Task has been completed. #}
-                        <div class="project-new-task">
-                          {% if not q.can_start_new_task and q.task.is_finished %}
-                            <span class="glyphicon glyphicon-ok project-glyphicon-ok"></span>
-                          {% endif %}
-                        </div>
-
-                        {# Select and show an icon. #}
-                        <img
-                          {# If the question has been answered, can only be answered once (i.e. is a module-type question), its Task comes with its own icon, and the question specification allows the use of that icon ('app_overrides_name_and_icon' is not set), then use it. #}
-                          {% if not q.can_start_new_task and q.task.get_app_icon_url and q.question.spec.app_overrides_name_and_icon is None %}
-                          src="{{q.task.get_app_icon_url}}"
-
-                          {# If the view computed an icon to show, show it. It's probably the icon from the question's specification. #}
-                          {% elif q.icon %}
-                          src="{{q.icon}}"
-
-                          {# Fall back to a shopping cart (if this question redirects/redirected to the Apps Catalog) or a default icon if this is just a Module. #}
-                          {% elif not q.question.spec.protocol %}
-                          src="{% static "img/default_app_icon.png" %}"
-                          {% else %}
-                          src="{% static "img/default_cart_icon_sm.png" %}"
-                          {% endif %}
-
-                          title="{{q.question.spec.title}}"
-                          class="img-responsive"
-                          alt="App Icon">
-                    </div>
-                    {% endif %}
-
-                    {# Once again, different HTML depending on the layout mode being used. For row mode, move to the second column for the question's title. #}
-                    {% if layout_mode == "rows" %}
-                      </div> <!-- /col -->
-                      <div class="col-sm-9">
-                    {% endif %}
-
-                    {# The label for the icon is the title of the question in the question's specification. #}
-                    <div class="question-title">
-                        {# If the question has been answered, can only be answered once (i.e. is a module-type question), and the question specification allows the use of Task's title as the label ('app_overrides_name_and_icon' is not set), then use it. #}
-                        {% if not q.can_start_new_task and q.question.spec.app_overrides_name_and_icon is None %}
-                          {{q.task.title}}
-
-                        {# Otherwise use the question's title as the label. #}
-                        {% else %}
-                          {% if q.can_start_new_task and q.question.spec.type == "module-set" %}
-                            <span class="glyphicon glyphicon-plus pull-right"></span>
-                          {% endif %}
-                          {{q.question.spec.title}}
-                        {% endif %}
-
-                        {# In the rows layout mode, indicate the question's progress and show a button to start or continue the task #}
-                        {% if layout_mode != "grid" %}
-                          {% with task=q.task %}
-                            <div class=""></div>
-                            {% if layout_mode == "rows" %}
-                            {% if task.is_finished %}
-                            <div class="btn btn-sm btn-default project-button-finished">Finished</div>
-                            {% elif task.is_started %}
-                            <div class="btn btn-sm btn-default">In progress</div>
-                            {% else %}
-                            <div class="btn btn-sm btn-default">Start section</div>
-                            {% endif %}
-                            {% endif %}
-                          {% endwith %}
-                        {% endif %}
-                      </div>
-
-                    {# Once again, different HTML depending on the layout mode being used. For row mode, end the column and the row. #}
-                    {% if layout_mode == "rows" %}
-                      </div> <!-- /col -->
-                      </div> <!-- /row -->
-                    {% endif %}
-
-                    {# If the user had permission to start a task and we started an 'a' or 'form' element, end it. #}
-                    {% if can_start_task %}
-                      {% if not q.can_start_new_task %}
-                        </a>
-                      {% else %}
-                        </form>
-                      {% endif %}
-                    {% endif %}
-
-                  {# Show invitations and discussions for this question below the icon and label. #}
-
-                  <div class="question-body">
-                    {# Show open invitations related to this question. #}
-                    {% for inv in q.invitations %}
-                      <p class="invitation" data-invitation-id="{{inv.id}}">
-                        You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
-                        (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
-                      </p>
-                    {% endfor %}
-
-                      {# If the user is a guest participant in a discussion inside this question, link to this discussion. They can't view the task directly. (?) #}
-                      {% if q.discussions %}
-                      <div>
-                        <div><strong>Discussions:</strong></div>
-                        {% for d in q.discussions %}
-                          <div><a href="{{d.get_absolute_url}}">{{d.attached_to.question.spec.title}}</a></div>
-                        {% endfor %}
-                      </div>
-                      {% endif %}
-                  </div> <!-- /.question-body -->
-                </div> <!-- /#question-__.question -->
-              {% endfor %} {# question #}
-              </div> <!-- /row -->
-            </div> <!-- /question-group -->
-            {% endfor %} {# group #}
-
-            {% comment %}
-            {% if columns|length > 0 and column.groups|length == 0 %}
-              <p class="project-question-comment">
-                {% if column.has_tasks_on_left %}
-                  There are no tasks in this column yet.
-                {% else %}
-                  There are no more tasks in this column. Congrats!
+    <div id="content">
+        <div class="row">
+          <div class="col-md-3">
+            <div id="status-box-controls" class="status-box" onclick="window.location.assign('{% url 'controls_selected' system_id=project.system.id %}')" style="cursor: pointer;">
+              <h2 class="status">{{ controls_status_count.Addressed }} of {{ project.system.root_element.controls.all|length }}</h2>
+              <span class="status-small">controls addressed</span>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div id="status-box-components" class="status-box" onclick="window.location.assign('{% url 'components_selected' system_id=project.system.id %}')" style="cursor: pointer;">
+              <h2 class="status">{{ project.system.get_producer_elements|length }}</h2>
+              <span class="status-small">system components</span>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div id="status-box-poams" class="status-box" onclick="window.location.assign('{% url 'poams_list' system_id=project.system.id %}')" style="cursor: pointer;">
+              <h2 class="status">{{ poam_status_count.Open }}</h2> <span class="status-small">open POA&Ms</span>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div id="status-box-compliance-piechart" class="status-box-invisible">
+              <h2 class="piechart" style="background-image: conic-gradient(#E1F8E2 {{ approx_compliance_degrees }}deg,
+                                                                           #B2E0B2 0 235deg);"> </h2>
+              <span class="status-small">{{ percent_compliant_100|floatformat:2 }}% compliance (unassessed)</span>
+              <br/>
+              <span id="systems-fisma-impact-level" class="status-small">
+                {% if impact_level %}
+                  Mission Impact: <b>{{ impact_level|lower }}</b>
+                  {% else %}
+                  Mission Impact: <b>Not Categorized</b>
                 {% endif %}
-              </p>
+              </span>
+            </div>
+          </div>
+        </div>
+     <div id="show-tags"></div>
+      {% if enable_experimental_evidence %}
+        <!-- <div style="text-align: right;"><a href="#">view more</a></div> -->
+        <!--
+        <div class="row">
+          <div class="col-md-12">
+            <div>
+              <table style="width:100%;">
+                <tr style="border-bottom:1px solid #ccc;">
+                  <td>
+                    <span style="font-size:1.3em;">Project Timeline</span>
+                  </td>
+                  <td>
+                    <span style="display:block; text-align: right; font-size:1em; color:#262626;"><strong>Start:</strong> 10/14/20&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<strong>Status:</strong> 65% @  12/18/20&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<strong>Projected Completion:</strong> 01/22/21</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="width:100%;">
+                    <table style="background:#E1F8E2; width:100%; margin-top:1em;">
+                      <tr>
+                        <td style="background:#B2E0B2; border-right:2px solid #fff; padding:5px; ">&nbsp;</td>
+                        <td style="background:#B2E0B2; border-right:2px solid #fff; padding:5px;">&nbsp;</td>
+                        <td style="background:#B2E0B2; border-right:2px solid #fff; padding:5px;">&nbsp;</td>
+                        <td style="background:#E1F8E2; border-right:2px solid #fff; padding:5px;">&nbsp;</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        -->
+        <div class="row" style="margin-top:0.3em;">
+          <div class="col-md-4">
+            <div style="padding:10px 0 40px 0;">
+              <span class="status-section-header">Description</span>
+                <p>
+                    This system provides important services to the organization.
+                    This system provides important services to the organization.
+                    This system provides important services to the organization... (<a href="#">view more</a>)
+                </p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div style="padding:10px 0 10px 0;">
+              <span class="status-section-header">To do next</span>
+                <ul style="list-style-type: none;">
+                  <li><input type="checkbox"></input><span class="input-todo">Review OSCAL import</span></li>
+                  <li><input type="checkbox"></input><span class="input-todo">Approve CISCO ASA Firewall component</span></li>
+                  <li><input type="checkbox"></input><span class="input-todo">Export OSCAL for Jeff at InitTech</span></li>
+                    {# <li><input type="checkbox"></input><span class="input-todo">Submit SSP</span></li>#}
+                </ul>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div style="padding:10px 0 40px 0;">
+              <span class="status-section-header">Recently changed</span>
+                <ul>
+                  <li>Tiffany edited CISCO ASA Firewall component</li>
+                  <li>1 component updated. (<a href="#">view changes</a>)</li>
+                  <li>2 components added. (<a href="#">view additions</a>)</li>
+                  <li>John left <a href="#">a comment</a> on your Project. </li>
+                </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+      <div><p>&nbsp;</p></div>
+        <div class="row">
+          <div class="col-sm-12" class="project-row-style">
+            <span class="status-section-header">Questionnaires / Compliance App</span>
+            {% if project.root_task.module.spec.introduction %}
+                {#<p class="project-text">#}
+                  {#{{project.root_task.render_introduction|safe}}#}
+                {#</p>#}
             {% endif %}
-            {% endcomment %}
-        </div> <!-- /question-column -->
-      </div> <!-- /col -->
-    {% endfor %} {# column #}
-    {% endwith %}
-    </div> <!-- /row for columns -->
+
+            {% if project.root_task.module.spec.is_app_stub %}
+              {# This project is tied to an app that has not yet been imported. #}
+              <h2>Activate App</h2>
+              <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
+            {% endif %}
+          </div>
+        </div>
+        <div class="row">
+        {% with ncolumns=columns|length %}
+        {% for column in columns %}
+          <div class="col-md-{{12|div:ncolumns|floatformat:0}}">
+            <div class="question-column">
+                {% if column.title %}
+                  <h2 class="question-column-title">{{column.title}}</h2>
+                {% endif %}
+
+                {% for group in column.groups %}
+                {% if group.title %}<div><a id="{{group.title}}"></a>&nbsp;</div>{% endif %}
+                <div class="question-group">
+
+                  {% if group.title %}
+                  <h3 class="question-group-title">{{group.title}}</h3>
+                  {% endif %}
+
+                  <div class="row">
+
+                  {% for q in group.questions %}
+                    <div id="question-{{q.question.key}}"
+                      {% if q.task  %}data-task-id="{{q.task.id}}"{% endif %}
+                      class="
+                        {# The layout of the project page is either a grid of components or a vertical list of components. #}
+                        {% if layout_mode == "grid" %}col-sm-3 col-lg-2{% else %}col-xs-12{% endif %}
+                        question
+                        "
+                        >
+
+                        {# The user may not have permission to actually start a Task, however. If not, show the same UI but without the form element that actually makes the request to start the Task. #}
+
+                        {% if can_start_task %}
+
+                          {# We need one of three forms here. If this is a module-type question and it's been answered already (it has a Task answer), then we simply link to that Task. Otherwise if it's not answered or if it's a module-set type question that can be answered multiple times, we show a form. If the question is answered by a particular module, clicking the icon submits a form that creates a new Task and redirects to it. If this question instead has a "protocol" field, then the user is simply redirected to the Apps Catalog and is presented with apps that satisfy the protocol. #}
+
+                          {% if not q.can_start_new_task %}
+                            {# This is a module-type question that has been started. Clicking the question doesn't start a new task --- instead, it's just a link to the started Task. #}
+
+                            {# Link to the Task. #}
+                            {# This is a module-type question that has been answered already (e.g., it has a Task answer). We are making the display of the information about the module one big link. Here we open the link tag and put everything that follows, including the progress bar and the buttons will clickable. #}
+                            <a href="{{q.task.get_absolute_url}}" style="display: block;">
+
+                          {% elif not q.question.spec.protocol %}
+                            {# Start a task directly using the module type in the specification. #}
+                            <form class="start-task" method="post" action="/tasks/start"
+                              onclick="$(this).submit();" style="cursor: pointer">
+                              {% csrf_token %}
+                              <input type="hidden" name="project" value="{{project.id}}"/>
+                              <input type="hidden" name="question" value="{{q.question.key}}"/>
+                              <input type="hidden" name="previous" value="project"/>
+
+                          {% else %}
+                            {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
+                            <form method="get" action="{% url 'store' %}" onclick="$(this).submit();" style="cursor: pointer">
+                              <input type="hidden" name="portfolio" id="id_portfolio" value="{{ project.portfolio.id }}">
+                              <input type="hidden" name="q" value="{{project.root_task.id}}/{{q.question.key}}">
+                          {% endif %}
+                        {% endif %}
+
+                        {# Once again, different HTML depending on the layout mode being used. For rows, start a new Bootstrap row and put the icon in the first column div. #}
+                        {% if layout_mode == "rows" %}
+                          <div class="row">
+                          <div class="col-sm-2">
+                        {% endif %}
+
+                        {% if authoring_tool_enabled %}
+                          {# Pencil icon to edit this question. #}
+                          <div class="authoring-tool-edit-question authoring-tool-hidden" data-key="{{q.question.key}}">
+                            <span class="glyphicon glyphicon-pencil"></span>
+                          </div>
+                        {% endif %}
+
+                        {% if not q.hide_icon %}
+                        <div class="question-icon project-question-icon">
+                            {# Show a checkmark if the question has been answered, can only be answered once (i.e. is a module-type question), and its Task has been completed. #}
+                            <div class="project-new-task">
+                              {% if not q.can_start_new_task and q.task.is_finished %}
+                                <span class="glyphicon glyphicon-ok project-glyphicon-ok"></span>
+                              {% endif %}
+                            </div>
+
+                            {# Select and show an icon. #}
+                            <img
+                              {# If the question has been answered, can only be answered once (i.e. is a module-type question), its Task comes with its own icon, and the question specification allows the use of that icon ('app_overrides_name_and_icon' is not set), then use it. #}
+                              {% if not q.can_start_new_task and q.task.get_app_icon_url and q.question.spec.app_overrides_name_and_icon is None %}
+                              src="{{q.task.get_app_icon_url}}"
+
+                              {# If the view computed an icon to show, show it. It's probably the icon from the question's specification. #}
+                              {% elif q.icon %}
+                              src="{{q.icon}}"
+
+                              {# Fall back to a shopping cart (if this question redirects/redirected to the Apps Catalog) or a default icon if this is just a Module. #}
+                              {% elif not q.question.spec.protocol %}
+                              src="{% static "img/default_app_icon.png" %}"
+                              {% else %}
+                              src="{% static "img/default_cart_icon_sm.png" %}"
+                              {% endif %}
+
+                              title="{{q.question.spec.title}}"
+                              class="img-responsive"
+                              alt="App Icon">
+                        </div>
+                        {% endif %}
+
+                        {# Once again, different HTML depending on the layout mode being used. For row mode, move to the second column for the question's title. #}
+                        {% if layout_mode == "rows" %}
+                          </div> <!-- /col -->
+                          <div class="col-sm-9">
+                        {% endif %}
+
+                        {# The label for the icon is the title of the question in the question's specification. #}
+                        <div class="question-title">
+                            {# If the question has been answered, can only be answered once (i.e. is a module-type question), and the question specification allows the use of Task's title as the label ('app_overrides_name_and_icon' is not set), then use it. #}
+                            {% if not q.can_start_new_task and q.question.spec.app_overrides_name_and_icon is None %}
+                              {{q.task.title}}
+
+                            {# Otherwise use the question's title as the label. #}
+                            {% else %}
+                              {% if q.can_start_new_task and q.question.spec.type == "module-set" %}
+                                <span class="glyphicon glyphicon-plus pull-right"></span>
+                              {% endif %}
+                              {{q.question.spec.title}}
+                            {% endif %}
+
+                            {# In the rows layout mode, indicate the question's progress and show a button to start or continue the task #}
+                            {% if layout_mode != "grid" %}
+                              {% with task=q.task %}
+                                <div class=""></div>
+                                {% if layout_mode == "rows" %}
+                                {% if task.is_finished %}
+                                <div class="btn btn-sm btn-default project-button-finished">Finished</div>
+                                {% elif task.is_started %}
+                                <div class="btn btn-sm btn-default">In progress</div>
+                                {% else %}
+                                <div class="btn btn-sm btn-default">Start section</div>
+                                {% endif %}
+                                {% endif %}
+                              {% endwith %}
+                            {% endif %}
+                          </div>
+
+                        {# Once again, different HTML depending on the layout mode being used. For row mode, end the column and the row. #}
+                        {% if layout_mode == "rows" %}
+                          </div> <!-- /col -->
+                          </div> <!-- /row -->
+                        {% endif %}
+
+                        {# If the user had permission to start a task and we started an 'a' or 'form' element, end it. #}
+                        {% if can_start_task %}
+                          {% if not q.can_start_new_task %}
+                            </a>
+                          {% else %}
+                            </form>
+                          {% endif %}
+                        {% endif %}
+
+                      {# Show invitations and discussions for this question below the icon and label. #}
+
+                      <div class="question-body">
+                        {# Show open invitations related to this question. #}
+                        {% for inv in q.invitations %}
+                          <p class="invitation" data-invitation-id="{{inv.id}}">
+                            You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
+                            (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
+                          </p>
+                        {% endfor %}
+
+                          {# If the user is a guest participant in a discussion inside this question, link to this discussion. They can't view the task directly. (?) #}
+                          {% if q.discussions %}
+                          <div>
+                            <div><strong>Discussions:</strong></div>
+                            {% for d in q.discussions %}
+                              <div><a href="{{d.get_absolute_url}}">{{d.attached_to.question.spec.title}}</a></div>
+                            {% endfor %}
+                          </div>
+                          {% endif %}
+                      </div> <!-- /.question-body -->
+                    </div> <!-- /#question-__.question -->
+                  {% endfor %} {# question #}
+                  </div> <!-- /row -->
+                </div> <!-- /question-group -->
+                {% endfor %} {# group #}
+
+                {% comment %}
+                {% if columns|length > 0 and column.groups|length == 0 %}
+                  <p class="project-question-comment">
+                    {% if column.has_tasks_on_left %}
+                      There are no tasks in this column yet.
+                    {% else %}
+                      There are no more tasks in this column. Congrats!
+                    {% endif %}
+                  </p>
+                {% endif %}
+                {% endcomment %}
+            </div> <!-- /question-column -->
+          </div> <!-- /col -->
+        {% endfor %} {# column #}
+        {% endwith %}
+        </div> <!-- /row for columns -->
+    </div>
   <!-- </div> -->
 <!-- </div> -->
 {% endblock %}
@@ -506,10 +512,12 @@
 {% endblock %}
 
 {% block scripts %}
+
 <script>
 var project_invitation_info = {{send_invitation|json}};
 
 $(function() {
+window.renderProjectTags({{ project.id }}, {{ tags | safe }});
   set_state_from_url_fragment();
   $(window).on('hashchange', set_state_from_url_fragment);
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {

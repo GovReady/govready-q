@@ -134,7 +134,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework_filters.backends.ComplexFilterBackend',
-        'rest_framework.filters.OrderingFilter',
+        # 'rest_framework.filters.OrderingFilter',
         'api.base.filters.RelatedOrderingFilter'
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (

@@ -11,6 +11,10 @@
 {% block head %}
 {% include "controls/_style-controls.html" %}
 <style>
+    #content {
+        display: none;
+    }
+
   .project-image {
     width: 20px;
     float: left;
@@ -101,7 +105,7 @@
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-<div style="margin-top: 30px;" >
+<div id="content" style="margin-top: 30px;" >
   <div class="container">
     <div class="row">
       <div id="above-tab-content" class="row">
@@ -155,13 +159,15 @@
         <div class="row">
           <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8 description-text">
             <h3>Component Description</h3>
+            <h5>
             {% if element.description %}
               {{ element.description }}
             {% else %}
               No description exists for this component.
             {% endif %}
+            </h5>
             <div id="show-tags"></div>
-            <div id="edit-tags"></div>
+
           </div>
           <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
 
@@ -337,7 +343,7 @@
 
 {% block scripts %}
       <script>
-        window.renderElementTags({{ tags | safe }});
+        window.renderElementTags({{ element.id }}, {{ tags | safe }});
       </script>
       <script>
         // Adds statement form to page

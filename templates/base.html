@@ -14,7 +14,8 @@
         <link rel="shortcut icon" href='{% static "img/brand/favicon.ico" %}' type="image/x-icon">
         <link rel="icon" href='{% static "img/brand/favicon.ico" %}' type="image/x-icon">
 
-
+{#        <link rel="stylesheet" type="text/css" href="{% static "styles.css" %}">#}
+{#        <link rel="stylesheet" type="text/css" href="{% static "vendors.css" %}">#}
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap.min.css" %}">
         <link rel="stylesheet" href="{% static "css/google-fonts.css" %}">
         <link rel="stylesheet" href="{% static "css/govready-q.css" %}">
@@ -26,6 +27,7 @@
         {% include "head.html" %}
 
         {% block head %}{% endblock %}
+
 
         <!--[if lt IE 9]>
             <script src="static/js/html5-3.6-respond-1.1.0.min.js"></script>
@@ -137,6 +139,7 @@
 
     <script src="{% static "vendor/jquery.js" %}"></script>
     <script src="{% static "vendor/jquery-ui.js" %}"></script>
+
     <script src="{% static "vendor/bootstrap/js/bootstrap.min.js" %}"></script>
     <script src="{% static "vendor/bootstrap-responsive-tabs.js" %}"></script>
     <script src="{% static "vendor/autosize.min.js" %}"> </script>
@@ -147,6 +150,9 @@
     <script src="{% static "js/main.js" %}"></script>
     <script src="{% static "vendor/bootstrap-helpers.js" %}"></script>
     <script src="{% static "vendor/jsgrid/jsgrid.min.js" %}"></script>
+    <script src="{% static "manifest.js" %}"></script>
+    <script src="{% static "styles.js" %}"></script>
+    <script src="{% static "vendors.js" %}"></script>
     <script src="{% static "main.js" %}"></script>
     <script>
     $(document).ajaxSend(function(event, xhr, settings) { if (!/^https?:.*/.test(settings.url)) xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}"); });
