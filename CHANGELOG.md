@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.3.5.2 (May 2, 2021)
+------------------------
+
+**Bug fixes**
+
+* Restore css style for component count accidentally deleted.
+
 v0.9.3.5.1 (May 1, 2021)
 ------------------------
 
