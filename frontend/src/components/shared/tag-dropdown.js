@@ -79,16 +79,16 @@ export const TagDropdown = ({ updateTagsURL, action, existingTags }) => {
         <div>
             <label>Tags</label>
             <MultiDropdownPaginated
-            ref={dropdownRef}
-            placeholder='Select Tags'
-            url={tagURL}
-            filterBy='label__istartswith'
-            displayKey='label'
-            addOptionIfNoneExistFunction={addOptionIfNotExists}
-            pageSize={20}
-            onChange={onChange}
-            onError={onError}
-            selected={state} />
+                ref={dropdownRef}
+                placeholder='Select Tags'
+                url={tagURL}
+                filterBy='label__istartswith'
+                displayKey='label'
+                addOptionIfNoneExistFunction={addOptionIfNotExists}
+                pageSize={20}
+                onChange={onChange}
+                onError={onError}
+                selected={state} />
         </div>
 
     )

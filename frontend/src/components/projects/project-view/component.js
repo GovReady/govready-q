@@ -8,7 +8,7 @@ import {TagDropdown} from "../../shared/tag-dropdown";
 
 const { setTags } = projectTagsStateSlice.actions;
 
-function renderProjectTags(projectID, existingTags) {
+window.renderProjectTags = (projectID, existingTags) => {
     store.dispatch(setTags(existingTags));
 
     $(window).on('load', function () {
@@ -25,6 +25,4 @@ function renderProjectTags(projectID, existingTags) {
         document.getElementById('show-tags')
     );
 
-}
-// This is a hack to get it to work with existing django templates.
-window.renderProjectTags = renderProjectTags;
+};

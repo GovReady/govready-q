@@ -48,10 +48,11 @@ def home_user(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect("/login")
 
+    portfolio = request.user.portfolio_list().first()
     return render(request, "home-user.html", {
         "sitename": Sitename.objects.last(),
         "users": User.objects.all(),
-        "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
+        "project_form": AddProjectForm(request.user, initial={'portfolio': portfolio.id if portfolio else None}),
         "projects_access": Project.get_projects_with_read_priv(request.user, excludes={"contained_in_folders": None}),
         "import_project_form": ImportProjectForm(),
         "portfolios": request.user.portfolio_list(),

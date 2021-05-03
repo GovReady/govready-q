@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom';
 import { componentTagsStateSlice } from "./slice"
 import { Provider } from "react-redux";
 import store from "../../../store";
-import {TagDropdown} from "../../shared/tag-dropdown";
+import { TagDropdown } from "../../shared/tag-dropdown";
 
 
 const { setTags } = componentTagsStateSlice.actions;
 
-function renderElementTags(elementID, existingTags) {
+window.renderElementTags = (elementID, existingTags) => {
     store.dispatch(setTags(existingTags));
 
     $(window).on('load', function () {
@@ -24,7 +24,4 @@ function renderElementTags(elementID, existingTags) {
         </Provider>,
         document.getElementById('show-tags')
     );
-
-}
-// This is a hack to get it to work with existing django templates.
-window.renderElementTags = renderElementTags;
+};
