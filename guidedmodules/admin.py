@@ -70,21 +70,20 @@ class AppSourceSpecWidget(forms.Widget):
         # depending on if the URL is an HTTP or SSH URL.
         if value is not None and value.get("type") == "git" and isinstance(value.get("url"), str):
             import re
-            if value["url"].startswith("https:") or value["url"].startswith("http:"):
+            pattern = re.compile(r"(?:git\+)?(?:(?P<protocol>https?):\/\/)"
+                                 r"(?:(?P<user>\w+)@)?(?P<host>[-\w.]+)(?:\/|:)"
+                                 r"(?P<port>\d{1,5})?(?P<path>.*\/)?(?P<project>.*?)(?:\.git)")
+            # This regex allows for git+https:// or https:// style urls and allows git itself to
+            # validate any other url formats, which may include remote helpers etc.
+            match = pattern.match(value["url"])
+            if match:
                 value["type"] = "git-web"
                 value["url-web"] = value["url"]
                 del value["url"]
-            elif re.match(r"(?P<user>[a-z_][a-z0-9_-]{0,29})@(?P<host>\S+):(?P<path>\S+)", value["url"]):
-                # This is a really cursory regex for one form of SSH URL
-                # that git recognizes, as user@host:path. There are
-                # remarkably no real requirements for a SSH username
-                # --- the regex here is tighter than is really required.
-                # But it's usually just "git" anyway.
+            else:
                 value["type"] = "git-ssh"
                 value["url-ssh"] = value["url"]
                 del value["url"]
-            else:
-                raise ValueError(value)
 
         def make_widget(key, label, widget, help_text, show_for_types):
             if key != "_remaining_":
