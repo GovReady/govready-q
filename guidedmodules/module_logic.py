@@ -6,6 +6,8 @@ from django.conf import settings
 from django.urls import reverse
 
 from jinja2.sandbox import SandboxedEnvironment
+
+from controls.enums.statements import StatementTypeEnum
 from controls.oscal import Catalogs, Catalog
 from siteapp.settings import GOVREADY_URL
 
