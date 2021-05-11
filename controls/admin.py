@@ -89,6 +89,13 @@ class SystemAssessmentResultAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'system', 'deployment', 'uuid')
     search_fields = ('id', 'name', 'system', 'deployment', 'uuid')
 
+class RepoAdmin(SimpleHistoryAdmin, ExportCsvMixin):
+    list_display = ('id', 'repo_url', 'name', 'role', 'system')
+    search_fields = ('id', 'repo_url', 'name', 'role', 'uuid')
+    actions = ["export_as_csv"]
+
+    def uuid(self, obj):
+        return obj.repo.uuid
 
 admin.site.register(ImportRecord, ImportRecordAdmin)
 admin.site.register(Statement, StatementAdmin)
@@ -102,4 +109,5 @@ admin.site.register(ElementCommonControl, ElementCommonControlAdmin)
 admin.site.register(Poam, PoamAdmin)
 admin.site.register(Deployment, DeploymentAdmin)
 admin.site.register(SystemAssessmentResult, SystemAssessmentResultAdmin)
+admin.site.register(Repo, RepoAdmin)
 

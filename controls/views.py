@@ -3102,3 +3102,138 @@ def system_assessment_result_history(request, system_id, sar_id=None):
         "project_form": AddProjectForm(request.user),
     }
     return render(request, "systems/sar_history.html", context)
+
+
+# System Repos
+def system_repos(request, system_id):
+    """List repos for a system"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve list of repos for the system
+        repos = system.repos.all().order_by(Lower('name'))
+        # controls = system.root_element.controls.all()
+        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+        # Return the controls
+        context = {
+            "system": system,
+            "project": project,
+            "repos": repos,
+            "project_form": AddProjectForm(request.user),
+        }
+        return render(request, "systems/repos_list.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+@login_required
+def manage_system_repos(request, system_id, repo_id=None):
+    """Form to create or edit system deployment"""
+
+    # Can user view this sytem?
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        # User does not have permission to this system
+        raise Http404
+
+    di = get_object_or_404(Deployment, pk=deployment_id) if deployment_id else None
+    if request.method == 'POST':
+        form = DeploymentForm(request.POST, instance=di)
+        if form.is_valid():
+            form.save()
+            deployment = form.instance
+            # Create message to display to user
+            if di:
+                messages.add_message(request, messages.INFO, f'Deployment "{deployment.name}" edited.')
+                logger.info(
+                    event="edit_deployment",
+                    object={"object": "deployment", "id": deployment.id, "name":deployment.name},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+            else:
+                messages.add_message(request, messages.INFO, f'Deployment "{deployment.name}" created.')
+                logger.info(
+                    event="create_deployment",
+                    object={"object": "deployment", "id": deployment.id, "name":deployment.name},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+            return redirect('system_deployments', system_id=system_id)
+    else:
+        if di is None:
+            di = Deployment(system_id=system_id)
+        form = DeploymentForm(instance=di)
+
+    return render(request, 'systems/deployment_form.html', {
+        "form": form,
+        "deployment": di,
+        "project_form": AddProjectForm(request.user),
+    })
+
+@login_required
+def system_repo_history(request, system_id, repo_id=None):
+    """Returns the history for the given deployment"""
+
+    # Can user view this sytem?
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        # User does not have permission to this system
+        raise Http404
+
+    from controls.models import Deployment
+    full_dpt_history = None
+    try:
+        deployments = Deployment.objects.get(id=deployment_id)
+        full_dpt_history = deployments.history.all()
+    except Deployment.DoesNotExist:
+        messages.add_message(request, messages.ERROR, f'The deployment id is not valid. Is this still a deployment in GovReady?')
+    context = {
+        "deployment": full_dpt_history,
+        "project_form": AddProjectForm(request.user),
+        }
+    return render(request, "systems/deployment_history.html", context)
+
+# @login_required
+# def system_deployment_inventory(request, system_id, repo_id):
+#     """List system deployment inventory"""
+
+#     # Retrieve identified System
+#     system = System.objects.get(id=system_id)
+#     # Retrieve related selected controls if user has permission on system
+#     if request.user.has_perm('view_system', system):
+#         # Retrieve primary system Project
+#         # Temporarily assume only one project and get first project
+#         project = system.projects.all()[0]
+
+#         # Retrieve list of deployments for the system
+#         deployments = system.deployments.all()
+#         deployment = get_object_or_404(Deployment, pk=deployment_id)
+#         # controls = system.root_element.controls.all()
+#         # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+#         # inventory_items = [item for item in inventory_all if item["deployment_id"] == deployment_id]
+#         inventory_items = [item for item in deployment.inventory_items] if deployment.inventory_items != None else []
+
+#         # Return the controls
+#         context = {
+#             "system": system,
+#             "project": project,
+#             "deployment": deployment,
+#             "inventory_items": inventory_items,
+#             # "controls": controls,
+#             # "poam_smts": poam_smts,
+#             # "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+#             # "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+#             # "project_form": ProjectForm(request.user),
+#         }
+#         return render(request, "systems/deployment_inventory.html", context)
+#     else:
+#         # User does not have permission to this system
+#         raise Http404
+

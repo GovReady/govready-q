@@ -1,0 +1,66 @@
+{% extends "project-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+{% load system_tags %}
+
+{% block title %}
+Repos List
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+<!-- action buttons included from project-base.html -->
+<!-- authoring_tool_enabled included from project-base.html -->
+
+{% block body_content %}
+<div class="systems-top">
+    <div id="tab-content" class="row rows-header">
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 systems-poam">Repos</div>
+        <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">&nbsp;</div>
+        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+          <a href="/systems/{{ system.id }}/repo/new" class="btn btn-sm btn-success systems-element-button">New Repo</a>
+        </div>
+    </div>
+    {% if repos|length < 1 %}
+      <div id="tab-content" class="row row-control">
+        <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+          <p>No Repos are currently identified for this system.</p>
+        </div>
+      </div>
+    {% else %}
+      {% for repo in repos %}
+        <div id="repo-{{repo.id}}" class="row row-control">
+            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                <a class="portfolio-project-link" href="/systems/{{ system.id }}/repo/{{ repo.id }}/inventory">{{ repo.name }}</a>
+            </div>
+            <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                {{ repo.description }}
+            </div>
+            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+              &nbsp;
+            </div>
+            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                {{ repo.updated|timesince}} ago
+            </div>
+            <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+                <a class="portfolio-project-link" href="/systems/{{ system.id }}/repo/{{ repo.id }}/edit" title="Edit repo" aria-label="Edit repo" ><span class="glyphicon glyphicon-pencil"></span></a>
+                &nbsp;
+                <a class="portfolio-project-link" href="/systems/{{ system.id }}/repo/{{ repo.id }}/history" title="View repo history" aria-label="View repo history" ><span class="glyphicon glyphicon-calendar"></span></a>
+            </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+</script>
+
+{% endblock %}

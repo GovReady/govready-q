@@ -1,0 +1,96 @@
+{% extends "project-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+{% load system_tags %}
+
+{% block title %}
+Deployment Inventory
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+{% include "controls/_style-controls.html" %}
+<style>
+</style>
+{% endblock %}
+
+<!-- action buttons included from project-base.html -->
+<!-- authoring_tool_enabled included from project-base.html -->
+
+{% block body_content %}
+<div  class="systems-top">
+    <div class="row">
+      <div class="col-md-12"><h2>"{{ deployment.name }}" deployment</h2></div>
+      <div class="col-md-12">Added {{ deployment.created }} {% if deployment.description %}- {{ deployment.description }}{% endif %}</div>
+      <div class="col-md-12"><span class="small">uuid: {{ deployment.uuid }}</span></div>
+    </div>
+    <div>&nbsp;</div>
+
+    <div class="row rows-header">
+        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam">Inventory Items</div>
+        <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">&nbsp;</div>
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+          <span class="glyphicon glyphicon-download-alt pull-right systems-poam-glyphicon"
+                style="cursor: pointer;"
+                onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
+        </div>
+    </div>
+    {% if inventory_items|length < 1 %}
+      <div id="tab-content" class="row row-control">
+        <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+          <p>No inventory items are currently identified for this deployment.</p>
+        </div>
+      </div>
+    {% else %}
+      {% for item in inventory_items %}
+        <div id="tab-content" class="row row-control">
+            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                {{ item.id }}
+            </div>
+            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                {{ item.name }}
+            </div>
+            <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
+                {{ item.description }}
+            </div>
+            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                <!-- {% if item.scan.time %}
+                assessment: {{ item.scan.time }}
+                {% else %}
+                assessment: not available
+                {% endif %} -->
+            </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // The download button shows a modal to ask what file format to download in.
+  function download_document(document_id, system_id) {
+    var dom = $("<div><p>Select download format:</p>"
+      + "<select class=form-control>"
+      + "<option value='xlsx'>Microsoft Excel Spreadsheet</option>"
+      + "<option value='csv'>CSV Text File</option>"
+      + "</select>"
+      + "</div>");
+    show_modal_confirm("Download Document", dom, "Download", function() {
+      var format = dom.find("select").val();
+      switch(format) {
+        case "xlsx":
+          window.location = "/systems/" + system_id + "/deployments/export/xlsx";
+          break;
+        case "csv":
+          window.location = "/systems/" + system_id + "/deployments/export/csv";
+          break;
+      }
+    });
+  }
+</script>
+
+{% endblock %}

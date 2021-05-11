@@ -155,3 +155,21 @@ class SystemAssessmentResultForm(ModelForm):
 
     assessment_results = forms.CharField(label='System assessment result items (JSON)', required=False, widget=forms.Textarea(),
             help_text="Listing of assessment items in JSON")
+
+class RepoForm(ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.initial['system'] = self.instance.system_id
+        self.fields['system'].widget = forms.HiddenInput()
+
+    class Meta:
+        model = Repo
+        fields = ['repo_url', 'name', 'description', 'repo_type', 'system']
+
+    def clean(self):
+        """Validate data."""
+
+        cd = self.cleaned_data
+        return cd
+

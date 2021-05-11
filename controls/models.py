@@ -946,6 +946,28 @@ class SystemAssessmentResult(auto_prefetch.Model):
         # For debugging.
         return "<SystemAssesmentResult %s id=%d>" % (self.system, self.id)
 
+class Repo(auto_prefetch.Model):
+    repo_url = models.URLField¶(max_length=200, help_text="URL of the git repository", unique=False, blank=False, null=False)
+    name = models.CharField(max_length=250, help_text="Name of the git repository", unique=False, blank=False, null=False)
+    description = models.TextField(max_length=255, help_text="Brief description of the git repository", unique=False, blank=False, null=False)
+    repo_type = models.CharField(max_length=150, help_text="The type or role of the git repository.", unique=False, blank=True, null=True, choices=RepoTypeEnum.choices())
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for the git repository.")
+    system = auto_prefetch.ForeignKey('System', related_name='git repositorys', on_delete=models.CASCADE, blank=True, null=True, help_text="The system associated with the git repository")
+    history = HistoricalRecords(cascade_delete_history=True)
+
+    def __str__(self):
+        return "'%s id=%d'" % (self.name, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "'%s id=%d'" % (self.name, self.id)
+
+    def get_absolute_url(self):
+        return "/systems/%d/repos" % (self.system.id)
+
+
 # Individual statement Model
 # class AssessmentResult(models.Model):
 #     statement = models.OneToOneField(Statement, related_name="assessment_result",

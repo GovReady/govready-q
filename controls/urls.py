@@ -53,6 +53,13 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/inventory$', views.system_deployment_inventory, name="system_deployment_inventory"),
     url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/history$', views.deployment_history, name="deployment_history"),
 
+    # Systems Repos
+    url(r'^(?P<system_id>.*)/repos$', views.system_repos, name="system_repos"),
+    url(r'^(?P<system_id>.*)/repo/new$', views.manage_system_repo, name="new_system_repo"),
+    url(r'^(?P<system_id>.*)/repo/(?P<repo_id>.*)/edit$', views.manage_system_repo, name="manage_system_repo"),
+    # url(r'^(?P<system_id>.*)/repo/(?P<repo_id>.*)/inventory$', views.system_repo_inventory, name="system_repo_inventory"),
+    url(r'^(?P<system_id>.*)/repo/(?P<repo_id>.*)/history$', views.repo_history, name="repo_history"),
+
     # Statements
     url(r'^smt/_save/$', views.save_smt),
     url(r'^smt/_delete/$', views.delete_smt),
