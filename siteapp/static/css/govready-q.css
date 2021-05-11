@@ -309,6 +309,7 @@ form #id_json_content { width: 100%; overflow: auto !important; } /* The !import
 details summary { cursor: pointer; }
 details summary > * { display: inline; }
 
+#common-tab-count, #component-tab-count { display: inline-block; color: #666; background-color: #dedede; border-radius: 20px; line-height: 1; padding: 2px 6px; font-size: 0.8em; font-weight: 600; }
 .component-control-description { white-space: pre-wrap; max-height: 200px !important;overflow-y: scroll; }
 #component-detail-content { border-left:1px solid #ccc; border-right:1px solid #ccc; border-bottom:1px solid #ccc; border-radius: 0; padding: 0 0 8px 12px; }
 /*details > summary::before { content: '▶'; }*/
