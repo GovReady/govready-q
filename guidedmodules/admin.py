@@ -85,55 +85,55 @@ class AppSourceSpecWidget(forms.Widget):
                 value["url-ssh"] = value["url"]
                 del value["url"]
 
-    	def make_widget(key, label, widget, help_text, show_for_types):
-    	    if key != "_remaining_":
-    	    	if value is not None and key in value:
-    	    		val = value[key]
-    	    		del value[key] # only the unrecognized keys are left at the end
-    	    	else:
-    	    		val = ""
-    	    elif value is None:
-    	    	# Nothing unrecognized.
-    	    	val = ""
-    	    else:
-    	        # Serialize unrecognized keys in YAML.
-    	        import rtyaml
-    	        val = rtyaml.dump(value)
-    	    return """
-    	    	<div style="clear: both; padding-bottom: .75em" class="{}">
-    	        	<label for="id_{}_{}">{}:</label>
-    	    		{}
-    	    		<p class="help">{}</p>
-    	    	</div>""".format(
-    	    		(
-    	    			"show_if_type "
-    	    			 + " ".join(("show_if_type_" + s) for s in show_for_types)
-    	    			 if show_for_types
-    	    			 else ""
-    	    		),
-		            escape_html(name),
-		            key,
-		            escape_html(label),
-		            widget.render(name + "_" + key, val),
-		            escape_html(help_text or ""),
-		            )
+        def make_widget(key, label, widget, help_text, show_for_types):
+            if key != "_remaining_":
+                if value is not None and key in value:
+                    val = value[key]
+                    del value[key] # only the unrecognized keys are left at the end
+                else:
+                    val = ""
+            elif value is None:
+                # Nothing unrecognized.
+                val = ""
+            else:
+                # Serialize unrecognized keys in YAML.
+                import rtyaml
+                val = rtyaml.dump(value)
+            return """
+                <div style="clear: both; padding-bottom: .75em" class="{}">
+                    <label for="id_{}_{}">{}:</label>
+                    {}
+                    <p class="help">{}</p>
+                </div>""".format(
+                    (
+                        "show_if_type "
+                         + " ".join(("show_if_type_" + s) for s in show_for_types)
+                         if show_for_types
+                         else ""
+                    ),
+                    escape_html(name),
+                    key,
+                    escape_html(label),
+                    widget.render(name + "_" + key, val),
+                    escape_html(help_text or ""),
+                    )
 
-    	# Widgets
-    	ret = "\n\n".join(make_widget(*args) for args in self.fields)
+        # Widgets
+        ret = "\n\n".join(make_widget(*args) for args in self.fields)
 
-    	# Click handler to only show fields that are appropriate for
-    	# the selected AppSource type.
-    	ret += """
-    	<script>
-    		django.jQuery("select[name=spec_type]")
-    			.change(function() {
-    				django.jQuery(".show_if_type").hide()
-    				django.jQuery(".show_if_type_" + this.value).show()
-    			})
-    			.change() // init
-    	</script>
-    	"""
-    	return ret
+        # Click handler to only show fields that are appropriate for
+        # the selected AppSource type.
+        ret += """
+        <script>
+            django.jQuery("select[name=spec_type]")
+                .change(function() {
+                    django.jQuery(".show_if_type").hide()
+                    django.jQuery(".show_if_type_" + this.value).show()
+                })
+                .change() // init
+        </script>
+        """
+        return ret
 
     def value_from_datadict(self, data, files, name):
         # Override Django Forms widget method `value_from_datadict`
