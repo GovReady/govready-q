@@ -686,6 +686,22 @@ class ImportExportTests(TestCaseWithFixtureData):
                 self.log_capture.append(message)
             self.log = logger
 
+    def _create_asset(self, i):
+
+        import os
+        from django.core.files import File
+
+        file = File(open('assets/system-reference.docx', 'rb'))
+        file_name = os.path.basename(file.name)
+
+
+        asset = ProjectAsset.objects.create(title=f"Test Template {i}", asset_type=AssetTypeEnum.SSP_EXPORT.name,
+                                   description=f"Test Description - {i}",
+                                    project_id=self.project.pk)
+        asset.file.save(file_name, file, save=True)
+
+        return asset.id
+
     def test_round_trip(self):
         # The normal question types all have the same import/export semantics but
         # validation requires that we give it sane values.
@@ -770,11 +786,10 @@ class ImportExportTests(TestCaseWithFixtureData):
         # Add New SSP Template Assets
         assets = []
         for i in range(10):
-            assets.append(ProjectAsset(title=f"Test Template {i}", asset_type=AssetTypeEnum.SSP_EXPORT.name,
-                                       description=f"Test Description - {i}",
-                                       file=File(open('assets/system-reference.docx', 'rb')),
-                                       project_id=self.project.pk))
-        ProjectAsset.objects.bulk_create(assets)
+            assets.append(
+                self._create_asset(i))
+
+       # ProjectAsset.objects.bulk_create(assets)
         asset_ids = []
         for asset in ProjectAsset.objects.filter(~Q(title__exact="System Template") &
                                                  Q(project=self.project)).values('id', 'default'):

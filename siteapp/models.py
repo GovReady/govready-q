@@ -1,6 +1,8 @@
 from collections import ChainMap
 from itertools import chain
+import os
 import logging
+from django.core.files import File
 import structlog
 import uuid as uuid
 from structlog import get_logger
@@ -635,11 +637,12 @@ class Project(TagModelMixin):
         need_to_add_asset = self.pk is None  # ensures only runs on first Save.
         project = super().save(**kwargs)
         if need_to_add_asset:
-            from django.core.files import File
-            ProjectAsset.objects.create(title="System Template", asset_type=AssetTypeEnum.SSP_EXPORT.name,
-                                        description="Standard template provided by the system",
-                                        file=File(open('assets/system-reference.docx', 'rb')),
-                                        project_id=self.pk)
+            file = File(open('assets/system-reference.docx', 'rb'))
+            file_name = os.path.basename(file.name)
+            asset = ProjectAsset.objects.create(title="System Template", asset_type=AssetTypeEnum.SSP_EXPORT.name,
+                                             description="Standard template provided by the system",
+                                                project_id=self.pk)
+            asset.file.save(file_name, file, save=True)
         return project
 
     @property
