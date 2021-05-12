@@ -27,7 +27,7 @@ pyinstrument==3.2.0 # BSD License
 jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages
-Django==3.1.9 # BSD License
+Django==3.2.0 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # BSD 3-Clause License
