@@ -27,8 +27,7 @@ pyinstrument==3.2.0 # BSD License
 jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages
-# Django==2.2.12 # BSD License
-Django==3.1.8 # BSD License
+Django==3.1.9 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # BSD 3-Clause License
@@ -79,12 +78,9 @@ parsel # BSD License
 
 # Documentation only
 m2r # MIT License
-sphinxcontrib-contentui # MIT License
-# Temporarily pinned.
 
-# markupsafe is pinned here because tests crash with version 1.1.0.
-# Can probably unpin when https://github.com/pallets/markupsafe/issues/108 is resolved.
-markupsafe==1.1.1 # BSD 3
+# markupsafe
+markupsafe==2.0.0 # BSD 3
 
 # Excel exports
 openpyxl # MIT License
