@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Permission
 from django.core.files import File
 from django.db.models import Q
-from django.test import TestCase
+from django.test import TransactionTestCase
 from siteapp.enums.assets import AssetTypeEnum
 from siteapp.models import Organization, Project, User, ProjectAsset
 from .app_loading import load_app_into_database
@@ -9,7 +9,7 @@ from .models import Module, Task, AppVersion
 from .module_logic import *
 
 
-class TestCaseWithFixtureData(TestCase):
+class TestCaseWithFixtureData(TransactionTestCase ):
     @classmethod
     def setUpClass(self):
         super().setUpClass()

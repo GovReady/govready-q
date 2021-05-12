@@ -7,7 +7,7 @@ import re
 from unittest import skip
 
 from django.conf import settings
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.crypto import get_random_string
 from guardian.shortcuts import (assign_perm, get_objects_for_user,

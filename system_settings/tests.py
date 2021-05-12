@@ -1,3 +1,3 @@
-from django.test import TestCase
+from django.test import TransactionTestCase
 
 # Create your tests here.

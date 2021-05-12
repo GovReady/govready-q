@@ -13,7 +13,7 @@ import os
 import unittest
 from pathlib import PurePath
 import tempfile
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.utils.text import slugify
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
@@ -40,7 +40,7 @@ from urllib.parse import urlparse
 
 # Control Tests
 
-class Oscal80053Tests(TestCase):
+class Oscal80053Tests(TransactionTestCase ):
     # Test
     def test_catalog_load_control(self):
         cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4)
@@ -104,7 +104,7 @@ class Oscal80053Tests(TestCase):
         self.assertTrue('Access control policy every 12 parsecs' in description,
                         description)
 
-class StatementTests(TestCase):
+class StatementTests(TransactionTestCase ):
 
     def test_statement_id_from_control(self):
         cases = (
@@ -465,7 +465,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         # Asserts that the edit button element is not found on the page
         self.assertTrue(len(self.browser.find_elements_by_css_selector('#edit-button'))<1)
 
-class StatementUnitTests(TestCase):
+class StatementUnitTests(TransactionTestCase ):
     ## Simply dummy test ##
     def test_tests(self):
         self.assertEqual(1,1)
@@ -517,7 +517,7 @@ class StatementUnitTests(TestCase):
         self.assertEqual(smt.prototype_synched, STATEMENT_NOT_SYNCHED)
         self.assertEqual(smt.diff_prototype_main, [(0, 'This is a test statement.'), (-1, '\nModified statememt')])
 
-class ElementUnitTests(TestCase):
+class ElementUnitTests(TransactionTestCase ):
 
     def test_element_create(self):
         e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
@@ -605,7 +605,7 @@ class ElementUnitTests(TestCase):
         self.assertEqual(e.description, "Renamed Element A Description")
 
 
-class ElementControlUnitTests(TestCase):
+class ElementControlUnitTests(TransactionTestCase ):
 
     def test_assign_baseline(self):
 
@@ -663,7 +663,7 @@ class ElementControlUnitTests(TestCase):
         self.assertEqual(ele.roles.values_list('role', flat=True).count(), 1)
 
 
-class SystemUnitTests(TestCase):
+class SystemUnitTests(TransactionTestCase ):
     def test_system_create(self):
         e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
         self.assertTrue(e.id is not None)
@@ -712,7 +712,7 @@ class SystemUITests(OrganizationSiteFunctionalTests):
         var_sleep(3) # wait for page to open
         wait_for_sleep_after(lambda: self.assertInNodeText("New Deployment", ".systems-element-button"))
 
-class PoamUnitTests(TestCase):
+class PoamUnitTests(TransactionTestCase ):
     """Class for Poam Unit Tests"""
 
     ## Simply dummy test ##
@@ -752,7 +752,7 @@ class PoamUnitTests(TestCase):
         # poam.delete()
         # self.assertTrue(poam.uuid is None)
 
-class OrgParamTests(TestCase):
+class OrgParamTests(TransactionTestCase ):
     """Class for OrgParam Unit Tests"""
 
     def test_org_params(self):
