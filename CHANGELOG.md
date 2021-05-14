@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v999 (May XX, 2021)
+------------------------
+
+**Bug fixes**
+
+* Fix multiple copies of same component displaying in component library search by adding `distinct()` to search command.
+
 v0.9.3.5.2 (May 2, 2021)
 ------------------------
 

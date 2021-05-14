@@ -383,7 +383,7 @@ def component_library(request):
 
     query = request.GET.get('search')
     if query:
-        element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system')
+        element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
     else:
         element_list = Element.objects.all().exclude(element_type='system')
 
