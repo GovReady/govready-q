@@ -1,6 +1,17 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.3.5.3 (May 16, 2021)
+-------------------------
+
+**Bug fixes**
+
+* Fix session timeout handler showing 500 error when returning to app after timeout by adding in @login_required decorator to various views that expect user identity.
+
+* Fix multiple copies of component being returned on search by adding `.distinct()` to end of Django search query.
+
+* Fix high number of controls statements (trying) to added on action by filtering statements to type control_implemention_prototype.
+
 v0.9.3.5.2 (May 2, 2021)
 ------------------------
 
