@@ -551,7 +551,7 @@ def save_answer(request, task, answered, context, __):
                                 # Go to next element
                                 continue
 
-                            smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
+                            smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
 
                             # Component does not have any statements of type control_implementation_prototype to
                             # add to system. So we cannot add the component (element) to the system.
@@ -565,7 +565,7 @@ def save_answer(request, task, answered, context, __):
                             # If we get here, we are going to add the element to the system
                             # We add an element to a system by adding copies of the element's statements
                             # Loop through element's prototype statements and add to control implementation statements
-                            for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value):
+                            for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value):
                                 # Add all existing control statements for a component to a system even if system does not use controls.
                                 # This guarantees that control statements are associated.
                                 # The selected controls will serve as the primary filter on what content to display.

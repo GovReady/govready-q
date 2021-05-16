@@ -1,8 +1,6 @@
 {% extends "project-base.html" %}
 {% load humanize %}
-{% load guardian_tags %}
 {% load static %}
-{% load q %}
 
 {% block title %}
   Component Detail
@@ -12,12 +10,6 @@
 {{block.super}}
 {% include "controls/_style-controls.html" %}
 <style>
-  .project-image {
-    width: 20px;
-    float: left;
-    margin: 4px 0 5px 8px;
-  }
-
   .inline {
     display: inline;
   }
@@ -65,16 +57,6 @@
     color: #666;
   }
 
-  #common-tab-count, #component-tab-count {
-    display: inline-block;
-    color: #666;
-    background-color: #dedede;
-    border-radius: 20px;
-    line-height: 1;
-    padding: 2px 6px;
-    font-size: 0.8em; font-weight: 600;
-  }
-
   .panel-heading-smt, .panel-heading-smt-body {
     white-space: pre-line;
   }
@@ -87,14 +69,6 @@
   .statement-text, .description-text { font-size: 0.8em; }
 
   .control-id-text { font-weight: bold; }
-
-  #component-detail-content {
-    border-left:1px solid #ccc;
-    border-right:1px solid #ccc;
-    border-bottom:1px solid #ccc;
-    border-radius: 0px;
-    padding: 0px 0px 8px 12px;
-  }
 
 </style>
 {% endblock %}
@@ -160,9 +134,31 @@
 
                                 <div class="row statement-text">
                                   <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                                    <span id="producer_element-{{ forloop.counter }}-control" class="control-id-text">{{ smt.sid|upper }} {% if smt.pid %}{{ smt.pid }}.{% endif %} - {{ smt.control_title }}</span>
+                                    <details>
+                                        <summary>
+                                            <span id="producer_element-{{ forloop.counter }}-control" class="control-id-text">
+                                                {{ smt.sid|upper }} {% if smt.pid %}{{ smt.pid }}.{% endif %} - {{ smt.control_title }}
+                                            </span>
+                                        </summary>
+                                        <div class="component-control-description">{{ smt.catalog_control_as_dict.description }}</div>
+                                    </details>
                                   </div>
-                                  <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">{{ smt.body }}</div><div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 remark-text-block"><a role="button" class="glyphicon glyphicon-pencil pull-right" style="color: #aaa;"  data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body"></a>{% if smt.remarks %}<details><summary>Remarks</summary><div>{{ smt.remarks }}</div></details>{% endif %}</div></div>
+                                  <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">{{ smt.body }}</div>
+                                  <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 remark-text-block">{% spaceless %}
+                                      {% if smt.prototype_synched == 'not_synched' %}
+                                          <span id="diff_alert_{{ forloop.counter }}_notice">
+                                              <span href="#diff_{{ forloop.counter }}" class="" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;cursor: pointer;" onclick="alert('Your statement and component\'s certified statement have diverged.\n\nEdit statement for details.');return false;"><span class="glyphicon glyphicon-alert"></span> Differs from certified</span>
+                                          </span>
+                                      {% elif smt.prototype_synched == 'orphaned' %}
+                                          <span id="diff_alert_{{ forloop.counter }}">
+                                              <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span class="glyphicon glyphicon-alert"></span> No related statement for component in library</a>
+                                          </span>
+                                      {% endif %}
+                                    <span class="pull-right"><a role="button" class="glyphicon glyphicon-pencil" style="color: #aaa;"  data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body"></a></span>
+                                    {% if smt.remarks %}<details><summary>Remarks</summary><div>{{ smt.remarks }}</div></details>{% endif %}
+                                  {% endspaceless %}
+                                  </div>
+                                </div>
 
                                   <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
                                     &nbsp;
@@ -171,33 +167,26 @@
                               <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
                                   <div class="panel-body">
                                       <div class="smt_block">
-
                                         <div class="row statement-text">
-                                          <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                                            &nbsp;
-                                          </div>
+                                          <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
                                           <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-edit-text-block">
-
                                           <form id="smt_{{ forloop.counter }}" class="smt_form">
                                               <!-- Never change name of the producer element already associated with a statement -->
                                               <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
                                               <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
                                               <div class="form-group">
                                                   <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                                                  <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ smt.producer_element.id }}" class="systems-link">{{ smt.producer_element.name }}</a></label>
+
                                               </div>
                                               <div class="form-group">
                                                 <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
-                                                <label for="statement">What is the solution and how is it implemented?
+                                                <label for="statement">
                                                     {% if smt.prototype_synched == 'synched'%}
-                                                        <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span
-                                                                class="glyphicon glyphicon-check"></span> Same as certified</a></span>
+                                                        <span id="diff_alert_{{ forloop.counter }}" style="color: green;font-weight: normal;"><span class="glyphicon glyphicon-check"></span> Same as certified</span>
                                                     {% elif smt.prototype_synched == 'not_synched' %}
-                                                        <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span
-                                                                class="glyphicon glyphicon-alert"></span> Differs from certified</a></span>
+                                                        <span id="diff_alert_{{ forloop.counter }}" style="color: firebrick;"> <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span class="glyphicon glyphicon-alert"></span> Click to see differences from certified statement</a></span></span>
                                                     {% elif smt.prototype_synched == 'orphaned' %}
-                                                        <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span
-                                                                class="glyphicon glyphicon-alert"></span> No related statement for component in library</a></span>
+                                                        <span id="diff_alert_{{ forloop.counter }}" style="color: firebrick;"><span class="glyphicon glyphicon-alert"></span> No related statement for component in library <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt;">view</a></span>
                                                     {% endif %}
                                                     <div id="diff_{{ forloop.counter }}" class="collapse smt_diff" style="font-size:10pt; font-weight: normal; margin-top: 12px;color: #666;">
                                                         <div style="text-decoration: underline;font-weight: bold;">
@@ -262,15 +251,9 @@
                                                   <button type="button" name="history" value="history" class="btn btn-xs btn-primary" onclick="location.href='{% url 'statement_history' smt_id=smt.id %}'">History</button>
                                               </div>
                                           </form>
-
                                           </div>
-
-                                        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                                          &nbsp;
+                                          <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
                                         </div>
-
-                                      </div>
-
                                       </div>
                                   </div>
                               </div>
@@ -279,7 +262,7 @@
                     </div><!--/smt-list-->
               </div>
 
-              <!-- Tab panel: oscal -->
+                <!-- Tab panel: oscal -->
                 <div role="tabpanel" class="tab-pane" id="oscal">
                   <p id="oscal_download" class="navbar-text navbar-right" style="margin: 12px 12px 0px 0px;">
                     <a id="oscal_download_json_link"

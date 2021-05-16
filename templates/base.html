@@ -167,7 +167,7 @@
          {% else %}
          && !confirm("All instances of '{{project.root_task.title}}' will be updated.\n\nAre you sure you want to upgrade?"))
          {% endif %}
-        return;
+
       ajax_with_indicator({
           url: "/tasks/_upgrade-app",
           method: "POST",
@@ -183,7 +183,7 @@
     }
     </script>
     {% endif %}
-
+{#    {% include 'session_security/all.html' %}#}
     {% block scripts %}
     {% endblock %}
     </body>
