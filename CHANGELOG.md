@@ -1,17 +1,56 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (April XX, 2021)
+v999 (May XX, 2021)
+---------------------
+
+
+v0.9.3.5.3 (May 16, 2021)
+-------------------------
+
+**Bug fixes**
+
+* Fix session timeout handler showing 500 error when returning to app after timeout by adding in @login_required decorator to various views that expect user identity.
+
+* Fix multiple copies of component being returned on search by adding `.distinct()` to end of Django search query.
+
+* Fix high number of controls statements (trying) to added on action by filtering statements to type control_implemention_prototype.
+
+* Have page reload after adding control statement to a component in the library to avoid non-feedback to user and user having to refresh the page.
+
+**Security changes**
+
+* Upgrade to Django 3.2.3 to correct for Snyk indicated vulnerability in Django 3.1.8 https://snyk.io/vuln/SNYK-PYTHON-DJANGO-1279042
+
+**Developer changers**
+
+* Remove documentation-related m2r and sphinx related packages from requirements.in.
+
+v0.9.3.5.2 (May 2, 2021)
+------------------------
+
+**Bug fixes**
+
+* Restore css style for component count accidentally deleted.
+
+v0.9.3.5.1 (May 1, 2021)
+------------------------
+
+**Bug fixes**
+
+* Fix "missing key" error for `SESSION_SECURITY...` params in `settings.py` when realed environment parameters not defined.
+
+v0.9.3.5 (April 28, 2021)
 -------------------------
 
 **UI changes**
 
 * Rearrange Create | Import | Manage component buttons; put "Manage Import Records" button last.
-  
+
 * Add links for "forgot password" and "change password".
-  
+
 * Add control titles to component control listing pages.
-  
+
 * Display control catalog guidance text in `details` tag next to component control implementation statements.
 
 * Add control titles to component control listing pages.
@@ -36,12 +75,12 @@ v999 (April XX, 2021)
 
 * Update stub_app used by compliance_app command for generating compliance app to include "input" and "output" section; and to have folders for templates, utils, and components.
 
-* Developers can now use `docker` & `docker-compose` to deploy a local environment.  This allows devs to work on any Operating System.  Instructions can be found at `dev_env/README.md` folder. 
+* Developers can now use `docker` & `docker-compose` to deploy a local environment.  This allows devs to work on any Operating System.  Instructions can be found at `dev_env/README.md` folder.
 
 * Set system fisma_impact_level as part of question action to set baseline. Also add fisma_impact_level set/get methods to System model.
 
 * Display system impact level on project page.
-  
+
 * Introduce django-session-security package to allow for setting session time out and alert.
 
 **Data changes**
@@ -58,7 +97,7 @@ v0.9.3.4 (April 20, 2021)
 * Added a `list_catalogs()` method to `Catalog` in order to easily get the `Catalog` objects in a list.
 
 * Allow moving projects between portfolios only by users with appropriate permissions.
-  
+
 * Introducing profiling with nplusone to assist in preventing N+1 views.
 
 **Bug fixes**

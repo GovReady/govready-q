@@ -8,6 +8,7 @@ from django.urls import reverse
 from jinja2.sandbox import SandboxedEnvironment
 from controls.oscal import Catalogs, Catalog
 from siteapp.settings import GOVREADY_URL
+from controls.enums.statements import StatementTypeEnum
 
 def get_jinja2_template_vars(template):
     from jinja2 import meta, TemplateSyntaxError
