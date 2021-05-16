@@ -12,6 +12,8 @@ v0.9.3.5.3 (May 16, 2021)
 
 * Fix high number of controls statements (trying) to added on action by filtering statements to type control_implemention_prototype.
 
+* Have page reload after adding control statement to a component in the library to avoid non-feedback to user and user having to refresh the page.
+
 v0.9.3.5.2 (May 2, 2021)
 ------------------------
 
