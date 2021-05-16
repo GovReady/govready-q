@@ -14,6 +14,15 @@ v0.9.3.5.3 (May 16, 2021)
 
 * Have page reload after adding control statement to a component in the library to avoid non-feedback to user and user having to refresh the page.
 
+**Security changes**
+
+* Upgrade to Django 3.2.3 to correct for Snyk indicated vulnerability in Django 3.1.8 https://snyk.io/vuln/SNYK-PYTHON-DJANGO-1279042
+
+**Developer changers**
+
+* Remove documentation-related m2r and sphinx related packages from requirements.in.
+
+
 v0.9.3.5.2 (May 2, 2021)
 ------------------------
 
