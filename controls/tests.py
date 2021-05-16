@@ -150,7 +150,7 @@ class ControlUITests(SeleniumTest):
         os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
         with tempfile.TemporaryFile() as d:
             temp_file_name = os.path.join(EXTERNAL_CATALOG_PATH, f'{d.name}_revtest_catalog.json')
-            
+
             # finding fixture data and dumping in the temp file
             test_catalog = os.getcwd() + "/fixtures/test_catalog.json"
             with open(test_catalog, 'r') as json_file:
@@ -182,7 +182,7 @@ class ControlUITests(SeleniumTest):
         os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
         with tempfile.TemporaryFile() as d:
             temp_file_name = os.path.join(EXTERNAL_BASELINE_PATH, f'{d.name}_revtest_baseline.json')
-            
+
             # finding fixture data and dumping in the temp file
             test_baseline = os.getcwd() + "/fixtures/test_baseline.json"
             with open(test_baseline, 'r') as json_file:
@@ -1077,10 +1077,11 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         # Components and their statements?
         self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 1)
         self.assertEqual(Element.objects.all().exclude(element_type='system')[0].name, "SecGet, Endpoint Security System")
+
         try:
-            self.assertEqual(Statement.objects.all().count(), 4)
+            self.assertEqual(Statement.objects.all().count(), 1)
         except:
-            self.assertEqual(Statement.objects.all().count(), 8)
+            self.assertEqual(Statement.objects.all().count(), 4)
 
     def test_project_json_export(self):
         """
