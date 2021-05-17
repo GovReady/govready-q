@@ -378,14 +378,15 @@ class SelectedComponentsList(ListView):
             # User does not have permission to this system
             raise Http404
 
+@login_required
 def component_library(request):
     """Display the library of components"""
 
     query = request.GET.get('search')
     if query:
-        element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system')
+        element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
     else:
-        element_list = Element.objects.all().exclude(element_type='system')
+        element_list = Element.objects.all().exclude(element_type='system').distinct()
 
     # Natural sorting on name
     element_list = natsorted(element_list, key=lambda x: x.name)
@@ -410,6 +411,7 @@ def component_library(request):
 
     return render(request, "components/component_library.html", context)
 
+@login_required
 def import_records(request):
     """Display the records of component imports"""
 
@@ -426,6 +428,7 @@ def import_records(request):
 
     return render(request, "components/import_records.html", context)
 
+@login_required
 def import_record_details(request, import_record_id):
     """Display the records of component imports"""
 
@@ -439,6 +442,7 @@ def import_record_details(request, import_record_id):
     }
     return render(request, "components/import_record_details.html", context)
 
+@login_required
 def confirm_import_record_delete(request, import_record_id):
     """Delete the components and statements imported from a particular import record"""
 
@@ -456,6 +460,7 @@ def confirm_import_record_delete(request, import_record_id):
     }
     return render(request, "components/confirm_import_record_delete.html", context)
 
+@login_required
 def import_record_delete(request, import_record_id):
     """Delete the components and statements imported from a particular import record"""
 
@@ -770,6 +775,7 @@ class ComponentImporter(object):
             control = catalog.get_control_by_id(control_id)
             return True if control is not None else False
 
+@login_required
 def add_selected_components(system, import_record):
         """Add a component from the library or a compliance app to the project and its statements using the import record"""
 
@@ -785,6 +791,7 @@ def add_selected_components(system, import_record):
                 smt.create_instance_from_prototype(system.root_element.id)
         return imported_components
 
+@login_required
 def system_element(request, system_id, element_id):
     """Display System's selected element detail view"""
 
@@ -890,6 +897,7 @@ def new_element(request):
         'form': form,
     })
 
+@login_required
 def component_library_component(request, element_id):
     """Display certified component's element detail view"""
 
@@ -962,6 +970,7 @@ def component_library_component(request, element_id):
     }
     return render(request, "components/element_detail_tabs.html", context)
 
+@login_required
 def api_controls_select(request):
     """Return list of controls in json for select2 options from all control catalogs"""
 
@@ -1119,6 +1128,7 @@ def restore_to_history(request, smt_id, history_id):
 
     return render(request, "controls/statement_history.html", context)
 
+@login_required
 def system_element_download_oscal_json(request, system_id, element_id):
 
     if system_id is not None and system_id != '':
@@ -1549,6 +1559,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
 def get_editor_data(request, system, catalog_key, cl_id):
     """
     Get data for editor views
@@ -1571,6 +1582,7 @@ def get_editor_data(request, system, catalog_key, cl_id):
         impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key).order_by('pid')
         return project, catalog, cg_flat, impl_smts
 
+@login_required
 def get_editor_system(cl_id, catalog_key, system_id):
     """
     Retrieves oscalized control id and catalog key. Also system object from system id.
@@ -1609,6 +1621,7 @@ def editor_compare(request, system_id, catalog_key, cl_id):
 
 
 # @task_view
+@login_required
 def save_smt(request):
     """Save a statement"""
 
@@ -1788,6 +1801,7 @@ def save_smt(request):
         {"status": "success", "message": statement_msg + " " + producer_element_msg + " " + statement_del_msg,
          "statement": serialized_obj})
 
+@login_required
 def update_smt_prototype(request):
     """Update a certified statement"""
 
@@ -1824,6 +1838,7 @@ def update_smt_prototype(request):
 
         return JsonResponse({ "status": "success", "message": statement_msg, "data": { "smt_body": statement.body } })
 
+@login_required
 def delete_smt(request):
     """Delete a statement"""
 
@@ -1916,6 +1931,7 @@ def delete_smt(request):
 
 # Components
 
+@login_required
 def add_system_component(request, system_id):
     """Add an existing element and its statements to a system"""
 
@@ -1994,6 +2010,7 @@ def add_system_component(request, system_id):
     # Redirect to selected element page
     return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
+@login_required
 def search_system_component(request):
     """Add an existing element and its statements to a system"""
 
@@ -2226,7 +2243,7 @@ class EditorAutocomplete(View):
 
 
 # Baselines
-
+@login_required
 def assign_baseline(request, system_id, catalog_key, baseline_name):
     """Assign a baseline to a system root element thereby showing selected controls for the system."""
 
@@ -2252,7 +2269,7 @@ def assign_baseline(request, system_id, catalog_key, baseline_name):
 
 
 # Export OpenControl
-
+@login_required
 def export_system_opencontrol(request, system_id):
     """Export entire system in OpenControl"""
 
@@ -2389,6 +2406,7 @@ certifications:
         raise Http404
 
 # PoamS
+@login_required
 def poams_list(request, system_id):
     """List Poams for a system"""
 
@@ -2423,6 +2441,7 @@ def poams_list(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
 def new_poam(request, system_id):
     """Form to create new POAM"""
 
@@ -2468,6 +2487,7 @@ def new_poam(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
 def edit_poam(request, system_id, poam_id):
     """Form to create new POAM"""
 
@@ -2525,12 +2545,15 @@ def edit_poam(request, system_id, poam_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
 def poam_export_xlsx(request, system_id):
     return poam_export(request, system_id, 'xlsx')
 
+@login_required
 def poam_export_csv(request, system_id):
     return poam_export(request, system_id, 'csv')
 
+@login_required
 def poam_export(request, system_id, format='xlsx'):
     """Export POA&M in either xlsx or csv"""
 
@@ -2678,6 +2701,7 @@ def poam_export(request, system_id, format='xlsx'):
         raise Http404
 
 # Project
+@login_required
 def project_import(request, project_id):
     """
     Import an entire project's components and control content
@@ -2776,6 +2800,7 @@ def project_import(request, project_id):
 
         return HttpResponseRedirect("/projects")
 
+@login_required
 def project_export(request, project_id):
     """
     Export an entire project's components and control content
@@ -2832,6 +2857,7 @@ def project_export(request, project_id):
     return response
 
 # System OSCAL
+@login_required
 def system_profile_oscal_json(request, system_id):
     """
     Return an OSCAL profile for this system.
@@ -2844,6 +2870,7 @@ def system_profile_oscal_json(request, system_id):
     return response
 
 # System Deployments
+@login_required
 def system_deployments(request, system_id):
     """List deployments for a system"""
 
