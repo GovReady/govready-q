@@ -377,6 +377,23 @@ class Element(auto_prefetch.Model, TagModelMixin):
 
         return oscal_ctl_ids
 
+    @transaction.atomic
+    def set_security_impact_level(self, security_impact_level):
+        """Assign Security impact levels to component"""
+
+        # Set the security_impact_level smt for element; should only have 1 statement
+        smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value, producer_element=self,consumer_element=self, body=security_impact_level)
+        return security_impact_level, smt
+
+    @property
+    def get_security_impact_level(self):
+        """Assign Security impact levels to component"""
+
+        # Get the security_impact_level smt for element; should only have 1 statement
+        smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value, producer_element=self.id, consumer_element=self.id)
+        security_impact_level = eval(smt.body)# Evaluate string of dictionary
+        return security_impact_level
+
 class ElementControl(auto_prefetch.Model):
     element = auto_prefetch.ForeignKey(Element, related_name="controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which controls are associated.")
     oscal_ctl_id = models.CharField(max_length=20, help_text="OSCAL formatted Control ID (e.g., au-2.3)", blank=True, null=True)
