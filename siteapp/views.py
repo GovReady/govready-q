@@ -975,7 +975,7 @@ def project(request, project):
     # Fetch statement defining FISMA impact level if set
     impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
     if len(impact_level_smts) > 0:
-        impact_level = impact_level_smts[0].body
+        impact_level = impact_level_smts.first().body
     else:
         impact_level = None
 
