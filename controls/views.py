@@ -494,6 +494,7 @@ class OSCALComponentSerializer(ComponentSerializer):
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
         uuid = str(self.element.uuid)
         control_implementations = []
+
         of = {
             "component-definition": {
                 "uuid": str(uuid4()),
@@ -502,7 +503,8 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": "string",
-                    "oscal-version": "1.0.0-rc1"
+                    "oscal-version": "1.0.0-rc1",
+                    "props": [{"name": "tag", "ns": "https://govready.com/ns/oscal", "value": tag.label} for tag in self.element.tags.all()]
                 },
                 "components": {
                     uuid: {

@@ -4,6 +4,9 @@ GovReady-Q Release Notes
 v999 (May XX, 2021)
 ---------------------
 
+**Developer changes**
+
+* Add management command `exportcomponentlibrary` to export as OSCAL or CSV.
 
 v0.9.3.5.3 (May 16, 2021)
 -------------------------
