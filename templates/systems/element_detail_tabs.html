@@ -429,11 +429,11 @@
         }
 
            function edit_component() {
-          show_edit_component_modal("{{element.name}}","{{element.description}}",(newName, newDescription)=>{
+          show_edit_component_modal("{{element.name}}","{{element.description}}", "{{element.get_security_impact_level}}",(newName, newDescription, newSecObjs)=>{
             ajax_with_indicator({
               url: '{% url "edit_element" element.id %}',
               method: "POST",
-              data: {name: newName,description: newDescription},
+              data: {name: newName,description: newDescription, security_objectives:newSecObjs},
               keep_indicator_forever: true,
               success: function(res) {
                 if(res["status"]=="ok"){

@@ -327,16 +327,19 @@ def edit_element(request, element_id):
 
     if request.method == 'POST':
         new_name = request.POST.get("name", "").strip() or None
+        new_security_objectives = request.POST.get("security_objectives", "").strip() or None
 
         # Check if the new component name is already in use and if the new name is different from the current name
         if Element.objects.filter(name__iexact=new_name).exists() and new_name != ele_instance.name:
             return JsonResponse({"status": "err", "message": "Name already in use"})
 
+        security_objectives, smt  = ele_instance.set_security_impact_level(new_security_objectives)
+
         form = ElementEditForm(request.POST or None, instance=ele_instance)
         if form.is_valid():
             logger.info(
                 event="edit_element",
-                object={"object": "element", "id": form.instance.id, "name": form.instance.name},
+                object={"object": "element", "id": form.instance.id, "name": form.instance.name, "security_objectives": security_objectives},
                 user={"id": request.user.id, "username": request.user.username}
             )
             form.save()
@@ -819,6 +822,15 @@ def system_element(request, system_id, element_id):
         # Build OSCAL and OpenControl
         oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
         opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+        # Body is a dictionary to be spread across 3 python objects
+        security_objective_smt = Statement.objects.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value, producer_element=element,consumer_element=element)
+        if security_objective_smt.exists():
+            security_body = element.get_security_impact_level
+            confidentiality, integrity, availability = security_body.get('security_objective_confidentiality',
+                                                                         None), security_body.get(
+                'security_objective_integrity', None), security_body.get('security_objective_availability', None)
+        else:
+            confidentiality, integrity, availability = None, None, None
 
         # Return the system's element information
         context = {
@@ -832,6 +844,10 @@ def system_element(request, system_id, element_id):
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": opencontrol_string,
             "project_form": AddProjectForm(request.user),
+            "confidentiality": confidentiality,
+            "integrity": integrity,
+            "availability": availability,
+            "is_admin": request.user.is_superuser,
         }
         return render(request, "systems/element_detail_tabs.html", context)
 
