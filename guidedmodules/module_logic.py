@@ -3,14 +3,12 @@ from itertools import groupby
 from urllib.parse import urlunparse
 
 from django.conf import settings
-from django.urls import reverse
-
 from jinja2.sandbox import SandboxedEnvironment
 
 from controls.enums.statements import StatementTypeEnum
 from controls.oscal import Catalogs, Catalog
 from siteapp.settings import GOVREADY_URL
-from controls.enums.statements import StatementTypeEnum
+
 
 def get_jinja2_template_vars(template):
     from jinja2 import meta, TemplateSyntaxError
@@ -936,7 +934,7 @@ def render_content(content, answers, output_format, source,
                         return "javascript:alert('Invalid link.');"
                     return url
 
-                import html5lib, xml.etree
+                import html5lib
                 dom = html5lib.HTMLParser().parseFragment(output)
                 for node in dom.iter():
                     if node.get("href"):
