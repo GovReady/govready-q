@@ -1419,6 +1419,17 @@ class ProjectTests(TestCaseWithFixtureData):
         self.assertEqual(self.project.version_comment, None)
 
         proj_id = self.project.id
+        element = Element()
+        element.name = self.project.title
+        element.element_type = "system"
+        element.save()
+        # Create system
+        system = System(root_element=element)
+        system.save()
+        # Link system to project
+        self.project.system = system
+        self.project.save()
+
         request_body = {'project_title': ['Test Project v2'],
                                 'project_version': ['1.1'], 'project_version_comment': ['A new comment!']}
 
