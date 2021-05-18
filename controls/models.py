@@ -12,6 +12,7 @@ from simple_history.models import HistoricalRecords
 from jsonfield import JSONField
 from natsort import natsorted
 
+from controls.enums.components import ComponentTypeEnum, ComponentStateEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from controls.enums.statements import StatementTypeEnum
 from controls.oscal import Catalogs, Catalog, check_and_extend
@@ -232,6 +233,8 @@ class Element(auto_prefetch.Model, TagModelMixin):
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
     import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_elements", on_delete=models.CASCADE,
                                       unique=False, blank=True, null=True, help_text="The Import Record which created this Element.")
+    component_type = models.CharField(default="software", max_length=150, help_text="Component Type.", unique=False, blank=True, null=True, choices=ComponentTypeEnum.choices())
+    component_state = models.CharField(default="operational", max_length=150, help_text="Component State.", unique=False, blank=True, null=True, choices=ComponentStateEnum.choices())
 
     # Notes
     # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)

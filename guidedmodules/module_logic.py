@@ -318,8 +318,8 @@ def oscal_context(answers):
             'uuid': e.uuid,
             'title': e.name,
             'description': e.description,
-            'state': "operational",         # TODO: OSCAL asks for individual component state
-            'type': "software"              # TODO: OSCAL components have a type
+            'state': e.component_state,
+            'type': e.component_type
         }
     components = [_component(e) for e in system.producer_elements]
 
@@ -397,6 +397,8 @@ def oscal_context(answers):
     profile = urlunparse((GOVREADY_URL.scheme, GOVREADY_URL.netloc,
                           "profile_path",
                           None, None, None))
+    security_body = project.system.get_security_impact_level
+
     return {
         "uuid": str(uuid.uuid4()), # SSP UUID
         "make_uuid": uuid.uuid4, # so we can gen UUIDS if needed in the templates
@@ -407,9 +409,9 @@ def oscal_context(answers):
         "system_id": f"govready-{system.id}",
         "system_authorization_boundary": "System authorization boundary, TBD", # TODO
         "system_information_types": information_types,
-        "system_security_impact_level_confidentiality": "UNKNOWN", # TODO
-        "system_security_impact_level_integrity": "UNKNOWN",       # TODO
-        "system_security_impact_level_availability": "UNKNOWN",    # TODO
+        "system_security_impact_level_confidentiality": security_body.get("security_objective_confidentiality", "UNKOWN"),
+        "system_security_impact_level_integrity": security_body.get("security_objective_integrity", "UNKOWN"),
+        "system_security_impact_level_availability": security_body.get("security_objective_availability", "UNKOWN"),
         "system_operating_status": "operational", # TODO: need from questionnaire, but wrong format
         "components": components,
         "implemented_requirements": implemented_requirements,
