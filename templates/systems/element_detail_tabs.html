@@ -108,44 +108,14 @@
               <div role="tabpanel" class="tab-pane active" id="component_controls">
 
                   <div class="row">
-                      <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8 description-text">
-                          <h3>Component Description</h3>
-                          {% if element.description %}
-                              {{ element.description }}
-                          {% else %}
-                              No description exists for this component.
-                          {% endif %}
-                      </div>
-                      <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 description-text">
-                          <h3>Security Objectives</h3>
-                          <span id="systems-security-confidentiality-level" class="status-small">
-            {% if confidentiality %}
-                Confidentiality: <b>{{ confidentiality|lower }}</b>
-            {% else %}
-                Confidentiality: <b>Not Categorized</b>
-            {% endif %}
-          </span>
-                          <br/>
-                          <span id="systems-security-integrity-level" class="status-small">
-            {% if integrity %}
-                Integrity: <b>{{ integrity|lower }}</b>
-            {% else %}
-                Integrity: <b>Not Categorized</b>
-            {% endif %}
-          </span>
-                          <br/>
-                          <span id="systems-security-availability-level" class="status-small">
-            {% if availability %}
-                Availability: <b>{{ availability|lower }}</b>
-            {% else %}
-                Availability: <b>Not Categorized</b>
-            {% endif %}
-          </span>
-    </div>
-                  <div id="btn-edit-title" style="text-align: center;">
-                      {% if is_admin %}
-                          <button class="btn btn-default btn-small" id="edit-button" onclick="return edit_component();">Edit</button>
+                    <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10 description-text">
+                      <h3>Component Description</h3>
+                      {% if element.description %}
+                        {{ element.description }}
+                      {% else %}
+                        No description exists for this component.
                       {% endif %}
+                    </div>
                   </div>
                   </div>
 
@@ -322,8 +292,7 @@
 
   </div>
 </div>
-<!-- local modals -->
-{% include "edit-component-modal.html" %}
+
 {% endblock %}
 
 {% block scripts %}
@@ -426,26 +395,6 @@
           $('#diff_alert_' + smt_panel_num).html('<span id="diff_alert_' + smt_panel_num + '"><a href="#diff_' + smt_panel_num + '" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span class="glyphicon glyphicon-check"></span> Same as certified</a></span>');
           // Update comparison
           $('#diff_comparison_' + smt_panel_num).text('Texts are identical.');
-        }
-
-           function edit_component() {
-          show_edit_component_modal("{{element.name}}","{{element.description}}", "{{element.get_security_impact_level}}",(newName, newDescription, newSecObjs)=>{
-            ajax_with_indicator({
-              url: '{% url "edit_element" element.id %}',
-              method: "POST",
-              data: {name: newName,description: newDescription, security_objectives:newSecObjs},
-              keep_indicator_forever: true,
-              success: function(res) {
-                if(res["status"]=="ok"){
-                  hide_edit_component_modal();
-                  window.location.reload();
-                }
-                if(res["status"]=="err"){
-                  show_edit_component_modal_error(res["message"])
-                }
-              }
-            });
-          });
         }
       </script>
 
