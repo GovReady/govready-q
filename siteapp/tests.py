@@ -1503,16 +1503,12 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self._login()
         self._new_project()
 
-        # Update impact level
-        # Get project.system.root_element to attach statement holding fisma impact level
-        project = self.current_project
-
         # security objectives
         new_security_objectives = {"security_objective_confidentiality": "low",
                                    "security_objective_integrity": "high",
                                    "security_objective_availability": "moderate"}
         # Setting security objectives for project's statement
-        security_objective_smt, smt = project.system.set_security_impact_level(new_security_objectives)
+        security_objective_smt, smt = self.current_project.system.set_security_impact_level(new_security_objectives)
 
         # Check value changed worked
-        self.assertEqual(project.system.get_security_impact_level, new_security_objectives)
+        self.assertEqual(self.current_project.system.get_security_impact_level, new_security_objectives)
