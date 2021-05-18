@@ -34,7 +34,7 @@ from controls.enums.statements import StatementTypeEnum
 from guidedmodules.tests import TestCaseWithFixtureData
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
-from controls.models import Statement, Element
+from controls.models import Statement, Element, System
 from siteapp.settings import HEADLESS, DOS
 from siteapp.views import project_edit
 from tools.utils.linux_to_dos import convert_w
@@ -1503,12 +1503,23 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self._login()
         self._new_project()
 
+        project =  Project.objects.first()
+        element = Element()
+        element.name = project.title
+        element.element_type = "system"
+        element.save()
+        # Create system
+        system = System(root_element=element)
+        system.save()
+        # Link system to project
+        project.system = system
+
         # security objectives
         new_security_objectives = {"security_objective_confidentiality": "low",
                                    "security_objective_integrity": "high",
                                    "security_objective_availability": "moderate"}
         # Setting security objectives for project's statement
-        security_objective_smt, smt = self.current_project.system.set_security_impact_level(new_security_objectives)
+        security_objective_smt, smt = project.system.set_security_impact_level(new_security_objectives)
 
         # Check value changed worked
-        self.assertEqual(self.current_project.system.get_security_impact_level, new_security_objectives)
+        self.assertEqual(project.system.get_security_impact_level, new_security_objectives)
