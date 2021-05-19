@@ -92,6 +92,7 @@ class Command(BaseCommand):
                                                    smt.updated
                                                   ])
         else:
+            counter = 0
             print(f"Format '{FORMAT}' not yet supported.")
 
         # Done
