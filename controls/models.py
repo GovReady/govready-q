@@ -225,7 +225,7 @@ class Statement(auto_prefetch.Model):
 class Element(auto_prefetch.Model, TagModelMixin):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
-    description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=True, null=True)
+    description = models.TextField(default="Description needed", help_text="Brief description of the Element", unique=False, blank=False, null=False)
     element_type = models.CharField(max_length=150, help_text="Component type", unique=False, blank=True, null=True)
     roles = models.ManyToManyField('ElementRole', related_name='elements', blank=True, help_text="Roles assigned to the Element")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -233,8 +233,8 @@ class Element(auto_prefetch.Model, TagModelMixin):
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
     import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_elements", on_delete=models.CASCADE,
                                       unique=False, blank=True, null=True, help_text="The Import Record which created this Element.")
-    component_type = models.CharField(default="software", max_length=150, help_text="Oscal Component Type.", unique=False, blank=True, null=True, choices=ComponentTypeEnum.choices())
-    component_state = models.CharField(default="operational", max_length=150, help_text="Oscal Component State.", unique=False, blank=True, null=True, choices=ComponentStateEnum.choices())
+    component_type = models.CharField(default="software", max_length=50, help_text="OSCAL Component Type.", unique=False, blank=True, null=True, choices=ComponentTypeEnum.choices())
+    component_state = models.CharField(default="operational", max_length=50, help_text="OSCAL Component State.", unique=False, blank=True, null=True, choices=ComponentStateEnum.choices())
 
     # Notes
     # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)

@@ -341,6 +341,8 @@ def edit_element(request, element_id):
             )
             form.save()
             return JsonResponse({"status": "ok"})
+        else:
+            return JsonResponse({"status": "err", "message": form.errors.as_json()})
 
 class SelectedComponentsList(ListView):
     """
