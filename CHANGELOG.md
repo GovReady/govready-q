@@ -4,6 +4,12 @@ GovReady-Q Release Notes
 v999 (May XX, 2021)
 ---------------------
 
+**Developer changes**
+
+* Add management command `exportcomponentlibrary` to batch export components from library as OSCAL or CSV.
+* Add management command `importcomponents` to batch import OSCAL components to library.
+* Add `existing_import_record` to importing and creating components to group multiple imports under the same import record.
+* Improve generation of components in OSCAL model by removing certain keys when values are none as per specification.
 
 v0.9.3.5.3 (May 16, 2021)
 -------------------------
