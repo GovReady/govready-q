@@ -380,14 +380,18 @@ def oscal_context(answers):
 
     # TODO: placeholder for information types -- should be able to pull this out
     # from questionnaire
+    security_body = project.system.get_security_impact_level
+    confidentiality =  security_body.get("security_objective_confidentiality", "UNKOWN")
+    integrity =  security_body.get("security_objective_integrity", "UNKOWN")
+    availability =  security_body.get("security_objective_availability", "UNKOWN")
 
     information_types = [
         {
             "title": "UNKNOWN information type title",
             "description": "information type description",
-            "confidentiality_impact": "information type confidentiality impact",
-            "integrity_impact": "information type integrity impact",
-            "availability_impact": "information type availability impact"
+            "confidentiality_impact": confidentiality,
+            "integrity_impact": integrity,
+            "availability_impact": availability
         }
     ]
 
@@ -397,7 +401,6 @@ def oscal_context(answers):
     profile = urlunparse((GOVREADY_URL.scheme, GOVREADY_URL.netloc,
                           "profile_path",
                           None, None, None))
-    security_body = project.system.get_security_impact_level
 
     return {
         "uuid": str(uuid.uuid4()), # SSP UUID
@@ -408,10 +411,9 @@ def oscal_context(answers):
         "last_modified": str(project.updated),
         "system_id": f"govready-{system.id}",
         "system_authorization_boundary": "System authorization boundary, TBD", # TODO
-        "system_information_types": information_types,
-        "system_security_impact_level_confidentiality": security_body.get("security_objective_confidentiality", "UNKOWN"),
-        "system_security_impact_level_integrity": security_body.get("security_objective_integrity", "UNKOWN"),
-        "system_security_impact_level_availability": security_body.get("security_objective_availability", "UNKOWN"),
+        "system_security_impact_level_confidentiality":confidentiality,
+        "system_security_impact_level_integrity": integrity,
+        "system_security_impact_level_availability": availability,
         "system_operating_status": "operational", # TODO: need from questionnaire, but wrong format
         "components": components,
         "implemented_requirements": implemented_requirements,
