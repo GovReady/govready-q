@@ -1,0 +1,40 @@
+<div id="edit_security_objs_modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="invitation_modal_title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="invitation_modal_title">Edit Project Security Objectives</h4>
+            </div>
+            <form action="{% url 'edit_project_security_objs' project.id %}" role="form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <label for="modal-security_objectives">Project Security Objective Confidentiality</label>
+                    <input id="confidentiality" type="text" name="confidentiality" maxlength="100" placeholder="{{ confidentiality|lower }}" value="{{ confidentiality|lower }}" required>
+                    <br><br/>
+
+                    <label for="modal-security_objectives">Project Security Objective Integrity </label>
+                    <input id="integrity" type="text" name="integrity" maxlength="100" placeholder="{{ integrity|lower }}" value="{{ integrity|lower }}" required>
+                    <br><br/>
+
+                    <label for="modal-security_objectives">Project Security Objective Availability</label>
+                    <input id="availability" type="text" name="availability" maxlength="100" placeholder="{{ availability|lower }}" value="{{ availability|lower }}" required>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button id="edit_project_security_objs_submit" class="btn btn-success btn-submit" type="submit">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% block scripts %}
+    <script>
+        function show_edit_security_objs_modal(callback) {
+            var m = $('#edit_security_objs_modal');
+            m.modal();
+        }
+    </script>
+{% endblock %}

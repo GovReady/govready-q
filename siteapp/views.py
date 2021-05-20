@@ -1040,14 +1040,6 @@ def project_edit(request, project_id):
             # Change project version
             project_version = request.POST.get("project_version", "").strip() or None
             project_version_comment = request.POST.get("project_version_comment", "").strip() or None
-            # TODO: Move security impact levels to an admin only form. adding validation.
-            confidentiality = request.POST.get("confidentiality", "").strip() or None
-            integrity = request.POST.get("integrity", "").strip() or None
-            availability = request.POST.get("availability", "").strip() or None
-
-            new_security_objectives = {"security_objective_confidentiality":confidentiality,"security_objective_integrity":integrity,"security_objective_availability":availability}
-            # Setting security objectives for project's statement
-            security_objective_smt, smt = project.system.set_security_impact_level(new_security_objectives)
 
             # Adding project version and comment
             project.version = project_version
@@ -1056,6 +1048,25 @@ def project_edit(request, project_id):
 
             # Will rename project if new title is present
             rename_project(request, project)
+
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+def project_security_objs_edit(request, project_id):
+    if request.method == 'POST':
+
+        form = EditProjectForm(request.POST)
+        if form.is_valid():
+            # project to update
+            project = Project.objects.get(id=project_id)
+
+            # TODO: Move security impact levels to an admin only form. adding validation.
+            confidentiality = request.POST.get("confidentiality", "").strip() or None
+            integrity = request.POST.get("integrity", "").strip() or None
+            availability = request.POST.get("availability", "").strip() or None
+
+            new_security_objectives = {"security_objective_confidentiality":confidentiality,"security_objective_integrity":integrity,"security_objective_availability":availability}
+            # Setting security objectives for project's statement
+            security_objective_smt, smt = project.system.set_security_impact_level(new_security_objectives)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 

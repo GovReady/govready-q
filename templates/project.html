@@ -209,8 +209,12 @@
     </div>
         </div>
     <div class="col-md-2">
-        <h3>Security Objectives</h3>
-           <span id="systems-security-confidentiality-level" class="status-small">
+           <h3>Security Objectives
+             {% if project.is_deletable and is_admin %}
+          <span class="glyphicon glyphicon-pencil" onclick="show_edit_security_objs_modal(); return false;"></span>
+            {% endif %}
+           </h3>
+        <span id="systems-security-confidentiality-level" class="status-small">
             {% if confidentiality %}
               Confidentiality: <b>{{ confidentiality|lower }}</b>
               {% else %}
