@@ -4,6 +4,10 @@ GovReady-Q Release Notes
 v999 (May XX, 2021)
 ---------------------
 
+**UI changes**
+
+* Improve project pages appearance: decrease action button width and left align text; widen from 9 to 10 columns main content.
+
 **Developer changes**
 
 * Add management command `exportcomponentlibrary` to batch export components from library as OSCAL or CSV.
