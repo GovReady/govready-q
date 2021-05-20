@@ -1,0 +1,12 @@
+<div class="container pull-left">
+    {% if element.component_state %}
+        <span class="component-tag">State: {{ element.component_state }}</span>
+    {% else %}
+        State:  No state exists for this component.
+    {% endif %}
+    {% if element.component_type %}
+       <span class="component-tag">Type: {{ element.component_type }}</span>
+    {% else %}
+        Type: No type exists for this component.
+    {% endif %}
+</div>

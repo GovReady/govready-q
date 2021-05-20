@@ -87,6 +87,7 @@
             </h2>
             <h2 class="control-heading" style="">
                 &nbsp;<!-- <small style="color: #888;">{{ catalog.catalog_key_display }}</small> -->
+                       {% include 'components/component_metadata.html' %}
             </h2>
         </div>
       </div>
@@ -110,7 +111,7 @@
               <div role="tabpanel" class="tab-pane active" id="component_controls">
 
                   <div class="row">
-                    <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10 description-text">
+                    <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9 description-text">
                       <h3>Component Description</h3>
                       {% if element.description %}
                         {{ element.description }}
