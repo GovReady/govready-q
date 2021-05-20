@@ -225,7 +225,7 @@ class Statement(auto_prefetch.Model):
 class Element(auto_prefetch.Model, TagModelMixin):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
-    description = models.TextField(default="Description needed", help_text="Brief description of the Element", unique=False, blank=False, null=False)
+    description = models.TextField(default="Description needed", help_text="Description of the Element", unique=False, blank=False, null=False)
     element_type = models.CharField(max_length=150, help_text="Component type", unique=False, blank=True, null=True)
     roles = models.ManyToManyField('ElementRole', related_name='elements', blank=True, help_text="Roles assigned to the Element")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
