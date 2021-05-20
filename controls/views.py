@@ -342,7 +342,9 @@ def edit_element(request, element_id):
             form.save()
             return JsonResponse({"status": "ok"})
         else:
-            return JsonResponse({"status": "err", "message": form.errors.as_json()})
+            errors = form.errors.get_json_data(escape_html=False)
+            msg_list = [f"{e.title()} - {errors[e][0]['message']}" for e in errors.keys()]
+            return JsonResponse({"status": "err", "message": "Please fix the following problems:<br>"+"<br>".join(msg_list)})
 
 class SelectedComponentsList(ListView):
     """
