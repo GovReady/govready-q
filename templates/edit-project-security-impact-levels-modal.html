@@ -8,15 +8,15 @@
             <form action="{% url 'edit_project_security_objs' project.id %}" role="form" method="POST">
                 {% csrf_token %}
                 <div class="modal-body">
-                    <label for="modal-security_objectives">Project Security Objective Confidentiality</label>
+                    <label for="modal-security-objectives">Confidentiality</label>
                     <input id="confidentiality" type="text" name="confidentiality" maxlength="100" placeholder="{{ confidentiality|lower }}" value="{{ confidentiality|lower }}" required>
                     <br><br/>
 
-                    <label for="modal-security_objectives">Project Security Objective Integrity </label>
+                    <label for="modal-security-objectives">Integrity </label>
                     <input id="integrity" type="text" name="integrity" maxlength="100" placeholder="{{ integrity|lower }}" value="{{ integrity|lower }}" required>
                     <br><br/>
 
-                    <label for="modal-security_objectives">Project Security Objective Availability</label>
+                    <label for="modal-security-objectives">Availability</label>
                     <input id="availability" type="text" name="availability" maxlength="100" placeholder="{{ availability|lower }}" value="{{ availability|lower }}" required>
                 </div>
 

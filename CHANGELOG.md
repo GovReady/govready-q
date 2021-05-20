@@ -7,6 +7,8 @@ v999 (May XX, 2021)
 **Data changes**
 
 * Require components to have descriptions.
+* Adding component_state and component_type fields to an `Element` to contain a component's state and type.
+* Created a modal to allow an admin user to add security objectives confidentiality, integrity, and availability.
 
 v0.9.3.5.3 (May 16, 2021)
 -------------------------
