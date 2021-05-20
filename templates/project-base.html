@@ -40,6 +40,8 @@
   .link-black:hover { color: black; }
 
   .btn-action {text-align: left;padding-left: 25px;}
+
+  #action-buttons, .action-button-box { width:150px; }
 </style>
 {% endblock %}
 
@@ -73,7 +75,7 @@
 {{block.super}}
 <div class="row">
   <div class="col-md-push-10 col-md-2">
-    <div id="action-buttons action-row" style="width:150px;">
+    <div id="action-buttons" class="action-row">
       {% block action_buttons %}
         <div class="btn-group" role="group" aria-label="action buttons group">
           {% if project.system is not None %}
