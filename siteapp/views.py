@@ -979,11 +979,23 @@ def project(request, project):
     else:
         impact_level = None
 
+    security_objective_smt = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value)
+    if security_objective_smt.exists():
+        security_body = project.system.get_security_impact_level
+        confidentiality, integrity, availability = security_body.get('security_objective_confidentiality',
+                                                                     None), security_body.get(
+            'security_objective_integrity', None), security_body.get('security_objective_availability', None)
+    else:
+        confidentiality, integrity, availability = None, None, None
+
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
         "impact_level": impact_level,
+        "confidentiality": confidentiality,
+        "integrity": integrity,
+        "availability": availability,
 
         "controls_status_count": project.system.controls_status_count,
         "poam_status_count": project.system.poam_status_count,
@@ -1028,7 +1040,7 @@ def project_edit(request, project_id):
             # Change project version
             project_version = request.POST.get("project_version", "").strip() or None
             project_version_comment = request.POST.get("project_version_comment", "").strip() or None
-
+            # TODO: Move security impact levels to an admin only form. adding validation.
             confidentiality = request.POST.get("confidentiality", "").strip() or None
             integrity = request.POST.get("integrity", "").strip() or None
             availability = request.POST.get("availability", "").strip() or None

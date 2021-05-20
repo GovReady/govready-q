@@ -555,9 +555,13 @@ class System(auto_prefetch.Model):
     def set_security_impact_level(self, security_impact_level):
         """Assign Security impact levels to system"""
 
-        # Set the security_impact_level smt for element; should only have 1 statement
-        smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value, producer_element=self.root_element,consumer_element=self.root_element, body=security_impact_level)
-        return security_impact_level, smt
+        security_objective_smt = self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value)
+        if security_objective_smt.exists():
+            security_objective_smt.update(body=security_impact_level)
+        else:
+            # Set the security_impact_level smt for element; should only have 1 statement
+            security_objective_smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value, producer_element=self.root_element,consumer_element=self.root_element, body=security_impact_level)
+        return security_impact_level, security_objective_smt
 
     @property
     def get_security_impact_level(self):
