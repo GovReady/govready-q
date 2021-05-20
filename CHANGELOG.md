@@ -10,6 +10,10 @@ v999 (May XX, 2021)
 * Adding component_state and component_type fields to an `Element` to contain a component's state and type.
 * Created a modal to allow an admin user to add security objectives confidentiality, integrity, and availability.
 
+**UI changes**
+
+* Can now edit a system componet's state and type in the detail page for a selected component.
+
 v0.9.3.5.3 (May 16, 2021)
 -------------------------
 

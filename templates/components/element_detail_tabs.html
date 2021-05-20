@@ -454,6 +454,13 @@
             });
           });
         }
+          // Convert select field for Add Component to jQuery Select2 box
+  $(document).ready(function() {
+    $('#state_change').select2();
+  });
+          $(document).ready(function() {
+    $('#type_change').select2();
+  });
       </script>
 
 {% endblock %}

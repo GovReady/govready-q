@@ -823,9 +823,12 @@ def system_element(request, system_id, element_id):
         # Build OSCAL and OpenControl
         oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
         opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
-
+        states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
+        types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
         # Return the system's element information
         context = {
+            "states": states,
+            "types": types,
             "system": system,
             "project": project,
             "element": element,
@@ -838,6 +841,28 @@ def system_element(request, system_id, element_id):
             "project_form": AddProjectForm(request.user),
         }
         return render(request, "systems/element_detail_tabs.html", context)
+
+def edit_component_state(request, system_id, element_id):
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+        # Retrieve element
+        element = Element.objects.get(id=element_id)
+        element.component_state = request.POST['state_change']
+        element.save()
+    return redirect(reverse('system_element', args=[system_id, element_id]))
+
+def edit_component_type(request, system_id, element_id):
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+        # Retrieve element
+        element = Element.objects.get(id=element_id)
+        element.component_type = request.POST['type_change']
+        element.save()
+    return redirect(reverse('system_element', args=[system_id, element_id]))
 
 @login_required
 def system_element_remove(request, system_id, element_id):
