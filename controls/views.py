@@ -518,7 +518,7 @@ class OSCALComponentSerializer(ComponentSerializer):
         }
 
         # Add component's tags if they exist
-        if len(self.element.tags.all()) > 0:
+        if self.element.tags.exists():
             props.extend([{"name": "tag", "ns": "https://govready.com/ns/oscal", "value": tag.label} for tag in self.element.tags.all()])
 
         # Remove 'metadata.props' key if no metadata.props exist
