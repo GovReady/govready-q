@@ -378,14 +378,15 @@ class SelectedComponentsList(ListView):
             # User does not have permission to this system
             raise Http404
 
+@login_required
 def component_library(request):
     """Display the library of components"""
 
     query = request.GET.get('search')
     if query:
-        element_list = Element.objects.filter(name__icontains=query).exclude(element_type='system')
+        element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
     else:
-        element_list = Element.objects.all().exclude(element_type='system')
+        element_list = Element.objects.all().exclude(element_type='system').distinct()
 
     # Natural sorting on name
     element_list = natsorted(element_list, key=lambda x: x.name)
@@ -410,6 +411,7 @@ def component_library(request):
 
     return render(request, "components/component_library.html", context)
 
+@login_required
 def import_records(request):
     """Display the records of component imports"""
 
@@ -426,6 +428,7 @@ def import_records(request):
 
     return render(request, "components/import_records.html", context)
 
+@login_required
 def import_record_details(request, import_record_id):
     """Display the records of component imports"""
 
@@ -439,6 +442,7 @@ def import_record_details(request, import_record_id):
     }
     return render(request, "components/import_record_details.html", context)
 
+@login_required
 def confirm_import_record_delete(request, import_record_id):
     """Delete the components and statements imported from a particular import record"""
 
@@ -456,6 +460,7 @@ def confirm_import_record_delete(request, import_record_id):
     }
     return render(request, "components/confirm_import_record_delete.html", context)
 
+@login_required
 def import_record_delete(request, import_record_id):
     """Delete the components and statements imported from a particular import record"""
 
@@ -483,12 +488,13 @@ class OSCALComponentSerializer(ComponentSerializer):
         else:
             return f"{control_id}_smt"
 
-
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
         uuid = str(self.element.uuid)
         control_implementations = []
+        props = []
+
         of = {
             "component-definition": {
                 "uuid": str(uuid4()),
@@ -497,7 +503,8 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": "string",
-                    "oscal-version": "1.0.0-rc1"
+                    "oscal-version": "1.0.0-rc1",
+                    "props": props
                 },
                 "components": {
                     uuid: {
@@ -509,6 +516,14 @@ class OSCALComponentSerializer(ComponentSerializer):
                 }
             },
         }
+
+        # Add component's tags if they exist
+        if self.element.tags.exists():
+            props.extend([{"name": "tag", "ns": "https://govready.com/ns/oscal", "value": tag.label} for tag in self.element.tags.all()])
+
+        # Remove 'metadata.props' key if no metadata.props exist
+        if len(props) == 0:
+            of['component-definition']['metadata'].pop('props', None)
 
         # create requirements and organize by source (sid_class)
 
@@ -537,8 +552,10 @@ class OSCALComponentSerializer(ComponentSerializer):
                 statement = {
                     "uuid": str(smt.uuid),
                     "description": smt.body,
-                    "remarks": smt.remarks
+                    "remarks": smt.remarks or ""
                 }
+                if smt.remarks is None:
+                    statement.pop('remarks', None)
                 statement_id = self.statement_id_from_control(control_id, smt.pid)
                 requirement["statements"][statement_id] = statement
 
@@ -552,6 +569,9 @@ class OSCALComponentSerializer(ComponentSerializer):
                 "implemented-requirements": [req for req in requirements]
             }
             control_implementations.append(control_implementation)
+        # Remove 'control-implementations' key if no implementations exist
+        if len(control_implementations) == 0:
+            of['component-definition']['components'][uuid].pop('control-implementations', None)
 
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
@@ -587,13 +607,15 @@ class OpenControlComponentSerializer(ComponentSerializer):
 
 class ComponentImporter(object):
 
-    def import_components_as_json(self, import_name, json_object, request=None):
+    def import_components_as_json(self, import_name, json_object, request=None, existing_import_record=False):
         """Imports Components from a JSON object
 
         @type import_name: str
         @param import_name: Name of import file (if it exists)
         @type json_object: dict
         @param json_object: Element attributes from JSON object
+        @type existing_import_record: boolean
+        @param existing_import_record: Continue to append imports to an existing import record
         @rtype: ImportRecord if success, bool (false) if failure
         @returns: ImportRecord linked to the created components (if success) or False if failure
         """
@@ -608,43 +630,63 @@ class ComponentImporter(object):
             return False
         if self.validate_oscal_json(oscal_json):
             # Returns list of created components
+
             created_components = self.create_components(oscal_json)
-            new_import_record = self.create_import_record(import_name, created_components)
+            new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
             return new_import_record
         else:
+
             if request is not None:
                 messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
                 logger.info(f"Invalid JSON. Component(s) not created.")
+            else:
+                logger.info(f"Invalid JSON. Component(s) not created.")
+
             return False
 
-    def create_import_record(self, import_name, components):
+    # def find_import_record_by_name(self, import_name):
+    #     """Returns most recent existing import record by name
+
+    #     @type import_name: str
+    #     @param import_name: Name of import file (if it exists)
+    #     """
+
+    #     found_import_record = ImportRecord.objects.filter(name=import_name).last()
+
+    #     return found_import_record
+
+    def create_import_record(self, import_name, components, existing_import_record=False):
         """Associates components and statements to an import record
 
         @type import_name: str
         @param import_name: Name of import file (if it exists)
         @type components: list
         @param components: List of components
+        @type existing_import_record: booleen
+        @param existing_import_record: Continue to append imports to an existing import record
         @rtype: ImportRecord
         @returns: New ImportRecord object with components and statements associated
         """
 
-        new_import_record = ImportRecord.objects.create(name=import_name)
+        import_record = ImportRecord.objects.filter(name=import_name).last()
+        if import_record is None or not existing_import_record:
+            import_record = ImportRecord.objects.create(name=import_name)
         for component in components:
             statements = Statement.objects.filter(producer_element=component)
             for statement in statements:
-                statement.import_record = new_import_record
+                statement.import_record = import_record
                 #statement.save()
-            component.import_record = new_import_record
+            component.import_record = import_record
             component.save()
 
-        return new_import_record
-
+        return import_record
 
     def validate_oscal_json(self, oscal_json):
         """Validates the JSON object is valid OSCAL format"""
 
         project_root = os.path.abspath(os.path.dirname(__name__))
         oscal_schema_path = os.path.join(project_root, "schemas", "oscal_component_schema.json")
+
         with open(oscal_schema_path, "r") as schema_content:
             oscal_json_schema = json.load(schema_content)
         try:
@@ -656,7 +698,6 @@ class ComponentImporter(object):
 
     def create_components(self, oscal_json):
         """Creates Elements (Components) from valid OSCAL JSON"""
-
         components_created = []
         components = oscal_json['component-definition']['components']
         for component in components:
@@ -681,18 +722,19 @@ class ComponentImporter(object):
 
         new_component = Element.objects.create(
             name=component_name,
-            description=component_json['description'] if 'description' in component_json else '',
+            description=component_json['description'] if 'description' in component_json else 'Description missing',
             # Components uploaded to the Component Library are all system_element types
             # TODO: When components can be uploaded by project, set element_type from component-type OSCAL property
             element_type="system_element"
         )
 
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
-        control_implementation_statements = component_json['control-implementations']
-        for control_element in control_implementation_statements:
-            catalog = oscalize_catalog_key(control_element['source']) if 'source' in control_element else None
-            implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
-            created_statements = self.create_control_implementation_statements(catalog, implemented_reqs, new_component)
+        control_implementation_statements = component_json.get('control-implementations', None)
+        if control_implementation_statements:
+            for control_element in control_implementation_statements:
+                catalog = oscalize_catalog_key(control_element['source']) if 'source' in control_element else None
+                implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
+                created_statements = self.create_control_implementation_statements(catalog, implemented_reqs, new_component)
         return new_component
 
     def create_control_implementation_statements(self, catalog_key, implemented_reqs, parent_component):
@@ -738,7 +780,7 @@ class ComponentImporter(object):
                         sid_class=catalog_key,
                         pid=get_control_statement_part(stmnt_id),
                         body=description,
-                        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+                        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value,
                         remarks=remarks,
                         status=implemented_control['status'] if 'status' in implemented_control else None,
                         producer_element=parent_component,
@@ -770,6 +812,7 @@ class ComponentImporter(object):
             control = catalog.get_control_by_id(control_id)
             return True if control is not None else False
 
+@login_required
 def add_selected_components(system, import_record):
         """Add a component from the library or a compliance app to the project and its statements using the import record"""
 
@@ -778,13 +821,14 @@ def add_selected_components(system, import_record):
         for imported_component in imported_components:
             # Loop through element's prototype statements and add to control implementation statements
             for smt in Statement.objects.filter(producer_element_id=imported_component.id,
-                                                statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value):
+                                                statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value):
                 # Add all existing control statements for a component to a system even if system does not use controls.
                 # This guarantees that control statements are associated.
                 # The selected controls will serve as the primary filter on what content to display.
                 smt.create_instance_from_prototype(system.root_element.id)
         return imported_components
 
+@login_required
 def system_element(request, system_id, element_id):
     """Display System's selected element detail view"""
 
@@ -890,6 +934,7 @@ def new_element(request):
         'form': form,
     })
 
+@login_required
 def component_library_component(request, element_id):
     """Display certified component's element detail view"""
 
@@ -898,11 +943,11 @@ def component_library_component(request, element_id):
     smt_query = request.GET.get('search')
 
     if smt_query:
-        impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
+        impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
     else:
         # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
-        impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
+        impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
 
     if len(impl_smts) < 1:
         context = {
@@ -962,6 +1007,7 @@ def component_library_component(request, element_id):
     }
     return render(request, "components/element_detail_tabs.html", context)
 
+@login_required
 def api_controls_select(request):
     """Return list of controls in json for select2 options from all control catalogs"""
 
@@ -1119,6 +1165,7 @@ def restore_to_history(request, smt_id, history_id):
 
     return render(request, "controls/statement_history.html", context)
 
+@login_required
 def system_element_download_oscal_json(request, system_id, element_id):
 
     if system_id is not None and system_id != '':
@@ -1514,6 +1561,8 @@ def editor(request, system_id, catalog_key, cl_id):
                     "remarks": smt.remarks
                 },
             }
+            if smt.remarks is None:
+                my_dict[smt.sid + "{}".format(smt.producer_element.name.replace(" ", "-"))].pop("remarks", None)
             by_components.update(my_dict)
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
 
@@ -1549,6 +1598,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
 def get_editor_data(request, system, catalog_key, cl_id):
     """
     Get data for editor views
@@ -1571,6 +1621,7 @@ def get_editor_data(request, system, catalog_key, cl_id):
         impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key).order_by('pid')
         return project, catalog, cg_flat, impl_smts
 
+@login_required
 def get_editor_system(cl_id, catalog_key, system_id):
     """
     Retrieves oscalized control id and catalog key. Also system object from system id.
@@ -1609,6 +1660,7 @@ def editor_compare(request, system_id, catalog_key, cl_id):
 
 
 # @task_view
+@login_required
 def save_smt(request):
     """Save a statement"""
 
@@ -1788,6 +1840,7 @@ def save_smt(request):
         {"status": "success", "message": statement_msg + " " + producer_element_msg + " " + statement_del_msg,
          "statement": serialized_obj})
 
+@login_required
 def update_smt_prototype(request):
     """Update a certified statement"""
 
@@ -1824,6 +1877,7 @@ def update_smt_prototype(request):
 
         return JsonResponse({ "status": "success", "message": statement_msg, "data": { "smt_body": statement.body } })
 
+@login_required
 def delete_smt(request):
     """Delete a statement"""
 
@@ -1916,6 +1970,7 @@ def delete_smt(request):
 
 # Components
 
+@login_required
 def add_system_component(request, system_id):
     """Add an existing element and its statements to a system"""
 
@@ -1962,7 +2017,7 @@ def add_system_component(request, system_id):
         # Redirect to selected element page
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
-    smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
+    smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
 
     # Component does not have any statements of type control_implementation_prototype to
     # add to system. So we cannot add the component (element) to the system.
@@ -1974,7 +2029,7 @@ def add_system_component(request, system_id):
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
     # Loop through element's prototype statements and add to control implementation statements
-    for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value):
+    for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value):
         # Add all existing control statements for a component to a system even if system does not use controls.
         # This guarantees that control statements are associated.
         # The selected controls will serve as the primary filter on what content to display.
@@ -1994,6 +2049,7 @@ def add_system_component(request, system_id):
     # Redirect to selected element page
     return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
+@login_required
 def search_system_component(request):
     """Add an existing element and its statements to a system"""
 
@@ -2226,7 +2282,7 @@ class EditorAutocomplete(View):
 
 
 # Baselines
-
+@login_required
 def assign_baseline(request, system_id, catalog_key, baseline_name):
     """Assign a baseline to a system root element thereby showing selected controls for the system."""
 
@@ -2252,7 +2308,7 @@ def assign_baseline(request, system_id, catalog_key, baseline_name):
 
 
 # Export OpenControl
-
+@login_required
 def export_system_opencontrol(request, system_id):
     """Export entire system in OpenControl"""
 
@@ -2389,6 +2445,7 @@ certifications:
         raise Http404
 
 # PoamS
+@login_required
 def poams_list(request, system_id):
     """List Poams for a system"""
 
@@ -2423,6 +2480,7 @@ def poams_list(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
 def new_poam(request, system_id):
     """Form to create new POAM"""
 
@@ -2468,6 +2526,7 @@ def new_poam(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
 def edit_poam(request, system_id, poam_id):
     """Form to create new POAM"""
 
@@ -2525,12 +2584,15 @@ def edit_poam(request, system_id, poam_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
 def poam_export_xlsx(request, system_id):
     return poam_export(request, system_id, 'xlsx')
 
+@login_required
 def poam_export_csv(request, system_id):
     return poam_export(request, system_id, 'csv')
 
+@login_required
 def poam_export(request, system_id, format='xlsx'):
     """Export POA&M in either xlsx or csv"""
 
@@ -2678,6 +2740,7 @@ def poam_export(request, system_id, format='xlsx'):
         raise Http404
 
 # Project
+@login_required
 def project_import(request, project_id):
     """
     Import an entire project's components and control content
@@ -2776,6 +2839,7 @@ def project_import(request, project_id):
 
         return HttpResponseRedirect("/projects")
 
+@login_required
 def project_export(request, project_id):
     """
     Export an entire project's components and control content
@@ -2832,6 +2896,7 @@ def project_export(request, project_id):
     return response
 
 # System OSCAL
+@login_required
 def system_profile_oscal_json(request, system_id):
     """
     Return an OSCAL profile for this system.
@@ -2844,6 +2909,7 @@ def system_profile_oscal_json(request, system_id):
     return response
 
 # System Deployments
+@login_required
 def system_deployments(request, system_id):
     """List deployments for a system"""
 
