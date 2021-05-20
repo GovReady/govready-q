@@ -96,7 +96,9 @@
         <!-- Nav tabs -->
         <ul class="nav nav-tabs" role="tablist">
           <li role="presentation" class="active"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Control Implementation Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
+            {% if enable_experimental_opencontrol %}
             <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
+          {% endif %}
           {% if enable_experimental_opencontrol %}
           <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
           {% endif %}
@@ -117,10 +119,7 @@
                       {% endif %}
                     </div>
                   </div>
-                  </div>
-
-                  <div id="control-description" class="control-text"><h3>{{ impl_smts|length }} associated Component Control Implementations Statements</h3></div>
-
+                           <div id="control-description" class="control-text"><h3>{{ impl_smts|length }} associated Component Control Implementations Statements</h3></div>
                   <div class="row statement-column-headings" style="">
                     <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Control</div>
                     <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">Statement</div>
@@ -261,8 +260,10 @@
                           </div>
                       {% endfor %}
                     </div><!--/smt-list-->
-              </div>
 
+                  </div>
+
+                {% if enable_experimental_opencontrol %}
                 <!-- Tab panel: oscal -->
                 <div role="tabpanel" class="tab-pane" id="oscal">
                   <p id="oscal_download" class="navbar-text navbar-right" style="margin: 12px 12px 0px 0px;">
@@ -277,7 +278,7 @@
                   <div class="systems-element-oscal"><div class="display-oscal">{{ oscal }}</div></div>
 
                 </div>
-
+                {% endif %}
               <!-- Tab panel: opencontrol -->
               {% if enable_experimental_opencontrol %}
                 <div role="tabpanel" class="tab-pane" id="opencontrol">
@@ -285,13 +286,11 @@
                     <div class="systems-element-opencontrol">{{ opencontrol }}</div>
                 </div>
               {% endif %}
-
+                </div>
           </div>
       </div>
 
 
-  </div>
-</div>
 
 {% endblock %}
 
