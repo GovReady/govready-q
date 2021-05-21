@@ -269,12 +269,7 @@
       <!-- Tab panel: combined -->
       <div role="tabpanel" class="tab-pane" id="oscal">
         <p id="oscal_download" class="pull-right" style="margin: 12px 12px 0px 0px;">
-          <a id="oscal_download_json_link"
-             class="navbar-link"
-             href={% url 'system_element_download_oscal_json' system_id=system.id element_id=element.id %}>
-            <span class="glyphicon glyphicon-download"></span>
-            Download ...
-          </a>
+
         </p>
         <div id="combined_smt" class="control-text"><h3>OSCAL</h3></div>
         <div style="font-family: monospace; font-size:12px; white-space: pre-wrap !important; padding: 0px 12px 8px 8px;">{{ oscal }}</div>
