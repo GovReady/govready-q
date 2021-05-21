@@ -34,7 +34,7 @@ from controls.enums.statements import StatementTypeEnum
 from guidedmodules.tests import TestCaseWithFixtureData
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
-from controls.models import Statement, Element
+from controls.models import Statement, Element, System
 from siteapp.settings import HEADLESS, DOS
 from siteapp.views import project_edit
 from tools.utils.linux_to_dos import convert_w
@@ -1419,6 +1419,17 @@ class ProjectTests(TestCaseWithFixtureData):
         self.assertEqual(self.project.version_comment, None)
 
         proj_id = self.project.id
+        element = Element()
+        element.name = self.project.title
+        element.element_type = "system"
+        element.save()
+        # Create system
+        system = System(root_element=element)
+        system.save()
+        # Link system to project
+        self.project.system = system
+        self.project.save()
+
         request_body = {'project_title': ['Test Project v2'],
                                 'project_version': ['1.1'], 'project_version_comment': ['A new comment!']}
 
@@ -1494,3 +1505,32 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
         self.assertEqual(impact_level_smts.count(), 1)
 
+
+    def test_security_objectives(self):
+        """
+        Test set/get of Security Objective levels
+        """
+        # Log in, create a new project.
+        self._login()
+        self._new_project()
+
+        project =  Project.objects.first()
+        element = Element()
+        element.name = project.title
+        element.element_type = "system"
+        element.save()
+        # Create system
+        system = System(root_element=element)
+        system.save()
+        # Link system to project
+        project.system = system
+
+        # security objectives
+        new_security_objectives = {"security_objective_confidentiality": "low",
+                                   "security_objective_integrity": "high",
+                                   "security_objective_availability": "moderate"}
+        # Setting security objectives for project's statement
+        security_objective_smt, smt = project.system.set_security_impact_level(new_security_objectives)
+
+        # Check value changed worked
+        self.assertEqual(project.system.get_security_impact_level, new_security_objectives)

@@ -200,7 +200,37 @@
               Mission Impact: <b>Not Categorized</b>
             {% endif %}
           </span>
+    </div>
         </div>
+    <div class="col-md-2">
+           <h3>Security Objectives
+             {% if project.is_deletable and is_admin %}
+          <span class="glyphicon glyphicon-pencil" onclick="show_edit_security_objs_modal(); return false;"></span>
+            {% endif %}
+           </h3>
+        <span id="systems-security-confidentiality-level" class="status-small">
+            {% if confidentiality %}
+              Confidentiality: <b>{{ confidentiality|lower }}</b>
+              {% else %}
+              Confidentiality: <b>Not Categorized</b>
+            {% endif %}
+          </span>
+                          <br/>
+                          <span id="systems-security-integrity-level" class="status-small">
+            {% if integrity %}
+              Integrity: <b>{{ integrity|lower }}</b>
+              {% else %}
+              Integrity: <b>Not Categorized</b>
+            {% endif %}
+          </span>
+                          <br/>
+                          <span id="systems-security-availability-level" class="status-small">
+            {% if availability %}
+              Availability: <b>{{ availability|lower }}</b>
+              {% else %}
+              Availability: <b>Not Categorized</b>
+            {% endif %}
+                          </span></div>
       </div>
     </div>
   {% if enable_experimental_evidence %}

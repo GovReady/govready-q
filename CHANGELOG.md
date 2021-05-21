@@ -4,8 +4,15 @@ GovReady-Q Release Notes
 v999 (May XX, 2021)
 ---------------------
 
+**Data changes**
+
+* Require components to have descriptions.
+* Adding component_state and component_type fields to an `Element` to contain a component's state and type.
+* Created a modal to allow an admin user to add security objectives confidentiality, integrity, and availability.
+
 **UI changes**
 
+* Can now edit a system componet's state and type in the detail page for a selected component.
 * Improve project pages appearance: decrease action button width and left align text; widen from 9 to 10 columns main content.
 
 **Developer changes**
@@ -14,6 +21,7 @@ v999 (May XX, 2021)
 * Add management command `importcomponents` to batch import OSCAL components to library.
 * Add `existing_import_record` to importing and creating components to group multiple imports under the same import record.
 * Improve generation of components in OSCAL model by removing certain keys when values are none as per specification.
+
 
 v0.9.3.5.3 (May 16, 2021)
 -------------------------

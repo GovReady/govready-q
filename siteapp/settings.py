@@ -182,6 +182,7 @@ TEMPLATES = [
 	},
 ]
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 # When in production, cache the templates once loaded from disk.
 if not DEBUG:
 	# Wrap the template loaders in the cached loader.
