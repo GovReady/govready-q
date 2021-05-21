@@ -492,12 +492,13 @@ class OSCALComponentSerializer(ComponentSerializer):
         else:
             return f"{control_id}_smt"
 
-
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
         uuid = str(self.element.uuid)
         control_implementations = []
+        props = []
+
         of = {
             "component-definition": {
                 "uuid": str(uuid4()),
@@ -506,7 +507,8 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": "string",
-                    "oscal-version": "1.0.0-rc1"
+                    "oscal-version": "1.0.0-rc1",
+                    "props": props
                 },
                 "components": {
                     uuid: {
@@ -518,6 +520,14 @@ class OSCALComponentSerializer(ComponentSerializer):
                 }
             },
         }
+
+        # Add component's tags if they exist
+        if self.element.tags.exists():
+            props.extend([{"name": "tag", "ns": "https://govready.com/ns/oscal", "value": tag.label} for tag in self.element.tags.all()])
+
+        # Remove 'metadata.props' key if no metadata.props exist
+        if len(props) == 0:
+            of['component-definition']['metadata'].pop('props', None)
 
         # create requirements and organize by source (sid_class)
 
@@ -546,8 +556,10 @@ class OSCALComponentSerializer(ComponentSerializer):
                 statement = {
                     "uuid": str(smt.uuid),
                     "description": smt.body,
-                    "remarks": smt.remarks
+                    "remarks": smt.remarks or ""
                 }
+                if smt.remarks is None:
+                    statement.pop('remarks', None)
                 statement_id = self.statement_id_from_control(control_id, smt.pid)
                 requirement["statements"][statement_id] = statement
 
@@ -561,6 +573,9 @@ class OSCALComponentSerializer(ComponentSerializer):
                 "implemented-requirements": [req for req in requirements]
             }
             control_implementations.append(control_implementation)
+        # Remove 'control-implementations' key if no implementations exist
+        if len(control_implementations) == 0:
+            of['component-definition']['components'][uuid].pop('control-implementations', None)
 
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
@@ -596,13 +611,15 @@ class OpenControlComponentSerializer(ComponentSerializer):
 
 class ComponentImporter(object):
 
-    def import_components_as_json(self, import_name, json_object, request=None):
+    def import_components_as_json(self, import_name, json_object, request=None, existing_import_record=False):
         """Imports Components from a JSON object
 
         @type import_name: str
         @param import_name: Name of import file (if it exists)
         @type json_object: dict
         @param json_object: Element attributes from JSON object
+        @type existing_import_record: boolean
+        @param existing_import_record: Continue to append imports to an existing import record
         @rtype: ImportRecord if success, bool (false) if failure
         @returns: ImportRecord linked to the created components (if success) or False if failure
         """
@@ -617,43 +634,63 @@ class ComponentImporter(object):
             return False
         if self.validate_oscal_json(oscal_json):
             # Returns list of created components
+
             created_components = self.create_components(oscal_json)
-            new_import_record = self.create_import_record(import_name, created_components)
+            new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
             return new_import_record
         else:
+
             if request is not None:
                 messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
                 logger.info(f"Invalid JSON. Component(s) not created.")
+            else:
+                logger.info(f"Invalid JSON. Component(s) not created.")
+
             return False
 
-    def create_import_record(self, import_name, components):
+    # def find_import_record_by_name(self, import_name):
+    #     """Returns most recent existing import record by name
+
+    #     @type import_name: str
+    #     @param import_name: Name of import file (if it exists)
+    #     """
+
+    #     found_import_record = ImportRecord.objects.filter(name=import_name).last()
+
+    #     return found_import_record
+
+    def create_import_record(self, import_name, components, existing_import_record=False):
         """Associates components and statements to an import record
 
         @type import_name: str
         @param import_name: Name of import file (if it exists)
         @type components: list
         @param components: List of components
+        @type existing_import_record: booleen
+        @param existing_import_record: Continue to append imports to an existing import record
         @rtype: ImportRecord
         @returns: New ImportRecord object with components and statements associated
         """
 
-        new_import_record = ImportRecord.objects.create(name=import_name)
+        import_record = ImportRecord.objects.filter(name=import_name).last()
+        if import_record is None or not existing_import_record:
+            import_record = ImportRecord.objects.create(name=import_name)
         for component in components:
             statements = Statement.objects.filter(producer_element=component)
             for statement in statements:
-                statement.import_record = new_import_record
+                statement.import_record = import_record
                 #statement.save()
-            component.import_record = new_import_record
+            component.import_record = import_record
             component.save()
 
-        return new_import_record
-
+        return import_record
 
     def validate_oscal_json(self, oscal_json):
         """Validates the JSON object is valid OSCAL format"""
 
         project_root = os.path.abspath(os.path.dirname(__name__))
         oscal_schema_path = os.path.join(project_root, "schemas", "oscal_component_schema.json")
+
         with open(oscal_schema_path, "r") as schema_content:
             oscal_json_schema = json.load(schema_content)
         try:
@@ -665,7 +702,6 @@ class ComponentImporter(object):
 
     def create_components(self, oscal_json):
         """Creates Elements (Components) from valid OSCAL JSON"""
-
         components_created = []
         components = oscal_json['component-definition']['components']
         for component in components:
@@ -690,18 +726,19 @@ class ComponentImporter(object):
 
         new_component = Element.objects.create(
             name=component_name,
-            description=component_json['description'] if 'description' in component_json else '',
+            description=component_json['description'] if 'description' in component_json else 'Description missing',
             # Components uploaded to the Component Library are all system_element types
             # TODO: When components can be uploaded by project, set element_type from component-type OSCAL property
             element_type="system_element"
         )
 
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
-        control_implementation_statements = component_json['control-implementations']
-        for control_element in control_implementation_statements:
-            catalog = oscalize_catalog_key(control_element['source']) if 'source' in control_element else None
-            implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
-            created_statements = self.create_control_implementation_statements(catalog, implemented_reqs, new_component)
+        control_implementation_statements = component_json.get('control-implementations', None)
+        if control_implementation_statements:
+            for control_element in control_implementation_statements:
+                catalog = oscalize_catalog_key(control_element['source']) if 'source' in control_element else None
+                implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
+                created_statements = self.create_control_implementation_statements(catalog, implemented_reqs, new_component)
         return new_component
 
     def create_control_implementation_statements(self, catalog_key, implemented_reqs, parent_component):
@@ -1559,6 +1596,8 @@ def editor(request, system_id, catalog_key, cl_id):
                     "remarks": smt.remarks
                 },
             }
+            if smt.remarks is None:
+                my_dict[smt.sid + "{}".format(smt.producer_element.name.replace(" ", "-"))].pop("remarks", None)
             by_components.update(my_dict)
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
 
