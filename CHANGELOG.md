@@ -13,6 +13,7 @@ v999 (May XX, 2021)
 **UI changes**
 
 * Can now edit a system componet's state and type in the detail page for a selected component.
+* Can now create a component with a state and type with the `ElementForm`
 
 v0.9.3.5.3 (May 16, 2021)
 -------------------------
