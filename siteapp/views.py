@@ -65,6 +65,8 @@ SIGNUP = "signup"
 def home_user(request):
     # If the user is logged in, then redirect them to the projects page.
     if not request.user.is_authenticated:
+        if settings.OKTA_ENABLED:
+            return HttpResponseRedirect("/oidc/authenticate")
         return HttpResponseRedirect("/login")
 
     return render(request, "home-user.html", {
@@ -75,6 +77,12 @@ def home_user(request):
         "import_project_form": ImportProjectForm(),
         "portfolios": request.user.portfolio_list(),
     })
+
+
+def logged_out(request):
+    from django.contrib.auth import logout
+    logout(request)
+    return render(request, "account/logged-out.html", {})
 
 
 def homepage(request):
@@ -274,7 +282,7 @@ class ProjectList(ListView):
             event="project_list",
             user={"id": self.request.user.id, "username": self.request.user.username}
         )
-        return projects
+        return list(projects)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -872,7 +880,7 @@ def project(request, project):
             questions[key] = {
                 "question": mq,
                 "icon": icon,
-                "invitations": [], # filled in below
+                "invitations": [],  # filled in below
                 "task": module_answers.task,
                 "can_start_new_task": False,
                 "discussions": []  # no longer tracking discussions per question,
@@ -913,18 +921,18 @@ def project(request, project):
     # Assign main-area questions to columns. For non-"columns" layouts,
     # assign to one giant column.
     if layout_mode != "columns":
-        columns= [{
+        columns = [{
             "questions": main_area_questions,
         }]
     else:
         # number of columns must divide 12 evenly
         columns = [
-            { "title": "To Do" },
-            { "title": "In Progress" },
-            { "title": "Completed" },
-            { "title": "Submitted" },
-            { "title": "Under Review" },
-            { "title": "Accepted" },
+            {"title": "To Do"},
+            {"title": "In Progress"},
+            {"title": "Completed"},
+            {"title": "Submitted"},
+            {"title": "Under Review"},
+            {"title": "Accepted"},
         ]
         for column in columns:
             column["questions"] = []
@@ -955,7 +963,7 @@ def project(request, project):
         del column["questions"]
         column["groups"] = list(column["groups"].values())
 
-        #column["has_tasks_on_left"] = ((i > 0) and (columns[i-1]["groups"] or columns[i-1]["has_tasks_on_left"]))
+        # column["has_tasks_on_left"] = ((i > 0) and (columns[i-1]["groups"] or columns[i-1]["has_tasks_on_left"]))
 
     # Are there any output documents that we can render?
     has_outputs = False
@@ -966,14 +974,16 @@ def project(request, project):
     # Calculate approximate compliance as degrees to display
     percent_compliant = 0
     if len(project.system.control_implementation_as_dict) > 0:
-        percent_compliant = project.system.controls_status_count['Addressed'] / len(project.system.control_implementation_as_dict)
+        percent_compliant = project.system.controls_status_count['Addressed'] / len(
+            project.system.control_implementation_as_dict)
     # Need to reverse calculation for displaying as per styles in .piechart class
-    approx_compliance_degrees = 365 - ( 365 * percent_compliant )
+    approx_compliance_degrees = 365 - (365 * percent_compliant)
     if approx_compliance_degrees > 358:
         approx_compliance_degrees = 358
 
     # Fetch statement defining FISMA impact level if set
-    impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
+    impact_level_smts = project.system.root_element.statements_consumed.filter(
+        statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
     if len(impact_level_smts) > 0:
         impact_level = impact_level_smts[0].body
     else:
@@ -1011,14 +1021,15 @@ def project(request, project):
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
 
-        "class_status" : Classification.objects.last(),
+        "class_status": Classification.objects.last(),
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
         "project_form": AddProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
         "import_project_form": ImportProjectForm()
     })
 
-#@api_view()
+
+# @api_view()
 def project_edit(request, project_id):
     if request.method == 'POST':
 
@@ -1426,7 +1437,9 @@ def move_project(request, project_id):
     # Check if the user moving the project is a superuser or
     # if they are the owner of the project and have edit permissions in the target directory
     owner = True if request.user.has_perm('can_grant_portfolio_owner_permission', cur_portfolio) else False
-    if request.user.is_superuser or ((request.user in project.get_admins() or owner) and 'change_portfolio' in get_perms(request.user, new_portfolio)):
+    if request.user.is_superuser or (
+            (request.user in project.get_admins() or owner) and 'change_portfolio' in get_perms(request.user,
+                                                                                                new_portfolio)):
         project.portfolio = new_portfolio
         project.save()
         # Give all current members of the project read access to target portfolio
@@ -1440,15 +1453,16 @@ def move_project(request, project_id):
             to_portfolio={"portfolio_title": new_portfolio.title, "id": new_portfolio.id}
         )
 
-        return JsonResponse({ "status": "ok" })
+        return JsonResponse({"status": "ok"})
     else:
         logger.info(
             event="move_project_different_portfolio unsuccessful",
-            object={"project_id": project.id,"new_portfolio_id": new_portfolio.id},
+            object={"project_id": project.id, "new_portfolio_id": new_portfolio.id},
             from_portfolio={"portfolio_title": cur_portfolio.title, "id": cur_portfolio.id},
             to_portfolio={"portfolio_title": new_portfolio.title, "id": new_portfolio.id}
         )
-        return JsonResponse({ "status": "error", "message": "User does not have permission to move this project." })
+        return JsonResponse({"status": "error", "message": "User does not have permission to move this project."})
+
 
 @project_admin_login_post_required
 def upgrade_project(request, project):
@@ -1859,13 +1873,12 @@ def portfolio_read_required(f):
 def portfolio_projects(request, pk):
     """List of projects within a portfolio"""
     portfolio = Portfolio.objects.get(pk=pk)
-    projects = Project.objects.filter(portfolio=portfolio).select_related('root_task')\
+    projects = Project.objects.filter(portfolio=portfolio).select_related('root_task') \
         .exclude(is_organization_project=True).order_by('-created')
     user_projects = [project for project in projects if request.user.has_perm('view_project', project)]
     anonymous_user = User.objects.get(username='AnonymousUser')
     project_form = AddProjectForm(request.user, initial={'portfolio': portfolio.id})
     users_with_perms = portfolio.users_with_perms()
-
 
     return render(request, "portfolios/detail.html", {
         "portfolio": portfolio,

@@ -9,7 +9,7 @@ from core.utils import Runner
 
 
 class DockerCompose(Runner):
-    REQUIRED_PORTS = [8000]
+    REQUIRED_PORTS = [8000, 5432]
 
     def generate_config(self):
         config = {
