@@ -81,16 +81,20 @@
   <div class="systems-top">
 
       <div id="above-tab-content" class="row">
-        <div class="systems-control-heading">
-            <h2 class="control-heading">
+        <div class="col-sm-10 ">
+            <h2 class="">
                 System Component: {{ element.name }}
             </h2>
-            <h2 class="control-heading" style="">
-                &nbsp;<!-- <small style="color: #888;">{{ catalog.catalog_key_display }}</small> -->
-                       {% include 'components/component_metadata.html' %}
-            </h2>
+            <h3 class="" style="">
+                 {{ catalog.catalog_key_display }}
+                {% include 'components/component_metadata.html' %}
+            </h3>
+                  </div>
+      <div class="col-sm-2">
+        <div id="btn-edit-title" style="text-align: center;">
         </div>
       </div>
+    </div>
 
       <!-- Tab panels -->
       <div id="tab-content" class="row">

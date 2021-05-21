@@ -1,6 +1,6 @@
 <div class="container pull-left">
 
-    <form id="edit_component_state" class="form-inline-block" method="post" action="{% url 'edit_component_state' system_id=system.id element_id=element.id %}">
+    <form id="edit_component_state" class="component-form" method="post" action="{% url 'edit_component_state' system_id=system.id element_id=element.id %}">
         {% csrf_token %}
         <div class="form-group">
             <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
@@ -19,7 +19,7 @@
             </select>
         </div>
     </form>
-    <form id="edit_component_type" class="form-inline-block" method="post" action="{% url 'edit_component_type' system_id=system.id element_id=element.id %}">
+    <form id="edit_component_type" class="component-form" method="post" action="{% url 'edit_component_type' system_id=system.id element_id=element.id %}">
         {% csrf_token %}
         <div class="form-group">
             <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->

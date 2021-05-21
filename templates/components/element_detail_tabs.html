@@ -77,18 +77,20 @@
       <div id="above-tab-content" class="row">
         <!-- Page Title-->
         <div style="float: left;">
-            <h2 class="control-heading" style="">
+            <h2 class="" style="">
               <a href="{% url 'component_library' %}">Component Library</a> {% if system.id %}&gt; <a href='{% url 'components_selected' system_id=system.id %}' style="color: black;">Component Detail</a>{% endif %}
             </h2>
         </div>
       </div>
     </div><!--/row-->
     <div id="above-tab-content" class="row">
-      <div class="col-sm-10">
-        <h2 class="control-heading" style="">
+      <div class="col-sm-10 ">
+        <h2 class="">
           {{ element.name }}
-         {% include 'components/component_metadata.html' %}
         </h2>
+        <h3 class="" style="">
+          {% include 'components/component_metadata.html' %}
+          </h3>
       </div>
       <div class="col-sm-2">
         <div id="btn-edit-title" style="text-align: center;">

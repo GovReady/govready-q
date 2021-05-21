@@ -843,6 +843,9 @@ def system_element(request, system_id, element_id):
         return render(request, "systems/element_detail_tabs.html", context)
 
 def edit_component_state(request, system_id, element_id):
+    """
+    Edit system component state
+    """
     # Retrieve identified System
     system = System.objects.get(id=system_id)
     # Retrieve related selected controls if user has permission on system
@@ -854,6 +857,9 @@ def edit_component_state(request, system_id, element_id):
     return redirect(reverse('system_element', args=[system_id, element_id]))
 
 def edit_component_type(request, system_id, element_id):
+    """
+    Edit system component type
+    """
     # Retrieve identified System
     system = System.objects.get(id=system_id)
     # Retrieve related selected controls if user has permission on system
