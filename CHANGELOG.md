@@ -15,6 +15,16 @@ v999 (May XX, 2021)
 
 * Can now edit a system componet's state and type in the detail page for a selected component.
 * Can now create a component with a state and type with the `ElementForm`
+* Improve project pages appearance: decrease action button width and left align text; widen from 9 to 10 columns main content.
+
+**Developer changes**
+
+* Add management command `exportcomponentlibrary` to batch export components from library as OSCAL or CSV.
+* Add management command `importcomponents` to batch import OSCAL components to library.
+* Add `existing_import_record` to importing and creating components to group multiple imports under the same import record.
+* Improve generation of components in OSCAL model by removing certain keys when values are none as per specification.
+
+
 
 v0.9.3.5.3 (May 16, 2021)
 -------------------------
