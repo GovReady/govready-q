@@ -972,12 +972,12 @@ def project(request, project):
     if approx_compliance_degrees > 358:
         approx_compliance_degrees = 358
 
-    # Fetch statement defining FISMA impact level if set
-    impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
-    if len(impact_level_smts) > 0:
-        impact_level = impact_level_smts.first().body
+    # Fetch statement defining Security Sensitivity level if set
+    security_sensitivity_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.value)
+    if len(security_sensitivity_smts) > 0:
+        security_sensitivity = security_sensitivity_smts.first().body
     else:
-        impact_level = None
+        security_sensitivity = None
 
     security_objective_smt = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value)
     if security_objective_smt.exists():
@@ -992,7 +992,7 @@ def project(request, project):
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
-        "impact_level": impact_level,
+        "security_sensitivity": security_sensitivity,
         "confidentiality": confidentiality,
         "integrity": integrity,
         "availability": availability,
@@ -1059,7 +1059,6 @@ def project_security_objs_edit(request, project_id):
             # project to update
             project = Project.objects.get(id=project_id)
 
-            # TODO: Move security impact levels to an admin only form. adding validation.
             confidentiality = request.POST.get("confidentiality", "").strip() or None
             integrity = request.POST.get("integrity", "").strip() or None
             availability = request.POST.get("availability", "").strip() or None

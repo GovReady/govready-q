@@ -1488,21 +1488,21 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
 
         # Display imact level testing
         # New project should not be categorized
-        self.assertInNodeText("Mission Impact: Not Categorized", "#systems-fisma-impact-level")
+        self.assertInNodeText("Mission Impact: Not Categorized", "#systems-security-sensitivity-level")
 
         # Update impact level
         # Get project.system.root_element to attach statement holding fisma impact level
         project = self.current_project
         fil = "Low"
-        # Test change and test system fisma_impact_level set/get methods
-        project.system.set_fisma_impact_level(fil)
+        # Test change and test system security_sensitivity_level set/get methods
+        project.system.set_security_sensitivity_level(fil)
         # Check value changed worked
-        self.assertEqual(project.system.get_fisma_impact_level, fil)
+        self.assertEqual(project.system.get_security_sensitivity_level, fil)
         # Refresh project page
         self.click_element('#btn-project-home')
         # See if project page has changed
-        wait_for_sleep_after( lambda: self.assertInNodeText("low", "#systems-fisma-impact-level") )
-        impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
+        wait_for_sleep_after( lambda: self.assertInNodeText("low", "#systems-security-sensitivity-level") )
+        impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.value)
         self.assertEqual(impact_level_smts.count(), 1)
 
 

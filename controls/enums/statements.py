@@ -6,5 +6,5 @@ class StatementTypeEnum(BaseEnum):
     CONTROL_IMPLEMENTATION_PROTOTYPE = "control_implementation_prototype"
     ASSESSMENT_RESULT = "assessment_result"
     POAM = "POAM"
-    FISMA_IMPACT_LEVEL = "fisma_impact_level"
+    SECURITY_SENSITIVITY_LEVEL = "security_sensitivity_level"
     SECURITY_IMPACT_LEVEL = "security_impact_level"

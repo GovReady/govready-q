@@ -9,6 +9,7 @@ v999 (May XX, 2021)
 * Require components to have descriptions.
 * Adding component_state and component_type fields to an `Element` to contain a component's state and type.
 * Created a modal to allow an admin user to add security objectives confidentiality, integrity, and availability.
+* Fisma impact level is now represented as Security Sensitivity level following OSCAL's schema.
 
 **UI changes**
 
