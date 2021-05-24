@@ -498,7 +498,14 @@ class OSCALComponentSerializer(ComponentSerializer):
         uuid = str(self.element.uuid)
         control_implementations = []
         props = []
+        parties = []
+        responsible_roles =  {
+          "supplier": {
+            "party-uuids": [
 
+            ]
+          }
+        }
         of = {
             "component-definition": {
                 "uuid": str(uuid4()),
@@ -506,8 +513,9 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "title": "{} Component-to-Control Narratives".format(self.element.name),
                     "published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
-                    "version": "string",
+                    "version": "string",# datetime.today().strftime('%Y%m%d')
                     "oscal-version": "1.0.0-rc1",
+                    "parties": parties,
                     "props": props
                 },
                 "components": {
@@ -515,6 +523,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                         "title": self.element.full_name or self.element.name,
                         "type": self.element.component_type or "software",
                         "description": self.element.description,
+                        "responsible-roles": responsible_roles,
                         "control-implementations": control_implementations
                     }
                 }
@@ -1552,7 +1561,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # Retrieve primary system Project
         project, catalog, cg_flat, impl_smts = get_editor_data(request, system, catalog_key, cl_id)
 
-        # Build OSCAL
+        # Build OSCAL SSP
         # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
         of = {
             "system-security-plan": {
