@@ -513,7 +513,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "title": "{} Component-to-Control Narratives".format(self.element.name),
                     "published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
-                    "version": "string",# datetime.today().strftime('%Y%m%d')
+                    "version": self.element.updated.replace(microsecond=0).isoformat(),
                     "oscal-version": "1.0.0-rc1",
                     "parties": parties,
                     "props": props
