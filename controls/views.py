@@ -513,7 +513,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                 "components": {
                     uuid: {
                         "title": self.element.full_name or self.element.name,
-                        "type": self.element.element_type or "software",
+                        "type": self.element.component_type or "software",
                         "description": self.element.description,
                         "control-implementations": control_implementations
                     }
