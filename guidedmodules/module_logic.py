@@ -387,7 +387,9 @@ def oscal_context(answers):
 
     information_types = [
         {
+            "uuid": str(uuid.uuid4()),
             "title": "UNKNOWN information type title",
+            "categorizations": [], # TODO
             "description": "information type description",
             "confidentiality_impact": confidentiality,
             "integrity_impact": integrity,
@@ -405,7 +407,7 @@ def oscal_context(answers):
     return {
         "uuid": str(uuid.uuid4()), # SSP UUID
         "make_uuid": uuid.uuid4, # so we can gen UUIDS if needed in the templates
-        "version": project.version,
+        "version": float(project.version),
         "profile": profile,
         "oscal_version": "1.0.0rc1",
         "last_modified": str(project.updated),
