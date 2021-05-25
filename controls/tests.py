@@ -604,6 +604,16 @@ class ElementUnitTests(TestCase):
         self.assertEqual(e.name, "Renamed Element A")
         self.assertEqual(e.description, "Renamed Element A Description")
 
+    def test_component_type_state(self):
+        e = Element.objects.create(name="New component",  element_type="system")
+        self.assertTrue(e.id is not None)
+        self.assertTrue(e.component_type == "software")
+        self.assertTrue(e.component_state == "operational")
+        e2 = Element.objects.create(name="New component2",  element_type="system", component_type="hardware", component_state="disposition")
+        self.assertTrue(e2.id is not None)
+        self.assertTrue(e2.component_type == "hardware")
+        self.assertTrue(e2.component_state == "disposition")
+
 
 class ElementControlUnitTests(TestCase):
 
