@@ -1,4 +1,4 @@
-# This module defines a SeleniumTest class that is used here and in
+
 # the discussion app to run Selenium and Chrome-based functional/integration
 # testing.
 #
@@ -614,7 +614,6 @@ class ElementUnitTests(TestCase):
         self.assertTrue(e2.component_type == "hardware")
         self.assertTrue(e2.component_state == "disposition")
 
-
 class ElementControlUnitTests(TestCase):
 
     def test_assign_baseline(self):
@@ -671,7 +670,6 @@ class ElementControlUnitTests(TestCase):
 
         # Even with two elements there is still only one element with a role
         self.assertEqual(ele.roles.values_list('role', flat=True).count(), 1)
-
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):
@@ -1020,6 +1018,27 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         # Add component statement
         submit_comp_statement = wait_for_sleep_after(lambda: self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button"))
         submit_comp_statement.click()
+
+class ProjectControlTests(OrganizationSiteFunctionalTests):
+
+    def test_project_controls_selected(self):
+
+        # login as the first user and create a new project
+        self._login()
+        self._new_project()
+
+        project = Project.objects.all().last()
+        system = project.system
+        # Assign low baseline
+        result = system.root_element.assign_baseline_controls(self.user, 'NIST_SP-800-53_rev4', 'low')
+        # Add component(s)
+
+        self.navigateToPage(f"/systems/{system.id}/controls/selected")
+        # var_sleep(10)
+
+        wait_for_sleep_after(lambda: self.assertInNodeText("Selected controls", "#tab-content"))
+
+    # def test_project_control_page(self):
 
 class ControlTestHelper(object):
 
