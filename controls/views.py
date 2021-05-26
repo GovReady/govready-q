@@ -523,7 +523,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                         "title": self.element.full_name or self.element.name,
                         "type": self.element.component_type or "software",
                         "description": self.element.description,
-                        "responsible-roles": responsible_roles,
+                        #"responsible-roles": responsible_roles, # TODO: gathering party-uuids
                         "control-implementations": control_implementations
                     }
                 }
