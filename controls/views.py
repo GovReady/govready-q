@@ -515,7 +515,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": self.element.updated.replace(microsecond=0).isoformat(),
                     "oscal-version": "1.0.0-rc1",
-                    "parties": parties,
+                   # "parties": parties,
                     "props": props
                 },
                 "components": {
