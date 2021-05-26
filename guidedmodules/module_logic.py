@@ -389,7 +389,7 @@ def oscal_context(answers):
         {
             "uuid": str(uuid.uuid4()),
             "title": "UNKNOWN information type title",
-            "categorizations": [], # TODO https://doi.org/10.6028/NIST.SP.800-60v2r1
+           # "categorizations": [], # TODO https://doi.org/10.6028/NIST.SP.800-60v2r1
             "description": "information type description",
             "confidentiality_impact": confidentiality,
             "integrity_impact": integrity,
