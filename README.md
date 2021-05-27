@@ -14,15 +14,6 @@ Read [What You Most Need to Know About GovReady-Q](http://govready-q.readthedocs
 
 If you have questions about if hosted version, email <a href="mailto:info@govready.com">info@govready.com</a>.
 
-## Installing GovReady-Q
-
-| Deployment Guide                                                                                                                                        |
-|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Installation and Setup](https://govready-q.readthedocs.io/en/latest/installation-and-setup/index.html)                                                 |
-| [Installing on Workstations for Development](https://govready-q.readthedocs.io/en/latest/installation-and-setup/desktop-installation/index.html)        |
-| [Deploying on Ubuntu](https://govready-q.readthedocs.io/en/latest/installation-and-setup/server-based-installation/linux/ubuntu/index.html)             |
-| [Deploying on RHEL 8 / CentOS 8](https://govready-q.readthedocs.io/en/latest/installation-and-setup/server-based-installation/linux/centos8/index.html) |
-| [Deploying with Docker](https://govready-q.readthedocs.io/en/latest/installation-and-setup/container-based-installation/index.html)                     |
 
 ## Support
 
