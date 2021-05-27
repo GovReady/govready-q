@@ -14,6 +14,7 @@ v999 (May XX, 2021)
 
 * Can now edit a system componet's state and type in the detail page for a selected component.
 * Improve project pages appearance: decrease action button width and left align text; widen from 9 to 10 columns main content.
+* Remove "Refresh Documents" button on task finished page because caches are now automatically cleared and document content refreshed.
 
 **Developer changes**
 
@@ -21,6 +22,7 @@ v999 (May XX, 2021)
 * Add management command `importcomponents` to batch import OSCAL components to library.
 * Add `existing_import_record` to importing and creating components to group multiple imports under the same import record.
 * Improve generation of components in OSCAL model by removing certain keys when values are none as per specification.
+* Task caches are now automatically cleared and document content refreshed when document downloaded.
 
 
 v0.9.3.5.3 (May 16, 2021)
