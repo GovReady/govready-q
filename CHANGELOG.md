@@ -36,6 +36,7 @@ v999 (April XX, 2021)
 **Data changes**
 
 * Use statement type `fisma_impact_level` to track impact level of a system.
+* Add input_type to AppInputs in order to make selections of input files based on type. This will support importing POA&Ms as part of loading and the starting an app.
 
 v0.9.3.4 (April 20, 2021)
 -------------------------

@@ -233,9 +233,6 @@ class AppVersionAdmin(admin.ModelAdmin):
 
 class AppInputAdmin(admin.ModelAdmin):
 	list_display = ('id', 'input_name', 'input_type', 'app', 'source', 'created')
-	# list_filter = ('input_type', 'Source')
-	# raw_id_fields = ('source', 'file',)
-	# readonly_fields = ('asset_files','asset_paths', 'system_app')
 
 class ModuleAdmin(admin.ModelAdmin):
 	list_display = ('id', 'source', 'app_', 'module_name', 'created')
