@@ -14,6 +14,7 @@ from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory,
 
 import guidedmodules.module_logic as module_logic
 import guidedmodules.answer_validation as answer_validation
+
 from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership
 from siteapp.forms import AddProjectForm
@@ -1262,9 +1263,16 @@ def download_module_output(request, task, answered, context, question, document_
     if document_id in (None, ""):
         raise Http404()
     try:
+        # Force refresh of content associated with this Task.
+        # Clear module questions since ModuleQuestions may have changed.
+        module_logic.clear_module_question_cache()
+
+        # Since impute conditions, output documents, and other generated
+        # data may have changed, clear all cached Task state for project.
+        Task.clear_state(Task.objects.filter(module__app=task.project.root_task.module.app.id))
         blob, filename, mime_type= task.download_output_document(document_id, download_format, answers=answered)
     except ValueError:
-        raise Http404()
+        raise Http404("Problem processing document request.")
 
     resp = HttpResponse(blob, mime_type)
     resp['Content-Disposition'] = 'inline; filename=' + filename
