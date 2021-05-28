@@ -24,6 +24,9 @@ v999 (May XX, 2021)
 * Improve generation of components in OSCAL model by removing certain keys when values are none as per specification.
 * Task caches are now automatically cleared and document content refreshed when document downloaded.
 
+**Bug fix**
+
+* Fix OSCAL SSP output template failure where statement didn't exist while exporting to OSCAL.
 
 v0.9.3.5.3 (May 16, 2021)
 -------------------------
