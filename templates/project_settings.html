@@ -408,12 +408,12 @@ h3.question-group-title {
           </div>
           {% endif %}
 
-        <div class="row project-settings-rows>
+        <div class="row project-settings-rows">
           <div class="col-sm-12">
             <h2 class="project-settings-header">Share Data</h2>
           </div>
           <div class="col-sm-12">
-            {# export #}
+              {# export #}
               <form method="post" action="{% url "export_project_questionnaire" project.id %}" style="display: inline-block; margin: 0; padding: 0;">{% csrf_token %}
                 <button class="btn btn-default">
                   <span class="glyphicon glyphicon-share" style="margin-right: .25em"></span>
@@ -430,8 +430,8 @@ h3.question-group-title {
                   style="width: auto; border:  none; padding: 0; display: inline-block"
                   onchange="$('#import-form').submit()" />
               </form>
-            </div>
           </div>
+        </div>
 
       {% if project.is_deletable and is_admin %}
         <div class="row project-settings-rows">
