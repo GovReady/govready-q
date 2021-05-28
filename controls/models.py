@@ -561,9 +561,12 @@ class System(auto_prefetch.Model):
         """Assign Security impact levels to system"""
 
         # Get the security_impact_level smt for element; should only have 1 statement
-        smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value, producer_element=self.root_element, consumer_element=self.root_element)
-        security_impact_level = eval(smt.body)# Evaluate string of dictionary
-        return security_impact_level
+        try:
+            smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value, producer_element=self.root_element, consumer_element=self.root_element)
+            security_impact_level = eval(smt.body)# Evaluate string of dictionary
+            return security_impact_level
+        except Statement.DoesNotExist:
+            return {}
 
     @property
     def smts_common_controls_as_dict(self):
