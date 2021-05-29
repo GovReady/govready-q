@@ -30,6 +30,8 @@ v999 (May XX, 2021)
 
 * Fix OSCAL SSP output template failure where statement didn't exist while exporting to OSCAL.
 * Fix bug breaking rendering of system's control detail page by removing an errant login_required decorator on a function.
+* File upload validator now accepts files with capitalized extensions, e.g. ".JPG".
+* File upload validator now recognizes ".jpeg" in addition to ".jpg" extension on JPEG files.
 
 v0.9.3.5.3 (May 16, 2021)
 -------------------------
