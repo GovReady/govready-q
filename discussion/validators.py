@@ -32,7 +32,7 @@ CONTENTTYPE_EXCEPTIONS = {
     "application/vnd.ms-powerpoint": (".ppt", ),
     "application/zip": (".docx", ".xlsx", ".pptx", ".zip",),
     "application/vnd.ms-excel": (".xls", ".xlb",),
-    "image/jpeg": (".jpg",".jpeg",),
+    "image/jpeg": (".jpg", ".jpeg",),
     "text/plain": (".csv",".txt", ".yaml", ".yml", ".md")
 }
 
@@ -62,7 +62,7 @@ def validate_file_extension(file):
         if file_ext.lower() != filechunk_extension:
             # Check if there is an exception for file extension
             if not (filechunk_content_type in CONTENTTYPE_EXCEPTIONS
-                    and file_ext in CONTENTTYPE_EXCEPTIONS[filechunk_content_type]):
+                    and file_ext.lower() in CONTENTTYPE_EXCEPTIONS[filechunk_content_type]):
                 return JsonResponse(status=400, data={'status': 'error', 'message': err_msg})
 
         # If it is not a valid mime or extension then return http response with error message.
