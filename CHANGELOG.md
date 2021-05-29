@@ -23,10 +23,13 @@ v999 (May XX, 2021)
 * Add `existing_import_record` to importing and creating components to group multiple imports under the same import record.
 * Improve generation of components in OSCAL model by removing certain keys when values are none as per specification.
 * Task caches are now automatically cleared and document content refreshed when document downloaded.
+* Add test for system control page.
+* Refactor creating system control statements from component library prototype statements when adding a component from the library to a system and reduce by an order a magnitude the time it takes to add a component to system.
 
 **Bug fix**
 
 * Fix OSCAL SSP output template failure where statement didn't exist while exporting to OSCAL.
+* Fix bug breaking rendering of system's control detail page by removing an errant login_required decorator on a function.
 
 v0.9.3.5.3 (May 16, 2021)
 -------------------------
