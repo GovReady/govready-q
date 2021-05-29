@@ -1505,7 +1505,6 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
         self.assertEqual(impact_level_smts.count(), 1)
 
-
     def test_security_objectives(self):
         """
         Test set/get of Security Objective levels

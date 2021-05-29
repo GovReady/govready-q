@@ -33,13 +33,7 @@ body, blockquote {
   color: black;
 }
 
-
-
 .glyphicon-globe { color: #888; }
-
-
-
-
 
 h1, h2 {
   font-family: 'Lato', sans-serif;
@@ -53,9 +47,6 @@ h3 { font-size: 18px; }
 .btn { white-space: normal; font-size: inherit; }
 .btn.btn-sm { font-size: 12px; }
 .btn.btn-xs { font-size: 12px; }
-
-
-
 
 footer { margin-top:60px;
   font-size: .75em;
@@ -202,7 +193,6 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 .app-quick-start-form { margin-top: .5em;}
 
 .control-label { font-size:.8em;} /* within modal, the word description was breaking */
-
 
 /* app-store-item */
 .breadcrumb-link { color: black; }

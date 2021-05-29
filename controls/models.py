@@ -531,6 +531,7 @@ class System(auto_prefetch.Model):
     def set_fisma_impact_level(self, fisma_impact_level):
         """Assign FISMA impact level to system"""
         # TODO: Fisma impact level is actually the security-sensitivity-level as defined in oscal ssp schema.
+
         # Get or create the fisma_impact_level smt for system's root_element; should only have 1 statement
         smt = Statement.objects.create(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value, producer_element=self.root_element,consumer_element=self.root_element, body=fisma_impact_level)
         return fisma_impact_level, smt
