@@ -295,6 +295,8 @@ form #id_json_content { width: 100%; overflow: auto !important; } /* The !import
 
 .component-tag { font-size: 0.7em; color: #999; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; }
 .component-tag a { color: #999; }
+.component-state { font-size: 0.8em; color: #444; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; }
+.component-type { font-size: 0.8em; color: #444; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; }
 
 .component-form {
  float: left;

@@ -673,14 +673,14 @@ class ElementControlUnitTests(TestCase):
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):
-        e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
-        self.assertTrue(e.id is not None)
-        self.assertTrue(e.name == "New Element")
-        self.assertTrue(e.full_name == "New Element Full Name")
-        self.assertTrue(e.element_type == "system")
-        s = System(root_element=e)
+        sre = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
+        self.assertTrue(sre.id is not None)
+        self.assertTrue(sre.name == "New Element")
+        self.assertTrue(sre.full_name == "New Element Full Name")
+        self.assertTrue(sre.element_type == "system")
+        s = System(root_element=sre)
         s.save()
-        self.assertEqual(s.root_element.name,e.name)
+        self.assertEqual(s.root_element.name,sre.name)
 
         u2 = User.objects.create(username="Jane2", email="jane@example.com")
         # Test no permissions for user
@@ -695,6 +695,42 @@ class SystemUnitTests(TestCase):
         self.assertIn('change_system', perms)
         self.assertIn('delete_system', perms)
         self.assertIn('view_system', perms)
+
+        # Create an element with control implementation statements and assign to system
+        e = Element.objects.create(name="OAuth", full_name="OAuth Service", element_type="system_element", component_state="operational")
+        self.assertTrue(e.id is not None)
+        self.assertTrue(e.name == "OAuth")
+        e.save()
+        smt_1 = Statement.objects.create(
+            sid = "au-3",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is the first test statement.",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+            status = "Implemented",
+            producer_element = e,
+            consumer_element = s.root_element
+        )
+        smt_1.save()
+        smt_2 = Statement.objects.create(
+            sid = "au-4",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is the first test statement.",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+            status = "Implemented",
+            producer_element = e,
+            consumer_element = s.root_element
+        )
+        smt_2.save()
+
+        # Batch update system statements status by changing system component state
+        element = e
+        control_status = "planned"
+        s.set_component_control_status(element, control_status)
+        # Test the system's component's statements status were changed
+        smt_1_updated = Statement.objects.get(pk=smt_1.id)
+        self.assertTrue(smt_1_updated.status, control_status)
+        smt_2_updated = Statement.objects.get(pk=smt_2.id)
+        self.assertTrue(smt_2_updated.status, control_status)
 
 class SystemUITests(OrganizationSiteFunctionalTests):
 
