@@ -723,6 +723,12 @@ class System(auto_prefetch.Model):
 
     producer_elements = cached_property(get_producer_elements)
 
+    def set_component_control_status(self, element, status):
+        """Batch update status of system control implementation statements for a specific element."""
+
+        self.root_element.statements_consumed.filter(producer_element=element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).update(status=status)
+        return True
+
 class CommonControlProvider(models.Model):
     name = models.CharField(max_length=150, help_text="Name of the CommonControlProvider", unique=False)
     description = models.CharField(max_length=255, help_text="Brief description of the CommonControlProvider", unique=False)

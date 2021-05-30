@@ -895,9 +895,20 @@ def edit_component_state(request, system_id, element_id):
     # Retrieve related selected controls if user has permission on system
     if request.user.has_perm('change_system', system):
         # Retrieve element
+        # TODO: Make atomic transaction
         element = Element.objects.get(id=element_id)
         element.component_state = request.POST['state_change']
         element.save()
+        logger.info(event=f"change_system update_component_state {element} {element.component_state}",
+                    object={"object": "system", "id": system.id},
+                    user={"id": request.user.id, "username": request.user.username})
+        # Batch update status of control implementation statements provided by the element to the system
+        state_status = {"operational": "Implemented", "under-development": "Partially Implemented", "planned": "Planned"}
+        control_status = state_status.get(request.POST['state_change']) or "Not Implemented"
+        system.set_component_control_status(element, control_status)
+        logger.info(event=f"change_system batch_update_component_control_status {element} {control_status}",
+                    object={"object": "system", "id": system.id},
+                    user={"id": request.user.id, "username": request.user.username})
     return redirect(reverse('system_element', args=[system_id, element_id]))
 
 def edit_component_type(request, system_id, element_id):

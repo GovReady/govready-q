@@ -15,6 +15,7 @@ v999 (May XX, 2021)
 * Can now edit a system componet's state and type in the detail page for a selected component.
 * Improve project pages appearance: decrease action button width and left align text; widen from 9 to 10 columns main content.
 * Remove "Refresh Documents" button on task finished page because caches are now automatically cleared and document content refreshed.
+* Display system component component_state and component_type when component is listed for a system.
 
 **Developer changes**
 
@@ -25,6 +26,7 @@ v999 (May XX, 2021)
 * Task caches are now automatically cleared and document content refreshed when document downloaded.
 * Add test for system control page.
 * Refactor creating system control statements from component library prototype statements when adding a component from the library to a system and reduce by an order a magnitude the time it takes to add a component to system.
+* Create System method to batch update an element's control implementation statements based on the component's state.
 
 **Bug fix**
 
