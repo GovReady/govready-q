@@ -1,6 +1,6 @@
+from .settings import *
 import re
 import sys
-from .settings import *
 
 INSTALLED_APPS += [
     'debug_toolbar',
@@ -18,15 +18,14 @@ INSTALLED_APPS += [
 
     'loadtesting',
 ]
-OKTA_ENABLED = environment.get("okta", False)  # todo - default to None/False
+OKTA_CONFIG = environment.get("okta", {})
 # https://blog.theodo.com/2021/03/okta-sso-with-django-admin/ - example for login override
-if OKTA_ENABLED:
+if OKTA_CONFIG:
     LOGIN_ENABLED = False
     AUTHENTICATION_BACKENDS += ['siteapp.authentication.OIDCAuthentication.OIDCAuth', ]
 
-    OKTA_DOMAIN = os.environ.get("OKTA_DOMAIN", "https://dev-41337671.okta.com")  # todo - remove default
-    OKTA_TOKEN = os.environ.get("OKTA_TOKEN")
-    BASE_URL = "http://localhost:8000"
+    OKTA_DOMAIN = OKTA_CONFIG['domain']
+    BASE_URL = environment['govready-url']
     # User information
     USER_CRM_ID = None
     USER_EMAIL = None
@@ -38,14 +37,13 @@ if OKTA_ENABLED:
     OIDC_OP_TOKEN_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/token"
     OIDC_OP_USER_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/userinfo"
     OIDC_RP_SCOPES = "openid profile email groups"
-    OIDC_RP_CLIENT_ID = os.environ.get("OKTA_ADMIN_CLIENT_ID", "0oarfvh9xvFwQgHPt5d6")  # todo - remove default
-    OIDC_RP_CLIENT_SECRET = os.environ.get("OKTA_ADMIN_CLIENT_SECRET",
-                                           "bbiMObAhk1dYfUW_WTTnalj5LWbQlcvSM4M30_YU")  # todo - remove default
+    OIDC_RP_CLIENT_ID = OKTA_CONFIG['client_id']
+    OIDC_RP_CLIENT_SECRET = OKTA_CONFIG['client_secret']
     OIDC_VERIFY_SSL = True
     LOGIN_REDIRECT_URL = f"{BASE_URL}/"
     OIDC_REDIRECT_URL = f"{BASE_URL}/oidc/callback/"
     OIDC_AUTH_REQUEST_EXTRA_PARAMS = {"redirect_uri": OIDC_REDIRECT_URL}
-    LOGOUT_REDIRECT_URL = "http://localhost:8000/logged-out"
+    LOGOUT_REDIRECT_URL = f"{BASE_URL}/logged-out"
 
     INSTALLED_APPS += ['mozilla_django_oidc']
     # The mozilla_django_oidc.middleware.SessionRefresh middleware will check to see if the user’s id token has expired
@@ -56,15 +54,8 @@ if OKTA_ENABLED:
     MIDDLEWARE += ['mozilla_django_oidc.middleware.SessionRefresh', ]
 
     # Mapping functionality to support via config
-    OIDC_EMAIL_CLAIM_KEY = "email"
-    OIDC_GROUPS_CLAIM_KEY = "groups"
-    OIDC_FIRSTNAME_CLAIM_KEY = "given_name"
-    OIDC_LASTNAME_CLAIM_KEY = "family_name"
-    OIDC_USERNAME_CLAIM_KEY = "preferred_username"
-    OIDC_ROLES_MAP = {
-        "admin": "Test-Admin",
-        "normal": "Test-Normal",
-    }
+    OIDC_CLAIMS_MAP = OKTA_CONFIG['claims_map']
+    OIDC_ROLES_MAP = OKTA_CONFIG['roles_map']
 
 if environment.get("trust-user-authentication-headers"):
     # When this is set, the 'username' and 'email' keys hold HTTP header

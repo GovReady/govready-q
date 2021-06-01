@@ -23,6 +23,7 @@ class DockerCompose(Runner):
             "govready-url": "http://localhost:8000",
             "mailgun_api_key": "",
             "memcached": False,
+            "okta": {},
             "secret-key": self.create_secret(),
             "gr-pdf-generator": "wkhtmltopdf",
             "gr-img-generator": "wkhtmltopdf",

@@ -65,7 +65,7 @@ SIGNUP = "signup"
 def home_user(request):
     # If the user is logged in, then redirect them to the projects page.
     if not request.user.is_authenticated:
-        if settings.OKTA_ENABLED:
+        if settings.OKTA_CONFIG:
             return HttpResponseRedirect("/oidc/authenticate")
         return HttpResponseRedirect("/login")
 
