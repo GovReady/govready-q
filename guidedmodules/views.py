@@ -12,7 +12,7 @@ from django.db import transaction
 import re
 
 from pathlib import PurePath
-from slugify import slugify
+from django.utils.text import slugify
 
 from controls.enums.statements import StatementTypeEnum
 from discussion.validators import validate_file_extension
