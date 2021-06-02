@@ -1,3 +1,6 @@
+import os
+
+from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
 from django.contrib import messages
@@ -7,6 +10,9 @@ from django.utils import timezone
 from django.db import transaction
 
 import re
+
+from pathlib import PurePath
+from slugify import slugify
 
 from controls.enums.statements import StatementTypeEnum
 from discussion.validators import validate_file_extension
@@ -18,12 +24,14 @@ import guidedmodules.answer_validation as answer_validation
 from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership
 from siteapp.forms import AddProjectForm
-from controls.models import Element, ElementRole, Statement
+from guidedmodules.forms import ExportCSVTemplateSSPForm
+from controls.models import Element, ElementRole, Statement, System
 
 import fs, fs.errors
 
 import logging
 logging.basicConfig()
+import csv
 import structlog
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
@@ -1185,6 +1193,17 @@ def task_finished(request, task, answered, context, *unused_args):
         if output.get("display") == "top":
             top_of_page_output = output
             del outputs[i]
+    if request.method == "POST":
+        export_csv_form = ExportCSVTemplateSSPForm(request.POST)
+        if export_csv_form.is_valid():
+
+            export_ssp_csv(export_csv_form.data, task.project.system)
+
+            logger.info(
+                event="export_ssp_csv",
+                object={"object": "ssp_csv"},
+                user={"id": request.user.id, "username": request.user.username}
+            )
 
     context.update({
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
@@ -1204,6 +1223,7 @@ def task_finished(request, task, answered, context, *unused_args):
         "next_module": next_module,
         "next_module_spec": next_module_spec,
         "gr_pdf_generator": settings.GR_PDF_GENERATOR,
+        "export_csv_form": ExportCSVTemplateSSPForm(),
         "project_form": AddProjectForm(request.user, initial={'portfolio': task.project.portfolio.id}) if task.project.portfolio else AddProjectForm(request.user)
     })
     return render(request, "task-finished.html", context)
@@ -2066,3 +2086,47 @@ def analytics(request):
 
         ]
     })
+
+def export_ssp_csv(export_csv_data, system):
+    """
+    Export an SSP's control implementations with the submitted headers
+    """
+
+    #
+    smt_control_keys = system.smts_control_implementation_as_dict.keys() # TODO: OR controls?
+    # Filter by the system's catalog's control set
+    # output csv
+
+    # # Selected controls
+    # selected_controls = system.root_element.controls.all()
+    # selected_controls = list(selected_controls)
+    # selected_controls.sort(key=lambda control: control.get_flattened_oscal_control_as_dict()['sort_id'])
+    #
+    # # Catalog keys
+    # catalog_keys = [ control.oscal_catalog_key for control in selected_controls]
+
+    smts = system.root_element.statements_consumed.filter(
+        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).order_by('pid')
+
+    selected_controls = list(smts.values_list('sid', flat=True))
+    catalog_keys = list(smts.values_list('sid_class', flat=True))
+    imps = list(smts.values_list('body', flat=True))
+    headers = [export_csv_data.get('info_system'), export_csv_data.get('control_id'), export_csv_data.get('catalog'), export_csv_data.get('shared_imps'), export_csv_data.get('private_imps')]
+    system_name = system.root_element.name # TODO: Should this come from questionnaire answer or project name as we have it?
+    data = [
+        [system_name] * len(selected_controls),
+        selected_controls,
+        catalog_keys,
+        [""] * len(selected_controls),# shared imps are not implemented
+        imps
+    ]
+    filename = str(PurePath(slugify(system_name+ "-" + datetime.now().strftime("%Y-%m-%d-%H-%M"))).with_suffix('.csv'))
+    with open(filename, mode='w') as f:
+        writer = csv.writer(f)
+
+        # write the headers
+        writer.writerow(headers)
+
+        # spread and write rows
+        writer.writerows(zip(*data))
+
