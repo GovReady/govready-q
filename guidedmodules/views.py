@@ -2092,19 +2092,6 @@ def export_ssp_csv(export_csv_data, system):
     Export an SSP's control implementations with the submitted headers
     """
 
-    #
-    smt_control_keys = system.smts_control_implementation_as_dict.keys() # TODO: OR controls?
-    # Filter by the system's catalog's control set
-    # output csv
-
-    # # Selected controls
-    # selected_controls = system.root_element.controls.all()
-    # selected_controls = list(selected_controls)
-    # selected_controls.sort(key=lambda control: control.get_flattened_oscal_control_as_dict()['sort_id'])
-    #
-    # # Catalog keys
-    # catalog_keys = [ control.oscal_catalog_key for control in selected_controls]
-
     smts = system.root_element.statements_consumed.filter(
         statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).order_by('pid')
 
