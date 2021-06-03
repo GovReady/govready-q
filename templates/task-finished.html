@@ -1,6 +1,7 @@
 {% extends "task-base.html" %}
 {% load static %}
 {% load q %}
+{% load bootstrap3 %}
 
 {% block title %}
 {{m.title}}
@@ -166,6 +167,7 @@
                             {% if gr_pdf_generator == 'wkhtmltopdf' %}<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/pdf">PDF</a>&nbsp;&nbsp;{% endif %}
                             <!-- <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/odt">Open Office (odt)</a>&nbsp;&nbsp; -->
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/html">HTML</a>&nbsp;&nbsp;
+                            <button id="exportCSVTemplateSSPButton" type="button" class="btn-xs btn-primary glyphicon glyphicon-copy" data-toggle="modal" data-target="#exportCSVTemplateSSP" aria-label="CSV" tooltip="exportCSVTemplateSSP" style="text-align: center; margin-right:10px; margin-left:5px;">CSV</button>&nbsp;&nbsp;
                             <!-- <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/markdown">Markdown</a>&nbsp;&nbsp; -->
                             <!--<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/plain">Plain Text</a>&nbsp;&nbsp;-->
                           {% endif %}
@@ -299,6 +301,35 @@
           <span style="float:left;" class="help-block">To add new templates please contact your Administrator</span>
 {#          <span ><i class="warning"></i></span>#}
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="exportCSVTemplateSSP" tabindex="-1" aria-labelledby="exportCSVTemplateSSP" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="exportCSVTemplateSSP">Export SSP as CSV</h2>
+        <div style="float:left;" class="help-block">Enter the five column headers for your SSP Control Statement CSV Export</div>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+            <span id="exportCSVTemplateSSPValidation"></span>
+            <form role="form" class="form-horizontal" method="POST">
+                 {% csrf_token %}
+                <div class="modal-body">
+                    {% for field in export_csv_form %}
+                      <label class="col-xs-5 control-label" style="text-align:left;" for="{{ field.auto_id }}">{{ field.label }}</label>
+                      {{ field }}
+                    {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button id="select_portfolio_submit" class="btn btn-success btn-submit" type="submit">Export</button>
+                </div>
+            </form>
+        </div>
       </div>
     </div>
   </div>
