@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
+from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
@@ -1405,10 +1406,9 @@ def authoring_create_q(request):
     except Exception as e:
         raise
 
-    from django.contrib import messages
     messages.add_message(request, messages.INFO, 'New Project "{}" added into the catalog.'.format(new_q["title"]))
 
-    return JsonResponse({ "status": "ok", "redirect": "{% url 'store' %}" })
+    return JsonResponse({ "status": "ok", "redirect": "/store" })
 
 @login_required
 def refresh_output_doc(request):
