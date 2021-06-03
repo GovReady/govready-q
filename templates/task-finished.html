@@ -311,17 +311,20 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2 class="modal-title" id="exportCSVTemplateSSP">Export SSP as CSV</h2>
+        <div style="float:left;" class="help-block">Enter the five column headers for your SSP Control Statement CSV Export</div>
       </div>
       <div class="modal-body">
         <div class="table-responsive">
             <span id="exportCSVTemplateSSPValidation"></span>
-            <form role="form" method="POST">
+            <form role="form" class="form-horizontal" method="POST">
                  {% csrf_token %}
                 <div class="modal-body">
-                    {% bootstrap_form export_csv_form %}
+                    {% for field in export_csv_form %}
+                      <label class="col-xs-5 control-label" style="text-align:left;" for="{{ field.auto_id }}">{{ field.label }}</label>
+                      {{ field }}
+                    {% endfor %}
                 </div>
                 <div class="modal-footer">
-                    <span style="float:left;" class="help-block">Please enter the five column headers for your SSP CSV Export</span>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     <button id="select_portfolio_submit" class="btn btn-success btn-submit" type="submit">Export</button>
                 </div>
