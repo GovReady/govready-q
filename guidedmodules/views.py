@@ -244,15 +244,17 @@ def save_answer(request, task, answered, context, __):
 
     # validate question
     q = task.module.questions.get(id=request.POST.get("question"))
+    # store question/tasks for back button
+    back_url = task.get_absolute_url() + f"/question/{q.key}"
 
     # make a function that gets the URL to the next page
     def redirect_to():
         next_q = get_next_question(q, task)
         if next_q:
             # Redirect to the next question.
-            return task.get_absolute_url_to_question(next_q) + "?previous=nquestion"
+            return task.get_absolute_url_to_question(next_q) + f"?back_url={back_url}&previous=nquestion"
         # Redirect to the module finished page because there are no more questions to answer.
-        return task.get_absolute_url() + "/finished?previous=nquestion"
+        return task.get_absolute_url() + f"/finished?back_url={back_url}&previous=nquestion"
 
     # validate and parse value
     if request.POST.get("method") == "clear":
@@ -646,6 +648,9 @@ def show_question(request, task, answered, context, q):
     # Is there a TaskAnswer for this yet?
     taskq = TaskAnswer.objects.filter(task=task, question=q).first()
 
+    # Get previous question for back button
+    back_url =  request.GET.get('back_url')
+
     # Display requested question.
 
     # Is there an answer already? (If this question isn't answerable, i.e. if we're
@@ -996,6 +1001,9 @@ def show_question(request, task, answered, context, q):
     })
     context.update({
         "project_form": AddProjectForm(request.user),
+    })
+    context.update({
+        "back_url": back_url,
     })
     return render(request, "question.html", context)
 
