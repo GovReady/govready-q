@@ -27,7 +27,8 @@ class ContentSecurityPolicyMiddleware:
         # * we're definitely using inline scripts and CSS throughout our templates, but that could be refactored
         response = self.next_middleware(request)
         response['Content-Security-Policy'] = \
-            "default-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+            "default-src 'self' data:; script-src 'self' https://apis.google.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; \
+            child-src https://youtube.com https://www.youtube.com https://player.vimeo.com https://vimeo.com; img-src * data: blob: 'unsafe-inline';"
         return response
 
 def QTemplateContextProcessor(request):
