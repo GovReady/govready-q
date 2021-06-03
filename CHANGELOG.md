@@ -17,6 +17,7 @@ v999 (May XX, 2021)
 * Remove "Refresh Documents" button on task finished page because caches are now automatically cleared and document content refreshed.
 * Display system component component_state and component_type when component is listed for a system.
 * Add simple "back" link to question to take user to previous question.
+* Add "Create a template" button to template library so admins can create a new template (e.g., compliance app).
 
 **Developer changes**
 
