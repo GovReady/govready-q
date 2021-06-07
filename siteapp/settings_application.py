@@ -42,6 +42,7 @@ if OKTA_CONFIG:
     OIDC_VERIFY_SSL = True
     LOGIN_REDIRECT_URL = f"{BASE_URL}/"
     OIDC_REDIRECT_URL = f"{BASE_URL}/oidc/callback/"
+    OIDC_AUTH_REQUEST_EXTRA_PARAMS = {"redirect_uri": OIDC_REDIRECT_URL}
     LOGOUT_REDIRECT_URL = f"{BASE_URL}/logged-out"
 
     INSTALLED_APPS += ['mozilla_django_oidc']
