@@ -56,7 +56,12 @@ if OKTA_CONFIG:
     # Mapping functionality to support via config
     OIDC_CLAIMS_MAP = OKTA_CONFIG['claims_map']
     OIDC_ROLES_MAP = OKTA_CONFIG['roles_map']
-
+    LOGGING['loggers'].update({
+        'mozilla_django_oidc': {
+            'handlers': ['console'],
+            'level': 'DEBUG'
+        }
+    })
 if environment.get("trust-user-authentication-headers"):
     # When this is set, the 'username' and 'email' keys hold HTTP header
     # names which control user authentication. Standard authentication
