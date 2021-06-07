@@ -169,7 +169,8 @@ def homepage(request):
         from django.contrib.auth import logout
         logout(request)
         return HttpResponseRedirect('/')  # reload
-
+    if settings.OKTA_CONFIG:
+        return HttpResponseRedirect("/oidc/authenticate")
     return render(request, "index.html", {
         "hide_registration": SystemSettings.hide_registration,
         "sitename": Sitename.objects.last(),
