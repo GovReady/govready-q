@@ -25,7 +25,7 @@ if OKTA_CONFIG:
     AUTHENTICATION_BACKENDS += ['siteapp.authentication.OIDCAuthentication.OIDCAuth', ]
 
     OKTA_DOMAIN = OKTA_CONFIG['domain']
-    BASE_URL = environment['govready-url']
+    BASE_URL = environment['govready-url'].replace(':443', '')
     # User information
     USER_CRM_ID = None
     USER_EMAIL = None
