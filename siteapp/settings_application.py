@@ -32,10 +32,10 @@ if OKTA_CONFIG:
 
     OKTA_ADMIN_DOMAIN = OKTA_DOMAIN
     OIDC_RP_SIGN_ALGO = "RS256"
-    OIDC_OP_JWKS_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/default/v1/keys"
-    OIDC_OP_AUTHORIZATION_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/default/v1/authorize"
-    OIDC_OP_TOKEN_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/default/v1/token"
-    OIDC_OP_USER_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/default/v1/userinfo"
+    OIDC_OP_JWKS_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/keys"
+    OIDC_OP_AUTHORIZATION_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/authorize"
+    OIDC_OP_TOKEN_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/token"
+    OIDC_OP_USER_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/userinfo"
     OIDC_RP_SCOPES = "openid profile email groups"
     OIDC_RP_CLIENT_ID = OKTA_CONFIG['client_id']
     OIDC_RP_CLIENT_SECRET = OKTA_CONFIG['client_secret']
