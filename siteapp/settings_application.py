@@ -51,7 +51,7 @@ if OKTA_CONFIG:
     # That will redirect back to the page the user was going to.
     # The length of time it takes for an id token to expire is set in settings.OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS
     # which defaults to 15 minutes.
-    MIDDLEWARE += ['mozilla_django_oidc.middleware.SessionRefresh', ]
+    MIDDLEWARE += ['siteapp.authentication.OIDCAuthentication.OIDCSessionRefresh', ]
 
     # Mapping functionality to support via config
     OIDC_CLAIMS_MAP = OKTA_CONFIG['claims_map']
