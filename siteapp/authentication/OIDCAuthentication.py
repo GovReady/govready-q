@@ -1,8 +1,14 @@
+from urllib.parse import urlencode
+
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
+from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.utils.crypto import get_random_string
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend, LOGGER
-from mozilla_django_oidc.utils import absolutify
+from mozilla_django_oidc.utils import absolutify, add_state_and_nonce_to_session
+from django.views.generic import View
+from mozilla_django_oidc.views import get_next_url
 
 from siteapp.models import Portfolio
 
@@ -59,18 +65,16 @@ class OIDCAuth(OIDCAuthenticationBackend):
         reverse_url = self.get_settings('OIDC_AUTHENTICATION_CALLBACK_URL',
                                         'oidc_authentication_callback')
 
-        redirect_uri = absolutify(
-                self.request,
-                reverse(reverse_url))
-        if 'https' in settings.BASE_URL:
-            redirect_uri = redirect_uri.replace('http', 'https')
         token_payload = {
             'client_id': self.OIDC_RP_CLIENT_ID,
             'client_secret': self.OIDC_RP_CLIENT_SECRET,
             'grant_type': 'authorization_code',
             'code': code,
-            'redirect_uri': redirect_uri
+            'redirect_uri': absolutify(
+                self.request,
+                reverse(reverse_url))
         }
+        token_payload.update(self.get_settings('OIDC_AUTH_REQUEST_EXTRA_PARAMS', {}))
 
         # Get the token
         token_info = self.get_token(token_payload)
