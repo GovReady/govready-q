@@ -1,14 +1,14 @@
+import time
 from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend, LOGGER
+from mozilla_django_oidc.middleware import SessionRefresh
 from mozilla_django_oidc.utils import absolutify, add_state_and_nonce_to_session
-from django.views.generic import View
-from mozilla_django_oidc.views import get_next_url
 
 from siteapp.models import Portfolio
 
@@ -92,3 +92,65 @@ class OIDCAuth(OIDCAuthenticationBackend):
                 LOGGER.warning('failed to get or create user: %s', exc)
                 return None
         return None
+
+
+class OIDCSessionRefresh(SessionRefresh):
+    def process_request(self, request):
+        if not self.is_refreshable_url(request):
+            LOGGER.debug('request is not refreshable')
+            return
+
+        expiration = request.session.get('oidc_id_token_expiration', 0)
+        now = time.time()
+        if expiration > now:
+            # The id_token is still valid, so we don't have to do anything.
+            LOGGER.debug('id token is still valid (%s > %s)', expiration, now)
+            return
+
+        LOGGER.debug('id token has expired')
+        # The id_token has expired, so we have to re-authenticate silently.
+        auth_url = self.get_settings('OIDC_OP_AUTHORIZATION_ENDPOINT')
+        client_id = self.get_settings('OIDC_RP_CLIENT_ID')
+        state = get_random_string(self.get_settings('OIDC_STATE_SIZE', 32))
+
+        # Build the parameters as if we were doing a real auth handoff, except
+        # we also include prompt=none.
+        params = {
+            'response_type': 'code',
+            'client_id': client_id,
+            'redirect_uri': absolutify(
+                request,
+                reverse(self.get_settings('OIDC_AUTHENTICATION_CALLBACK_URL',
+                                          'oidc_authentication_callback'))
+            ),
+            'state': state,
+            'scope': self.get_settings('OIDC_RP_SCOPES', 'openid email'),
+            'prompt': 'none',
+        }
+
+        if self.get_settings('OIDC_USE_NONCE', True):
+            nonce = get_random_string(self.get_settings('OIDC_NONCE_SIZE', 32))
+            params.update({
+                'nonce': nonce
+            })
+        params.update(self.get_settings('OIDC_AUTH_REQUEST_EXTRA_PARAMS', {}))
+
+        add_state_and_nonce_to_session(request, state, params)
+
+        request.session['oidc_login_next'] = request.get_full_path()
+
+        query = urlencode(params)
+        redirect_url = '{url}?{query}'.format(url=auth_url, query=query)
+        if request.is_ajax():
+            # Almost all XHR request handling in client-side code struggles
+            # with redirects since redirecting to a page where the user
+            # is supposed to do something is extremely unlikely to work
+            # in an XHR request. Make a special response for these kinds
+            # of requests.
+            # The use of 403 Forbidden is to match the fact that this
+            # middleware doesn't really want the user in if they don't
+            # refresh their session.
+            response = JsonResponse({'refresh_url': redirect_url}, status=403)
+            response['refresh_url'] = redirect_url
+            return response
+        return HttpResponseRedirect(redirect_url)
