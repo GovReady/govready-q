@@ -1,7 +1,5 @@
-import requests
-from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 from django.conf import settings
-from requests.auth import HTTPBasicAuth
+from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 from siteapp.models import Portfolio
 
@@ -40,26 +38,3 @@ class OIDCAuth(OIDCAuthenticationBackend):
         if new_values != original_values:
             user.save()
         return user
-
-    def get_token(self, payload):
-        """Return token object as a dictionary."""
-
-        auth = None
-        if self.get_settings('OIDC_TOKEN_USE_BASIC_AUTH', False):
-            # When Basic auth is defined, create the Auth Header and remove secret from payload.
-            user = payload.get('client_id')
-            pw = payload.get('client_secret')
-
-            auth = HTTPBasicAuth(user, pw)
-            del payload['client_secret']
-
-        response = requests.post(
-            self.OIDC_OP_TOKEN_ENDPOINT,
-            data=payload,
-            auth=auth,
-            verify=self.get_settings('OIDC_VERIFY_SSL', True),
-            timeout=self.get_settings('OIDC_TIMEOUT', None),
-            proxies=self.get_settings('OIDC_PROXY', None))
-        import ipdb; ipdb.set_trace()
-        response.raise_for_status()
-        return response.json()
