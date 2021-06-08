@@ -1010,10 +1010,9 @@ def show_question(request, task, answered, context, q):
     })
     context.update({
         "project_form": AddProjectForm(request.user),
+         "back_url": back_url,
     })
-    context.update({
-        "back_url": back_url,
-    })
+ 
     return render(request, "question.html", context)
 
 @task_view
@@ -2124,4 +2123,3 @@ def export_ssp_csv(export_csv_data, system):
 
         # spread and write rows
         writer.writerows(zip(*data))
-
