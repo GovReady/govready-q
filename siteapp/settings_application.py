@@ -26,6 +26,8 @@ if OKTA_CONFIG:
 
     OKTA_DOMAIN = OKTA_CONFIG['domain']
     BASE_URL = environment['govready-url'].replace(':443', '')
+    if 'https' in BASE_URL:
+        SECURE_SSL_REDIRECT = True
     # User information
     USER_CRM_ID = None
     USER_EMAIL = None
@@ -41,7 +43,6 @@ if OKTA_CONFIG:
     OIDC_RP_CLIENT_SECRET = OKTA_CONFIG['client_secret']
     OIDC_VERIFY_SSL = True
     LOGIN_REDIRECT_URL = f"{BASE_URL}/"
-    OIDC_AUTHENTICATION_CALLBACK_URL = f"{BASE_URL}/oidc/callback/"
     LOGOUT_REDIRECT_URL = f"{BASE_URL}/logged-out"
 
     INSTALLED_APPS += ['mozilla_django_oidc']
