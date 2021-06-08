@@ -26,8 +26,6 @@ if OKTA_CONFIG:
 
     OKTA_DOMAIN = OKTA_CONFIG['domain']
     BASE_URL = environment['govready-url'].replace(':443', '')
-    if 'https' in BASE_URL:
-        SECURE_SSL_REDIRECT = True
     # User information
     USER_CRM_ID = None
     USER_EMAIL = None

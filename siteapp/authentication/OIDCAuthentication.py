@@ -1,5 +1,8 @@
 from django.conf import settings
-from mozilla_django_oidc.auth import OIDCAuthenticationBackend
+from django.core.exceptions import SuspiciousOperation
+from django.urls import reverse
+from mozilla_django_oidc.auth import OIDCAuthenticationBackend, LOGGER
+from mozilla_django_oidc.utils import absolutify
 
 from siteapp.models import Portfolio
 
@@ -38,3 +41,50 @@ class OIDCAuth(OIDCAuthenticationBackend):
         if new_values != original_values:
             user.save()
         return user
+
+    def authenticate(self, request, **kwargs):
+        """Authenticates a user based on the OIDC code flow."""
+
+        self.request = request
+        if not self.request:
+            return None
+
+        state = self.request.GET.get('state')
+        code = self.request.GET.get('code')
+        nonce = kwargs.pop('nonce', None)
+
+        if not code or not state:
+            return None
+
+        reverse_url = self.get_settings('OIDC_AUTHENTICATION_CALLBACK_URL',
+                                        'oidc_authentication_callback')
+
+        redirect_uri = absolutify(
+                self.request,
+                reverse(reverse_url))
+        if 'https' in settings.BASE_URL:
+            redirect_uri = redirect_uri.replace('http', 'https')
+        token_payload = {
+            'client_id': self.OIDC_RP_CLIENT_ID,
+            'client_secret': self.OIDC_RP_CLIENT_SECRET,
+            'grant_type': 'authorization_code',
+            'code': code,
+            'redirect_uri': redirect_uri
+        }
+
+        # Get the token
+        token_info = self.get_token(token_payload)
+        id_token = token_info.get('id_token')
+        access_token = token_info.get('access_token')
+
+        # Validate the token
+        payload = self.verify_token(id_token, nonce=nonce)
+
+        if payload:
+            self.store_tokens(access_token, id_token)
+            try:
+                return self.get_or_create_user(access_token, id_token, payload)
+            except SuspiciousOperation as exc:
+                LOGGER.warning('failed to get or create user: %s', exc)
+                return None
+        return None
