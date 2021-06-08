@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}
+    {{ portfolio.title }} Components Selected
+{% endblock %}
+
+{% block head %}
+    {% include "controls/_style-controls.html" %}
+    <style>
+        .pagination {
+            text-align: right;
+            margin: 0px;
+            font-weight: normal;
+        }
+
+        .rows-header { font-weight: bold; }
+
+    </style>
+
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+{# Do a side-by side comparison pagination of 1 for the right side and need a call #}
+
+{% for prime_smt in prime_smts %}
+        <a href="#diff_prime" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: darkgreen;">{{ prime_smt.body|safe  }}</a>
+{% endfor %}
+{% for component in element_list %}
+{{ component.statements }}
+    {% endfor %}
+
+
+<br>
+{% for diff in differences %}
+
+    <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;">{{ diff|safe  }}</a>
+<br>
+    {% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
