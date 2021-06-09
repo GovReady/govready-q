@@ -453,10 +453,11 @@ def compare_components(request):
         # TODO: Need to create a tuple with smt id to return appropriate
         for smt in cmt_smts:
             smt_prime = compare_prime_smts.filter(sid=smt.sid).filter(pid=smt.pid).filter(sid_class=smt.sid_class).first()
+            # If it is not a statement found in both components then we just add styling
             if smt_prime:
                 diff = diff_components_prettyHtml(smt_prime, smt)
             else:
-                diff = smt.body
+                diff = f"<span><ins style='background:#e6ffe6;'>{smt.body}</ins><span>"
             differences.append(diff)
         difference_tuples.extend(zip(cmt_smts, differences))
 

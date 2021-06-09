@@ -31,6 +31,7 @@
     <thead class="thead-dark">
     <tr>
       <th scope="col">Control Number</th>
+      <th scope="col">Control Part</th>
       <th scope="col">Catalog</th>
       <th scope="col">Statement</th>
     </tr>
@@ -39,6 +40,7 @@
     {% for prime_smt in prime_smts %}
     <tr>
       <th scope="row">{{ prime_smt.sid }}</th>
+      <th>{{ prime_smt.pid }}</th>
       <td>{{ prime_smt.sid_class }}</td>
     {% if prime_smt.body|safe|length <= 50 %}
     <td>{{ prime_smt.body|safe  }}</td>
@@ -64,6 +66,7 @@
     <thead class="thead-dark">
     <tr>
       <th scope="col">Control Number</th>
+      <th scope="col">Control Part</th>
       <th scope="col">Catalog</th>
       <th scope="col">Statement</th>
     </tr>
@@ -72,14 +75,15 @@
         {% for smt, diff in differences %}
         <tr>
             <th scope="row">{{ smt.sid }}</th>
+            <th>{{ smt.pid }}</th>
             <td>{{ smt.sid_class }}</td>
             {% if diff|safe|length <= 50 %}
-            <td><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;">{{ diff|safe }}</a></td>
+            <td><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: black;">{{ diff|safe }}</a></td>
             {% else %}
             <td>
-                <details>
+            <details>
             <summary>Click to read</summary>
-            <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;">{{ diff|safe }}</a>
+            <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: black;">{{ diff|safe }}</a>
             </details>
             </td>
             {% endif %}
