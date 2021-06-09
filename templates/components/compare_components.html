@@ -47,7 +47,7 @@
                     <tbody>
                     {% for prime_smt in prime_smts %}
                             <tr>
-                                <th scope="row">{{ prime_smt.sid }}.{{ prime_smt.pid }}</th>
+                                <th scope="row">{{ prime_smt.sid }}{% if prime_smt.pid %}.{{ prime_smt.pid }}{% endif %}</th>
                                 <td>{{ prime_smt.sid_class }}</td>
                                 {% if prime_smt.body|safe|length <= 50 %}
                                     <td>{{ prime_smt.body|safe }}</td>
