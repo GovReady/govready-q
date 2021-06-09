@@ -1204,14 +1204,13 @@ def task_finished(request, task, answered, context, *unused_args):
     if request.method == "POST":
         export_csv_form = ExportCSVTemplateSSPForm(request.POST)
         if export_csv_form.is_valid():
-
-            export_ssp_csv(export_csv_form.data, task.project.system)
-
+            response = export_ssp_csv(export_csv_form.data, task.project.system)
             logger.info(
                 event="export_ssp_csv",
                 object={"object": "ssp_csv"},
                 user={"id": request.user.id, "username": request.user.username}
             )
+            return response
 
     context.update({
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
@@ -2115,11 +2114,18 @@ def export_ssp_csv(export_csv_data, system):
         imps
     ]
     filename = str(PurePath(slugify(system_name+ "-" + datetime.now().strftime("%Y-%m-%d-%H-%M"))).with_suffix('.csv'))
-    with open(filename, mode='w') as f:
-        writer = csv.writer(f)
 
-        # write the headers
-        writer.writerow(headers)
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename=' + filename},
+    )
 
-        # spread and write rows
-        writer.writerows(zip(*data))
+    writer = csv.writer(response)
+    writer.writerow(headers)
+    # spread and write rows
+    writer.writerows(zip(*data))
+
+    return response
+  
+  

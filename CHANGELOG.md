@@ -30,6 +30,10 @@ v999 (May XX, 2021)
 * Refactor creating system control statements from component library prototype statements when adding a component from the library to a system and reduce by an order a magnitude the time it takes to add a component to system.
 * Create System method to batch update an element's control implementation statements based on the component's state.
 
+**Deployment changes**
+
+* The HTTP Content-Security-Policy header is now set to allow browsers to load third-party videos from YouTube.com, Vimeo.com and images from any source.
+
 **Bug fix**
 
 * Fix OSCAL SSP output template failure where statement didn't exist while exporting to OSCAL.
