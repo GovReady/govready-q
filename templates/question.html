@@ -119,6 +119,8 @@ Next Question: {{q.spec.title}} | {{task.title}}
     padding-top: 1em;
   }
 
+  #back-button a {color: white; text-decoration: none;}
+
   /* Legacy background and focus area styling for question pages */
   body { /*background-color: rgb(247,247,247);*/ }
   #focus-area-wrapper {
@@ -513,6 +515,11 @@ Next Question: {{q.spec.title}} | {{task.title}}
 
                 {# Buttons to save or skip this question #}
                 <div class="pull-left">
+                  {% if back_url %}
+                    <button id="back-button" class="btn btn-normal"><a href="{{back_url}}">
+                    &laquo; Back</a></button>
+                  {% endif %}
+
                   <button id="save-button"
                     type="submit" class="btn btn-success"
                     onclick="$('#question > form input[name=method]').val('save')">
@@ -527,14 +534,14 @@ Next Question: {{q.spec.title}} | {{task.title}}
                     {% endif %}
                     &raquo;
                   </button>
-
+                </div>
+                <div>
                   {# This is DEBUG functionality for reverting a question to an un-answered state, which differs from being answered but with null via the Skip/Clear button. #}
                   {% if answer_obj and DEBUG %}
                     <button id="clear-button"
                       type="submit" class="btn btn-link question-button"
                       onclick="$('#question > form input[name=method]').val('clear')">
                         Mark as Unanswered
-                        <!-- &raquo; -->
                       </button>
                   {% endif %}
                 </div> {# /.pull-left #}
