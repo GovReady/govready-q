@@ -440,7 +440,7 @@ def compare_components(request):
         element_list = list(Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct())
         compare_prime, element_list = element_list[0], element_list[1:]# The first component selected will be compared against the rest
         compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
-        compare_secondary = element_list[0]
+        compare_secondary, element_list = element_list[0], element_list[1:]
     elif len(compare_list) <= 1:
         # add messages
         messages.add_message(request, messages.WARNING, f"Not enough components were selected to compare!")
