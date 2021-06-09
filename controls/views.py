@@ -418,7 +418,14 @@ def component_library(request):
 def diff_components_prettyHtml(smt1, smt2):
     """Generate a diff of two statements of type `control_implementation`"""
     dmp = dmp_module.diff_match_patch()
-    diff = dmp.diff_main(smt1.body, smt2.body)
+    val1 = ""
+    val2 = ""
+    if hasattr(smt1, 'body'):
+        val1 = smt1.body
+    if hasattr(smt2, 'body'):
+        val2 = smt2.body
+
+    diff = dmp.diff_main(val1, val2)
     if len(diff) == 1:
         return "Statement is identical."
     return dmp.diff_prettyHtml(diff)
@@ -431,32 +438,36 @@ def compare_components(request):
     compare_list = request.POST.getlist('componentcomparecheckbox')
     if compare_list:
         element_list = list(Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct())
-        compare_prime = element_list.pop()# The first component selected will be compared against the rest
-        compare_prime_smts = compare_prime.statements('control_implementation')
-    elif len(compare_list) > 1:
+        compare_prime, element_list = element_list[0], element_list[1:]# The first component selected will be compared against the rest
+        compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+        compare_secondary = element_list[0]
+    elif len(compare_list) <= 1:
         # add messages
         messages.add_message(request, messages.WARNING, f"Not enough components were selected to compare!")
         return HttpResponseRedirect("/controls/components")
+    difference_tuples = []
     differences = []
-    for component in element_list:
-        # compare each component's statements to prime
-        cmt_smts = component.statements('control_implementation')
-        if cmt_smts.exists():
-            for smt in cmt_smts:
-                smt_prime = compare_prime_smts.filter(sid=smt.sid).filter(pid=smt.pid).filter(sid_class=smt.sid_class).first()
-                if smt_prime:# if the statement in
-                    differences.append(diff_components_prettyHtml(smt_prime, smt))
-                else:
-                    differences.append(smt.body)
+    # compare each component's statements to prime
+    cmt_smts = compare_secondary.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+    if cmt_smts.exists():
+        # TODO: Need to create a tuple with smt id to return appropriate
+        for smt in cmt_smts:
+            smt_prime = compare_prime_smts.filter(sid=smt.sid).filter(pid=smt.pid).filter(sid_class=smt.sid_class).first()
+            if smt_prime:
+                diff = diff_components_prettyHtml(smt_prime, smt)
+            else:
+                diff = smt.body
+            differences.append(diff)
+        difference_tuples.extend(zip(cmt_smts, differences))
 
     if request.method == 'POST':
-        # Deletion part
-        # side-by-side comparison
         context = {
             "element_list": element_list,
             "compare_prime": compare_prime,
-            "prime_smts": compare_prime.statements('control_implementation'),
-            "differences": differences
+            "compare_secondary": compare_secondary,
+            "prime_smts": compare_prime_smts,
+            "secondary_smts": cmt_smts,
+            "differences": difference_tuples
         }
         return render(request, "components/compare_components.html", context)
 
