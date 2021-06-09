@@ -12,18 +12,9 @@
             </thead>
             <tbody>
                 <tr>
-                    <th scope="row">{{ smt.sid }}}{% if smt.pid %}.{{ smt.pid }}{% endif %}</th>
+                    <th scope="row">{{ smt.sid }}{% if smt.pid %}.{{ smt.pid }}{% endif %}</th>
                     <td>{{ smt.sid_class }}</td>
-                    {% if diff|safe|length <= 50 %}
-                        <td><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: black;">{{ diff|safe }}</a></td>
-                    {% else %}
-                        <td>
-                            <details>
-                                <summary>Click to read</summary>
-                                <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: black;">{{ diff|safe }}</a>
-                            </details>
-                        </td>
-                    {% endif %}
+                    <td><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: black;">{{ diff|safe }}</a></td>
                 </tr>
 
             </tbody>

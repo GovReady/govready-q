@@ -49,16 +49,7 @@
                             <tr>
                                 <th scope="row">{{ prime_smt.sid }}{% if prime_smt.pid %}.{{ prime_smt.pid }}{% endif %}</th>
                                 <td>{{ prime_smt.sid_class }}</td>
-                                {% if prime_smt.body|safe|length <= 50 %}
-                                    <td>{{ prime_smt.body|safe }}</td>
-                                {% else %}
-                                    <td>
-                                        <details>
-                                            <summary>Click to read</summary>
-                                            {{ prime_smt.body|safe }}
-                                        </details>
-                                    </td>
-                                {% endif %}
+                                <td>{{ prime_smt.body|safe }}</td>
                             </tr>
                     {% endfor %}
                     </tbody>
