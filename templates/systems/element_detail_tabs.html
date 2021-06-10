@@ -81,22 +81,29 @@
   <div class="systems-top">
 
       <div id="above-tab-content" class="row">
-        <div class="systems-control-heading">
-            <h2 class="control-heading">
+        <div class="col-sm-10 ">
+            <h2 class="">
                 System Component: {{ element.name }}
             </h2>
-            <h2 class="control-heading" style="">
-                &nbsp;<!-- <small style="color: #888;">{{ catalog.catalog_key_display }}</small> -->
-            </h2>
+            <h3 class="" style="">
+                 {{ catalog.catalog_key_display }}
+                {% include 'components/component_metadata.html' %}
+            </h3>
+                  </div>
+      <div class="col-sm-2">
+        <div id="btn-edit-title" style="text-align: center;">
         </div>
       </div>
+    </div>
 
       <!-- Tab panels -->
       <div id="tab-content" class="row">
         <!-- Nav tabs -->
         <ul class="nav nav-tabs" role="tablist">
           <li role="presentation" class="active"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Control Implementation Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
+            {% if enable_experimental_opencontrol %}
             <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
+          {% endif %}
           {% if enable_experimental_opencontrol %}
           <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
           {% endif %}
@@ -108,7 +115,7 @@
               <div role="tabpanel" class="tab-pane active" id="component_controls">
 
                   <div class="row">
-                    <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10 description-text">
+                    <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9 description-text">
                       <h3>Component Description</h3>
                       {% if element.description %}
                         {{ element.description }}
@@ -117,9 +124,7 @@
                       {% endif %}
                     </div>
                   </div>
-
-                  <div id="control-description" class="control-text"><h3>{{ impl_smts|length }} associated Component Control Implementations Statements</h3></div>
-
+                           <div id="control-description" class="control-text"><h3>{{ impl_smts|length }} associated Component Control Implementations Statements</h3></div>
                   <div class="row statement-column-headings" style="">
                     <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Control</div>
                     <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">Statement</div>
@@ -260,8 +265,9 @@
                           </div>
                       {% endfor %}
                     </div><!--/smt-list-->
-              </div>
+                  </div>
 
+                {% if enable_experimental_opencontrol %}
                 <!-- Tab panel: oscal -->
                 <div role="tabpanel" class="tab-pane" id="oscal">
                   <p id="oscal_download" class="navbar-text navbar-right" style="margin: 12px 12px 0px 0px;">
@@ -276,7 +282,7 @@
                   <div class="systems-element-oscal"><div class="display-oscal">{{ oscal }}</div></div>
 
                 </div>
-
+                {% endif %}
               <!-- Tab panel: opencontrol -->
               {% if enable_experimental_opencontrol %}
                 <div role="tabpanel" class="tab-pane" id="opencontrol">
@@ -284,13 +290,11 @@
                     <div class="systems-element-opencontrol">{{ opencontrol }}</div>
                 </div>
               {% endif %}
-
+                </div>
           </div>
       </div>
 
 
-  </div>
-</div>
 
 {% endblock %}
 
@@ -395,12 +399,14 @@
           // Update comparison
           $('#diff_comparison_' + smt_panel_num).text('Texts are identical.');
         }
+
+          $(document).ready(function() {
+    $('#state_change').select2();
+  });
+          $(document).ready(function() {
+    $('#type_change').select2();
+  });
       </script>
 
-      <script>
-        $( document ).ready(function() {
-            //console.log("document ready");
-        });
-      </script>
 
 {% endblock %}

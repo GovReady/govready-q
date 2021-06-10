@@ -986,15 +986,27 @@ def project(request, project):
     impact_level_smts = project.system.root_element.statements_consumed.filter(
         statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
     if len(impact_level_smts) > 0:
-        impact_level = impact_level_smts[0].body
+        impact_level = impact_level_smts.first().body
     else:
         impact_level = None
+
+    security_objective_smt = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value)
+    if security_objective_smt.exists():
+        security_body = project.system.get_security_impact_level
+        confidentiality, integrity, availability = security_body.get('security_objective_confidentiality',
+                                                                     None), security_body.get(
+            'security_objective_integrity', None), security_body.get('security_objective_availability', None)
+    else:
+        confidentiality, integrity, availability = None, None, None
 
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
         "impact_level": impact_level,
+        "confidentiality": confidentiality,
+        "integrity": integrity,
+        "availability": availability,
 
         "controls_status_count": project.system.controls_status_count,
         "poam_status_count": project.system.poam_status_count,
@@ -1029,8 +1041,6 @@ def project(request, project):
         "import_project_form": ImportProjectForm()
     })
 
-
-# @api_view()
 def project_edit(request, project_id):
     if request.method == 'POST':
 
@@ -1049,6 +1059,25 @@ def project_edit(request, project_id):
 
             # Will rename project if new title is present
             rename_project(request, project)
+
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+def project_security_objs_edit(request, project_id):
+    if request.method == 'POST':
+
+        form = EditProjectForm(request.POST)
+        if form.is_valid():
+            # project to update
+            project = Project.objects.get(id=project_id)
+
+            # TODO: Move security impact levels to an admin only form. adding validation.
+            confidentiality = request.POST.get("confidentiality", "").strip() or None
+            integrity = request.POST.get("integrity", "").strip() or None
+            availability = request.POST.get("availability", "").strip() or None
+
+            new_security_objectives = {"security_objective_confidentiality":confidentiality,"security_objective_integrity":integrity,"security_objective_availability":availability}
+            # Setting security objectives for project's statement
+            security_objective_smt, smt = project.system.set_security_impact_level(new_security_objectives)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 

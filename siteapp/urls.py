@@ -65,6 +65,7 @@ urlpatterns = [
     url(r"^projects$", views.ProjectList.as_view(), name="projects"),
     url(r"^projects/lifecycle$", views.project_list_lifecycle, name="projects_lifecycle"),
     url(r'^projects/(?P<project_id>.*)/__edit$', views.project_edit, name="edit_project"),
+    url(r'^projects/(?P<project_id>.*)/__edit_security_obj$', views.project_security_objs_edit, name="edit_project_security_objs"),
     url(r'^projects/(\d+)/__delete$', views.delete_project, name="delete_project"),
     url(r'^projects/(\d+)/__admins$', views.make_revoke_project_admin, name="make_revoke_project_admin"),
     url(r'^projects/(\d+)/__export$', views.export_project_questionnaire, name="export_project_questionnaire"),

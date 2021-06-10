@@ -1,4 +1,4 @@
-# This module defines a SeleniumTest class that is used here and in
+
 # the discussion app to run Selenium and Chrome-based functional/integration
 # testing.
 #
@@ -604,6 +604,15 @@ class ElementUnitTests(TestCase):
         self.assertEqual(e.name, "Renamed Element A")
         self.assertEqual(e.description, "Renamed Element A Description")
 
+    def test_component_type_state(self):
+        e = Element.objects.create(name="New component",  element_type="system")
+        self.assertTrue(e.id is not None)
+        self.assertTrue(e.component_type == "software")
+        self.assertTrue(e.component_state == "operational")
+        e2 = Element.objects.create(name="New component2",  element_type="system", component_type="hardware", component_state="disposition")
+        self.assertTrue(e2.id is not None)
+        self.assertTrue(e2.component_type == "hardware")
+        self.assertTrue(e2.component_state == "disposition")
 
 class ElementControlUnitTests(TestCase):
 
@@ -662,17 +671,16 @@ class ElementControlUnitTests(TestCase):
         # Even with two elements there is still only one element with a role
         self.assertEqual(ele.roles.values_list('role', flat=True).count(), 1)
 
-
 class SystemUnitTests(TestCase):
     def test_system_create(self):
-        e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
-        self.assertTrue(e.id is not None)
-        self.assertTrue(e.name == "New Element")
-        self.assertTrue(e.full_name == "New Element Full Name")
-        self.assertTrue(e.element_type == "system")
-        s = System(root_element=e)
+        sre = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
+        self.assertTrue(sre.id is not None)
+        self.assertTrue(sre.name == "New Element")
+        self.assertTrue(sre.full_name == "New Element Full Name")
+        self.assertTrue(sre.element_type == "system")
+        s = System(root_element=sre)
         s.save()
-        self.assertEqual(s.root_element.name,e.name)
+        self.assertEqual(s.root_element.name,sre.name)
 
         u2 = User.objects.create(username="Jane2", email="jane@example.com")
         # Test no permissions for user
@@ -687,6 +695,42 @@ class SystemUnitTests(TestCase):
         self.assertIn('change_system', perms)
         self.assertIn('delete_system', perms)
         self.assertIn('view_system', perms)
+
+        # Create an element with control implementation statements and assign to system
+        e = Element.objects.create(name="OAuth", full_name="OAuth Service", element_type="system_element", component_state="operational")
+        self.assertTrue(e.id is not None)
+        self.assertTrue(e.name == "OAuth")
+        e.save()
+        smt_1 = Statement.objects.create(
+            sid = "au-3",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is the first test statement.",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+            status = "Implemented",
+            producer_element = e,
+            consumer_element = s.root_element
+        )
+        smt_1.save()
+        smt_2 = Statement.objects.create(
+            sid = "au-4",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is the first test statement.",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+            status = "Implemented",
+            producer_element = e,
+            consumer_element = s.root_element
+        )
+        smt_2.save()
+
+        # Batch update system statements status by changing system component state
+        element = e
+        control_status = "planned"
+        s.set_component_control_status(element, control_status)
+        # Test the system's component's statements status were changed
+        smt_1_updated = Statement.objects.get(pk=smt_1.id)
+        self.assertTrue(smt_1_updated.status, control_status)
+        smt_2_updated = Statement.objects.get(pk=smt_2.id)
+        self.assertTrue(smt_2_updated.status, control_status)
 
 class SystemUITests(OrganizationSiteFunctionalTests):
 
@@ -1010,6 +1054,27 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         # Add component statement
         submit_comp_statement = wait_for_sleep_after(lambda: self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button"))
         submit_comp_statement.click()
+
+class ProjectControlTests(OrganizationSiteFunctionalTests):
+
+    def test_project_controls_selected(self):
+
+        # login as the first user and create a new project
+        self._login()
+        self._new_project()
+
+        project = Project.objects.all().last()
+        system = project.system
+        # Assign low baseline
+        result = system.root_element.assign_baseline_controls(self.user, 'NIST_SP-800-53_rev4', 'low')
+        # Add component(s)
+
+        self.navigateToPage(f"/systems/{system.id}/controls/selected")
+        # var_sleep(10)
+
+        wait_for_sleep_after(lambda: self.assertInNodeText("Selected controls", "#tab-content"))
+
+    # def test_project_control_page(self):
 
 class ControlTestHelper(object):
 
