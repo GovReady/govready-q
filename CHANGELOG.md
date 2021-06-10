@@ -18,6 +18,7 @@ v999 (May XX, 2021)
 * Display system component component_state and component_type when component is listed for a system.
 * Add simple "back" link to question to take user to previous question.
 * Add "Create a template" button to template library so admins can create a new template (e.g., compliance app).
+* Add option to compare components in component library.
 
 **Developer changes**
 
