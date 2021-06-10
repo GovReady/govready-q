@@ -415,6 +415,62 @@ def component_library(request):
 
     return render(request, "components/component_library.html", context)
 
+def diff_components_prettyHtml(smt1, smt2):
+    """Generate a diff of two statements of type `control_implementation`"""
+    dmp = dmp_module.diff_match_patch()
+    val1 = ""
+    val2 = ""
+    if hasattr(smt1, 'body'):
+        val1 = smt1.body
+    if hasattr(smt2, 'body'):
+        val2 = smt2.body
+
+    diff = dmp.diff_main(val1, val2)
+    if len(diff) == 1:
+        return "Statement is identical."
+    return dmp.diff_prettyHtml(diff)
+
+def compare_components(request):
+    """
+    Compare submitted components
+    """
+    # TODO: need to figure out how to accumulate all checked boxes not one in pageobj
+    compare_list = request.POST.getlist('componentcomparecheckbox')
+    if compare_list:
+        element_list = list(Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct())
+        compare_prime, element_list = element_list[0], element_list[1:]# The first component selected will be compared against the rest
+        compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+    elif len(compare_list) <= 1:
+        # add messages
+        messages.add_message(request, messages.WARNING, f"Not enough components were selected to compare!")
+        return HttpResponseRedirect("/controls/components")
+    difference_tuples = []
+    differences = []
+    for component in element_list:
+        differences = []
+        # compare each component's statements to prime
+        cmt_smts = component.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+        if cmt_smts.exists():
+            # TODO: Need to create a tuple with smt id to return appropriate
+            for smt in cmt_smts:
+                smt_prime = compare_prime_smts.filter(sid=smt.sid).filter(pid=smt.pid).filter(sid_class=smt.sid_class).first()
+                # If it is not a statement found in both components then we just add styling
+                if smt_prime:
+                    diff = diff_components_prettyHtml(smt_prime, smt)
+                else:
+                    diff = f"<span><ins style='background:#e6ffe6;'>{smt.body}</ins><span>"
+                differences.append(diff)
+        difference_tuples.extend(zip([component.name] * len(cmt_smts), cmt_smts, differences))
+    if request.method == 'POST':
+        context = {
+            "element_list": element_list,
+            "compare_prime": compare_prime,
+            "prime_smts": compare_prime_smts,
+            "secondary_smts": cmt_smts,
+            "differences": difference_tuples
+        }
+        return render(request, "components/compare_components.html", context)
+
 @login_required
 def import_records(request):
     """Display the records of component imports"""
