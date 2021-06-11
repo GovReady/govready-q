@@ -33,13 +33,7 @@ body, blockquote {
   color: black;
 }
 
-
-
 .glyphicon-globe { color: #888; }
-
-
-
-
 
 h1, h2 {
   font-family: 'Lato', sans-serif;
@@ -53,9 +47,6 @@ h3 { font-size: 18px; }
 .btn { white-space: normal; font-size: inherit; }
 .btn.btn-sm { font-size: 12px; }
 .btn.btn-xs { font-size: 12px; }
-
-
-
 
 footer { margin-top:60px;
   font-size: .75em;
@@ -203,7 +194,6 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 
 .control-label { font-size:.8em;} /* within modal, the word description was breaking */
 
-
 /* app-store-item */
 .breadcrumb-link { color: black; }
 .app-header { max-width:968px; margin: auto; padding-top: 30px;}
@@ -305,6 +295,12 @@ form #id_json_content { width: 100%; overflow: auto !important; } /* The !import
 
 .component-tag { font-size: 0.7em; color: #999; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; }
 .component-tag a { color: #999; }
+.component-state { font-size: 0.8em; color: #444; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; }
+.component-type { font-size: 0.8em; color: #444; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; }
+
+.component-form {
+ float: left;
+}
 
 details summary { cursor: pointer; }
 details summary > * { display: inline; }

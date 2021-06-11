@@ -12,6 +12,7 @@ from simple_history.models import HistoricalRecords
 from jsonfield import JSONField
 from natsort import natsorted
 
+from controls.enums.components import ComponentTypeEnum, ComponentStateEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from controls.enums.statements import StatementTypeEnum
 from controls.oscal import Catalogs, Catalog, check_and_extend
@@ -126,23 +127,16 @@ class Statement(auto_prefetch.Model):
         self.save()
         return self.prototype
 
-    def create_instance_from_prototype(self, consumer_element_id):
+    def create_system_control_smt_from_component_prototype_smt(self, consumer_element_id):
         """Creates a control_implementation statement instance for a system's root_element from an existing control implementation prototype statement"""
 
-        # TODO: Check statement is a prototype
+        # Check statement is a prototype
+        if self.statement_type != StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value:
+            return None
 
-        # System already has instance of the control_implementation statement
-        # TODO: write check for this logic
-        # Get all statements for consumer element so we can identify
-        smts_existing = Statement.objects.filter(consumer_element__id = consumer_element_id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).select_related('prototype')
-
-        # Get prototype ids for all consumer element statements
-        smts_existing_prototype_ids = [smt.prototype.id for smt in smts_existing]
-        if self.id is smts_existing_prototype_ids:
+        # Return if statement already has instance associated with consumer_element
+        if self.instances.filter(consumer_element__id=consumer_element_id).exists():
             return self.prototype
-
-        #     # TODO:
-        #     # check if prototype content is the same, report error if not, or overwrite if permission approved
 
         instance = deepcopy(self)
         instance.statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value
@@ -224,7 +218,7 @@ class Statement(auto_prefetch.Model):
 class Element(auto_prefetch.Model, TagModelMixin):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
-    description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=True, null=True)
+    description = models.TextField(default="Description needed", help_text="Description of the Element", unique=False, blank=False, null=False)
     element_type = models.CharField(max_length=150, help_text="Component type", unique=False, blank=True, null=True)
     roles = models.ManyToManyField('ElementRole', related_name='elements', blank=True, help_text="Roles assigned to the Element")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -232,6 +226,8 @@ class Element(auto_prefetch.Model, TagModelMixin):
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
     import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_elements", on_delete=models.CASCADE,
                                       unique=False, blank=True, null=True, help_text="The Import Record which created this Element.")
+    component_type = models.CharField(default="software", max_length=50, help_text="OSCAL Component Type.", unique=False, blank=True, null=True, choices=ComponentTypeEnum.choices())
+    component_state = models.CharField(default="operational", max_length=50, help_text="OSCAL Component State.", unique=False, blank=True, null=True, choices=ComponentStateEnum.choices())
 
     # Notes
     # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)
@@ -534,6 +530,7 @@ class System(auto_prefetch.Model):
     @transaction.atomic
     def set_fisma_impact_level(self, fisma_impact_level):
         """Assign FISMA impact level to system"""
+        # TODO: Fisma impact level is actually the security-sensitivity-level as defined in oscal ssp schema.
 
         # Get or create the fisma_impact_level smt for system's root_element; should only have 1 statement
         smt = Statement.objects.create(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value, producer_element=self.root_element,consumer_element=self.root_element, body=fisma_impact_level)
@@ -547,6 +544,30 @@ class System(auto_prefetch.Model):
         smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value, producer_element=self.root_element,consumer_element=self.root_element)
         fisma_impact_level = smt.body
         return fisma_impact_level
+
+    @transaction.atomic
+    def set_security_impact_level(self, security_impact_level):
+        """Assign Security impact levels to system"""
+
+        security_objective_smt = self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value)
+        if security_objective_smt.exists():
+            security_objective_smt.update(body=security_impact_level)
+        else:
+            # Set the security_impact_level smt for element; should only have 1 statement
+            security_objective_smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value, producer_element=self.root_element,consumer_element=self.root_element, body=security_impact_level)
+        return security_impact_level, security_objective_smt
+
+    @property
+    def get_security_impact_level(self):
+        """Assign Security impact levels to system"""
+
+        # Get the security_impact_level smt for element; should only have 1 statement
+        try:
+            smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value, producer_element=self.root_element, consumer_element=self.root_element)
+            security_impact_level = eval(smt.body)# Evaluate string of dictionary
+            return security_impact_level
+        except Statement.DoesNotExist:
+            return {}
 
     @property
     def smts_common_controls_as_dict(self):
@@ -701,6 +722,12 @@ class System(auto_prefetch.Model):
         return components
 
     producer_elements = cached_property(get_producer_elements)
+
+    def set_component_control_status(self, element, status):
+        """Batch update status of system control implementation statements for a specific element."""
+
+        self.root_element.statements_consumed.filter(producer_element=element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).update(status=status)
+        return True
 
 class CommonControlProvider(models.Model):
     name = models.CharField(max_length=150, help_text="Name of the CommonControlProvider", unique=False)

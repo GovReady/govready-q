@@ -15,6 +15,7 @@ from siteapp.tests import wait_for_sleep_after
 
 FIXTURE_DIR = "fixtures"
 TEST_FILENAME = "test"
+TEST_FILENAME_UPPER = "testupper"
 TEST_SPECIAL_FILENAME = "test,.png"
 
 class DiscussionTests(SeleniumTest):
@@ -98,8 +99,6 @@ class DiscussionTests(SeleniumTest):
         # wait_for_sleep_after(lambda: self.click_element("#start-project"))
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "I want to answer some questions on Q."))
 
-
-
     def _start_task(self):
         # Assumes _new_project() just finished.
 
@@ -181,6 +180,28 @@ class DiscussionTests(SeleniumTest):
             # Restore list of valid content types
             VALID_EXTS[file_ext] = content_types
 
+        # Test uppercase extension
+        for ext, _content_type in {".jpeg": ("image/jpeg",),}.items():
+            print("Testing file type {}".format(ext))
+            test_file_name = "".join([TEST_FILENAME_UPPER, ext.upper()])
+            test_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                FIXTURE_DIR,
+                test_file_name
+            )
+            test_file_contents = b''
+
+            # Read in test file
+            with open(test_path, "rb") as test_file:
+                test_file_contents = test_file.read()
+            # Test valid file extension, content type
+            file_model = SimpleUploadedFile(
+                            test_file_name,
+                            test_file_contents
+                        )
+            is_valid = validate_file_extension(file_model)
+            self.assertIsNone(is_valid)
+
     def test_discussion(self):
         # Log in and create a new project.
         self._login()
@@ -219,6 +240,7 @@ class DiscussionTests(SeleniumTest):
         # Test some special characters
         wait_for_sleep_after(lambda: self.fill_field("#discussion-your-comment", "¥"))
         wait_for_sleep_after(lambda: self.click_element("#discussion .comment-input button.btn-primary"))
+
         wait_for_sleep_after(lambda: self.assertInNodeText("¥", '.comment[data-id="3"] .comment-text p'))
 
         # Test file attachments upload successfully

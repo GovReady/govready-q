@@ -3,11 +3,12 @@ from itertools import groupby
 from urllib.parse import urlunparse
 
 from django.conf import settings
-from django.urls import reverse
-
 from jinja2.sandbox import SandboxedEnvironment
+
+from controls.enums.statements import StatementTypeEnum
 from controls.oscal import Catalogs, Catalog
 from siteapp.settings import GOVREADY_URL
+
 
 def get_jinja2_template_vars(template):
     from jinja2 import meta, TemplateSyntaxError
@@ -317,8 +318,8 @@ def oscal_context(answers):
             'uuid': e.uuid,
             'title': e.name,
             'description': e.description,
-            'state': "operational",         # TODO: OSCAL asks for individual component state
-            'type': "software"              # TODO: OSCAL components have a type
+            'state': e.component_state,
+            'type': e.component_type
         }
     components = [_component(e) for e in system.producer_elements]
 
@@ -379,14 +380,20 @@ def oscal_context(answers):
 
     # TODO: placeholder for information types -- should be able to pull this out
     # from questionnaire
+    security_body = project.system.get_security_impact_level
+    confidentiality =  security_body.get("security_objective_confidentiality", "UNKOWN")
+    integrity =  security_body.get("security_objective_integrity", "UNKOWN")
+    availability =  security_body.get("security_objective_availability", "UNKOWN")
 
     information_types = [
         {
+            "uuid": str(uuid.uuid4()),
             "title": "UNKNOWN information type title",
+           # "categorizations": [], # TODO https://doi.org/10.6028/NIST.SP.800-60v2r1
             "description": "information type description",
-            "confidentiality_impact": "information type confidentiality impact",
-            "integrity_impact": "information type integrity impact",
-            "availability_impact": "information type availability impact"
+            "confidentiality_impact": confidentiality,
+            "integrity_impact": integrity,
+            "availability_impact": availability
         }
     ]
 
@@ -396,19 +403,19 @@ def oscal_context(answers):
     profile = urlunparse((GOVREADY_URL.scheme, GOVREADY_URL.netloc,
                           "profile_path",
                           None, None, None))
+
     return {
         "uuid": str(uuid.uuid4()), # SSP UUID
         "make_uuid": uuid.uuid4, # so we can gen UUIDS if needed in the templates
-        "version": project.version,
+        "version": float(project.version),
         "profile": profile,
         "oscal_version": "1.0.0rc1",
         "last_modified": str(project.updated),
         "system_id": f"govready-{system.id}",
         "system_authorization_boundary": "System authorization boundary, TBD", # TODO
-        "system_information_types": information_types,
-        "system_security_impact_level_confidentiality": "UNKNOWN", # TODO
-        "system_security_impact_level_integrity": "UNKNOWN",       # TODO
-        "system_security_impact_level_availability": "UNKNOWN",    # TODO
+        "system_security_impact_level_confidentiality":confidentiality,
+        "system_security_impact_level_integrity": integrity,
+        "system_security_impact_level_availability": availability,
         "system_operating_status": "operational", # TODO: need from questionnaire, but wrong format
         "components": components,
         "implemented_requirements": implemented_requirements,
@@ -933,7 +940,7 @@ def render_content(content, answers, output_format, source,
                         return "javascript:alert('Invalid link.');"
                     return url
 
-                import html5lib, xml.etree
+                import html5lib
                 dom = html5lib.HTMLParser().parseFragment(output)
                 for node in dom.iter():
                     if node.get("href"):
