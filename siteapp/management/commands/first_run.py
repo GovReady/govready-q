@@ -116,8 +116,7 @@ class Command(BaseCommand):
                         user.email
                     ))
                     # Create the first portfolio
-                    portfolio = Portfolio.objects.create(title=user.username)
-                    portfolio.assign_owner_permissions(user)
+                    portfolio = user.create_default_portfolio_if_missing()
                     print("Created administrator portfolio {}".format(portfolio.title))
                 else:
                     print("\n[INFO] Skipping create admin account '{}' - username already exists.\n".format(

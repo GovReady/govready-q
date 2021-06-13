@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (May XX, 2021)
+v999 (June XX, 2021)
 ---------------------
 
 **Data changes**
@@ -9,6 +9,7 @@ v999 (May XX, 2021)
 * Require components to have descriptions.
 * Adding component_state and component_type fields to an `Element` to contain a component's state and type.
 * Created a modal to allow an admin user to add security objectives confidentiality, integrity, and availability.
+* Add field to identify user's default portfolio.
 
 **UI changes**
 
@@ -19,6 +20,8 @@ v999 (May XX, 2021)
 * Add simple "back" link to question to take user to previous question.
 * Add "Create a template" button to template library so admins can create a new template (e.g., compliance app).
 * Add option to compare components in component library.
+* Remove portfolio selection modal from Start a Project process. Assign new projects to user's default portfolio.
+* Remove specifying user default portfolio during registration process.
 
 **Developer changes**
 

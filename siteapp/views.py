@@ -32,11 +32,10 @@ from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
 from controls.models import Element, System, Statement, Poam, Deployment
 from system_settings.models import SystemSettings, Classification, Sitename
 
-from .forms import PortfolioForm, AddProjectForm, EditProjectForm
+from .forms import PortfolioForm, EditProjectForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
 from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, Tag, ProjectAsset
-from .forms import PortfolioSignupForm
 from .notifications_helpers import *
 
 import sys
@@ -70,7 +69,6 @@ def home_user(request):
     return render(request, "home-user.html", {
         "sitename": Sitename.objects.last(),
         "users": User.objects.all(),
-        "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
         "projects_access": Project.get_projects_with_read_priv(request.user, excludes={"contained_in_folders": None}),
         "import_project_form": ImportProjectForm(),
         "portfolios": request.user.portfolio_list(),
@@ -82,7 +80,6 @@ def homepage(request):
         return HttpResponseRedirect("/projects")
     from allauth.account.forms import SignupForm, LoginForm
 
-    portfolio_form = PortfolioSignupForm()
     signup_form = SignupForm()
     login_form = LoginForm()
 
@@ -95,8 +92,7 @@ def homepage(request):
     # NOTE: When GovReady-Q is in SSO trusting mode, new users accounts are created in siteapp/middelware.py ProxyHeaderUserAuthenticationBackend
     if SIGNUP in request.path or request.POST.get("action") == SIGNUP:
         signup_form = SignupForm(request.POST)
-        portfolio_form = PortfolioSignupForm(request.POST)
-        if (request.user.is_authenticated or signup_form.is_valid()) and portfolio_form.is_valid():
+        if (request.user.is_authenticated or signup_form.is_valid()):
             # Perform signup and new org creation, then redirect to main page
             with transaction.atomic():
                 if not request.user.is_authenticated:
@@ -121,20 +117,8 @@ def homepage(request):
                         return HttpResponseRedirect("/")
                 else:
                     user = request.user
-                if portfolio_form.is_valid():
-                    portfolio = portfolio_form.save()
-                    portfolio.assign_owner_permissions(request.user)
-                    logger.info(
-                        event="new_portfolio",
-                        object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-                        user={"id": request.user.id, "username": request.user.username}
-                    )
-                    logger.info(
-                        event="new_portfolio assign_owner_permissions",
-                        object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-                        receiving_user={"id": request.user.id, "username": request.user.username},
-                        user={"id": request.user.id, "username": request.user.username}
-                    )
+                # Create user's default portfolio
+                portfolio = user.create_default_portfolio_if_missing()
                 # Send a message to site administrators.
                 from django.core.mail import mail_admins
                 def subvars(s):
@@ -166,7 +150,6 @@ def homepage(request):
         "hide_registration": SystemSettings.hide_registration,
         "sitename": Sitename.objects.last(),
         "signup_form": signup_form,
-        "portfolio_form": portfolio_form,
         "login_form": login_form,
         "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
     })
@@ -281,7 +264,6 @@ class ProjectList(ListView):
         context['projects_access'] = Project.get_projects_with_read_priv(
             self.request.user,
             excludes={"contained_in_folders": None})
-        context['project_form'] = AddProjectForm(self.request.user)
         return context
 
 
@@ -316,7 +298,6 @@ def project_list_lifecycle(request):
     return render(request, "projects_lifecycle_original.html", {
         "lifecycles": lifecycles,
         "projects": projects,
-        "project_form": AddProjectForm(request.user),
     })
 
 
@@ -546,7 +527,6 @@ def apps_catalog(request):
         "filter_description": filter_description,
         "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
         "authoring_tool_enabled": authoring_tool_enabled,
-        "project_form": AddProjectForm(request.user),
     })
 
 
@@ -554,6 +534,7 @@ def apps_catalog(request):
 def apps_catalog_item(request, source_slug, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
+    print("\n** in apps_catalog_item")
     from guidedmodules.models import AppSource
     catalog, _ = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
     for app_catalog_info in catalog:
@@ -567,7 +548,9 @@ def apps_catalog_item(request, source_slug, app_name):
     if request.GET.get("portfolio"):
         portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
     else:
-        portfolio = None
+        if not request.user.default_portfolio:
+            request.user.create_default_portfolio_if_missing()
+        portfolio = request.user.default_portfolio
 
     error = None
 
@@ -611,10 +594,9 @@ def apps_catalog_item(request, source_slug, app_name):
                 raise ValueError("Invalid protocol.")
 
         # Get portfolio project should be included in.
-        if request.GET.get("portfolio"):
-            portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
-        else:
-            portfolio = None
+        if not request.user.default_portfolio:
+            request.user.create_default_portfolio_if_missing()
+        portfolio = request.user.default_portfolio
 
         # Start the most recent version of the app.
         appver = app_catalog_info["versions"][0]
@@ -639,7 +621,6 @@ def apps_catalog_item(request, source_slug, app_name):
     return render(request, "app-store-item.html", {
         "app": app_catalog_info,
         "error": error,
-        "project_form": AddProjectForm(request.user),
         "source_slug": source_slug,
         "portfolio": portfolio
     })
@@ -1026,7 +1007,6 @@ def project(request, project):
         "class_status" : Classification.objects.last(),
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
-        "project_form": AddProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
         "import_project_form": ImportProjectForm()
     })
 
@@ -1131,7 +1111,6 @@ def project_settings(request, project):
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
 
-        "project_form": AddProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
         "import_project_form": ImportProjectForm()
     })
 
@@ -1606,7 +1585,6 @@ def import_project_questionnaire(request, project):
     return render(request, "project-import-finished.html", {
         "project": project,
         "log": log_output,
-        "project_form": AddProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
     })
 
 
@@ -1722,7 +1700,6 @@ def portfolio_list(request):
 
     return render(request, "portfolios/index.html", {
         "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None,
-        "project_form": AddProjectForm(request.user),
     })
 
 
@@ -1751,7 +1728,6 @@ def new_portfolio(request):
         form = PortfolioForm()
     return render(request, 'portfolios/form.html', {
         'form': form,
-        "project_form": AddProjectForm(request.user),
     })
 
 
@@ -1893,14 +1869,12 @@ def portfolio_projects(request, pk):
         .exclude(is_organization_project=True).order_by('-created')
     user_projects = [project for project in projects if request.user.has_perm('view_project', project)]
     anonymous_user = User.objects.get(username='AnonymousUser')
-    project_form = AddProjectForm(request.user, initial={'portfolio': portfolio.id})
     users_with_perms = portfolio.users_with_perms()
 
 
     return render(request, "portfolios/detail.html", {
         "portfolio": portfolio,
         "projects": projects if request.user.has_perm('view_portfolio', portfolio) else user_projects,
-        "project_form": project_form,
         "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
         "can_edit_portfolio": request.user.has_perm('change_portfolio', portfolio),
         "send_invitation": Invitation.form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
