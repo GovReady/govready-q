@@ -7,3 +7,4 @@ class StatementTypeEnum(BaseEnum):
     ASSESSMENT_RESULT = "assessment_result"
     POAM = "POAM"
     FISMA_IMPACT_LEVEL = "fisma_impact_level"
+    SECURITY_IMPACT_LEVEL = "security_impact_level"

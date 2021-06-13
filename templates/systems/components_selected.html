@@ -45,10 +45,14 @@
             {% for component in system_elements %}
                 {# Each "component" is a Element model object. #}
                     <div id="tab-content" class="row row-control">
-                        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                             <a href={% url 'system_element' system_id=system.id element_id=component.id %}>{{ component.name }}</a>
                         </div>
-                        <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
+                        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                            <span class="component-type">{{ component.component_type }}</span>
+                            <span class="component-state">{{ component.component_state }}</span>
+                        </div>
+                        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
                             {% if component.description %}{{ component.description }}{% else %}<span class="not-provided">No description provided.</span>{% endif %}
                             <div>{% for tag in component.tags.all %}<span class="component-tag">{{ tag.label }}</span> {% endfor %}</div>
                         </div>
@@ -57,13 +61,12 @@
                             <span class="pull-right">{% if ctl_count %}{{ ctl_count }} control{{ ctl_count|pluralize }}</span>{% else %}None{% endif %}
                         </div>
                     {% endwith %}
-
                     {% get_obj_perms request.user for system as "system_perms" %}
                     {% if "change_system" in system_perms %}
                         <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 pull-right">
                             <a href="{% url 'system_element_remove' system_id=system.id element_id=component.id %}">
                               <small>
-                              <span class="glyphicon glyphicon-trash" title="remove component"></span>
+                              <span class="glyphicon glyphicon-trash pull-right" title="remove component"></span>
                               </small>
                           </a>
                         </div>
@@ -77,8 +80,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static "vendor/js/select2.min.js" %}"></script>
-<link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
+
 <script>
   // Convert select field for Add Component to jQuery Select2 box
   $(document).ready(function() {

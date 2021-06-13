@@ -1,0 +1,41 @@
+<div class="container pull-left">
+
+    <form id="edit_component_state" class="component-form" method="post" action="{% url 'edit_component_state' system_id=system.id element_id=element.id %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
+            <select class="state_change" id="state_change" name="state_change" onchange="$(form).submit();" style="width:340px;">
+
+                {% if element.component_state %}
+                    <option value="None" selected disabled hidden>State: {{ element.component_state }}</option>
+                {% else %}
+                    <option value="None" selected disabled hidden>State: None Selected</option>
+                {% endif %}
+                {% for state in states %}
+                     {% if element.component_state != state %}
+                    <option value="{{ state }}">{{ state }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+    <form id="edit_component_type" class="component-form" method="post" action="{% url 'edit_component_type' system_id=system.id element_id=element.id %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
+            <select class="type_change" id="type_change" name="type_change" onchange="$(form).submit();" style="width:340px;">
+                {% if element.component_type %}
+                    <option value="None" selected disabled hidden>Type: {{ element.component_type }}</option>
+                {% else %}
+                    <option value="None" selected disabled hidden>Type: None Selected</option>
+                {% endif %}
+
+                {% for type in types %}
+                 {% if element.component_type != type %}
+                    <option value="{{ type }}">{{ type }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
