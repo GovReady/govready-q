@@ -4,6 +4,10 @@ GovReady-Q Release Notes
 v999 (June XX, 2021)
 ---------------------
 
+
+v0.9.4 (June 13, 2021)
+----------------------
+
 **Data changes**
 
 * Require components to have descriptions.
