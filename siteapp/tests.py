@@ -400,10 +400,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         wait_for_sleep_after(lambda: self.click_element("#new-project"))
 
-        # Select Portfolio
-        self.select_option_by_visible_text('#id_portfolio', self.user.username)
-        self.click_element("#select_portfolio_submit")
-
         var_sleep(2)
         # Click Add Button
         wait_for_sleep_after(lambda: self.click_element(".app[data-app='project/simple_project'] .start-app"))
@@ -746,7 +742,7 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.browser.get(self.url("/portfolios"))
 
         # Navigate to portfolio created on signup
-        self.click_element_with_link_text("portfolio-user")
+        self.click_element_with_link_text("portfolio_user")
 
         # Test creating a portfolio using the form
         # Navigate to the portfolio form
