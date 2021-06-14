@@ -4,6 +4,9 @@ GovReady-Q Release Notes
 v999 (June XX, 2021)
 --------------------
 
+**UI changes**
+
+* Add "Import AppSource" button for admins in Compliance App store to simplify end-users adding AppSource.
 
 v0.9.4 (June 13, 2021)
 ----------------------

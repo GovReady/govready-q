@@ -297,11 +297,33 @@ function authoring_tool_create_q_form(argument) {
   $('#create_q_authoring_tool').modal();
 }
 
-function  authoring_tool_create_q() {
+function authoring_tool_create_q() {
   var data = $('#create_q_authoring_tool form').serializeArray();
   console.log("data is: "+JSON.stringify(data));
   ajax_with_indicator({
       url: "/tasks/_authoring_tool/create-app-project",
+      method: "POST",
+      data: data,
+      keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      success: function(res) {
+        // Modal can stay up until the redirect finishes.
+        window.location = res.redirect;
+        if (window.location.hash.length > 1)
+          window.location.reload(); // if there is a # in the URL, the browser won't actually reload
+      }
+  });
+}
+
+function authoring_tool_import_appsource_form(argument) {
+  $('#import_appsource_authoring_tool').modal();
+}
+
+function authoring_tool_import_appsource() {
+  // Use FormData to serialize form object including uploaded file
+  var data = new FormData($('#import_appsource_authoring_tool form')[0]);
+  console.log("data is: "+JSON.stringify(data));
+  ajax_with_indicator({
+      url: "/tasks/_authoring_tool/import-appsource",
       method: "POST",
       data: data,
       keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
