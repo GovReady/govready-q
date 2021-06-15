@@ -338,7 +338,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
         # Remove orphaned systems (e.g., systems whose projects have been deleted). See issue https://github.com/GovReady/govready-q/issues/1617
         systems_with_projects = []
         for s in systems:
-            if len(s.projects.all()) > 0:
+            if s.projects.exists():
                 systems_with_projects.append(s)
         systems_with_projects.sort(key=lambda x: x.root_element.name)
         return systems_with_projects

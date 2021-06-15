@@ -109,7 +109,7 @@
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
       <li id="smt-tab" role="presentation" class="active"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Control Implementation Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
-      <li id="systems-tab" role="presentation"><a href="#systems" aria-controls="systems" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> Systems </a></li>
+      <li id="systems-tab" role="presentation"><a href="#systems" aria-controls="systems" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> Systems  &nbsp;<div id="common-tab-count">{{ consuming_systems|length }}</div></a></li>
       <li id="oscal-tab" role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
       {% if enable_experimental_opencontrol %}
       <li id="opencontrol-tab" role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
@@ -273,14 +273,10 @@
 
         <div class="row">
           <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-            <h3>Systems Using {{ element.name }}</h3>
-
-            <div>{% for tag in element.tags.all %}<span class="component-tag"><a href="{% url 'component_library' %}?search={{ tag.label }}">{{ tag.label }}</a></span> {% endfor %}</div>
+            <h3>Systems</h3>
 
             <div class="consuming-systems">
               {% if consuming_systems|length > 0 %}
-                <div>The component "{{ element.name }}" is currently used by {{ consuming_systems|length }} systems.</div>
-                <div>&nbsp;</div>
                   {% for cs in consuming_systems %}
                       <div class="consuming-system">
                         <a class=""
@@ -293,7 +289,7 @@
                       </div>
                   {% endfor %}
               {% else %}
-                <div>The component "{{ element.name }}"" is not currently used by any system.</div>
+                <div>There aren't any systems using the component.</div>
               {% endif %}
             </div>
           </div>
