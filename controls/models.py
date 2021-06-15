@@ -333,8 +333,8 @@ class Element(auto_prefetch.Model, TagModelMixin):
     def consuming_systems(self):
         """Return list of systems for which Element is producer_element of statement of type control_implementation"""
 
-        root_element_ids = set([ce['consumer_element'] for ce in Statement.objects.filter(producer_element=self).values('consumer_element').distinct()])
-        systems = [Element.objects.get(pk=root_element_id).system.all()[0] for root_element_id in root_element_ids if root_element_id]
+        root_element_ids = set(filter(None, [ce['consumer_element'] for ce in Statement.objects.filter(producer_element=self).values('consumer_element').distinct()]))
+        systems = System.objects.filter(pk__in=Element.objects.filter(pk__in=root_element_ids).values_list('system', flat=True))
         # Remove orphaned systems (e.g., systems whose projects have been deleted). See issue https://github.com/GovReady/govready-q/issues/1617
         systems_with_projects = []
         for s in systems:
