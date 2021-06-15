@@ -1,8 +1,15 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (May XX, 2021)
----------------------
+v999 (June XX, 2021)
+--------------------
+
+**UI changes**
+
+* Add tab to component library component detail page to display list of systems containing the component.
+
+v0.9.4 (June 13, 2021)
+----------------------
 
 **Data changes**
 
@@ -16,8 +23,9 @@ v999 (May XX, 2021)
 * Improve project pages appearance: decrease action button width and left align text; widen from 9 to 10 columns main content.
 * Remove "Refresh Documents" button on task finished page because caches are now automatically cleared and document content refreshed.
 * Display system component component_state and component_type when component is listed for a system.
+* Add simple "back" link to question to take user to previous question.
 * Add "Create a template" button to template library so admins can create a new template (e.g., compliance app).
-* Add tab to component library component detail page to display list of systems containing the component.
+* Add option to compare components in component library.
 
 **Developer changes**
 

@@ -1,7 +1,8 @@
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.conf import settings
-from django.urls import path
+from django.urls import path, re_path
+from django.views.generic import RedirectView
 from rest_framework import routers
 from rest_framework import serializers
 from siteapp.views import UserViewSet
@@ -127,6 +128,14 @@ urlpatterns = [
     # Session
     url(r'session_security/', include('session_security.urls')),
 ]
+
+
+if settings.OKTA_CONFIG:
+    urlpatterns += [
+        path('oidc/', include('mozilla_django_oidc.urls')),
+        url(r'^accounts/logout/$', views.logged_out, name="logged_out"),
+        re_path(r'^accounts/login/$', RedirectView.as_view(url='/oidc/authenticate', permanent=False), name='login2')
+    ]
 
 if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS:
     # If username/pwd logins are enabled, add the login pages.
