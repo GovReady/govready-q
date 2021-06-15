@@ -461,7 +461,7 @@ if environment.get("branding"):
 # Enable themes
 THEME_DIR = "themes"
 # get theme directories
-THEME_DIRS = os.listdir(THEME_DIR)
+THEME_DIRS = [f.name for f in os.scandir(THEME_DIR) if f.is_dir()]
 for td in THEME_DIRS:
 	INSTALLED_APPS.append(f"{THEME_DIR}.{td}")
 	TEMPLATES[0].setdefault('DIRS', []).append(os.path.join(THEME_DIR, td, 'templates'))
