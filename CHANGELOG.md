@@ -49,6 +49,7 @@ v0.9.4 (June 13, 2021)
 * File upload validator now accepts files with capitalized extensions, e.g. ".JPG".
 * File upload validator now recognizes ".jpeg" in addition to ".jpg" extension on JPEG files.
 
+
 v0.9.3.5.3 (May 16, 2021)
 -------------------------
 
