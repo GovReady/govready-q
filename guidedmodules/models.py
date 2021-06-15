@@ -13,6 +13,7 @@ from collections import OrderedDict
 import uuid
 
 from siteapp.enums.assets import AssetTypeEnum
+from guidedmodules.enums.inputs import InputTypeEnum
 from .module_logic import ModuleAnswers, render_content
 from .answer_validation import validator
 from siteapp.models import User, Organization, Project, ProjectMembership
@@ -304,6 +305,8 @@ class AppInput(models.Model):
                                   help_text="A slug-like identifier for the input that is unique within the AppVersion app.")
     content_hash = models.CharField(max_length=64,
                                     help_text="A hash of the input binary content, as provided by the source.")
+    input_type = models.CharField(max_length=64, unique=False, blank=True, null=True, choices=InputTypeEnum.choices(),
+                                    help_text="Type of input (oscal, poam)")
     file = models.FileField(upload_to='guidedmodules/app-inputs', help_text="The input file.")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)

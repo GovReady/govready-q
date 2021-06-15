@@ -11,6 +11,7 @@ VALID_EXTS = {
     ".pdf": ("application/pdf",),
     ".png": ("image/png",),
     ".jpg": ("image/jpeg",),
+    ".jpeg": ("image/jpeg",),
     ".doc": ("application/msword",),
     ".docx": ("application/vnd.openxmlformats-officedocument.wordprocessingml.document",
               "application/zip"),
@@ -31,6 +32,7 @@ CONTENTTYPE_EXCEPTIONS = {
     "application/vnd.ms-powerpoint": (".ppt", ),
     "application/zip": (".docx", ".xlsx", ".pptx", ".zip",),
     "application/vnd.ms-excel": (".xls", ".xlb",),
+    "image/jpeg": (".jpg", ".jpeg",),
     "text/plain": (".csv",".txt", ".yaml", ".yml", ".md")
 }
 
@@ -43,7 +45,6 @@ def validate_file_extension(file):
         # Archive and image filetypes will display chunks since it only looks at the first 261 bytes
         filechunk = filetype.guess(chunk)
         err_msg = f"The file {file.name} does not have a supported file type"
-
 
         # Mime and extension
         filechunk_content_type = filechunk.mime if filechunk is not None else None
@@ -58,16 +59,16 @@ def validate_file_extension(file):
         _file, file_ext = os.path.splitext(file.name)
 
         # Mixmatch file given extension and guessed extension
-        if file_ext != filechunk_extension:
+        if file_ext.lower() != filechunk_extension:
             # Check if there is an exception for file extension
             if not (filechunk_content_type in CONTENTTYPE_EXCEPTIONS
-                    and file_ext in CONTENTTYPE_EXCEPTIONS[filechunk_content_type]):
+                    and file_ext.lower() in CONTENTTYPE_EXCEPTIONS[filechunk_content_type]):
                 return JsonResponse(status=400, data={'status': 'error', 'message': err_msg})
 
         # If it is not a valid mime or extension then return http response with error message.
         is_match = False
-        if file_ext in VALID_EXTS:
-            is_match = (filechunk_content_type in VALID_EXTS[file_ext])
+        if file_ext.lower() in VALID_EXTS:
+            is_match = (filechunk_content_type in VALID_EXTS[file_ext.lower()])
 
         if not is_match:
             return JsonResponse(status=400, data={'status': 'error',

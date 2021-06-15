@@ -1,0 +1,25 @@
+<div class="col-xs-12 col-sm-12 col-lg-12 ">
+    <h2 class="sub-header">Compared components</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">Component</th>
+                <th scope="col">Control</th>
+                <th scope="col">Catalog</th>
+                <th scope="col">Statement</th>
+            </tr>
+            </thead>
+            <tbody>
+{% for cmp_name, smt, diff in comp_differences %}
+                <tr>
+                    <td scope="row" style="width: 110px;"><b>{{ cmp_name }}</b></td>
+                    <td style="width: 90px;">{{ smt.sid }}{% if smt.pid %}.{{ smt.pid }}{% endif %}</td>
+                    <td style="width: 190px;">{{ smt.sid_class }}</td>
+                    <td><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: black;">{{ diff|safe }}</a></td>
+                </tr>
+{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

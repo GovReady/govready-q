@@ -1,7 +1,90 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (April XX, 2021)
+v999 (June XX, 2021)
+--------------------
+
+**Developer changes**
+
+* Replace branding with support for multiple, dynamic themes.
+
+v0.9.4 (June 13, 2021)
+----------------------
+
+**Data changes**
+
+* Require components to have descriptions.
+* Adding component_state and component_type fields to an `Element` to contain a component's state and type.
+* Created a modal to allow an admin user to add security objectives confidentiality, integrity, and availability.
+
+**UI changes**
+
+* Can now edit a system componet's state and type in the detail page for a selected component.
+* Improve project pages appearance: decrease action button width and left align text; widen from 9 to 10 columns main content.
+* Remove "Refresh Documents" button on task finished page because caches are now automatically cleared and document content refreshed.
+* Display system component component_state and component_type when component is listed for a system.
+* Add simple "back" link to question to take user to previous question.
+* Add "Create a template" button to template library so admins can create a new template (e.g., compliance app).
+* Add option to compare components in component library.
+
+**Developer changes**
+
+* Add management command `exportcomponentlibrary` to batch export components from library as OSCAL or CSV.
+* Add management command `importcomponents` to batch import OSCAL components to library.
+* Add `existing_import_record` to importing and creating components to group multiple imports under the same import record.
+* Improve generation of components in OSCAL model by removing certain keys when values are none as per specification.
+* Task caches are now automatically cleared and document content refreshed when document downloaded.
+* Add test for system control page.
+* Refactor creating system control statements from component library prototype statements when adding a component from the library to a system and reduce by an order a magnitude the time it takes to add a component to system.
+* Create System method to batch update an element's control implementation statements based on the component's state.
+
+**Deployment changes**
+
+* The HTTP Content-Security-Policy header is now set to allow browsers to load third-party videos from YouTube.com, Vimeo.com and images from any source.
+
+**Bug fix**
+
+* Fix OSCAL SSP output template failure where statement didn't exist while exporting to OSCAL.
+* Fix bug breaking rendering of system's control detail page by removing an errant login_required decorator on a function.
+* File upload validator now accepts files with capitalized extensions, e.g. ".JPG".
+* File upload validator now recognizes ".jpeg" in addition to ".jpg" extension on JPEG files.
+
+v0.9.3.5.3 (May 16, 2021)
+-------------------------
+
+**Bug fixes**
+
+* Fix session timeout handler showing 500 error when returning to app after timeout by adding in @login_required decorator to various views that expect user identity.
+
+* Fix multiple copies of component being returned on search by adding `.distinct()` to end of Django search query.
+
+* Fix high number of controls statements (trying) to added on action by filtering statements to type control_implemention_prototype.
+
+* Have page reload after adding control statement to a component in the library to avoid non-feedback to user and user having to refresh the page.
+
+**Security changes**
+
+* Upgrade to Django 3.2.3 to correct for Snyk indicated vulnerability in Django 3.1.8 https://snyk.io/vuln/SNYK-PYTHON-DJANGO-1279042
+
+**Developer changers**
+
+* Remove documentation-related m2r and sphinx related packages from requirements.in.
+
+v0.9.3.5.2 (May 2, 2021)
+------------------------
+
+**Bug fixes**
+
+* Restore css style for component count accidentally deleted.
+
+v0.9.3.5.1 (May 1, 2021)
+------------------------
+
+**Bug fixes**
+
+* Fix "missing key" error for `SESSION_SECURITY...` params in `settings.py` when realed environment parameters not defined.
+
+v0.9.3.5 (April 28, 2021)
 -------------------------
 
 **UI changes**
@@ -12,6 +95,15 @@ v999 (April XX, 2021)
 
 * Add control titles to component control listing pages.
 
+* Display control catalog guidance text in `details` tag next to component control implementation statements.
+
+* Add control titles to component control listing pages.
+
+* Better notify users when project implementation statement differs from certified by displaying notice in third column of control detail pages.
+
+* Improve language notifying users that project implementation statement differs from certified. Only difference notice is clickable now.
+
+* Search component library by tag content and make component tags clickable.
 
 **Bug fixes**
 
@@ -27,17 +119,18 @@ v999 (April XX, 2021)
 
 * Update stub_app used by compliance_app command for generating compliance app to include "input" and "output" section; and to have folders for templates, utils, and components.
 
-* Developers can now use `docker` & `docker-compose` to deploy a local environment.  This allows devs to work on any Operating System.  Instructions can be found at `dev_env/README.md` folder. 
+* Developers can now use `docker` & `docker-compose` to deploy a local environment.  This allows devs to work on any Operating System.  Instructions can be found at `dev_env/README.md` folder.
 
 * Set system fisma_impact_level as part of question action to set baseline. Also add fisma_impact_level set/get methods to System model.
 
 * Display system impact level on project page.
 
-* Replace branding with support for multiple, dynamic themes.
+* Introduce django-session-security package to allow for setting session time out and alert.
 
 **Data changes**
 
 * Use statement type `fisma_impact_level` to track impact level of a system.
+* Add input_type to AppInputs in order to make selections of input files based on type. This will support importing POA&Ms as part of loading and the starting an app.
 
 v0.9.3.4 (April 20, 2021)
 -------------------------
@@ -45,7 +138,12 @@ v0.9.3.4 (April 20, 2021)
 **Developer changes**
 
 * Add ability for external catalogs and baselines to be used in GovReady-q projects through the two functions `extend_external_baselines` and `extend_external_catalogs`. This includes two new paths GovReady-q looks at which are EXTERNAL_BASELINE_PATH and EXTERNAL_CATALOG_PATH `~/govready-q/local/controls/data/<baselines/catalogs>`
+
 * Added a `list_catalogs()` method to `Catalog` in order to easily get the `Catalog` objects in a list.
+
+* Allow moving projects between portfolios only by users with appropriate permissions.
+
+* Introducing profiling with nplusone to assist in preventing N+1 views.
 
 **Bug fixes**
 
@@ -54,6 +152,8 @@ v0.9.3.4 (April 20, 2021)
 **UI changes**
 
 * Link mini-dashboards on project page to sensible related pages.
+
+* Improved messaging for the move_project function when user does not have the correct permissions.
 
 v0.9.3.3 (April 13, 2021)
 -------------------------

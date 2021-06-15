@@ -9,7 +9,7 @@ from core.utils import Runner
 
 
 class DockerCompose(Runner):
-    REQUIRED_PORTS = [8000]
+    REQUIRED_PORTS = [8000, 5432]
 
     def generate_config(self):
         config = {
@@ -23,9 +23,13 @@ class DockerCompose(Runner):
             "govready-url": "http://localhost:8000",
             "mailgun_api_key": "",
             "memcached": False,
+            "okta": {},
             "secret-key": self.create_secret(),
             "gr-pdf-generator": "wkhtmltopdf",
             "gr-img-generator": "wkhtmltopdf",
+            "session_security_expire_at_browser_close": True,
+            "session_security_warn_after": 1200,
+            "session_security_expire_after": 1800,
             "single-organization": "",
             "static": "static_root",
             "syslog": "",

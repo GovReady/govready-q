@@ -1,7 +1,8 @@
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.conf import settings
-from django.urls import path
+from django.urls import path, re_path
+from django.views.generic import RedirectView
 from rest_framework import routers
 from rest_framework import serializers
 from siteapp.views import UserViewSet
@@ -64,6 +65,7 @@ urlpatterns = [
     url(r"^projects$", views.ProjectList.as_view(), name="projects"),
     url(r"^projects/lifecycle$", views.project_list_lifecycle, name="projects_lifecycle"),
     url(r'^projects/(?P<project_id>.*)/__edit$', views.project_edit, name="edit_project"),
+    url(r'^projects/(?P<project_id>.*)/__edit_security_obj$', views.project_security_objs_edit, name="edit_project_security_objs"),
     url(r'^projects/(\d+)/__delete$', views.delete_project, name="delete_project"),
     url(r'^projects/(\d+)/__admins$', views.make_revoke_project_admin, name="make_revoke_project_admin"),
     url(r'^projects/(\d+)/__export$', views.export_project_questionnaire, name="export_project_questionnaire"),
@@ -122,7 +124,18 @@ urlpatterns = [
     url(r'^tags/_save$', views.create_tag),
     url(r'^tags/(\d+)/_delete$', views.delete_tag),
     url(r'^tags/$', views.list_tags),
+
+    # Session
+    url(r'session_security/', include('session_security.urls')),
 ]
+
+
+if settings.OKTA_CONFIG:
+    urlpatterns += [
+        path('oidc/', include('mozilla_django_oidc.urls')),
+        url(r'^accounts/logout/$', views.logged_out, name="logged_out"),
+        re_path(r'^accounts/login/$', RedirectView.as_view(url='/oidc/authenticate', permanent=False), name='login2')
+    ]
 
 if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS:
     # If username/pwd logins are enabled, add the login pages.
