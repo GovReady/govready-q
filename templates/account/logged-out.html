@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load bootstrap3 %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Password Reset" %}{% endblock %}
+
+{% block content %}
+    <p>{% blocktrans %}You have successfully logged out!{% endblocktrans %}</p>
+    <a href="{% url 'oidc_authentication_init' %}">Login</a>
+{% endblock %}
