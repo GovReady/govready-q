@@ -7,6 +7,7 @@ v999 (June XX, 2021)
 **Feature changes**
 
 * Add full text search of component statements in component library search.
+* Add tab to component library component detail page to display list of systems containing the component.
 
 **UI changes**
 
@@ -43,6 +44,8 @@ v0.9.4 (June 13, 2021)
 * Add test for system control page.
 * Refactor creating system control statements from component library prototype statements when adding a component from the library to a system and reduce by an order a magnitude the time it takes to add a component to system.
 * Create System method to batch update an element's control implementation statements based on the component's state.
+* Always display OSCAL tab in component library for component detail (rather than conditional on 'enable_experimental_opencontrol' parameter).
+* Add method controls.element.consuming_systems to produce list of systems consuming (e.g., containing) the element.
 
 **Deployment changes**
 

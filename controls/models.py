@@ -326,8 +326,22 @@ class Element(auto_prefetch.Model, TagModelMixin):
 
     def statements(self, statement_type):
         """Return on the statements of statement_type produced by this element"""
+
         smts = Statement.objects.filter(producer_element = self, statement_type = statement_type)
         return smts
+
+    def consuming_systems(self):
+        """Return list of systems for which Element is producer_element of statement of type control_implementation"""
+
+        root_element_ids = set(filter(None, [ce['consumer_element'] for ce in Statement.objects.filter(producer_element=self).values('consumer_element').distinct()]))
+        systems = System.objects.filter(pk__in=Element.objects.filter(pk__in=root_element_ids).values_list('system', flat=True))
+        # Remove orphaned systems (e.g., systems whose projects have been deleted). See issue https://github.com/GovReady/govready-q/issues/1617
+        systems_with_projects = []
+        for s in systems:
+            if s.projects.exists():
+                systems_with_projects.append(s)
+        systems_with_projects.sort(key=lambda x: x.root_element.name)
+        return systems_with_projects
 
     @property
     def get_control_impl_smts_prototype_count(self):
@@ -523,7 +537,6 @@ class System(auto_prefetch.Model):
                                                      sid_class=control.oscal_catalog_key,
                                                      sid=control.oscal_ctl_id
                                                      ).delete()
-
         control.delete()
         return control
 
