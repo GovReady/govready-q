@@ -1,6 +1,8 @@
 import os
 
 from datetime import datetime
+from zipfile import ZipFile
+from zipfile import BadZipFile
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
 from django.urls import reverse
@@ -1377,6 +1379,45 @@ def authoring_tool_auth(f):
 
 @login_required
 @transaction.atomic
+def authoring_import_appsource(request):
+    from guidedmodules.models import AppSource
+    from collections import OrderedDict
+
+    appsource_zipfile = request.FILES.get("file")
+    if appsource_zipfile:
+        try:
+            appsource_name = os.path.splitext(appsource_zipfile.name)[0]
+            # Extract AppSource file
+            with ZipFile(appsource_zipfile, 'r') as zipObj:
+               zipObj.extractall("local/appsources/")
+            # TODO:
+            # Check if file is Appsource directory format
+            #   - has "apps" directory
+            #   - apps.yaml files exist in directories
+            # Create a new AppSource.
+            appsrc = AppSource.objects.create(
+                slug=appsource_name,
+                spec={ "type": "local", "path": f"local/appsources/{appsource_name}/apps" }
+            )
+            # Log uploaded app source
+            logger.info(
+                event=f"govready appsource_added {appsrc.slug}",
+                object={"object": "appsource", "id": appsrc.id, "slug": appsrc.slug},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return JsonResponse({ "status": "ok", "redirect": f"/admin/guidedmodules/appsource/{appsrc.id}/change" })
+        except BadZipFile as err:
+            messages.add_message(request, messages.ERROR, f"Bad zip file: {appsource_zipfile}")
+            return JsonResponse({ "status": "ok", "redirect": "/store" })
+        except ValueError:
+            messages.add_message(request, messages.ERROR, f"Failure processing: {ValueError}")
+            return JsonResponse({ "status": "ok", "redirect": "/store" })
+    else:
+        messages.add_message(request, messages.ERROR, f"AppSource file required.")
+        return JsonResponse({ "status": "ok", "redirect": "/store" })
+
+@login_required
+@transaction.atomic
 def authoring_create_q(request):
     from guidedmodules.models import AppSource
     from collections import OrderedDict
@@ -1549,10 +1590,10 @@ def authoring_download_app(request, task):
 @transaction.atomic
 def authoring_download_app_project(request, task):
     # Download a project
-#    print("Calling to download task: {}".format(task))
+    # print("Calling to download task: {}".format(task))
     # Get project that this Task is a part of
     project_obj = task.project
-#    print("project is {}".format(project_obj))
+    # print("project is {}".format(project_obj))
 
     # Get module that this task is answering
     # module_obj = task.module
@@ -1561,10 +1602,10 @@ def authoring_download_app_project(request, task):
     # print("module.serialize: ")
     # print("{}".format(module_obj.serialize()))
     # Recreate the yaml of the module (e.g, app-project)
-#    print("text {}".format(task.module.serialize()))
+    # print("text {}".format(task.module.serialize()))
 
     # Download current project_app (.e.g, module) in use.
-#    print("In `authoring_download_app_project` and attempting to download project-app")
+    # print("In `authoring_download_app_project` and attempting to download project-app")
     try:
         module_yaml = task.module.serialize()
     except Exception as e:
