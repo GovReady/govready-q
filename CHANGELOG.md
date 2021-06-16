@@ -4,13 +4,14 @@ GovReady-Q Release Notes
 v999 (June XX, 2021)
 --------------------
 
-**UI changes**
+**Feature changes**
 
+* Add full text search of component statements in component library search.
 * Add tab to component library component detail page to display list of systems containing the component.
 
+**UI changes**
 
 * Add "Import AppSource" button for admins in Compliance App store to simplify end-users adding AppSource.
-
 * Link to library version of component from a system's selected control component listing and selected components.
 
 
