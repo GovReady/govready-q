@@ -1051,6 +1051,9 @@ def component_library_component(request, element_id):
     element = Element.objects.get(id=element_id)
     smt_query = request.GET.get('search')
 
+    # Retrieve systems consuming element
+    consuming_systems = element.consuming_systems()
+
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
     else:
@@ -1104,6 +1107,7 @@ def component_library_component(request, element_id):
     context = {
         "page_obj": page_obj,
         "element": element,
+        "consuming_systems": consuming_systems,
         "impl_smts": impl_smts,
         "catalog_controls": catalog_controls,
         "catalog_key": catalog_key,
