@@ -534,7 +534,6 @@ def apps_catalog(request):
 def apps_catalog_item(request, source_slug, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
-    print("\n** in apps_catalog_item")
     from guidedmodules.models import AppSource
     catalog, _ = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
     for app_catalog_info in catalog:
@@ -596,7 +595,11 @@ def apps_catalog_item(request, source_slug, app_name):
         # Get portfolio project should be included in.
         if not request.user.default_portfolio:
             request.user.create_default_portfolio_if_missing()
-        portfolio = request.user.default_portfolio
+
+        if request.GET.get("portfolio") is not None:
+            portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+        else:
+            portfolio = request.user.default_portfolio
 
         # Start the most recent version of the app.
         appver = app_catalog_info["versions"][0]
