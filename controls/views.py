@@ -355,7 +355,7 @@ class SelectedComponentsList(ListView):
         Return the systems producer elements.
         """
         system = System.objects.get(id=self.kwargs['system_id'])
-        return system.producer_elements
+        return [element for element in system.producer_elements if element.element_type != "system"]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
