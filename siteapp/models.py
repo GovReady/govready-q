@@ -46,6 +46,9 @@ class User(AbstractUser):
                                   help_text="The user's API key with read-write permission.")
     api_key_wo = models.CharField(max_length=32, blank=True, null=True, unique=True,
                                   help_text="The user's API key with write-only permission.")
+    default_portfolio = models.ForeignKey('Portfolio', blank=True, null=True, related_name="default_for", on_delete=models.RESTRICT,
+                                  help_text="Default Portfolio of the User.")
+
 
     # Methods
 
@@ -299,6 +302,8 @@ class User(AbstractUser):
         portfolio = Portfolio.objects.create(title=title)
         portfolio.save()
         portfolio.assign_owner_permissions(self)
+        self.default_portfolio = portfolio
+        self.save()
         logger.info(
             event="new_portfolio",
             object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},

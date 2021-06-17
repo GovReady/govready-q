@@ -12,7 +12,6 @@ from django.http import (Http404, HttpResponse, HttpResponseRedirect,
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from system_settings.models import SystemSettings
-from .forms import PortfolioSignupForm
 from .models import Organization, Portfolio, User
 from .notifications_helpers import notification_reply_email_hook
 
