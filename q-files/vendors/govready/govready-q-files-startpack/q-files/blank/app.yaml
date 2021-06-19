@@ -1,0 +1,26 @@
+id: app
+title: Blank Project
+type: project
+version: 1.0
+icon: app.png
+introduction:
+  format: markdown
+  template: GovReady System Questionnaires
+
+catalog:
+  category: IT System Template
+  description:
+    long: |
+      Blank Compliance App
+      ====================
+
+      Blank compliance app with no questions or outputs mostly used for initation of projects in batch.
+    short: Blank project
+  source_url: https://github.com/GovReady/govready-q/q-files/vendors/govready/govready-q-files-startpack/q-files/blank
+  status: stub
+  vendor: GovReady
+  vendor_url: https://govready.com
+  version: 1.0
+  parameters: []
+questions: []
+output: []
