@@ -13,7 +13,7 @@ v999 (June XX, 2021)
 
 * Add "Import AppSource" button for admins in Compliance App store to simplify end-users adding AppSource.
 * Link to library version of component from a system's selected control component listing and selected components.
-
+* Improve UI of project security objectives. Improve alignment and convert text fields to select boxes to control data input.
 
 v0.9.4 (June 13, 2021)
 ----------------------
