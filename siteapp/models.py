@@ -649,8 +649,7 @@ class Project(TagModelMixin):
 
     @property
     def title(self):
-        if not self.root_task: return "???"
-        return self.root_task.title
+        return self.root_task.title if self.root_task else f"Project {self.id}"
 
     def organization_and_title(self):
         parts = [str(self.organization)]
