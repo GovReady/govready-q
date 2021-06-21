@@ -17,6 +17,7 @@ class Catalogs(object):
     NIST_SP_800_53_rev4 = 'NIST_SP-800-53_rev4'
     NIST_SP_800_53_rev5 = 'NIST_SP-800-53_rev5'
     NIST_SP_800_171_rev1 = 'NIST_SP-800-171_rev1'
+    CMMC_ver1 = 'CMMC_ver1'
 
     def __init__(self):
         self.catalog_path = CATALOG_PATH
@@ -47,7 +48,8 @@ class Catalogs(object):
         return self.extend_external_catalogs([
             Catalogs.NIST_SP_800_53_rev4,
             Catalogs.NIST_SP_800_53_rev5,
-            Catalogs.NIST_SP_800_171_rev1
+            Catalogs.NIST_SP_800_171_rev1,
+            Catalogs.CMMC_ver1
         ], "keys")
 
     def _load_catalog_json(self, catalog_key):
