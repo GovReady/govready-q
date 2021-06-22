@@ -531,6 +531,53 @@ def apps_catalog(request):
     # If user is superuser, enable creating new apps
     authoring_tool_enabled = request.user.has_perm('guidedmodules.change_module')
 
+    # Auto start a project if set in database
+    # Temporarily pretend values set in development
+    # TODO: Refactor! This code is close duplicate to what is in `apps_catalog_item` POST section
+    SOURCE_SLUG_AUTO = 'govready-q-files-startpack'
+    APP_NAME_AUTO = 'speedyssp'
+    if SOURCE_SLUG_AUTO and APP_NAME_AUTO:
+
+        source_slug = SOURCE_SLUG_AUTO
+        app_name = APP_NAME_AUTO
+        print("\n***  AUTO SOURCE indicated")
+
+        # can user start the app?
+        # Is this a module the user has access to? The app store
+        # does some authz based on the organization.
+        from guidedmodules.models import AppSource
+        catalog, _ = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
+        for app_catalog_info in catalog:
+            if app_catalog_info["key"] == source_slug + "/" + app_name:
+                # We found it.
+                break
+        else:
+            raise Http404()
+
+        # Start the most recent version of the app.
+        appver = app_catalog_info["versions"][0]
+        # Start the app.
+        from guidedmodules.app_loading import ModuleDefinitionError
+        organization = Organization.objects.first() # temporary
+        folder = None
+        task = None
+        q = None
+        # Get portfolio project should be included in.
+        if request.GET.get("portfolio"):
+            portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+        else:
+            if not request.user.default_portfolio:
+                request.user.create_default_portfolio_if_missing()
+            portfolio = request.user.default_portfolio
+        try:
+            project = start_app(appver, organization, request.user, folder, task, q, portfolio)
+        except ModuleDefinitionError as e:
+            error = str(e)
+
+        # Redirect to the new project.
+        return HttpResponseRedirect(project.get_absolute_url())
+
+
     return render(request, "app-store.html", {
         "apps": catalog_by_category,
         "filter_description": filter_description,
