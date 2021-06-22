@@ -2,7 +2,17 @@ GovReady-Q Release Notes
 ========================
 
 v999 (June XX, 2021)
---------------------
+---------------------
+
+**Feature changes**
+
+* Add full text search of component statements in component library search.
+* Add tab to component library component detail page to display list of systems containing the component.
+
+**UI changes**
+
+* Add "Import AppSource" button for admins in Compliance App store to simplify end-users adding AppSource.
+* Link to library version of component from a system's selected control component listing and selected components.
 
 **Developer changes**
 
@@ -16,6 +26,7 @@ v0.9.4 (June 13, 2021)
 * Require components to have descriptions.
 * Adding component_state and component_type fields to an `Element` to contain a component's state and type.
 * Created a modal to allow an admin user to add security objectives confidentiality, integrity, and availability.
+* Add field to identify user's default portfolio.
 
 **UI changes**
 
@@ -26,6 +37,8 @@ v0.9.4 (June 13, 2021)
 * Add simple "back" link to question to take user to previous question.
 * Add "Create a template" button to template library so admins can create a new template (e.g., compliance app).
 * Add option to compare components in component library.
+* Remove portfolio selection modal from Start a Project process. Assign new projects to user's default portfolio.
+* Remove specifying user default portfolio during registration process.
 
 **Developer changes**
 
@@ -37,6 +50,8 @@ v0.9.4 (June 13, 2021)
 * Add test for system control page.
 * Refactor creating system control statements from component library prototype statements when adding a component from the library to a system and reduce by an order a magnitude the time it takes to add a component to system.
 * Create System method to batch update an element's control implementation statements based on the component's state.
+* Always display OSCAL tab in component library for component detail (rather than conditional on 'enable_experimental_opencontrol' parameter).
+* Add method controls.element.consuming_systems to produce list of systems consuming (e.g., containing) the element.
 
 **Deployment changes**
 

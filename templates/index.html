@@ -66,7 +66,6 @@ Welcome to Compliance Automation
               {% if not request.user.is_authenticated %}
                 {% bootstrap_form signup_form %}
               {% endif %}
-              {% bootstrap_form portfolio_form %}
               <p><button type="submit" id="signup-button" class="btn btn-success">Next &raquo;</button></p>
             </form>
           </div>
@@ -82,21 +81,6 @@ Welcome to Compliance Automation
 
 {% block scripts %}
 <script>
-
-// Copy any changes in username to default portfolio title
-$('#id_username').on('keyup', function() {
-  var title = $(this).val();
-  title = title.toLowerCase().replace(/[^a-z0-9--]+/g, "-").replace(/^-+/, "").replace(/-+$/, "");
-  $('#id_name').val(title);
-  $('#id_title').val(title);
-})
-// And if typing changes default portfolio title, force changes back into username
-$('#id_title').on('keyup', function() {
-  var title = $(this).val();
-  title = title.toLowerCase().replace(/[^a-z0-9--]+/g, "-").replace(/^-+/, "").replace(/-+$/, "");
-  $('#id_name').val(title);
-  $('#id_username').val(title);
-})
 
 {% if request.method == "POST" %}
 
