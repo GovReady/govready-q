@@ -534,12 +534,12 @@ def apps_catalog(request):
     # Auto start a project if set in database
     # Temporarily pretend values set in development
     # TODO: Refactor! This code is close duplicate to what is in `apps_catalog_item` POST section
-    SOURCE_SLUG_AUTO = 'govready-q-files-startpack'
-    APP_NAME_AUTO = 'speedyssp'
-    if SOURCE_SLUG_AUTO and APP_NAME_AUTO:
+    AUTO_SOURCE_SLUG = 'govready-q-files-startpack'
+    AUTO_APP_NAME = 'speedyssp'
+    if AUTO_SOURCE_SLUG and AUTO_APP_NAME:
 
-        source_slug = SOURCE_SLUG_AUTO
-        app_name = APP_NAME_AUTO
+        source_slug = AUTO_SOURCE_SLUG
+        app_name = AUTO_APP_NAME
         print("\n***  AUTO SOURCE indicated")
 
         # can user start the app?
