@@ -26,7 +26,7 @@ class Command(BaseCommand):
                 rows = sheet.read_data()
                 for row in rows:
                     system_name = row[3]
-                    record = dict(control_number=row[5], implementation_statement=row[7])
+                    record = dict(control_number=row[5], implementation_statement=row[9])
                     if system_name not in process_data:
                         process_data[system_name] = []
                     process_data[system_name].append(record)
