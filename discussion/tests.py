@@ -88,10 +88,6 @@ class DiscussionTests(SeleniumTest):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
 
-        # Select Portfolio
-        self.select_option_by_visible_text('#id_portfolio', self.user.username)
-        self.click_element("#select_portfolio_submit")
-
         # Start a project
         wait_for_sleep_after(lambda: self.click_element(".app[data-app='project/simple_project'] .view-app"))
         # var_sleep(10.5)

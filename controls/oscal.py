@@ -196,7 +196,7 @@ class Catalog(object):
         # For 800-53, 800-171, we can match by first few characters of control ID
         group_ids = self.get_group_ids()
         for group_id in group_ids:
-            if group_id.lower() in control_id.lower():
+            if group_id.lower() == control_id.lower():
                 return group_id
 
         # Group ID was not matched

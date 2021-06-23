@@ -64,7 +64,7 @@ class Command(BaseCommand):
                 # Load the AppSource's assessments (apps) we want
                 # We will do some hard-coding here temporarily
                 created_appsource = AppSource.objects.get(slug="govready-q-files-startpack")
-                for appname in ["speedyssp", "System-Description-Demo",
+                for appname in ["blank", "speedyssp", "System-Description-Demo",
                                 "PTA-Demo", "rules-of-behavior", "lightweight-ato", "lightweight-ato-800-171"]:
                     print("Adding appname '{}' from AppSource '{}' to catalog.".format(appname, created_appsource))
                     try:
@@ -116,8 +116,7 @@ class Command(BaseCommand):
                         user.email
                     ))
                     # Create the first portfolio
-                    portfolio = Portfolio.objects.create(title=user.username)
-                    portfolio.assign_owner_permissions(user)
+                    portfolio = user.create_default_portfolio_if_missing()
                     print("Created administrator portfolio {}".format(portfolio.title))
                 else:
                     print("\n[INFO] Skipping create admin account '{}' - username already exists.\n".format(

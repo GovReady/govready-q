@@ -122,16 +122,10 @@
                             </select>
                         </div>
                     {% endif %}
-                    {% if portfolio %}
                         <button id="start-project" type="submit" class="btn btn-success app-button-width">Add ►</button>
-                    {% endif %}
                 </form>
                 <button id="start-project" type="submit" class="btn btn-link btn-start-project">
-                    {% if portfolio %}
-                        <a href="/store?portfolio={{ portfolio.id }}" class="back-to-link">Back to Apps</a>
-                    {% else %}
-                        <a href="/store" class="back-to-link">Back to Apps</a>
-                    {% endif %}
+                    <a href="/store" class="back-to-link">Back to Apps</a>
                 </button>
             </div>
         </div>
