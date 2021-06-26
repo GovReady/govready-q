@@ -1621,7 +1621,7 @@ def editor(request, system_id, catalog_key, cl_id):
     # Retrieve related statements if user has permission on system
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
-        project, catalog, cg_flat, impl_smts = get_editor_data(request, system, catalog_key, cl_id)
+        project, catalog, cg_flat, impl_smts, impl_smts_legacy = get_editor_data(request, system, catalog_key, cl_id)
 
         # Build OSCAL SSP
         # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
@@ -1692,6 +1692,7 @@ def editor(request, system_id, catalog_key, cl_id):
             "control": cg_flat[cl_id.lower()],
             "impl_smts": impl_smts,
             "impl_statuses": impl_statuses,
+            "impl_smts_legacy": impl_smts_legacy,
             "combined_smt": combined_smt,
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
@@ -1722,9 +1723,12 @@ def get_editor_data(request, system, catalog_key, cl_id):
             return render(request, "controls/detail.html", {"catalog": catalog, "control": {}})
 
         # Get and return the control
-        # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog
-        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key).order_by('pid')
-        return project, catalog, cg_flat, impl_smts
+        # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog, Type
+        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).order_by('pid')
+        # Retrieve Legacy Implememtation Statements
+        impl_smts_legacy = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.value)
+
+        return project, catalog, cg_flat, impl_smts, impl_smts_legacy
 
 def get_editor_system(cl_id, catalog_key, system_id):
     """

@@ -495,7 +495,7 @@ class StatementUnitTests(TestCase):
         # Detection of difference in statement
         # Create a smt
         smt = Statement.objects.create(
-            sid = "au.3",
+            sid = "au-3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is a test statement.",
             statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
@@ -516,6 +516,36 @@ class StatementUnitTests(TestCase):
         smt.prototype.save()
         self.assertEqual(smt.prototype_synched, STATEMENT_NOT_SYNCHED)
         self.assertEqual(smt.diff_prototype_main, [(0, 'This is a test statement.'), (-1, '\nModified statememt')])
+
+    def test_control_implementation_legacy(self):
+
+        # Create a smt
+        smt = Statement.objects.create(
+            sid = "ac-3",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is a test legacy statement.",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.value,
+            consumer_element=s.root_element,
+            producer_element=s.root_element,
+            # status = "Implemented"
+        )
+        smt.save()
+
+        self.assertEqual(smt.body, "This is a test legacy statement.")
+
+        # Test ui
+        # login as the first user and create a new project
+        self._login()
+        self._new_project()
+
+        # systemid = System.objects.all().first()
+        project = Project.objects.all().last()
+        system = project.system
+
+        self.navigateToPage(f"/systems/{system.id}/deployments")
+        wait_for_sleep_after(lambda: self.assertInNodeText("Controls", ".btn-controls"))
+        self.navigateToPage(f"/controls/{system.id}/controls/catalogs/{smt.sid_class}/control/{smt.sid}")
+
 
 class ElementUnitTests(TestCase):
 
@@ -747,7 +777,7 @@ class SystemUITests(OrganizationSiteFunctionalTests):
         self.navigateToPage(f"/systems/{system.id}/deployments")
         wait_for_sleep_after(lambda: self.assertInNodeText("New Deployment", ".systems-element-button"))
 
-        # # Add deault deployments to system
+        # Add default deployments to system
         deployment = Deployment(name="Training", description="Training environment", system=system)
         deployment.save()
 

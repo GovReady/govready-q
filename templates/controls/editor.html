@@ -29,7 +29,7 @@
         }
 
         #above-tab-content, #tab-content {
-            max-width: 950px;
+            max-width: 1250px;
             margin: auto;
         }
 
@@ -155,6 +155,45 @@
 
                 <!-- Tab panel: component control -->
                 <div role="tabpanel" class="tab-pane active" id="component_controls">
+
+                    {% if impl_smts_legacy|length > 0 %}
+                    <div class="row">
+                        <div id="control-description" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 control-text"><h3>{{ impl_smts_legacy|length }} associated Legacy Componented Control Implementations Statements</h3></div>
+                    </div><!-- Needed for proper styling -->
+
+                     <div class="row statement-column-headings" style="">
+                        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Component</div>
+                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">Legacy Statement</div>
+                        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Status</div>
+                    </div>
+
+                    <div id="smt-list" class="" style="width: 100%">
+                        <!-- Loop through existing component-control statements -->
+                        {% for smt in impl_smts_legacy %}
+                            <div id="panel-{{ forloop.counter }}" class="smt-panel">
+                                <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
+                                    <div class="row statement-text">
+                                      <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                                        <span id="producer_element-{{ forloop.counter }}-control" class="control-id-text">{{ smt.producer_element.name }}</span>
+                                      </div>
+                                      <div>
+                                      <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">{% if smt.pid is not None and smt.pid != "" %}<div class="panel-heading-smt">{{ smt.pid }}.</div>{% endif %}{{ smt.body }}</div>
+                                      <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 remark-text-block">
+                                        {% spaceless %}
+                                        <span>Status: {% if smt.status != "" and smt.status is not None %}{{ smt.status }}{% else %}N/A{% endif %}</span>
+                                          <div>
+                                              {% if smt.remarks %}<details><summary>Remarks</summary><div>{{ smt.remarks }}</div></details>{% endif %}
+                                          </div>
+                                        {% endspaceless %}
+                                      </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        {% endfor %}
+                    </div><!--/smt-list-->
+                    {% endif %}
 
                     <div class="row">
                         <div id="control-description" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 control-text"><h3>{{ impl_smts|length }} associated Componented Control Implementations Statements</h3></div>

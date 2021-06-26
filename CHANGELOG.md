@@ -4,7 +4,9 @@ GovReady-Q Release Notes
 v999 (June XX, 2021)
 ---------------------
 
+**UI changes**
 
+* Display legacy control implementation statements within system's statements.
 
 v0.9.5 (June 23, 2021)
 ----------------------
