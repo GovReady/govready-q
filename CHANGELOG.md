@@ -4,6 +4,11 @@ GovReady-Q Release Notes
 v999 (June XX, 2021)
 ---------------------
 
+
+
+v0.9.5 (June 23, 2021)
+----------------------
+
 **Feature changes**
 
 * Add full text search of component statements in component library search.
