@@ -49,7 +49,7 @@
                     {% for prime_smt in prime_smts %}
                             <tr>
                                 <td scope="row" style="width: 110px;"><b>{{ compare_prime.name }}</b></td>
-                                <td scope="row" style="width: 90px;">{{ prime_smt.sid }}{% if prime_smt.pid %}.{{ prime_smt.pid }}{% endif %}</td>
+                                <td scope="row" style="width: 90px;">{{ prime_smt.sid }}{% if prime_smt.pid %}.{{ prime_smt.pid }}{% endif %}</th>
                                 <td style="width: 190px;">{{ prime_smt.sid_class }}</td>
                                 <td>{{ prime_smt.body|safe }}</td>
                             </tr>
