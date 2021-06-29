@@ -82,7 +82,7 @@
                         <div>{% for tag in component.tags.all %}<span class="component-tag"><a href="{% url 'component_library' %}?search={{ tag.label }}">{{ tag.label }}</a></span> {% endfor %}</div>
                     </div>
                     <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
-                        <label for="comp_comparison_{{ forloop.counter }}"></label><input type="checkbox" id="comp_comparison_{{ forloop.counter }}" name="componentcomparecheckbox" value="{{ component.id }}"">
+                        <label for="comp_comparison_{{ forloop.counter }}"></label><input type="checkbox" id="comp_comparison_{{ forloop.counter }}" name="componentcomparecheckbox" value="{{ component.id }}">
                     </div>
                     <div id="" class="pull-right col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
                         <span class="pull-right">{% if component.get_control_impl_smts_prototype_count > 0 %}{{ component.get_control_impl_smts_prototype_count }} control{{ component.get_control_impl_smts_prototype_count|pluralize }}</span>{% else %}

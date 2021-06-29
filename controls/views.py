@@ -460,14 +460,16 @@ def compare_components(request):
                 else:
                     diff = f"<span><ins style='background:#e6ffe6;'>{smt.body}</ins><span>"
                 differences.append(diff)
-        difference_tuples.extend(zip([component.name] * len(cmt_smts), cmt_smts, differences))
+        difference_tuples.extend(zip([component.id] * len(cmt_smts),[component.name] * len(cmt_smts), cmt_smts, differences))
+    # TODO: still need to figure out how to only have only checkboxes for each component and send that to the view
     if request.method == 'POST':
         context = {
             "element_list": element_list,
             "compare_prime": compare_prime,
             "prime_smts": compare_prime_smts,
             "secondary_smts": cmt_smts,
-            "differences": difference_tuples
+            "differences": difference_tuples,
+            "compare_list": compare_list
         }
         return render(request, "components/compare_components.html", context)
 

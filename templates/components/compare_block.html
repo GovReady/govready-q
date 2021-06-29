@@ -8,17 +8,23 @@
                 <th scope="col">Control</th>
                 <th scope="col">Catalog</th>
                 <th scope="col">Statement</th>
+                <th scope="col">Select</th>
             </tr>
             </thead>
             <tbody>
-{% for cmp_name, smt, diff in comp_differences %}
-                <tr>
-                    <td scope="row" style="width: 110px;"><b>{{ cmp_name }}</b></td>
-                    <td style="width: 90px;">{{ smt.sid }}{% if smt.pid %}.{{ smt.pid }}{% endif %}</td>
-                    <td style="width: 190px;">{{ smt.sid_class }}</td>
-                    <td><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: black;">{{ diff|safe }}</a></td>
-                </tr>
-{% endfor %}
+
+            {% for comp_id, cmp_name, smt, diff in comp_differences %}
+
+                            <tr>
+                                <td scope="row" style="width: 110px;"><b>{{ cmp_name }}</b></td>
+                                <td style="width: 90px;">{{ smt.sid }}{% if smt.pid %}.{{ smt.pid }}{% endif %}</td>
+                                <td style="width: 190px;">{{ smt.sid_class }}</td>
+                                <td><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: black;">{{ diff|safe }}{{ id_list }}</a></td>
+                                <td><label for="comp_comparison_{{ forloop.counter }}"></label><input type="checkbox" id="comp_comparison_{{ forloop.counter }}" name="componentcomparecheckbox" value="{{ comp_id }}"></td>
+                            </tr>
+
+            {% endfor %}
+
             </tbody>
         </table>
     </div>
