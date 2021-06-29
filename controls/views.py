@@ -1724,9 +1724,9 @@ def get_editor_data(request, system, catalog_key, cl_id):
 
         # Get and return the control
         # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog, Type
-        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).order_by('pid')
+        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
         # Retrieve Legacy Implememtation Statements
-        impl_smts_legacy = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.value)
+        impl_smts_legacy = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name)
 
         return project, catalog, cg_flat, impl_smts, impl_smts_legacy
 
