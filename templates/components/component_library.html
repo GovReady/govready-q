@@ -114,7 +114,9 @@ function select_all(val) {
     var checkboxes = $('input[type=checkbox]')
     checkboxes.prop('checked', val);
     var compare_btn = $("#compare-components")
-    compare_btn.toggle()
+    if (checkboxes.prop('checked') && compare_btn.is(":hidden") ) {
+        compare_btn.toggle()
+    }
 }
 </script>
 {% endblock %}
