@@ -439,7 +439,9 @@ def compare_components(request):
         messages.add_message(request, messages.WARNING, f"Not enough components were selected to compare!")
         return HttpResponseRedirect("/controls/components")
     else:
-        element_list = list(Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct())
+        ele_q = Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct()
+        # Maintain sort order of compare_list otherwise Django will order ascending
+        element_list = sorted(ele_q, key=lambda x: compare_list.index(str(x.id)))
         compare_prime, element_list = element_list[0], element_list[
                                                        1:]  # The first component selected will be compared against the rest
         compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
