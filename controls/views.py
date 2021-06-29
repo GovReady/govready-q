@@ -432,17 +432,17 @@ def compare_components(request):
     """
     Compare submitted components
     """
-    # TODO: need to figure out how to accumulate all checked boxes not one in pageobj
-    # Might need to check for any previously entered checkbox ids
+    # TODO: need to figure out how to accumulate all checked boxes not one in pageobj. Need to check for any previously entered checkbox ids
     compare_list = request.POST.getlist('componentcomparecheckbox')
-    if compare_list:
-        element_list = list(Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct())
-        compare_prime, element_list = element_list[0], element_list[1:]# The first component selected will be compared against the rest
-        compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
-    elif len(compare_list) <= 1:
+    if len(compare_list) <= 1:
         # add messages
         messages.add_message(request, messages.WARNING, f"Not enough components were selected to compare!")
         return HttpResponseRedirect("/controls/components")
+    else:
+        element_list = list(Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct())
+        compare_prime, element_list = element_list[0], element_list[
+                                                       1:]  # The first component selected will be compared against the rest
+        compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
     difference_tuples = []
     for component in element_list:
         differences = []
