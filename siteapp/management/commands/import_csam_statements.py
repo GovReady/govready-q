@@ -5,12 +5,15 @@ from controls.models import Statement, ImportRecord
 from siteapp.models import User, Project, Organization
 import xlsxio
 
+# Example:
+# python3 manage.py import_csam_statements SystemImplementationStatementsQuery.xlsx admin
 
 class Command(BaseCommand):
     help = 'Import CSAM System Implementation Statement Query excel export'
 
     def add_arguments(self, parser):
         parser.add_argument('file', nargs='?')
+        parser.add_argument('username', nargs='?')
 
     def find(self, target, prop, array):
         for i in range(len(array)):
@@ -32,7 +35,7 @@ class Command(BaseCommand):
                     process_data[system_name].append(record)
 
         org = Organization.objects.first()
-        user = User.objects.all()[1]  # hardcode to second user (first user that was created)
+        user = User.objects.get(username=options['username'])
 
         for system_name, data in process_data.items():
             project = Project.objects.filter(system__root_element__name=system_name).first()
