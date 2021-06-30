@@ -38,6 +38,8 @@ class Command(BaseCommand):
         org = Organization.objects.first()
         user = User.objects.get(username=options['username'])
 
+        import_record = ImportRecord.objects.create(name=options['file'])
+
         for system_name, data in process_data.items():
             project = Project.objects.filter(system__root_element__name=system_name).first()
             if not project:
@@ -59,7 +61,6 @@ class Command(BaseCommand):
                                                            consumer_element=project.system.root_element)
             existing_statement_sids = existing_statements.values_list('sid', flat=True)
             create_statements = []
-            import_record = ImportRecord.objects.create(name=options['file'])
             for row in data:
                 if row['control_number'] in existing_statement_sids:
                     # Update if exists
