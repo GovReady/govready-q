@@ -75,7 +75,7 @@ class Command(BaseCommand):
                                                        producer_element=project.system.root_element,
                                                        consumer_element=project.system.root_element,
                                                        body=row['implementation_statement'],
-                                                       statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY,
+                                                       statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name,
                                                        remarks='imported from spreadsheet',
                                                        import_record=import_record))
 
