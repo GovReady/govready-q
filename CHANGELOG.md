@@ -12,6 +12,10 @@ v999 (June XX, 2021)
 
 * Set component library detail page Systems tab to not be inactive and thus remove the content from the System tab showing up on the Control Implementation Statements tab.
 
+**Developer changes**
+
+* Add custom Django command to batch import legacy control implementation statements from legacy SSPs Excel spreadsheet exports. Currently supports CSAM.
+
 **Data changes**
 
 * Set all `StatementTypeEnum.<LABEL>.value` to `StatementTypeEnum.<LABEL>.name` in order for relevant label/term to show up in Django database admin interface.
