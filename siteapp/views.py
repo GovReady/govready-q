@@ -156,12 +156,8 @@ def homepage(request):
         return HttpResponseRedirect('/')  # reload
     if settings.OKTA_CONFIG:
         return HttpResponseRedirect("/oidc/authenticate")
-    # Since there is only one hide registration entry in the SystemSettings table just retrieve the value directly to avoid
-    # 3 queries
-    hide_registration = SystemSettings.objects.filter(setting="hide_registration")[0].active
-
     return render(request, "index.html", {
-        "hide_registration": hide_registration,
+        "hide_registration":  SystemSettings.hide_registration,
         "sitename": Sitename.objects.last(),
         "signup_form": signup_form,
         "login_form": login_form,
