@@ -8,6 +8,14 @@ v999 (June XX, 2021)
 
 * Display legacy control implementation statements within system's statements.
 
+**Bug fixes**
+
+* Set component library detail page Systems tab to not be inactive and thus remove the content from the System tab showing up on the Control Implementation Statements tab.
+
+**Data changes**
+
+* Set all `StatementTypeEnum.<LABEL>.value` to `StatementTypeEnum.<LABEL>.name` in order for relevant label/term to show up in Django database admin interface.
+
 v0.9.5 (June 23, 2021)
 ----------------------
 

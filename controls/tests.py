@@ -28,6 +28,7 @@ from siteapp.models import User, Organization, OrganizationalSetting
 from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests, wait_for_sleep_after
 from system_settings.models import SystemSettings
 from controls.models import *
+from controls.enums.statements import StatementTypeEnum
 from controls.oscal import Catalogs, Catalog, EXTERNAL_CATALOG_PATH
 from siteapp.models import User, Project, Portfolio
 from system_settings.models import SystemSettings
@@ -307,7 +308,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         element_count_before_import = Element.objects.filter(element_type="system_element").count()
         statement_count_before_import = Statement.objects.filter(
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
 
         # Verify that the contents got copied correctly from the file to the textfield
         try:
@@ -329,7 +330,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         element_count_after_import = Element.objects.filter(element_type="system_element").count()
         self.assertEqual(element_count_before_import, element_count_after_import)
 
-        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
+        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
         self.assertEqual(statement_count_before_import, statement_count_after_import)
 
     def test_component_import_oscal_json(self):
@@ -338,7 +339,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.browser.get(url)
 
         element_count_before_import = Element.objects.filter(element_type="system_element").count()
-        statement_count_before_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
+        statement_count_before_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
 
         # Test initial import of Component(s) and Statement(s)
         self.click_element('a#component-import-oscal')
@@ -353,7 +354,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 2, element_count_after_import))
 
-        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
+        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
         self.assertEqual(statement_count_before_import + 4, statement_count_after_import)
         # Test file contains 6 Statements, but only 4 get imported
         # because one has an improper Catalog
@@ -382,7 +383,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.assertEqual(duplicate_import_element_count, 1)
 
         statement_count_after_duplicate_import = Statement.objects.filter(
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
         self.assertEqual(statement_count_after_import + 4, statement_count_after_duplicate_import)
 
     def test_import_tracker(self):
@@ -498,7 +499,7 @@ class StatementUnitTests(TestCase):
             sid = "au-3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is a test statement.",
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
             status = "Implemented"
         )
         smt.save()
@@ -516,36 +517,6 @@ class StatementUnitTests(TestCase):
         smt.prototype.save()
         self.assertEqual(smt.prototype_synched, STATEMENT_NOT_SYNCHED)
         self.assertEqual(smt.diff_prototype_main, [(0, 'This is a test statement.'), (-1, '\nModified statememt')])
-
-    def test_control_implementation_legacy(self):
-
-        # Create a smt
-        smt = Statement.objects.create(
-            sid = "ac-3",
-            sid_class = "NIST_SP-800-53_rev4",
-            body = "This is a test legacy statement.",
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.value,
-            consumer_element=s.root_element,
-            producer_element=s.root_element,
-            # status = "Implemented"
-        )
-        smt.save()
-
-        self.assertEqual(smt.body, "This is a test legacy statement.")
-
-        # Test ui
-        # login as the first user and create a new project
-        self._login()
-        self._new_project()
-
-        # systemid = System.objects.all().first()
-        project = Project.objects.all().last()
-        system = project.system
-
-        self.navigateToPage(f"/systems/{system.id}/deployments")
-        wait_for_sleep_after(lambda: self.assertInNodeText("Controls", ".btn-controls"))
-        self.navigateToPage(f"/controls/{system.id}/controls/catalogs/{smt.sid_class}/control/{smt.sid}")
-
 
 class ElementUnitTests(TestCase):
 
@@ -592,7 +563,7 @@ class ElementUnitTests(TestCase):
             sid = "au-3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is the first test statement.",
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value,
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
             status = "Implemented",
             producer_element = e
         )
@@ -601,7 +572,7 @@ class ElementUnitTests(TestCase):
             sid = "au-4",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is the first test statement.",
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value,
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
             status = "Implemented",
             producer_element = e
         )
@@ -617,7 +588,7 @@ class ElementUnitTests(TestCase):
         self.assertTrue(e_copy.name == "OAuth copy")
 
         # Test statements copied
-        smts = e_copy.statements("control_implementation_prototype")
+        smts = e_copy.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
         self.assertEqual(len(smts), 2)
 
     def test_element_rename(self):
@@ -735,7 +706,7 @@ class SystemUnitTests(TestCase):
             sid = "au-3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is the first test statement.",
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
             status = "Implemented",
             producer_element = e,
             consumer_element = s.root_element
@@ -745,7 +716,7 @@ class SystemUnitTests(TestCase):
             sid = "au-4",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is the first test statement.",
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
             status = "Implemented",
             producer_element = e,
             consumer_element = s.root_element
@@ -1085,6 +1056,35 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         submit_comp_statement = wait_for_sleep_after(lambda: self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button"))
         submit_comp_statement.click()
 
+class StatementUITests(OrganizationSiteFunctionalTests):
+
+    def test_control_implementation_legacy_ui(self):
+
+       # Test ui
+        # login as the first user and create a new project
+        self._login()
+        self._new_project()
+
+        # systemid = System.objects.all().first()
+        project = Project.objects.all().last()
+        system = project.system
+
+        # Create a smt
+        smt = Statement.objects.create(
+            sid = "ac-3",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is a test legacy statement.",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name,
+            consumer_element=system.root_element,
+            producer_element=system.root_element,
+            # status = "Implemented"
+        )
+        smt.save()
+
+        self.assertEqual(smt.body, "This is a test legacy statement.")
+
+        self.navigateToPage(f"/controls/{system.id}/controls/catalogs/{smt.sid_class}/control/{smt.sid}")
+
 class ProjectControlTests(OrganizationSiteFunctionalTests):
 
     def test_project_controls_selected(self):
@@ -1126,7 +1126,7 @@ class ControlTestHelper(object):
             sid_class='NIST_SP-800-53_rev4',
             pid='a',
             body='This is a sample statement',
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
             producer_element=component,
             import_record=import_record,
         )
