@@ -33,9 +33,6 @@
     <div class="float-container">
 
         <div class="float-child">
-            <div id="" class="row">
-                <button id="compare-components" href="{% url 'compare_components' %}" class="btn btn-info pull-right">Change component</button>
-            </div>
             <h1>Component comparison</h1>
 
             <div class="col-xs-12 col-sm-12 col-lg-12">
@@ -48,7 +45,6 @@
                             <th scope="col">Control</th>
                             <th scope="col">Catalog</th>
                             <th scope="col">Statement</th>
-                            <th scope="col">Select</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -58,7 +54,6 @@
                                 <td scope="row" style="width: 90px;">{{ prime_smt.sid|safe }}{% if prime_smt.pid %}.{{ prime_smt.pid|safe }}{% endif %}</td>
                                 <td style="width: 190px;">{{ prime_smt.sid_class|safe }}</td>
                                 <td>{{ prime_smt.body|safe }}</td>
-                                <td><label for="comp_comparison_{{ forloop.counter }}"></label><input type="checkbox" id="comp_comparison_{{ forloop.counter }}" name="componentcomparecheckbox" value="{{ compare_prime.id }}"></td>
                             </tr>
                         {% endfor %}
                         </tbody>
