@@ -432,8 +432,8 @@ def compare_components(request):
     """
     Compare submitted components
     """
-    # TODO: need to figure out how to accumulate all checked boxes not one in pageobj. Need to check for any previously entered checkbox ids
-    compare_list = request.POST.getlist('componentcomparecheckbox')
+    checks = json.loads(request.POST.get('hiddenChecks'))
+    compare_list = list(checks.values())
     if len(compare_list) <= 1:
         # add messages
         messages.add_message(request, messages.WARNING, f"Not enough components were selected to compare!")
@@ -461,7 +461,6 @@ def compare_components(request):
                     diff = f"<span><ins style='background:#e6ffe6;'>{smt.body}</ins><span>"
                 differences.append(diff)
         difference_tuples.extend(zip([component.id] * len(cmt_smts),[component.name] * len(cmt_smts), cmt_smts, differences))
-    # TODO: still need to figure out how to only have only checkboxes for each component and send that to the view
     if request.method == 'POST':
         context = {
             "element_list": element_list,
