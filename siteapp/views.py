@@ -19,6 +19,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.generic import ListView
+from guardian.core import ObjectPermissionChecker
 from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model, get_perms, assign_perm
 
@@ -1886,20 +1887,23 @@ def portfolio_read_required(f):
 def portfolio_projects(request, pk):
     """List of projects within a portfolio"""
     portfolio = Portfolio.objects.get(pk=pk)
-    projects = Project.objects.filter(portfolio=portfolio).select_related('root_task') \
+    projects = Project.objects.filter(portfolio=portfolio).select_related('root_task').prefetch_related('portfolio') \
         .exclude(is_organization_project=True).order_by('-created')
-    user_projects = [project for project in projects if request.user.has_perm('view_project', project)]
+    # # Prefetch the permissions
+    perm_checker = ObjectPermissionChecker(request.user)
+    perm_checker.prefetch_perms(projects)
+
+    user_projects = [project for project in projects if perm_checker.has_perm('view_project', project)]
     anonymous_user = User.objects.get(username='AnonymousUser')
     users_with_perms = portfolio.users_with_perms()
 
     return render(request, "portfolios/detail.html", {
         "portfolio": portfolio,
-        "projects": projects if request.user.has_perm('view_portfolio', portfolio) else user_projects,
-        "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
-        "can_edit_portfolio": request.user.has_perm('change_portfolio', portfolio),
-        "send_invitation": Invitation.form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
+        "projects": projects if perm_checker.has_perm('view_portfolio', portfolio) else user_projects,
+        "can_invite_to_portfolio": perm_checker.has_perm('can_grant_portfolio_owner_permission', portfolio),
+        "can_edit_portfolio": perm_checker.has_perm('change_portfolio', portfolio),
+        "send_invitation": Invitation.form_context_dict(perm_checker, portfolio, [request.user, anonymous_user]),
         "users_with_perms": users_with_perms,
-        "display_users_with_perms": len(users_with_perms),
     })
 
 

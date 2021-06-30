@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load humanize %}
-{% load guardian_tags %}
 {% load static %}
 {% load q %}
 
@@ -79,13 +78,12 @@ Remove contextbar from top of page
         <div class="col-xs-6 col-sm-2">{{project.portfolio.title}}</div>
 
 
-        {% get_obj_perms request.user for project as "perms" %}
-        {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
-        {% if "delete_project" in perms %}
+
+        {% if perms.siteapp.delete_project %}
         <div class="col-xs-6 col-sm-2">Owner</div>
-        {% elif "change_project" in perms%}
+        {% elif perms.siteapp.change_project %}
         <div class="col-xs-6 col-sm-2">Project Member</div>
-        {% elif "portfolio_perms"%}
+        {% else %}
         <div class="col-xs-6 col-sm-2">Portfolio Member</div>
         {% endif %}
 
@@ -117,7 +115,7 @@ Remove contextbar from top of page
       </div>
       {% endif %}
 
-      {% if display_users_with_perms %}
+      {% if users_with_perms is not None %}
       <div id="portfolio-members" class="container">
         <div class="row portfolio-project-top">
           <p id="portfolio-members"></p>
@@ -165,7 +163,7 @@ Remove contextbar from top of page
       {{ block.super }}
       {% endblock %}
 
-      {% block scripts %}
+{% block scripts %}
       <script>
         var project_invitation_info = {{ send_invitation| json}};
         function invite_user_into_portfolio() {
