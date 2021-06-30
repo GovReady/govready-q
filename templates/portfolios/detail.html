@@ -78,18 +78,7 @@ Remove contextbar from top of page
         <div class="col-xs-6 col-sm-1">{{project.id}}</div>
         <div class="col-xs-6 col-sm-2">{{project.portfolio.title}}</div>
 
-<!--         {% get_obj_perms request.user for project as "project_perms" %}
-        {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
-        <div class="col-xs-6 col-sm-2">
-          <small style="color: #888;">
-              {{ project_perms|join:", " }}
-          </small>
-          <small style="color: #888;">
-              {% if portfolio_perms and not project_perms %}
-                Permissions through project portfolio
-              {% endif %}
-          </small>
-        </div> -->
+
         {% get_obj_perms request.user for project as "perms" %}
         {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
         {% if "delete_project" in perms %}
