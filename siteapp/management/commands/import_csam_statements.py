@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 
 from controls.enums.statements import StatementTypeEnum
 from controls.models import Statement, ImportRecord
+from controls.utilities import oscalize_control_id
 from siteapp.models import User, Project, Organization
 import xlsxio
 
@@ -69,7 +70,7 @@ class Command(BaseCommand):
                         record.save()
                 else:
                     # Create if doesn't exist
-                    create_statements.append(Statement(sid=row['control_number'],
+                    create_statements.append(Statement(sid=oscalize_control_id(row['control_number']),
                                                        sid_class="NIST_SP-800-53_rev4",
                                                        producer_element=project.system.root_element,
                                                        consumer_element=project.system.root_element,
