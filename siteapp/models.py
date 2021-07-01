@@ -649,8 +649,7 @@ class Project(TagModelMixin):
 
     @property
     def title(self):
-        if not self.root_task: return "???"
-        return self.root_task.title
+        return self.root_task.title if self.root_task else f"Project {self.id}"
 
     def organization_and_title(self):
         parts = [str(self.organization)]
@@ -869,7 +868,7 @@ class Project(TagModelMixin):
     def get_parent_projects(self):
         parents = []
         project = self
-        while project.root_task.is_answer_to.count():
+        while project.root_task is not None and project.root_task.is_answer_to.count():
             ans = project.root_task.is_answer_to.select_related("taskanswer__task__project__root_task__module").first()
             project = ans.taskanswer.task.project
             parents.append(project)
