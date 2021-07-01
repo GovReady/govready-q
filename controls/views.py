@@ -444,12 +444,12 @@ def compare_components(request):
         element_list = sorted(ele_q, key=lambda x: compare_list.index(str(x.id)))
         compare_prime, element_list = element_list[0], element_list[
                                                        1:]  # The first component selected will be compared against the rest
-        compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+        compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
     difference_tuples = []
     for component in element_list:
         differences = []
         # compare each component's statements to prime
-        cmt_smts = component.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+        cmt_smts = component.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
         if cmt_smts.exists():
             # TODO: Need to create a tuple with smt id to return appropriate
             for smt in cmt_smts:
