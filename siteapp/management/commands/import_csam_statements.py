@@ -5,6 +5,7 @@ from controls.models import Statement, ImportRecord
 from controls.utilities import oscalize_control_id
 from siteapp.models import User, Project, Organization
 import xlsxio
+import os
 
 import logging
 logging.basicConfig()
@@ -48,7 +49,7 @@ class Command(BaseCommand):
         org = Organization.objects.first()
         user = User.objects.get(username=options['username'])
 
-        import_record = ImportRecord.objects.create(name=options['file'])
+        import_record = ImportRecord.objects.create(name=os.path.basename(options['file']))
 
         for system_name, data in process_data.items():
             project = Project.objects.filter(system__root_element__name=system_name).first()
@@ -58,12 +59,15 @@ class Command(BaseCommand):
                 client.post("/store/govready-q-files-startpack/blank",
                             {"organization": org.slug})
                 project = Project.objects.get(id=client.response.url.split('/')[2])
+                project.import_record = import_record
+                project.save()
 
                 project.root_task.title_override = system_name
                 project.root_task.save()
                 project.root_task.on_answer_changed()
                 if project.system is not None:
                     project.system.root_element.name = system_name
+                    project.system.root_element.import_record = import_record
                     project.system.root_element.save()
                 # Set baseline if not set
                 # baseline_name = [p for p in parameters if p['id'] == 'baseline'][0]['value']
@@ -80,7 +84,6 @@ class Command(BaseCommand):
                         baseline={"catalog_key": catalog_key, "baseline_name": baseline_name},
                         user={"id": user.id, "username": user.username}
                     )
-
 
             existing_statements = Statement.objects.filter(sid__in=[oscalize_control_id(row['control_number']) for row in data],
                                                            sid_class="NIST_SP-800-53_rev4",

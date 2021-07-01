@@ -508,12 +508,16 @@ def confirm_import_record_delete(request, import_record_id):
     statement_count = 0
     for component in component_statements:
         statement_count += component_statements[component].count()
-    other_statement_count = len(import_record.get_other_statements())
+    projects = import_record.import_record_projects.all()
+    project_count = len(projects)
+    elements = import_record.import_record_elements.all()
+    element_count = len(elements)
     context = {
         "import_record": import_record,
         "component_count": component_count,
         "statement_count": statement_count,
-        "other_statement_count": other_statement_count
+        "project_count": project_count,
+        "element_count": element_count
     }
     return render(request, "components/confirm_import_record_delete.html", context)
 

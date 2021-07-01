@@ -3,6 +3,7 @@ from itertools import chain
 import logging
 import structlog
 import uuid as uuid
+import auto_prefetch
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
 from typing import Dict
@@ -23,6 +24,7 @@ from jsonfield import JSONField
 from siteapp.model_mixins.tags import TagModelMixin
 from siteapp.enums.assets import AssetTypeEnum
 from siteapp.utils.uploads import hash_file
+from controls.models import ImportRecord
 
 logging.basicConfig()
 structlog.configure(logger_factory=LoggerFactory())
@@ -620,6 +622,8 @@ class Project(TagModelMixin):
                                help_text="Project's version identifier")
     version_comment = models.TextField(unique=False, blank=True, null=True,
                                        help_text="Project's version comment")
+    import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_projects", on_delete=models.CASCADE,
+                                      unique=False, blank=True, null=True, help_text="The Import Record which created this Project.")
 
     class Meta:
         unique_together = [('organization', 'is_organization_project')]  # ensures only one can be true
