@@ -975,13 +975,13 @@ def project(request, project):
 
     # Fetch statement defining FISMA impact level if set
     impact_level_smts = project.system.root_element.statements_consumed.filter(
-        statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
+        statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.name)
     if len(impact_level_smts) > 0:
         impact_level = impact_level_smts.first().body
     else:
         impact_level = None
 
-    security_objective_smt = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value)
+    security_objective_smt = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name)
     if security_objective_smt.exists():
         security_body = project.system.get_security_impact_level
         confidentiality, integrity, availability = security_body.get('security_objective_confidentiality',
