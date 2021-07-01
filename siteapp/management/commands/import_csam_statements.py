@@ -55,23 +55,28 @@ class Command(BaseCommand):
                 if project.system is not None:
                     project.system.root_element.name = system_name
                     project.system.root_element.save()
-            existing_statements = Statement.objects.filter(sid__in=[row['control_number'] for row in data],
+            existing_statements = Statement.objects.filter(sid__in=[oscalize_control_id(row['control_number']) for row in data],
                                                            sid_class="NIST_SP-800-53_rev4",
                                                            producer_element=project.system.root_element,
                                                            consumer_element=project.system.root_element)
             existing_statement_sids = existing_statements.values_list('sid', flat=True)
             create_statements = []
             for row in data:
-                if row['control_number'] in existing_statement_sids:
-                    # Update if exists
-                    record = self.find(row['control_number'], 'sid', existing_statements)
+                oscal_control_id = oscalize_control_id(row['control_number'])
+                if oscal_control_id in existing_statement_sids and row['implementation_statement']:
+                    # Update smt if exists
+                    record = self.find(oscal_control_id, 'sid', existing_statements)
                     if record.body != row['implementation_statement']:
                         record.body = row['implementation_statement']
                         record.import_record = import_record
                         record.save()
-                else:
-                    # Create if doesn't exist
-                    create_statements.append(Statement(sid=oscalize_control_id(row['control_number']),
+                elif oscal_control_id in existing_statement_sids and not row['implementation_statement']:
+                    # Delete smt if exists and incoming implementation_statement is empty
+                    record = self.find(oscal_control_id, 'sid', existing_statements)
+                    record.delete()
+                elif row['implementation_statement']:
+                    # Create smt if doesn't exist
+                    create_statements.append(Statement(sid=oscal_control_id,
                                                        sid_class="NIST_SP-800-53_rev4",
                                                        producer_element=project.system.root_element,
                                                        consumer_element=project.system.root_element,
