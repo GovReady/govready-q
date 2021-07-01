@@ -40,6 +40,10 @@ class ImportRecord(models.Model):
 
         return component_statements
 
+    def get_other_statements(self):
+        other_smts = self.import_record_statements.all()
+        return other_smts
+
 STATEMENT_SYNCHED = 'synched'
 STATEMENT_NOT_SYNCHED = 'not_synched'
 STATEMENT_ORPHANED = 'orphaned'

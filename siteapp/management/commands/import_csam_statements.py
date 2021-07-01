@@ -6,6 +6,16 @@ from controls.utilities import oscalize_control_id
 from siteapp.models import User, Project, Organization
 import xlsxio
 
+import logging
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+
 # Example:
 # python3 manage.py import_csam_statements SystemImplementationStatementsQuery.xlsx admin
 
@@ -55,6 +65,23 @@ class Command(BaseCommand):
                 if project.system is not None:
                     project.system.root_element.name = system_name
                     project.system.root_element.save()
+                # Set baseline if not set
+                # baseline_name = [p for p in parameters if p['id'] == 'baseline'][0]['value']
+                # Assign profile/baseline
+                catalog_key="NIST_SP-800-53_rev4"
+                baseline_name = "moderate"
+                assign_results = project.system.root_element.assign_baseline_controls(user, catalog_key, baseline_name)
+                # Log result if successful
+                if assign_results:
+                    # Log start app / new project
+                    logger.info(
+                        event="assign_baseline",
+                        object={"object": "system", "id": project.system.root_element.id, "title": project.system.root_element.name},
+                        baseline={"catalog_key": catalog_key, "baseline_name": baseline_name},
+                        user={"id": user.id, "username": user.username}
+                    )
+
+
             existing_statements = Statement.objects.filter(sid__in=[oscalize_control_id(row['control_number']) for row in data],
                                                            sid_class="NIST_SP-800-53_rev4",
                                                            producer_element=project.system.root_element,
