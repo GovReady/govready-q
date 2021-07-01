@@ -142,7 +142,7 @@ class ControlUITests(SeleniumTest):
 
         os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
         catalog_list = Catalogs().list_catalogs()
-        self.assertEqual(len(catalog_list), 3)
+        self.assertEqual(len(catalog_list), 4)
 
     def test_extend_external_catalogs(self):
         """

@@ -1,0 +1,1954 @@
+---
+catalog_name: CMMC Version 1.0
+domains:
+- domain_name: ACCESS CONTROL (AC)
+  capabilities:
+    - capability_id: C001
+      capability_name: Establish system access requirements
+      controls:
+      - control_id: AC.1.001
+        control_name: Limit information system access to authorized users, processes acting on behalf of authorized users, or devices (including other information systems).
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.i"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.1"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "1.4, 1.6, 5.1, 14.6, 15.10, 16.8, 16.9, 16.11"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1, PR.AC-3, PR.AC-4, PR.AC-6, PR.PT-3, PR.PT-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-2, AC-3, AC-17"
+          - rc_framework: AU ACSC
+            rc_ids: "Essential Eight"
+      - control_id: AC.2.005
+        control_name: Provide privacy and security notices consistent with applicable CUI rules.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.9"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-8"
+      - control_id: AC.2.006
+        control_name: Limit use of portable storage devices on external systems.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.21"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "13.7, 13.8, 13.9"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.AM-4, PR.PT-2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-20(2)"
+    - capability_id: C002
+      capability_name: Control internal system access
+      controls:
+      - control_id: AC.1.002
+        control_name: Limit information system access to the types of transactions and functions that authorized users are permitted to execute.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.ii"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.2"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "1.4, 1.6, 5.1, 8.5, 14.6, 15.10, 16.8, 16.9, 16.11"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1, PR.AC-3, PR.AC-4, PR.AC-6, PR.PT-3, PR.PT-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-2, AC-3, AC-17"
+      - control_id: AC.2.007
+        control_name: Employ the principle of least privilege, including for specific security functions and privileged accounts.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.5"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "14.6"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-6, AC-6(1), AC-6(5)"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+      - control_id: AC.3.017
+        control_name: Separate the duties of individuals to reduce the risk of malevolent activity without collusion.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.4"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-5"
+      - control_id: AC.4.023
+        control_name: Control information flows between security domains on connected systems.
+        related_controls:
+          - rc_framework: CMMC modification of Draft NIST SP 800-171B
+            rc_ids: "3.1.3e"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "12.1, 12.2, 13.1, 13.3, 14.1, 14.2, 14.5, 14.6, 14.7, 15.6, 15.10"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.AM-3, PR.AC-5, PR.DS-5, PR.PT-4, DE.AE-1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-4, AC-4(1), AC-4(6), AC-4(8), AC-4(12), AC-4(13), AC-4(15), AC-4(20)"
+      - control_id: AC.5.024
+        control_name: Identify and mitigate risk associated with unidentified wireless access points connected to the network.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "15.3"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.DS-5, DE.AE-1, DE.CM-7"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SI-4(14)"
+      - control_id: AC.2.008
+        control_name: Use non-privileged accounts or roles when accessing nonsecurity functions.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.6"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "4.3, 4.6"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-6(2)"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+      - control_id: AC.3.018
+        control_name: Prevent non-privileged users from executing privileged functions and capture the execution of such functions in audit logs.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.7"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-6(9), AC-6(10)"
+      - control_id: AC.4.025
+        control_name: Periodically review and update CUI program access permissions.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+      - control_id: AC.2.009
+        control_name: Limit unsuccessful logon attempts.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.8"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-7"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-7"
+      - control_id: AC.3.019
+        control_name: Terminate (automatically) user sessions after a defined condition.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.11"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "16.7, 16.11"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-12"
+      - control_id: AC.2.010
+        control_name: Use session lock with pattern-hiding displays to prevent access and viewing of data after a period of inactivity.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.10"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "16.11"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-11, AC-11(1)"
+      - control_id: AC.3.012
+        control_name: Protect wireless access using authentication and encryption.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.17"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "15.7, 15.8"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-18(1)"
+      - control_id: AC.2.011
+        control_name: Authorize wireless access prior to allowing such connections.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.16"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "15.1, 15.10"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-18"
+      - control_id: AC.3.020
+        control_name: Control connection of mobile devices.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.18"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "13.6, 16.7"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-3, PR.AC-6"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-19"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+    - capability_id: C003
+      capability_name: Control remote system access
+      controls:
+      - control_id: AC.2.013
+        control_name: Monitor and control remote access sessions.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.12"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "12.11, 12.12"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-3, PR.PT-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-17(1)"
+      - control_id: AC.3.014
+        control_name: Employ cryptographic mechanisms to protect the confidentiality of remote access sessions.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.13"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "15.7, 15.8"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-3, PR.PT-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-17(2)"
+      - control_id: AC.4.032
+        control_name: Restrict remote network access based on organizationally defined risk factors such as time of day, location of access, physical location, network     connection state, and measured properties of the current user and role.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+      - control_id: AC.2.015
+        control_name: Route remote access via managed access control points.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.14"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "15.5, 15.10"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-3, PR.PT-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-17(3)"
+      - control_id: AC.3.021
+        control_name: Authorize remote execution of privileged commands and remote access to security-relevant information.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.15"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "8.8, 12.11, 12.12"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-3, PR.PT-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-17(4)"
+    - capability_id: C004
+      capability_name: Limit data access to authorized users and processes
+      controls:
+      - control_id: AC.1.003
+        control_name: Verify and control/limit connections to and use of external information systems.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.iii"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.20"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "12.1, 12.4"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.AM-4, PR.AC-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "EXD:SG3.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-20, AC-20(1)"
+      - control_id: AC.2.016
+        control_name: Control the flow of CUI in accordance with approved authorizations.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.3"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "12.1, 12.2, 12.5, 12.8, 13.3, 14.1, 14.6, 14.7"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.AM-3, PR.AC-5, PR.DS-5, PR.PT-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-4"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+      - control_id: AC.3.022
+        control_name: Encrypt CUI on mobile devices and mobile computing platforms.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.19"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "13.6"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-19(5)"
+      - control_id: AC.1.004
+        control_name: Control information posted or processed on publicly accessible information systems.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.iv"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.1.22"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AC-22"
+- domain_name: AUDIT AND ACCOUNTABILITY (AU)
+  capabilities:
+    - capability_id: C007
+      capability_name: Define audit requirements
+      controls:
+      - control_id: AU.2.041
+        control_name: Ensure that the actions of individual system users can be uniquely traced to those users so they can be held accountable for their actions.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.3.2"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "16.8, 16.9"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.CM-1, DE.CM-3, DE.CM-7"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG1.SP3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-2, AU-3, AU-3(1), AU-6, AU-11, AU-12"
+      - control_id: AU.3.045
+        control_name: Review and update logged events.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.3.3"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "6.7"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "IMC:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-2(3)"
+      - control_id: AU.3.046
+        control_name: Alert in the event of an audit logging process failure.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.3.4"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "6.7"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-5"
+    - capability_id: C008
+      capability_name: Perform auditing
+      controls:
+      - control_id: AU.2.042
+        control_name: Create and retain system audit logs and records to the extent needed to enable the monitoring, analysis, investigation, and reporting of unlawful or     unauthorized system activity.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.3.1"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "6.2"
+          - NIST CSF v1.1. DE.CM-1, DE.CM-3, DE.CM-7
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG2.SP3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-2, AU-3, AU-3(1), AU-6, AU-11, AU-12"
+      - control_id: AU.3.048
+        control_name: Collect audit information (e.g., logs) into one or more central repositories.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "6.5"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "COMP:SG3.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-6(4)"
+      - control_id: AU.5.055
+        control_name: Identify assets not reporting audit logs and assure appropriate organizationally defined systems are logging.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "6.2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-12"
+      - control_id: AU.2.043
+        control_name: Provide a system capability that compares and synchronizes internal system clocks with an authoritative source to generate time stamps for audit records.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.3.7"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "6.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-8, AU-8(1)"
+    - capability_id: C009
+      capability_name: Identify and protect audit information
+      controls:
+      - control_id: AU.3.049
+        control_name: Protect audit information and audit logging tools from unauthorized access, modification, and deletion.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.3.8"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG2.SP3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-6(7), AU-9"
+      - control_id: AU.3.050
+        control_name: Limit management of audit logging functionality to a subset of privileged users.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.3.9"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-6(7), AU-9(4)"
+    - capability_id: C010
+      capability_name: Review and manage audit logs
+      controls:
+      - control_id: AU.2.044
+        control_name: Review audit logs.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "6.7"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-1"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "COMP:SG3.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-6"
+      - control_id: AU.3.051
+        control_name: Correlate audit record review, analysis, and reporting processes for investigation and response to indications of unlawful, unauthorized, suspicious, or unusual activity.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.3.5"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "6.6, 6.7"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.AE-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "COMP:SG3.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-6(3)"
+      - control_id: AU.4.053
+        control_name: Automate analysis of audit logs to identify and act on critical indicators (TTPs) and/or organizationally defined suspicious activity.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "6.6"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.AE-3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SI-4(2)"
+      - control_id: AU.3.052
+        control_name: Provide audit record reduction and report generation to support on-demand analysis and reporting.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.3.6"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "RS.AN-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "COMP:SG3.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-7"
+      - control_id: AU.4.054
+        control_name: Review audit information for broad activity in addition to per-machine activity.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "RA-5(6), RA-5(8), RA-5(10)"
+
+- domain_name: AWARENESS AND TRAINING (AT)
+  capabilities:
+    - capability_id: C011
+      capability_name: Conduct security awareness activities
+      controls:
+      - control_id: AT.2.056
+        control_name: Ensure that managers, system administrators, and users of organizational systems are made aware of the security risks associated with their activitie  s and of the applicable policies, standards, and procedures related to the security of those systems.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.2.1"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "17.3"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AT-1, PR.AT-2, PR.AT-3, PR.AT-4, PR.AT-5"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "OTA:SG1.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AT-2, AT-3"
+      - control_id: AT.3.058
+        control_name: Provide security awareness training on recognizing and reporting potential indicators of insider threat.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.2.3"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.RA-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "OTA:SG2.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AT-2(2)"
+      - control_id: AT.4.059
+        control_name: Provide awareness training focused on recognizing and responding to threats from social engineering, advanced persistent threat actors, breaches, and suspicious behaviors; update the training at least annually or when there are significant changes to the threat.
+        related_controls:
+          - rc_framework: Draft NIST SP 800-171B
+            rc_ids: "3.2.1e"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "17.1, 17.2, 17.4"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AT-1, PR.AT-2, PR.AT-3, PR.AT-4, PR.AT-5"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "OTA:SG2.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AT-2"
+      - control_id: AT.4.060
+        control_name: Include practical exercises in awareness training that are aligned with current threat scenarios and provide feedback to individuals involved in the     training.
+        related_controls:
+          - rc_framework: CMMC modification of Draft NIST SP 800-171B
+            rc_ids: "3.2.2e"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "17.1, 17.2, 17.4"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AT-1, PR.AT-2, PR.AT-3, PR.AT-4, PR.AT-5"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "OTA:SG3.SP1, OTA:SG3.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AT-2(1)"
+    - capability_id: C012
+      capability_name: Conduct training
+      controls:
+      - control_id: AT.2.057
+        control_name: Ensure that personnel are trained to carry out their assigned information security-related duties and responsibilities.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.2.2"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "17.5, 17.6, 17.7, 17.8, 17.9"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AT-1, PR.AT-2, PR.AT-3, PR.AT-4, PR.AT-5"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "OTA:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AT-2, AT-3"
+
+- domain_name: CONFIGURATION MANAGEMENT (CM)
+  capabilities:
+    - capability_id: C013
+      capability_name: Establish configuration baselines
+      controls:
+      - control_id: CM.2.061
+        control_name: Establish and maintain baseline configurations and inventories of organizational systems (including hardware, software, firmware, and documentation)     throughout the respective system development life cycles.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.4.1"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "1.4, 1.5, 2.1, 2.4, 5.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.AM-1, ID.AM-2, PR.DS-3, PR.DS-7, PR.IP-1, DE.AE-1"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG5.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CM-2, CM-6, CM-8, CM-8(1)"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+      - control_id: CM.2.062
+        control_name: Employ the principle of least functionality by configuring organizational systems to provide only essential capabilities.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.4.6"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.IP-1, PR.PT-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CM-7"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+      - control_id: CM.2.063
+        control_name: Control and monitor user-installed software.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.4.9"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "2.1, 2.2, 2.6"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.CM-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG2.SP3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CM-11"
+    - capability_id: C014
+      capability_name: Perform configuration and change management
+      controls:
+      - control_id: CM.2.064
+        control_name: Establish and enforce security configuration settings for information technology products employed in organizational systems.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.4.2"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "1.4, 1.5, 2.1, 2.4, 5.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.AM-1, ID.AM-2, PR.DS-3, PR.DS-7, PR.IP-1, DE.AE-1"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CM-2, CM-6, CM-8, CM-8(1)"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+      - control_id: CM.3.067
+        control_name: Define, document, approve, and enforce physical and logical access restrictions associated with changes to organizational systems.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.4.5"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "2.5, 2.7, 2.8, 2.9, 4.3, 11.1, 11.3, 11.7"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.IP-1"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CM-5"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+      - control_id: CM.4.073
+        control_name: Employ application whitelisting and an application vetting process for systems identified by the organization.
+        related_controls:
+          - rc_framework: CMMC modification of NIST SP 800-171
+            rc_ids: "3.4.8"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "2.1, 2.2, 2.6, 2.7, 2.8, 2.9"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CM-7(4), CM-7(5)"
+      - control_id: CM.5.074
+        control_name: Verify the integrity and correctness of security critical or essential software as defined by the organization (e.g., roots of trust, forma  l verification,   or cryptographic signatures).
+        related_controls:
+          - rc_framework: CMMC modification of Draft NIST SP 800-171B
+            rc_ids: "3.14.1e"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "2.10"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.DS-6, PR.DS-8, PR.IP-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: " SI-7(6), SI-7(9), SI-7(10), SA-17"
+      - control_id: CM.2.065
+        control_name: Track, review, approve, or disapprove, and log changes to organizational systems.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.4.3"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.IP-1, PR.IP-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG5.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CM-3"
+          - rc_framework: AU ACSC
+            rc_ids: "Essential Eight"
+      - control_id: CM.3.068
+        control_name: Restrict, disable, or prevent the use of nonessential programs, functions, ports, protocols, and services.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.4.7"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "9.2, 9.4, 12.4"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.IP-1, PR.PT-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CM-7(1), CM-7(2)"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+      - control_id: CM.2.066
+        control_name: Analyze the security impact of changes prior to implementation.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.4.4"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.IP-3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CM-4"
+      - control_id: CM.3.069
+        control_name: Apply deny-by-exception (blacklisting) policy to prevent the use of unauthorized software or deny-all, permit-by-exception (whitelisting) policy t  o allow   the execution of authorized software.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.4.8"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "2.1, 2.2, 2.6, 2.7, 2.8, 2.9"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CM-7(4), CM-7(5)"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+
+- domain_name: IDENTIFICATION AND AUTHENTICATION (IA)
+  capabilities:
+    - capability_id: C015
+      capability_name: Grant access to authenticated entities
+      controls:
+      - control_id: IA.1.076
+        control_name: Identify information system users, processes acting on behalf of users, or devices.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.v"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.5.1"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "4.2, 4.3, 16.8, 16.9"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1, PR.AC-6, PR.AC-7"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "ID:SG1.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IA-2, IA-3, IA-5"
+      - control_id: IA.2.078
+        control_name: Enforce a minimum password complexity and change of characters when new passwords are created.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.5.7"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "4.2, 4.4"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1, PR.AC-6, PR.AC-7"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IA-5(1)"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+      - control_id: IA.3.083
+        control_name: Use multifactor authentication for local and network access to privileged accounts and for network access to non-privileged accounts.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.5.3"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "4.5, 11.5, 12.11"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1, PR.AC-6, PR.AC-7"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IA-2(1), IA-2(2), IA-2(3)"
+          - rc_framework: AU ACSC
+            rc_ids: "Essential Eight"
+      - control_id: IA.1.077
+        control_name: Authenticate (or verify) the identities of those users, processes, or devices, as a prerequisite to allowing access to organizational informatio  n systems.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.vi"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.5.2"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "4.2, 4.3, 16.8, 16.9"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1, PR.AC-6, PR.AC-7"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IA-2, IA-3, IA-5"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+      - control_id: IA.2.079
+        control_name: Prohibit password reuse for a specified number of generations.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.5.8"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "4.2, 4.4"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1, PR.AC-6, PR.AC-7"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IA-5(1)"
+      - control_id: IA.3.084
+        control_name: Employ replay-resistant authentication mechanisms for network access to privileged and non-privileged accounts.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.5.4"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1, PR.AC-6, PR.AC-7"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IA-2(8), IA-2(9)"
+      - control_id: IA.2.080
+        control_name: Allow temporary password use for system logons with an immediate change to a permanent password.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.5.9"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1, PR.AC-6, PR.AC-7"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IA-5(1)"
+      - control_id: IA.3.085
+        control_name: Prevent the reuse of identifiers for a defined period.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.5.5"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "16.7, 16.10, 16.12"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1, PR.AC-6, PR.AC-7"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IA-4"
+      - control_id: IA.2.081
+        control_name: Store and transmit only cryptographically-protected passwords.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.5.10"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "16.4, 16.5"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1, PR.AC-6, PR.AC-7"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IA-5(1)"
+      - control_id: IA.3.086
+        control_name: Disable identifiers after a defined period of inactivity.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.5.6"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "16.9, 16.10, 16.11"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1, PR.AC-6, PR.AC-7"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IA-4"
+      - control_id: IA.2.082
+        control_name: Obscure feedback of authentication information.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.5.11"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IA-6"
+
+- domain_name: INCIDENT RESPONSE (IR)
+  capabilities:
+    - capability_id: C016
+      capability_name: Plan incident response
+      controls:
+      - control_id: IR.2.092
+        control_name: Establish an operational incident-handling capability for organizational systems that includes preparation, detection, analysis, containment  , recovery,   and user response activities.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.6.1"
+          - NIST CSF v1.1. RS.RP-1
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "IMC:SG1.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IR-2, IR-4"
+      - control_id: IR.4.100
+        control_name: Use knowledge of attacker tactics, techniques, and procedures in incident response planning and execution.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+      - control_id: IR.5.106
+        control_name: In response to cyber incidents, utilize forensic data gathering across impacted systems, ensuring the secure transfer and protection of forensic data.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "RS.AM-3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-12"
+    - capability_id: C017
+      capability_name: Detect and report events
+      controls:
+      - control_id: IR.2.093
+        control_name: Detect and report events.
+        related_controls:
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "19.4"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.CM-1, DE.CM-2, DE.CM-3, RS.CO-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "IMC:SG2.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IR-6"
+      - control_id: IR.2.094
+        control_name: Analyze and triage events to support event resolution and incident declaration.
+        related_controls:
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "IMC:SG2.SP4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IR-4(3)"
+    - capability_id: C018
+      capability_name: Develop and implement a response to a declared incident
+      controls:
+      - control_id: IR.2.096
+        control_name: Develop and implement responses to declared incidents according to pre-defined procedures.
+        related_controls:
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "19.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "RS.RP-1"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "IMC:SG4.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IR-4"
+      - control_id: IR.3.098
+        control_name: Track, document, and report incidents to designated officials and/or authorities both internal and external to the organization.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.6.2"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "19.4"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "RS.CO-2, RS.CO-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "IMC:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IR-6, IR-7"
+      - control_id: IR.4.101
+        control_name: Establish and maintain a security operations center capability that facilitates a 24/7 response capability.
+        related_controls:
+          - rc_framework: CMMC modification of Draft NIST SP 800-171B
+            rc_ids: "3.6.1e"
+      - control_id: IR.5.102
+        control_name: Use a combination of manual and automated, real-time responses to anomalous activities that match incident patterns.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IR-4(1)"
+      - control_id: IR.5.108
+        control_name: Establish and maintain a cyber incident response team that can investigate an issue physically or virtually at any location within 24 hours.
+        related_controls:
+          - rc_framework: CMMC modification of Draft NIST SP 800-171B
+            rc_ids: "3.6.2e"
+    - capability_id: C019
+      capability_name: Perform post incident reviews
+      controls:
+      - control_id: IR.2.097
+        control_name: Perform root cause analysis on incidents to determine underlying causes.
+        related_controls:
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.AE-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "IMC:SG5.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "AU-2"
+    - capability_id: C020
+      capability_name: Test incident response
+      controls:
+      - control_id: IR.3.099
+        control_name: Test the organizational incident response capability.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.6.3"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "19.7"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.DP-3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "IR-3"
+      - control_id: IR.5.110
+        control_name: Perform unannounced operational exercises to demonstrate technical and procedural responses.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "19.7"
+
+- domain_name: MAINTENANCE (MA)
+  capabilities:
+    - capability_id: C021
+      capability_name: Manage maintenance
+      controls:
+      - control_id: MA.2.111
+        control_name: Perform maintenance on organizational systems.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.7.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.MA-1"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG5.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MA-2"
+      - control_id: MA.3.115
+        control_name: Ensure equipment removed for off-site maintenance is sanitized of any CUI.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.7.3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG5.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MA-2"
+      - control_id: MA.2.112
+        control_name: Provide controls on the tools, techniques, mechanisms, and personnel used to conduct system maintenance.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.7.2"
+          - NIST CSF v1.2 PR.MA-1
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG5.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MA-3"
+      - control_id: MA.3.116
+        control_name: Check media containing diagnostic and test programs for malicious code before the media are used in organizational systems.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.7.4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MA-3(2)"
+      - control_id: MA.2.113
+        control_name: Require multifactor authentication to establish nonlocal maintenance sessions via external network connections and terminate such connections when     nonlocal maintenance is complete.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.7.5"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.MA-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MA-4"
+      - control_id: MA.2.114
+        control_name: Supervise the maintenance activities of personnel without required access authorization.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.7.6"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "TM:SG5.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MA-5"
+
+- domain_name: MEDIA PROTECTION (MP)
+  capabilities:
+    - capability_id: C022
+      capability_name: Identify and mark media
+      controls:
+      - control_id: MP.3.122
+        control_name: Mark media with necessary CUI markings and distribution limitations.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.8.4"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG2.SP4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MP-3"
+    - capability_id: C023
+      capability_name: Protect and control media
+      controls:
+      - control_id: MP.2.119
+        control_name: Protect (i.e., physically control and securely store) system media containing CUI, both paper and digital.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.8.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MP-4"
+      - control_id: MP.3.123
+        control_name: Prohibit the use of portable storage devices when such devices have no identifiable owner.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.8.8"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG2.SP4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MP-7(1)"
+      - control_id: MP.2.120
+        control_name: Limit access to CUI on system media to authorized users.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.8.2"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "14.6"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG2.SP4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MP-2"
+      - control_id: MP.2.121
+        control_name: Control the use of removable media on system components.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.8.7"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "13.7, 13.8"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG2.SP4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MP-7"
+    - capability_id: C024
+      capability_name: Sanitize media
+      controls:
+      - control_id: MP.1.118
+        control_name: Sanitize or destroy information system media containing Federal Contract Information before disposal or release for reuse.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.vii"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.8.3"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.DS-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MP-6"
+    - capability_id: C025
+      capability_name: Protect media during transport
+      controls:
+      - control_id: MP.3.124
+        control_name: Control access to media containing CUI and maintain accountability for media during transport outside of controlled areas.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.8.5"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MP-5"
+      - control_id: MP.3.125
+        control_name: Implement cryptographic mechanisms to protect the confidentiality of CUI stored on digital media during transport unless otherwise protected by     alternative physical safeguards.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.8.6"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "13.9"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "MP-5(4)"
+
+- domain_name: PERSONNEL SECURITY (PS)
+  capabilities:
+    - capability_id: C026
+      capability_name: Screen personnel
+      controls:
+      - control_id: PS.2.127
+        control_name: Screen individuals prior to authorizing access to organizational systems containing CUI.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.9.1"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "HRM:SG2.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "PS-3"
+    - capability_id: C027
+      capability_name: Protect CUI during personnel actions
+      controls:
+      - control_id: PS.2.128
+        control_name: Ensure that organizational systems containing CUI are protected during and after personnel actions such as terminations and transfers.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.9.2"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-1"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "HRM:SG4.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "PS-4, PS-5"
+
+- domain_name: PHYSICAL PROTECTION (PE)
+  capabilities:
+    - capability_id: C028
+      capability_name: Limit physical access
+      controls:
+      - control_id: PE.1.131
+        control_name: Limit physical access to organizational information systems, equipment, and the respective operating environments to authorized individuals.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.viii"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.10.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "PE-2"
+      - control_id: PE.2.135
+        control_name: Protect and monitor the physical facility and support infrastructure for organizational systems.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.10.2"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "PE-6"
+      - control_id: PE.3.136
+        control_name: Enforce safeguarding measures for CUI at alternate work sites.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.10.6"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "EC:SG2.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "PE-17"
+      - control_id: PE.1.132
+        control_name: Escort visitors and monitor visitor activity.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "Partial b.1.ix"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.10.3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "AM:SG1.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "PE-3"
+      - control_id: PE.1.133
+        control_name: Maintain audit logs of physical access.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "Partial b.1.ix"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.10.4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "PE-3"
+      - control_id: PE.1.134
+        control_name: Control and manage physical access devices.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "Partial b.1.ix"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.10.5"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "PE-3"
+
+- domain_name: RECOVERY (RE)
+  capabilities:
+    - capability_id: C029
+      capability_name: Manage backups
+      controls:
+      - control_id: RE.2.137
+        control_name: Regularly perform and test data backups.
+        related_controls:
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "10.1, 10.3"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.IP-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG6.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CP-9"
+          - rc_framework: AU ACSC
+            rc_ids: "Essential Eight"
+      - control_id: RE.3.139
+        control_name: Regularly perform complete, comprehensive, and resilient data backups as organizationally defined.
+        related_controls:
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "10.1, 10.2, 10.5"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG6.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CP-9, CP-9(3)"
+      - control_id: RE.2.138
+        control_name: Protect the confidentiality of backup CUI at storage locations.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.8.9"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG2.SP4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CP-9"
+    - capability_id: C030
+      capability_name: Manage information security continuity
+      controls:
+      - control_id: RE.5.140
+        control_name: Ensure information processing facilities meet organizationally defined information security continuity, redundancy, and availability requirements.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.IP-9"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "RRM:SG1.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CP-10"
+
+- domain_name: RISK MANAGEMENT (RM)
+  capabilities:
+    - capability_id: C031
+      capability_name: Identify and evaluate risk
+      controls:
+      - control_id: RM.2.141
+        control_name: Periodically assess the risk to organizational operations (including mission, functions, image, or reputation), organizational assets, an  d individuals,   resulting from the operation of organizational systems and the associated processing, storage, or transmission of CUI.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.11.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.RA-1, ID.RA-4, DE.AE-4, RS.MI-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "RISK:SG4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "RA-3"
+      - control_id: RM.3.144
+        control_name: Periodically perform risk assessments to identify and prioritize risks according to the defined risk categories, risk sources, and risk measurement     criteria.
+        related_controls:
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.RA-5"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "RISK:SG3, RISK:SG4.SP3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "RA-3"
+      - control_id: RM.4.149
+        control_name: Catalog and periodically update threat profiles and adversary TTPs.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.AE-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "VAR:SG2.SP1"
+      - control_id: RM.2.142
+        control_name: Scan for vulnerabilities in organizational systems and applications periodically and when new vulnerabilities affecting those systems and application  s are   identified.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.11.2"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "3.1, 3.2"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.RA-1"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "VAR:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "RA-5"
+      - control_id: RM.4.150
+        control_name: Employ threat intelligence to inform the development of the system and security architectures, selection of security solutions, monitoring, threat     hunting, and response and recovery activities.
+        related_controls:
+          - rc_framework: Draft NIST SP 800-171B
+            rc_ids: "3.11.1e"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.RA-2, ID.RA-3"
+      - control_id: RM.4.151
+        control_name: Perform scans for unauthorized ports available across perimeter network boundaries over the organization's Internet network boundaries and other     organizationally defined boundaries.
+        related_controls:
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "12.2"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.CM-7"
+    - capability_id: C032
+      capability_name: Manage risk
+      controls:
+      - control_id: RM.2.143
+        control_name: Remediate vulnerabilities in accordance with risk assessments.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.11.3"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "3.7"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "RS.MI-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "VAR:SG3.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "RA-5"
+      - control_id: RM.3.146
+        control_name: Develop and implement risk mitigation plans.
+        related_controls:
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.RA-6, ID.RM-1"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "RISK:SG5.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "PM-9"
+      - control_id: RM.5.152
+        control_name: Utilize an exception process for non-whitelisted software that includes mitigation techniques.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+      - control_id: RM.3.147
+        control_name: Manage non-vendor-supported products (e.g., end of life) separately and restrict as necessary to reduce risk.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "2.2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SA-22(1)"
+      - control_id: RM.5.155
+        control_name: Analyze the effectiveness of security solutions at least annually to address anticipated risk to the system and the organization based on current and     accumulated threat intelligence.
+        related_controls:
+          - rc_framework: CMMC modification of Draft NIST SP 800-171B
+            rc_ids: "3.11.5e"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "RISK:SG6.SP1"
+    - capability_id: C033
+      capability_name: Manage supply chain risk
+      controls:
+      - control_id: RM.4.148
+        control_name: Develop and update as required, a plan for managing supply chain risks associated with the IT supply chain.
+        related_controls:
+          - rc_framework: CMMC modification of Draft NIST SP 800-171B
+            rc_ids: "3.11.7e"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.SC-1, ID.SC-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "EC:SG3.SP1, EC:SG3.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SA-12"
+
+- domain_name: SECURITY ASSESSMENT (CA)
+  capabilities:
+    - capability_id: C034
+      capability_name: Develop and manage a system security plan
+      controls:
+      - control_id: CA.2.157
+        control_name: Develop, document, and periodically update system security plans that describe system boundaries, system environments of operation, how security     requirements are implemented, and the relationships with or connections to other systems.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.12.4"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.IP-7"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "PL-2"
+      - control_id: CA.4.163
+        control_name: Create, maintain, and leverage a security strategy and roadmap for organizational cybersecurity improvement.
+        related_controls:
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.RM-1, RS.IM-1, RS.IM-2, RC.IM-1, and RC.IM-2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "PL-1"
+    - capability_id: C035
+      capability_name: Define and manage controls
+      controls:
+      - control_id: CA.2.158
+        control_name: Periodically assess the security controls in organizational systems to determine if the controls are effective in their application.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.12.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.DP-3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CA-2"
+      - control_id: CA.3.161
+        control_name: Monitor security controls on an ongoing basis to ensure the continued effectiveness of the controls.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.12.3"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.IP-7, DE.DP-5"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG1.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CA-7"
+      - control_id: CA.4.164
+        control_name: Conduct penetration testing periodically, leveraging automated scanning tools and ad hoc tests using human experts.
+        related_controls:
+          - rc_framework: CMMC modification of Draft NIST SP 800-171B
+            rc_ids: "3.12.1e"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "20.2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CA-8"
+      - control_id: CA.2.159
+        control_name: Develop and implement plans of action designed to correct deficiencies and reduce or eliminate vulnerabilities in organizational systems.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.12.2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "RISK:SG5.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CA-5"
+      - control_id: CA.4.227
+        control_name: Periodically perform red teaming against organizational assets in order to validate defensive capabilities.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "20.3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "CA-8(2)"
+    - capability_id: C036
+      capability_name: Perform code reviews
+      controls:
+      - control_id: CA.3.162
+        control_name: Employ a security assessment of enterprise software that has been developed internally, for internal use, and that has been organizationally defined a  s an   area of risk.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "18.1, 18.2"
+
+- domain_name: SITUATIONAL AWARENESS (SA)
+  capabilities:
+    - capability_id: C037
+      capability_name: Implement threat monitoring
+      controls:
+      - control_id: SA.3.169
+        control_name: Receive and respond to cyber threat intelligence from information sharing forums and sources and communicate to stakeholders.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.RA-2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "PM-16"
+      - control_id: SA.4.171
+        control_name: Establish and maintain a cyber threat hunting capability to search for indicators of compromise in organizational systems and detect, track, an  d disrupt   threats that evade existing controls.
+        related_controls:
+          - rc_framework: Draft NIST SP 800-171B
+            rc_ids: "3.11.2e"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.CM-1, DE.CM-2, DE.CM-3, DE.CM-4, DE.CM-5, DE.CM-6, DE.CM.7, DE.CM-8"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "PM-16"
+      - control_id: SA.4.173
+        control_name: Design network and system security capabilities to leverage, integrate, and share indicators of compromise.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SI-4(24)"
+
+- domain_name: SYSTEM AND COMMUNICATIONS PROTECTION (SC)
+  capabilities:
+    - capability_id: C038
+      capability_name: Define security requirements for systems and communications
+      controls:
+      - control_id: SC.2.178
+        control_name: Prohibit remote activation of collaborative computing devices and provide indication of devices in use to users present at the device.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.12"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-15"
+      - control_id: SC.3.177
+        control_name: Employ FIPS-validated cryptography when used to protect the confidentiality of CUI.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.11"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "14.4, 14.8"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.DS-1, PR.DS-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-13"
+      - control_id: SC.4.197
+        control_name: Employ physical and logical isolation techniques in the system and security architecture and/or where deemed appropriate by the organization.
+        related_controls:
+          - rc_framework: CMMC modification of Draft NIST SP 800-171B
+            rc_ids: "3.13.4e"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "14.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-5"
+      - control_id: SC.5.198
+        control_name: Configure monitoring systems to record packets passing through the organization's Internet network boundaries and other organizationally defined     boundaries.
+        related_controls:
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "12.5"
+      - control_id: SC.2.179
+        control_name: Use encrypted sessions for the management of network devices.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "11.5"
+      - control_id: SC.3.180
+        control_name: Employ architectural designs, software development techniques, and systems engineering principles that promote effective information security within     organizational systems.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.2"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "5.1, 5.2, 5.4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SA-8"
+      - control_id: SC.4.228
+        control_name: Isolate administration of organizationally defined high-value critical network infrastructure components and servers.
+        related_controls:
+          - rc_framework: CMMC modification of NIST SP 800-171 Rev 1
+            rc_ids: "3.13.2"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "11.7, 14.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-5"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SA-8"
+      - control_id: SC.5.230
+        control_name: Enforce port and protocol compliance.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "9.2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-7(17)"
+      - control_id: SC.3.181
+        control_name: Separate user functionality from system management functionality.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.3"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "4.3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-2"
+          - rc_framework: AU ACSC
+            rc_ids: "Essential Eight"
+      - control_id: SC.3.182
+        control_name: Prevent unauthorized and unintended information transfer via shared system resources.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-4"
+      - control_id: SC.3.183
+        control_name: Deny network communications traffic by default and allow network communications traffic by exception (i.e., deny all, permit by exception).
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.6"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-7(5)"
+      - control_id: SC.3.184
+        control_name: Prevent remote devices from simultaneously establishing non-remote connections with organizational systems and communicating via some other connectio  n to   resources in external networks (i.e., split tunneling).
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.7"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "12.12"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-7(7)"
+      - control_id: SC.3.185
+        control_name: Implement cryptographic mechanisms to prevent unauthorized disclosure of CUI during transmission unless otherwise protected by alternative physical     safeguards.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.8"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-8(1)"
+      - control_id: SC.3.186
+        control_name: Terminate network connections associated with communications sessions at the end of the sessions or after a defined period of inactivity.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.9"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-10"
+      - control_id: SC.3.187
+        control_name: Establish and manage cryptographic keys for cryptography employed in organizational systems.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.10"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-12"
+      - control_id: SC.3.188
+        control_name: Control and monitor the use of mobile code.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.13"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.CM-5"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-18"
+          - rc_framework: AU ACSC
+            rc_ids: "Essential Eight"
+      - control_id: SC.3.189
+        control_name: Control and monitor the use of Voice over Internet Protocol (VoIP) technologies.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.14"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-19"
+      - control_id: SC.3.190
+        control_name: Protect the authenticity of communications sessions.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.15"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-23"
+      - control_id: SC.3.191
+        control_name: Protect the confidentiality of CUI at rest.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.16"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "14.8"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.DS-1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-28"
+    - capability_id: C039
+      capability_name: Control communications at system boundaries
+      controls:
+      - control_id: SC.1.175
+        control_name: Monitor, control, and protect organizational communications (i.e., information transmitted or received by organizational information systems) at the     external boundaries and key internal boundaries of the information systems.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.x"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.PT-4"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-7"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+      - control_id: SC.3.192
+        control_name: Implement Domain Name System (DNS) filtering services.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "7.7"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-20"
+      - control_id: SC.4.199
+        control_name: Utilize threat intelligence to proactively block DNS requests from reaching malicious domains.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+      - control_id: SC.5.208
+        control_name: Employ organizationally defined and tailored boundary protections in addition to commercially available solutions.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+      - control_id: SC.1.176
+        control_name: Implement subnetworks for publicly accessible system components that are physically or logically separated from internal networks.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.xi"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.13.5"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "14.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.AC-5"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-7"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+      - control_id: SC.3.193
+        control_name: Implement a policy restricting the publication of CUI on externally owned, publicly accessible websites (e.g., forums, LinkedIn, Facebook, Twitter).
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+      - control_id: SC.4.202
+        control_name: Employ mechanisms to analyze executable code and scripts (e.g., sandbox) traversing Internet network boundaries or other organizationally defined     boundaries.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-44"
+      - control_id: SC.4.229
+        control_name: Utilize a URL categorization service and implement techniques to enforce URL filtering of websites that are not approved by the organization.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "7.4"
+
+- domain_name: SYSTEM AND INFORMATION INTEGRITY (SI)
+  capabilities:
+    - capability_id: C040
+      capability_name: Identify and manage information system flaws
+      controls:
+      - control_id: SI.1.210
+        control_name: Identify, report, and correct information and information system flaws in a timely manner.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.xii"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.14.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "RS.CO-2, RS.MI-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "VAR:SG2.SP2"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SI-2"
+          - rc_framework: UK NCSC Cyber Essentials
+            rc_ids: "~"
+          - rc_framework: AU ACSC
+            rc_ids: "Essential Eight"
+      - control_id: SI.2.214
+        control_name: Monitor system security alerts and advisories and take action in response.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.14.3"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "6.5, 6.6"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "RS.AN-5"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "IMC:SG2.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SI-5"
+      - control_id: SI.4.221
+        control_name: Use threat indicator information relevant to the information and systems being protected and effective mitigations obtained from external organization  s to   inform intrusion detection and threat hunting.
+        related_controls:
+          - rc_framework: Draft NIST SP 800-171B
+            rc_ids: "3.14.6e"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "ID.RA-2, ID.RA-3"
+    - capability_id: C041
+      capability_name: Identify malicious content
+      controls:
+      - control_id: SI.1.211
+        control_name: Provide protection from malicious code at appropriate locations within organizational information systems.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.xiii"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.14.2"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "8.1"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.CM-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "VAR:SG3.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SI-3"
+          - rc_framework: AU ACSC
+            rc_ids: "Essential Eight"
+      - control_id: SI.5.222
+        control_name: Analyze system behavior to detect and mitigate execution of normal system commands and scripts that indicate malicious actions.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+      - control_id: SI.1.212
+        control_name: Update malicious code protection mechanisms when new releases are available.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.xiv"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.14.4"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "8.2"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.CM-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "VAR:SG3.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SI-3"
+      - control_id: SI.1.213
+        control_name: Perform periodic scans of the information system and real-time scans of files from external sources as files are downloaded, opened, or executed.
+        related_controls:
+          - rc_framework: FAR Clause 52.204-21
+            rc_ids: "b.1.xv"
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.14.5"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "8.4, 8.7"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.CM-4"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "VAR:SG3.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SI-3"
+    - capability_id: C042
+      capability_name: Perform network and system monitoring
+      controls:
+      - control_id: SI.2.216
+        control_name: Monitor organizational systems, including inbound and outbound communications traffic, to detect attacks and indicators of potential attacks.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.14.6"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "12.6"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.CM-1"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG1.SP3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SI-4"
+      - control_id: SI.3.218
+        control_name: Employ spam protection mechanisms at information system access entry and exit points.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SI-8"
+      - control_id: SI.5.223
+        control_name: Monitor individuals and system components on an ongoing basis for anomalous or suspicious behavior.
+        related_controls:
+          - rc_framework: Draft NIST SP 800-171B
+            rc_ids: "3.14.2e"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "13.3, 16.12, 16.13"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.CM-1, DE.CM-3"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG1.SP3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SI-4"
+      - control_id: SI.2.217
+        control_name: Identify unauthorized use of organizational systems.
+        related_controls:
+          - rc_framework: NIST SP 800-171 Rev 1
+            rc_ids: "3.14.7"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "DE.CM-1, DE.CM-7"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "MON:SG1.SP3"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SI-4"
+    - capability_id: C043
+      capability_name: Implement advanced email protections
+      controls:
+      - control_id: SI.3.219
+        control_name: Implement email forgery protections.
+        related_controls:
+          - rc_framework: CMMC
+            rc_ids: "~"
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "7.8"
+          - rc_framework: NIST CSF v1.1
+            rc_ids: "PR.DS-2"
+          - rc_framework: CERT RMM v1.2
+            rc_ids: "KIM:SG4.SP1"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-8"
+      - control_id: SI.3.220
+        control_name: Utilize sandboxing to detect or block potentially malicious email.
+        related_controls:
+          - rc_framework: CIS Controls v7.1
+            rc_ids: "7.10"
+          - rc_framework: NIST SP 800-53 Rev 4
+            rc_ids: "SC-44"
