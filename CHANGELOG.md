@@ -6,6 +6,8 @@ v0.9.6-dev (June XX, 2021)
 **UI changes**
 
 * Display legacy control implementation statements within system's statements.
+* Added compare components button to compare one component's statements to other selected components.
+* Added a Select/Deselect button for component comparison choice
 
 **Bug fixes**
 
@@ -14,6 +16,7 @@ v0.9.6-dev (June XX, 2021)
 **Developer changes**
 
 * Add custom Django command to batch import legacy control implementation statements from legacy SSPs Excel spreadsheet exports. Currently supports CSAM.
+* Added missing unit test for portfolio project endpoint
 
 **Data changes**
 
