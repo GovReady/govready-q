@@ -20,7 +20,14 @@
     <h2 class="">Confirm Import Delete: Import Record {{ import_record.id }}</h2>
     <h3>{{ import_record.created }}</h3>
 
-    <p>This import includes {{ component_count }} components{{ component|pluralize }} and {{ statement_count }} statements{{ statement|pluralize }}.</p>
+    <p>This import includes:
+        <ul>
+            <li>{{ project_count }} project{{ project_count|pluralize }}</li>
+            <li>{{ element_count }} system{{ element_count|pluralize }} (e.g., system root element){{ element_count|pluralize }}</li>
+            <li>{{ component_count }} component{{ component_count|pluralize }}</li>
+            <li>{{ statement_count }} component statement{{ statement_count|pluralize }}</li>
+        </ul>
+    </p>
 
   <a id="cancel-import-delete" class="btn btn-default" href="{% url 'component_library' %}">Cancel</a>
   <a id="confirm-import-delete" class="btn btn-danger" href="{% url 'import_record_delete' import_record.id %}">Delete</a>
