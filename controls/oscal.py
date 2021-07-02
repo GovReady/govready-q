@@ -242,6 +242,29 @@ class Catalog(object):
             return None
         return prop['value']
 
+    def get_control_part_by_name(self, control, part_name):
+        """Return value of a part of a control by name of part"""
+        part = self.find_dict_by_value(control['parts'], "name", part_name)
+        return part
+
+    def get_control_guidance_links(self, control):
+        """Return the links in the guidance section of a control"""
+        guidance = self.get_control_part_by_name(control, "guidance")
+        if "links" in guidance:
+            return guidance["links"]
+        else:
+            return None
+
+    def get_guidance_related_links_by_value_in_href(self, control, value):
+        """Return objects from 'rel': 'related' links with particular value found in the 'href' string"""
+        links = [ l for l in self.get_control_guidance_links(control) if l['rel']=="related" and value in l['href'] ]
+        return links
+
+    def get_guidance_related_links_text_by_value_in_href(self, control, value):
+        """Return 'text' from rel': 'related' links with particular value found in the 'href' string"""
+        links_text = [ l['text'] for l in self.get_control_guidance_links(control) if l['rel']=="related" and value in l['href'] ]
+        return links_text
+
     def get_control_parameter_label_by_id(self, control, param_id):
         """Return value of a parameter of a control by id of parameter"""
         param = self.find_dict_by_value(control['parameters'], "id", param_id)
