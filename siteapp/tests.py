@@ -396,7 +396,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("form#login_form button[type=submit]")
 
     def _new_project(self):
-        self.browser.get(self.url("/projects"))
+        self.browser.get(self.browser.current_url)
 
         wait_for_sleep_after(lambda: self.click_element("#new-project"))
 
@@ -805,11 +805,15 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         """
         Ensure key parts of the portfolio page
         """
-        # Create new project within portfolio
+        # Login as authenticated user
+        self.client.force_login(user=self.user)
+        # Reset login
+        self.browser.get(self.url("/accounts/logout/"))
         self._login()
+        # If the above is not done a new project cannot be created
         self._new_project()
 
-        portfolio_id = Project.objects.last().id
+        portfolio_id = Project.objects.last().portfolio.id
         url = reverse('portfolio_projects', args=[portfolio_id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -821,7 +825,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
             self.assertEqual(response.context[context], True)
 
         self.assertEqual(response.context["portfolio"].id, portfolio_id)
-        self.assertEqual(response.context["send_invitation"]['users'], [{'id': 2, 'name': 'me'}, {'id': 3, 'name': 'me2'}])
 
 
     def test_grant_portfolio_access(self):
