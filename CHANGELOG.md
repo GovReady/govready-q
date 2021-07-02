@@ -1,10 +1,25 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (June XX, 2021)
----------------------
+v0.9.6-dev (June XX, 2021)
 
+--------------------------
 
+**UI changes**
+
+* Display legacy control implementation statements within system's statements.
+
+**Bug fixes**
+
+* Set component library detail page Systems tab to not be inactive and thus remove the content from the System tab showing up on the Control Implementation Statements tab.
+
+**Developer changes**
+
+* Add custom Django command to batch import legacy control implementation statements from legacy SSPs Excel spreadsheet exports. Currently supports CSAM.
+
+**Data changes**
+
+* Set all `StatementTypeEnum.<LABEL>.value` to `StatementTypeEnum.<LABEL>.name` in order for relevant label/term to show up in Django database admin interface.
 
 v0.9.5 (June 23, 2021)
 ----------------------
@@ -18,7 +33,7 @@ v0.9.5 (June 23, 2021)
 
 * Add "Import AppSource" button for admins in Compliance App store to simplify end-users adding AppSource.
 * Link to library version of component from a system's selected control component listing and selected components.
-
+* Improve UI of project security objectives. Improve alignment and convert text fields to select boxes to control data input.
 
 v0.9.4 (June 13, 2021)
 ----------------------
