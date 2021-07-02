@@ -3,8 +3,6 @@ GovReady-Q Release Notes
 
 v0.9.6-dev (June XX, 2021)
 
---------------------------
-
 **UI changes**
 
 * Display legacy control implementation statements within system's statements.
@@ -20,6 +18,9 @@ v0.9.6-dev (June XX, 2021)
 **Data changes**
 
 * Set all `StatementTypeEnum.<LABEL>.value` to `StatementTypeEnum.<LABEL>.name` in order for relevant label/term to show up in Django database admin interface.
+
+* Fisma impact level is now represented as Security Sensitivity level following OSCAL's schema.
+
 
 v0.9.5 (June 23, 2021)
 ----------------------
@@ -45,9 +46,11 @@ v0.9.4 (June 13, 2021)
 * Created a modal to allow an admin user to add security objectives confidentiality, integrity, and availability.
 * Add field to identify user's default portfolio.
 
+
 **UI changes**
 
 * Can now edit a system componet's state and type in the detail page for a selected component.
+* Can now create a component with a state and type with the `ElementForm`
 * Improve project pages appearance: decrease action button width and left align text; widen from 9 to 10 columns main content.
 * Remove "Refresh Documents" button on task finished page because caches are now automatically cleared and document content refreshed.
 * Display system component component_state and component_type when component is listed for a system.
@@ -80,6 +83,7 @@ v0.9.4 (June 13, 2021)
 * Fix bug breaking rendering of system's control detail page by removing an errant login_required decorator on a function.
 * File upload validator now accepts files with capitalized extensions, e.g. ".JPG".
 * File upload validator now recognizes ".jpeg" in addition to ".jpg" extension on JPEG files.
+
 
 v0.9.3.5.3 (May 16, 2021)
 -------------------------

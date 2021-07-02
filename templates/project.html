@@ -194,7 +194,6 @@
                                                                        #B2E0B2 0 235deg);"> </h2>
           <span class="status-small">{{ percent_compliant_100|floatformat:2 }}% compliance (unassessed)</span>
           <br/>
-          <br/>
         </div>
       </div>
 
@@ -214,8 +213,8 @@
         </div>
       </div>
       <div class="col-md-3">
-        <div id="systems-fisma-impact-level" class="status-box status-small" onclick="" style="">
-          Mission Impact: <b>{% if impact_level %}{{ impact_level|lower }}{% else %} Not Categorized{% endif %}</b>
+        <div id="systems-security-sensitivity-level" class="status-box status-small" onclick="" style="">
+          Mission Impact: <b>{% if security_sensitivity %}{{ security_sensitivity|lower }}{% else %} Not Categorized{% endif %}</b>
         </div>
       </div>
 </div>

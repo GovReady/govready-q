@@ -19,6 +19,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.generic import ListView
+from guardian.core import ObjectPermissionChecker
 from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model, get_perms, assign_perm
 
@@ -156,7 +157,7 @@ def homepage(request):
     if settings.OKTA_CONFIG:
         return HttpResponseRedirect("/oidc/authenticate")
     return render(request, "index.html", {
-        "hide_registration": SystemSettings.hide_registration,
+        "hide_registration":  SystemSettings.hide_registration,
         "sitename": Sitename.objects.last(),
         "signup_form": signup_form,
         "login_form": login_form,
@@ -973,13 +974,14 @@ def project(request, project):
     if approx_compliance_degrees > 358:
         approx_compliance_degrees = 358
 
-    # Fetch statement defining FISMA impact level if set
-    impact_level_smts = project.system.root_element.statements_consumed.filter(
-        statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.name)
-    if len(impact_level_smts) > 0:
-        impact_level = impact_level_smts.first().body
+
+    # Fetch statement defining Security Sensitivity level if set
+    security_sensitivity_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
+    if len(security_sensitivity_smts) > 0:
+        security_sensitivity = security_sensitivity_smts.first().body
+
     else:
-        impact_level = None
+        security_sensitivity = None
 
     security_objective_smt = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name)
     if security_objective_smt.exists():
@@ -994,7 +996,7 @@ def project(request, project):
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
-        "impact_level": impact_level,
+        "security_sensitivity": security_sensitivity,
         "confidentiality": confidentiality,
         "integrity": integrity,
         "availability": availability,
@@ -1060,7 +1062,6 @@ def project_security_objs_edit(request, project_id):
             # project to update
             project = Project.objects.get(id=project_id)
 
-            # TODO: Move security impact levels to an admin only form. adding validation.
             confidentiality = request.POST.get("confidentiality", "").strip() or None
             integrity = request.POST.get("integrity", "").strip() or None
             availability = request.POST.get("availability", "").strip() or None
@@ -1889,20 +1890,23 @@ def portfolio_read_required(f):
 def portfolio_projects(request, pk):
     """List of projects within a portfolio"""
     portfolio = Portfolio.objects.get(pk=pk)
-    projects = Project.objects.filter(portfolio=portfolio).select_related('root_task') \
+    projects = Project.objects.filter(portfolio=portfolio).select_related('root_task').prefetch_related('portfolio') \
         .exclude(is_organization_project=True).order_by('-created')
-    user_projects = [project for project in projects if request.user.has_perm('view_project', project)]
+    # # Prefetch the permissions
+    perm_checker = ObjectPermissionChecker(request.user)
+    perm_checker.prefetch_perms(projects)
+
+    user_projects = [project for project in projects if perm_checker.has_perm('view_project', project)]
     anonymous_user = User.objects.get(username='AnonymousUser')
     users_with_perms = portfolio.users_with_perms()
 
     return render(request, "portfolios/detail.html", {
         "portfolio": portfolio,
-        "projects": projects if request.user.has_perm('view_portfolio', portfolio) else user_projects,
-        "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
-        "can_edit_portfolio": request.user.has_perm('change_portfolio', portfolio),
-        "send_invitation": Invitation.form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
+        "projects": projects if perm_checker.has_perm('view_portfolio', portfolio) else user_projects,
+        "can_invite_to_portfolio": perm_checker.has_perm('can_grant_portfolio_owner_permission', portfolio),
+        "can_edit_portfolio": perm_checker.has_perm('change_portfolio', portfolio),
+        "send_invitation": Invitation.form_context_dict(perm_checker, portfolio, [request.user, anonymous_user]),
         "users_with_perms": users_with_perms,
-        "display_users_with_perms": len(users_with_perms),
     })
 
 

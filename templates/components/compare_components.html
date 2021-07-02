@@ -9,17 +9,17 @@
 {% block head %}
     {% include "controls/_style-controls.html" %}
     <style>
-.float-container {
-    border: 3px solid #fff;
-    padding: 20px;
-}
+        .float-container {
+            border: 3px solid #fff;
+            padding: 20px;
+        }
 
-.float-child {
-    width: 100%;
-    float: left;
-    padding: 20px;
-    border: 2px solid slategray;
-}
+        .float-child {
+            width: 100%;
+            float: left;
+            padding: 20px;
+            border: 2px solid slategray;
+        }
 
     </style>
 
@@ -28,45 +28,47 @@
 {% block contextbar %}{% endblock %}
 
 {% block body %}
+ <form name="change_compare_form" method="POST">
+ {% csrf_token %}
+    <div class="float-container">
 
-<div class="float-container">
+        <div class="float-child">
+            <h1>Component comparison</h1>
 
-    <div class="float-child">
-     <h1>Component comparison</h1>
-        <div class="col-xs-12 col-sm-12 col-lg-12">
-            <h2 class="sub-header">{{ compare_prime.name }}</h2>
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered">
-                    <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">Component</th>
-                        <th scope="col">Control</th>
-                        <th scope="col">Catalog</th>
-                        <th scope="col">Statement</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for prime_smt in prime_smts %}
+            <div class="col-xs-12 col-sm-12 col-lg-12">
+                <h2 class="sub-header">{{ compare_prime.name|safe }}</h2>
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Component</th>
+                            <th scope="col">Control</th>
+                            <th scope="col">Catalog</th>
+                            <th scope="col">Statement</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for prime_smt in prime_smts %}
                             <tr>
-                                <td scope="row" style="width: 110px;"><b>{{ compare_prime.name }}</b></td>
-                                <td scope="row" style="width: 90px;">{{ prime_smt.sid }}{% if prime_smt.pid %}.{{ prime_smt.pid }}{% endif %}</th>
-                                <td style="width: 190px;">{{ prime_smt.sid_class }}</td>
+                                <td scope="row" style="width: 110px;"><b>{{ compare_prime.name|safe }}</b></td>
+                                <td scope="row" style="width: 90px;">{{ prime_smt.sid|safe }}{% if prime_smt.pid %}.{{ prime_smt.pid|safe }}{% endif %}</td>
+                                <td style="width: 190px;">{{ prime_smt.sid_class|safe }}</td>
                                 <td>{{ prime_smt.body|safe }}</td>
                             </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+
+        <div class="float-child">
+            {% with comp_differences=differences %}
+                {% include "components/compare_block.html" %}
+            {% endwith %}
+        </div>
+
     </div>
-
-    <div class="float-child">
-        {% with comp_differences=differences %}
-            {% include "components/compare_block.html" %}
-        {% endwith %}
-    </div>
-
-</div>
-
+</form>
 {% endblock %}
 
