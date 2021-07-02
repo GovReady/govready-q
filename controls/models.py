@@ -575,7 +575,7 @@ class System(auto_prefetch.Model):
 
         # Get the security_impact_level smt for element; should only have 1 statement
         try:
-            smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value, producer_element=self.root_element, consumer_element=self.root_element)
+            smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element)
             security_impact_level = eval(smt.body)# Evaluate string of dictionary
             return security_impact_level
         except Statement.DoesNotExist:
