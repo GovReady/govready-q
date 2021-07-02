@@ -20,22 +20,20 @@ if "Legacy" in type(v).__name__:
 DEVEL_BUILD = False
 with open("CHANGELOG.md") as f:
 	for line in f:
-		if re.match(r"^v.?999", line):
+		if re.match(r"^v.?999", line) or re.match(r"^(v\S+-dev) \(.*", line) or re.match(r"^-+\s*$", line) or v.is_devrelease:
 			# v999 or v.999 indicates a development build
 			DEVEL_BUILD = True
-
-		if re.match(r"^(v\S+-dev) \(.*", line):
-			# v0.9.5-dev indicates a development build
-			DEVEL_BUILD = True
-
-		elif re.match(r"^-+\s*$", line):
-			# A heading before a version number usually is for
-			# "In Development" and indicates this is a development
-			# build as well
-			DEVEL_BUILD = True
+			print("999")
+			print(re.match(r"^v.?999", line) )
+			print("-dev")
+			print(re.match(r"^(v\S+-dev) \(.*", line) )
+			print("other check")
+			print(re.match(r"^-+\s*$", line) )
 
 		m = re.match(r"^(v\S+-dev) \(.*|^(v\S+) \(.*", line)
-
+		print(m)
+		n = re.match(r"^(v\S+) \(.*", line)
+		print(n)
 		if m:
 			CURRENT_VERSION = m.group(1)
 			break
@@ -50,13 +48,10 @@ if not DEVEL_BUILD and v.local:
 	sys.exit(1)
 
 # check to ensure that if either the CHANGELOG or VERSION indicates a development build, the other does so as well
-if not DEVEL_BUILD and str(v) == "999":
+if not DEVEL_BUILD and v.is_prerelease:
 	print("The VERSION file indicates a development build version of {}, while the CHANGELOG does not, indicating a version of {}.".format(VERSION, CURRENT_VERSION))
 	sys.exit(1)
-elif DEVEL_BUILD and str(v) != "999":
-	print("The VERSION file does not indicate a development build, with a version of {}, while the CHANGELOG does indicate a development build, with a version of {}.".format(VERSION, CURRENT_VERSION))
-	sys.exit(1)
-elif DEVEL_BUILD and str(v) != "999":
+elif DEVEL_BUILD and not v.is_prerelease:
 	print("The VERSION file does not indicate a development build, with a version of {}, while the CHANGELOG does indicate a development build, with a version of {}.".format(VERSION, CURRENT_VERSION))
 	sys.exit(1)
 
