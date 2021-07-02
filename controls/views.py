@@ -35,7 +35,7 @@ from system_settings.models import SystemSettings
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
 from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
 from .forms import ElementEditForm
-from siteapp.forms import PortfolioForm, AddProjectForm
+from siteapp.forms import PortfolioForm
 from .models import *
 from .utilities import *
 from simple_history.utils import update_change_reason
@@ -69,7 +69,6 @@ def catalogs(request):
 
     context = {
         "catalogs": Catalogs(),
-        "project_form": AddProjectForm(request.user),
     }
     return render(request, "controls/index-catalogs.html", context)
 
@@ -91,7 +90,6 @@ def catalog(request, catalog_key, system_id=None):
         "common_controls": None,
         "system": system,
         "control_groups": control_groups,
-        "project_form": AddProjectForm(request.user),
     }
     return render(request, "controls/index.html", context)
 
@@ -115,7 +113,6 @@ def group(request, catalog_key, g_id):
         "common_controls": None,
         "control_groups": control_groups,
         "group": group,
-        "project_form": AddProjectForm(request.user),
     }
     return render(request, "controls/index-group.html", context)
 
@@ -135,7 +132,6 @@ def control(request, catalog_key, cl_id):
     context = {
         "catalog": catalog,
         "control": cg_flat[cl_id.lower()],
-        "project_form": AddProjectForm(request.user),
     }
     return render(request, "controls/detail.html", context)
 
@@ -179,7 +175,6 @@ def controls_selected(request, system_id):
             "external_catalogs": external_catalogs,
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "project_form": AddProjectForm(request.user),
         }
         return render(request, "systems/controls_selected.html", context)
     else:
@@ -303,7 +298,6 @@ def controls_updated(request, system_id):
             "controls": controls,
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "project_form": AddProjectForm(request.user),
         }
         return render(request, "systems/controls_updated.html", context)
     else:
@@ -361,7 +355,7 @@ class SelectedComponentsList(ListView):
         Return the systems producer elements.
         """
         system = System.objects.get(id=self.kwargs['system_id'])
-        return system.producer_elements
+        return [element for element in system.producer_elements if element.element_type != "system"]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -376,7 +370,6 @@ class SelectedComponentsList(ListView):
             context['project'] = project
             context['system'] = system
             context['elements'] = Element.objects.all().exclude(element_type='system')
-            context['project_form'] = AddProjectForm(self.request.user)
             return context
         else:
             # User does not have permission to this system
@@ -388,7 +381,13 @@ def component_library(request):
 
     query = request.GET.get('search')
     if query:
-        element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
+        try:
+            element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)
+                                                  | Q(pk__in=set(Statement.objects.filter(body__search=query).values_list('producer_element', flat=True)))
+                                                 ).exclude(element_type='system').distinct()
+        except:
+            logger.info(f"Ah, you are not using Postgres for your Database!")
+            element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
     else:
         element_list = Element.objects.all().exclude(element_type='system').distinct()
 
@@ -410,10 +409,65 @@ def component_library(request):
         "page_obj": page_obj,
         "import_form": ImportOSCALComponentForm(),
         "total_comps": Element.objects.exclude(element_type='system').count(),
-        "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
 
     return render(request, "components/component_library.html", context)
+
+def diff_components_prettyHtml(smt1, smt2):
+    """Generate a diff of two statements of type `control_implementation`"""
+    dmp = dmp_module.diff_match_patch()
+    val1 = ""
+    val2 = ""
+    if hasattr(smt1, 'body'):
+        val1 = smt1.body
+    if hasattr(smt2, 'body'):
+        val2 = smt2.body
+
+    diff = dmp.diff_main(val1, val2)
+    if len(diff) == 1:
+        return "Statement is identical."
+    return dmp.diff_prettyHtml(diff)
+
+def compare_components(request):
+    """
+    Compare submitted components
+    """
+    # TODO: need to figure out how to accumulate all checked boxes not one in pageobj
+    compare_list = request.POST.getlist('componentcomparecheckbox')
+    if compare_list:
+        element_list = list(Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct())
+        compare_prime, element_list = element_list[0], element_list[1:]# The first component selected will be compared against the rest
+        compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+    elif len(compare_list) <= 1:
+        # add messages
+        messages.add_message(request, messages.WARNING, f"Not enough components were selected to compare!")
+        return HttpResponseRedirect("/controls/components")
+    difference_tuples = []
+    differences = []
+    for component in element_list:
+        differences = []
+        # compare each component's statements to prime
+        cmt_smts = component.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+        if cmt_smts.exists():
+            # TODO: Need to create a tuple with smt id to return appropriate
+            for smt in cmt_smts:
+                smt_prime = compare_prime_smts.filter(sid=smt.sid).filter(pid=smt.pid).filter(sid_class=smt.sid_class).first()
+                # If it is not a statement found in both components then we just add styling
+                if smt_prime:
+                    diff = diff_components_prettyHtml(smt_prime, smt)
+                else:
+                    diff = f"<span><ins style='background:#e6ffe6;'>{smt.body}</ins><span>"
+                differences.append(diff)
+        difference_tuples.extend(zip([component.name] * len(cmt_smts), cmt_smts, differences))
+    if request.method == 'POST':
+        context = {
+            "element_list": element_list,
+            "compare_prime": compare_prime,
+            "prime_smts": compare_prime_smts,
+            "secondary_smts": cmt_smts,
+            "differences": difference_tuples
+        }
+        return render(request, "components/compare_components.html", context)
 
 @login_required
 def import_records(request):
@@ -427,7 +481,6 @@ def import_records(request):
 
     context = {
         "import_components": import_components,
-        "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
 
     return render(request, "components/import_records.html", context)
@@ -442,7 +495,6 @@ def import_record_details(request, import_record_id):
     context = {
         "import_record": import_record,
         "component_statements": component_statements,
-        "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
     return render(request, "components/import_record_details.html", context)
 
@@ -498,7 +550,14 @@ class OSCALComponentSerializer(ComponentSerializer):
         uuid = str(self.element.uuid)
         control_implementations = []
         props = []
+        parties = []
+        responsible_roles =  {
+          "supplier": {
+            "party-uuids": [
 
+            ]
+          }
+        }
         of = {
             "component-definition": {
                 "uuid": str(uuid4()),
@@ -506,15 +565,17 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "title": "{} Component-to-Control Narratives".format(self.element.name),
                     "published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
-                    "version": "string",
+                    "version": self.element.updated.replace(microsecond=0).isoformat(),
                     "oscal-version": "1.0.0-rc1",
+                   # "parties": parties,
                     "props": props
                 },
                 "components": {
                     uuid: {
                         "title": self.element.full_name or self.element.name,
-                        "type": self.element.element_type or "software",
+                        "type": self.element.component_type or "software",
                         "description": self.element.description,
+                        #"responsible-roles": responsible_roles, # TODO: gathering party-uuids
                         "control-implementations": control_implementations
                     }
                 }
@@ -823,13 +884,11 @@ def add_selected_components(system, import_record):
         # Get components from import record
         imported_components = Element.objects.filter(import_record=import_record)
         for imported_component in imported_components:
-            # Loop through element's prototype statements and add to control implementation statements
+            # Loop through all element's prototype statements and add to control implementation statements.
+            # System's selected controls will filter what controls and control statements to display.
             for smt in Statement.objects.filter(producer_element_id=imported_component.id,
                                                 statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value):
-                # Add all existing control statements for a component to a system even if system does not use controls.
-                # This guarantees that control statements are associated.
-                # The selected controls will serve as the primary filter on what content to display.
-                smt.create_instance_from_prototype(system.root_element.id)
+                smt.create_system_control_smt_from_component_prototype_smt(system.root_element.id)
         return imported_components
 
 @login_required
@@ -875,7 +934,6 @@ def system_element(request, system_id, element_id):
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": opencontrol_string,
-            "project_form": AddProjectForm(request.user),
         }
         return render(request, "systems/element_detail_tabs.html", context)
 
@@ -888,9 +946,20 @@ def edit_component_state(request, system_id, element_id):
     # Retrieve related selected controls if user has permission on system
     if request.user.has_perm('change_system', system):
         # Retrieve element
+        # TODO: Make atomic transaction
         element = Element.objects.get(id=element_id)
         element.component_state = request.POST['state_change']
         element.save()
+        logger.info(event=f"change_system update_component_state {element} {element.component_state}",
+                    object={"object": "system", "id": system.id},
+                    user={"id": request.user.id, "username": request.user.username})
+        # Batch update status of control implementation statements provided by the element to the system
+        state_status = {"operational": "Implemented", "under-development": "Partially Implemented", "planned": "Planned"}
+        control_status = state_status.get(request.POST['state_change']) or "Not Implemented"
+        system.set_component_control_status(element, control_status)
+        logger.info(event=f"change_system batch_update_component_control_status {element} {control_status}",
+                    object={"object": "system", "id": system.id},
+                    user={"id": request.user.id, "username": request.user.username})
     return redirect(reverse('system_element', args=[system_id, element_id]))
 
 def edit_component_type(request, system_id, element_id):
@@ -977,6 +1046,9 @@ def component_library_component(request, element_id):
     element = Element.objects.get(id=element_id)
     smt_query = request.GET.get('search')
 
+    # Retrieve systems consuming element
+    consuming_systems = element.consuming_systems()
+
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
     else:
@@ -990,7 +1062,6 @@ def component_library_component(request, element_id):
             "impl_smts": impl_smts,
             "is_admin": request.user.is_superuser,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
         }
         return render(request, "components/element_detail_tabs.html", context)
 
@@ -1030,6 +1101,7 @@ def component_library_component(request, element_id):
     context = {
         "page_obj": page_obj,
         "element": element,
+        "consuming_systems": consuming_systems,
         "impl_smts": impl_smts,
         "catalog_controls": catalog_controls,
         "catalog_key": catalog_key,
@@ -1038,7 +1110,6 @@ def component_library_component(request, element_id):
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
-        "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
     }
     return render(request, "components/element_detail_tabs.html", context)
 
@@ -1552,7 +1623,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # Retrieve primary system Project
         project, catalog, cg_flat, impl_smts = get_editor_data(request, system, catalog_key, cl_id)
 
-        # Build OSCAL
+        # Build OSCAL SSP
         # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
         of = {
             "system-security-plan": {
@@ -1625,7 +1696,6 @@ def editor(request, system_id, catalog_key, cl_id):
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": "opencontrol_string",
-            "project_form": AddProjectForm(request.user),
             "elements": elements,
         }
         return render(request, "controls/editor.html", context)
@@ -1656,7 +1726,6 @@ def get_editor_data(request, system, catalog_key, cl_id):
         impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key).order_by('pid')
         return project, catalog, cg_flat, impl_smts
 
-@login_required
 def get_editor_system(cl_id, catalog_key, system_id):
     """
     Retrieves oscalized control id and catalog key. Also system object from system id.
@@ -1686,7 +1755,6 @@ def editor_compare(request, system_id, catalog_key, cl_id):
             "catalog": catalog,
             "control": cg_flat[cl_id.lower()],
             "impl_smts": impl_smts,
-            "project_form": AddProjectForm(request.user),
         }
         return render(request, "controls/compare.html", context)
     else:
@@ -2063,12 +2131,10 @@ def add_system_component(request, system_id):
         # Redirect to selected element page
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
-    # Loop through element's prototype statements and add to control implementation statements
-    for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value):
-        # Add all existing control statements for a component to a system even if system does not use controls.
-        # This guarantees that control statements are associated.
-        # The selected controls will serve as the primary filter on what content to display.
-        smt.create_instance_from_prototype(system.root_element.id)
+    # Loop through all element's prototype statements and add to control implementation statements.
+    # System's selected controls will filter what controls and control statements to display.
+    for smt in smts:
+        smt.create_system_control_smt_from_component_prototype_smt(system.root_element.id)
 
     # Make sure some controls were added to the system. Report error otherwise.
     smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
@@ -2308,7 +2374,7 @@ class EditorAutocomplete(View):
                         # Only add statements for controls selected for system
                         if "{} {}".format(smt.sid, smt.sid_class) in selected_controls_ids:
                             logger.info(f"smt {smt}")
-                            smt.create_instance_from_prototype(system.root_element.id)
+                            smt.create_system_control_smt_from_component_prototype_smt(system.root_element.id)
                         else:
                             logger.error(f"not adding smt from selected controls for the current system: {smt}")
 
@@ -2508,7 +2574,6 @@ def poams_list(request, system_id):
             "controls": controls,
             "poam_smts": poam_smts,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "project_form": AddProjectForm(request.user),
         }
         return render(request, "systems/poams_list.html", context)
     else:
@@ -2555,7 +2620,6 @@ def new_poam(request, system_id):
                 'system': system,
                 'project': project,
                 'controls': controls,
-                "project_form": AddProjectForm(request.user),
             })
     else:
         # User does not have permission to this system
@@ -2613,7 +2677,6 @@ def edit_poam(request, system_id, poam_id):
                 'project': project,
                 'controls': controls,
                 'poam_smt': poam_smt,
-                "project_form": AddProjectForm(request.user),
             })
     else:
         # User does not have permission to this system
@@ -2966,7 +3029,6 @@ def system_deployments(request, system_id):
             "system": system,
             "project": project,
             "deployments": deployments,
-            "project_form": AddProjectForm(request.user),
         }
         return render(request, "systems/deployments_list.html", context)
     else:
@@ -3013,7 +3075,6 @@ def manage_system_deployment(request, system_id, deployment_id=None):
     return render(request, 'systems/deployment_form.html', {
         "form": form,
         "deployment": di,
-        "project_form": AddProjectForm(request.user),
     })
 
 @login_required
@@ -3035,7 +3096,6 @@ def deployment_history(request, system_id, deployment_id=None):
         messages.add_message(request, messages.ERROR, f'The deployment id is not valid. Is this still a deployment in GovReady?')
     context = {
         "deployment": full_dpt_history,
-        "project_form": AddProjectForm(request.user),
         }
     return render(request, "systems/deployment_history.html", context)
 
@@ -3070,7 +3130,6 @@ def system_deployment_inventory(request, system_id, deployment_id):
             # "poam_smts": poam_smts,
             # "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             # "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
-            # "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/deployment_inventory.html", context)
     else:
@@ -3105,7 +3164,6 @@ def system_assessment_results_list(request, system_id=None):
             "system": system,
             "project": project,
             "sars": sars,
-            "project_form": AddProjectForm(request.user),
         }
         return render(request, "systems/sar_list.html", context)
 
@@ -3139,7 +3197,6 @@ def view_system_assessment_result_summary(request, system_id, sar_id=None):
         "sar_items": sar_items,
         "assessment_results_json": json.dumps(sar.assessment_results, indent=4, sort_keys=True),
         "summary": summary,
-        "project_form": AddProjectForm(request.user),
     })
 
 @login_required
@@ -3184,7 +3241,6 @@ def manage_system_assessment_result(request, system_id, sar_id=None):
     return render(request, 'systems/sar_form.html', {
         'form': form,
         'system_id': system_id,
-        "project_form": AddProjectForm(request.user),
     })
 
 @login_required
@@ -3200,6 +3256,5 @@ def system_assessment_result_history(request, system_id, sar_id=None):
         messages.add_message(request, messages.ERROR, f'The system assessment result id is not valid. Is this still a system assessment result in GovReady?')
     context = {
         "deployment": full_sar_history,
-        "project_form": AddProjectForm(request.user),
     }
     return render(request, "systems/sar_history.html", context)

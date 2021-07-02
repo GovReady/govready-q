@@ -1,6 +1,7 @@
 {% extends "task-base.html" %}
 {% load static %}
 {% load q %}
+{% load bootstrap3 %}
 
 {% block title %}
 {{m.title}}
@@ -138,9 +139,6 @@
               <a role="button" data-toggle="collapse" data-parent="#accordion" href="#your-answers-body-2" aria-expanded="true" aria-controls="your-answers-body-2">
                 Available documents
               </a>
-              <div class="pull-right">
-                <button type="button" id="force-refresh" class="btn btn-warning btn-xs" onclick="refresh_output_doc({{project.root_task.module.app.id}});return false;"> Refresh documents <span class="glyphicon glyphicon-refresh"></span></button>
-              </div>
             </h4>
           </div>
           <div id="your-answers-body-2" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="your-answers-title-2">
@@ -169,6 +167,7 @@
                             {% if gr_pdf_generator == 'wkhtmltopdf' %}<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/pdf">PDF</a>&nbsp;&nbsp;{% endif %}
                             <!-- <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/odt">Open Office (odt)</a>&nbsp;&nbsp; -->
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/html">HTML</a>&nbsp;&nbsp;
+                            <button id="exportCSVTemplateSSPButton" type="button" class="btn-xs btn-primary glyphicon glyphicon-copy" data-toggle="modal" data-target="#exportCSVTemplateSSP" aria-label="CSV" tooltip="exportCSVTemplateSSP" style="text-align: center; margin-right:10px; margin-left:5px;">CSV</button>&nbsp;&nbsp;
                             <!-- <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/markdown">Markdown</a>&nbsp;&nbsp; -->
                             <!--<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/plain">Plain Text</a>&nbsp;&nbsp;-->
                           {% endif %}
@@ -307,6 +306,35 @@
   </div>
 </div>
 
+<div class="modal fade" id="exportCSVTemplateSSP" tabindex="-1" aria-labelledby="exportCSVTemplateSSP" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="exportCSVTemplateSSP">Export SSP as CSV</h2>
+        <div style="float:left;" class="help-block">Enter the five column headers for your SSP Control Statement CSV Export</div>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+            <span id="exportCSVTemplateSSPValidation"></span>
+            <form role="form" class="form-horizontal" method="POST">
+                 {% csrf_token %}
+                <div class="modal-body">
+                    {% for field in export_csv_form %}
+                      <label class="col-xs-5 control-label" style="text-align:left;" for="{{ field.auto_id }}">{{ field.label }}</label>
+                      {{ field }}
+                    {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button id="select_portfolio_submit" class="btn btn-success btn-submit" type="submit">Export</button>
+                </div>
+            </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 {#</div>#}
 {% endblock %}
@@ -366,26 +394,5 @@
     });
   }
 
-  function refresh_output_doc(app_id) {
-      if (upgrade_app_option_confirm
-         {% if is_question_page %}
-         && !confirm("All instances of '{{task.project.root_task.title}}' will be updated.\n\nAre you sure you want to upgrade?"))
-         {% else %}
-         && !confirm("Force refresh of output document(s) in '{{project.root_task.title}}'?"))
-         {% endif %}
-        return;
-      ajax_with_indicator({
-          url: "/tasks/_refresh-output-doc",
-          method: "POST",
-          data: {
-            app: app_id,
-            force: upgrade_app_option_force ? "true" : "false"
-          },
-          keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect or reload
-          success: function(res) {
-            location.reload();
-          }
-      })
-    }
   </script>
 {% endblock %}

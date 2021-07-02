@@ -1,21 +1,49 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (May XX, 2021)
+v999 (June XX, 2021)
 ---------------------
+
+* Fisma impact level is now represented as Security Sensitivity level following OSCAL's schema.
+
+
+v0.9.5 (June 23, 2021)
+----------------------
+
+**Feature changes**
+
+* Add full text search of component statements in component library search.
+* Add tab to component library component detail page to display list of systems containing the component.
+
+**UI changes**
+
+* Add "Import AppSource" button for admins in Compliance App store to simplify end-users adding AppSource.
+* Link to library version of component from a system's selected control component listing and selected components.
+
+
+v0.9.4 (June 13, 2021)
+----------------------
 
 **Data changes**
 
 * Require components to have descriptions.
 * Adding component_state and component_type fields to an `Element` to contain a component's state and type.
 * Created a modal to allow an admin user to add security objectives confidentiality, integrity, and availability.
-* Fisma impact level is now represented as Security Sensitivity level following OSCAL's schema.
+* Add field to identify user's default portfolio.
+
 
 **UI changes**
 
 * Can now edit a system componet's state and type in the detail page for a selected component.
 * Can now create a component with a state and type with the `ElementForm`
 * Improve project pages appearance: decrease action button width and left align text; widen from 9 to 10 columns main content.
+* Remove "Refresh Documents" button on task finished page because caches are now automatically cleared and document content refreshed.
+* Display system component component_state and component_type when component is listed for a system.
+* Add simple "back" link to question to take user to previous question.
+* Add "Create a template" button to template library so admins can create a new template (e.g., compliance app).
+* Add option to compare components in component library.
+* Remove portfolio selection modal from Start a Project process. Assign new projects to user's default portfolio.
+* Remove specifying user default portfolio during registration process.
 
 **Developer changes**
 
@@ -23,7 +51,23 @@ v999 (May XX, 2021)
 * Add management command `importcomponents` to batch import OSCAL components to library.
 * Add `existing_import_record` to importing and creating components to group multiple imports under the same import record.
 * Improve generation of components in OSCAL model by removing certain keys when values are none as per specification.
+* Task caches are now automatically cleared and document content refreshed when document downloaded.
+* Add test for system control page.
+* Refactor creating system control statements from component library prototype statements when adding a component from the library to a system and reduce by an order a magnitude the time it takes to add a component to system.
+* Create System method to batch update an element's control implementation statements based on the component's state.
+* Always display OSCAL tab in component library for component detail (rather than conditional on 'enable_experimental_opencontrol' parameter).
+* Add method controls.element.consuming_systems to produce list of systems consuming (e.g., containing) the element.
 
+**Deployment changes**
+
+* The HTTP Content-Security-Policy header is now set to allow browsers to load third-party videos from YouTube.com, Vimeo.com and images from any source.
+
+**Bug fix**
+
+* Fix OSCAL SSP output template failure where statement didn't exist while exporting to OSCAL.
+* Fix bug breaking rendering of system's control detail page by removing an errant login_required decorator on a function.
+* File upload validator now accepts files with capitalized extensions, e.g. ".JPG".
+* File upload validator now recognizes ".jpeg" in addition to ".jpg" extension on JPEG files.
 
 
 v0.9.3.5.3 (May 16, 2021)
@@ -107,6 +151,7 @@ v0.9.3.5 (April 28, 2021)
 **Data changes**
 
 * Use statement type `fisma_impact_level` to track impact level of a system.
+* Add input_type to AppInputs in order to make selections of input files based on type. This will support importing POA&Ms as part of loading and the starting an app.
 
 v0.9.3.4 (April 20, 2021)
 -------------------------

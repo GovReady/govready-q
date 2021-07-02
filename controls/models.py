@@ -127,23 +127,16 @@ class Statement(auto_prefetch.Model):
         self.save()
         return self.prototype
 
-    def create_instance_from_prototype(self, consumer_element_id):
+    def create_system_control_smt_from_component_prototype_smt(self, consumer_element_id):
         """Creates a control_implementation statement instance for a system's root_element from an existing control implementation prototype statement"""
 
-        # TODO: Check statement is a prototype
+        # Check statement is a prototype
+        if self.statement_type != StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value:
+            return None
 
-        # System already has instance of the control_implementation statement
-        # TODO: write check for this logic
-        # Get all statements for consumer element so we can identify
-        smts_existing = Statement.objects.filter(consumer_element__id = consumer_element_id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).select_related('prototype')
-
-        # Get prototype ids for all consumer element statements
-        smts_existing_prototype_ids = [smt.prototype.id for smt in smts_existing]
-        if self.id is smts_existing_prototype_ids:
+        # Return if statement already has instance associated with consumer_element
+        if self.instances.filter(consumer_element__id=consumer_element_id).exists():
             return self.prototype
-
-        #     # TODO:
-        #     # check if prototype content is the same, report error if not, or overwrite if permission approved
 
         instance = deepcopy(self)
         instance.statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name
@@ -333,8 +326,22 @@ class Element(auto_prefetch.Model, TagModelMixin):
 
     def statements(self, statement_type):
         """Return on the statements of statement_type produced by this element"""
+
         smts = Statement.objects.filter(producer_element = self, statement_type = statement_type)
         return smts
+
+    def consuming_systems(self):
+        """Return list of systems for which Element is producer_element of statement of type control_implementation"""
+
+        root_element_ids = set(filter(None, [ce['consumer_element'] for ce in Statement.objects.filter(producer_element=self).values('consumer_element').distinct()]))
+        systems = System.objects.filter(pk__in=Element.objects.filter(pk__in=root_element_ids).values_list('system', flat=True))
+        # Remove orphaned systems (e.g., systems whose projects have been deleted). See issue https://github.com/GovReady/govready-q/issues/1617
+        systems_with_projects = []
+        for s in systems:
+            if s.projects.exists():
+                systems_with_projects.append(s)
+        systems_with_projects.sort(key=lambda x: x.root_element.name)
+        return systems_with_projects
 
     @property
     def get_control_impl_smts_prototype_count(self):
@@ -530,7 +537,6 @@ class System(auto_prefetch.Model):
                                                      sid_class=control.oscal_catalog_key,
                                                      sid=control.oscal_ctl_id
                                                      ).delete()
-
         control.delete()
         return control
 
@@ -540,6 +546,7 @@ class System(auto_prefetch.Model):
         # Get or create the security_sensitivity_level smt for system's root_element; should only have 1 statement
         smt = Statement.objects.create(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element, body=security_sensitivity_level)
         return security_sensitivity_level, smt
+
 
     @property
     def get_security_sensitivity_level(self):
@@ -567,9 +574,13 @@ class System(auto_prefetch.Model):
         """Get one or more of the System Security impact levels (e.g. confidentiality, integrity, availability)"""
 
         # Get the security_impact_level smt for element; should only have 1 statement
-        smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element)
-        security_impact_level = eval(smt.body)# Evaluate string of dictionary
-        return security_impact_level
+        try:
+            smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value, producer_element=self.root_element, consumer_element=self.root_element)
+            security_impact_level = eval(smt.body)# Evaluate string of dictionary
+            return security_impact_level
+        except Statement.DoesNotExist:
+            return {}
+
 
     @property
     def smts_common_controls_as_dict(self):
@@ -724,6 +735,12 @@ class System(auto_prefetch.Model):
         return components
 
     producer_elements = cached_property(get_producer_elements)
+
+    def set_component_control_status(self, element, status):
+        """Batch update status of system control implementation statements for a specific element."""
+
+        self.root_element.statements_consumed.filter(producer_element=element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).update(status=status)
+        return True
 
 class CommonControlProvider(models.Model):
     name = models.CharField(max_length=150, help_text="Name of the CommonControlProvider", unique=False)

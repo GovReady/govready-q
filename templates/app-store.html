@@ -111,10 +111,12 @@ Compliance Apps
         <form class="form-inline" onsubmit="return false;">
           <div class="form-group">
             {% if authoring_tool_enabled %}
-{#                commenting out for now until fully implemented#}
-{#            <span class="create-new-project">#}
-{#              <a id="new-project" href="#" class="btn btn-success" onclick="authoring_tool_create_q_form('argument'); return false;">Create App Source</a>#}
-{#            </span>#}
+            <span class="create-new-project">
+              <a id="new-project" href="#" class="btn btn-success" onclick="authoring_tool_create_q_form('argument'); return false;">Create a template</a>
+            </span>
+            <span class="create-new-project">
+              <a id="import-appsource" href="#" class="btn btn-success" onclick="authoring_tool_import_appsource_form('argument'); return false;">Import AppSource</a>
+            </span>
             {% endif %}
             <label class="sr-only" for="app-search">search apps for</label>
             <div class="input-group">
@@ -122,6 +124,7 @@ Compliance Apps
               <input type="text" class="form-control" id="app-search" placeholder="search compliance apps">
             </div>
           </div>
+          &nbsp;&nbsp;
         </form>
       </div>
 
@@ -179,9 +182,8 @@ Compliance Apps
                       {% with app.organizations|first as first_org %}
                           <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
                       {% endwith %}
-                      {% if 'portfolio' in forward_qsargs %}
+                      {% if 'portfolio' in forward_qsargs %}{% endif %}
                         <button type="submit" class="btn btn-success btn-sm btn-justified start-app">Add ►</button>
-                      {% endif %}
                   </form>
               {% endif %}
               <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-info btn-sm view-app">Info</a>

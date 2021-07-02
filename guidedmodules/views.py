@@ -1,5 +1,11 @@
+import os
+
+from datetime import datetime
+from zipfile import ZipFile
+from zipfile import BadZipFile
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
+from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
@@ -8,21 +14,26 @@ from django.db import transaction
 
 import re
 
+from pathlib import PurePath
+from django.utils.text import slugify
+
 from controls.enums.statements import StatementTypeEnum
 from discussion.validators import validate_file_extension
 from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
 
 import guidedmodules.module_logic as module_logic
 import guidedmodules.answer_validation as answer_validation
+
 from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership
-from siteapp.forms import AddProjectForm
-from controls.models import Element, ElementRole, Statement
+from guidedmodules.forms import ExportCSVTemplateSSPForm
+from controls.models import Element, ElementRole, Statement, System
 
 import fs, fs.errors
 
 import logging
 logging.basicConfig()
+import csv
 import structlog
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
@@ -243,15 +254,17 @@ def save_answer(request, task, answered, context, __):
 
     # validate question
     q = task.module.questions.get(id=request.POST.get("question"))
+    # store question/tasks for back button
+    back_url = task.get_absolute_url() + f"/question/{q.key}"
 
     # make a function that gets the URL to the next page
     def redirect_to():
         next_q = get_next_question(q, task)
         if next_q:
             # Redirect to the next question.
-            return task.get_absolute_url_to_question(next_q) + "?previous=nquestion"
+            return task.get_absolute_url_to_question(next_q) + f"?back_url={back_url}&previous=nquestion"
         # Redirect to the module finished page because there are no more questions to answer.
-        return task.get_absolute_url() + "/finished?previous=nquestion"
+        return task.get_absolute_url() + f"/finished?back_url={back_url}&previous=nquestion"
 
     # validate and parse value
     if request.POST.get("method") == "clear":
@@ -562,14 +575,11 @@ def save_answer(request, task, answered, context, __):
                                 # Go to next element
                                 continue
 
-                            # If we get here, we are going to add the element to the system
-                            # We add an element to a system by adding copies of the element's statements
-                            # Loop through element's prototype statements and add to control implementation statements
+                            # Add the element to the system by adding copies of the element's statements associated with system's root element
+                            # Loop through all element's prototype statements and add to control implementation statements.
+                            # System's selected controls will filter what controls and control statements to display.
                             for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value):
-                                # Add all existing control statements for a component to a system even if system does not use controls.
-                                # This guarantees that control statements are associated.
-                                # The selected controls will serve as the primary filter on what content to display.
-                                smt.create_instance_from_prototype(system.root_element.id)
+                                smt.create_system_control_smt_from_component_prototype_smt(system.root_element.id)
 
                             # Get a count of control statements added to the system.
                             smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
@@ -647,6 +657,9 @@ def show_question(request, task, answered, context, q):
 
     # Is there a TaskAnswer for this yet?
     taskq = TaskAnswer.objects.filter(task=task, question=q).first()
+
+    # Get previous question for back button
+    back_url =  request.GET.get('back_url')
 
     # Display requested question.
 
@@ -997,8 +1010,9 @@ def show_question(request, task, answered, context, q):
         "is_question_page": True,
     })
     context.update({
-        "project_form": AddProjectForm(request.user),
+         "back_url": back_url,
     })
+ 
     return render(request, "question.html", context)
 
 @task_view
@@ -1187,6 +1201,16 @@ def task_finished(request, task, answered, context, *unused_args):
         if output.get("display") == "top":
             top_of_page_output = output
             del outputs[i]
+    if request.method == "POST":
+        export_csv_form = ExportCSVTemplateSSPForm(request.POST)
+        if export_csv_form.is_valid():
+            response = export_ssp_csv(export_csv_form.data, task.project.system)
+            logger.info(
+                event="export_ssp_csv",
+                object={"object": "ssp_csv"},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return response
 
     context.update({
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
@@ -1206,7 +1230,7 @@ def task_finished(request, task, answered, context, *unused_args):
         "next_module": next_module,
         "next_module_spec": next_module_spec,
         "gr_pdf_generator": settings.GR_PDF_GENERATOR,
-        "project_form": AddProjectForm(request.user, initial={'portfolio': task.project.portfolio.id}) if task.project.portfolio else AddProjectForm(request.user)
+        "export_csv_form": ExportCSVTemplateSSPForm(),
     })
     return render(request, "task-finished.html", context)
 
@@ -1265,9 +1289,16 @@ def download_module_output(request, task, answered, context, question, document_
     if document_id in (None, ""):
         raise Http404()
     try:
+        # Force refresh of content associated with this Task.
+        # Clear module questions since ModuleQuestions may have changed.
+        module_logic.clear_module_question_cache()
+
+        # Since impute conditions, output documents, and other generated
+        # data may have changed, clear all cached Task state for project.
+        Task.clear_state(Task.objects.filter(module__app=task.project.root_task.module.app.id))
         blob, filename, mime_type= task.download_output_document(document_id, download_format, answers=answered)
     except ValueError:
-        raise Http404()
+        raise Http404("Problem processing document request.")
 
     resp = HttpResponse(blob, mime_type)
     resp['Content-Disposition'] = 'inline; filename=' + filename
@@ -1345,6 +1376,45 @@ def authoring_tool_auth(f):
 
 @login_required
 @transaction.atomic
+def authoring_import_appsource(request):
+    from guidedmodules.models import AppSource
+    from collections import OrderedDict
+
+    appsource_zipfile = request.FILES.get("file")
+    if appsource_zipfile:
+        try:
+            appsource_name = os.path.splitext(appsource_zipfile.name)[0]
+            # Extract AppSource file
+            with ZipFile(appsource_zipfile, 'r') as zipObj:
+               zipObj.extractall("local/appsources/")
+            # TODO:
+            # Check if file is Appsource directory format
+            #   - has "apps" directory
+            #   - apps.yaml files exist in directories
+            # Create a new AppSource.
+            appsrc = AppSource.objects.create(
+                slug=appsource_name,
+                spec={ "type": "local", "path": f"local/appsources/{appsource_name}/apps" }
+            )
+            # Log uploaded app source
+            logger.info(
+                event=f"govready appsource_added {appsrc.slug}",
+                object={"object": "appsource", "id": appsrc.id, "slug": appsrc.slug},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return JsonResponse({ "status": "ok", "redirect": f"/admin/guidedmodules/appsource/{appsrc.id}/change" })
+        except BadZipFile as err:
+            messages.add_message(request, messages.ERROR, f"Bad zip file: {appsource_zipfile}")
+            return JsonResponse({ "status": "ok", "redirect": "/store" })
+        except ValueError:
+            messages.add_message(request, messages.ERROR, f"Failure processing: {ValueError}")
+            return JsonResponse({ "status": "ok", "redirect": "/store" })
+    else:
+        messages.add_message(request, messages.ERROR, f"AppSource file required.")
+        return JsonResponse({ "status": "ok", "redirect": "/store" })
+
+@login_required
+@transaction.atomic
 def authoring_create_q(request):
     from guidedmodules.models import AppSource
     from collections import OrderedDict
@@ -1380,10 +1450,9 @@ def authoring_create_q(request):
     except Exception as e:
         raise
 
-    from django.contrib import messages
     messages.add_message(request, messages.INFO, 'New Project "{}" added into the catalog.'.format(new_q["title"]))
 
-    return JsonResponse({ "status": "ok", "redirect": "{% url 'store' %}" })
+    return JsonResponse({ "status": "ok", "redirect": "/store" })
 
 @login_required
 def refresh_output_doc(request):
@@ -1518,10 +1587,10 @@ def authoring_download_app(request, task):
 @transaction.atomic
 def authoring_download_app_project(request, task):
     # Download a project
-#    print("Calling to download task: {}".format(task))
+    # print("Calling to download task: {}".format(task))
     # Get project that this Task is a part of
     project_obj = task.project
-#    print("project is {}".format(project_obj))
+    # print("project is {}".format(project_obj))
 
     # Get module that this task is answering
     # module_obj = task.module
@@ -1530,10 +1599,10 @@ def authoring_download_app_project(request, task):
     # print("module.serialize: ")
     # print("{}".format(module_obj.serialize()))
     # Recreate the yaml of the module (e.g, app-project)
-#    print("text {}".format(task.module.serialize()))
+    # print("text {}".format(task.module.serialize()))
 
     # Download current project_app (.e.g, module) in use.
-#    print("In `authoring_download_app_project` and attempting to download project-app")
+    # print("In `authoring_download_app_project` and attempting to download project-app")
     try:
         module_yaml = task.module.serialize()
     except Exception as e:
@@ -2061,3 +2130,40 @@ def analytics(request):
 
         ]
     })
+
+def export_ssp_csv(export_csv_data, system):
+    """
+    Export an SSP's control implementations with the submitted headers
+    """
+
+    smts = system.root_element.statements_consumed.filter(
+        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).order_by('pid')
+
+    selected_controls = list(smts.values_list('sid', flat=True))
+    catalog_keys = list(smts.values_list('sid_class', flat=True))
+    imps = list(smts.values_list('body', flat=True))
+    headers = [export_csv_data.get('info_system'), export_csv_data.get('control_id'), export_csv_data.get('catalog'), export_csv_data.get('shared_imps'), export_csv_data.get('private_imps')]
+    system_name = system.root_element.name # TODO: Should this come from questionnaire answer or project name as we have it?
+    data = [
+        [system_name] * len(selected_controls),
+        selected_controls,
+        catalog_keys,
+        [""] * len(selected_controls),# shared imps are not implemented
+        imps
+    ]
+    filename = str(PurePath(slugify(system_name+ "-" + datetime.now().strftime("%Y-%m-%d-%H-%M"))).with_suffix('.csv'))
+
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename=' + filename},
+    )
+
+    writer = csv.writer(response)
+    writer.writerow(headers)
+    # spread and write rows
+    writer.writerows(zip(*data))
+
+    return response
+  
+  

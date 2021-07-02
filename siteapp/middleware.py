@@ -27,7 +27,8 @@ class ContentSecurityPolicyMiddleware:
         # * we're definitely using inline scripts and CSS throughout our templates, but that could be refactored
         response = self.next_middleware(request)
         response['Content-Security-Policy'] = \
-            "default-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+            "default-src 'self' data:; script-src 'self' https://apis.google.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; \
+            child-src https://youtube.com https://www.youtube.com https://player.vimeo.com https://vimeo.com; img-src * data: blob: 'unsafe-inline';"
         return response
 
 def QTemplateContextProcessor(request):
@@ -91,19 +92,7 @@ class ProxyHeaderUserAuthenticationBackend(django.contrib.auth.backends.RemoteUs
                 ))
 
             # Create a default portfolio for the user if user does not have a portfolio with their username
-            # NOTE TODO: There may be an issue if user changes name of their portfolio and new default portfolio is created on next SSO login
-            # TODO: Grant user permission to create portfolios if user does not have the permission
-            user_portfolio = None
-            try:
-                user_portfolio = Portfolio.objects.get(title="{}".format(user.username))
-            except Portfolio.DoesNotExist:
-                user_portfolio = None
-            if user_portfolio is None:
-                # Create user default portfolio
-                user_portfolio = Portfolio(title="{}".format(user.username), description="Default portfolio of {}".format(user.username))
-                user_portfolio.save()
-                # Grant owner permissions on new portfolio to user
-                user_portfolio.assign_owner_permissions(user)
+            portfolio = user.create_default_portfolio_if_missing()
 
             # Make sure user has permission to view app sources and thus see available compliance apps
             # New users may not have permission to view app sources, so add permission if user does not have it

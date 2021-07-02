@@ -32,11 +32,10 @@ from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
 from controls.models import Element, System, Statement, Poam, Deployment
 from system_settings.models import SystemSettings, Classification, Sitename
 
-from .forms import PortfolioForm, AddProjectForm, EditProjectForm
+from .forms import PortfolioForm, EditProjectForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
 from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, Tag, ProjectAsset
-from .forms import PortfolioSignupForm
 from .notifications_helpers import *
 
 import sys
@@ -65,16 +64,23 @@ SIGNUP = "signup"
 def home_user(request):
     # If the user is logged in, then redirect them to the projects page.
     if not request.user.is_authenticated:
+        if settings.OKTA_CONFIG:
+            return HttpResponseRedirect("/oidc/authenticate")
         return HttpResponseRedirect("/login")
 
     return render(request, "home-user.html", {
         "sitename": Sitename.objects.last(),
         "users": User.objects.all(),
-        "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
         "projects_access": Project.get_projects_with_read_priv(request.user, excludes={"contained_in_folders": None}),
         "import_project_form": ImportProjectForm(),
         "portfolios": request.user.portfolio_list(),
     })
+
+
+def logged_out(request):
+    from django.contrib.auth import logout
+    logout(request)
+    return render(request, "account/logged-out.html", {})
 
 
 def homepage(request):
@@ -82,7 +88,6 @@ def homepage(request):
         return HttpResponseRedirect("/projects")
     from allauth.account.forms import SignupForm, LoginForm
 
-    portfolio_form = PortfolioSignupForm()
     signup_form = SignupForm()
     login_form = LoginForm()
 
@@ -95,8 +100,7 @@ def homepage(request):
     # NOTE: When GovReady-Q is in SSO trusting mode, new users accounts are created in siteapp/middelware.py ProxyHeaderUserAuthenticationBackend
     if SIGNUP in request.path or request.POST.get("action") == SIGNUP:
         signup_form = SignupForm(request.POST)
-        portfolio_form = PortfolioSignupForm(request.POST)
-        if (request.user.is_authenticated or signup_form.is_valid()) and portfolio_form.is_valid():
+        if (request.user.is_authenticated or signup_form.is_valid()):
             # Perform signup and new org creation, then redirect to main page
             with transaction.atomic():
                 if not request.user.is_authenticated:
@@ -121,20 +125,8 @@ def homepage(request):
                         return HttpResponseRedirect("/")
                 else:
                     user = request.user
-                if portfolio_form.is_valid():
-                    portfolio = portfolio_form.save()
-                    portfolio.assign_owner_permissions(request.user)
-                    logger.info(
-                        event="new_portfolio",
-                        object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-                        user={"id": request.user.id, "username": request.user.username}
-                    )
-                    logger.info(
-                        event="new_portfolio assign_owner_permissions",
-                        object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-                        receiving_user={"id": request.user.id, "username": request.user.username},
-                        user={"id": request.user.id, "username": request.user.username}
-                    )
+                # Create user's default portfolio
+                portfolio = user.create_default_portfolio_if_missing()
                 # Send a message to site administrators.
                 from django.core.mail import mail_admins
                 def subvars(s):
@@ -161,12 +153,12 @@ def homepage(request):
         from django.contrib.auth import logout
         logout(request)
         return HttpResponseRedirect('/')  # reload
-
+    if settings.OKTA_CONFIG:
+        return HttpResponseRedirect("/oidc/authenticate")
     return render(request, "index.html", {
         "hide_registration": SystemSettings.hide_registration,
         "sitename": Sitename.objects.last(),
         "signup_form": signup_form,
-        "portfolio_form": portfolio_form,
         "login_form": login_form,
         "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
     })
@@ -274,14 +266,13 @@ class ProjectList(ListView):
             event="project_list",
             user={"id": self.request.user.id, "username": self.request.user.username}
         )
-        return projects
+        return list(projects)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['projects_access'] = Project.get_projects_with_read_priv(
             self.request.user,
             excludes={"contained_in_folders": None})
-        context['project_form'] = AddProjectForm(self.request.user)
         return context
 
 
@@ -316,7 +307,6 @@ def project_list_lifecycle(request):
     return render(request, "projects_lifecycle_original.html", {
         "lifecycles": lifecycles,
         "projects": projects,
-        "project_form": AddProjectForm(request.user),
     })
 
 
@@ -546,7 +536,6 @@ def apps_catalog(request):
         "filter_description": filter_description,
         "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
         "authoring_tool_enabled": authoring_tool_enabled,
-        "project_form": AddProjectForm(request.user),
     })
 
 
@@ -567,7 +556,9 @@ def apps_catalog_item(request, source_slug, app_name):
     if request.GET.get("portfolio"):
         portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
     else:
-        portfolio = None
+        if not request.user.default_portfolio:
+            request.user.create_default_portfolio_if_missing()
+        portfolio = request.user.default_portfolio
 
     error = None
 
@@ -611,10 +602,13 @@ def apps_catalog_item(request, source_slug, app_name):
                 raise ValueError("Invalid protocol.")
 
         # Get portfolio project should be included in.
-        if request.GET.get("portfolio"):
+        if not request.user.default_portfolio:
+            request.user.create_default_portfolio_if_missing()
+
+        if request.GET.get("portfolio") is not None:
             portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
         else:
-            portfolio = None
+            portfolio = request.user.default_portfolio
 
         # Start the most recent version of the app.
         appver = app_catalog_info["versions"][0]
@@ -639,7 +633,6 @@ def apps_catalog_item(request, source_slug, app_name):
     return render(request, "app-store-item.html", {
         "app": app_catalog_info,
         "error": error,
-        "project_form": AddProjectForm(request.user),
         "source_slug": source_slug,
         "portfolio": portfolio
     })
@@ -872,7 +865,7 @@ def project(request, project):
             questions[key] = {
                 "question": mq,
                 "icon": icon,
-                "invitations": [], # filled in below
+                "invitations": [],  # filled in below
                 "task": module_answers.task,
                 "can_start_new_task": False,
                 "discussions": []  # no longer tracking discussions per question,
@@ -913,18 +906,18 @@ def project(request, project):
     # Assign main-area questions to columns. For non-"columns" layouts,
     # assign to one giant column.
     if layout_mode != "columns":
-        columns= [{
+        columns = [{
             "questions": main_area_questions,
         }]
     else:
         # number of columns must divide 12 evenly
         columns = [
-            { "title": "To Do" },
-            { "title": "In Progress" },
-            { "title": "Completed" },
-            { "title": "Submitted" },
-            { "title": "Under Review" },
-            { "title": "Accepted" },
+            {"title": "To Do"},
+            {"title": "In Progress"},
+            {"title": "Completed"},
+            {"title": "Submitted"},
+            {"title": "Under Review"},
+            {"title": "Accepted"},
         ]
         for column in columns:
             column["questions"] = []
@@ -955,7 +948,7 @@ def project(request, project):
         del column["questions"]
         column["groups"] = list(column["groups"].values())
 
-        #column["has_tasks_on_left"] = ((i > 0) and (columns[i-1]["groups"] or columns[i-1]["has_tasks_on_left"]))
+        # column["has_tasks_on_left"] = ((i > 0) and (columns[i-1]["groups"] or columns[i-1]["has_tasks_on_left"]))
 
     # Are there any output documents that we can render?
     has_outputs = False
@@ -966,11 +959,13 @@ def project(request, project):
     # Calculate approximate compliance as degrees to display
     percent_compliant = 0
     if len(project.system.control_implementation_as_dict) > 0:
-        percent_compliant = project.system.controls_status_count['Addressed'] / len(project.system.control_implementation_as_dict)
+        percent_compliant = project.system.controls_status_count['Addressed'] / len(
+            project.system.control_implementation_as_dict)
     # Need to reverse calculation for displaying as per styles in .piechart class
-    approx_compliance_degrees = 365 - ( 365 * percent_compliant )
+    approx_compliance_degrees = 365 - (365 * percent_compliant)
     if approx_compliance_degrees > 358:
         approx_compliance_degrees = 358
+
 
     # Fetch statement defining Security Sensitivity level if set
     security_sensitivity_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
@@ -1023,10 +1018,9 @@ def project(request, project):
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
 
-        "class_status" : Classification.objects.last(),
+        "class_status": Classification.objects.last(),
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
-        "project_form": AddProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
         "import_project_form": ImportProjectForm()
     })
 
@@ -1130,7 +1124,6 @@ def project_settings(request, project):
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
 
-        "project_form": AddProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
         "import_project_form": ImportProjectForm()
     })
 
@@ -1455,7 +1448,9 @@ def move_project(request, project_id):
     # Check if the user moving the project is a superuser or
     # if they are the owner of the project and have edit permissions in the target directory
     owner = True if request.user.has_perm('can_grant_portfolio_owner_permission', cur_portfolio) else False
-    if request.user.is_superuser or ((request.user in project.get_admins() or owner) and 'change_portfolio' in get_perms(request.user, new_portfolio)):
+    if request.user.is_superuser or (
+            (request.user in project.get_admins() or owner) and 'change_portfolio' in get_perms(request.user,
+                                                                                                new_portfolio)):
         project.portfolio = new_portfolio
         project.save()
         # Give all current members of the project read access to target portfolio
@@ -1469,15 +1464,16 @@ def move_project(request, project_id):
             to_portfolio={"portfolio_title": new_portfolio.title, "id": new_portfolio.id}
         )
 
-        return JsonResponse({ "status": "ok" })
+        return JsonResponse({"status": "ok"})
     else:
         logger.info(
             event="move_project_different_portfolio unsuccessful",
-            object={"project_id": project.id,"new_portfolio_id": new_portfolio.id},
+            object={"project_id": project.id, "new_portfolio_id": new_portfolio.id},
             from_portfolio={"portfolio_title": cur_portfolio.title, "id": cur_portfolio.id},
             to_portfolio={"portfolio_title": new_portfolio.title, "id": new_portfolio.id}
         )
-        return JsonResponse({ "status": "error", "message": "User does not have permission to move this project." })
+        return JsonResponse({"status": "error", "message": "User does not have permission to move this project."})
+
 
 @project_admin_login_post_required
 def upgrade_project(request, project):
@@ -1605,7 +1601,6 @@ def import_project_questionnaire(request, project):
     return render(request, "project-import-finished.html", {
         "project": project,
         "log": log_output,
-        "project_form": AddProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
     })
 
 
@@ -1721,7 +1716,6 @@ def portfolio_list(request):
 
     return render(request, "portfolios/index.html", {
         "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None,
-        "project_form": AddProjectForm(request.user),
     })
 
 
@@ -1750,7 +1744,6 @@ def new_portfolio(request):
         form = PortfolioForm()
     return render(request, 'portfolios/form.html', {
         'form': form,
-        "project_form": AddProjectForm(request.user),
     })
 
 
@@ -1888,18 +1881,15 @@ def portfolio_read_required(f):
 def portfolio_projects(request, pk):
     """List of projects within a portfolio"""
     portfolio = Portfolio.objects.get(pk=pk)
-    projects = Project.objects.filter(portfolio=portfolio).select_related('root_task')\
+    projects = Project.objects.filter(portfolio=portfolio).select_related('root_task') \
         .exclude(is_organization_project=True).order_by('-created')
     user_projects = [project for project in projects if request.user.has_perm('view_project', project)]
     anonymous_user = User.objects.get(username='AnonymousUser')
-    project_form = AddProjectForm(request.user, initial={'portfolio': portfolio.id})
     users_with_perms = portfolio.users_with_perms()
-
 
     return render(request, "portfolios/detail.html", {
         "portfolio": portfolio,
         "projects": projects if request.user.has_perm('view_portfolio', portfolio) else user_projects,
-        "project_form": project_form,
         "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
         "can_edit_portfolio": request.user.has_perm('change_portfolio', portfolio),
         "send_invitation": Invitation.form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
