@@ -432,6 +432,7 @@ def compare_components(request):
     """
     Compare submitted components
     """
+    
     checks = json.loads(request.POST.get('hiddenChecks'))
     compare_list = list(checks.values())
     if len(compare_list) <= 1:
@@ -511,11 +512,16 @@ def confirm_import_record_delete(request, import_record_id):
     statement_count = 0
     for component in component_statements:
         statement_count += component_statements[component].count()
-
+    projects = import_record.import_record_projects.all()
+    project_count = len(projects)
+    elements = import_record.import_record_elements.all()
+    element_count = len(elements)
     context = {
         "import_record": import_record,
         "component_count": component_count,
         "statement_count": statement_count,
+        "project_count": project_count,
+        "element_count": element_count
     }
     return render(request, "components/confirm_import_record_delete.html", context)
 
@@ -848,7 +854,7 @@ class ComponentImporter(object):
                         sid_class=catalog_key,
                         pid=get_control_statement_part(stmnt_id),
                         body=description,
-                        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value,
+                        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
                         remarks=remarks,
                         status=implemented_control['status'] if 'status' in implemented_control else None,
                         producer_element=parent_component,
@@ -890,7 +896,7 @@ def add_selected_components(system, import_record):
             # Loop through all element's prototype statements and add to control implementation statements.
             # System's selected controls will filter what controls and control statements to display.
             for smt in Statement.objects.filter(producer_element_id=imported_component.id,
-                                                statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value):
+                                                statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name):
                 smt.create_system_control_smt_from_component_prototype_smt(system.root_element.id)
         return imported_components
 
@@ -1053,11 +1059,11 @@ def component_library_component(request, element_id):
     consuming_systems = element.consuming_systems()
 
     if smt_query:
-        impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+        impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
     else:
         # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
-        impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+        impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     if len(impl_smts) < 1:
         context = {
@@ -1624,7 +1630,7 @@ def editor(request, system_id, catalog_key, cl_id):
     # Retrieve related statements if user has permission on system
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
-        project, catalog, cg_flat, impl_smts = get_editor_data(request, system, catalog_key, cl_id)
+        project, catalog, cg_flat, impl_smts, impl_smts_legacy = get_editor_data(request, system, catalog_key, cl_id)
 
         # Build OSCAL SSP
         # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
@@ -1695,6 +1701,7 @@ def editor(request, system_id, catalog_key, cl_id):
             "control": cg_flat[cl_id.lower()],
             "impl_smts": impl_smts,
             "impl_statuses": impl_statuses,
+            "impl_smts_legacy": impl_smts_legacy,
             "combined_smt": combined_smt,
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
@@ -1725,9 +1732,12 @@ def get_editor_data(request, system, catalog_key, cl_id):
             return render(request, "controls/detail.html", {"catalog": catalog, "control": {}})
 
         # Get and return the control
-        # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog
-        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key).order_by('pid')
-        return project, catalog, cg_flat, impl_smts
+        # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog, Type
+        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
+        # Retrieve Legacy Implememtation Statements
+        impl_smts_legacy = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name)
+
+        return project, catalog, cg_flat, impl_smts, impl_smts_legacy
 
 def get_editor_system(cl_id, catalog_key, system_id):
     """
@@ -2123,7 +2133,7 @@ def add_system_component(request, system_id):
         # Redirect to selected element page
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
-    smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+    smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     # Component does not have any statements of type control_implementation_prototype to
     # add to system. So we cannot add the component (element) to the system.
@@ -2140,7 +2150,7 @@ def add_system_component(request, system_id):
         smt.create_system_control_smt_from_component_prototype_smt(system.root_element.id)
 
     # Make sure some controls were added to the system. Report error otherwise.
-    smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
+    smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
 
     smts_added_count = len(smts_added)
     if smts_added_count > 0:
@@ -2371,7 +2381,7 @@ class EditorAutocomplete(View):
                 for related_element in form_values['relatedcomps']:
 
                     # Look up the element
-                    for smt in Statement.objects.filter(id=related_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value):
+                    for smt in Statement.objects.filter(id=related_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name):
                         logger.info(
                             f"Adding an element with the id {smt.id} and sid class {smt.sid} to system_id {system_id}")
                         # Only add statements for controls selected for system

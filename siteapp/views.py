@@ -780,7 +780,7 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
 
 def project_read_required(f):
     @login_required
-    def g(request, project_id, project_url_suffix):
+    def g(request, project_id, project_url_suffix=None):
         project = get_object_or_404(Project.objects.
                                     prefetch_related('root_task__module__questions',
                                                      'root_task__module__questions__answer_type_module'), id=project_id)
@@ -791,7 +791,7 @@ def project_read_required(f):
 
         # Redirect if slug is not canonical. We do this after checking for
         # read privs so that we don't reveal the task's slug to unpriv'd users.
-        if request.path != project.get_absolute_url() + project_url_suffix:
+        if request.path != project.get_absolute_url() + (project_url_suffix if project_url_suffix else ""):
             return HttpResponseRedirect(project.get_absolute_url())
 
         return f(request, project)
@@ -816,7 +816,10 @@ def project(request, project):
 
     # Pre-load the answers to project root task questions and impute answers so
     # that we know which questions are suppressed by imputed values.
-    root_task_answers = project.root_task.get_answers().with_extended_info()
+    if project.root_task is None:
+        root_task_answers = None
+    else:
+        root_task_answers = project.root_task.get_answers().with_extended_info()
 
     # Check if this user has authorization to start tasks in this Project.
     can_start_task = project.can_start_task(request.user)
@@ -828,7 +831,7 @@ def project(request, project):
     from collections import OrderedDict
     questions = OrderedDict()
     can_start_any_apps = False
-    for (mq, is_answered, answer_obj, answer_value) in root_task_answers.answertuples.values():
+    for (mq, is_answered, answer_obj, answer_value) in (root_task_answers.answertuples.values() if root_task_answers else []):
         # Display module/module-set questions only. Other question types in a project
         # module are not valid.
         if mq.spec.get("type") not in ("module", "module-set"):
@@ -953,9 +956,13 @@ def project(request, project):
 
     # Are there any output documents that we can render?
     has_outputs = False
-    for doc in project.root_task.module.spec.get("output", []):
-        if "id" in doc:
-            has_outputs = True
+    if project.root_task:
+        for doc in project.root_task.module.spec.get("output", []):
+            if "id" in doc:
+                has_outputs = True
+
+    can_upgrade_app = project.root_task.module.app.has_upgrade_priv(request.user) if project.root_task else True
+    authoring_tool_enabled = project.root_task.module.is_authoring_tool_enabled(request.user) if project.root_task else True
 
     # Calculate approximate compliance as degrees to display
     percent_compliant = 0
@@ -969,13 +976,13 @@ def project(request, project):
 
     # Fetch statement defining FISMA impact level if set
     impact_level_smts = project.system.root_element.statements_consumed.filter(
-        statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value)
+        statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.name)
     if len(impact_level_smts) > 0:
         impact_level = impact_level_smts.first().body
     else:
         impact_level = None
 
-    security_objective_smt = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value)
+    security_objective_smt = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name)
     if security_objective_smt.exists():
         security_body = project.system.get_security_impact_level
         confidentiality, integrity, availability = security_body.get('security_objective_confidentiality',
@@ -1000,7 +1007,7 @@ def project(request, project):
         "approx_compliance_degrees": approx_compliance_degrees,
 
         "is_admin": request.user in project.get_admins(),
-        "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
+        "can_upgrade_app": can_upgrade_app,
         "can_start_task": can_start_task,
         "can_start_any_apps": can_start_any_apps,
 
@@ -1021,7 +1028,7 @@ def project(request, project):
 
         "class_status": Classification.objects.last(),
 
-        "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
+        "authoring_tool_enabled": authoring_tool_enabled,
         "import_project_form": ImportProjectForm()
     })
 

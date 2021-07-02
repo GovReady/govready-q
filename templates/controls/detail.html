@@ -62,8 +62,8 @@ Remove contextbar from top of page
       {% if control.title is not None %}
       <div id="tab-content" class="row row-control" style="">
         <div id="" class="col-xs-11 col-sm-11 col-md-11 col-lg-11 col-xl-11">
-          <div id="control-description" class="control-text"><h3>Description</h3>{{ control.description }}</div>
-          <div id="control-guidance"  class="control-text"><h3>Guidance</h3>{{ control.guidance }}</div>
+          <div id="control-description" class="control-text"><h3>Description</h3>{% if control.description %}{{ control.description }}{% else %}No description provided.{% endif %}</div>
+          <div id="control-guidance"  class="control-text"><h3>Guidance</h3>{% if control.guidance %}{{ control.guidance }}{% else %}No guidance provided.{% endif %}</div>
         </div>
       </div>
       {% else %}
