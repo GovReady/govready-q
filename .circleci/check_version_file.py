@@ -20,7 +20,7 @@ if "Legacy" in type(v).__name__:
 DEVEL_BUILD = False
 with open("CHANGELOG.md") as f:
 	for line in f:
-		if re.match(r"^v.?999", line) or re.match(r"^(v\S+-dev) \(.*", line) or re.match(r"^-+\s*$", line) or v.is_devrelease:
+		if re.match(r"^v.?999", line) or re.match(r"^(v\S+-dev) \(.*", line) or re.match(r"^-+\s*$", line) or v.is_prerelease:
 			# v999 or v.999 indicates a development build
 			DEVEL_BUILD = True
 			print("999")
