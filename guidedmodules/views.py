@@ -564,7 +564,7 @@ def save_answer(request, task, answered, context, __):
                                 # Go to next element
                                 continue
 
-                            smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+                            smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
                             # Component does not have any statements of type control_implementation_prototype to
                             # add to system. So we cannot add the component (element) to the system.
@@ -578,11 +578,11 @@ def save_answer(request, task, answered, context, __):
                             # Add the element to the system by adding copies of the element's statements associated with system's root element
                             # Loop through all element's prototype statements and add to control implementation statements.
                             # System's selected controls will filter what controls and control statements to display.
-                            for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value):
+                            for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name):
                                 smt.create_system_control_smt_from_component_prototype_smt(system.root_element.id)
 
                             # Get a count of control statements added to the system.
-                            smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
+                            smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
                             smts_added_count = len(smts_added)
                             # Prepare message
                             if smts_added_count > 0:
@@ -596,9 +596,9 @@ def save_answer(request, task, answered, context, __):
                     if a_verb == "del_role":
                         for producer_element in elements_with_role:
                             # Delete component from system
-                            smts_assigned_count = len(Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value))
+                            smts_assigned_count = len(Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name))
                             if smts_assigned_count > 0:
-                                Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).delete()
+                                Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).delete()
                                 messages.add_message(request, messages.INFO,
                                                      f'I\'ve deleted "{producer_element.name}" and its {smts_assigned_count} control implementation statements from the system.')
 
@@ -2137,7 +2137,7 @@ def export_ssp_csv(export_csv_data, system):
     """
 
     smts = system.root_element.statements_consumed.filter(
-        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).order_by('pid')
+        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
 
     selected_controls = list(smts.values_list('sid', flat=True))
     catalog_keys = list(smts.values_list('sid_class', flat=True))

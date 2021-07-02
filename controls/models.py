@@ -131,7 +131,7 @@ class Statement(auto_prefetch.Model):
         """Creates a control_implementation statement instance for a system's root_element from an existing control implementation prototype statement"""
 
         # Check statement is a prototype
-        if self.statement_type != StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value:
+        if self.statement_type != StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name:
             return None
 
         # Return if statement already has instance associated with consumer_element
@@ -151,7 +151,7 @@ class Statement(auto_prefetch.Model):
     def prototype_synched(self):
         """Returns one of STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED for control_implementations"""
 
-        if self.statement_type == "control_implementation":
+        if self.statement_type == StatementTypeEnum.CONTROL_IMPLEMENTATION.name:
             if self.prototype:
                 if self.body == self.prototype.body:
                     return STATEMENT_SYNCHED
@@ -166,7 +166,7 @@ class Statement(auto_prefetch.Model):
     def diff_prototype_main(self):
         """Generate a diff of statement of type `control_implementation` and its prototype"""
 
-        if self.statement_type != 'control_implementation':
+        if self.statement_type != StatementTypeEnum.CONTROL_IMPLEMENTATION.name:
             # TODO: Should we return None or raise error because statement is not of type control_implementation?
             return None
         if self.prototype is None:
@@ -180,7 +180,7 @@ class Statement(auto_prefetch.Model):
     def diff_prototype_prettyHtml(self):
         """Generate a diff of statement of type `control_implementation` and its prototype"""
 
-        if self.statement_type != 'control_implementation':
+        if self.statement_type != StatementTypeEnum.CONTROL_IMPLEMENTATION.name:
             # TODO: Should we return None or raise error because statement is not of type control_implementation?
             return None
         if self.prototype is None:
@@ -190,7 +190,7 @@ class Statement(auto_prefetch.Model):
         diff = dmp.diff_main(self.prototype.body, self.body)
         return dmp.diff_prettyHtml(diff)
 
-    # TODO:c
+    # TODO:
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
     @staticmethod
@@ -369,7 +369,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
             e_copy.name = self.name + " copy"
         e_copy.save()
         # Copy prototype statements from existing element
-        for smt in self.statements("control_implementation_prototype"):
+        for smt in self.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name):
             smt_copy = deepcopy(smt)
             smt_copy.producer_element = e_copy
             smt_copy.consumer_element_id = None
@@ -546,7 +546,6 @@ class System(auto_prefetch.Model):
         # Get or create the security_sensitivity_level smt for system's root_element; should only have 1 statement
         smt = Statement.objects.create(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element, body=security_sensitivity_level)
         return security_sensitivity_level, smt
-
 
     @property
     def get_security_sensitivity_level(self):
@@ -739,7 +738,7 @@ class System(auto_prefetch.Model):
     def set_component_control_status(self, element, status):
         """Batch update status of system control implementation statements for a specific element."""
 
-        self.root_element.statements_consumed.filter(producer_element=element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).update(status=status)
+        self.root_element.statements_consumed.filter(producer_element=element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).update(status=status)
         return True
 
 class CommonControlProvider(models.Model):

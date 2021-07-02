@@ -29,7 +29,7 @@
         }
 
         #above-tab-content, #tab-content {
-            max-width: 950px;
+            max-width: 1250px;
             margin: auto;
         }
 
@@ -83,7 +83,11 @@
             color: #000;
         }
 
-        .statement-text, .description-text { font-size: 0.8em; }
+        .statement-text, .description-text { font-size: 0.9em; }
+
+        .legacy-statement-text { font-size: 0.9em; }
+
+        .legacy-statement-text-block { border-left: 1px solid #ccc; white-space: pre-line; }
 
         .control-id-text { font-weight: bold; }
 
@@ -155,6 +159,29 @@
 
                 <!-- Tab panel: component control -->
                 <div role="tabpanel" class="tab-pane active" id="component_controls">
+
+                    {% if impl_smts_legacy|length > 0 %}
+                    <div id="smt-list" class="" style="width: 100%">
+                        <p>&nbsp</p>
+                        <details>
+                            <summary>&nbsp;<span class="glyphicon glyphicon-eye-open"></span> Read legacy implementation statement from original SSP</summary>
+                            {% for smt in impl_smts_legacy %}
+                            <div id="legacy-panel-{{ forloop.counter }}" class="smt-panel-x" style="border:2px solid #aaddaa; border-radius: 20px;margin-bottom:12px; margin-right:12px; ">
+                                <div class="panel-heading" role="tab" id="legacy-document-{{ forloop.counter }}-title" style="">
+                                    <div class="row legacy-statement-text">
+                                      <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                                        <div id="producer_element-{{ forloop.counter }}-control" class="control-id-text">{{ smt.producer_element.name }}</div>
+                                        <div>Imported from SSP</div>
+                                      </div>
+                                      <div>
+                                      <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 legacy-statement-text-block">{{ smt.body }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </details>
+                    </div>
+                    {% endif %}
+
 
                     <div class="row">
                         <div id="control-description" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 control-text"><h3>{{ impl_smts|length }} associated Componented Control Implementations Statements</h3></div>

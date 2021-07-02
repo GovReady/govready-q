@@ -162,6 +162,7 @@
   .portfolio-table { width:100%;}
   .portfolio-table-component { font-size: 1.2em; font-weight:bold; padding:0; margin:0;}
   .portfolio-table-component-desc { font-size: .8em; }
+
 </style>
 {% endblock %}
 
@@ -193,46 +194,32 @@
                                                                        #B2E0B2 0 235deg);"> </h2>
           <span class="status-small">{{ percent_compliant_100|floatformat:2 }}% compliance (unassessed)</span>
           <br/>
-          <span id="systems-security-sensitivity-level" class="status-small">
-            {% if security_sensitivity %}
-              Mission Impact: <b>{{ security_sensitivity|lower }}</b>
-              {% else %}
-              Mission Impact: <b>Not Categorized</b>
-            {% endif %}
-          </span>
-    </div>
         </div>
-    <div class="col-md-2">
-           <h3>Security Objectives
-             {% if project.is_deletable and is_admin %}
-          <span class="glyphicon glyphicon-pencil" onclick="show_edit_security_objs_modal(); return false;"></span>
-            {% endif %}
-           </h3>
-        <span id="systems-security-confidentiality-level" class="status-small">
-            {% if confidentiality %}
-              Confidentiality: <b>{{ confidentiality|lower }}</b>
-              {% else %}
-              Confidentiality: <b>Not Categorized</b>
-            {% endif %}
-          </span>
-                          <br/>
-                          <span id="systems-security-integrity-level" class="status-small">
-            {% if integrity %}
-              Integrity: <b>{{ integrity|lower }}</b>
-              {% else %}
-              Integrity: <b>Not Categorized</b>
-            {% endif %}
-          </span>
-                          <br/>
-                          <span id="systems-security-availability-level" class="status-small">
-            {% if availability %}
-              Availability: <b>{{ availability|lower }}</b>
-              {% else %}
-              Availability: <b>Not Categorized</b>
-            {% endif %}
-                          </span></div>
       </div>
-    </div>
+
+      <div class="col-md-3">
+        <div id="systems-security-confidentiality-level" class="status-box status-small" onclick="show_edit_security_objs_modal(); return false;" style="cursor: pointer;">
+          confidentiality objective: <b>{% if confidentiality %}{{ confidentiality|lower }}{% else %} Not Categorized{% endif %}</b>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div id="systems-security-integrity-level" class="status-box status-small" onclick="show_edit_security_objs_modal(); return false;" style="cursor: pointer;">
+          integrity objective: <b>{% if integrity %}{{ integrity|lower }}{% else %} Not Categorized{% endif %}</b>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div id="systems-security-availability-level" class="status-box status-small" onclick="show_edit_security_objs_modal(); return false;" style="cursor: pointer;">
+          availability objective: <b>{% if availability %}{{ availability|lower }}{% else %} Not Categorized{% endif %}</b>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div id="systems-fisma-impact-level" class="status-box status-small" onclick="" style="">
+          Mission Impact: <b>{% if security_sensitivity %}{{ security_sensitivity|lower }}{% else %} Not Categorized{% endif %}</b>
+        </div>
+      </div>
+</div>
+
+
   {% if enable_experimental_evidence %}
     <!-- <div style="text-align: right;"><a href="#">view more</a></div> -->
     <!--
@@ -300,7 +287,7 @@
       </div>
     </div>
   {% endif %}
-  <div><p>&nbsp;</p></div>
+  <div class="col-md-12"><p>&nbsp;</p></div>
     <div class="row">
       <div class="col-sm-12" class="project-row-style">
         <span class="status-section-header">Questionnaires / Compliance App</span>
