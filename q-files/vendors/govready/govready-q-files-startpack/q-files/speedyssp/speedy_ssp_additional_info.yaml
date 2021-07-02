@@ -175,7 +175,7 @@ questions:
     help: |
       SaaS systems are typically accessed online via a subscription rather than something that is bought and installed
       on premises. Examples of SaaS are Google Apps, Salesforce, Dropbox, etc.
-      SaaS systems allow for the consumer to build anything other than servers. 
+      SaaS systems allow for the consumer to build anything other than servers.
   - key: paas
     text: Platform as a Service
     help: |
@@ -195,7 +195,7 @@ questions:
   title: Other System
   prompt: |
     Does your system fit outside the bounds of SaaS, PaaS, or IaaS?
-    If you feel your system is not any of these types, explain the system below. 
+    If you feel your system is not any of these types, explain the system below.
   type: longtext
   impute:
   - condition: cloud_service_model != 'other'
@@ -234,10 +234,10 @@ questions:
   prompt: |
     Does your system have any leveraged authorizations?
 
-    An agency AO can leverage a P-ATO or other Agency ATO, including all supporting documentation, 
-    when making a risk-based decision to grant an Agency ATO. Each Agency that is considering using  
-    the system should review the P-ATO/ATO letter as well as the package itself before deciding  
-    whether or not to use the system. 
+    An agency AO can leverage a P-ATO or other Agency ATO, including all supporting documentation,
+    when making a risk-based decision to grant an Agency ATO. Each Agency that is considering using
+    the system should review the P-ATO/ATO letter as well as the package itself before deciding
+    whether or not to use the system.
   type: datagrid
   fields:
     - key: Leveraged Information System Name
@@ -291,43 +291,31 @@ questions:
 - id: system_auth_diagram
   title: Upload Security Autorization Boundary Diagram
   prompt: >-
-    Upload this IT System's Authorization Boundary Diagram 
+    Upload this IT System's Authorization Boundary Diagram
   type: file
   file-type: image
-  image:
-    max-size:
-      width: 60
-      height: 60
 
 #system_network
 - id: system_network_diagram
   title: Upload System Network Diagram
   prompt: >-
-    Upload this IT System's Network Diagram 
+    Upload this IT System's Network Diagram
   type: file
   file-type: image
-  image:
-    max-size:
-      width: 60
-      height: 60
 
 #system data
 - id: system_data_diagram
   title: Upload System Data Flow Diagram
   prompt: >-
-    Upload this IT System's Data Flow Diagram 
+    Upload this IT System's Data Flow Diagram
   type: file
   file-type: image
-  image:
-    max-size:
-      width: 60
-      height: 60
 
 #Table 10-1. Ports, Protocols and Services
 - id: ports_protocols_services
   title: Ports, Protocols, and Services
   prompt: |
-    What are the ports, protocols, and services for the IT system? 
+    What are the ports, protocols, and services for the IT system?
   type: datagrid
   fields:
     - key: Ports(TCP/UDP)
