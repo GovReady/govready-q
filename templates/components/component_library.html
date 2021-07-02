@@ -103,13 +103,19 @@
 {% block scripts %}
 <script>
 //Hide submit button until 1 checkbox is checked
-    $(document).ready(function() {
+$(document).ready(function () {
+    var checkBoxValues = JSON.parse(localStorage.getItem('checkBoxValues'))
+    // If are no previously checked components then hide button
+    var $submit = $("#compare-components").hide()
+    if (checkBoxValues !== null) {
+        $submit.toggle();
+    } else {
+        $cbs = $('input[name="compareCheckbox"]').click(function () {
 
-        var $submit = $("#compare-components").hide(),
-            $cbs = $('input[name="compareCheckbox"]').click(function() {
-                $submit.toggle( $cbs.is(":checked") );
-            });
-    });
+            $submit.toggle($cbs.is(":checked"));
+        });
+    }
+});
 
 function select_all(val) {
     // select and deselect with toggle
