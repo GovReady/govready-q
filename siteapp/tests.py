@@ -396,7 +396,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("form#login_form button[type=submit]")
 
     def _new_project(self):
-        self.browser.get(self.browser.current_url)
+        self.browser.get(self.url("/projects"))
 
         wait_for_sleep_after(lambda: self.click_element("#new-project"))
 
