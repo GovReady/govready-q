@@ -801,6 +801,32 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.click_element("#create-portfolio-button")
         wait_for_sleep_after(lambda:  self.assertRegex(self.browser.title, "Security Projects"))
 
+    def test_portfolio_projects(self):
+        """
+        Ensure key parts of the portfolio page
+        """
+        # Login as authenticated user
+        self.client.force_login(user=self.user)
+        # Reset login
+        self.browser.get(self.url("/accounts/logout/"))
+        self._login()
+        # If the above is not done a new project cannot be created
+        self._new_project()
+
+        portfolio_id = Project.objects.last().portfolio.id
+        url = reverse('portfolio_projects', args=[portfolio_id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'portfolios/detail.html')
+        self.assertContains(response, 'Owner', 1)
+        # Context
+        bool_context_objects = ["can_invite_to_portfolio", "can_edit_portfolio"]
+        for context in bool_context_objects:
+            self.assertEqual(response.context[context], True)
+
+        self.assertEqual(response.context["portfolio"].id, portfolio_id)
+
+
     def test_grant_portfolio_access(self):
         # Grant another member access to portfolio
         self._login()
