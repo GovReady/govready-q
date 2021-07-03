@@ -19,6 +19,7 @@ v999 (June XX, 2021)
 **Data changes**
 
 * Set all `StatementTypeEnum.<LABEL>.value` to `StatementTypeEnum.<LABEL>.name` in order for relevant label/term to show up in Django database admin interface.
+* Create baselines for CMMC catalog.
 
 v0.9.5 (June 23, 2021)
 ----------------------

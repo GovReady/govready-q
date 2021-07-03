@@ -175,7 +175,7 @@ def controls_selected(request, system_id):
         # Get list of catalog objects
         catalog_list = Catalogs().list_catalogs()
         # Remove the 3 nist catalogs that are hard-coded already in template
-        external_catalogs = [catalog for catalog in catalog_list if catalog.catalog_key not in ['NIST_SP-800-53_rev4', 'NIST_SP-800-53_rev5', 'NIST_SP-800-171_rev1' ]]
+        external_catalogs = [catalog for catalog in catalog_list if catalog.catalog_key not in ['NIST_SP-800-53_rev4', 'NIST_SP-800-53_rev5', 'NIST_SP-800-171_rev1', 'CMMC_ver1' ]]
 
         # Return the controls
         context = {
