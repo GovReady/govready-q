@@ -124,6 +124,15 @@ def control(request, catalog_key, cl_id):
     # Get catalog
     catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
+    # Prepare links
+    links = []
+    for link in cg_flat[cl_id.lower()]['guidance_links']:
+        link['href_split'] = link['href'].split("/")
+        if len(link['href_split']) == 6:
+            link['catalog'] = link['href_split'][3].replace("_"," ")
+        else:
+            link['catalog'] = None
+        links.append(link)
 
     # Handle properly formatted control id that does not exist
     if cl_id.lower() not in cg_flat:
@@ -132,6 +141,7 @@ def control(request, catalog_key, cl_id):
     context = {
         "catalog": catalog,
         "control": cg_flat[cl_id.lower()],
+        "links": links,
     }
     return render(request, "controls/detail.html", context)
 
