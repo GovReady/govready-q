@@ -130,11 +130,8 @@ class Catalog(object):
         self.catalog_path = CATALOG_PATH
         self.external_catalog_path = EXTERNAL_CATALOG_PATH
         self.catalog_file = catalog_key + "_catalog.json"
-        print("here1")
         try:
-            print("here2")
             self.oscal = self._load_catalog_json()
-            print("self.oscal", self.oscal)
             self.status = "ok"
             self.status_message = "Success loading catalog"
             self.catalog_id = self.oscal['id']
