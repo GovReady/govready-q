@@ -40,6 +40,7 @@ from .models import *
 from .utilities import *
 from simple_history.utils import update_change_reason
 import functools
+import subprocess
 logging.basicConfig()
 import structlog
 from structlog import get_logger
@@ -3172,11 +3173,16 @@ def system_assessment_results_list(request, system_id=None):
         project = system.projects.all()[0]
         sars = system.system_assessment_result.all().order_by('created').reverse()
 
-        # Return the controls
+        # Retrieve user's API keys
+        api_keys = request.user.get_api_keys()
+
         context = {
             "system": system,
             "project": project,
             "sars": sars,
+            "api_key_ro": api_keys['ro'],
+            "api_key_rw": api_keys['rw'],
+            "api_key_wo": api_keys['wo']
         }
         return render(request, "systems/sar_list.html", context)
 
@@ -3271,3 +3277,55 @@ def system_assessment_result_history(request, system_id, sar_id=None):
         "deployment": full_sar_history,
     }
     return render(request, "systems/sar_history.html", context)
+
+@login_required
+def new_system_assessment_result_wazuh(request, system_id):
+    """Returns a SAR info from Wazuh and adds to system"""
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    else:
+        print("Getting Wazuh information")
+        # Validate data
+        valid = True
+        for param in ["wazuhhost_val", "user_val", "passwd_val", "agents_val"]:
+            if param not in request.POST:
+                valid = False
+                messages.add_message(request, messages.WARNING, f"Please complete field {param.replace('_val','')}")
+        if not valid:
+            return HttpResponseRedirect(f"/systems/{system_id}/assessments")
+
+        # Check user permissions
+        system = System.objects.get(pk=system_id)
+        if not request.user.has_perm('change_system', system):
+            # User does not have write permissions
+            # Log permission to save answer denied
+            logger.info(
+                event="delete_smt permission_denied",
+                object={"object": "statement", "id": statement.id},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return HttpResponseForbidden(
+                "Permission denied. {} does not have change privileges to system and/or project.".format(
+                    request.user.username))
+
+        #python tools/simple_sar_server/wazuh_etl.py N6auqvmM44aq9mkktZiGo72cZTIXQQPG https://wazuh-1.govready.com -s 269 --agents 001,002,0003,004
+        #if subprocess.run(["python", "tools/simple_sar_server/wazuh_etl.py", "N6auqvmM44aq9mkktZiGo72cZTIXQQPG", "https://wazuh-1.govready.com", "-s", "269", "--agents", "001,002,0003,004"]):
+        if subprocess.run(["python", "tools/simple_sar_server/wazuh_etl.py", "N6auqvmM44aq9mkktZiGo72cZTIXQQPG", f"{request.POST['wazuhhost_val']}", "-s", f"{system_id}", "--agents", f"{request.POST['agents_val']}"]):
+            # see https://stackoverflow.com/questions/3878624/how-do-i-programmatically-determine-if-there-are-uncommitted-changes
+            print("Wazuh command executed")
+            messages.add_message(request, messages.INFO, f'OK. I hit the Wazuh API and added results to {system.root_element.name}.')
+        else:
+            messages.add_message(request, messages.INFO, f'Darn. There was a problem with the subprocess.')
+            print("Wazuh command failed")
+
+    # Redirect
+        return HttpResponseRedirect(f"/systems/{system_id}/assessments")
+
+
+
+
+
+
+

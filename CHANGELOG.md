@@ -8,6 +8,7 @@ v0.9.6-dev (June XX, 2021)
 * Display legacy control implementation statements within system's statements.
 * Added compare components button to compare one component's statements to other selected components.
 * Added a Select/Deselect button for component comparison choice
+* Add accordion to assessment page to provide information on getting data from Wazuh.
 
 **Bug fixes**
 
