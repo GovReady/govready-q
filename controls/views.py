@@ -3286,7 +3286,6 @@ def new_system_assessment_result_wazuh(request, system_id):
         return HttpResponseNotAllowed(["POST"])
 
     else:
-        print("Getting Wazuh information")
         # Validate data
         valid = True
         for param in ["wazuhhost_val", "user_val", "passwd_val", "agents_val"]:
@@ -3310,15 +3309,41 @@ def new_system_assessment_result_wazuh(request, system_id):
                 "Permission denied. {} does not have change privileges to system and/or project.".format(
                     request.user.username))
 
-        #python tools/simple_sar_server/wazuh_etl.py N6auqvmM44aq9mkktZiGo72cZTIXQQPG https://wazuh-1.govready.com -s 269 --agents 001,002,0003,004
-        #if subprocess.run(["python", "tools/simple_sar_server/wazuh_etl.py", "N6auqvmM44aq9mkktZiGo72cZTIXQQPG", "https://wazuh-1.govready.com", "-s", "269", "--agents", "001,002,0003,004"]):
-        if subprocess.run(["python", "tools/simple_sar_server/wazuh_etl.py", "N6auqvmM44aq9mkktZiGo72cZTIXQQPG", f"{request.POST['wazuhhost_val']}", "-s", f"{system_id}", "--agents", f"{request.POST['agents_val']}"]):
-            # see https://stackoverflow.com/questions/3878624/how-do-i-programmatically-determine-if-there-are-uncommitted-changes
-            print("Wazuh command executed")
-            messages.add_message(request, messages.INFO, f'OK. I hit the Wazuh API and added results to {system.root_element.name}.')
-        else:
-            messages.add_message(request, messages.INFO, f'Darn. There was a problem with the subprocess.')
-            print("Wazuh command failed")
+        from sec_srvc.sec_srvc import SecurityService
+        sec_srvc = SecurityService()
+
+        sec_srvc.setup(request.POST['wazuhhost_val'])
+
+        description = sec_srvc.description()
+
+        user = request.POST['user_val']
+        passwd = request.POST['passwd_val']
+        authentication = sec_srvc.authenticate(user, passwd)
+
+        identifiers = request.POST['agents_val']
+        extracted_data = sec_srvc.extract_data(authentication, identifiers)
+
+        # TODO: Set deployment id
+        deployment_uuid = "7e85e2af-20d4-4103-9a92-c4cfaa827293"
+        transformed_data = sec_srvc.transform_data(extracted_data, system_id, "Scan Title", "Scan description", deployment_uuid)
+
+        loaded_data = sec_srvc.load_data(transformed_data)
+
+        sar = SystemAssessmentResult(
+                name=transformed_data["metadata"]["title"],
+                description=transformed_data["metadata"]["description"],
+                system_id=transformed_data["metadata"]["system_id"],
+                deployment_id=transformed_data["metadata"]["system_id"],
+                assessment_results=transformed_data
+                # assessment_results=json.loads(request.FILES.get('data').read().decode("utf8", "replace"))
+            )
+        sar.save()
+        logger.info(
+            event="create_system_assessment_result",
+            object={"object": "system_assessment_result", "id": sar.id, "name":sar.name},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        messages.add_message(request, messages.INFO, "Data from Wazuh retrieved and loaded")
 
     # Redirect
         return HttpResponseRedirect(f"/systems/{system_id}/assessments")

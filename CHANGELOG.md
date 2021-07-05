@@ -7,8 +7,9 @@ v0.9.6-dev (June XX, 2021)
 
 * Display legacy control implementation statements within system's statements.
 * Added compare components button to compare one component's statements to other selected components.
-* Added a Select/Deselect button for component comparison choice
+* Added a Select/Deselect button for component comparison choice.
 * Add accordion to assessment page to provide information on getting data from Wazuh.
+* Add form to Assessments page to collect Wazuh information.
 
 **Bug fixes**
 
@@ -17,12 +18,12 @@ v0.9.6-dev (June XX, 2021)
 **Developer changes**
 
 * Add custom Django command to batch import legacy control implementation statements from legacy SSPs Excel spreadsheet exports. Currently supports CSAM.
-* Added missing unit test for portfolio project endpoint
+* Added missing unit test for portfolio project endpoint.
+* Add `sec_srvc.SecurityService` class to represent a security service from which data could be collected.
 
 **Data changes**
 
 * Set all `StatementTypeEnum.<LABEL>.value` to `StatementTypeEnum.<LABEL>.name` in order for relevant label/term to show up in Django database admin interface.
-
 * Fisma impact level is now represented as Security Sensitivity level following OSCAL's schema.
 
 
