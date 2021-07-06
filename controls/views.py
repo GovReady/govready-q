@@ -3302,51 +3302,51 @@ def new_system_assessment_result_wazuh(request, system_id):
             # Log permission to save answer denied
             logger.info(
                 event="delete_smt permission_denied",
-                object={"object": "statement", "id": statement.id},
+                object={"object": "statement", "id": statement.id},  # todo - statement not defined anywhere - Greg
                 user={"id": request.user.id, "username": request.user.username}
             )
             return HttpResponseForbidden(
                 "Permission denied. {} does not have change privileges to system and/or project.".format(
                     request.user.username))
 
-        from sec_srvc.sec_srvc import SecurityService
-        sec_srvc = SecurityService()
+        from sec_srvc.wazuh import WazuhSecurityService
+        wazuh_sec_svc = WazuhSecurityService()
+        wazuh_sec_svc.setup(base_url=request.POST['wazuhhost_val'])
 
-        sec_srvc.setup(request.POST['wazuhhost_val'])
+        authentication = wazuh_sec_svc.authenticate(request.POST['user_val'], request.POST['passwd_val'])
 
-        description = sec_srvc.description()
+        if wazuh_sec_svc.is_authenticated:
+            identifiers = request.POST['agents_val']
+            extracted_data = wazuh_sec_svc.extract_data(authentication, identifiers)
 
-        user = request.POST['user_val']
-        passwd = request.POST['passwd_val']
-        authentication = sec_srvc.authenticate(user, passwd)
+            # TODO: Set deployment id
+            deployment_uuid = "7e85e2af-20d4-4103-9a92-c4cfaa827293"
+            transformed_data = wazuh_sec_svc.transform_data(extracted_data, system_id, "Scan Title", "Scan description", deployment_uuid)
 
-        identifiers = request.POST['agents_val']
-        extracted_data = sec_srvc.extract_data(authentication, identifiers)
+            loaded_data = wazuh_sec_svc.load_data(transformed_data)
 
-        # TODO: Set deployment id
-        deployment_uuid = "7e85e2af-20d4-4103-9a92-c4cfaa827293"
-        transformed_data = sec_srvc.transform_data(extracted_data, system_id, "Scan Title", "Scan description", deployment_uuid)
-
-        loaded_data = sec_srvc.load_data(transformed_data)
-
-        sar = SystemAssessmentResult(
-                name=transformed_data["metadata"]["title"],
-                description=transformed_data["metadata"]["description"],
-                system_id=transformed_data["metadata"]["system_id"],
-                deployment_id=transformed_data["metadata"]["system_id"],
-                assessment_results=transformed_data
-                # assessment_results=json.loads(request.FILES.get('data').read().decode("utf8", "replace"))
+            sar = SystemAssessmentResult(
+                    name=transformed_data["metadata"]["title"],
+                    description=transformed_data["metadata"]["description"],
+                    system_id=transformed_data["metadata"]["system_id"],
+                    deployment_id=transformed_data["metadata"]["system_id"],
+                    assessment_results=transformed_data
+                    # assessment_results=json.loads(request.FILES.get('data').read().decode("utf8", "replace"))
+                )
+            sar.save()
+            logger.info(
+                event="create_system_assessment_result",
+                object={"object": "system_assessment_result", "id": sar.id, "name":sar.name},
+                user={"id": request.user.id, "username": request.user.username}
             )
-        sar.save()
-        logger.info(
-            event="create_system_assessment_result",
-            object={"object": "system_assessment_result", "id": sar.id, "name":sar.name},
-            user={"id": request.user.id, "username": request.user.username}
-        )
-        messages.add_message(request, messages.INFO, "Data from Wazuh retrieved and loaded")
+            messages.add_message(request, messages.INFO, "Data from Wazuh retrieved and loaded")
 
-    # Redirect
-        return HttpResponseRedirect(f"/systems/{system_id}/assessments")
+        # Redirect
+            return HttpResponseRedirect(f"/systems/{system_id}/assessments")
+
+        else:
+            # TODO: better handling of response code; 401, 301, etc.
+            raise Exception(wazuh_sec_svc.error_msg['error'])
 
 
 
