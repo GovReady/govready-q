@@ -123,6 +123,28 @@ class Command(BaseCommand):
                         username
                     ))
 
+        # Create default users, if specifified in local/environment.json
+        if len(settings.GOVREADY_USERS):
+            for reg_user in settings.GOVREADY_USERS:
+                username = reg_user["username"]
+                if not User.objects.filter(username=username).exists():
+                    user = User.objects.create(username=username, is_superuser=True, is_staff=True)
+                    user.set_password(reg_user["password"])
+                    user.email = reg_user["email"]
+                    user.save()
+                    print("Created regular user account: username '{}' with email '{}'.".format(
+                        user.username,
+                        user.email
+                    ))
+                    # Create the first portfolio
+                    portfolio = user.create_default_portfolio_if_missing()
+                    print("Created regular user portfolio {}".format(portfolio.title))
+                else:
+                    print("\n[INFO] Skipping create account '{}' - username already exists.\n".format(
+                        username
+                    ))
+
+
         # Create the first user.
         if not User.objects.filter(is_superuser=True).exists():
             if not options['non_interactive']:
@@ -159,7 +181,7 @@ class Command(BaseCommand):
 
         else:
             # One or more superusers already exists
-            print("\n[INFO] Superuser(s) already exists, not creating default admin superuser. Did you specify 'govready_admins' in 'local/environment.json'? Are you connecting to a persistent database?\n")
+            print("\n[INFO] Superuser(s) already exists, not creating default admin superuser. Did you specify 'govready_admins' in 'local/environment.json'? Did you specify an admin or are you connecting to a persistent database?\n")
 
         # Provide feedback to user
         print("GovReady-Q configuration complete.")
