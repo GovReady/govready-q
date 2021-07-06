@@ -1,7 +1,6 @@
 import json
 
 import requests
-
 from sec_srvc.security_service import SecurityService
 from base64 import b64encode
 from urllib.parse import urlparse
