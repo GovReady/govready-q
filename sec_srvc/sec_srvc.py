@@ -14,6 +14,7 @@ import json
 import random
 import uuid
 
+
 class SecurityService:
 
     def description(self):
@@ -87,7 +88,7 @@ class SecurityService:
                 # Enhance agent result
                 endpoint_result['agent'] = identifer_id
                 endpoint_result['ip_address'] = None
-                endpoint_result['url_link'] = f"{PROTOCOL}://{HOST}/app/wazuh#/overview/?tab=sca&agentId={identifer_id}"
+                endpoint_result['url_link'] = f"https://{self.base_url}/app/wazuh#/overview/?tab=sca&agentId={identifer_id}"
                 sar_list.append(endpoint_result)
             else:
                 endpoint_result = None
