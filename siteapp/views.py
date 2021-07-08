@@ -992,6 +992,11 @@ def project(request, project):
     else:
         confidentiality, integrity, availability = None, None, None
 
+    # Retrieve components
+    model = Element
+    ordering = ['name']
+    elements = [element for element in project.system.producer_elements if element.element_type != "system"]
+
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
@@ -1030,7 +1035,9 @@ def project(request, project):
         "class_status": Classification.objects.last(),
 
         "authoring_tool_enabled": authoring_tool_enabled,
-        "import_project_form": ImportProjectForm()
+        # "import_project_form": ImportProjectForm()
+
+        "elements": elements,
     })
 
 def project_edit(request, project_id):
