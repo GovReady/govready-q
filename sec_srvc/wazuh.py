@@ -69,11 +69,16 @@ class WazuhSecurityService(SecurityService):
     def transform_data(self, data, system_id=None, title=None, description=None, deployment_uuid=None):
         modified_items = data
 
+        if deployment_uuid is not None:
+            d_uuid_uuid = uuid.UUID(f'urn:uuid:{deployment_uuid}')
+        else:
+            d_uuid_uuid = None
+
         # TODO: update data time fields
         transformed_data = {'schema': 'GovReadySimpleSAR',
                             'version': '0.2',
                             "metadata": {
-                                "deployment_uuid": f"{deployment_uuid}",
+                                "deployment_uuid": f"{d_uuid_uuid}",
                                 "description": f"{description}",
                                 "last-modified": "dateTime-with-timezone",
                                 "published": "dateTime-with-timezone",

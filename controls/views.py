@@ -3320,16 +3320,27 @@ def new_system_assessment_result_wazuh(request, system_id):
             extracted_data = wazuh_sec_svc.extract_data(authentication, identifiers)
 
             # TODO: Set deployment id
-            deployment_uuid = "7e85e2af-20d4-4103-9a92-c4cfaa827293"
-            transformed_data = wazuh_sec_svc.transform_data(extracted_data, system_id, "Scan Title", "Scan description", deployment_uuid)
+            # deployment_uuid = "7e85e2af-20d4-4103-9a92-c4cfaa827293"
+            deployment_uuid = None
 
+            transformed_data = wazuh_sec_svc.transform_data(extracted_data, system_id, "Scan Title", "Scan description", deployment_uuid)
             loaded_data = wazuh_sec_svc.load_data(transformed_data)
+
+            # Determine deployment_id from deployment_uuid
+            # TODO: Make sure deployment is associated with system
+            if deployment_uuid is None or deployment_uuid == "None":
+                # When deployment is not defined, leave blank and attach SAR to system only
+                deployment = None
+                deployment_id = None
+            else:
+                deployment = Deployment.objects.get(uuid=deployment_uuid)
+                deployment_id = deployment.id
 
             sar = SystemAssessmentResult(
                     name=transformed_data["metadata"]["title"],
                     description=transformed_data["metadata"]["description"],
                     system_id=transformed_data["metadata"]["system_id"],
-                    deployment_id=transformed_data["metadata"]["system_id"],
+                    deployment_id=deployment_id,
                     assessment_results=transformed_data
                     # assessment_results=json.loads(request.FILES.get('data').read().decode("utf8", "replace"))
                 )
