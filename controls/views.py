@@ -3289,7 +3289,7 @@ def new_system_assessment_result_wazuh(request, system_id):
         # Validate data
         valid = True
         for param in ["wazuhhost_val", "user_val", "passwd_val", "agents_val"]:
-            if param not in request.POST:
+            if param not in request.POST or request.POST[param] == "":
                 valid = False
                 messages.add_message(request, messages.WARNING, f"Please complete field {param.replace('_val','')}")
         if not valid:
@@ -3320,7 +3320,6 @@ def new_system_assessment_result_wazuh(request, system_id):
             extracted_data = wazuh_sec_svc.extract_data(authentication, identifiers)
 
             # TODO: Set deployment id
-            # deployment_uuid = "7e85e2af-20d4-4103-9a92-c4cfaa827293"
             deployment_uuid = None
 
             transformed_data = wazuh_sec_svc.transform_data(extracted_data, system_id, "Scan Title", "Scan description", deployment_uuid)
