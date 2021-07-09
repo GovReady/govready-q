@@ -494,15 +494,15 @@ def save_answer(request, task, answered, context, __):
                             object={"object": "system", "id": system.id, "name": system.root_element.name},
                             user={"id": request.user.id, "username": request.user.username}
                         )
-                        # Set fisma_impact_level statement
+                        # Set security_sensitivity_level statement
                         if baseline.lower() in ["low", "moderate", "high"]:
-                            fisma_impact_level, smt = system.set_fisma_impact_level(baseline)
-                            if fisma_impact_level == baseline.lower():
+                            security_sensitivity_level, smt = system.set_security_sensitivity_level(baseline)
+                            if security_sensitivity_level == baseline.lower():
                                 messages.add_message(request, messages.INFO,
-                                                              f'I\'ve set the system FISMA impact level to "{fisma_impact_level}.')
-                                # Log setting fisma_impact_level
+                                                              f'I\'ve set the system FISMA impact level to "{security_sensitivity_level}.')
+                                # Log setting security_sensitivity_level
                                 logger.info(
-                                    event=f"system assign_fisma_impact_level {fisma_impact_level}",
+                                    event=f"system assign_security_sensitivity_level {security_sensitivity_level}",
                                     object={"object": "system", "id": system.id, "name": system.root_element.name, "statementid": smt.id},
                                     user={"id": request.user.id, "username": request.user.username}
                                 )

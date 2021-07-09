@@ -442,18 +442,21 @@ def compare_components(request):
     """
     Compare submitted components
     """
-    # TODO: need to figure out how to accumulate all checked boxes not one in pageobj
-    compare_list = request.POST.getlist('componentcomparecheckbox')
-    if compare_list:
-        element_list = list(Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct())
-        compare_prime, element_list = element_list[0], element_list[1:]# The first component selected will be compared against the rest
-        compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
-    elif len(compare_list) <= 1:
+    
+    checks = json.loads(request.POST.get('hiddenChecks'))
+    compare_list = list(checks.values())
+    if len(compare_list) <= 1:
         # add messages
         messages.add_message(request, messages.WARNING, f"Not enough components were selected to compare!")
         return HttpResponseRedirect("/controls/components")
+    else:
+        ele_q = Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct()
+        # Maintain sort order of compare_list otherwise Django will order ascending
+        element_list = sorted(ele_q, key=lambda x: compare_list.index(str(x.id)))
+        compare_prime, element_list = element_list[0], element_list[
+                                                       1:]  # The first component selected will be compared against the rest
+        compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
     difference_tuples = []
-    differences = []
     for component in element_list:
         differences = []
         # compare each component's statements to prime
@@ -468,14 +471,15 @@ def compare_components(request):
                 else:
                     diff = f"<span><ins style='background:#e6ffe6;'>{smt.body}</ins><span>"
                 differences.append(diff)
-        difference_tuples.extend(zip([component.name] * len(cmt_smts), cmt_smts, differences))
+        difference_tuples.extend(zip([component.id] * len(cmt_smts),[component.name] * len(cmt_smts), cmt_smts, differences))
     if request.method == 'POST':
         context = {
             "element_list": element_list,
             "compare_prime": compare_prime,
             "prime_smts": compare_prime_smts,
             "secondary_smts": cmt_smts,
-            "differences": difference_tuples
+            "differences": difference_tuples,
+            "compare_list": compare_list
         }
         return render(request, "components/compare_components.html", context)
 

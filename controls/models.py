@@ -541,26 +541,24 @@ class System(auto_prefetch.Model):
         return control
 
     @transaction.atomic
-    def set_fisma_impact_level(self, fisma_impact_level):
-        """Assign FISMA impact level to system"""
-        # TODO: Fisma impact level is actually the security-sensitivity-level as defined in oscal ssp schema.
-
-        # Get or create the fisma_impact_level smt for system's root_element; should only have 1 statement
-        smt = Statement.objects.create(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.name, producer_element=self.root_element,consumer_element=self.root_element, body=fisma_impact_level)
-        return fisma_impact_level, smt
+    def set_security_sensitivity_level(self, security_sensitivity_level):
+        """Assign Security Sensitivty level to system"""
+        # Get or create the security_sensitivity_level smt for system's root_element; should only have 1 statement
+        smt = Statement.objects.create(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element, body=security_sensitivity_level)
+        return security_sensitivity_level, smt
 
     @property
-    def get_fisma_impact_level(self):
-        """Assign FISMA impact level to system"""
+    def get_security_sensitivity_level(self):
+        """Assign Security Sensitivty level to system"""
 
-        # Get or create the fisma_impact_level smt for system's root_element; should only have 1 statement
-        smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.name, producer_element=self.root_element,consumer_element=self.root_element)
-        fisma_impact_level = smt.body
-        return fisma_impact_level
+        # Get or create the security_sensitivity_level smt for system's root_element; should only have 1 statement
+        smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element)
+        security_sensitivity_level = smt.body
+        return security_sensitivity_level
 
     @transaction.atomic
     def set_security_impact_level(self, security_impact_level):
-        """Assign Security impact levels to system"""
+        """Assign one or more of the System Security impact levels (e.g. confidentiality, integrity, availability)"""
 
         security_objective_smt = self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name)
         if security_objective_smt.exists():
@@ -572,7 +570,7 @@ class System(auto_prefetch.Model):
 
     @property
     def get_security_impact_level(self):
-        """Assign Security impact levels to system"""
+        """Get one or more of the System Security impact levels (e.g. confidentiality, integrity, availability)"""
 
         # Get the security_impact_level smt for element; should only have 1 statement
         try:
@@ -581,6 +579,7 @@ class System(auto_prefetch.Model):
             return security_impact_level
         except Statement.DoesNotExist:
             return {}
+
 
     @property
     def smts_common_controls_as_dict(self):

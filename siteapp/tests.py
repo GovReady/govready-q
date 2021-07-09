@@ -801,6 +801,32 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.click_element("#create-portfolio-button")
         wait_for_sleep_after(lambda:  self.assertRegex(self.browser.title, "Security Projects"))
 
+    def test_portfolio_projects(self):
+        """
+        Ensure key parts of the portfolio page
+        """
+        # Login as authenticated user
+        self.client.force_login(user=self.user)
+        # Reset login
+        self.browser.get(self.url("/accounts/logout/"))
+        self._login()
+        # If the above is not done a new project cannot be created
+        self._new_project()
+
+        portfolio_id = Project.objects.last().portfolio.id
+        url = reverse('portfolio_projects', args=[portfolio_id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'portfolios/detail.html')
+        self.assertContains(response, 'Owner', 1)
+        # Context
+        bool_context_objects = ["can_invite_to_portfolio", "can_edit_portfolio"]
+        for context in bool_context_objects:
+            self.assertEqual(response.context[context], True)
+
+        self.assertEqual(response.context["portfolio"].id, portfolio_id)
+
+
     def test_grant_portfolio_access(self):
         # Grant another member access to portfolio
         self._login()
@@ -1484,21 +1510,21 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
 
         # Display imact level testing
         # New project should not be categorized
-        self.assertInNodeText("Mission Impact: Not Categorized", "#systems-fisma-impact-level")
+        self.assertInNodeText("Mission Impact: Not Categorized", "#systems-security-sensitivity-level")
 
         # Update impact level
         # Get project.system.root_element to attach statement holding fisma impact level
         project = self.current_project
         fil = "Low"
-        # Test change and test system fisma_impact_level set/get methods
-        project.system.set_fisma_impact_level(fil)
+        # Test change and test system security_sensitivity_level set/get methods
+        project.system.set_security_sensitivity_level(fil)
         # Check value changed worked
-        self.assertEqual(project.system.get_fisma_impact_level, fil)
+        self.assertEqual(project.system.get_security_sensitivity_level, fil)
         # Refresh project page
         self.click_element('#btn-project-home')
         # See if project page has changed
-        wait_for_sleep_after( lambda: self.assertInNodeText("low", "#systems-fisma-impact-level") )
-        impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.name)
+        wait_for_sleep_after( lambda: self.assertInNodeText("low", "#systems-security-sensitivity-level") )
+        impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
         self.assertEqual(impact_level_smts.count(), 1)
 
     def test_security_objectives(self):
