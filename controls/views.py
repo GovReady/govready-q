@@ -1828,7 +1828,6 @@ def save_smt(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
-        print(form_dict)
         smt_id = form_values['smt_id']
         # Updating or saving a new statement?
         if len(smt_id) > 0:
@@ -1864,13 +1863,14 @@ def save_smt(request):
             else:
                 new_statement = True
         else:
+            new_statement_type_enum = StatementTypeEnum[form_values['statement_type'].upper()]
             # Create new Statement object
             statement = Statement(
                 sid=oscalize_control_id(form_values['sid']),
                 sid_class=form_values['sid_class'],
                 body=form_values['body'],
                 pid=form_values['pid'],
-                statement_type=form_values['statement_type'],
+                statement_type=new_statement_type_enum.name,
                 status=form_values['status'],
                 remarks=form_values['remarks'],
             )
@@ -1899,7 +1899,7 @@ def save_smt(request):
         if new_statement:
             try:
                 statement.producer_element = producer_element
-                #statement.save()
+                statement.save()
                 statement_element_status = "ok"
                 statement_element_msg = "Statement associated with Producer Element."
                 messages.add_message(request, messages.INFO, f"{statement_element_msg} {producer_element.id}.")
