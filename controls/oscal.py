@@ -156,7 +156,7 @@ class Catalog(object):
     def _load_catalog_json(self):
         """Read catalog file - JSON"""
         catalog_file = os.path.join(self.catalog_path, self.catalog_file)
-        catalof_file_external = os.path.join(self.external_catalog_path, self.catalog_file)
+        catalog_file_external = os.path.join(self.external_catalog_path, self.catalog_file)
         # Get catalog file from internal or "external" catalog files
         if os.path.isfile(catalog_file):
             with open(catalog_file, 'r') as json_file:
