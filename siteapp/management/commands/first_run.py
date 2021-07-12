@@ -123,13 +123,15 @@ class Command(BaseCommand):
                         username
                     ))
 
-        # Create default users, if specifified in local/environment.json
-        if len(settings.GOVREADY_USERS):
+        # Create default users, if specified in local/environment.json
+        env_pw = os.environ.get("CREATE_DEV_USER_PASSWORD")
+        if len(settings.GOVREADY_USERS) and env_pw != None:
+            # TODO: iterate for each environment. Need to modularize this loop.
             for reg_user in settings.GOVREADY_USERS:
                 username = reg_user["username"]
                 if not User.objects.filter(username=username).exists():
-                    user = User.objects.create(username=username, is_superuser=True, is_staff=True)
-                    user.set_password(reg_user["password"])
+                    user = User.objects.create(username=username, is_superuser=False, is_staff=False)
+                    user.set_password(env_pw)
                     user.email = reg_user["email"]
                     user.save()
                     print("Created regular user account: username '{}' with email '{}'.".format(
