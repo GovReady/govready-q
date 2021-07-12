@@ -9,11 +9,7 @@
       </div>
       <form id="component_import_form" action="{% url 'import_component' %}" onsubmit="show_spinner();" role="form" method="POST">{% csrf_token %}
         <div class="modal-body">
-          <label for="{{import_form.file.id_auto}}">{{ import_form.file.label }}:</label>
-          {{ import_form.file }}
-          <br>
-          <label for="{{import_form.json_content.id_auto}}">{{ import_form.json_content.label }}:</label>
-          <br>
+             {% include "drag-n-fill.html" %}
           {{ import_form.json_content }}
           {{ import_form.import_name }}
           <div class="modal-footer">
@@ -37,7 +33,7 @@
   }
 
   function fillJSONContent(file) {
-    filecontents = $('#{{import_form.file.auto_id}}').prop('files')[0];
+    filecontents = document.getElementById('json_content').files[0];
     $('#{{import_form.import_name.auto_id}}').val(filecontents.name);
     var reader = new FileReader();
     reader.readAsText(filecontents);
