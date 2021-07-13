@@ -1,8 +1,35 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (June XX, 2021)
----------------------
+v0.9.6-dev (June XX, 2021)
+
+**UI changes**
+
+* Display legacy control implementation statements within system's statements.
+* Added compare components button to compare one component's statements to other selected components.
+* Added a Select/Deselect button for component comparison choice.
+* Add accordion to assessment page to provide information on getting data from Wazuh.
+* Add form to Assessments page to collect Wazuh information.
+
+**Bug fixes**
+
+* Set component library detail page Systems tab to not be inactive and thus remove the content from the System tab showing up on the Control Implementation Statements tab.
+
+**Developer changes**
+
+* Add custom Django command to batch import legacy control implementation statements from legacy SSPs Excel spreadsheet exports. Currently supports CSAM.
+* Added missing unit test for portfolio project endpoint.
+* Add `sec_srvc.SecurityService` class to represent a security service from which data could be collected.
+
+**Data changes**
+
+* Set all `StatementTypeEnum.<LABEL>.value` to `StatementTypeEnum.<LABEL>.name` in order for relevant label/term to show up in Django database admin interface.
+* Create baselines for CMMC catalog.
+* Fisma impact level is now represented as Security Sensitivity level following OSCAL's schema.
+
+
+v0.9.5 (June 23, 2021)
+----------------------
 
 **Feature changes**
 
@@ -13,7 +40,7 @@ v999 (June XX, 2021)
 
 * Add "Import AppSource" button for admins in Compliance App store to simplify end-users adding AppSource.
 * Link to library version of component from a system's selected control component listing and selected components.
-
+* Improve UI of project security objectives. Improve alignment and convert text fields to select boxes to control data input.
 
 v0.9.4 (June 13, 2021)
 ----------------------
@@ -25,9 +52,11 @@ v0.9.4 (June 13, 2021)
 * Created a modal to allow an admin user to add security objectives confidentiality, integrity, and availability.
 * Add field to identify user's default portfolio.
 
+
 **UI changes**
 
 * Can now edit a system componet's state and type in the detail page for a selected component.
+* Can now create a component with a state and type with the `ElementForm`
 * Improve project pages appearance: decrease action button width and left align text; widen from 9 to 10 columns main content.
 * Remove "Refresh Documents" button on task finished page because caches are now automatically cleared and document content refreshed.
 * Display system component component_state and component_type when component is listed for a system.
@@ -60,6 +89,7 @@ v0.9.4 (June 13, 2021)
 * Fix bug breaking rendering of system's control detail page by removing an errant login_required decorator on a function.
 * File upload validator now accepts files with capitalized extensions, e.g. ".JPG".
 * File upload validator now recognizes ".jpeg" in addition to ".jpg" extension on JPEG files.
+
 
 v0.9.3.5.3 (May 16, 2021)
 -------------------------

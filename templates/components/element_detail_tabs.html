@@ -204,7 +204,8 @@
                   <div class="smt_block">
                     <div class="row statement-text">
                       <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
-                      <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-edit-text-block"><div>
+                      <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-edit-text-block">
+                        <div>
                         <form id="smt_{{ forloop.counter }}" class="smt_form">
                           <!-- Never change name of the producer element already associated with a statement -->
                           <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
@@ -250,6 +251,7 @@
                             <button type="button" name="history" value="history" class="btn btn-xs btn-primary" onclick="location.href='{% url 'statement_history' smt_id=smt.id %}'">History</button>
                           </div>
                         </form>
+                        </div>
                       </div>
                       <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
                     </div>
@@ -257,20 +259,15 @@
                 </div>
               </div>
             </div>
-          </div>
-
             {% endfor %}
           </div><!--/smt-list-->
         <div>
           <button type="submit" id="new_component_statement" class="small btn btn-xs btn-success" onclick="add_smt({{ impl_smts|length }})">Add component statement</button>
         </div>
-
-
       </div>
 
       <!-- Tab panel: systems -->
-      <div role="tabpanel" class="tab-pane active" id="systems">
-
+      <div role="tabpanel" class="tab-pane" id="systems">
         <div class="row">
           <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
             <h3>Systems</h3>

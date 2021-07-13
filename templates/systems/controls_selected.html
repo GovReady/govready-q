@@ -46,14 +46,21 @@
     {% if controls|length < 1 %}
       <div id="tab-content" class="row row-control">
         <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-          <p>No controls are currently selected for this system.</p>
-          <p>FEATURE NOTE: We are automating the assigning of control baselines by system categorization.
-          Prior to feature completion, we humbly ask you manually select the desired control baseline...</p>
+          <p>No controls are currently selected for your system.</p>
+          <p>An appropriate baseline will be assigned based on your questionnaire answers. Alternatively, you can predictively assign a control baseline from the list below.</p>
           <ul>
             <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='low' %}>Assign 800-53 rev4 Low Impact Baseline</a></li>
             <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='moderate' %}>Assign 800-53 rev4 Moderate Impact Baseline</a></li>
             <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='high' %}>Assign 800-53 rev4 High Impact Baseline</a></li>
+            <br>
             <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-171_rev1' baseline_name='cui' %}>Assign 800-171 rev1 Baseline</a></li>
+            <br>
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='CMMC_ver1' baseline_name='level 1' %}>Assign CMMC ver1 level 1 Baseline</a></li>
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='CMMC_ver1' baseline_name='level 2' %}>Assign CMMC ver1 level 2 Baseline</a></li>
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='CMMC_ver1' baseline_name='level 3' %}>Assign CMMC ver1 level 3 Baseline</a></li>
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='CMMC_ver1' baseline_name='level 4' %}>Assign CMMC ver1 level 4 Baseline</a></li>
+            <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='CMMC_ver1' baseline_name='level 5' %}>Assign CMMC ver1 level 5 Baseline</a></li>
+
               {% for catalog in external_catalogs %}
                               <li><a href={% url 'assign_baseline' system_id=system.id catalog_key=catalog.catalog_key  baseline_name='low' %}>Assign {{ catalog.catalog_key_display }} Low Impact Baseline</a></li>
                               <li><a href={% url 'assign_baseline' system_id=system.id catalog_key=catalog.catalog_key  baseline_name='moderate' %}>Assign {{ catalog.catalog_key_display }} Moderate Impact Baseline</a></li>

@@ -118,7 +118,7 @@ class Statement(auto_prefetch.Model):
             return self.prototype
             # check if prototype content is the same, report error if not, or overwrite if permission approved
         prototype = deepcopy(self)
-        prototype.statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value
+        prototype.statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name
         prototype.consumer_element_id = None
         prototype.id = None
         prototype.save()
@@ -131,7 +131,7 @@ class Statement(auto_prefetch.Model):
         """Creates a control_implementation statement instance for a system's root_element from an existing control implementation prototype statement"""
 
         # Check statement is a prototype
-        if self.statement_type != StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value:
+        if self.statement_type != StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name:
             return None
 
         # Return if statement already has instance associated with consumer_element
@@ -139,7 +139,7 @@ class Statement(auto_prefetch.Model):
             return self.prototype
 
         instance = deepcopy(self)
-        instance.statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value
+        instance.statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name
         instance.consumer_element_id = consumer_element_id
         instance.id = None
         # Set prototype attribute to newly created instance
@@ -151,7 +151,7 @@ class Statement(auto_prefetch.Model):
     def prototype_synched(self):
         """Returns one of STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED for control_implementations"""
 
-        if self.statement_type == "control_implementation":
+        if self.statement_type == StatementTypeEnum.CONTROL_IMPLEMENTATION.name:
             if self.prototype:
                 if self.body == self.prototype.body:
                     return STATEMENT_SYNCHED
@@ -166,7 +166,7 @@ class Statement(auto_prefetch.Model):
     def diff_prototype_main(self):
         """Generate a diff of statement of type `control_implementation` and its prototype"""
 
-        if self.statement_type != 'control_implementation':
+        if self.statement_type != StatementTypeEnum.CONTROL_IMPLEMENTATION.name:
             # TODO: Should we return None or raise error because statement is not of type control_implementation?
             return None
         if self.prototype is None:
@@ -180,7 +180,7 @@ class Statement(auto_prefetch.Model):
     def diff_prototype_prettyHtml(self):
         """Generate a diff of statement of type `control_implementation` and its prototype"""
 
-        if self.statement_type != 'control_implementation':
+        if self.statement_type != StatementTypeEnum.CONTROL_IMPLEMENTATION.name:
             # TODO: Should we return None or raise error because statement is not of type control_implementation?
             return None
         if self.prototype is None:
@@ -190,7 +190,7 @@ class Statement(auto_prefetch.Model):
         diff = dmp.diff_main(self.prototype.body, self.body)
         return dmp.diff_prettyHtml(diff)
 
-    # TODO:c
+    # TODO:
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
     @staticmethod
@@ -240,7 +240,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
     #    e.statements_consumed.all()
     #
     # Retrieve statements that are control implementations
-    #    e.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
+    #    e.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
 
     def __str__(self):
         return "'%s id=%d'" % (self.name, self.id)
@@ -347,7 +347,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
     def get_control_impl_smts_prototype_count(self):
         """Return count of statements with this element as producer_element"""
 
-        smt_count = Statement.objects.filter(producer_element=self, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
+        smt_count = Statement.objects.filter(producer_element=self, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
 
         return smt_count
 
@@ -369,7 +369,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
             e_copy.name = self.name + " copy"
         e_copy.save()
         # Copy prototype statements from existing element
-        for smt in self.statements("control_implementation_prototype"):
+        for smt in self.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name):
             smt_copy = deepcopy(smt)
             smt_copy.producer_element = e_copy
             smt_copy.consumer_element_id = None
@@ -480,7 +480,7 @@ class System(auto_prefetch.Model):
     # Notes
     # Retrieve system implementation statements
     #   system = System.objects.get(pk=2)
-    #   system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
+    #   system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
     #
     # Retrieve system common controls statements
     #   system = System.objects.get(pk=2)
@@ -533,7 +533,7 @@ class System(auto_prefetch.Model):
         control = ElementControl.objects.get(pk=control_id)
 
         # Delete Control Statements
-        self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+        self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
                                                      sid_class=control.oscal_catalog_key,
                                                      sid=control.oscal_ctl_id
                                                      ).delete()
@@ -541,46 +541,45 @@ class System(auto_prefetch.Model):
         return control
 
     @transaction.atomic
-    def set_fisma_impact_level(self, fisma_impact_level):
-        """Assign FISMA impact level to system"""
-        # TODO: Fisma impact level is actually the security-sensitivity-level as defined in oscal ssp schema.
-
-        # Get or create the fisma_impact_level smt for system's root_element; should only have 1 statement
-        smt = Statement.objects.create(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value, producer_element=self.root_element,consumer_element=self.root_element, body=fisma_impact_level)
-        return fisma_impact_level, smt
+    def set_security_sensitivity_level(self, security_sensitivity_level):
+        """Assign Security Sensitivty level to system"""
+        # Get or create the security_sensitivity_level smt for system's root_element; should only have 1 statement
+        smt = Statement.objects.create(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element, body=security_sensitivity_level)
+        return security_sensitivity_level, smt
 
     @property
-    def get_fisma_impact_level(self):
-        """Assign FISMA impact level to system"""
+    def get_security_sensitivity_level(self):
+        """Assign Security Sensitivty level to system"""
 
-        # Get or create the fisma_impact_level smt for system's root_element; should only have 1 statement
-        smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.FISMA_IMPACT_LEVEL.value, producer_element=self.root_element,consumer_element=self.root_element)
-        fisma_impact_level = smt.body
-        return fisma_impact_level
+        # Get or create the security_sensitivity_level smt for system's root_element; should only have 1 statement
+        smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element)
+        security_sensitivity_level = smt.body
+        return security_sensitivity_level
 
     @transaction.atomic
     def set_security_impact_level(self, security_impact_level):
-        """Assign Security impact levels to system"""
+        """Assign one or more of the System Security impact levels (e.g. confidentiality, integrity, availability)"""
 
-        security_objective_smt = self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value)
+        security_objective_smt = self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name)
         if security_objective_smt.exists():
             security_objective_smt.update(body=security_impact_level)
         else:
             # Set the security_impact_level smt for element; should only have 1 statement
-            security_objective_smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value, producer_element=self.root_element,consumer_element=self.root_element, body=security_impact_level)
+            security_objective_smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name, producer_element=self.root_element,consumer_element=self.root_element, body=security_impact_level)
         return security_impact_level, security_objective_smt
 
     @property
     def get_security_impact_level(self):
-        """Assign Security impact levels to system"""
+        """Get one or more of the System Security impact levels (e.g. confidentiality, integrity, availability)"""
 
         # Get the security_impact_level smt for element; should only have 1 statement
         try:
-            smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.value, producer_element=self.root_element, consumer_element=self.root_element)
+            smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element)
             security_impact_level = eval(smt.body)# Evaluate string of dictionary
             return security_impact_level
         except Statement.DoesNotExist:
             return {}
+
 
     @property
     def smts_common_controls_as_dict(self):
@@ -595,7 +594,7 @@ class System(auto_prefetch.Model):
 
     @property
     def smts_control_implementation_as_dict(self):
-        smts = self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).order_by('pid')
+        smts = self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
         smts_as_dict = {}
         for smt in smts:
             if smt.sid in smts_as_dict:
@@ -612,7 +611,7 @@ class System(auto_prefetch.Model):
         elm = self.root_element
         selected_controls = elm.controls.all().values("oscal_ctl_id", "uuid")
         # Get the smts_control_implementations ordered by part, e.g. pid
-        smts = elm.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).order_by('pid')
+        smts = elm.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
 
         smts_as_dict = {}
 
@@ -699,12 +698,12 @@ class System(auto_prefetch.Model):
         # Fetch all selected controls
         elm = self.root_element
 
-        counts = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value, status__in=status_list).values('status').order_by('status').annotate(count=Count('status'))
+        counts = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name, status__in=status_list).values('status').order_by('status').annotate(count=Count('status'))
         status_stats.update({r['status']: r['count'] for r in counts})
 
         # TODO add index on statement status
         # Get overall controls addressed (e.g., covered)
-        status_stats['Addressed'] = elm.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).values('sid').distinct().count()
+        status_stats['Addressed'] = elm.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).values('sid').distinct().count()
         return status_stats
 
     @cached_property
@@ -739,7 +738,7 @@ class System(auto_prefetch.Model):
     def set_component_control_status(self, element, status):
         """Batch update status of system control implementation statements for a specific element."""
 
-        self.root_element.statements_consumed.filter(producer_element=element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value).update(status=status)
+        self.root_element.statements_consumed.filter(producer_element=element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).update(status=status)
         return True
 
 class CommonControlProvider(models.Model):
@@ -799,7 +798,8 @@ class Baselines (object):
         return self.extend_external_baselines([
             'NIST_SP-800-53_rev4_baselines.json',
             # 'NIST_SP-800-53_rev5_baselines.json',
-            'NIST_SP-800-171_rev1_baselines.json'
+            'NIST_SP-800-171_rev1_baselines.json',
+            'CMMC_ver1_baselines.json'
         ], "files")
 
 
@@ -807,7 +807,8 @@ class Baselines (object):
         return self.extend_external_baselines([
             'NIST_SP-800-53_rev4',
             # 'NIST_SP-800-53_rev5',
-            'NIST_SP-800-171_rev1'
+            'NIST_SP-800-171_rev1',
+            'CMMC_ver1'
         ], "keys")
 
 
@@ -861,6 +862,7 @@ class Baselines (object):
 
         baseline_info = check_and_extend(baseline_info, external_baselines, extendtype, "_baselines")
         return baseline_info
+
 class OrgParams(object):
     """
     Represent list of organizational defined parameters. Temporary

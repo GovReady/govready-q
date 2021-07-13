@@ -17,6 +17,7 @@ class Catalogs(object):
     NIST_SP_800_53_rev4 = 'NIST_SP-800-53_rev4'
     NIST_SP_800_53_rev5 = 'NIST_SP-800-53_rev5'
     NIST_SP_800_171_rev1 = 'NIST_SP-800-171_rev1'
+    CMMC_ver1 = 'CMMC_ver1'
 
     def __init__(self):
         self.catalog_path = CATALOG_PATH
@@ -47,7 +48,8 @@ class Catalogs(object):
         return self.extend_external_catalogs([
             Catalogs.NIST_SP_800_53_rev4,
             Catalogs.NIST_SP_800_53_rev5,
-            Catalogs.NIST_SP_800_171_rev1
+            Catalogs.NIST_SP_800_171_rev1,
+            Catalogs.CMMC_ver1
         ], "keys")
 
     def _load_catalog_json(self, catalog_key):
@@ -154,19 +156,21 @@ class Catalog(object):
     def _load_catalog_json(self):
         """Read catalog file - JSON"""
         catalog_file = os.path.join(self.catalog_path, self.catalog_file)
-        # Does file exist?
-        if not os.path.isfile(catalog_file):
-            # Check if there any external oscal catalog files
-            try:
-                catalog_file = os.path.join(self.external_catalog_path, self.catalog_file)
-            except:
-                print(f"ERROR: {catalog_file} does not exist")
-                return False
-        # Load file as json
-        with open(catalog_file, 'r') as json_file:
-            data = json.load(json_file)
-            oscal = data['catalog']
-        return oscal
+        catalog_file_external = os.path.join(self.external_catalog_path, self.catalog_file)
+        # Get catalog file from internal or "external" catalog files
+        if os.path.isfile(catalog_file):
+            with open(catalog_file, 'r') as json_file:
+                data = json.load(json_file)
+                oscal = data['catalog']
+            return oscal
+        elif os.path.isfile(catalog_file_external):
+            with open(catalog_file, 'r') as json_file:
+                data = json.load(json_file)
+                oscal = data['catalog']
+            return oscal
+        else:
+            # Catalog file doesn't exist
+            return False
 
     def find_dict_by_value(self, search_array, search_key, search_value):
         """Return the dictionary in an array of dictionaries with a key matching a value"""
@@ -178,7 +182,10 @@ class Catalog(object):
     #     return [item['id'] for item in search_collection if 'id' in item]
 
     def get_groups(self):
-        return self.oscal['groups']
+        if "groups" in self.oscal:
+            return self.oscal['groups']
+        else:
+            return None
 
     def get_group_ids(self):
         search_collection = self.get_groups()
@@ -239,6 +246,32 @@ class Catalog(object):
         if prop is None:
             return None
         return prop['value']
+
+    def get_control_part_by_name(self, control, part_name):
+        """Return value of a part of a control by name of part"""
+        if "parts" in control:
+            part = self.find_dict_by_value(control['parts'], "name", part_name)
+            return part
+        else:
+            return None
+
+    def get_control_guidance_links(self, control):
+        """Return the links in the guidance section of a control"""
+        guidance = self.get_control_part_by_name(control, "guidance")
+        if guidance and "links" in guidance:
+            return guidance["links"]
+        else:
+            return []
+
+    def get_guidance_related_links_by_value_in_href(self, control, value):
+        """Return objects from 'rel': 'related' links with particular value found in the 'href' string"""
+        links = [ l for l in self.get_control_guidance_links(control) if l['rel']=="related" and value in l['href'] ]
+        return links
+
+    def get_guidance_related_links_text_by_value_in_href(self, control, value):
+        """Return 'text' from rel': 'related' links with particular value found in the 'href' string"""
+        links_text = [ l['text'] for l in self.get_control_guidance_links(control) if l['rel']=="related" and value in l['href'] ]
+        return links_text
 
     def get_control_parameter_label_by_id(self, control, param_id):
         """Return value of a parameter of a control by id of parameter"""
@@ -375,7 +408,8 @@ class Catalog(object):
             "catalog_key": self.catalog_file.split('_catalog.json')[0],
             "catalog_id": self.catalog_id,
             "sort_id": self.get_control_property_by_name(control, "sort-id"),
-            "label": self.get_control_property_by_name(control, "label")
+            "label": self.get_control_property_by_name(control, "label"),
+            "guidance_links": self.get_control_guidance_links(control)
         }
         return cl_dict
 
@@ -400,6 +434,7 @@ class Catalog(object):
             cl_dict = self.get_flattened_control_as_dict(cl)
             cl_all_list.append(cl_dict)
         return cl_all_list
+
     def _cache_parameters_by_control(self):
         cache = defaultdict(list)
         if self.oscal:

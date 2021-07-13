@@ -11,6 +11,18 @@ Assessment List
 
 {% block head %}
 {{block.super}}
+
+<style>
+
+    details > summary::before {
+        content: '▶ ';
+    }
+
+    details[open] > summary::before {
+        content: '▼ ';
+    }
+
+</style>
 {% include "controls/_style-controls.html" %}
 {% endblock %}
 
@@ -18,7 +30,69 @@ Assessment List
 <!-- authoring_tool_enabled included from project-base.html -->
 
 {% block body_content %}
-<div class="systems-top">
+
+<div>
+    <form method="post" action="{% url 'new_system_assessment_result_wazuh' project.system.id %}"
+          style="border: 1px solid #999; padding:12px 12px 12px 12px; border-radius:12px; margin-bottom: 12px;">
+        <div style="">Retrieve data from Wazuh</div>
+        {% csrf_token %}
+        <div class="form-inline">
+            <label for="wazuhhost_val">Wazuh host: </label>
+            <input id="wazuhhost_val" class="form-control"  type="text" name="wazuhhost_val" class="form-control" placeholder="https://wazuh.example.com:5500" onchange="update_wazuhhost(this.value); return false;" style="width: 250px;"/>
+            &nbsp;&nbsp;
+            <label for="user_val">User: </label>
+            <input id="user_val" class="form-control"  type="text" name="user_val" class="form-control" placeholder="seabiscuit" onchange="update_user(this.value); return false;"/>
+            &nbsp;&nbsp;
+            <label for="passwd_val"> Password: </label>
+            <input id="passwd_val" class="form-control"  type="password" name="passwd_val" class="form-control" placeholder="secretword" onchange="update_passwd(this.value)"/>
+            &nbsp;&nbsp;
+            <label for="agents_val"> Agents: </label>
+            <input id="agents_val" class="form-control"  type="text" name="agents_val" class="form-control" placeholder="001,002,003,004" onchange="update_agents(this.value)"/>
+            <button type="submit" id="create-object-button" class="btn btn-success">Execute &raquo;</button>
+        </div>
+
+        <details style="margin-left: 100px; margin-right: 24px; margin-top:8px;">
+            <summary>View Wazuh Commandline</summary>
+            <div>
+<pre>
+# Run wazuht_etl.py
+python tools/simple_sar_server/wazuh_etl.py {{api_key_wo}} <span class="wazuhhost_val">https://wazuh.example.com:55000</span> -s {{project.system.id}} --agents <span class="agents_val">001,002,003,004</span>
+
+# Authenticate and get Bearer token
+TOKEN=$(curl -u <span class="user_val">seabisbuit</span>:<span class="passwd_val">secret</span> -k -X GET "<span class="wazuhhost_val">https://wazuh.example.com:55000</span>/security/user/authenticate?raw=true")
+
+# Retrieve agent (e.g. monitored host) information
+curl -k -X GET "<span class="wazuhhost_val">WAZUH_HOST</span>/agents?pretty=true&sort=-ip,name" -H "Authorization: Bearer $TOKEN"
+</pre>
+
+            </div>
+        </details>
+
+    </div>
+
+    <script type="text/javascript">
+        // Change target values
+        function update_wazuhhost(value) {
+            $(".wazuhhost_val").html(value);
+            return false;
+        }
+        function update_user(value) {
+            $(".user_val").html(value);
+            return false;
+        }
+        function update_passwd(value) {
+            var str = new Array(value.length + 1).join( "X" );
+            $(".passwd_val").html(str);
+            return false;
+        }
+        function update_agents(value) {
+            $(".agents_val").html(value);
+            return false;
+        }
+    </script>
+    </form>
+
+
     <div id="tab-content" class="row rows-header">
         <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 systems-poam">System Assessment Results</div>
         <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">&nbsp;</div>
