@@ -24,6 +24,7 @@ v0.9.6-dev (June XX, 2021)
 **Data changes**
 
 * Set all `StatementTypeEnum.<LABEL>.value` to `StatementTypeEnum.<LABEL>.name` in order for relevant label/term to show up in Django database admin interface.
+* Create baselines for CMMC catalog.
 * Fisma impact level is now represented as Security Sensitivity level following OSCAL's schema.
 
 

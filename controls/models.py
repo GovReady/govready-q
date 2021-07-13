@@ -798,7 +798,8 @@ class Baselines (object):
         return self.extend_external_baselines([
             'NIST_SP-800-53_rev4_baselines.json',
             # 'NIST_SP-800-53_rev5_baselines.json',
-            'NIST_SP-800-171_rev1_baselines.json'
+            'NIST_SP-800-171_rev1_baselines.json',
+            'CMMC_ver1_baselines.json'
         ], "files")
 
 
@@ -806,7 +807,8 @@ class Baselines (object):
         return self.extend_external_baselines([
             'NIST_SP-800-53_rev4',
             # 'NIST_SP-800-53_rev5',
-            'NIST_SP-800-171_rev1'
+            'NIST_SP-800-171_rev1',
+            'CMMC_ver1'
         ], "keys")
 
 
@@ -860,6 +862,7 @@ class Baselines (object):
 
         baseline_info = check_and_extend(baseline_info, external_baselines, extendtype, "_baselines")
         return baseline_info
+
 class OrgParams(object):
     """
     Represent list of organizational defined parameters. Temporary

@@ -125,6 +125,15 @@ def control(request, catalog_key, cl_id):
     # Get catalog
     catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
+    # Prepare links
+    links = []
+    for link in cg_flat[cl_id.lower()]['guidance_links']:
+        link['href_split'] = link['href'].split("/")
+        if len(link['href_split']) == 6:
+            link['catalog'] = link['href_split'][3].replace("_"," ")
+        else:
+            link['catalog'] = None
+        links.append(link)
 
     # Handle properly formatted control id that does not exist
     if cl_id.lower() not in cg_flat:
@@ -133,6 +142,7 @@ def control(request, catalog_key, cl_id):
     context = {
         "catalog": catalog,
         "control": cg_flat[cl_id.lower()],
+        "links": links,
     }
     return render(request, "controls/detail.html", context)
 
@@ -166,7 +176,7 @@ def controls_selected(request, system_id):
         # Get list of catalog objects
         catalog_list = Catalogs().list_catalogs()
         # Remove the 3 nist catalogs that are hard-coded already in template
-        external_catalogs = [catalog for catalog in catalog_list if catalog.catalog_key not in ['NIST_SP-800-53_rev4', 'NIST_SP-800-53_rev5', 'NIST_SP-800-171_rev1' ]]
+        external_catalogs = [catalog for catalog in catalog_list if catalog.catalog_key not in ['NIST_SP-800-53_rev4', 'NIST_SP-800-53_rev5', 'NIST_SP-800-171_rev1', 'CMMC_ver1' ]]
 
         # Return the controls
         context = {
@@ -1818,7 +1828,6 @@ def save_smt(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
-        print(form_dict)
         smt_id = form_values['smt_id']
         # Updating or saving a new statement?
         if len(smt_id) > 0:
@@ -1854,13 +1863,14 @@ def save_smt(request):
             else:
                 new_statement = True
         else:
+            new_statement_type_enum = StatementTypeEnum[form_values['statement_type'].upper()]
             # Create new Statement object
             statement = Statement(
                 sid=oscalize_control_id(form_values['sid']),
                 sid_class=form_values['sid_class'],
                 body=form_values['body'],
                 pid=form_values['pid'],
-                statement_type=form_values['statement_type'],
+                statement_type=new_statement_type_enum.name,
                 status=form_values['status'],
                 remarks=form_values['remarks'],
             )
@@ -1889,7 +1899,7 @@ def save_smt(request):
         if new_statement:
             try:
                 statement.producer_element = producer_element
-                #statement.save()
+                statement.save()
                 statement_element_status = "ok"
                 statement_element_msg = "Statement associated with Producer Element."
                 messages.add_message(request, messages.INFO, f"{statement_element_msg} {producer_element.id}.")
