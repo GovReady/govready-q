@@ -50,9 +50,11 @@ else:
 	environment["secret-key"] = make_secret_key() # Generate a new key since the initial one was printed for the user for edification
 	print(json.dumps(environment, sort_keys=True, indent=2))
 
-# Load pre-specified admin users
+# Load pre-specified admin users, regular users
 # Example: "govready_admins":[{"username": "username", "email":"first.last@example.com", "password": "REPLACEME"}]
 GOVREADY_ADMINS = environment.get("govready_admins") or []
+# Example: "govready_users":[{"username": "username", "email":"first.last@example.com", "password": "REPLACEME"}]
+GOVREADY_USERS = environment.get("govready_users") or []
 
 # DJANGO SETTINGS #
 ###################
@@ -62,7 +64,7 @@ SECRET_KEY = environment.get("secret-key") or make_secret_key()
 
 # The DEBUG flag must be set in the environment.
 DEBUG = bool(environment.get("debug"))
-ADMINS = environment.get("admins") or []
+# ADMINS = environment.get("admins") or []
 # Do you want to use django debug toolbar
 ENABLE_TOOLBAR = bool(environment.get("enable_tool_bar"))
 
