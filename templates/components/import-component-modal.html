@@ -21,7 +21,8 @@
         </form>
 
       </div>
-    </div>
+</div>
+</div>
 
 {% block scripts %}
 
@@ -36,23 +37,25 @@
       var fileInput = document.getElementById('json_content')
 
       var filePath = fileInput.value;
-      // Allowing file type
       var allowedExtensions =
           /(\.json)$/i;
       if (!allowedExtensions.exec(filePath)) {
           fileInput.value = '';
-            show_modal_error("Wrong File Type Error", "Please only provide json data!");
+          show_modal_error("Wrong File Type Error", "Please only provide json data!");
       } else {
           filecontents = fileInput.files[0];
-          $('#{{import_form.import_name.auto_id}}').val(filecontents.name);
-          var reader = new FileReader();
-          reader.readAsText(filecontents);
-          reader.onload = function (e) {
-              $('#{{import_form.json_content.auto_id}}').val(e.target.result);
-          };
+          if (filecontents.size < 5000000) {
+              $('#{{import_form.import_name.auto_id}}').val(filecontents.name);
+              var reader = new FileReader();
+              reader.readAsText(filecontents);
+              reader.onload = function (e) {
+                  $('#{{import_form.json_content.auto_id}}').val(e.target.result);
+              }
+          } else {
+              show_modal_error("File is too large", "Maximum size is under 5MBs");
+          }
       }
   }
-
         function show_spinner() {
             $("#import_loading_spinner").show();
         }
