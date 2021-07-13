@@ -40,7 +40,8 @@ class Catalogs(object):
         return self.extend_external_catalogs([
             'NIST_SP-800-53_rev4_catalog.json',
             'NIST_SP-800-53_rev5_catalog.json',
-            'NIST_SP-800-171_rev1_catalog.json'
+            'NIST_SP-800-171_rev1_catalog.json',
+            'CMMC_ver1_catalog.json'
         ], "files")
 
     def _list_catalog_keys(self):

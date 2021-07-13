@@ -345,7 +345,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.click_element('a#component-import-oscal')
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
-        file_input = self.find_selected_option('input#id_file')
+        file_input = self.find_selected_option('input#json_content')
         oscal_json_path = self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
         self.click_element('input#import_component_submit')
@@ -366,7 +366,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         wait_for_sleep_after(lambda: self.click_element('a#component-import-oscal'))
 
-        file_input = self.find_selected_option('input#id_file')
+        file_input = self.find_selected_option('input#json_content')
         # Using converted keys from above
         file_input.send_keys(oscal_json_path)
 
@@ -1162,7 +1162,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         file_path = os.getcwd() + "/fixtures/test_project_import_data.json"
         # convert filepath if necessary and send keys
         self.filepath_conversion(file_input, file_path, "sendkeys")
-        self.browser.find_element_by_id("import_component_submit").click()
+        self.browser.find_element_by_id("import_project_submit").click()
 
         # Check the new number of projects, and validate that it's the same
         project_num = Project.objects.all().count()
