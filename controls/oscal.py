@@ -40,7 +40,8 @@ class Catalogs(object):
         return self.extend_external_catalogs([
             'NIST_SP-800-53_rev4_catalog.json',
             'NIST_SP-800-53_rev5_catalog.json',
-            'NIST_SP-800-171_rev1_catalog.json'
+            'NIST_SP-800-171_rev1_catalog.json',
+            'CMMC_ver1_catalog.json'
         ], "files")
 
     def _list_catalog_keys(self):
@@ -164,7 +165,7 @@ class Catalog(object):
                 oscal = data['catalog']
             return oscal
         elif os.path.isfile(catalog_file_external):
-            with open(catalog_file, 'r') as json_file:
+            with open(catalog_file_external, 'r') as json_file:
                 data = json.load(json_file)
                 oscal = data['catalog']
             return oscal
