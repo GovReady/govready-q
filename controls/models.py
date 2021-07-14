@@ -315,8 +315,8 @@ class Element(auto_prefetch.Model, TagModelMixin):
             selected_controls_ids_new = set([f"{oscal_ctl_id}=+={baselines_key}" for oscal_ctl_id in controls])
             for scc in selected_controls_ids_cur:
                 if scc not in selected_controls_ids_new:
-                    oscal_ctl_id_rm = scc.split("=+=")[0]
-                    remove_result = self.remove_element_control(oscal_ctl_id_rm, baselines_key)
+                    oscal_ctl_id_rm, catalog_key_rm = scc.split("=+=")
+                    remove_result = self.remove_element_control(oscal_ctl_id_rm, catalog_key_rm)
                     if remove_result:
                         changed_controls['remove'].append(scc)
             return True
