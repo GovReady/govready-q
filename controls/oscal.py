@@ -165,7 +165,7 @@ class Catalog(object):
                 oscal = data['catalog']
             return oscal
         elif os.path.isfile(catalog_file_external):
-            with open(catalog_file, 'r') as json_file:
+            with open(catalog_file_external, 'r') as json_file:
                 data = json.load(json_file)
                 oscal = data['catalog']
             return oscal
