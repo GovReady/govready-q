@@ -957,6 +957,57 @@ def system_element(request, system_id, element_id):
         }
         return render(request, "systems/element_detail_tabs.html", context)
 
+@login_required
+def system_element_control(request, system_id, element_id, catalog_key, control_id):
+    """Display System's selected element detail view"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve element
+        element = Element.objects.get(id=element_id)
+
+        # Retrieve impl_smts produced by element and consumed by system
+        # Get the impl_smts contributed by this component to system
+        impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+        # Get the cont
+        impl_smt_ctl = next((ctl for ctl in impl_smts if ctl.sid == control_id and ctl.sid_class == catalog_key), None)
+
+        # Retrieve control ids
+        # TODO: Only need to individual control
+        catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+        # Retrieve control
+        control = next((ctl for ctl in catalog_controls if ctl['id'] == oscalize_control_id(control_id)), None)
+
+        # Build OSCAL and OpenControl
+        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+        opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+        states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
+        types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
+        # Return the system's element information
+        context = {
+            "states": states,
+            "types": types,
+            "system": system,
+            "project": project,
+            "element": element,
+            "impl_smts": impl_smts,
+            "impl_smt_ctl": impl_smt_ctl,
+            "catalog_controls": catalog_controls,
+            "catalog_key": catalog_key,
+            "control": control,
+            "oscal": oscal_string,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "opencontrol": opencontrol_string,
+        }
+        return render(request, "systems/element_detail_control.html", context)
+
+
 def edit_component_state(request, system_id, element_id):
     """
     Edit system component state

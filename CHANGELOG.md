@@ -11,6 +11,7 @@ v0.9.6-dev (July XX, 2021)
 * Add accordion to assessment page to provide information on getting data from Wazuh.
 * Add form to Assessments page to collect Wazuh information.
 * Support auto start of project via global System Setting.
+* Create new route for displaying a single system component control.
 
 **Bug fixes**
 
