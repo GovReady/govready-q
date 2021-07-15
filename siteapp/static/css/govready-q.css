@@ -474,13 +474,15 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 /*drag n fill */
 
 .file-droppable {
-  background: #d9d5ec;
-  border: dashed 2px #5b537d;
   border-radius: 5px;
   overflow: hidden;
   transition: all 1s;
   min-height: 70px;
   position: relative;
+  -moz-box-shadow: 0 0 5em #ccc;
+  -webkit-box-shadow: 0 0 5em #ccc;
+   box-shadow: 0 0 5em #ccc;
+   padding: 2em;
 }
 
 .file-droppable.filled {
@@ -532,4 +534,17 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
   width: 100%;
   height: 100%;
   top: 0;
+  padding-bottom: 5em;
+}
+.file-droppable button {
+  background: #136aa8 !important;
+  border-color: #136aa8 !important;
+}
+
+.glyphicon-save{
+    color:#5f6981 !important;
+}
+.upload-text {
+     font-size: .7em;
+    color: #777777;
 }
