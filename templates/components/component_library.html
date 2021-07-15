@@ -56,10 +56,13 @@
             {% else %}
                 <p>You do not have access to any components.</p>
             {% endif %}
-        <form action="{% url 'compare_components' %}" name="compare_form" method="POST">
+        <form action="{% url 'compare_components' %}" name="compare_form" onsubmit="return clearStorage()" method="POST">
             {% csrf_token %}
+        <input type="hidden" name="hiddenChecks" id="hiddenChecks" value="" />
             <div id="" class="row">
-                <button id="compare-components" href="{% url 'compare_components' %}" class="pull-left btn btn-info">Compare Components</button>
+                <button id="compare-components" href="{% url 'compare_components' %}" class="btn btn-info"><em class="glyphicon glyphicon-sort"></em> Compare Components</button>
+                 <button id="compare-select" onclick="select_all(true); return false;" href="#" class="btn btn-success">Select all</button>
+                 <button id="compare-deselect" onclick="select_all(false); return false;" href="#" class=" btn btn-danger">Deselect all</button>
                 <div id="" class="col-xs-12"><span>{% include 'components/paginate_comp.html' %}</span></div>
             </div>
 
@@ -69,6 +72,7 @@
                 <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">Select</div>
                 <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2"><span class="pull-right">Statements</span></div>
             </div>
+        <div id="checkbox-container">
             {% for component in page_obj %}
                 <div id="tab-content" class="row row-control" style="">
                     <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
@@ -79,7 +83,7 @@
                         <div>{% for tag in component.tags.all %}<span class="component-tag"><a href="{% url 'component_library' %}?search={{ tag.label }}">{{ tag.label }}</a></span> {% endfor %}</div>
                     </div>
                     <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
-                        <label for="comp_comparison_{{ forloop.counter }}"></label><input type="checkbox" id="comp_comparison_{{ forloop.counter }}" name="componentcomparecheckbox" value="{{ component.id }}">
+                        <label for="comp_comparison_{{ forloop.counter }}"></label><input type="checkbox" id="comp_comparison_{{ forloop.counter }}" name="compareCheckbox" onchange="addCheck()" value="{{ component.id }}">
                     </div>
                     <div id="" class="pull-right col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
                         <span class="pull-right">{% if component.get_control_impl_smts_prototype_count > 0 %}{{ component.get_control_impl_smts_prototype_count }} control{{ component.get_control_impl_smts_prototype_count|pluralize }}</span>{% else %}
@@ -87,6 +91,7 @@
                     </div>
                 </div>
             {% endfor %}
+        </div>
         </form>
 
             {% include "components/import-component-modal.html" %}
@@ -97,13 +102,63 @@
 
 {% block scripts %}
 <script>
+//Hide submit button until 1 checkbox is checked
+$(document).ready(function () {
+    var checkBoxValues = JSON.parse(localStorage.getItem('checkBoxValues'))
+    // If are no previously checked components then hide button
+    var $submit = $("#compare-components").hide()
+    if (checkBoxValues !== null) {
+        $submit.toggle();
+    } else {
+        $cbs = $('input[name="compareCheckbox"]').click(function () {
 
-    $(document).ready(function() {
+            $submit.toggle($cbs.is(":checked"));
+        });
+    }
+});
 
-        var $submit = $("#compare-components").hide(),
-            $cbs = $('input[name="componentcomparecheckbox"]').click(function() {
-                $submit.toggle( $cbs.is(":checked") );
-            });
+function select_all(val) {
+    // select and deselect with toggle
+    var checkBoxValues = JSON.parse(localStorage.getItem('checkBoxValues')) || {};
+    var $checkboxes = $("#checkbox-container :checkbox");//$('input[type=checkbox]')
+    $checkboxes.prop('checked', val);
+
+    addStorage($checkboxes, checkBoxValues);
+
+    var compare_btn = $("#compare-components")
+    if ($checkboxes.prop('checked') && compare_btn.is(":hidden")) {
+        compare_btn.toggle()
+    }
+    if (!$checkboxes.prop('checked') && compare_btn.is(":visible")) {
+        clearStorage()
+    }
+}
+
+function addCheck() {
+    // maintain in localstorage checkboxes that have been checked
+    var checkBoxValues = JSON.parse(localStorage.getItem('checkBoxValues')) || {};
+
+    var $checkboxes = $("#checkbox-container :checkbox");
+    addStorage($checkboxes, checkBoxValues)
+
+}
+
+function addStorage($checkboxes, checkBoxValues) {
+    // add each check's value with a unique key made from id and value.
+    $checkboxes.each(function () {
+        if (this.checked) {
+            checkBoxValues[this.id + "_" + this.value] = this.value;
+        }
+
     });
+    // set this json string in localstorage to then rewrite the hidden input
+    localStorage.setItem("checkBoxValues", JSON.stringify(checkBoxValues));
+    document.getElementById("hiddenChecks").value = localStorage.getItem('checkBoxValues');
+}
+
+function clearStorage() {
+    // clear local storage when deselecting all or after pressing the compare button
+    localStorage.clear()
+}
 </script>
 {% endblock %}

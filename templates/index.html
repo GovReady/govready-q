@@ -17,7 +17,7 @@ Welcome to Compliance Automation
     <div class="col-md-5" style="margin: 40px 0px 30px 0px;">
       <!-- Nav tabs -->
       <ul class="nav nav-tabs" role="tablist">
-        {% if not hide_registration%}
+        {% if not hide_registration %}
          <li id="tab-register" role="presentation" {% if request.POST.action|escapejs != 'login' %}class="active"{% endif %}><a href="#register" aria-controls="register" role="tab" data-toggle="tab">Register</a></li>
          {% endif %}
          <li id="tab-signin" role="presentation" {% if request.POST.action|escapejs == 'login' %}class="active"{% endif %}><a href="#signin" aria-controls="signin" role="tab" data-toggle="tab">Sign in</a></li>
@@ -42,7 +42,7 @@ Welcome to Compliance Automation
             <p>You are a member of the following organizations:</p>
             <ul style="padding-left: 1.33em">
               {% for org in member_of_orgs %}
-                <li>{{org}}</li>
+                <li>{{org|safe}}</li>
               {% endfor %}
             </ul>
             <p>Once you go to your organization&rsquo;s homepage, you will need to log in again.</p>
@@ -52,7 +52,7 @@ Welcome to Compliance Automation
             <form method="post">
               {% csrf_token %}
               <input type=hidden name=action value=logout>
-              <p>Logged in as {{request.user}}. Not you? <a href="#" onclick="$(this).parents('form').submit(); return false  ;">    Log out</a>.</p>
+              <p>Logged in as {{request.user|safe}}. Not you? <a href="#" onclick="$(this).parents('form').submit(); return false  ;">    Log out</a>.</p>
             </form>
             {% endif %}
           </div>
