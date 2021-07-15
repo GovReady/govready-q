@@ -431,14 +431,12 @@ Systems that are categorized as FIPS 199 Low use the controls designated as Low,
 
 <!--Control catalog here-->
 
+{% if control_catalog|length > system.root_element.selected_controls_oscal_ctl_ids|length %}
 {% set meta = {"current_family_title": "", "current_control": "", "current_control_part": "", "control_count": 0, "current_parts": []} %}
 
 {% for control in system.root_element.selected_controls_oscal_ctl_ids %}
-  {% set control_selected = false %}
-  {% if control in system.control_implementation_as_dict %}{% set control_selected = true %}{% endif %}
-  {% set control_smt_exists = false %}
-  {% if system.control_implementation_as_dict[control]['combined_smt']|length > 0 %}{% set control_smt_exists = true %}{% endif %}
   {% set var_ignore = meta.update({"control_count": meta['control_count'] + 1}) %}
+
   {% if meta['current_family_title'] != control_catalog[control.lower()]['family_title'] %}
     {# When current current control family changes print the new control family and update the current control family #}
     <h2>{{control_catalog[control.lower()]['family_id']|upper}} - {{control_catalog[control.lower()]['family_title']}}</h2>
@@ -446,19 +444,56 @@ Systems that are categorized as FIPS 199 Low use the controls designated as Low,
   {% endif %}
   <div>
     {% if control.lower() in control_catalog %}
-    <div style="font-size: 1.2em; margin: 1em 0 1em 0;">{{control|upper}} - {{control_catalog[control.lower()]['title']}}</div>
-    <div style="">{{control_catalog[control.lower()]['description_print']|safe}}</div>
+    <div>{{control|upper}} - {{control_catalog[control.lower()]['title']}}</div>
+    <div style="white-space: pre-wrap;">{{control_catalog[control.lower()]['description']}}</div>
     <div>
-          {% if control_smt_exists %}
-            <h4>What is the solution and how is it implemented?</h4>
-            <div style="">{{ system.control_implementation_as_dict[control]['combined_smt']|safe}}</div>
-          {% else %}
-            <div {% if not control_smt_exists %}class="warning"{% endif %} style="">No implementation available.</div>
-          {% endif %}
+      <h4>What is the solution and how is it implemented?</h4>
+        {% if control in system.control_implementation_as_dict %}
+          <div style="white-space: pre-line; word-break: keep-all;">{{ system.control_implementation_as_dict[control]['combined_smt']|safe }}</div>
+        {% else %}
+          <div style="white-space: pre-line; word-break: keep-all;">No statement available.</div>
+        {% endif %}
     </div>
     {% endif %}
   </div>
 {% endfor %}
+
+{% else %}
+
+{% for catalog_list in control_catalog %}
+{% set meta = {"current_family_title": "", "current_control": "", "current_control_part": "", "current_catalog": "", "control_count": 0, "current_parts": []} %}
+{% for catalog_dict in catalog_list %}
+  {% set var_ignore = meta.update({"control_count": meta['control_count'] + 1}) %}
+
+  {% if meta['current_catalog'] != catalog_dict['catalog_key'] %}
+    {# When current catalog changes print the new control family and update the current control family #}
+    <h1>{{catalog_dict['catalog_key']}}</h1>
+    {% set var_ignore = meta.update({"current_catalog": catalog_dict['catalog_key']}) %}
+  {% endif %}
+
+  {% if meta['current_family_title'] != catalog_dict['family_title'] %}
+    {# When current control family changes print the new control family and update the current control family #}
+    <h2>{{catalog_dict['family_id']|upper}} - {{catalog_dict['family_title']}}</h2>
+    {% set var_ignore = meta.update({"current_family_title": catalog_dict['family_title']}) %}
+  {% endif %}
+  <div>
+  {% if catalog_dict['id'] in system.root_element.selected_controls_oscal_ctl_ids %}
+<div>{{catalog_dict['id']|upper}} - {{catalog_dict['title']}}</div>
+<div style="white-space: pre-wrap;">{{catalog_dict['description']}}</div>
+<div>
+  <h4>What is the solution and how is it implemented?</h4>
+    {% if catalog_dict['id'] in system.control_implementation_as_dict %}
+      <div style="white-space: pre-line; word-break: keep-all;">{{ system.control_implementation_as_dict[catalog_dict['id']]['combined_smt']|safe }}</div>
+    {% else %}
+      <div style="white-space: pre-line; word-break: keep-all;">No statement available.</div>
+    {% endif %}
+</div>
+    {% endif %}
+  </div>
+{% endfor %}
+{% endfor %}
+
+{% endif %}
 
 {% if system.root_element.selected_controls_oscal_ctl_ids|length == 0 %}
 <i>Control requirements have not yet been assigned to this system.</i>
