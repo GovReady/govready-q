@@ -1092,7 +1092,7 @@ def project(request, project):
         "class_status": Classification.objects.last(),
 
         "authoring_tool_enabled": authoring_tool_enabled,
-        # "import_project_form": ImportProjectForm()
+        "import_project_form": ImportProjectForm(),
 
         "elements": elements,
     })
