@@ -3,9 +3,9 @@ from django import forms
 from django.utils.html import escape as escape_html
 
 from .models import \
-        AppSource, AppVersion, Module, ModuleQuestion, ModuleAsset, \
-        Task, TaskAnswer, TaskAnswerHistory, \
-        InstrumentationEvent
+	AppSource, AppVersion, Module, ModuleQuestion, ModuleAsset, \
+	Task, TaskAnswer, TaskAnswerHistory, \
+	InstrumentationEvent, AppInput
 
 class AppSourceSpecWidget(forms.Widget):
     fields = [
@@ -235,6 +235,9 @@ class AppVersionAdmin(admin.ModelAdmin):
     raw_id_fields = ('source', 'asset_files',)
     readonly_fields = ('asset_files', 'asset_paths', 'system_app')
 
+class AppInputAdmin(admin.ModelAdmin):
+	list_display = ('id', 'input_name', 'input_type', 'app', 'source', 'created')
+
 class ModuleAdmin(admin.ModelAdmin):
     list_display = ('id', 'source', 'app_', 'module_name', 'created')
     list_filter = ('source',)
@@ -298,6 +301,7 @@ class InstrumentationEventAdmin(admin.ModelAdmin):
 
 admin.site.register(AppSource, AppSourceAdmin)
 admin.site.register(AppVersion, AppVersionAdmin)
+admin.site.register(AppInput, AppInputAdmin)
 admin.site.register(Module, ModuleAdmin)
 admin.site.register(ModuleQuestion, ModuleQuestionAdmin)
 admin.site.register(ModuleAsset, ModuleAssetAdmin)
