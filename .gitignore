@@ -119,3 +119,4 @@ _notes/
 env_var.sh
 dev_env/docker/ssh/
 environment.json
+environment.okta.json

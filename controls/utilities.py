@@ -46,7 +46,9 @@ def oscalize_control_id(cl_id):
     #   at-1, at-01, ac-2.3, ac-02.3, ac-2 (3), ac-02 (3), ac-2(3), ac-02 (3)
     # Recognize 800-171 control id:
     #   3.1.1, 3.2.4
-    pattern = re.compile("^[A-Za-z][A-Za-z]-[0-9() .]*$|^3\.[0-9]{1,2}\.[0-9]{1,2}$")
+    # Recognize CMMC control id:
+    #   ac.1.001
+    pattern = re.compile("^[A-Za-z][A-Za-z]-[0-9() .]*$|^3\.[0-9]{1,2}\.[0-9]{1,2}$|^[A-Za-z][A-Za-z][.][0-9][.][0-9]{1,3}")
     if not pattern.match(cl_id):
         return ""
 

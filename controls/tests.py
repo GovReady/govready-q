@@ -28,6 +28,7 @@ from siteapp.models import User, Organization, OrganizationalSetting
 from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests, wait_for_sleep_after
 from system_settings.models import SystemSettings
 from controls.models import *
+from controls.enums.statements import StatementTypeEnum
 from controls.oscal import Catalogs, Catalog, EXTERNAL_CATALOG_PATH
 from siteapp.models import User, Project, Portfolio
 from system_settings.models import SystemSettings
@@ -141,7 +142,7 @@ class ControlUITests(SeleniumTest):
 
         os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
         catalog_list = Catalogs().list_catalogs()
-        self.assertEqual(len(catalog_list), 3)
+        self.assertEqual(len(catalog_list), 4)
 
     def test_extend_external_catalogs(self):
         """
@@ -302,12 +303,12 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.click_element('a#component-import-oscal')
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
-        file_input = self.find_selected_option('input#id_file')
+        file_input = self.find_selected_option('input#json_content')
         self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
         element_count_before_import = Element.objects.filter(element_type="system_element").count()
         statement_count_before_import = Statement.objects.filter(
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
 
         # Verify that the contents got copied correctly from the file to the textfield
         try:
@@ -329,7 +330,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         element_count_after_import = Element.objects.filter(element_type="system_element").count()
         self.assertEqual(element_count_before_import, element_count_after_import)
 
-        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
+        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
         self.assertEqual(statement_count_before_import, statement_count_after_import)
 
     def test_component_import_oscal_json(self):
@@ -338,13 +339,13 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.browser.get(url)
 
         element_count_before_import = Element.objects.filter(element_type="system_element").count()
-        statement_count_before_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
+        statement_count_before_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
 
         # Test initial import of Component(s) and Statement(s)
         self.click_element('a#component-import-oscal')
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
-        file_input = self.find_selected_option('input#id_file')
+        file_input = self.find_selected_option('input#json_content')
         oscal_json_path = self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
         self.click_element('input#import_component_submit')
@@ -353,7 +354,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 2, element_count_after_import))
 
-        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
+        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
         self.assertEqual(statement_count_before_import + 4, statement_count_after_import)
         # Test file contains 6 Statements, but only 4 get imported
         # because one has an improper Catalog
@@ -365,7 +366,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         wait_for_sleep_after(lambda: self.click_element('a#component-import-oscal'))
 
-        file_input = self.find_selected_option('input#id_file')
+        file_input = self.find_selected_option('input#json_content')
         # Using converted keys from above
         file_input.send_keys(oscal_json_path)
 
@@ -382,7 +383,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.assertEqual(duplicate_import_element_count, 1)
 
         statement_count_after_duplicate_import = Statement.objects.filter(
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value).count()
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
         self.assertEqual(statement_count_after_import + 4, statement_count_after_duplicate_import)
 
     def test_import_tracker(self):
@@ -495,10 +496,10 @@ class StatementUnitTests(TestCase):
         # Detection of difference in statement
         # Create a smt
         smt = Statement.objects.create(
-            sid = "au.3",
+            sid = "au-3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is a test statement.",
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
             status = "Implemented"
         )
         smt.save()
@@ -562,7 +563,7 @@ class ElementUnitTests(TestCase):
             sid = "au-3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is the first test statement.",
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value,
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
             status = "Implemented",
             producer_element = e
         )
@@ -571,7 +572,7 @@ class ElementUnitTests(TestCase):
             sid = "au-4",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is the first test statement.",
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value,
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
             status = "Implemented",
             producer_element = e
         )
@@ -587,7 +588,7 @@ class ElementUnitTests(TestCase):
         self.assertTrue(e_copy.name == "OAuth copy")
 
         # Test statements copied
-        smts = e_copy.statements("control_implementation_prototype")
+        smts = e_copy.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
         self.assertEqual(len(smts), 2)
 
     def test_element_rename(self):
@@ -705,7 +706,7 @@ class SystemUnitTests(TestCase):
             sid = "au-3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is the first test statement.",
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
             status = "Implemented",
             producer_element = e,
             consumer_element = s.root_element
@@ -715,7 +716,7 @@ class SystemUnitTests(TestCase):
             sid = "au-4",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is the first test statement.",
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
             status = "Implemented",
             producer_element = e,
             consumer_element = s.root_element
@@ -747,7 +748,7 @@ class SystemUITests(OrganizationSiteFunctionalTests):
         self.navigateToPage(f"/systems/{system.id}/deployments")
         wait_for_sleep_after(lambda: self.assertInNodeText("New Deployment", ".systems-element-button"))
 
-        # # Add deault deployments to system
+        # Add default deployments to system
         deployment = Deployment(name="Training", description="Training environment", system=system)
         deployment.save()
 
@@ -1055,6 +1056,35 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         submit_comp_statement = wait_for_sleep_after(lambda: self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button"))
         submit_comp_statement.click()
 
+class StatementUITests(OrganizationSiteFunctionalTests):
+
+    def test_control_implementation_legacy_ui(self):
+
+       # Test ui
+        # login as the first user and create a new project
+        self._login()
+        self._new_project()
+
+        # systemid = System.objects.all().first()
+        project = Project.objects.all().last()
+        system = project.system
+
+        # Create a smt
+        smt = Statement.objects.create(
+            sid = "ac-3",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is a test legacy statement.",
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name,
+            consumer_element=system.root_element,
+            producer_element=system.root_element,
+            # status = "Implemented"
+        )
+        smt.save()
+
+        self.assertEqual(smt.body, "This is a test legacy statement.")
+
+        self.navigateToPage(f"/controls/{system.id}/controls/catalogs/{smt.sid_class}/control/{smt.sid}")
+
 class ProjectControlTests(OrganizationSiteFunctionalTests):
 
     def test_project_controls_selected(self):
@@ -1096,7 +1126,7 @@ class ControlTestHelper(object):
             sid_class='NIST_SP-800-53_rev4',
             pid='a',
             body='This is a sample statement',
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value,
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
             producer_element=component,
             import_record=import_record,
         )
@@ -1132,7 +1162,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         file_path = os.getcwd() + "/fixtures/test_project_import_data.json"
         # convert filepath if necessary and send keys
         self.filepath_conversion(file_input, file_path, "sendkeys")
-        self.browser.find_element_by_id("import_component_submit").click()
+        self.browser.find_element_by_id("import_project_submit").click()
 
         # Check the new number of projects, and validate that it's the same
         project_num = Project.objects.all().count()

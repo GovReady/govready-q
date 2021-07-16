@@ -40,6 +40,7 @@ from .models import *
 from .utilities import *
 from simple_history.utils import update_change_reason
 import functools
+import subprocess
 logging.basicConfig()
 import structlog
 from structlog import get_logger
@@ -124,6 +125,15 @@ def control(request, catalog_key, cl_id):
     # Get catalog
     catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
+    # Prepare links
+    links = []
+    for link in cg_flat[cl_id.lower()]['guidance_links']:
+        link['href_split'] = link['href'].split("/")
+        if len(link['href_split']) == 6:
+            link['catalog'] = link['href_split'][3].replace("_"," ")
+        else:
+            link['catalog'] = None
+        links.append(link)
 
     # Handle properly formatted control id that does not exist
     if cl_id.lower() not in cg_flat:
@@ -132,6 +142,7 @@ def control(request, catalog_key, cl_id):
     context = {
         "catalog": catalog,
         "control": cg_flat[cl_id.lower()],
+        "links": links,
     }
     return render(request, "controls/detail.html", context)
 
@@ -165,7 +176,7 @@ def controls_selected(request, system_id):
         # Get list of catalog objects
         catalog_list = Catalogs().list_catalogs()
         # Remove the 3 nist catalogs that are hard-coded already in template
-        external_catalogs = [catalog for catalog in catalog_list if catalog.catalog_key not in ['NIST_SP-800-53_rev4', 'NIST_SP-800-53_rev5', 'NIST_SP-800-171_rev1' ]]
+        external_catalogs = [catalog for catalog in catalog_list if catalog.catalog_key not in ['NIST_SP-800-53_rev4', 'NIST_SP-800-53_rev5', 'NIST_SP-800-171_rev1', 'CMMC_ver1' ]]
 
         # Return the controls
         context = {
@@ -432,22 +443,25 @@ def compare_components(request):
     """
     Compare submitted components
     """
-    # TODO: need to figure out how to accumulate all checked boxes not one in pageobj
-    compare_list = request.POST.getlist('componentcomparecheckbox')
-    if compare_list:
-        element_list = list(Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct())
-        compare_prime, element_list = element_list[0], element_list[1:]# The first component selected will be compared against the rest
-        compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
-    elif len(compare_list) <= 1:
+    
+    checks = json.loads(request.POST.get('hiddenChecks'))
+    compare_list = list(checks.values())
+    if len(compare_list) <= 1:
         # add messages
         messages.add_message(request, messages.WARNING, f"Not enough components were selected to compare!")
         return HttpResponseRedirect("/controls/components")
+    else:
+        ele_q = Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct()
+        # Maintain sort order of compare_list otherwise Django will order ascending
+        element_list = sorted(ele_q, key=lambda x: compare_list.index(str(x.id)))
+        compare_prime, element_list = element_list[0], element_list[
+                                                       1:]  # The first component selected will be compared against the rest
+        compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
     difference_tuples = []
-    differences = []
     for component in element_list:
         differences = []
         # compare each component's statements to prime
-        cmt_smts = component.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+        cmt_smts = component.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
         if cmt_smts.exists():
             # TODO: Need to create a tuple with smt id to return appropriate
             for smt in cmt_smts:
@@ -458,14 +472,15 @@ def compare_components(request):
                 else:
                     diff = f"<span><ins style='background:#e6ffe6;'>{smt.body}</ins><span>"
                 differences.append(diff)
-        difference_tuples.extend(zip([component.name] * len(cmt_smts), cmt_smts, differences))
+        difference_tuples.extend(zip([component.id] * len(cmt_smts),[component.name] * len(cmt_smts), cmt_smts, differences))
     if request.method == 'POST':
         context = {
             "element_list": element_list,
             "compare_prime": compare_prime,
             "prime_smts": compare_prime_smts,
             "secondary_smts": cmt_smts,
-            "differences": difference_tuples
+            "differences": difference_tuples,
+            "compare_list": compare_list
         }
         return render(request, "components/compare_components.html", context)
 
@@ -508,11 +523,16 @@ def confirm_import_record_delete(request, import_record_id):
     statement_count = 0
     for component in component_statements:
         statement_count += component_statements[component].count()
-
+    projects = import_record.import_record_projects.all()
+    project_count = len(projects)
+    elements = import_record.import_record_elements.all()
+    element_count = len(elements)
     context = {
         "import_record": import_record,
         "component_count": component_count,
         "statement_count": statement_count,
+        "project_count": project_count,
+        "element_count": element_count
     }
     return render(request, "components/confirm_import_record_delete.html", context)
 
@@ -845,7 +865,7 @@ class ComponentImporter(object):
                         sid_class=catalog_key,
                         pid=get_control_statement_part(stmnt_id),
                         body=description,
-                        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value,
+                        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
                         remarks=remarks,
                         status=implemented_control['status'] if 'status' in implemented_control else None,
                         producer_element=parent_component,
@@ -887,7 +907,7 @@ def add_selected_components(system, import_record):
             # Loop through all element's prototype statements and add to control implementation statements.
             # System's selected controls will filter what controls and control statements to display.
             for smt in Statement.objects.filter(producer_element_id=imported_component.id,
-                                                statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value):
+                                                statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name):
                 smt.create_system_control_smt_from_component_prototype_smt(system.root_element.id)
         return imported_components
 
@@ -1050,11 +1070,11 @@ def component_library_component(request, element_id):
     consuming_systems = element.consuming_systems()
 
     if smt_query:
-        impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+        impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
     else:
         # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
-        impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+        impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     if len(impl_smts) < 1:
         context = {
@@ -1621,7 +1641,7 @@ def editor(request, system_id, catalog_key, cl_id):
     # Retrieve related statements if user has permission on system
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
-        project, catalog, cg_flat, impl_smts = get_editor_data(request, system, catalog_key, cl_id)
+        project, catalog, cg_flat, impl_smts, impl_smts_legacy = get_editor_data(request, system, catalog_key, cl_id)
 
         # Build OSCAL SSP
         # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
@@ -1692,6 +1712,7 @@ def editor(request, system_id, catalog_key, cl_id):
             "control": cg_flat[cl_id.lower()],
             "impl_smts": impl_smts,
             "impl_statuses": impl_statuses,
+            "impl_smts_legacy": impl_smts_legacy,
             "combined_smt": combined_smt,
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
@@ -1722,9 +1743,12 @@ def get_editor_data(request, system, catalog_key, cl_id):
             return render(request, "controls/detail.html", {"catalog": catalog, "control": {}})
 
         # Get and return the control
-        # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog
-        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key).order_by('pid')
-        return project, catalog, cg_flat, impl_smts
+        # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog, Type
+        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
+        # Retrieve Legacy Implememtation Statements
+        impl_smts_legacy = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name)
+
+        return project, catalog, cg_flat, impl_smts, impl_smts_legacy
 
 def get_editor_system(cl_id, catalog_key, system_id):
     """
@@ -1804,7 +1828,6 @@ def save_smt(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
-        print(form_dict)
         smt_id = form_values['smt_id']
         # Updating or saving a new statement?
         if len(smt_id) > 0:
@@ -1840,13 +1863,14 @@ def save_smt(request):
             else:
                 new_statement = True
         else:
+            new_statement_type_enum = StatementTypeEnum[form_values['statement_type'].upper()]
             # Create new Statement object
             statement = Statement(
                 sid=oscalize_control_id(form_values['sid']),
                 sid_class=form_values['sid_class'],
                 body=form_values['body'],
                 pid=form_values['pid'],
-                statement_type=form_values['statement_type'],
+                statement_type=new_statement_type_enum.name,
                 status=form_values['status'],
                 remarks=form_values['remarks'],
             )
@@ -1875,7 +1899,7 @@ def save_smt(request):
         if new_statement:
             try:
                 statement.producer_element = producer_element
-                #statement.save()
+                statement.save()
                 statement_element_status = "ok"
                 statement_element_msg = "Statement associated with Producer Element."
                 messages.add_message(request, messages.INFO, f"{statement_element_msg} {producer_element.id}.")
@@ -2120,7 +2144,7 @@ def add_system_component(request, system_id):
         # Redirect to selected element page
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
-    smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)
+    smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     # Component does not have any statements of type control_implementation_prototype to
     # add to system. So we cannot add the component (element) to the system.
@@ -2137,7 +2161,7 @@ def add_system_component(request, system_id):
         smt.create_system_control_smt_from_component_prototype_smt(system.root_element.id)
 
     # Make sure some controls were added to the system. Report error otherwise.
-    smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value)
+    smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
 
     smts_added_count = len(smts_added)
     if smts_added_count > 0:
@@ -2368,7 +2392,7 @@ class EditorAutocomplete(View):
                 for related_element in form_values['relatedcomps']:
 
                     # Look up the element
-                    for smt in Statement.objects.filter(id=related_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.value):
+                    for smt in Statement.objects.filter(id=related_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name):
                         logger.info(
                             f"Adding an element with the id {smt.id} and sid class {smt.sid} to system_id {system_id}")
                         # Only add statements for controls selected for system
@@ -3159,11 +3183,16 @@ def system_assessment_results_list(request, system_id=None):
         project = system.projects.all()[0]
         sars = system.system_assessment_result.all().order_by('created').reverse()
 
-        # Return the controls
+        # Retrieve user's API keys
+        api_keys = request.user.get_api_keys()
+
         context = {
             "system": system,
             "project": project,
             "sars": sars,
+            "api_key_ro": api_keys['ro'],
+            "api_key_rw": api_keys['rw'],
+            "api_key_wo": api_keys['wo']
         }
         return render(request, "systems/sar_list.html", context)
 
@@ -3258,3 +3287,90 @@ def system_assessment_result_history(request, system_id, sar_id=None):
         "deployment": full_sar_history,
     }
     return render(request, "systems/sar_history.html", context)
+
+@login_required
+def new_system_assessment_result_wazuh(request, system_id):
+    """Returns a SAR info from Wazuh and adds to system"""
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    else:
+        # Validate data
+        valid = True
+        for param in ["wazuhhost_val", "user_val", "passwd_val", "agents_val"]:
+            if param not in request.POST or request.POST[param] == "":
+                valid = False
+                messages.add_message(request, messages.WARNING, f"Please complete field {param.replace('_val','')}")
+        if not valid:
+            return HttpResponseRedirect(f"/systems/{system_id}/assessments")
+
+        # Check user permissions
+        system = System.objects.get(pk=system_id)
+        if not request.user.has_perm('change_system', system):
+            # User does not have write permissions
+            # Log permission to save answer denied
+            logger.info(
+                event="delete_smt permission_denied",
+                object={"object": "statement", "id": statement.id},  # todo - statement not defined anywhere - Greg
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return HttpResponseForbidden(
+                "Permission denied. {} does not have change privileges to system and/or project.".format(
+                    request.user.username))
+
+        from sec_srvc.wazuh import WazuhSecurityService
+        wazuh_sec_svc = WazuhSecurityService()
+        wazuh_sec_svc.setup(base_url=request.POST['wazuhhost_val'])
+
+        authentication = wazuh_sec_svc.authenticate(request.POST['user_val'], request.POST['passwd_val'])
+
+        if wazuh_sec_svc.is_authenticated:
+            identifiers = request.POST['agents_val']
+            extracted_data = wazuh_sec_svc.extract_data(authentication, identifiers)
+
+            # TODO: Set deployment id
+            deployment_uuid = None
+
+            transformed_data = wazuh_sec_svc.transform_data(extracted_data, system_id, "Scan Title", "Scan description", deployment_uuid)
+            loaded_data = wazuh_sec_svc.load_data(transformed_data)
+
+            # Determine deployment_id from deployment_uuid
+            # TODO: Make sure deployment is associated with system
+            if deployment_uuid is None or deployment_uuid == "None":
+                # When deployment is not defined, leave blank and attach SAR to system only
+                deployment = None
+                deployment_id = None
+            else:
+                deployment = Deployment.objects.get(uuid=deployment_uuid)
+                deployment_id = deployment.id
+
+            sar = SystemAssessmentResult(
+                    name=transformed_data["metadata"]["title"],
+                    description=transformed_data["metadata"]["description"],
+                    system_id=transformed_data["metadata"]["system_id"],
+                    deployment_id=deployment_id,
+                    assessment_results=transformed_data
+                    # assessment_results=json.loads(request.FILES.get('data').read().decode("utf8", "replace"))
+                )
+            sar.save()
+            logger.info(
+                event="create_system_assessment_result",
+                object={"object": "system_assessment_result", "id": sar.id, "name":sar.name},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            messages.add_message(request, messages.INFO, "Data from Wazuh retrieved and loaded")
+
+        # Redirect
+            return HttpResponseRedirect(f"/systems/{system_id}/assessments")
+
+        else:
+            # TODO: better handling of response code; 401, 301, etc.
+            raise Exception(wazuh_sec_svc.error_msg['error'])
+
+
+
+
+
+
+

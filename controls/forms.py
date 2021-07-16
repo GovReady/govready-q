@@ -155,3 +155,4 @@ class SystemAssessmentResultForm(ModelForm):
 
     assessment_results = forms.CharField(label='System assessment result items (JSON)', required=False, widget=forms.Textarea(),
             help_text="Listing of assessment items in JSON")
+
