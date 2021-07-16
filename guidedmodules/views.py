@@ -1387,21 +1387,24 @@ def authoring_import_appsource(request):
             # Extract AppSource file
             with ZipFile(appsource_zipfile, 'r') as zipObj:
                zipObj.extractall("local/appsources/")
-            # TODO:
-            # Check if file is Appsource directory format
-            #   - has "apps" directory
-            #   - apps.yaml files exist in directories
-            # Create a new AppSource.
-            appsrc = AppSource.objects.create(
-                slug=appsource_name,
-                spec={ "type": "local", "path": f"local/appsources/{appsource_name}/apps" }
-            )
-            # Log uploaded app source
-            logger.info(
-                event=f"govready appsource_added {appsrc.slug}",
-                object={"object": "appsource", "id": appsrc.id, "slug": appsrc.slug},
-                user={"id": request.user.id, "username": request.user.username}
-            )
+            # Update existing AppSource or create new one
+            if AppSource.objects.filter(slug=appsource_name).exists():
+                appsrc = AppSource.objects.filter(slug=appsource_name).first()
+                logger.info(
+                    event=f"govready appsource_updated {appsrc.slug}",
+                    object={"object": "appsource", "id": appsrc.id, "slug": appsrc.slug},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+            else:
+                appsrc = AppSource.objects.create(
+                    slug=appsource_name,
+                    spec={ "type": "local", "path": f"local/appsources/{appsource_name}/apps" }
+                )
+                logger.info(
+                    event=f"govready appsource_added {appsrc.slug}",
+                    object={"object": "appsource", "id": appsrc.id, "slug": appsrc.slug},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
             return JsonResponse({ "status": "ok", "redirect": f"/admin/guidedmodules/appsource/{appsrc.id}/change" })
         except BadZipFile as err:
             messages.add_message(request, messages.ERROR, f"Bad zip file: {appsource_zipfile}")
