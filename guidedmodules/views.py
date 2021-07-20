@@ -473,7 +473,7 @@ def save_answer(request, task, answered, context, __):
                 # The system actions are currently supported:
                 #   1. `system/assign_baseline/<value>` - Automatically sets the system baseline controls to the selected impact value
                 #   2. `system/update_system_and_project_name/<value>` - Automatically sets the system, project names
-                if a_obj == 'system':
+                if a_obj == 'system' and skipped_reason is None:
 
                     # Assign baseline set of controls to a root_element
                     if a_verb == "assign_baseline":
@@ -532,7 +532,7 @@ def save_answer(request, task, answered, context, __):
                 # Only two actions are currently supported:
                 #   1. `element/add_role/<role_value>` - Automatically add elements to the selected components of a system
                 #   2. `element/del_role/<role_value>` - Automatically delete elements from the selected components of a system
-                if a_obj == 'element':
+                if a_obj == 'element' and skipped_reason is None:
 
                     # Get all elements assigned role specified in the action
                     elements_with_role = Element.objects.filter(element_type="system_element").filter(roles__role=a_filter)
@@ -592,7 +592,7 @@ def save_answer(request, task, answered, context, __):
                                                  f'Oops. I tried adding "{producer_element.name}" to the system, but no control implementation statements were found.')
 
                     # Delete elements matching role from the selected components of a system
-                    if a_verb == "del_role":
+                    if a_verb == "del_role" and skipped_reason is None:
                         for producer_element in elements_with_role:
                             # Delete component from system
                             smts_assigned_count = len(Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name))
@@ -603,7 +603,7 @@ def save_answer(request, task, answered, context, __):
 
                 # Process project actions
                 # -----------------------------------
-                if a_obj == 'project':
+                if a_obj == 'project' and skipped_reason is None:
 
                     # Get all elements assigned role specified in the action
                     # elements_with_role = Element.objects.filter(element_type="system_element").filter(roles__role=a_filter)
