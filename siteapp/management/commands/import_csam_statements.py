@@ -125,3 +125,4 @@ class Command(BaseCommand):
                     import_record.delete()
                 except:
                     pass
+
