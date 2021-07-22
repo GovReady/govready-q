@@ -121,4 +121,7 @@ class Command(BaseCommand):
 
             if not import_record.import_record_statements.exists():
                 # Removes the import record object IF there were no creates or updates.
-                import_record.delete()
+                try:
+                    import_record.delete()
+                except:
+                    pass
