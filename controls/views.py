@@ -639,7 +639,7 @@ class OSCALComponentSerializer(ComponentSerializer):
             for smt in group:
                 statement_id = self.statement_id_from_control(control_id, smt.pid)
                 statement = {
-                    "uuid": str(smt.uuid),
+                    "uuid": str(uuid4()),
                     "description": smt.body,
                     "control-id": statement_id
                 }
@@ -650,8 +650,8 @@ class OSCALComponentSerializer(ComponentSerializer):
 
         for sid_class, requirements in by_class.items():
             control_implementation = {
-                "uuid": str(uuid4()),
-                "source": sid_class,
+                "uuid":str(smt.uuid),
+                "source": smt.source,
                 "description": f"This is a partial implementation of the {sid_class} catalog, focusing on the control enhancement {requirements[0].get('control-id')}.",
                 "implemented-requirements": [req for req in requirements]
             }
@@ -834,17 +834,17 @@ class ComponentImporter(object):
         if control_implementation_statements:
             for control_element in control_implementation_statements:
                 catalog = oscalize_catalog_key(control_element['source']) if 'source' in control_element else None
-                implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
-                created_statements = self.create_control_implementation_statements(catalog, implemented_reqs, new_component)
+
+                created_statements = self.create_control_implementation_statements(catalog, control_element, new_component)
         return new_component
 
-    def create_control_implementation_statements(self, catalog_key, implemented_reqs, parent_component):
+    def create_control_implementation_statements(self, catalog_key, control_element, parent_component):
         """Creates a Statement from a JSON dict implemented-requirements
 
         @type catalog_key: str
         @param catalog_key: Catalog of the control statements
-        @type implemented_reqs: list
-        @param implemented_reqs: Implemented controls
+        @type control_element: dict
+        @param control_element: Implemented controls
         @type parent_component: str
         @param parent_component: UUID of parent component
         @rtype: dict
@@ -852,31 +852,22 @@ class ComponentImporter(object):
         """
 
         statements_created = []
+        implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
 
         for implemented_control in implemented_reqs:
 
             control_id = oscalize_control_id(implemented_control['control-id']) if 'control-id' in implemented_control else ''
             statements = implemented_control['statements'] if 'statements' in implemented_control else ''
-
-
             if self.control_exists_in_catalog(catalog_key, control_id):
-                if 'description' in implemented_control:
-                    description = implemented_control['description']
-                else:
-                    description = ''
-                if 'remarks' in implemented_control:
-                    remarks = implemented_control['remarks']
-                else:
-                    remarks = ''
-
                 new_statement = Statement.objects.create(
                     sid=control_id,
                     sid_class=catalog_key,
                     pid=get_control_statement_part(control_id),
-                    source=implemented_control['source'] if 'status' in implemented_control else catalog_key,
-                    body=description,
+                    source=control_element['source'] if 'source' in control_element else catalog_key,
+                    uuid=control_element['uuid'] if 'uuid' in control_element else uuid.uuid4(),
+                    body=implemented_control['description'] if 'description' in implemented_control else '',
                     statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
-                    remarks=remarks,
+                    remarks=implemented_control['remarks'] if 'remarks' in implemented_control else '',
                     status=implemented_control['status'] if 'status' in implemented_control else None,
                     producer_element=parent_component,
                 )
