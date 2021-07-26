@@ -584,11 +584,11 @@ class OSCALComponentSerializer(ComponentSerializer):
             "component-definition": {
                 "uuid": str(uuid4()),
                 "metadata": {
-                    "title": "{} Component-to-Control Narratives".format(self.element.name),
+                    "title": "{}".format(self.element.name),
                     #"published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": self.element.updated.replace(microsecond=0).isoformat(),
-                    "oscal-version": "1.0.0",
+                    "oscal-version": self.element.oscal_version,
                    # "parties": parties,
                     "props": props
                 },
@@ -1654,7 +1654,7 @@ def editor(request, system_id, catalog_key, cl_id):
                     #"published": datetime.now().replace(microsecond=0).isoformat(),
                     "last-modified": system.root_element.updated.replace(microsecond=0).isoformat(),
                     "version": "1.0",
-                    "oscal-version": "1.0.0",
+                    "oscal-version": system.root_element.oscal_version,
                     "roles": [],
                     "parties": [],
                 },

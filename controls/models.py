@@ -224,6 +224,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
     roles = models.ManyToManyField('ElementRole', related_name='elements', blank=True, help_text="Roles assigned to the Element")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
+    oscal_version = models.CharField(default="1.0.0", max_length=20, help_text="OSCAL version number.", unique=False, blank=True, null=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
     import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_elements", on_delete=models.CASCADE,
                                       unique=False, blank=True, null=True, help_text="The Import Record which created this Element.")
