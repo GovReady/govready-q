@@ -51,6 +51,7 @@ class SystemException(Exception):
 class Statement(auto_prefetch.Model):
     sid = models.CharField(max_length=100, help_text="Statement identifier such as OSCAL formatted Control ID", unique=False, blank=True, null=True)
     sid_class = models.CharField(max_length=200, help_text="Statement identifier 'class' such as 'NIST_SP-800-53_rev4' or other OSCAL catalog name Control ID.", unique=False, blank=True, null=True)
+    source = models.CharField(max_length=200, help_text="Statement source such as '../../../nist.gov/SP800-53/rev4/json/NIST_SP-800-53_rev4_catalog.json'.", unique=False, blank=True, null=True)
     pid = models.CharField(max_length=20, help_text="Statement part identifier such as 'h' or 'h.1' or other part key", unique=False, blank=True, null=True)
     body = models.TextField(help_text="The statement itself", unique=False, blank=True, null=True)
     statement_type = models.CharField(max_length=150, help_text="Statement type.", unique=False, blank=True, null=True, choices=StatementTypeEnum.choices())

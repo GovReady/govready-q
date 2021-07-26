@@ -873,6 +873,7 @@ class ComponentImporter(object):
                     sid=control_id,
                     sid_class=catalog_key,
                     pid=get_control_statement_part(control_id),
+                    source=implemented_control['source'] if 'status' in implemented_control else catalog_key,
                     body=description,
                     statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
                     remarks=remarks,
@@ -1685,12 +1686,15 @@ def editor(request, system_id, catalog_key, cl_id):
                 }
             }
         }
-        by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["description"][
+        by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["statements"][
             "{}_smt".format(cl_id)]["by-components"]
         for smt in impl_smts:
             my_dict = {
                 smt.sid + "{}".format(smt.producer_element.name.replace(" ", "-")): {
-                    smt.body
+                    "description": smt.body,
+                    "role-ids": "",
+                    "set-params": {},
+                    "remarks": smt.remarks
                 },
             }
             if smt.remarks is None:
