@@ -70,7 +70,10 @@ def oscalize_catalog_key(catalogkey):
     """ Covers empty catalog key case. Otherwise, outputs an oscal standard catalog key from various common formats for catalog keys
     NIST_SP_800_53_rev4 --> NIST_SP-800-53_rev4
     """
-
+    # If coming with reference to some path to catalog json file
+    # (e.g. '../../../nist.gov/SP800-53/rev4/json/NIST_SP-800-53_rev4_catalog.json', 'FedRAMP_rev4_HIGH-baseline_profile.json')
+    if ".json" in catalogkey:
+        catalogkey = catalogkey.split('/')[-1].split('_catalog.json')[0].split(".json")[0]
     # A default catalog key
     if catalogkey=='':
         catalogkey = 'NIST_SP-800-53_rev4'

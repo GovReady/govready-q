@@ -6,8 +6,10 @@ from pathlib import PurePath
 from uuid import uuid4
 import rtyaml
 import shutil
+import tempfile
 import operator
-from natsort import natsorted
+import trestle.oscal.component as trestlecomponent
+import pathlib
 from django.db.models import Q
 from django.conf import settings
 from django.contrib import messages
@@ -560,9 +562,9 @@ class OSCALComponentSerializer(ComponentSerializer):
     @staticmethod
     def statement_id_from_control(control_id, part_id):
         if part_id:
-            return f"{control_id}_smt.{part_id}"
+            return f"{control_id}.{part_id}"
         else:
-            return f"{control_id}_smt"
+            return f"{control_id}"
 
     def as_json(self):
         # Build OSCAL
@@ -583,22 +585,23 @@ class OSCALComponentSerializer(ComponentSerializer):
                 "uuid": str(uuid4()),
                 "metadata": {
                     "title": "{} Component-to-Control Narratives".format(self.element.name),
-                    "published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+                    #"published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": self.element.updated.replace(microsecond=0).isoformat(),
-                    "oscal-version": "1.0.0-rc1",
+                    "oscal-version": "1.0.0",
                    # "parties": parties,
                     "props": props
                 },
-                "components": {
-                    uuid: {
-                        "title": self.element.full_name or self.element.name,
-                        "type": self.element.component_type or "software",
+                "components": [
+                   {
+                        "uuid": uuid,
+                       "type": self.element.component_type or "software",
+                       "title": self.element.full_name or self.element.name,
                         "description": self.element.description,
                         #"responsible-roles": responsible_roles, # TODO: gathering party-uuids
                         "control-implementations": control_implementations
                     }
-                }
+                ]
             },
         }
 
@@ -627,22 +630,21 @@ class OSCALComponentSerializer(ComponentSerializer):
                                          lambda ismt: ismt.sid):
             requirement = {
                 "uuid": str(uuid4()),
+                "description": "",# TODO: Need description added to a implementation statement
                 "control-id": control_id,
-                "description": "",
                 "remarks": "",
                 "statements": {}
             }
 
             for smt in group:
+                statement_id = self.statement_id_from_control(control_id, smt.pid)
                 statement = {
                     "uuid": str(smt.uuid),
                     "description": smt.body,
-                    "remarks": smt.remarks or ""
+                    "control-id": statement_id
                 }
-                if smt.remarks is None:
-                    statement.pop('remarks', None)
-                statement_id = self.statement_id_from_control(control_id, smt.pid)
-                requirement["statements"][statement_id] = statement
+                # The whole requirement dictionary
+                requirement = statement
 
             by_class[smt.sid_class].append(requirement)
 
@@ -650,7 +652,7 @@ class OSCALComponentSerializer(ComponentSerializer):
             control_implementation = {
                 "uuid": str(uuid4()),
                 "source": sid_class,
-                "description": f"Partial implementation of {sid_class}",
+                "description": f"This is a partial implementation of the {sid_class} catalog, focusing on the control enhancement {requirements[0].get('control-id')}.",
                 "implemented-requirements": [req for req in requirements]
             }
             control_implementations.append(control_implementation)
@@ -705,15 +707,27 @@ class ComponentImporter(object):
         @returns: ImportRecord linked to the created components (if success) or False if failure
         """
 
-        # Validates the format of the JSON object
         try:
+            # Create a temporary directory and dump the json_object in there.
+            tempdir = tempfile.mkdtemp()
+            path = os.path.join(tempdir, "object.json")
+            # Use trestle's ComponentDefinition method oscal_read to read the path to json in the temporary folder
+            path_component_definition = pathlib.Path(path)
             oscal_json = json.loads(json_object)
+            with open(path, 'w+') as cred:
+                json.dump(oscal_json, cred)
+
+            trestle_oscal_json = trestlecomponent.ComponentDefinition.oscal_read(path_component_definition)
         except ValueError:
             if request is not None:
                 messages.add_message(request, messages.ERROR, f"Invalid JSON. Component(s) not created.")
             logger.info(f"Invalid JSON. Component(s) not created.")
             return False
-        if self.validate_oscal_json(oscal_json):
+        # Finally validate that this object is valid by the component definition
+        trestle_oscal_component = trestlecomponent.ComponentDefinition.validate(trestle_oscal_json)
+        # Cleanup
+        shutil.rmtree(tempdir)
+        if trestle_oscal_component:
             # Returns list of created components
 
             created_components = self.create_components(oscal_json)
@@ -766,11 +780,11 @@ class ComponentImporter(object):
 
         return import_record
 
-    def validate_oscal_json(self, oscal_json):
+    def validate_oscal_json(self, oscal_json, version="1.0.0"):
         """Validates the JSON object is valid OSCAL format"""
-
+        schemas = {"1.0.0": "oscal_1.0.0_component_schema.json", "1.0.0-rc1": "oscal_component_schema.json"}
         project_root = os.path.abspath(os.path.dirname(__name__))
-        oscal_schema_path = os.path.join(project_root, "schemas", "oscal_component_schema.json")
+        oscal_schema_path = os.path.join(project_root, "schemas", "oscal_1.0.0_component_schema.json")#schemas[version])
 
         with open(oscal_schema_path, "r") as schema_content:
             oscal_json_schema = json.load(schema_content)
@@ -786,7 +800,7 @@ class ComponentImporter(object):
         components_created = []
         components = oscal_json['component-definition']['components']
         for component in components:
-            new_component = self.create_component(components[component])
+            new_component = self.create_component(component)
             if new_component is not None:
                 components_created.append(new_component)
 
@@ -810,7 +824,9 @@ class ComponentImporter(object):
             description=component_json['description'] if 'description' in component_json else 'Description missing',
             # Components uploaded to the Component Library are all system_element types
             # TODO: When components can be uploaded by project, set element_type from component-type OSCAL property
-            element_type="system_element"
+            element_type="system_element",
+            uuid=component_json['uuid'] if 'uuid' in component_json else uuid.uuid4(),
+            component_type=component_json['type'] if 'type' in component_json else "software"
         )
 
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
@@ -842,40 +858,33 @@ class ComponentImporter(object):
             control_id = oscalize_control_id(implemented_control['control-id']) if 'control-id' in implemented_control else ''
             statements = implemented_control['statements'] if 'statements' in implemented_control else ''
 
-            for stmnt_id in statements:
-                statement = statements[stmnt_id]
 
-                if self.control_exists_in_catalog(catalog_key, control_id):
-                    if 'description' in statement:
-                        description = statement['description']
-                    elif 'description' in implemented_control:
-                        description = implemented_control['description']
-                    else:
-                        description = ''
-
-                    if 'remarks' in statement:
-                        remarks = statement['remarks']
-                    elif 'remarks' in implemented_control:
-                        remarks = implemented_control['remarks']
-                    else:
-                        remarks = ''
-
-                    new_statement = Statement.objects.create(
-                        sid=control_id,
-                        sid_class=catalog_key,
-                        pid=get_control_statement_part(stmnt_id),
-                        body=description,
-                        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
-                        remarks=remarks,
-                        status=implemented_control['status'] if 'status' in implemented_control else None,
-                        producer_element=parent_component,
-                    )
-
-                    logger.info(f"New statement with UUID {new_statement.uuid} created.")
-                    statements_created.append(new_statement)
-
+            if self.control_exists_in_catalog(catalog_key, control_id):
+                if 'description' in implemented_control:
+                    description = implemented_control['description']
                 else:
-                    logger.info(f"Control {control_id} doesn't exist in catalog {catalog_key}. Skipping Statement...")
+                    description = ''
+                if 'remarks' in implemented_control:
+                    remarks = implemented_control['remarks']
+                else:
+                    remarks = ''
+
+                new_statement = Statement.objects.create(
+                    sid=control_id,
+                    sid_class=catalog_key,
+                    pid=get_control_statement_part(control_id),
+                    body=description,
+                    statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
+                    remarks=remarks,
+                    status=implemented_control['status'] if 'status' in implemented_control else None,
+                    producer_element=parent_component,
+                )
+
+                logger.info(f"New statement with UUID {new_statement.uuid} created.")
+                statements_created.append(new_statement)
+
+            else:
+                logger.info(f"Control {control_id} doesn't exist in catalog {catalog_key}. Skipping Statement...")
 
         return statements_created
 
@@ -1650,10 +1659,10 @@ def editor(request, system_id, catalog_key, cl_id):
                 "id": "example-ssp",
                 "metadata": {
                     "title": "{} System Security Plan Excerpt".format(system.root_element.name),
-                    "published": datetime.now().replace(microsecond=0).isoformat(),
-                    "last-modified": "element.updated.replace(microsecond=0).isoformat()",
+                    #"published": datetime.now().replace(microsecond=0).isoformat(),
+                    "last-modified": system.root_element.updated.replace(microsecond=0).isoformat(),
                     "version": "1.0",
-                    "oscal-version": "1.0.0-milestone3",
+                    "oscal-version": "1.0.0",
                     "roles": [],
                     "parties": [],
                 },
@@ -1676,15 +1685,12 @@ def editor(request, system_id, catalog_key, cl_id):
                 }
             }
         }
-        by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["statements"][
+        by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["description"][
             "{}_smt".format(cl_id)]["by-components"]
         for smt in impl_smts:
             my_dict = {
                 smt.sid + "{}".format(smt.producer_element.name.replace(" ", "-")): {
-                    "description": smt.body,
-                    "role-ids": "",
-                    "set-params": {},
-                    "remarks": smt.remarks
+                    smt.body
                 },
             }
             if smt.remarks is None:
