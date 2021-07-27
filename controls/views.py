@@ -1638,6 +1638,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # need parties and roles to not be empty
         # Build OSCAL SSP
         # Example: https://github.com/usnistgov/oscal-content/blob/master/examples/ssp/json/ssp-example.json
+        smt_id = "{}_smt".format(cl_id)
         of = {
             "system-security-plan": {
                 "id": "example-ssp",
@@ -1654,22 +1655,25 @@ def editor(request, system_id, catalog_key, cl_id):
                 "system-implementations": {},
                 "control-implementation": {
                     "description": "",
-                    "implemented-requirements": {
-                        "control-id": "{}".format(cl_id),
-                        "description": "",
-                        "statements": {
-                            "{}_smt".format(cl_id): {
-                                "description": "N/A",
-                                "by-components": {
+                    "implemented-requirement2s": [
+                        {
+                            "uuid": "aaadb3ff-6ae8-4332-92db-211468c52af2",
+                            "control-id": "{}".format(cl_id),
+                            "statements": [
+                                {
+
+                                    "statement-id": smt_id,
+                                    "uuid": "74b5b0f2-9915-4f80-b7cd-379566442ab6",
+                                    "by-components": []
                                 }
-                            }
+                            ]
                         }  #statements
-                    },  # implemented-requirements
+                    ], # implemented-requirements
                 }
             }
         }
         by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["statements"][
-            "{}_smt".format(cl_id)]["by-components"]
+            smt_id]["by-components"]
         for smt in impl_smts:
             my_dict = {
                 smt.sid + "{}".format(smt.producer_element.name.replace(" ", "-")): {
