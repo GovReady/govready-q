@@ -719,9 +719,9 @@ class ComponentImporter(object):
 
             trestle_oscal_json = trestlecomponent.ComponentDefinition.oscal_read(path_component_definition)
         except ValueError:
-            if request is not None:
+            if request.POST.get("json_content") is not None:
                 messages.add_message(request, messages.ERROR, f"Invalid JSON. Component(s) not created.")
-            logger.info(f"Invalid JSON. Component(s) not created.")
+            shutil.rmtree(tempdir)
             return False
         # Finally validate that this object is valid by the component definition
         trestle_oscal_component = trestlecomponent.ComponentDefinition.validate(trestle_oscal_json)
@@ -733,15 +733,6 @@ class ComponentImporter(object):
             created_components = self.create_components(oscal_json)
             new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
             return new_import_record
-        else:
-
-            if request is not None:
-                messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
-                logger.info(f"Invalid JSON. Component(s) not created.")
-            else:
-                logger.info(f"Invalid JSON. Component(s) not created.")
-
-            return False
 
     # def find_import_record_by_name(self, import_name):
     #     """Returns most recent existing import record by name
