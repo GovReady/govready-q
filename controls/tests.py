@@ -349,19 +349,13 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         oscal_json_path = self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
         self.click_element('input#import_component_submit')
-        var_sleep(2)
+        var_sleep(4)
         element_count_after_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
 
-        wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 2, element_count_after_import))
+        wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 1, element_count_after_import))
 
         statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
-        self.assertEqual(statement_count_before_import + 4, statement_count_after_import)
-        # Test file contains 6 Statements, but only 4 get imported
-        # because one has an improper Catalog
-        # and another has an improper Control
-        # but we can't test individual statements because the UUIDs are randomly generated and not consistent
-        # with the OSCAL JSON file. So we simply do a count.
-
+        self.assertEqual(statement_count_before_import + 1, statement_count_after_import)
         # Test that duplicate Components are re-imported with a different name and that Statements get reimported
 
         wait_for_sleep_after(lambda: self.click_element('a#component-import-oscal'))
@@ -374,17 +368,17 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         element_count_after_duplicate_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
 
-        self.assertEqual(element_count_after_import + 2, element_count_after_duplicate_import)
+        self.assertEqual(element_count_after_import + 1, element_count_after_duplicate_import)
 
-        original_import_element_count = Element.objects.filter(name='Test OSCAL Component1').count()
+        original_import_element_count = Element.objects.filter(name='test component 1').count()
         self.assertEqual(original_import_element_count, 1)
 
-        duplicate_import_element_count = Element.objects.filter(name='Test OSCAL Component1 (1)').count()
+        duplicate_import_element_count = Element.objects.filter(name='test component 1 (1)').count()
         self.assertEqual(duplicate_import_element_count, 1)
 
         statement_count_after_duplicate_import = Statement.objects.filter(
             statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
-        self.assertEqual(statement_count_after_import + 4, statement_count_after_duplicate_import)
+        self.assertEqual(statement_count_after_import + 1, statement_count_after_duplicate_import)
 
     def test_import_tracker(self):
         """Tests that imports are tracked correctly."""
@@ -1171,7 +1165,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.assertEqual(Project.objects.all()[project_num - 1].title, "New Test Project"))
         # Components and their statements?
         self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 1)
-        self.assertEqual(Element.objects.all().exclude(element_type='system')[0].name, "SecGet, Endpoint Security System")
+        self.assertEqual(Element.objects.all().exclude(element_type='system')[0].name, "test component 1")
 
         try:
             self.assertEqual(Statement.objects.all().count(), 1)
