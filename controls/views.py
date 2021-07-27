@@ -1634,15 +1634,15 @@ def editor(request, system_id, catalog_key, cl_id):
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
         project, catalog, cg_flat, impl_smts, impl_smts_legacy = get_editor_data(request, system, catalog_key, cl_id)
-
+        # TODO: Update system-security-plan to oscal 1.0.0
+        # need parties and roles to not be empty
         # Build OSCAL SSP
-        # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
+        # Example: https://github.com/usnistgov/oscal-content/blob/master/examples/ssp/json/ssp-example.json
         of = {
             "system-security-plan": {
                 "id": "example-ssp",
                 "metadata": {
-                    "title": "{} System Security Plan Excerpt".format(system.root_element.name),
-                    #"published": datetime.now().replace(microsecond=0).isoformat(),
+                    "title": "{} System Security Plan".format(system.root_element.name),
                     "last-modified": system.root_element.updated.replace(microsecond=0).isoformat(),
                     "version": "1.0",
                     "oscal-version": system.root_element.oscal_version,
