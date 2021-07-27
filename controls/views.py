@@ -1655,7 +1655,7 @@ def editor(request, system_id, catalog_key, cl_id):
                 "system-implementations": {},
                 "control-implementation": {
                     "description": "",
-                    "implemented-requirement2s": [
+                    "implemented-requirements": [
                         {
                             "uuid": "aaadb3ff-6ae8-4332-92db-211468c52af2",
                             "control-id": "{}".format(cl_id),
@@ -1663,7 +1663,7 @@ def editor(request, system_id, catalog_key, cl_id):
                                 {
 
                                     "statement-id": smt_id,
-                                    "uuid": "74b5b0f2-9915-4f80-b7cd-379566442ab6",
+                                    "uuid": uuid.uuid4(),
                                     "by-components": []
                                 }
                             ]
