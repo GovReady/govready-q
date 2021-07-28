@@ -1641,7 +1641,7 @@ def editor(request, system_id, catalog_key, cl_id):
         smt_id = "{}_smt".format(cl_id)
         of = {
             "system-security-plan": {
-                "id": system.root_element.uuid,
+                "uuid": system.root_element.uuid,
                 "metadata": {
                     "title": "{} System Security Plan".format(system.root_element.name),
                     "last-modified": system.root_element.updated.replace(microsecond=0).isoformat(),
