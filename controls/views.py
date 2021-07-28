@@ -1637,15 +1637,15 @@ def editor(request, system_id, catalog_key, cl_id):
         # TODO: Update system-security-plan to oscal 1.0.0
         # need parties and roles to not be empty
         # Build OSCAL SSP
-        # Example: https://github.com/usnistgov/oscal-content/blob/master/examples/ssp/json/ssp-example.json
+        # Example: https://github.com/usnistgov/oscal-content/tree/master/examples/ssp/json/ssp-example.json
         smt_id = "{}_smt".format(cl_id)
         of = {
             "system-security-plan": {
-                "id": "example-ssp",
+                "id": system.root_element.uuid,
                 "metadata": {
                     "title": "{} System Security Plan".format(system.root_element.name),
                     "last-modified": system.root_element.updated.replace(microsecond=0).isoformat(),
-                    "version": "1.0",
+                    "version": system.root_element.version,
                     "oscal-version": system.root_element.oscal_version,
                     "roles": [],
                     "parties": [],
