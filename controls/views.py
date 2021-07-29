@@ -845,37 +845,33 @@ class ComponentImporter(object):
             for stmnt_id in statements:
                 statement = statements[stmnt_id]
 
-                if self.control_exists_in_catalog(catalog_key, control_id):
-                    if 'description' in statement:
-                        description = statement['description']
-                    elif 'description' in implemented_control:
-                        description = implemented_control['description']
-                    else:
-                        description = ''
-
-                    if 'remarks' in statement:
-                        remarks = statement['remarks']
-                    elif 'remarks' in implemented_control:
-                        remarks = implemented_control['remarks']
-                    else:
-                        remarks = ''
-
-                    new_statement = Statement.objects.create(
-                        sid=control_id,
-                        sid_class=catalog_key,
-                        pid=get_control_statement_part(stmnt_id),
-                        body=description,
-                        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
-                        remarks=remarks,
-                        status=implemented_control['status'] if 'status' in implemented_control else None,
-                        producer_element=parent_component,
-                    )
-
-                    logger.info(f"New statement with UUID {new_statement.uuid} created.")
-                    statements_created.append(new_statement)
-
+                if 'description' in statement:
+                    description = statement['description']
+                elif 'description' in implemented_control:
+                    description = implemented_control['description']
                 else:
-                    logger.info(f"Control {control_id} doesn't exist in catalog {catalog_key}. Skipping Statement...")
+                    description = ''
+
+                if 'remarks' in statement:
+                    remarks = statement['remarks']
+                elif 'remarks' in implemented_control:
+                    remarks = implemented_control['remarks']
+                else:
+                    remarks = ''
+
+                new_statement = Statement.objects.create(
+                    sid=control_id,
+                    sid_class=catalog_key,
+                    pid=get_control_statement_part(stmnt_id),
+                    body=description,
+                    statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
+                    remarks=remarks,
+                    status=implemented_control['status'] if 'status' in implemented_control else None,
+                    producer_element=parent_component,
+                )
+
+                logger.info(f"New statement with UUID {new_statement.uuid} created.")
+                statements_created.append(new_statement)
 
         return statements_created
 
