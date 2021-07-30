@@ -1,7 +1,20 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.6-dev (July XX, 2021)
+
+v0.9.7-dev (July xx, 2021)
+--------------------------
+
+**UI changes**
+
+* Display datagrid question wider and with smaller fonts.
+
+**Developer changes**
+
+* Support datgrid specifying select type cell.
+
+
+v0.9.6 (July 15, 2021)
 ----------------------
 
 **UI changes**
