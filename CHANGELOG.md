@@ -8,7 +8,7 @@ v0.9.7-dev (July xx, 2021)
 **UI changes**
 
 * Display datagrid question wider and with smaller fonts.
-* Display existance of legacy statement in project system's selected controls
+* Display existance of legacy statement in project system's selected controls.
 
 **Developer changes**
 
