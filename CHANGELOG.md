@@ -8,10 +8,15 @@ v0.9.7-dev (July xx, 2021)
 **UI changes**
 
 * Display datagrid question wider and with smaller fonts.
+* Display existance of legacy statement in project system's selected controls
 
 **Developer changes**
 
-* Support datgrid specifying select type cell.
+* Support datagrid specifying select type cell.
+
+**Bug fixes**
+
+* Fix count on project system's components associated with a control (avoid double counting).
 
 
 v0.9.6 (July 15, 2021)
