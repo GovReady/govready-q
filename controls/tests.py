@@ -355,15 +355,17 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 2, element_count_after_import))
 
         statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
-        self.assertEqual(statement_count_before_import + 4, statement_count_after_import)
-        # Test file contains 6 Statements, but only 4 get imported
-        # because one has an improper Catalog
-        # and another has an improper Control
-        # but we can't test individual statements because the UUIDs are randomly generated and not consistent
+        # Test OSCAL file contains 6 Statements, and all 6 get imported even though two Statements have "bad" data.
+        # One Statement has an improper Catalog.
+        # Another Statement has an improper Control.
+        # But we can't test individual statements because the UUIDs are randomly generated and not consistent
         # with the OSCAL JSON file. So we simply do a count.
+        # We allow bad Statements with non-existent catalogs and bad control ids to be imported
+        # because we do not want to create friction of having to have a catalog or having
+        # perfect data prior to importing a component.
+        self.assertEqual(statement_count_before_import + 6, statement_count_after_import)
 
         # Test that duplicate Components are re-imported with a different name and that Statements get reimported
-
         wait_for_sleep_after(lambda: self.click_element('a#component-import-oscal'))
 
         file_input = self.find_selected_option('input#json_content')
@@ -384,7 +386,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         statement_count_after_duplicate_import = Statement.objects.filter(
             statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
-        self.assertEqual(statement_count_after_import + 4, statement_count_after_duplicate_import)
+        self.assertEqual(statement_count_after_import + 6, statement_count_after_duplicate_import)
 
     def test_import_tracker(self):
         """Tests that imports are tracked correctly."""
