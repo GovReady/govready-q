@@ -95,6 +95,8 @@ def get_control_statement_part(control_stmnt_id):
 
     # Portion after the '_smt.' is the part
     split_stmnt = control_stmnt_id.split("_smt.")
+    if len(split_stmnt) <= 1:
+        split_stmnt = control_stmnt_id.split(".")
     return split_stmnt[1] if len(split_stmnt) > 1 else ""
 
 
