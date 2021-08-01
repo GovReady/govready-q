@@ -820,12 +820,21 @@ class ComponentImporter(object):
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
         control_implementation_statements = component_json.get('control-implementations', None)
         catalog = "missing"
+        # If there is an data in the control-implementations key
         if control_implementation_statements:
+            # For each element if there is a source and the oscalized key is in the available keys
+            # Then create statements otherwise it will return an empty list
             for control_element in control_implementation_statements:
                 if 'source' in control_element:
                     if oscalize_catalog_key(control_element['source']) in Catalogs().catalog_keys:
                         catalog = oscalize_catalog_key(control_element['source'])
                 created_statements = self.create_control_implementation_statements(catalog, control_element, new_component)
+        # If there are no valid statements in the json object
+        if created_statements == []:
+            logger.info(f"The Component {new_component.name} will be deleted as there were no valid statements provided.")
+            new_component.delete()
+            new_component = None
+
         return new_component
 
     def create_control_implementation_statements(self, catalog_key, control_element, parent_component):
