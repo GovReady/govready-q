@@ -553,9 +553,10 @@ def import_record_delete(request, import_record_id):
 
 class SystemSecurityPlanSerializer(object):
 
-    def __init__(self, catalog_key, system_id):
+    def __init__(self, catalog_key, system_id, impl_smts):
         self.catalog_key = catalog_key
         self.system_id = system_id
+        self.impl_smts = impl_smts
 
 class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
 
@@ -566,6 +567,24 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
         else:
             return f"{control_id}_smt"
 
+    def create_statement_dicts(self, control_id, group_impl_smts):
+        """
+        Create statements for each group of implementation statements
+        """
+        statements = []
+        for smt in group_impl_smts:
+            # Get oscal control and form statement id with part if present
+            cl_id = oscalize_control_id(control_id)
+            smt_id = self.ssp_statement_id_from_control(cl_id, smt.pid)
+            statement_dict = {"statement-id": smt_id, "uuid": str(uuid.uuid4()),
+                              "by-components": [{
+                                  "component-uuid": str(smt.producer_element.uuid),
+                                  "uuid": str(smt.uuid),
+                                  "description": smt.body,
+                                  "set-parameters": {}}
+                              ]}
+            statements.append(statement_dict)
+        return statements
     def as_json(self):
         catalog_key, system = get_editor_system(self.catalog_key, self.system_id)
         # TODO: Update system-security-plan to oscal 1.0.0
@@ -588,35 +607,23 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
                 "system-implementations": {},
                 "control-implementation": {
                     "description": "",
-                    "implemented-requirements": [
-                        {
-                            "uuid": str(uuid.uuid4()),
-                            "control-id": "{}".format(cl_id),
-                            "statements": [
-                            ]
-                        }  #statements
-                    ], # implemented-requirements
+                    "implemented-requirements": [], # implemented-requirements
                 }
             }
         }
-        # Create statements dict list using impl_smts each of these dicts may contain a by-components section
-        statements = []
-        for smt in impl_smts:
-            # Get oscal control and form statement id with part if present
-            cl_id = oscalize_control_id(cl_id)
-            smt_id = self.ssp_statement_id_from_control(cl_id, smt.pid)
-            statement_dict = {"statement-id": smt_id, "uuid": str(uuid.uuid4()),
-                              "by-components": [{
-                                  "component-uuid": str(smt.producer_element.uuid),
-                                  "uuid": str(smt.uuid),
-                                  "description": smt.body,
-                                  "set-parameters": {}}
-                              ]}
-            statements.append(statement_dict)
-        # TODO: Need to use groupby an allow for multiple control ids instead of just the first impl requirement. Also get impl_smts for each implemnt res
-        #  for the rest of the possible implemented-requirements.
+        # Create a list of dicts that are the implementation requirements
+        # Each element is for each control sid group
+        # Each group has that controls statements
+        for control_id, group in groupby(natsorted(self.impl_smts, key=lambda ismt: ismt.sid),
+                                         lambda ismt: ismt.sid):
 
-        of["system-security-plan"]["control-implementation"]["implemented-requirements"][0]["statements"] = statements
+                imp_req_dict = {
+                    "uuid": str(uuid.uuid4()),
+                    "control-id": "{}".format(control_id),
+                    "statements":  self.create_statement_dicts(control_id, group)
+                }  #statements
+
+                of["system-security-plan"]["control-implementation"]["implemented-requirements"].append(imp_req_dict)
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
 
@@ -1724,7 +1731,8 @@ def editor(request, system_id, catalog_key, cl_id):
         # Example: https://github.com/usnistgov/oscal-content/tree/master/examples/ssp/json/ssp-example.json
         # oscalize key
         cl_id = oscalize_control_id(cl_id)
-
+        impl_smts = Statement.objects.filter(consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
+        oscal_string = OSCALSystemSecurityPlanSerializer(catalog_key, system_id, impl_smts).as_json()
         # Build combined statement if it exists
         if cl_id in system.control_implementation_as_dict:
             combined_smt = system.control_implementation_as_dict[cl_id]['combined_smt']
@@ -1744,6 +1752,7 @@ def editor(request, system_id, catalog_key, cl_id):
             "catalog": catalog,
             "control": cg_flat[cl_id.lower()],
             "impl_smts": impl_smts,
+            "oscal": oscal_string,
             "impl_statuses": impl_statuses,
             "impl_smts_legacy": impl_smts_legacy,
             "combined_smt": combined_smt,
@@ -1777,7 +1786,7 @@ def get_editor_data(request, system, catalog_key, cl_id):
         # Get and return the control
         # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog, Type
         impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
-        # Retrieve Legacy Implememtation Statements
+        # Retrieve Legacy Implementation Statements
         impl_smts_legacy = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name)
 
         return project, catalog, cg_flat, impl_smts, impl_smts_legacy
