@@ -557,6 +557,69 @@ class SystemSecurityPlanSerializer(object):
         self.catalog_key = catalog_key
         self.system_id = system_id
 
+class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
+
+    @staticmethod
+    def ssp_statement_id_from_control(control_id, part_id):
+        if part_id:
+            return f"{control_id}_smt.{part_id}"
+        else:
+            return f"{control_id}_smt"
+
+    def as_json(self):
+        catalog_key, system = get_editor_system(self.catalog_key, self.system_id)
+        # TODO: Update system-security-plan to oscal 1.0.0
+        # need parties and roles to not be empty
+        # Build OSCAL SSP
+        # Example: https://github.com/usnistgov/oscal-content/tree/master/examples/ssp/json/ssp-example.json
+        of = {
+            "system-security-plan": {
+                "uuid": str(system.root_element.uuid),
+                "metadata": {
+                    "title": "{} System Security Plan".format(system.root_element.name),
+                    "last-modified": system.root_element.updated.replace(microsecond=0).isoformat(),
+                    "version": system.projects.first().version,
+                    "oscal-version": system.root_element.oscal_version,
+                    "roles": [],
+                    "parties": [],
+                },
+                "import-profile": {},
+                "system-characteristics": {},
+                "system-implementations": {},
+                "control-implementation": {
+                    "description": "",
+                    "implemented-requirements": [
+                        {
+                            "uuid": str(uuid.uuid4()),
+                            "control-id": "{}".format(cl_id),
+                            "statements": [
+                            ]
+                        }  #statements
+                    ], # implemented-requirements
+                }
+            }
+        }
+        # Create statements dict list using impl_smts each of these dicts may contain a by-components section
+        statements = []
+        for smt in impl_smts:
+            # Get oscal control and form statement id with part if present
+            cl_id = oscalize_control_id(cl_id)
+            smt_id = self.ssp_statement_id_from_control(cl_id, smt.pid)
+            statement_dict = {"statement-id": smt_id, "uuid": str(uuid.uuid4()),
+                              "by-components": [{
+                                  "component-uuid": str(smt.producer_element.uuid),
+                                  "uuid": str(smt.uuid),
+                                  "description": smt.body,
+                                  "set-parameters": {}}
+                              ]}
+            statements.append(statement_dict)
+        # TODO: Need to use groupby an allow for multiple control ids instead of just the first impl requirement. Also get impl_smts for each implemnt res
+        #  for the rest of the possible implemented-requirements.
+
+        of["system-security-plan"]["control-implementation"]["implemented-requirements"][0]["statements"] = statements
+        oscal_string = json.dumps(of, sort_keys=False, indent=2)
+        return oscal_string
+
 class ComponentSerializer(object):
 
     def __init__(self, element, impl_smts):
@@ -1661,55 +1724,6 @@ def editor(request, system_id, catalog_key, cl_id):
         # Example: https://github.com/usnistgov/oscal-content/tree/master/examples/ssp/json/ssp-example.json
         # oscalize key
         cl_id = oscalize_control_id(cl_id)
-        smt_id = "{}_smt".format(cl_id)
-        of = {
-            "system-security-plan": {
-                "uuid": str(system.root_element.uuid),
-                "metadata": {
-                    "title": "{} System Security Plan".format(system.root_element.name),
-                    "last-modified": system.root_element.updated.replace(microsecond=0).isoformat(),
-                    "version": project.version,
-                    "oscal-version": system.root_element.oscal_version,
-                    "roles": [],
-                    "parties": [],
-                },
-                "import-profile": {},
-                "system-characteristics": {},
-                "system-implementations": {},
-                "control-implementation": {
-                    "description": "",
-                    "implemented-requirements": [
-                        {
-                            "uuid": "aaadb3ff-6ae8-4332-92db-211468c52af2",
-                            "control-id": "{}".format(cl_id),
-                            "statements": [
-                                {
-
-                                    "statement-id": smt_id,
-                                    "uuid": str(uuid.uuid4()),
-                                    "by-components": []
-                                }
-                            ]
-                        }  #statements
-                    ], # implemented-requirements
-                }
-            }
-        }
-        # by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"][0]["statements"][
-        #     smt_id]["by-components"]
-        for smt in impl_smts:
-            my_dict = {
-                smt.sid + "{}".format(smt.producer_element.name.replace(" ", "-")): {
-                    "description": smt.body,
-                    "role-ids": "",
-                    "set-params": {},
-                    "remarks": smt.remarks
-                },
-            }
-            if smt.remarks is None:
-                my_dict[smt.sid + "{}".format(smt.producer_element.name.replace(" ", "-"))].pop("remarks", None)
-            #by_components.update(my_dict)
-        oscal_string = json.dumps(of, sort_keys=False, indent=2)
 
         # Build combined statement if it exists
         if cl_id in system.control_implementation_as_dict:
@@ -1733,7 +1747,6 @@ def editor(request, system_id, catalog_key, cl_id):
             "impl_statuses": impl_statuses,
             "impl_smts_legacy": impl_smts_legacy,
             "combined_smt": combined_smt,
-            "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": "opencontrol_string",
             "elements": elements,
