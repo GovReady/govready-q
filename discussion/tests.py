@@ -133,7 +133,7 @@ class DiscussionTests(SeleniumTest):
                 test_file_name
             )
             test_file_contents = b''
-
+            print(f"test_path{test_path}")
             # Read in test file
             with open(test_path, "rb") as test_file:
                 test_file_contents = test_file.read()
