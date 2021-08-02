@@ -722,13 +722,12 @@ class OSCALComponentSerializer(ComponentSerializer):
         uuid = str(self.element.uuid)
         control_implementations = []
         props = []
-        parties = []
+        orgs = list(Organization.objects.all())  # TODO: orgs need uuids, not sure which orgs to use for a component
+        parties = [{"uuid": str(uuid.uuid4()), "type": "organization", "name": org.name} for org in orgs]
         responsible_roles =  {
-          "supplier": {
-            "party-uuids": [
+           "role-id": "supplier",# TODO: Not sure what this refers to
+            "party-uuids": [ party.get("uuid") for party in parties ]
 
-            ]
-          }
         }
         of = {
             "component-definition": {
@@ -739,7 +738,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": self.element.updated.replace(microsecond=0).isoformat(),
                     "oscal-version": self.element.oscal_version,
-                   # "parties": parties,
+                    "parties": parties,
                     "props": props
                 },
                 "components": [
@@ -748,7 +747,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                        "type": self.element.component_type or "software",
                        "title": self.element.full_name or self.element.name,
                         "description": self.element.description,
-                        #"responsible-roles": responsible_roles, # TODO: gathering party-uuids
+                         "responsible-roles": responsible_roles, # TODO: gathering party-uuids, just filling for now
                         "control-implementations": control_implementations
                     }
                 ]
