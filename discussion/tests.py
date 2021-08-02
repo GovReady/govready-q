@@ -125,6 +125,7 @@ class DiscussionTests(SeleniumTest):
         random_ext = ".random"
 
         for ext, _content_type in VALID_EXTS.items():
+            print("Testing file type {}".format(ext))
             test_file_name = "".join([TEST_FILENAME, ext])
             test_path = os.path.join(
                 os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -177,6 +178,7 @@ class DiscussionTests(SeleniumTest):
 
         # Test uppercase extension
         for ext, _content_type in {".jpeg": ("image/jpeg",),}.items():
+            print("Testing file type {}".format(ext))
             test_file_name = "".join([TEST_FILENAME_UPPER, ext.upper()])
             test_path = os.path.join(
                 os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
