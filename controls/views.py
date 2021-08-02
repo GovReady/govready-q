@@ -719,16 +719,16 @@ class OSCALComponentSerializer(ComponentSerializer):
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
-        uuid = str(self.element.uuid)
+        comp_uuid = str(self.element.uuid)
         control_implementations = []
         props = []
         orgs = list(Organization.objects.all())  # TODO: orgs need uuids, not sure which orgs to use for a component
         parties = [{"uuid": str(uuid.uuid4()), "type": "organization", "name": org.name} for org in orgs]
-        responsible_roles =  {
+        responsible_roles =  [{
            "role-id": "supplier",# TODO: Not sure what this refers to
-            "party-uuids": [ party.get("uuid") for party in parties ]
+            "party-uuids": [ str(party.get("uuid")) for party in parties ]
 
-        }
+        }]
         of = {
             "component-definition": {
                 "uuid": str(uuid4()),
@@ -743,8 +743,8 @@ class OSCALComponentSerializer(ComponentSerializer):
                 },
                 "components": [
                    {
-                        "uuid": uuid,
-                       "type": self.element.component_type or "software",
+                        "uuid": comp_uuid,
+                       "type": self.element.component_type.lower() or "software",
                        "title": self.element.full_name or self.element.name,
                         "description": self.element.description,
                          "responsible-roles": responsible_roles, # TODO: gathering party-uuids, just filling for now
