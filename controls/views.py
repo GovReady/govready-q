@@ -698,6 +698,7 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
             }, "authorization-boundary": {
                 "description": "The description of the authorization boundary would go here."
             }}
+        # TODO: trestle validation of SSP
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
 
@@ -734,7 +735,6 @@ class OSCALComponentSerializer(ComponentSerializer):
                 "uuid": str(uuid4()),
                 "metadata": {
                     "title": "{}".format(self.element.name),
-                    #"published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": self.element.updated.replace(microsecond=0).isoformat(),
                     "oscal-version": self.element.oscal_version,
