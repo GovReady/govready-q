@@ -1,48 +1,45 @@
-from itertools import groupby
+import functools
 import logging
-from collections import defaultdict
-from datetime import datetime, timezone
-from pathlib import PurePath
-from uuid import uuid4
-import rtyaml
+import operator
+import pathlib
 import shutil
 import tempfile
-import operator
+from collections import defaultdict
+from datetime import datetime
+from itertools import groupby
+from pathlib import PurePath
+from urllib.parse import quote, urlunparse
+from uuid import uuid4
+
+import rtyaml
 import trestle.oscal.component as trestlecomponent
-import pathlib
-from django.db.models import Q
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.core.serializers.json import DjangoJSONEncoder
-from django.db import IntegrityError
+from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
     HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.text import slugify
 from django.views import View
 from django.views.generic import ListView
-from django.urls import reverse
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
-from urllib.parse import quote
-from guidedmodules.models import Task, Module, AppVersion, AppSource
-from siteapp.model_mixins.tags import TagView
-from siteapp.models import Project, Tag
+from simple_history.utils import update_change_reason
+
+from siteapp.models import Project, Organization
+from siteapp.settings import GOVREADY_URL
 from system_settings.models import SystemSettings
+from .forms import ElementEditForm
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
 from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
-from .forms import ElementEditForm
-from siteapp.forms import PortfolioForm
 from .models import *
 from .utilities import *
-from simple_history.utils import update_change_reason
-import functools
-import subprocess
+
 logging.basicConfig()
 import structlog
 from structlog import get_logger
@@ -553,9 +550,8 @@ def import_record_delete(request, import_record_id):
 
 class SystemSecurityPlanSerializer(object):
 
-    def __init__(self, catalog_key, system_id, impl_smts):
-        self.catalog_key = catalog_key
-        self.system_id = system_id
+    def __init__(self, system, impl_smts):
+        self.system = system
         self.impl_smts = impl_smts
 
 class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
@@ -576,35 +572,54 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
             # Get oscal control and form statement id with part if present
             cl_id = oscalize_control_id(control_id)
             smt_id = self.ssp_statement_id_from_control(cl_id, smt.pid)
+            # TODO: "set-parameters" ?
             statement_dict = {"statement-id": smt_id, "uuid": str(uuid.uuid4()),
                               "by-components": [{
                                   "component-uuid": str(smt.producer_element.uuid),
                                   "uuid": str(smt.uuid),
-                                  "description": smt.body,
-                                  "set-parameters": {}}
+                                  "description": smt.body}
                               ]}
             statements.append(statement_dict)
         return statements
+
     def as_json(self):
-        catalog_key, system = get_editor_system(self.catalog_key, self.system_id)
-        # TODO: Update system-security-plan to oscal 1.0.0
-        # need parties and roles to not be empty
+
         # Build OSCAL SSP
         # Example: https://github.com/usnistgov/oscal-content/tree/master/examples/ssp/json/ssp-example.json
+        project = self.system.projects.first()
+        # TODO: again a stub as found in module_logic, this is still not entirely valid.
+        profile = urlunparse((GOVREADY_URL.scheme, GOVREADY_URL.netloc,
+                              "profile_path",
+                              None, None, None))
+        orgs = list(Organization.objects.filter(projects=project))  # TODO: orgs need uuids
+        components = Element.objects.filter(statements_produced__in=self.impl_smts).filter(component_state="operational").exclude(element_type='system')
+        impl_comps = [{ "component-uuid": str(component.uuid) } for component in components]
+        parties = [{"uuid":str(uuid.uuid4()), "type": "organization", "name": org.name} for org in orgs]
         of = {
             "system-security-plan": {
-                "uuid": str(system.root_element.uuid),
+                "uuid": str(self.system.root_element.uuid),
                 "metadata": {
-                    "title": "{} System Security Plan".format(system.root_element.name),
-                    "last-modified": system.root_element.updated.replace(microsecond=0).isoformat(),
-                    "version": system.projects.first().version,
-                    "oscal-version": system.root_element.oscal_version,
+                    "title": "{} System Security Plan".format(self.system.root_element.name),
+                    "last-modified": self.system.root_element.updated.replace(microsecond=0).isoformat(),
+                    "version": project.version,
+                    "oscal-version": self.system.root_element.oscal_version,
                     "roles": [],
-                    "parties": [],
+                    "parties": parties,
                 },
-                "import-profile": {},
+                "import-profile": {
+                    "href": profile
+                },
                 "system-characteristics": {},
-                "system-implementations": {},
+                "system-implementation": {
+                    "remarks": "",
+                    "users": [],
+                    "components": [],
+                    "inventory-items": [        {
+          "uuid": str(uuid.uuid4()),
+          "description": "An inventory item",
+          "implemented-components": impl_comps
+        }]# TODO: inventory-items props, description, responsible-parties
+                },
                 "control-implementation": {
                     "description": "",
                     "implemented-requirements": [], # implemented-requirements
@@ -616,7 +631,6 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
         # Each group has that controls statements
         for control_id, group in groupby(natsorted(self.impl_smts, key=lambda ismt: ismt.sid),
                                          lambda ismt: ismt.sid):
-
                 imp_req_dict = {
                     "uuid": str(uuid.uuid4()),
                     "control-id": "{}".format(control_id),
@@ -624,6 +638,60 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
                 }  #statements
 
                 of["system-security-plan"]["control-implementation"]["implemented-requirements"].append(imp_req_dict)
+
+        # System implementation
+        users = project.get_all_participants()# TODO:Need proper user title based on is_member, is_admin, editor_of
+        # TODO: party-uuids users don't have uuids not sure what to do other than make a random one
+        user_party_uuid = str(uuid.uuid4())
+
+        of["system-security-plan"]["metadata"]['roles'] =  [{"id": auths.get('role', "member").split(';')[0], "title": auths.get('role', "member").split(';')[0].capitalize()  } for user, auths in users]
+        of["system-security-plan"]["system-implementation"]['users'] = [{"uuid":user_party_uuid, "title":user.username, "role-ids": [auths.get('role', "member").split(';')[0]]} for user, auths in users]
+        of["system-security-plan"]["system-implementation"]['components'] = [{"uuid":str(comp_ele.uuid), "title":comp_ele.name, "description":comp_ele.description, "status": {"state": comp_ele.component_state}, "type":comp_ele.component_type, "responsible-roles": [{
+              "role-id": "asset-owner",
+              "party-uuids": [
+                user_party_uuid
+              ]
+            }]} for comp_ele in components]# TODO: responsible-roles
+        # System characteristics
+        # TODO: status remarks, authorization-boundary
+        security_body = project.system.get_security_impact_level
+        confidentiality = security_body.get("security_objective_confidentiality", "UNKOWN")
+        integrity = security_body.get("security_objective_integrity", "UNKOWN")
+        availability = security_body.get("security_objective_availability", "UNKOWN")
+        information_types = [
+            {
+                "uuid": str(uuid.uuid4()),
+                "title": "UNKNOWN information type title",
+                # "categorizations": [], # TODO https://doi.org/10.6028/NIST.SP.800-60v2r1
+                "description": "information type description",
+                "confidentiality-impact":  {
+              "base": confidentiality
+            },
+                "integrity-impact":  {
+              "base": integrity
+            },
+                "availability-impact":  {
+              "base": availability
+            }
+            }
+        ]
+        of["system-security-plan"]["system-characteristics"] = {"system-name": self.system.root_element.name,
+                                                                "description": self.system.root_element.description,
+                                                                "system-ids": [{"id": str(self.system.root_element.uuid),# TODO: identifier-type
+                                                                               "identifier-type": "https://ietf.org/rfc/rfc4122"}],
+                                                                "security-sensitivity-level": self.system.get_security_sensitivity_level if self.system.get_security_sensitivity_level else "UNKOWN",
+                                                                "system-information": {
+                                                                    "information-types": information_types},
+                                                                "security-impact-level": {
+                                                                    "security-objective-confidentiality": confidentiality,
+                                                                    "security-objective-integrity": integrity,
+                                                                    "security-objective-availability": availability
+                                                                }, "status": {
+                "state": self.system.root_element.component_state,
+                "remarks": ""
+            }, "authorization-boundary": {
+                "description": "The description of the authorization boundary would go here."
+            }}
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
 
@@ -1409,6 +1477,23 @@ def system_element_download_oscal_json(request, system_id, element_id):
     return response
 
 @login_required
+def OSCAL_ssp_export(*args, **kwargs):
+    """
+    Exporting a system security plan in OSCAL json version 1.0.0
+    """
+    system_id = kwargs.get('system_id', 1)
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    impl_smts = Statement.objects.filter(consumer_element=system.root_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
+    oscal_string = OSCALSystemSecurityPlanSerializer(system, impl_smts).as_json()
+    # File name construction and JSON response
+    filename = "{}_OSCAL_{}.json".format(system.root_element.name.replace(" ", "_"),
+                                                           datetime.now().strftime("%Y-%m-%d-%H-%M"))
+    resp = HttpResponse(oscal_string, content_type="application/json")
+    resp["content-disposition"] = "attachment; filename=%s" % quote(filename)
+    return resp
+
+@login_required
 def controls_selected_export_xacta_xslx(request, system_id):
     """Export System's selected controls compatible with Xacta 360"""
 
@@ -1437,7 +1522,7 @@ def controls_selected_export_xacta_xslx(request, system_id):
                 setattr(control, 'impl_smts', None)
 
         from openpyxl import Workbook
-        from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
+        from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
         from tempfile import NamedTemporaryFile
 
         wb = Workbook()
@@ -1731,8 +1816,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # Example: https://github.com/usnistgov/oscal-content/tree/master/examples/ssp/json/ssp-example.json
         # oscalize key
         cl_id = oscalize_control_id(cl_id)
-        impl_smts = Statement.objects.filter(consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
-        oscal_string = OSCALSystemSecurityPlanSerializer(catalog_key, system_id, impl_smts).as_json()
+
         # Build combined statement if it exists
         if cl_id in system.control_implementation_as_dict:
             combined_smt = system.control_implementation_as_dict[cl_id]['combined_smt']
@@ -1752,7 +1836,6 @@ def editor(request, system_id, catalog_key, cl_id):
             "catalog": catalog,
             "control": cg_flat[cl_id.lower()],
             "impl_smts": impl_smts,
-            "oscal": oscal_string,
             "impl_statuses": impl_statuses,
             "impl_smts_legacy": impl_smts_legacy,
             "combined_smt": combined_smt,
@@ -2766,7 +2849,7 @@ def poam_export(request, system_id, format='xlsx'):
 
         if format == 'xlsx':
             from openpyxl import Workbook
-            from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
+            from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
             from tempfile import NamedTemporaryFile
 
             wb = Workbook()
