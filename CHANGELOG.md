@@ -19,6 +19,7 @@ v0.9.7-dev (July xx, 2021)
 * Component and System Security Plan exports pass OSCAL 1.0.0 schema validation
 * Added a proxy for parties and responsible parties for component OSCAL export
 * Coverage 6.0b1 starts to use a modern hash algorithm (sha256) when fingerprinting for high-security environments, upgrading to avoid this safety fail.
+* Validate Component import and SSP with trestle the package
 
 * **Bug fixes**
 

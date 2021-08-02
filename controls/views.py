@@ -13,6 +13,7 @@ from uuid import uuid4
 
 import rtyaml
 import trestle.oscal.component as trestlecomponent
+import trestle.oscal.ssp as trestlessp
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -698,9 +699,29 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
             }, "authorization-boundary": {
                 "description": "The description of the authorization boundary would go here."
             }}
-        # TODO: trestle validation of SSP
+        try:
+            # Create a temporary directory and dump the json_object in there.
+            tempdir = tempfile.mkdtemp()
+            path = os.path.join(tempdir, "ssp_object.json")
+            # Use trestle's ComponentDefinition method oscal_read to read the path to json in the temporary folder
+            path_ssp_definition = pathlib.Path(path)
+
+            with open(path, 'w+') as cred:
+                json.dump(of, cred)
+
+            trestle_oscal_json = trestlessp.SystemSecurityPlan.oscal_read(path_ssp_definition)
+            # Cleanup
+            shutil.rmtree(tempdir)
+        except ValueError as ex:
+            logger.error(f"Invalid System Security Plan JSON: {ex}")
+            shutil.rmtree(tempdir)
+            return HttpResponse(ex)
+
+       # Finally validate that this object is valid by the component definition
+        trestle_oscal_ssp = trestlessp.SystemSecurityPlan.validate(trestle_oscal_json)
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
+
 
 class ComponentSerializer(object):
 
