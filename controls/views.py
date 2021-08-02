@@ -162,15 +162,20 @@ def controls_selected(request, system_id):
         # sort controls
         controls = list(controls)
         controls.sort(key=lambda control: control.get_flattened_oscal_control_as_dict()['sort_id'])
-        # controls.sort(key = lambda control:list(reversed(control.get_flattened_oscal_control_as_dict()['sort_id'])))
 
-        impl_smts_count = {}
+        # Determine if a legacy statement exists for the control
+        impl_smts_legacy = Statement.objects.filter(consumer_element=system.root_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name)
+        impl_smts_legacy_dict = {}
+        for legacy_smt in impl_smts_legacy:
+            impl_smts_legacy_dict[legacy_smt.sid] = legacy_smt
+
+        # Get count of componentes (e.g., producer_elements) associated with a control
+        impl_smts_cmpts_count = {}
         ikeys = system.smts_control_implementation_as_dict.keys()
         for c in controls:
-            impl_smts_count[c.oscal_ctl_id] = 0
+            impl_smts_cmpts_count[c.oscal_ctl_id] = 0
             if c.oscal_ctl_id in ikeys:
-                impl_smts_count[c.oscal_ctl_id] = len(
-                    system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+                impl_smts_cmpts_count[c.oscal_ctl_id] = len(set([s.producer_element for s in system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts']]))
 
         # Get list of catalog objects
         catalog_list = Catalogs().list_catalogs()
@@ -183,7 +188,8 @@ def controls_selected(request, system_id):
             "project": project,
             "controls": controls,
             "external_catalogs": external_catalogs,
-            "impl_smts_count": impl_smts_count,
+            "impl_smts_cmpts_count": impl_smts_cmpts_count,
+            "impl_smts_legacy_dict": impl_smts_legacy_dict,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         }
         return render(request, "systems/controls_selected.html", context)
