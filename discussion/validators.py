@@ -32,7 +32,6 @@ CONTENTTYPE_EXCEPTIONS = {
     "application/zip": (".docx", ".xlsx", ".pptx", ".zip",),
     "application/octet-stream": (".bin",),
     "application/pdf": (".random",),
-    "application/msword": (".doc",),
     "application/vnd.ms-excel": (".xls", ".xlb",),
     "image/jpeg": (".jpg", ".jpeg",),
     "image/png": (".random",),
