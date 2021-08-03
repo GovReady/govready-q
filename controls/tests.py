@@ -260,6 +260,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self._login()
         url = self.url(f"/systems/{self.system.id}/component/{self.component.id}")
         self.browser.get(url)
+        var_sleep(2)
         self.click_element('a[href="#oscal"]')
 
         # sigh; selenium doesn't really let us find out the name of the
@@ -1203,7 +1204,7 @@ class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
         """
         Testing OSCAL_ssp_export to make sure the file is created with a status code of 200 utilizing the class OSCALSystemSecurityPlanSerializer's as_json() method
         """
-        self._login()
+        self._login(self.user.username, self.user.clear_password)
         self._new_project()
         system = System.objects.last()
         # ssp_export_oscal with system id
