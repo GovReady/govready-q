@@ -1206,7 +1206,12 @@ class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
         """
         self._login(self.user.username, self.user.clear_password)
         self._new_project()
-        system = System.objects.last()
+
+        element = Element(name="Test element", element_type="system")
+        element.save()
+        # Create system
+        system = System(root_element=element)
+        system.save()
         # ssp_export_oscal with system id
         response = OSCAL_ssp_export(self,{"system_id": system.id} )
 
