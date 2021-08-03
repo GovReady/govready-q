@@ -185,7 +185,7 @@ class ControlUITests(SeleniumTest):
             temp_file_name = os.path.join(EXTERNAL_BASELINE_PATH, f'{d.name}_revtest_baseline.json')
 
             # finding fixture data and dumping in the temp file
-            test_baseline = os.getcwd() + "/fixtures/test_baseline.json"
+            test_baseline = os.getcwd() + "/fixtures/test_baselines.json"
             with open(test_baseline, 'r') as json_file:
                 baseline_data = json.load(json_file)
             with open(temp_file_name, 'w') as cred:
