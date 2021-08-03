@@ -93,9 +93,10 @@ def get_control_statement_part(control_stmnt_id):
     if "." not in control_stmnt_id and "_" not in control_stmnt_id:
         return control_stmnt_id
 
-    # Portion after the '_smt.' is the part
+    # Portion after the '_smt.' is the part, au-2_smt.b --> sid au-2, part b
     split_stmnt = control_stmnt_id.split("_smt.")
     if len(split_stmnt) <= 1:
+        # ac-2.3.a --> sid ac-2, part 3
         split_stmnt = control_stmnt_id.split(".")
     return split_stmnt[1] if len(split_stmnt) > 1 else ""
 

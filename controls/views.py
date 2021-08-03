@@ -28,8 +28,6 @@ from django.urls import reverse
 from django.utils.text import slugify
 from django.views import View
 from django.views.generic import ListView
-from jsonschema import validate
-from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from simple_history.utils import update_change_reason
 
 from siteapp.models import Project, Organization
@@ -708,17 +706,17 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
 
             with open(path, 'w+') as cred:
                 json.dump(of, cred)
-
+            # Read in temporary file and shape into trestle pydantic SSP definition.
             trestle_oscal_json = trestlessp.SystemSecurityPlan.oscal_read(path_ssp_definition)
+            # Finally validate that this object is valid by the OSCAL System Security Plan definition
+            trestlessp.SystemSecurityPlan.validate(trestle_oscal_json)
             # Cleanup
             shutil.rmtree(tempdir)
-        except ValueError as ex:
-            logger.error(f"Invalid System Security Plan JSON: {ex}")
+        except Exception as e:
+            logger.error(f"Invalid System Security Plan JSON: {e}")
             shutil.rmtree(tempdir)
-            return HttpResponse(ex)
+            return HttpResponse(e)
 
-       # Finally validate that this object is valid by the component definition
-        trestle_oscal_ssp = trestlessp.SystemSecurityPlan.validate(trestle_oscal_json)
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
 
@@ -733,7 +731,8 @@ class OSCALComponentSerializer(ComponentSerializer):
 
     @staticmethod
     def statement_id_from_control(control_id, part_id):
-        if part_id:
+        # Checking for a case where the control was provided like ac-2.3 which already has its part included.
+        if part_id not in control_id:
             return f"{control_id}.{part_id}"
         else:
             return f"{control_id}"
@@ -875,26 +874,27 @@ class ComponentImporter(object):
             path = os.path.join(tempdir, "object.json")
             # Use trestle's ComponentDefinition method oscal_read to read the path to json in the temporary folder
             path_component_definition = pathlib.Path(path)
-            oscal_json = self.source_fill(json.loads(json_object))
+            oscal_json = json.loads(json_object)
             with open(path, 'w+') as cred:
                 json.dump(oscal_json, cred)
 
+            # Read in temporary file and shape into trestle pydantic Component definition.
             trestle_oscal_json = trestlecomponent.ComponentDefinition.oscal_read(path_component_definition)
-        except ValueError:
-            if request.POST.get("json_content") is not None:
-                messages.add_message(request, messages.ERROR, f"Invalid JSON. Component(s) not created.")
+            # Finally validate that this object is valid by the component definition
+            trestlecomponent.ComponentDefinition.validate(trestle_oscal_json)
+            # Cleanup
             shutil.rmtree(tempdir)
-            return False
-        # Finally validate that this object is valid by the component definition
-        trestle_oscal_component = trestlecomponent.ComponentDefinition.validate(trestle_oscal_json)
-        # Cleanup
-        shutil.rmtree(tempdir)
-        if trestle_oscal_component:
-            # Returns list of created components
+        except Exception as e:
+            logger.error(e)
+            if request.POST.get("json_content") is not None:
+                messages.add_message(request, messages.ERROR, f"Invalid Component JSON: {e.__context__}")
+            shutil.rmtree(tempdir)
+            return HttpResponse(e)
 
-            created_components = self.create_components(oscal_json)
-            new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
-            return new_import_record
+        # Returns list of created components
+        created_components = self.create_components(oscal_json)
+        new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
+        return new_import_record
 
     # def find_import_record_by_name(self, import_name):
     #     """Returns most recent existing import record by name
@@ -932,21 +932,6 @@ class ComponentImporter(object):
             component.save()
 
         return import_record
-
-    def validate_oscal_json(self, oscal_json, version="1.0.0"):
-        """Validates the JSON object is valid OSCAL format"""
-        schemas = {"1.0.0": "oscal_1.0.0_component_schema.json", "1.0.0-rc1": "oscal_component_schema.json"}
-        project_root = os.path.abspath(os.path.dirname(__name__))
-        oscal_schema_path = os.path.join(project_root, "schemas", "oscal_1.0.0_component_schema.json")#schemas[version])
-
-        with open(oscal_schema_path, "r") as schema_content:
-            oscal_json_schema = json.load(schema_content)
-        try:
-            validate(instance=oscal_json, schema=oscal_json_schema)
-            return True
-        except (SchemaError, SchemaValidationError) as e:
-            logger.error(e._contents())
-            return False
 
     def create_components(self, oscal_json):
         """Creates Elements (Components) from valid OSCAL JSON"""
@@ -1062,17 +1047,6 @@ class ComponentImporter(object):
             catalog = Catalog.GetInstance(catalog_key)
             control = catalog.get_control_by_id(control_id)
             return True if control is not None else False
-
-    def source_fill(self, json_object):
-        """
-        Fill in a default source if there is no source provided from the json object. This assumes one component in components list
-        """
-        impls = json_object['component-definition']['components'][0]['control-implementations']
-        for idx, implementation in enumerate(impls):
-            if implementation['source'] is None:
-                impls[idx]['source'] = "emptysource"
-        json_object['component-definition']['components'][0]['control-implementations'] = impls
-        return json_object
 
 @login_required
 def add_selected_components(system, import_record):
