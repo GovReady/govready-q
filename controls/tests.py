@@ -1199,6 +1199,7 @@ class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
     Testing the import and export of OSCAL JSON objects
     """
 
+    @unittest.skip
     def test_export_oscal_system_security_plan(self):
         """
         Testing OSCAL_ssp_export to make sure the file is created with a status code of 200 utilizing the class OSCALSystemSecurityPlanSerializer's as_json() method
