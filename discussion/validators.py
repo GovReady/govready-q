@@ -12,8 +12,7 @@ VALID_EXTS = {
     ".png": ("image/png",),
     ".jpg": ("image/jpeg",),
     ".jpeg": ("image/jpeg",),
-    ".doc": ("application/msword",),
-    ".docx": ("application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".doc": ("application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document",
               "application/zip"),
     ".xls": ("application/vnd.ms-excel",),
     ".xlsx": ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -31,8 +30,11 @@ VALID_EXTS = {
 CONTENTTYPE_EXCEPTIONS = {
     "application/vnd.ms-powerpoint": (".ppt", ),
     "application/zip": (".docx", ".xlsx", ".pptx", ".zip",),
+    "application/octet-stream": (".bin",),
+    "application/pdf": (".random",),
     "application/vnd.ms-excel": (".xls", ".xlb",),
     "image/jpeg": (".jpg", ".jpeg",),
+    "image/png": (".random",),
     "text/plain": (".csv",".txt", ".yaml", ".yml", ".md")
 }
 

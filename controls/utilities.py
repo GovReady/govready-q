@@ -70,7 +70,10 @@ def oscalize_catalog_key(catalogkey):
     """ Covers empty catalog key case. Otherwise, outputs an oscal standard catalog key from various common formats for catalog keys
     NIST_SP_800_53_rev4 --> NIST_SP-800-53_rev4
     """
-
+    # If coming with reference to some path to catalog json file
+    # (e.g. '../../../nist.gov/SP800-53/rev4/json/NIST_SP-800-53_rev4_catalog.json', 'FedRAMP_rev4_HIGH-baseline_profile.json')
+    if ".json" in catalogkey:
+        catalogkey = catalogkey.split('/')[-1].split('_catalog.json')[0].split(".json")[0]
     # A default catalog key
     if catalogkey=='':
         catalogkey = 'NIST_SP-800-53_rev4'
@@ -90,8 +93,11 @@ def get_control_statement_part(control_stmnt_id):
     if "." not in control_stmnt_id and "_" not in control_stmnt_id:
         return control_stmnt_id
 
-    # Portion after the '_smt.' is the part
+    # Portion after the '_smt.' is the part, au-2_smt.b --> sid au-2, part b
     split_stmnt = control_stmnt_id.split("_smt.")
+    if len(split_stmnt) <= 1:
+        # ac-2.3.a --> sid ac-2, part 3
+        split_stmnt = control_stmnt_id.split(".")
     return split_stmnt[1] if len(split_stmnt) > 1 else ""
 
 
