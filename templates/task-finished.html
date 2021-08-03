@@ -156,7 +156,7 @@
                         <td>{{document.title}}</td>
                         <td>
                           {% if document.format == "json" %}
-                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/json">OSCAL (json)</a>&nbsp;&nbsp;
+                            <a href="{% url 'ssp_export_oscal' project.system.id %}">OSCAL (json)</a>&nbsp;&nbsp;
                             <!-- <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/plain">View as text</a>&nbsp;&nbsp; -->
                           {% elif document.format == "yaml" %}
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/yaml">Download OSCAL (yaml)</a>&nbsp;&nbsp;
@@ -326,7 +326,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button id="select_portfolio_submit" class="btn btn-success btn-submit" type="submit">Export</button>
+                    <button id="ssp_csv_submit" class="btn btn-success btn-submit" type="submit">Export</button>
                 </div>
             </form>
         </div>
