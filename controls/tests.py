@@ -260,7 +260,6 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self._login()
         url = self.url(f"/systems/{self.system.id}/component/{self.component.id}")
         self.browser.get(url)
-        var_sleep(2)
         self.click_element('a[href="#oscal"]')
 
         # sigh; selenium doesn't really let us find out the name of the
@@ -1207,7 +1206,7 @@ class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
         self._login(self.user.username, self.user.clear_password)
         self._new_project()
 
-        element = Element(name="Test element", element_type="system")
+        element = Element(name="I_want_to_answer_some_questions_on_Q._3", element_type="system")
         element.save()
         # Create system
         system = System(root_element=element)

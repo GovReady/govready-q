@@ -732,10 +732,11 @@ class OSCALComponentSerializer(ComponentSerializer):
     @staticmethod
     def statement_id_from_control(control_id, part_id):
         # Checking for a case where the control was provided like ac-2.3 which already has its part included.
-        if part_id not in control_id:
-            return f"{control_id}.{part_id}"
-        else:
-            return f"{control_id}"
+        if part_id:
+            if part_id not in control_id:
+                return f"{control_id}.{part_id}"
+
+        return f"{control_id}"
 
     def as_json(self):
         # Build OSCAL
