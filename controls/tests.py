@@ -23,7 +23,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from controls.models import System
 from controls.models import STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED
-from controls.views import OSCALComponentSerializer
+from controls.views import OSCALComponentSerializer, OSCAL_ssp_export
 from siteapp.models import User, Organization, OrganizationalSetting
 from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests, wait_for_sleep_after
 from system_settings.models import SystemSettings
@@ -1193,4 +1193,32 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
                 project_title = file_name
 
         self.assertIn(file_name, file_system)
+
+class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
+    """
+    Testing the import and export of OSCAL JSON objects
+    """
+
+    def test_export_oscal_system_security_plan(self):
+        """
+        Testing OSCAL_ssp_export to make sure the file is created with a status code of 200 utilizing the class OSCALSystemSecurityPlanSerializer's as_json() method
+        """
+        self._login()
+        self._new_project()
+        system = System.objects.last()
+        # ssp_export_oscal with system id
+        response = OSCAL_ssp_export(self,{"system_id": system.id} )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+        self.assertEqual(
+            response.get('Content-Type'),
+            'application/json'
+        )
+        self.assertIn(
+        f"attachment; filename={system.root_element.name.replace(' ', '_')}_OSCAL_",
+        response.get('Content-Disposition')
+        )
 
