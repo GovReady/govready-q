@@ -175,6 +175,8 @@ class Catalog(object):
 
     def find_dict_by_value(self, search_array, search_key, search_value):
         """Return the dictionary in an array of dictionaries with a key matching a value"""
+        if search_array is None:
+            return None
         result_dict = next((sub for sub in search_array if sub[search_key] == search_value), None)
         return result_dict
 
@@ -183,10 +185,10 @@ class Catalog(object):
     #     return [item['id'] for item in search_collection if 'id' in item]
 
     def get_groups(self):
-        if "groups" in self.oscal:
+        if self.oscal and "groups" in self.oscal:
             return self.oscal['groups']
         else:
-            return None
+            return []
 
     def get_group_ids(self):
         search_collection = self.get_groups()
@@ -203,9 +205,12 @@ class Catalog(object):
 
         # For 800-53, 800-171, we can match by first few characters of control ID
         group_ids = self.get_group_ids()
-        for group_id in group_ids:
-            if group_id.lower() == control_id.lower():
-                return group_id
+        if group_ids:
+            for group_id in group_ids:
+                if group_id.lower() == control_id.lower():
+                    return group_id
+        else:
+            return None
 
         # Group ID was not matched
         return None
@@ -243,6 +248,8 @@ class Catalog(object):
 
     def get_control_property_by_name(self, control, property_name):
         """Return value of a property of a control by name of property"""
+        if control is None:
+            return None
         prop = self.find_dict_by_value(control['properties'], "name", property_name)
         if prop is None:
             return None
@@ -309,6 +316,8 @@ class Catalog(object):
 
         # If this part has a label (i.e. "a."), get the label.
         label = ""
+        if part is None:
+            return ""
         label_property = self.find_dict_by_value(part.get('properties', []), 'name', 'label')
         if label_property:
             label = label_property['value'] + " "
@@ -373,6 +382,8 @@ class Catalog(object):
         # parameters that are not specified.
         parameter_values = dict(parameter_values)  # clone so that we don't modify the caller's dict
 
+        if control is None:
+            return text
         if "parameters" not in control:
             return text
 
@@ -391,27 +402,50 @@ class Catalog(object):
         If parameter_values is supplied, it will override any paramters set
         in the catalog.
         """
-        family_id = self.get_group_id_by_control_id(control['id'])
-        description = self.get_control_prose_as_markdown(control, part_types={"statement"},
-                                                        parameter_values=self.parameter_values)
-        description_print = description.replace("\n", "<br/>")
-        cl_dict = {
-            "id": control['id'],
-            "id_display": re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)\.([0-9]*)$', r'\1\2 (\3)', control['id']),
-            "title": control['title'],
-            "family_id": family_id,
-            "family_title": self.get_group_title_by_id(family_id),
-            "class": control['class'],
-            "description": description,
-            "description_print": description_print,
-            "guidance": self.get_control_prose_as_markdown(control, part_types={"guidance"}),
-            "catalog_file": self.catalog_file,
-            "catalog_key": self.catalog_file.split('_catalog.json')[0],
-            "catalog_id": self.catalog_id,
-            "sort_id": self.get_control_property_by_name(control, "sort-id"),
-            "label": self.get_control_property_by_name(control, "label"),
-            "guidance_links": self.get_control_guidance_links(control)
-        }
+        if control is None:
+            family_id = None
+            description = self.get_control_prose_as_markdown(control, part_types={"statement"},
+                                                            parameter_values=self.parameter_values)
+            description_print = description.replace("\n", "<br/>")
+            cl_dict = {
+                "id": None,
+                "id_display": None,
+                "title": None,
+                "family_id": family_id,
+                "family_title": None,
+                "class": None,
+                "description": description,
+                "description_print": description_print,
+                "guidance": None,
+                "catalog_file": None,
+                "catalog_key": None,
+                "catalog_id": None,
+                "sort_id": None,
+                "label": None,
+                "guidance_links": None
+            }
+        else:
+            family_id = self.get_group_id_by_control_id(control['id'])
+            description = self.get_control_prose_as_markdown(control, part_types={"statement"},
+                                                            parameter_values=self.parameter_values)
+            description_print = description.replace("\n", "<br/>")
+            cl_dict = {
+                "id": control['id'],
+                "id_display": re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)\.([0-9]*)$', r'\1\2 (\3)', control['id']),
+                "title": control['title'],
+                "family_id": family_id,
+                "family_title": self.get_group_title_by_id(family_id),
+                "class": control['class'],
+                "description": description,
+                "description_print": description_print,
+                "guidance": self.get_control_prose_as_markdown(control, part_types={"guidance"}),
+                "catalog_file": self.catalog_file,
+                "catalog_key": self.catalog_file.split('_catalog.json')[0],
+                "catalog_id": self.catalog_id,
+                "sort_id": self.get_control_property_by_name(control, "sort-id"),
+                "label": self.get_control_property_by_name(control, "label"),
+                "guidance_links": self.get_control_guidance_links(control)
+            }
         return cl_dict
 
     def get_flattened_controls_all_as_dict(self):

@@ -3491,10 +3491,3 @@ def new_system_assessment_result_wazuh(request, system_id):
         else:
             # TODO: better handling of response code; 401, 301, etc.
             raise Exception(wazuh_sec_svc.error_msg['error'])
-
-
-
-
-
-
-
