@@ -1206,13 +1206,9 @@ class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
         self._login(self.user.username, self.user.clear_password)
         self._new_project()
 
-        element = Element(name="I_want_to_answer_some_questions_on_Q._3", element_type="system")
-        element.save()
-        # Create system
-        system = System(root_element=element)
-        system.save()
+        the_system = self.current_project.system
         # ssp_export_oscal with system id
-        response = OSCAL_ssp_export(self,{"system_id": system.id} )
+        response = OSCAL_ssp_export(self,{"system_id": the_system.id} )
 
         self.assertEqual(
             response.status_code,
@@ -1223,7 +1219,7 @@ class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
             'application/json'
         )
         self.assertIn(
-        f"attachment; filename={system.root_element.name.replace(' ', '_')}_OSCAL_",
+        f"attachment; filename={the_system.root_element.name.replace(' ', '_')}_OSCAL_",
         response.get('Content-Disposition')
         )
 
