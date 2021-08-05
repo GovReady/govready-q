@@ -2021,14 +2021,14 @@ def start_a_discussion(request):
 
         # Get the TaskAnswer for this task. It may not exist yet.
         tq, isnew = TaskAnswer.objects.get_or_create(**tq_filter)
-
+    # Filter for discussion and return the first entry (if it doesn't exist it returns None)
     discussion = Discussion.get_for(task.project.organization, tq)
     if not discussion:
         # Validate user can create discussion.
         if not task.has_read_priv(request.user):
             return JsonResponse({ "status": "error", "message": "You do not have permission!" })
 
-        # Get the Discussion.
+        # Create a Discussion.
         discussion = Discussion.get_for(task.project.organization, tq, create=True)
 
     return JsonResponse(discussion.render_context_dict(request.user))

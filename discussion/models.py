@@ -246,6 +246,18 @@ class Discussion(models.Model):
             self._get_autocompletes = self.attached_to_obj.get_discussion_autocompletes(self)
         return self._get_autocompletes
 
+    @property
+    def get_task(self, discussion):
+        """
+        Retrieves the task for the given discussion's attached object. For example Projects have root_task while TaskAnswer discussion would have a task.
+        """
+        if hasattr(self.discussion.attached_to_obj, 'root_task'):
+            return discussion.attached_to_obj.root_task
+        elif hasattr(self.discussion.attached_to_obj, 'task'):
+            return discussion.attached_to_obj.task
+        else:
+            return False
+
 class Comment(models.Model):
     discussion = models.ForeignKey(Discussion, related_name="comments", on_delete=models.CASCADE, help_text="The Discussion that this comment is attached to.")
     replies_to = models.ForeignKey('self', blank=True, null=True, related_name="replies", on_delete=models.CASCADE, help_text="If this is a reply to a Comment, the Comment that this is in reply to.")
