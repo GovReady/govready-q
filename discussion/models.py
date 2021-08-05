@@ -176,6 +176,11 @@ class Discussion(models.Model):
     def is_public(self):
         return getattr(self.attached_to_obj, 'is_discussion_public', lambda : False)
 
+    def is_discussion_inactive(self):
+
+        if self.attached_to_obj is not None:
+            return True if self.attached_to_obj.title == "<Deleted Discussion>" else False
+
     def can_comment(self, user):
         return user is not None and self.is_participant(user)
 
@@ -247,14 +252,14 @@ class Discussion(models.Model):
         return self._get_autocompletes
 
     @property
-    def get_task(self, discussion):
+    def get_task(self):
         """
         Retrieves the task for the given discussion's attached object. For example Projects have root_task while TaskAnswer discussion would have a task.
         """
-        if hasattr(self.discussion.attached_to_obj, 'root_task'):
-            return discussion.attached_to_obj.root_task
-        elif hasattr(self.discussion.attached_to_obj, 'task'):
-            return discussion.attached_to_obj.task
+        if hasattr(self.attached_to_obj, 'root_task'):
+            return self.attached_to_obj.root_task
+        elif hasattr(self.attached_to_obj, 'task'):
+            return self.attached_to_obj.task
         else:
             return False
 
