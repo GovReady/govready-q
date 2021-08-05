@@ -1,5 +1,7 @@
 import sys
 import os.path
+import json
+
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
@@ -10,6 +12,7 @@ from django.conf import settings
 from guidedmodules.models import AppSource, Module
 from siteapp.models import User, Organization, Portfolio
 from controls.models import Element
+from controls.oscal import CatalogData
 from django.contrib.auth.management.commands import createsuperuser
 
 import fs, fs.errors
@@ -38,8 +41,26 @@ class Command(BaseCommand):
         if not Organization.objects.all().exists() and not Organization.objects.filter(name="main").exists():
             org = Organization.objects.create(name="main", slug="main")
 
+        # Load the default control catalogs
+        CATALOG_PATH = os.path.join(os.path.dirname(__file__),'..','..','..','controls','data','catalogs')
+        # TODO: Check directory exists
+        catalog_files = [file for file in os.listdir(CATALOG_PATH) if file.endswith('.json')]
+        # conditionally load catalog files
+        for cf in catalog_files:
+            catalog_key = cf.replace("_catalog.json", "")
+            with open(os.path.join(CATALOG_PATH,cf), 'r') as json_file:
+                catalog_json = json.load(json_file)
+            catalog, created = CatalogData.objects.get_or_create(
+                    catalog_key=catalog_key,
+                    catalog_json=catalog_json
+                )
+            if created:
+                print(f"{catalog_key} record created into database")
+            else:
+                print(f"{catalog_key} record found in database")
+
         # Install default AppSources and compliance apps if no AppSources installed
-        if AppSource.objects.all().exists():
+        if not AppSource.objects.filter(slug="govready-q-files-startpack").exists():
             # Create AppSources that we want.
             if os.path.exists("/mnt/q-files-host"):
                 # For our docker image.

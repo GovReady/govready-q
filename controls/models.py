@@ -1016,3 +1016,5 @@ class SystemAssessmentResult(auto_prefetch.Model):
 #         # For debugging.
 #         return "<AssesmentResult %s id=%d>" % (self.statement, self.id)
 
+
+

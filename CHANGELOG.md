@@ -15,11 +15,12 @@ v0.9.7-dev (July xx, 2021)
 * Support datagrid specifying select type cell.
 * Added new function OSCAL_ssp_export in order to export a system's security plan in OSCAL, this replaces the usual JSON export. Added a several fields of data for OSCAL SSP. 
 * If a component to be imported has a catalog key that is not found in the internal or external catalog list then it will be skipped and logged
-* If no statements are created the resulting element/component is deleted
-* Component and System Security Plan exports pass OSCAL 1.0.0 schema validation
-* Added a proxy for parties and responsible parties for component OSCAL export
+* If no statements are created the resulting element/component is deleted.
+* Component and System Security Plan exports pass OSCAL 1.0.0 schema validation.
+* Added a proxy for parties and responsible parties for component OSCAL export.
 * Coverage 6.0b1 starts to use a modern hash algorithm (sha256) when fingerprinting for high-security environments, upgrading to avoid this safety fail.
-* Validate Component import and SSP with trestle the package
+* Validate Component import and SSP with trestle the package.
+* Retrieve Catalog data from database instead of file system with new controls.models.CatalogData model.
 
 * **Bug fixes**
 

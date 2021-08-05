@@ -1289,20 +1289,26 @@ def component_library_component(request, element_id):
 def api_controls_select(request):
     """Return list of controls in json for select2 options from all control catalogs"""
 
+    cl_id = request.GET.get('q', None).lower()
+    print("\n\n*** request", request)
     # Create array to hold accumulated controls
     cxs = []
-    # Loop through control catalogs
+    # Search control catalogs in a loop
     catalogs = Catalogs()
     for ck in catalogs._list_catalog_keys():
         cx = Catalog.GetInstance(catalog_key=ck)
-        # Get controls
-        ctl_list = cx.get_flattened_controls_all_as_dict()
-        # Build objects for rendering Select2 auto complete list from catalog
-        select_list = [{'id': ctl_list[ctl]['id'], 'title': ctl_list[ctl]['title'], 'class': ctl_list[ctl]['class'], 'catalog_key_display': cx.catalog_key_display, 'display_text': f"{ctl_list[ctl]['label']} - {ctl_list[ctl]['title']} - {cx.catalog_key_display}"} for ctl in ctl_list]
-        # Extend array of accumuated controls with catalog's control list
-        cxs.extend(select_list)
+        ctr = cx.get_control_by_id(cl_id)
+        if ctr:
+            cxs.append({'id': ctr['id'], 'title': ctr['title'], 'class': ctr['class'], 'catalog_key_display': cx.catalog_key_display, 'display_text': f"{ctr['id']} - {ctr['title']} - {cx.catalog_key_display} - ({ctr['id'].upper()})"})
+
+        # # Get controls
+        # ctl_list = cx.get_flattened_controls_all_as_dict()
+        # # Build objects for rendering Select2 auto complete list from catalog
+        # select_list = [{'id': ctl_list[ctl]['id'], 'title': ctl_list[ctl]['title'], 'class': ctl_list[ctl]['class'], 'catalog_key_display': cx.catalog_key_display, 'display_text': f"{ctl_list[ctl]['label']} - {ctl_list[ctl]['title']} - {cx.catalog_key_display}"} for ctl in ctl_list]
+        # # Extend array of accumuated controls with catalog's control list
+        # cxs.extend(select_list)
     # Sort the accummulated list
-    cxs.sort(key = operator.itemgetter('id', 'catalog_key_display'))
+    # cxs.sort(key = operator.itemgetter('id', 'catalog_key_display'))
 
     status = "success"
     message = "Sending list."
