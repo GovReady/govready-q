@@ -261,7 +261,7 @@ class Discussion(models.Model):
         elif hasattr(self.attached_to_obj, 'task'):
             return self.attached_to_obj.task
         else:
-            return False
+            return False#TODO: not sure what to do if the model isn't related to a Task
 
 class Comment(models.Model):
     discussion = models.ForeignKey(Discussion, related_name="comments", on_delete=models.CASCADE, help_text="The Discussion that this comment is attached to.")
