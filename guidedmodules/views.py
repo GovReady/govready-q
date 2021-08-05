@@ -2140,14 +2140,22 @@ def export_ssp_csv(form_data, system):
         statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
 
     selected_controls = list(smts.values_list('sid', flat=True))
-    # Did the user choose to display the controls in oscal format?
-    if form_data.get('oscal_format'):
+    # If the user selected to format the control id in OSCAL this will be skipped
+    if not form_data.get('oscal_format'):
         # De-oscalize every control id (sid)
         selected_controls = [de_oscalize_control(control) for control in selected_controls]
-    catalog_keys = list(smts.values_list('sid_class', flat=True))
+    db_catalog_keys = list(smts.values_list('sid_class', flat=True))
+    catalog_keys = []
+    # XYZ_3_0 --> XYZ 3.0
+    for catalog in db_catalog_keys:
+        if catalog.count("_") == 3:
+            catalog_keys.append(" ".join(catalog.split("_")[:2]) + " " + ".".join(catalog.split("_")[-2:]))
+        else:
+            catalog_keys.append(catalog)
     imps = list(smts.values_list('body', flat=True))
     headers = [form_data.get('info_system'), form_data.get('control_id'), form_data.get('catalog'), form_data.get('shared_imps'), form_data.get('private_imps')]
     system_name = system.root_element.name # TODO: Should this come from questionnaire answer or project name as we have it?
+
     data = [
         [system_name] * len(selected_controls),
         selected_controls,
