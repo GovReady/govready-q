@@ -167,7 +167,6 @@ class Command(BaseCommand):
                         username
                     ))
 
-
         # Create the first user.
         if not User.objects.filter(is_superuser=True).exists():
             if not options['non_interactive']:

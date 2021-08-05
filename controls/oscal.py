@@ -31,6 +31,12 @@ class CatalogData(auto_prefetch.Model):
 class Catalogs(object):
     """Represent list of catalogs"""
 
+    # well known catalog identifiers
+    NIST_SP_800_53_rev4 = 'NIST_SP-800-53_rev4'
+    NIST_SP_800_53_rev5 = 'NIST_SP-800-53_rev5'
+    NIST_SP_800_171_rev1 = 'NIST_SP-800-171_rev1'
+    CMMC_ver1 = 'CMMC_ver1'
+
     def __init__(self):
         self.catalog_keys = self._list_catalog_keys()
         self.index = self._build_index()
@@ -60,8 +66,7 @@ class Catalogs(object):
         """
         List catalog objects
         """
-        return [Catalog(key) for key in Catalogs()._list_catalog_keys()]
-
+        return [Catalog.GetInstance(catalog_key=key) for key in Catalogs()._list_catalog_keys()]
 
 def uhash(obj):
     """Return a positive hash code"""

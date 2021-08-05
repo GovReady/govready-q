@@ -29,7 +29,7 @@ from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTes
 from system_settings.models import SystemSettings
 from controls.models import *
 from controls.enums.statements import StatementTypeEnum
-from controls.oscal import Catalogs, Catalog, EXTERNAL_CATALOG_PATH
+from controls.oscal import Catalogs, Catalog, CatalogData
 from siteapp.models import User, Project, Portfolio
 from system_settings.models import SystemSettings
 
@@ -38,10 +38,10 @@ from urllib.parse import urlparse
 
 #####################################################################
 
-
 # Control Tests
 
-class Oscal80053Tests(TestCase):
+class Oscal80053Tests(SeleniumTest):
+
     # Test
     def test_catalog_load_control(self):
         cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4)
@@ -122,6 +122,7 @@ class StatementTests(TestCase):
 #####################################################################
 
 class ControlUITests(SeleniumTest):
+
     def test_homepage(self):
         self.browser.get(self.url("/controls/"))
 
@@ -136,76 +137,11 @@ class ControlUITests(SeleniumTest):
         self.assertInNodeText("Automated Audit Actions", "#control-heading")
 
     def test_catalog_list(self):
-        """
-        Check the catalog listing method has the 3 default catalogs
-        """
-
-        os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
         catalog_list = Catalogs().list_catalogs()
         self.assertEqual(len(catalog_list), 4)
 
-    def test_extend_external_catalogs(self):
-        """
-        Extending catalog file and key list
-        """
-        os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
-        with tempfile.TemporaryFile() as d:
-            temp_file_name = os.path.join(EXTERNAL_CATALOG_PATH, f'{d.name}_revtest_catalog.json')
+    # TODO: Create tests for uploading catalog
 
-            # finding fixture data and dumping in the temp file
-            test_catalog = os.getcwd() + "/fixtures/test_catalog.json"
-            with open(test_catalog, 'r') as json_file:
-                catalog_data = json.load(json_file)
-            with open(temp_file_name, 'w') as cred:
-                json.dump(catalog_data, cred)
-
-            extended_files = Catalogs.extend_external_catalogs(self, [
-                'NIST_SP-800-53_rev4_catalog.json',
-                'NIST_SP-800-53_rev5_catalog.json',
-                'NIST_SP-800-171_rev1_catalog.json'
-            ], "files")
-
-            self.assertEqual(len(extended_files), 4)
-
-            extended_keys = Catalogs.extend_external_catalogs(self, [
-                Catalogs.NIST_SP_800_53_rev4,
-                Catalogs.NIST_SP_800_53_rev5,
-                Catalogs.NIST_SP_800_171_rev1
-            ], "keys")
-            self.assertEqual(len(extended_keys), 4)
-            # Delete temp file
-            os.remove(temp_file_name)
-
-    def test_extend_external_baseline(self):
-        """
-        Extending baseline file and key list
-        """
-        os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
-        with tempfile.TemporaryFile() as d:
-            temp_file_name = os.path.join(EXTERNAL_BASELINE_PATH, f'{d.name}_revtest_baseline.json')
-
-            # finding fixture data and dumping in the temp file
-            test_baseline = os.getcwd() + "/fixtures/test_baselines.json"
-            with open(test_baseline, 'r') as json_file:
-                baseline_data = json.load(json_file)
-            with open(temp_file_name, 'w') as cred:
-                json.dump(baseline_data, cred)
-
-            extended_files = Baselines.extend_external_baselines(self, [
-            'NIST_SP-800-53_rev4_baselines.json',
-            'NIST_SP-800-171_rev1_baselines.json'
-        ], "files")
-
-            self.assertEqual(len(extended_files), 3)
-
-            extended_keys = Baselines.extend_external_baselines(self, [
-            'NIST_SP-800-53_rev4',
-            'NIST_SP-800-171_rev1'
-        ], "keys")
-
-            self.assertEqual(len(extended_keys), 3)
-        # Delete temp file
-        os.remove(temp_file_name)
 #####################################################################
 
 class ComponentUITests(OrganizationSiteFunctionalTests):
@@ -214,6 +150,19 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
     def setUp(self):
         super().setUp()
+
+        # Add catalogs to database
+        CATALOG_PATH = os.path.join(os.path.dirname(__file__),'..','controls','data','catalogs')
+        catalog_files = [file for file in os.listdir(CATALOG_PATH) if file.endswith('.json')]
+        for cf in catalog_files:
+            catalog_key = cf.replace("_catalog.json", "")
+            with open(os.path.join(CATALOG_PATH,cf), 'r') as json_file:
+                catalog_json = json.load(json_file)
+            # cls.foo = Foo.objects.create(bar="Test")
+            catalog, created = CatalogData.objects.get_or_create(
+                    catalog_key=catalog_key,
+                    catalog_json=catalog_json
+                )
 
         self.json_download = \
             self.download_path / PurePath(slugify(self.component_name)).with_suffix(".json")
@@ -791,7 +740,7 @@ class PoamUnitTests(TestCase):
         # poam.delete()
         # self.assertTrue(poam.uuid is None)
 
-class OrgParamTests(TestCase):
+class OrgParamTests(SeleniumTest):
     """Class for OrgParam Unit Tests"""
 
     def test_org_params(self):
