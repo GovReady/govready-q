@@ -132,6 +132,14 @@ Next Question: {{q.spec.title}} | {{task.title}}
     /* on mobile, space between columns */
     margin-bottom: 30px;
   }
+
+  .datagrid-text {
+    font-size: 0.8em;
+  }
+  .datagrid-text-select {
+    font-size: 1.0em;
+  }
+
 </style>
 {% endblock %}
 
@@ -140,7 +148,6 @@ Next Question: {{q.spec.title}} | {{task.title}}
 {{block.super}}
 
 <div class="row" style="padding-left: 22px;">
-
   <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-7 col-xl-6">
     {% if source_invitation %}
       <div class="question-source-invitation">
@@ -583,7 +590,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
     &nbsp;
   </div>
 
-  <div id="progress-project-area-wrapper" class="col-xs-8 col-sm-6 col-md-3 col-lg-3 col-xl-2 question-progress-project">
+  <div id="progress-project-area-wrapper" class="col-xs-6 col-sm-4 col-md-1 col-lg-2 col-xl-2 question-progress-project">
     {% include "task-progress-project-list.html" with previous="question" %}
   </div>
 
@@ -1088,11 +1095,10 @@ function record_interaction() {
 <script>
   // Render datagrid question type
   // Make focus-area-wrapper wider when question type is datagrid
-  $("#col-spacer").removeClass("col-spacer hidden-xs col-sm-1 col-md-1 col-lg-3 col-xl-2");
-  $("#col-spacer").addClass("col-spacer hidden-xs col-sm-1 col-md-1 col-lg-1 col-xl-2");
-  $("#focus-area-wrapper").removeClass("col-xs-12 col-sm-9 col-md-7 col-lg-6 col-xl-5");
-  $("#focus-area-wrapper").addClass("col-xs-12 col-sm-9 col-md-8 col-lg-8 col-xl-7");
-
+  $("#col-spacer").removeClass("col-spacer hidden-xs col-sm-1 col-md-1 col-lg-2 col-xl-1");
+  $("#col-spacer").addClass("hidden-xs hidden-sm hidden-md hidden-lg hidden-xl");
+  $("#focus-area-wrapper").removeClass("col-xs-12 col-sm-9 col-md-7 col-lg-7 col-xl-6");
+  $("#focus-area-wrapper").addClass("col-xs-12 col-sm-12 col-md-10 col-lg-10 col-xl-10");
 
   // Prepare data for jsGrid data grid
   var entries = [
@@ -1103,21 +1109,24 @@ function record_interaction() {
 
   var datagrid_fields = [
     {% for field in q.spec.fields %}
-      { name: "{{field.key}}", type: "text", width: 100, validate: "required" },
+      {% if field.type == 'select' %}
+      { name: "{{field.key}}", type: "select", items: [""{% for item in field.choices %},"{{ item.key }}"{% endfor %}], width: 100, validate: "required", headercss: "datagrid-text", insertcss: "datagrid-text-select" },
+      {% else %}
+      { name: "{{field.key}}", type: "text", width: 100, validate: "required", css: "datagrid-text" },
+      {% endif %}
+
     {% endfor %}
     { type: "control" }
   ];
 
   $("#jsGrid").jsGrid({
       width: "98%",
-
       inserting: true,
       editing: true,
       sorting: true,
       paging: true,
-
       data: entries,
-
+      noDataContent: "Click the '+' button to add new row of data.<br>Click the row's '+' to add row of data to answer.",
       fields: datagrid_fields
   });
 </script>

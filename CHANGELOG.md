@@ -1,6 +1,31 @@
 GovReady-Q Release Notes
 ========================
 
+
+v0.9.7-dev (July xx, 2021)
+--------------------------
+
+**UI changes**
+
+* Display datagrid question wider and with smaller fonts.
+* Display existance of legacy statement in project system's selected controls.
+
+**Developer changes**
+
+* Support datagrid specifying select type cell.
+* Added new function OSCAL_ssp_export in order to export a system's security plan in OSCAL, this replaces the usual JSON export. Added a several fields of data for OSCAL SSP. 
+* If a component to be imported has a catalog key that is not found in the internal or external catalog list then it will be skipped and logged
+* If no statements are created the resulting element/component is deleted
+* Component and System Security Plan exports pass OSCAL 1.0.0 schema validation
+* Added a proxy for parties and responsible parties for component OSCAL export
+* Coverage 6.0b1 starts to use a modern hash algorithm (sha256) when fingerprinting for high-security environments, upgrading to avoid this safety fail.
+* Validate Component import and SSP with trestle the package
+
+* **Bug fixes**
+
+* Fix count on project system's components associated with a control (avoid double counting).
+
+
 v0.9.6 (July 15, 2021)
 ----------------------
 

@@ -405,11 +405,11 @@ def oscal_context(answers):
                           None, None, None))
 
     return {
-        "uuid": str(uuid.uuid4()), # SSP UUID
+        "uuid": str(system.root_element.uuid), # SSP UUID
         "make_uuid": uuid.uuid4, # so we can gen UUIDS if needed in the templates
         "version": float(project.version),
         "profile": profile,
-        "oscal_version": "1.0.0rc1",
+        "oscal_version": system.root_element.oscal_version,
         "last_modified": str(project.updated),
         "system_id": f"govready-{system.id}",
         "system_authorization_boundary": "System authorization boundary, TBD", # TODO

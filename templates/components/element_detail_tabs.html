@@ -187,7 +187,7 @@
                     <details>
                         <summary>
                             <span id="producer_element-{{ forloop.counter }}-control" class="control-id-text">
-                            {{ smt.sid|upper }} {% if smt.pid %}{{ smt.pid }}.{% endif %} - {{ smt.control_title }}
+                            {{ smt.sid|upper }} {% if smt.pid not in smt.sid %}{{ smt.pid }}.{% endif %} - {{ smt.control_title }}
                             </span>
                         </summary>
                         <div class="component-control-description">{{ smt.catalog_control_as_dict.description }}</div>

@@ -55,7 +55,7 @@ class Command(BaseCommand):
         elif FORMAT == "csv":
             import csv
             counter = 0
-            pprint(f"Format '{FORMAT}' not yet supported.")
+            print(f"Format '{FORMAT}' not yet supported.")
         else:
             print(f"Format '{FORMAT}' not yet supported.")
 

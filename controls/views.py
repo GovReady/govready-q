@@ -1,46 +1,44 @@
-from itertools import groupby
+import functools
 import logging
-from collections import defaultdict
-from datetime import datetime, timezone
-from pathlib import PurePath
-from uuid import uuid4
-import rtyaml
-import shutil
 import operator
-from natsort import natsorted
-from django.db.models import Q
+import pathlib
+import shutil
+import tempfile
+from collections import defaultdict
+from datetime import datetime
+from itertools import groupby
+from pathlib import PurePath
+from urllib.parse import quote, urlunparse
+from uuid import uuid4
+
+import rtyaml
+import trestle.oscal.component as trestlecomponent
+import trestle.oscal.ssp as trestlessp
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.core.serializers.json import DjangoJSONEncoder
-from django.db import IntegrityError
+from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
     HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.text import slugify
 from django.views import View
 from django.views.generic import ListView
-from django.urls import reverse
-from jsonschema import validate
-from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
-from urllib.parse import quote
-from guidedmodules.models import Task, Module, AppVersion, AppSource
-from siteapp.model_mixins.tags import TagView
-from siteapp.models import Project, Tag
+from simple_history.utils import update_change_reason
+
+from siteapp.models import Project, Organization
+from siteapp.settings import GOVREADY_URL
 from system_settings.models import SystemSettings
+from .forms import ElementEditForm
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
 from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
-from .forms import ElementEditForm
-from siteapp.forms import PortfolioForm
 from .models import *
 from .utilities import *
-from simple_history.utils import update_change_reason
-import functools
-import subprocess
+
 logging.basicConfig()
 import structlog
 from structlog import get_logger
@@ -163,15 +161,20 @@ def controls_selected(request, system_id):
         # sort controls
         controls = list(controls)
         controls.sort(key=lambda control: control.get_flattened_oscal_control_as_dict()['sort_id'])
-        # controls.sort(key = lambda control:list(reversed(control.get_flattened_oscal_control_as_dict()['sort_id'])))
 
-        impl_smts_count = {}
+        # Determine if a legacy statement exists for the control
+        impl_smts_legacy = Statement.objects.filter(consumer_element=system.root_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name)
+        impl_smts_legacy_dict = {}
+        for legacy_smt in impl_smts_legacy:
+            impl_smts_legacy_dict[legacy_smt.sid] = legacy_smt
+
+        # Get count of componentes (e.g., producer_elements) associated with a control
+        impl_smts_cmpts_count = {}
         ikeys = system.smts_control_implementation_as_dict.keys()
         for c in controls:
-            impl_smts_count[c.oscal_ctl_id] = 0
+            impl_smts_cmpts_count[c.oscal_ctl_id] = 0
             if c.oscal_ctl_id in ikeys:
-                impl_smts_count[c.oscal_ctl_id] = len(
-                    system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+                impl_smts_cmpts_count[c.oscal_ctl_id] = len(set([s.producer_element for s in system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts']]))
 
         # Get list of catalog objects
         catalog_list = Catalogs().list_catalogs()
@@ -184,7 +187,8 @@ def controls_selected(request, system_id):
             "project": project,
             "controls": controls,
             "external_catalogs": external_catalogs,
-            "impl_smts_count": impl_smts_count,
+            "impl_smts_cmpts_count": impl_smts_cmpts_count,
+            "impl_smts_legacy_dict": impl_smts_legacy_dict,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         }
         return render(request, "systems/controls_selected.html", context)
@@ -549,6 +553,174 @@ def import_record_delete(request, import_record_id):
     response = redirect('/controls/components')
     return response
 
+class SystemSecurityPlanSerializer(object):
+
+    def __init__(self, system, impl_smts):
+        self.system = system
+        self.impl_smts = impl_smts
+
+class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
+
+    @staticmethod
+    def ssp_statement_id_from_control(control_id, part_id):
+        if part_id:
+            return f"{control_id}_smt.{part_id}"
+        else:
+            return f"{control_id}_smt"
+
+    def create_statement_dicts(self, control_id, group_impl_smts):
+        """
+        Create statements for each group of implementation statements
+        """
+        statements = []
+        for smt in group_impl_smts:
+            # Get oscal control and form statement id with part if present
+            cl_id = oscalize_control_id(control_id)
+            smt_id = self.ssp_statement_id_from_control(cl_id, smt.pid)
+            # TODO: "set-parameters" ?
+            statement_dict = {"statement-id": smt_id, "uuid": str(uuid.uuid4()),
+                              "by-components": [{
+                                  "component-uuid": str(smt.producer_element.uuid),
+                                  "uuid": str(smt.uuid),
+                                  "description": smt.body}
+                              ]}
+            statements.append(statement_dict)
+        return statements
+
+    def as_json(self):
+
+        # Build OSCAL SSP
+        # Example: https://github.com/usnistgov/oscal-content/tree/master/examples/ssp/json/ssp-example.json
+        project = self.system.projects.first()
+        # TODO: again a stub as found in module_logic, this is still not entirely valid.
+        profile = urlunparse((GOVREADY_URL.scheme, GOVREADY_URL.netloc,
+                              "profile_path",
+                              None, None, None))
+        orgs = list(Organization.objects.filter(projects=project))  # TODO: orgs need uuids
+        components = Element.objects.filter(statements_produced__in=self.impl_smts).filter(component_state="operational").exclude(element_type='system')
+        impl_comps = [{ "component-uuid": str(component.uuid) } for component in components]
+        parties = [{"uuid":str(uuid.uuid4()), "type": "organization", "name": org.name} for org in orgs]
+        of = {
+            "system-security-plan": {
+                "uuid": str(self.system.root_element.uuid),
+                "metadata": {
+                    "title": "{} System Security Plan".format(self.system.root_element.name),
+                    "last-modified": self.system.root_element.updated.replace(microsecond=0).isoformat(),
+                    "version": project.version,
+                    "oscal-version": self.system.root_element.oscal_version,
+                    "roles": [],
+                    "parties": parties,
+                },
+                "import-profile": {
+                    "href": profile
+                },
+                "system-characteristics": {},
+                "system-implementation": {
+                    "remarks": "",
+                    "users": [],
+                    "components": [],
+                    "inventory-items": [        {
+          "uuid": str(uuid.uuid4()),
+          "description": "An inventory item",
+          "implemented-components": impl_comps
+        }]# TODO: inventory-items props, description, responsible-parties
+                },
+                "control-implementation": {
+                    "description": "",
+                    "implemented-requirements": [], # implemented-requirements
+                }
+            }
+        }
+        # Create a list of dicts that are the implementation requirements
+        # Each element is for each control sid group
+        # Each group has that controls statements
+        for control_id, group in groupby(natsorted(self.impl_smts, key=lambda ismt: ismt.sid),
+                                         lambda ismt: ismt.sid):
+                imp_req_dict = {
+                    "uuid": str(uuid.uuid4()),
+                    "control-id": "{}".format(control_id),
+                    "statements":  self.create_statement_dicts(control_id, group)
+                }  #statements
+
+                of["system-security-plan"]["control-implementation"]["implemented-requirements"].append(imp_req_dict)
+
+        # System implementation
+        users = project.get_all_participants()# TODO:Need proper user title based on is_member, is_admin, editor_of
+        # TODO: party-uuids users don't have uuids not sure what to do other than make a random one
+        user_party_uuid = str(uuid.uuid4())
+
+        of["system-security-plan"]["metadata"]['roles'] =  [{"id": auths.get('role', "member").split(';')[0], "title": auths.get('role', "member").split(';')[0].capitalize()  } for user, auths in users]
+        of["system-security-plan"]["system-implementation"]['users'] = [{"uuid":user_party_uuid, "title":user.username, "role-ids": [auths.get('role', "member").split(';')[0]]} for user, auths in users]
+        of["system-security-plan"]["system-implementation"]['components'] = [{"uuid":str(comp_ele.uuid), "title":comp_ele.name, "description":comp_ele.description, "status": {"state": comp_ele.component_state}, "type":comp_ele.component_type, "responsible-roles": [{
+              "role-id": "asset-owner",
+              "party-uuids": [
+                user_party_uuid
+              ]
+            }]} for comp_ele in components]# TODO: responsible-roles
+        # System characteristics
+        # TODO: status remarks, authorization-boundary
+        security_body = project.system.get_security_impact_level
+        confidentiality = security_body.get("security_objective_confidentiality", "UNKOWN")
+        integrity = security_body.get("security_objective_integrity", "UNKOWN")
+        availability = security_body.get("security_objective_availability", "UNKOWN")
+        information_types = [
+            {
+                "uuid": str(uuid.uuid4()),
+                "title": "UNKNOWN information type title",
+                # "categorizations": [], # TODO https://doi.org/10.6028/NIST.SP.800-60v2r1
+                "description": "information type description",
+                "confidentiality-impact":  {
+              "base": confidentiality
+            },
+                "integrity-impact":  {
+              "base": integrity
+            },
+                "availability-impact":  {
+              "base": availability
+            }
+            }
+        ]
+        of["system-security-plan"]["system-characteristics"] = {"system-name": self.system.root_element.name,
+                                                                "description": self.system.root_element.description,
+                                                                "system-ids": [{"id": str(self.system.root_element.uuid),# TODO: identifier-type
+                                                                               "identifier-type": "https://ietf.org/rfc/rfc4122"}],
+                                                                "security-sensitivity-level": self.system.get_security_sensitivity_level if self.system.get_security_sensitivity_level else "UNKOWN",
+                                                                "system-information": {
+                                                                    "information-types": information_types},
+                                                                "security-impact-level": {
+                                                                    "security-objective-confidentiality": confidentiality,
+                                                                    "security-objective-integrity": integrity,
+                                                                    "security-objective-availability": availability
+                                                                }, "status": {
+                "state": self.system.root_element.component_state,
+                "remarks": ""
+            }, "authorization-boundary": {
+                "description": "The description of the authorization boundary would go here."
+            }}
+        try:
+            # Create a temporary directory and dump the json_object in there.
+            tempdir = tempfile.mkdtemp()
+            path = os.path.join(tempdir, "ssp_object.json")
+            # Use trestle's ComponentDefinition method oscal_read to read the path to json in the temporary folder
+            path_ssp_definition = pathlib.Path(path)
+
+            with open(path, 'w+') as cred:
+                json.dump(of, cred)
+            # Read in temporary file and shape into trestle pydantic SSP definition.
+            trestle_oscal_json = trestlessp.SystemSecurityPlan.oscal_read(path_ssp_definition)
+            # Finally validate that this object is valid by the OSCAL System Security Plan definition
+            trestlessp.SystemSecurityPlan.validate(trestle_oscal_json)
+            # Cleanup
+            shutil.rmtree(tempdir)
+        except Exception as e:
+            logger.error(f"Invalid System Security Plan JSON: {e}")
+            shutil.rmtree(tempdir)
+            return HttpResponse(e)
+
+        oscal_string = json.dumps(of, sort_keys=False, indent=2)
+        return oscal_string
+
+
 class ComponentSerializer(object):
 
     def __init__(self, element, impl_smts):
@@ -559,46 +731,47 @@ class OSCALComponentSerializer(ComponentSerializer):
 
     @staticmethod
     def statement_id_from_control(control_id, part_id):
+        # Checking for a case where the control was provided like ac-2.3 which already has its part included.
         if part_id:
-            return f"{control_id}_smt.{part_id}"
-        else:
-            return f"{control_id}_smt"
+            if part_id not in control_id:
+                return f"{control_id}.{part_id}"
+
+        return f"{control_id}"
 
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
-        uuid = str(self.element.uuid)
+        comp_uuid = str(self.element.uuid)
         control_implementations = []
         props = []
-        parties = []
-        responsible_roles =  {
-          "supplier": {
-            "party-uuids": [
+        orgs = list(Organization.objects.all())  # TODO: orgs need uuids, not sure which orgs to use for a component
+        parties = [{"uuid": str(uuid.uuid4()), "type": "organization", "name": org.name} for org in orgs]
+        responsible_roles =  [{
+           "role-id": "supplier",# TODO: Not sure what this refers to
+            "party-uuids": [ str(party.get("uuid")) for party in parties ]
 
-            ]
-          }
-        }
+        }]
         of = {
             "component-definition": {
                 "uuid": str(uuid4()),
                 "metadata": {
-                    "title": "{} Component-to-Control Narratives".format(self.element.name),
-                    "published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+                    "title": "{}".format(self.element.name),
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": self.element.updated.replace(microsecond=0).isoformat(),
-                    "oscal-version": "1.0.0-rc1",
-                   # "parties": parties,
+                    "oscal-version": self.element.oscal_version,
+                    "parties": parties,
                     "props": props
                 },
-                "components": {
-                    uuid: {
-                        "title": self.element.full_name or self.element.name,
-                        "type": self.element.component_type or "software",
+                "components": [
+                   {
+                        "uuid": comp_uuid,
+                       "type": self.element.component_type.lower() or "software",
+                       "title": self.element.full_name or self.element.name,
                         "description": self.element.description,
-                        #"responsible-roles": responsible_roles, # TODO: gathering party-uuids
+                         "responsible-roles": responsible_roles, # TODO: gathering party-uuids, just filling for now
                         "control-implementations": control_implementations
                     }
-                }
+                ]
             },
         }
 
@@ -623,34 +796,25 @@ class OSCALComponentSerializer(ComponentSerializer):
         # - OSCAL implemented_requirements and control_implementations need UUIDs
         #   which we don't have in the db, so we construct them.
 
-        for control_id, group in groupby(sorted(self.impl_smts, key=lambda ismt: ismt.sid),
+        for control_id, group in groupby(natsorted(self.impl_smts, key=lambda ismt: ismt.sid),
                                          lambda ismt: ismt.sid):
-            requirement = {
-                "uuid": str(uuid4()),
-                "control-id": control_id,
-                "description": "",
-                "remarks": "",
-                "statements": {}
-            }
 
             for smt in group:
-                statement = {
+                statement_id = self.statement_id_from_control(control_id, smt.pid)
+                statement_req = {
                     "uuid": str(smt.uuid),
                     "description": smt.body,
-                    "remarks": smt.remarks or ""
+                    "control-id": statement_id,
                 }
-                if smt.remarks is None:
-                    statement.pop('remarks', None)
-                statement_id = self.statement_id_from_control(control_id, smt.pid)
-                requirement["statements"][statement_id] = statement
-
-            by_class[smt.sid_class].append(requirement)
+                # key-value by sid a.k.a control id for each requirement
+                if statement_req not in by_class[smt.sid]:
+                    by_class[smt.sid].append(statement_req)
 
         for sid_class, requirements in by_class.items():
             control_implementation = {
-                "uuid": str(uuid4()),
-                "source": sid_class,
-                "description": f"Partial implementation of {sid_class}",
+                "uuid":str(uuid4()),# TODO: Not sure if this should implemented or just generated here.
+                "source": smt.source if smt.source else "Govready",
+                "description": f"This is a partial implementation of the {sid_class} catalog, focusing on the control enhancement {requirements[0].get('control-id')}.",
                 "implemented-requirements": [req for req in requirements]
             }
             control_implementations.append(control_implementation)
@@ -705,29 +869,33 @@ class ComponentImporter(object):
         @returns: ImportRecord linked to the created components (if success) or False if failure
         """
 
-        # Validates the format of the JSON object
         try:
+            # Create a temporary directory and dump the json_object in there.
+            tempdir = tempfile.mkdtemp()
+            path = os.path.join(tempdir, "object.json")
+            # Use trestle's ComponentDefinition method oscal_read to read the path to json in the temporary folder
+            path_component_definition = pathlib.Path(path)
             oscal_json = json.loads(json_object)
-        except ValueError:
-            if request is not None:
-                messages.add_message(request, messages.ERROR, f"Invalid JSON. Component(s) not created.")
-            logger.info(f"Invalid JSON. Component(s) not created.")
-            return False
-        if self.validate_oscal_json(oscal_json):
-            # Returns list of created components
+            with open(path, 'w+') as cred:
+                json.dump(oscal_json, cred)
 
-            created_components = self.create_components(oscal_json)
-            new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
-            return new_import_record
-        else:
+            # Read in temporary file and shape into trestle pydantic Component definition.
+            trestle_oscal_json = trestlecomponent.ComponentDefinition.oscal_read(path_component_definition)
+            # Finally validate that this object is valid by the component definition
+            trestlecomponent.ComponentDefinition.validate(trestle_oscal_json)
+            # Cleanup
+            shutil.rmtree(tempdir)
+        except Exception as e:
+            logger.error(e)
+            if request.POST.get("json_content") is not None:
+                messages.add_message(request, messages.ERROR, f"Invalid Component JSON: {e.__context__}")
+            shutil.rmtree(tempdir)
+            return HttpResponse(e)
 
-            if request is not None:
-                messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
-                logger.info(f"Invalid JSON. Component(s) not created.")
-            else:
-                logger.info(f"Invalid JSON. Component(s) not created.")
-
-            return False
+        # Returns list of created components
+        created_components = self.create_components(oscal_json)
+        new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
+        return new_import_record
 
     # def find_import_record_by_name(self, import_name):
     #     """Returns most recent existing import record by name
@@ -766,27 +934,12 @@ class ComponentImporter(object):
 
         return import_record
 
-    def validate_oscal_json(self, oscal_json):
-        """Validates the JSON object is valid OSCAL format"""
-
-        project_root = os.path.abspath(os.path.dirname(__name__))
-        oscal_schema_path = os.path.join(project_root, "schemas", "oscal_component_schema.json")
-
-        with open(oscal_schema_path, "r") as schema_content:
-            oscal_json_schema = json.load(schema_content)
-        try:
-            validate(instance=oscal_json, schema=oscal_json_schema)
-            return True
-        except (SchemaError, SchemaValidationError) as e:
-            logger.error(e._contents())
-            return False
-
     def create_components(self, oscal_json):
         """Creates Elements (Components) from valid OSCAL JSON"""
         components_created = []
         components = oscal_json['component-definition']['components']
         for component in components:
-            new_component = self.create_component(components[component])
+            new_component = self.create_component(component)
             if new_component is not None:
                 components_created.append(new_component)
 
@@ -809,26 +962,38 @@ class ComponentImporter(object):
             name=component_name,
             description=component_json['description'] if 'description' in component_json else 'Description missing',
             # Components uploaded to the Component Library are all system_element types
-            # TODO: When components can be uploaded by project, set element_type from component-type OSCAL property
-            element_type="system_element"
+            element_type="system_element",
+            uuid=component_json['uuid'] if 'uuid' in component_json else uuid.uuid4(),
+            component_type=component_json['type'] if 'type' in component_json else "software"
         )
 
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
         control_implementation_statements = component_json.get('control-implementations', None)
+        catalog = "missing"
+        # If there is an data in the control-implementations key
         if control_implementation_statements:
+            # For each element if there is a source and the oscalized key is in the available keys
+            # Then create statements otherwise it will return an empty list
             for control_element in control_implementation_statements:
-                catalog = oscalize_catalog_key(control_element['source']) if 'source' in control_element else None
-                implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
-                created_statements = self.create_control_implementation_statements(catalog, implemented_reqs, new_component)
+                if 'source' in control_element:
+                    if oscalize_catalog_key(control_element['source']) in Catalogs().catalog_keys:
+                        catalog = oscalize_catalog_key(control_element['source'])
+                created_statements = self.create_control_implementation_statements(catalog, control_element, new_component)
+        # If there are no valid statements in the json object
+        if created_statements == []:
+            logger.info(f"The Component {new_component.name} will be deleted as there were no valid statements provided.")
+            new_component.delete()
+            new_component = None
+
         return new_component
 
-    def create_control_implementation_statements(self, catalog_key, implemented_reqs, parent_component):
+    def create_control_implementation_statements(self, catalog_key, control_element, parent_component):
         """Creates a Statement from a JSON dict implemented-requirements
 
         @type catalog_key: str
         @param catalog_key: Catalog of the control statements
-        @type implemented_reqs: list
-        @param implemented_reqs: Implemented controls
+        @type control_element: dict
+        @param control_element: Implemented controls
         @type parent_component: str
         @param parent_component: UUID of parent component
         @rtype: dict
@@ -836,46 +1001,33 @@ class ComponentImporter(object):
         """
 
         statements_created = []
-
+        if catalog_key == "missing":
+            logger.info(f"Control Catalog {catalog_key} missing skipping Statement creation...")
+            return statements_created
+        implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
         for implemented_control in implemented_reqs:
 
-            control_id = oscalize_control_id(implemented_control['control-id']) if 'control-id' in implemented_control else ''
-            statements = implemented_control['statements'] if 'statements' in implemented_control else ''
+            control_id = implemented_control['control-id'] if 'control-id' in implemented_control else ''
+            #statements = implemented_control['statements'] if 'statements' in implemented_control else ''
+            if self.control_exists_in_catalog(catalog_key, control_id):
+                new_statement = Statement.objects.create(
+                    sid=control_id,
+                    sid_class=catalog_key,
+                    pid=get_control_statement_part(control_id),
+                    source=control_element['source'] if 'source' in control_element else catalog_key,
+                    uuid=control_element['uuid'] if 'uuid' in control_element else uuid.uuid4(),
+                    body=implemented_control['description'] if 'description' in implemented_control else '',
+                    statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
+                    remarks=implemented_control['remarks'] if 'remarks' in implemented_control else '',
+                    status=implemented_control['status'] if 'status' in implemented_control else None,
+                    producer_element=parent_component,
+                )
 
-            for stmnt_id in statements:
-                statement = statements[stmnt_id]
+                logger.info(f"New statement with UUID {new_statement.uuid} created.")
+                statements_created.append(new_statement)
 
-                if self.control_exists_in_catalog(catalog_key, control_id):
-                    if 'description' in statement:
-                        description = statement['description']
-                    elif 'description' in implemented_control:
-                        description = implemented_control['description']
-                    else:
-                        description = ''
-
-                    if 'remarks' in statement:
-                        remarks = statement['remarks']
-                    elif 'remarks' in implemented_control:
-                        remarks = implemented_control['remarks']
-                    else:
-                        remarks = ''
-
-                    new_statement = Statement.objects.create(
-                        sid=control_id,
-                        sid_class=catalog_key,
-                        pid=get_control_statement_part(stmnt_id),
-                        body=description,
-                        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
-                        remarks=remarks,
-                        status=implemented_control['status'] if 'status' in implemented_control else None,
-                        producer_element=parent_component,
-                    )
-
-                    logger.info(f"New statement with UUID {new_statement.uuid} created.")
-                    statements_created.append(new_statement)
-
-                else:
-                    logger.info(f"Control {control_id} doesn't exist in catalog {catalog_key}. Skipping Statement...")
+            else:
+                logger.info(f"Control {control_id} doesn't exist in catalog {catalog_key}. Skipping Statement...")
 
         return statements_created
 
@@ -1316,7 +1468,7 @@ def system_element_download_oscal_json(request, system_id, element_id):
         element = Element.objects.get(id=element_id)
         # Get the impl_smts contributed by this component to system
         impl_smts = Statement.objects.filter(producer_element=element)
-
+    print(f"component library statements {len(impl_smts)}")
     response = HttpResponse(content_type="application/json")
     filename = str(PurePath(slugify(element.name)).with_suffix('.json'))
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -1324,6 +1476,23 @@ def system_element_download_oscal_json(request, system_id, element_id):
     response.write(body)
 
     return response
+
+@login_required
+def OSCAL_ssp_export(*args, **kwargs):
+    """
+    Exporting a system security plan in OSCAL json version 1.0.0
+    """
+    system_id = kwargs.get('system_id', 1)
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    impl_smts = Statement.objects.filter(consumer_element=system.root_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
+    oscal_string = OSCALSystemSecurityPlanSerializer(system, impl_smts).as_json()
+    # File name construction and JSON response
+    filename = "{}_OSCAL_{}.json".format(system.root_element.name.replace(" ", "_"),
+                                                           datetime.now().strftime("%Y-%m-%d-%H-%M"))
+    resp = HttpResponse(oscal_string, content_type="application/json")
+    resp["content-disposition"] = "attachment; filename=%s" % quote(filename)
+    return resp
 
 @login_required
 def controls_selected_export_xacta_xslx(request, system_id):
@@ -1354,7 +1523,7 @@ def controls_selected_export_xacta_xslx(request, system_id):
                 setattr(control, 'impl_smts', None)
 
         from openpyxl import Workbook
-        from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
+        from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
         from tempfile import NamedTemporaryFile
 
         wb = Workbook()
@@ -1636,61 +1805,18 @@ def controls_selected_export_xacta_xslx(request, system_id):
 def editor(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
-    cl_id, catalog_key, system = get_editor_system(cl_id, catalog_key, system_id)
+    catalog_key, system = get_editor_system(catalog_key, system_id)
 
     # Retrieve related statements if user has permission on system
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
         project, catalog, cg_flat, impl_smts, impl_smts_legacy = get_editor_data(request, system, catalog_key, cl_id)
-
+        # TODO: Update system-security-plan to oscal 1.0.0
+        # need parties and roles to not be empty
         # Build OSCAL SSP
-        # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
-        of = {
-            "system-security-plan": {
-                "id": "example-ssp",
-                "metadata": {
-                    "title": "{} System Security Plan Excerpt".format(system.root_element.name),
-                    "published": datetime.now().replace(microsecond=0).isoformat(),
-                    "last-modified": "element.updated.replace(microsecond=0).isoformat()",
-                    "version": "1.0",
-                    "oscal-version": "1.0.0-milestone3",
-                    "roles": [],
-                    "parties": [],
-                },
-                "import-profile": {},
-                "system-characteristics": {},
-                "system-implementations": {},
-                "control-implementation": {
-                    "description": "",
-                    "implemented-requirements": {
-                        "control-id": "{}".format(cl_id),
-                        "description": "",
-                        "statements": {
-                            "{}_smt".format(cl_id): {
-                                "description": "N/A",
-                                "by-components": {
-                                }
-                            }
-                        }  #statements
-                    },  # implemented-requirements
-                }
-            }
-        }
-        by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["statements"][
-            "{}_smt".format(cl_id)]["by-components"]
-        for smt in impl_smts:
-            my_dict = {
-                smt.sid + "{}".format(smt.producer_element.name.replace(" ", "-")): {
-                    "description": smt.body,
-                    "role-ids": "",
-                    "set-params": {},
-                    "remarks": smt.remarks
-                },
-            }
-            if smt.remarks is None:
-                my_dict[smt.sid + "{}".format(smt.producer_element.name.replace(" ", "-"))].pop("remarks", None)
-            by_components.update(my_dict)
-        oscal_string = json.dumps(of, sort_keys=False, indent=2)
+        # Example: https://github.com/usnistgov/oscal-content/tree/master/examples/ssp/json/ssp-example.json
+        # oscalize key
+        cl_id = oscalize_control_id(cl_id)
 
         # Build combined statement if it exists
         if cl_id in system.control_implementation_as_dict:
@@ -1714,7 +1840,6 @@ def editor(request, system_id, catalog_key, cl_id):
             "impl_statuses": impl_statuses,
             "impl_smts_legacy": impl_smts_legacy,
             "combined_smt": combined_smt,
-            "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": "opencontrol_string",
             "elements": elements,
@@ -1745,31 +1870,31 @@ def get_editor_data(request, system, catalog_key, cl_id):
         # Get and return the control
         # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog, Type
         impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
-        # Retrieve Legacy Implememtation Statements
+        # Retrieve Legacy Implementation Statements
         impl_smts_legacy = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name)
 
         return project, catalog, cg_flat, impl_smts, impl_smts_legacy
 
-def get_editor_system(cl_id, catalog_key, system_id):
+def get_editor_system(catalog_key, system_id):
     """
     Retrieves oscalized control id and catalog key. Also system object from system id.
     """
 
-    cl_id = oscalize_control_id(cl_id)
 
     catalog_key = oscalize_catalog_key(catalog_key)
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
 
-    return cl_id, catalog_key, system
+    return catalog_key, system
 
 @login_required
 def editor_compare(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
-    cl_id, catalog_key, system = get_editor_system(cl_id, catalog_key, system_id)
-
+    catalog_key, system = get_editor_system(catalog_key, system_id)
+    # oscalize key
+    cl_id = oscalize_control_id(cl_id)
     # Retrieve related statements if owner has permission on system
     if request.user.has_perm('view_system', system):
         project, catalog, cg_flat, impl_smts = get_editor_data(request, system, catalog_key, cl_id)
@@ -2725,7 +2850,7 @@ def poam_export(request, system_id, format='xlsx'):
 
         if format == 'xlsx':
             from openpyxl import Workbook
-            from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
+            from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
             from tempfile import NamedTemporaryFile
 
             wb = Workbook()
@@ -3367,10 +3492,3 @@ def new_system_assessment_result_wazuh(request, system_id):
         else:
             # TODO: better handling of response code; 401, 301, etc.
             raise Exception(wazuh_sec_svc.error_msg['error'])
-
-
-
-
-
-
-
