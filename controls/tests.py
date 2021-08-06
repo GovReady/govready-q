@@ -558,7 +558,7 @@ class ElementUnitTests(TestCase):
         self.assertTrue(e2.component_type == "hardware")
         self.assertTrue(e2.component_state == "disposition")
 
-class ElementControlUnitTests(TestCase):
+class ElementControlUnitTests(SeleniumTest):
 
     def test_assign_baseline(self):
 

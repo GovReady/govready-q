@@ -13,11 +13,12 @@ from jsonfield import JSONField
 
 
 CATALOG_PATH = os.path.join(os.path.dirname(__file__), 'data', 'catalogs')
-EXTERNAL_CATALOG_PATH = os.path.join(f"{os.getcwd()}",'local', 'controls', 'data', 'catalogs')
+BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 
 class CatalogData(auto_prefetch.Model):
     catalog_key = models.CharField(max_length=100, help_text="Unique key for catalog", unique=True, blank=False, null=False)
     catalog_json = JSONField(blank=True, null=True, help_text="JSON object representing the OSCAL-formatted control catalog.")
+    baselines_json = JSONField(blank=True, null=True, help_text="JSON object representing the baselines for the catalog.")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
@@ -73,18 +74,6 @@ def uhash(obj):
     h = hash(obj)
     return h + sys.maxsize + 1
 
-def check_and_extend(values, external_values, extendtype, splitter):
-    """
-    Modularize value to extend
-    """
-    if extendtype == "keys":
-        keys = [key.split(f'{splitter}.json')[0] for key in external_values]
-        values.extend(keys)
-    elif extendtype == "files":
-        files = [file for file in external_values]
-        values.extend(files)
-    return values
-
 class Catalog(object):
     """Represent a catalog"""
 
@@ -118,7 +107,6 @@ class Catalog(object):
         self.catalog_key = catalog_key
         self.catalog_key_display = catalog_key.replace("_", " ")
         self.catalog_path = CATALOG_PATH
-        self.external_catalog_path = EXTERNAL_CATALOG_PATH
         self.catalog_file = catalog_key + "_catalog.json"
         try:
             self.oscal = self._load_catalog_json()

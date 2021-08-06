@@ -144,15 +144,23 @@ class SeleniumTest(StaticLiveServerTestCase):
         self.browser.delete_all_cookies()
         # Add catalogs to database
         CATALOG_PATH = os.path.join(os.path.dirname(__file__),'..','controls','data','catalogs')
+        BASELINE_PATH = os.path.join(os.path.dirname(__file__),'..','controls','data','baselines')
         catalog_files = [file for file in os.listdir(CATALOG_PATH) if file.endswith('.json')]
         for cf in catalog_files:
             catalog_key = cf.replace("_catalog.json", "")
             with open(os.path.join(CATALOG_PATH,cf), 'r') as json_file:
                 catalog_json = json.load(json_file)
-            # cls.foo = Foo.objects.create(bar="Test")
+            baseline_filename = cf.replace("_catalog.json", "_baselines.json")
+            if os.path.isfile(os.path.join(BASELINE_PATH, baseline_filename)):
+                with open(os.path.join(BASELINE_PATH, baseline_filename), 'r') as json_file:
+                    baselines_json = json.load(json_file)
+            else:
+                baselines_json = {}
+
             catalog, created = CatalogData.objects.get_or_create(
                     catalog_key=catalog_key,
-                    catalog_json=catalog_json
+                    catalog_json=catalog_json,
+                    baselines_json=baselines_json
                 )
             # if created:
             #     print(f"{catalog_key} record created into database")

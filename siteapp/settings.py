@@ -331,7 +331,7 @@ if environment.get("syslog"):
 	}
 
 SILENCED_SYSTEM_CHECKS = []
-DATA_UPLOAD_MAX_MEMORY_SIZE = 8242880
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10242880
 # Settings that have normal values based on the primary app
 # (the app this file resides in).
 
