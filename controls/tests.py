@@ -23,13 +23,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from controls.models import System
 from controls.models import STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED
-from controls.views import OSCALComponentSerializer
+from controls.views import OSCALComponentSerializer, OSCAL_ssp_export
 from siteapp.models import User, Organization, OrganizationalSetting
 from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests, wait_for_sleep_after
 from system_settings.models import SystemSettings
 from controls.models import *
 from controls.enums.statements import StatementTypeEnum
-from controls.oscal import Catalogs, Catalog, EXTERNAL_CATALOG_PATH
+from controls.oscal import Catalogs, Catalog, EXTERNAL_CATALOG_PATH, de_oscalize_control
 from siteapp.models import User, Project, Portfolio
 from system_settings.models import SystemSettings
 
@@ -185,7 +185,7 @@ class ControlUITests(SeleniumTest):
             temp_file_name = os.path.join(EXTERNAL_BASELINE_PATH, f'{d.name}_revtest_baseline.json')
 
             # finding fixture data and dumping in the temp file
-            test_baseline = os.getcwd() + "/fixtures/test_baseline.json"
+            test_baseline = os.getcwd() + "/fixtures/test_baselines.json"
             with open(test_baseline, 'r') as json_file:
                 baseline_data = json.load(json_file)
             with open(temp_file_name, 'w') as cred:
@@ -303,7 +303,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.click_element('a#component-import-oscal')
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
-        file_input = self.find_selected_option('input#id_file')
+        file_input = self.find_selected_option('input#json_content')
         self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
         element_count_before_import = Element.objects.filter(element_type="system_element").count()
@@ -345,28 +345,22 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.click_element('a#component-import-oscal')
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
-        file_input = self.find_selected_option('input#id_file')
+        file_input = self.find_selected_option('input#json_content')
         oscal_json_path = self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
         self.click_element('input#import_component_submit')
-        var_sleep(2)
+        var_sleep(4)
         element_count_after_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
 
-        wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 2, element_count_after_import))
+        wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 1, element_count_after_import))
 
         statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
-        self.assertEqual(statement_count_before_import + 4, statement_count_after_import)
-        # Test file contains 6 Statements, but only 4 get imported
-        # because one has an improper Catalog
-        # and another has an improper Control
-        # but we can't test individual statements because the UUIDs are randomly generated and not consistent
-        # with the OSCAL JSON file. So we simply do a count.
-
+        self.assertEqual(statement_count_before_import + 1, statement_count_after_import)
         # Test that duplicate Components are re-imported with a different name and that Statements get reimported
 
         wait_for_sleep_after(lambda: self.click_element('a#component-import-oscal'))
 
-        file_input = self.find_selected_option('input#id_file')
+        file_input = self.find_selected_option('input#json_content')
         # Using converted keys from above
         file_input.send_keys(oscal_json_path)
 
@@ -374,17 +368,17 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         element_count_after_duplicate_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
 
-        self.assertEqual(element_count_after_import + 2, element_count_after_duplicate_import)
+        self.assertEqual(element_count_after_import + 1, element_count_after_duplicate_import)
 
-        original_import_element_count = Element.objects.filter(name='Test OSCAL Component1').count()
+        original_import_element_count = Element.objects.filter(name='test component 1').count()
         self.assertEqual(original_import_element_count, 1)
 
-        duplicate_import_element_count = Element.objects.filter(name='Test OSCAL Component1 (1)').count()
+        duplicate_import_element_count = Element.objects.filter(name='test component 1 (1)').count()
         self.assertEqual(duplicate_import_element_count, 1)
 
         statement_count_after_duplicate_import = Statement.objects.filter(
             statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
-        self.assertEqual(statement_count_after_import + 4, statement_count_after_duplicate_import)
+        self.assertEqual(statement_count_after_import + 1, statement_count_after_duplicate_import)
 
     def test_import_tracker(self):
         """Tests that imports are tracked correctly."""
@@ -1162,7 +1156,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         file_path = os.getcwd() + "/fixtures/test_project_import_data.json"
         # convert filepath if necessary and send keys
         self.filepath_conversion(file_input, file_path, "sendkeys")
-        self.browser.find_element_by_id("import_component_submit").click()
+        self.browser.find_element_by_id("import_project_submit").click()
 
         # Check the new number of projects, and validate that it's the same
         project_num = Project.objects.all().count()
@@ -1171,7 +1165,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.assertEqual(Project.objects.all()[project_num - 1].title, "New Test Project"))
         # Components and their statements?
         self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 1)
-        self.assertEqual(Element.objects.all().exclude(element_type='system')[0].name, "SecGet, Endpoint Security System")
+        self.assertEqual(Element.objects.all().exclude(element_type='system')[0].name, "test component 1")
 
         try:
             self.assertEqual(Statement.objects.all().count(), 1)
@@ -1199,4 +1193,44 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
                 project_title = file_name
 
         self.assertIn(file_name, file_system)
+
+class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
+    """
+    Testing the import and export of OSCAL JSON objects
+    """
+
+    @unittest.skip
+    def test_export_oscal_system_security_plan(self):
+        """
+        Testing OSCAL_ssp_export to make sure the file is created with a status code of 200 utilizing the class OSCALSystemSecurityPlanSerializer's as_json() method
+        """
+        self._login(self.user.username, self.user.clear_password)
+        self._new_project()
+
+        the_system = self.current_project.system
+
+        # ssp_export_oscal with system id
+        response = OSCAL_ssp_export(self,"", {"system_id": the_system.id} )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+        self.assertEqual(
+            response.get('Content-Type'),
+            'application/json'
+        )
+        self.assertIn(
+        f"attachment; filename={the_system.root_element.name.replace(' ', '_')}_OSCAL_",
+        response.get('Content-Disposition')
+        )
+
+    def test_deoscalization_control_id(self):
+        """
+        Tests de_oscalize_control function on expected formats from sid (oscal) format to regular.
+        """
+        controls = ["ac-2.4", "ac-2.5", "ac-2.11","ac-2.13", "ac-3", "ac-4", "si-3.2", "si-4.2", "si-4.5"]
+        regular_sid_controls = [de_oscalize_control(control) for control in controls]
+        self.assertEqual(['AC-2 (4)', 'AC-2 (5)', 'AC-2 (11)', 'AC-2 (13)', 'AC-3', 'AC-4', 'SI-3 (2)', 'SI-4 (2)', 'SI-4 (5)'], regular_sid_controls)
+
 

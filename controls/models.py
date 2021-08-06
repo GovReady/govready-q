@@ -51,6 +51,7 @@ class SystemException(Exception):
 class Statement(auto_prefetch.Model):
     sid = models.CharField(max_length=100, help_text="Statement identifier such as OSCAL formatted Control ID", unique=False, blank=True, null=True)
     sid_class = models.CharField(max_length=200, help_text="Statement identifier 'class' such as 'NIST_SP-800-53_rev4' or other OSCAL catalog name Control ID.", unique=False, blank=True, null=True)
+    source = models.CharField(max_length=200, help_text="Statement source such as '../../../nist.gov/SP800-53/rev4/json/NIST_SP-800-53_rev4_catalog.json'.", unique=False, blank=True, null=True)
     pid = models.CharField(max_length=20, help_text="Statement part identifier such as 'h' or 'h.1' or other part key", unique=False, blank=True, null=True)
     body = models.TextField(help_text="The statement itself", unique=False, blank=True, null=True)
     statement_type = models.CharField(max_length=150, help_text="Statement type.", unique=False, blank=True, null=True, choices=StatementTypeEnum.choices())
@@ -223,6 +224,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
     roles = models.ManyToManyField('ElementRole', related_name='elements', blank=True, help_text="Roles assigned to the Element")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
+    oscal_version = models.CharField(default="1.0.0", max_length=20, help_text="OSCAL version number.", unique=False, blank=True, null=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
     import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_elements", on_delete=models.CASCADE,
                                       unique=False, blank=True, null=True, help_text="The Import Record which created this Element.")
@@ -315,8 +317,8 @@ class Element(auto_prefetch.Model, TagModelMixin):
             selected_controls_ids_new = set([f"{oscal_ctl_id}=+={baselines_key}" for oscal_ctl_id in controls])
             for scc in selected_controls_ids_cur:
                 if scc not in selected_controls_ids_new:
-                    oscal_ctl_id_rm = scc.split("=+=")[0]
-                    remove_result = self.remove_element_control(oscal_ctl_id_rm, baselines_key)
+                    oscal_ctl_id_rm, catalog_key_rm = scc.split("=+=")
+                    remove_result = self.remove_element_control(oscal_ctl_id_rm, catalog_key_rm)
                     if remove_result:
                         changed_controls['remove'].append(scc)
             return True

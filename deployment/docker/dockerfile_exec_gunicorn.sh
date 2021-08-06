@@ -1,3 +1,4 @@
+#!/bin/bash
 # This is the main entry point, i.e. process zero, of the
 # Docker container.
 
@@ -13,7 +14,7 @@ cat VERSION
 # helpful to know for debugging.
 echo
 echo Filesystem information:
-cat /proc/mounts | egrep -v "^proc|^cgroup| /proc| /dev| /sys"
+cat < /proc/mounts | grep -E -v "^proc|^cgroup| /proc| /dev| /sys"
 echo
 
 # Check that we're running as the 'application' user. Our Dockerfile
@@ -34,62 +35,62 @@ fi
 # variables are set (and PORT is not 80), take the values
 # from there, otherwise default to "localhost:8000".
 ADDRESS="${HOST-localhost}:${PORT-8080}"
-ADDRESS=$(echo $ADDRESS | sed s/:80$//; )
+ADDRESS=$(echo"${ADDRESS//:80$//;}")
 
 # Create a local/environment.json file. Use jq to
 # guarantee valid JSON encoding of strings.
 cat > local/environment.json << EOF;
 { 
 	"debug": ${DEBUG-false},
-	"host": $(echo ${ADDRESS} | jq -R .),
+	"host": $(echo "${ADDRESS}" | jq -R .),
 	"https": ${HTTPS-false},
-	"secret-key": $(echo ${SECRET_KEY-} | jq -R .),
-	"syslog": $(echo ${SYSLOG-} | jq -R .),
+	"secret-key": $(echo "${SECRET_KEY-}" | jq -R .),
+	"syslog": $(echo "${SYSLOG-}" | jq -R .),
 	"admins": ${ADMINS-[]},
 	"static": "static_root",
-	"db": $(echo ${DBURL-} | jq -R .)
+	"db": $(echo "${DBURL-}" | jq -R .)
 }
 EOF
 
 function set_env_setting {
 	# set_env_setting keypath value
-	cat local/environment.json \
-	| jq ".$1 = $(echo $2 | jq -R .)" \
+	cat < local/environment.json \
+	| jq ".$1 = $(echo "$2" | jq -R .)" \
 	> /tmp/new-environment.json
 	cat /tmp/new-environment.json > local/environment.json
 	rm -f /tmp/new-environment.json
 }
 
 # Add email parameters.
-if [ ! -z "${EMAIL_HOST-}" ]; then
+if [ -n "${EMAIL_HOST-}" ]; then
 	set_env_setting email.host "$EMAIL_HOST"
 	set_env_setting email.port "$EMAIL_PORT"
 	set_env_setting email.user "$EMAIL_USER"
 	set_env_setting email.pw "$EMAIL_PW"
 	set_env_setting email.domain "$EMAIL_DOMAIN"
 fi
-if [ ! -z "${MAILGUN_API_KEY-}" ]; then
+if [ -n "${MAILGUN_API_KEY-}" ]; then
 	set_env_setting mailgun_api_key "$MAILGUN_API_KEY"
 fi
 
 # Overridden branding.
-if [ ! -z "${BRANDING-}" ]; then
+if [ -n "${BRANDING-}" ]; then
 	set_env_setting branding "$BRANDING"
 fi
 
 # Enterprise login settings.
-if [ ! -z "${PROXY_AUTHENTICATION_USER_HEADER-}" ]; then
+if [ -n "${PROXY_AUTHENTICATION_USER_HEADER-}" ]; then
 	set_env_setting '["trust-user-authentication-headers"].username' "$PROXY_AUTHENTICATION_USER_HEADER"
 	set_env_setting '["trust-user-authentication-headers"].email' "$PROXY_AUTHENTICATION_EMAIL_HEADER"
 fi
 
 # PDF Generator settings.
-if [ ! -z "${GR_PDF_GENERATOR-}" ]; then
+if [ -n "${GR_PDF_GENERATOR-}" ]; then
 	set_env_setting '["gr-pdf-generator"]' "$GR_PDF_GENERATOR"
 fi
 
 # Image Generator settings.
-if [ ! -z "${GR_IMG_GENERATOR-}" ]; then
+if [ -n "${GR_IMG_GENERATOR-}" ]; then
 	set_env_setting '["gr-img-generator"]' "$GR_IMG_GENERATOR"
 fi
 
@@ -101,7 +102,7 @@ python3.6 manage.py check --deploy
 
 # Check if 0.9.0 upgrade has happened
 DB_BEFORE_090=$(python3.6 manage.py db_before_090)
-if [ $DB_BEFORE_090 = "True" ]
+if [ "$DB_BEFORE_090" = "True" ]
 then
 	echo "** WARNING!! **"
 	echo "Launching this container will automatically upgrade your GovReady-Q deployment to version 0.9.0!"
@@ -137,7 +138,7 @@ python3.6 manage.py load_modules
 # Create an initial administrative user and organization
 # non-interactively and write the administrator's initial
 # password to standard output.
-if [ ! -z "${FIRST_RUN-}" ]; then
+if [ -n "${FIRST_RUN-}" ]; then
 	echo "Running FIRST_RUN actions..."
 	python3.6 manage.py first_run --non-interactive
 fi

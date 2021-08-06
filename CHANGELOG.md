@@ -1,7 +1,40 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.6-dev (July XX, 2021)
+v0.9.8-dev (August xx, 2021)
+----------------------------
+
+**Developer changes**
+
+* Support autostart of a project, taking user to first question of a project when starting a new project.
+
+
+v0.9.7 (August 06, 2021)
+------------------------
+
+**UI changes**
+
+* Display datagrid question wider and with smaller fonts.
+* Display existance of legacy statement in project system's selected controls.
+
+**Developer changes**
+
+* Support datagrid specifying select type cell.
+* Added new function OSCAL_ssp_export in order to export a system's security plan in OSCAL, this replaces the usual JSON export. Added a several fields of data for OSCAL SSP.
+* If a component to be imported has a catalog key that is not found in the internal or external catalog list then it will be skipped and logged.
+* If no statements are created the resulting element/component is deleted.
+* Component and System Security Plan exports pass OSCAL 1.0.0 schema validation.
+* Added a proxy for parties and responsible parties for component OSCAL export.
+* Coverage 6.0b1 starts to use a modern hash algorithm (sha256) when fingerprinting for high-security environments, upgrading to avoid this safety fail.
+* Validate Component import and SSP with trestle the package.
+
+* **Bug fixes**
+
+* Fix count on project system's components associated with a control (avoid double counting).
+
+
+v0.9.6 (July 15, 2021)
+----------------------
 
 **UI changes**
 
@@ -45,6 +78,7 @@ v0.9.5 (June 23, 2021)
 * Link to library version of component from a system's selected control component listing and selected components.
 * Improve UI of project security objectives. Improve alignment and convert text fields to select boxes to control data input.
 
+
 v0.9.4 (June 13, 2021)
 ----------------------
 
@@ -54,7 +88,6 @@ v0.9.4 (June 13, 2021)
 * Adding component_state and component_type fields to an `Element` to contain a component's state and type.
 * Created a modal to allow an admin user to add security objectives confidentiality, integrity, and availability.
 * Add field to identify user's default portfolio.
-
 
 **UI changes**
 

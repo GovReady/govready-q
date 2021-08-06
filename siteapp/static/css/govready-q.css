@@ -469,3 +469,67 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
         overflow: hidden!important;
     }
 }
+
+
+/*drag n fill */
+
+.file-droppable {
+  background: #d9d5ec;
+  border: dashed 2px #5b537d;
+  border-radius: 5px;
+  overflow: hidden;
+  transition: all 1s;
+  min-height: 70px;
+  position: relative;
+}
+
+.file-droppable.filled {
+  background: #c5dfdc;
+  border: solid 2px #6faca5;
+  border-radius: 5px;
+}
+
+.file-droppable:after {
+  position: absolute;
+  left: 13px;
+  top: 38px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.file-droppable::before {
+  content: " ";
+  display: inline-block;
+  height: 100%;
+  width: 1%;
+  vertical-align: middle;
+}
+
+.file-droppable div {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 10px;
+  overflow: hidden;
+  word-break: break-all;
+}
+
+.file-droppable span {
+  position: absolute;
+  font-weight: bold;
+  right: 5px;
+  top: -5px;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 10;
+  display: none;
+}
+
+.file-droppable input {
+  position: absolute;
+  z-index: 3;
+  display: block;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+}

@@ -15,9 +15,12 @@ class WazuhSecurityService(SecurityService):
 
     def setup(self, **kwargs):
         self.base_url = kwargs.pop('base_url')
-        url_parts = urlparse(self.base_url)
-        if not (url_parts.scheme and url_parts.netloc):
+        self.url_parts = urlparse(self.base_url)
+        if not (self.url_parts.scheme and self.url_parts.netloc):
             raise Exception("Invalid base url")
+        self.scheme = self.url_parts.scheme
+        self.port = self.url_parts.port
+        self.hostname = self.url_parts.hostname
 
     def authenticate(self, user=None, passwd=None):
         """Authenticate with service"""
@@ -59,7 +62,7 @@ class WazuhSecurityService(SecurityService):
                 endpoint_result['agent'] = identifer_id
                 endpoint_result['ip_address'] = None
                 endpoint_result[
-                    'url_link'] = f"https://{self.base_url}/app/wazuh#/overview/?tab=sca&agentId={identifer_id}"
+                    'url_link'] = f"{self.scheme}://{self.hostname}/app/wazuh#/overview/?tab=sca&agentId={identifer_id}"
                 sar_list.append(endpoint_result)
             else:
                 endpoint_result = None

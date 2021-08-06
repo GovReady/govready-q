@@ -92,7 +92,8 @@ def edit_discussion_comment(request):
 
     # save
     comment.save()
-
+    # TODO: fully implement this add it as an attribute to Discussion model perhaps? Otherwise to find out if the text of the
+    # Current comment is the same as the previous text you would do something like: comment.extra['history'][-1]['previous-text'] != comment.text
     # Kick the attached object.
     if hasattr(comment.discussion.attached_to, 'on_discussion_comment_edited'):
         comment.discussion.attached_to.on_discussion_comment_edited(comment)

@@ -3,9 +3,9 @@ import os
 from datetime import datetime
 from zipfile import ZipFile
 from zipfile import BadZipFile
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render,  get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
-from django.urls import reverse
+from controls.oscal import de_oscalize_control
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
@@ -2039,14 +2039,14 @@ def start_a_discussion(request):
 
         # Get the TaskAnswer for this task. It may not exist yet.
         tq, isnew = TaskAnswer.objects.get_or_create(**tq_filter)
-
+    # Filter for discussion and return the first entry (if it doesn't exist it returns None)
     discussion = Discussion.get_for(task.project.organization, tq)
     if not discussion:
         # Validate user can create discussion.
         if not task.has_read_priv(request.user):
             return JsonResponse({ "status": "error", "message": "You do not have permission!" })
 
-        # Get the Discussion.
+        # Create a Discussion.
         discussion = Discussion.get_for(task.project.organization, tq, create=True)
 
     return JsonResponse(discussion.render_context_dict(request.user))
@@ -2149,7 +2149,7 @@ def analytics(request):
         ]
     })
 
-def export_ssp_csv(export_csv_data, system):
+def export_ssp_csv(form_data, system):
     """
     Export an SSP's control implementations with the submitted headers
     """
@@ -2158,10 +2158,22 @@ def export_ssp_csv(export_csv_data, system):
         statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
 
     selected_controls = list(smts.values_list('sid', flat=True))
-    catalog_keys = list(smts.values_list('sid_class', flat=True))
+    # If the user selected to format the control id in OSCAL this will be skipped
+    if not form_data.get('oscal_format'):
+        # De-oscalize every control id (sid)
+        selected_controls = [de_oscalize_control(control) for control in selected_controls]
+    db_catalog_keys = list(smts.values_list('sid_class', flat=True))
+    catalog_keys = []
+    # XYZ_3_0 --> XYZ 3.0
+    for catalog in db_catalog_keys:
+        if catalog.count("_") == 3:
+            catalog_keys.append(" ".join(catalog.split("_")[:2]) + " " + ".".join(catalog.split("_")[-2:]))
+        else:
+            catalog_keys.append(catalog)
     imps = list(smts.values_list('body', flat=True))
-    headers = [export_csv_data.get('info_system'), export_csv_data.get('control_id'), export_csv_data.get('catalog'), export_csv_data.get('shared_imps'), export_csv_data.get('private_imps')]
+    headers = [form_data.get('info_system'), form_data.get('control_id'), form_data.get('catalog'), form_data.get('shared_imps'), form_data.get('private_imps')]
     system_name = system.root_element.name # TODO: Should this come from questionnaire answer or project name as we have it?
+
     data = [
         [system_name] * len(selected_controls),
         selected_controls,

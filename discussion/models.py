@@ -176,6 +176,11 @@ class Discussion(models.Model):
     def is_public(self):
         return getattr(self.attached_to_obj, 'is_discussion_public', lambda : False)
 
+    def is_discussion_inactive(self):
+
+        if self.attached_to_obj is not None:
+            return True if self.attached_to_obj.title == "<Deleted Discussion>" else False
+
     def can_comment(self, user):
         return user is not None and self.is_participant(user)
 
@@ -245,6 +250,18 @@ class Discussion(models.Model):
         else:
             self._get_autocompletes = self.attached_to_obj.get_discussion_autocompletes(self)
         return self._get_autocompletes
+
+    @property
+    def get_task(self):
+        """
+        Retrieves the task for the given discussion's attached object. For example Projects have root_task while TaskAnswer discussion would have a task.
+        """
+        if hasattr(self.attached_to_obj, 'root_task'):
+            return self.attached_to_obj.root_task
+        elif hasattr(self.attached_to_obj, 'task'):
+            return self.attached_to_obj.task
+        else:
+            return False#TODO: not sure what to do if the model isn't related to a Task
 
 class Comment(models.Model):
     discussion = models.ForeignKey(Discussion, related_name="comments", on_delete=models.CASCADE, help_text="The Discussion that this comment is attached to.")
