@@ -1,8 +1,6 @@
 # Utility functions
 import re
-import json
-
-from .models import CommonControlProvider, CommonControl
+from structlog import get_logger
 
 def replace_line_breaks(text, break_src="\n", break_trg="<br />"):
     """ replace one type of line break with another in text block """
@@ -50,7 +48,12 @@ def oscalize_control_id(cl_id):
     #   ac.1.001
     pattern = re.compile("^[A-Za-z][A-Za-z]-[0-9() .]*$|^3\.[0-9]{1,2}\.[0-9]{1,2}$|^[A-Za-z][A-Za-z][.][0-9][.][0-9]{1,3}")
     if not pattern.match(cl_id):
-        return ""
+        logger = get_logger()
+        logger.warning(
+            event=f"The given control could not be parsed given the Control ID structure",
+            object={"object": "control", "id": cl_id, "pattern_result": ""}
+        )
+        return cl_id
 
     # Handle properly formatted existing id
     # Transform various patterns of control ids into OSCAL format
