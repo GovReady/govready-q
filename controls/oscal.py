@@ -74,6 +74,13 @@ def uhash(obj):
     h = hash(obj)
     return h + sys.maxsize + 1
 
+def de_oscalize_control(control_id):
+    """
+    Returns the regular control formatting from an oscalized version of the control number.
+    de_oscalize_control("ac-2.3") --> AC-2 (3)
+    """
+    return re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)\.([0-9]*)$', r'\1\2 (\3)', control_id).upper()
+
 class Catalog(object):
     """Represent a catalog"""
 
@@ -398,7 +405,7 @@ class Catalog(object):
             description_print = description.replace("\n", "<br/>")
             cl_dict = {
                 "id": control['id'],
-                "id_display": re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)\.([0-9]*)$', r'\1\2 (\3)', control['id']),
+                "id_display": de_oscalize_control(control['id']),
                 "title": control['title'],
                 "family_id": family_id,
                 "family_title": self.get_group_title_by_id(family_id),
