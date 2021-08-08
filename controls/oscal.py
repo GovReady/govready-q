@@ -6,56 +6,47 @@ import re
 from pathlib import Path
 import sys
 
+import auto_prefetch
+from django.db import models
+from django.utils.functional import cached_property
+from jsonfield import JSONField
+
+
 CATALOG_PATH = os.path.join(os.path.dirname(__file__), 'data', 'catalogs')
-EXTERNAL_CATALOG_PATH = os.path.join(f"{os.getcwd()}",'local', 'controls', 'data', 'catalogs')
+BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
+
+class CatalogData(auto_prefetch.Model):
+    catalog_key = models.CharField(max_length=100, help_text="Unique key for catalog", unique=True, blank=False, null=False)
+    catalog_json = JSONField(blank=True, null=True, help_text="JSON object representing the OSCAL-formatted control catalog.")
+    baselines_json = JSONField(blank=True, null=True, help_text="JSON object representing the baselines for the catalog.")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    def __str__(self):
+        return "'%s id=%d'" % (self.catalog_key, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "'%s id=%d'" % (self.catalog_key, self.id)
 
 class Catalogs(object):
     """Represent list of catalogs"""
 
     # well known catalog identifiers
-
     NIST_SP_800_53_rev4 = 'NIST_SP-800-53_rev4'
     NIST_SP_800_53_rev5 = 'NIST_SP-800-53_rev5'
     NIST_SP_800_171_rev1 = 'NIST_SP-800-171_rev1'
     CMMC_ver1 = 'CMMC_ver1'
 
     def __init__(self):
-        self.catalog_path = CATALOG_PATH
-        # self.catalog = None
         self.catalog_keys = self._list_catalog_keys()
         self.index = self._build_index()
 
-    def extend_external_catalogs(self, catalog_info, extendtype):
-        """
-        Add external catalogs to list of catalogs
-        """
-        os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
-        external_catalogs = [file for file in os.listdir(EXTERNAL_CATALOG_PATH) if
-                  file.endswith('.json')]
-        catalog_info = check_and_extend(catalog_info, external_catalogs, extendtype, "_catalog")
-
-        return catalog_info
-
-    def _list_catalog_files(self):
-        return self.extend_external_catalogs([
-            'NIST_SP-800-53_rev4_catalog.json',
-            'NIST_SP-800-53_rev5_catalog.json',
-            'NIST_SP-800-171_rev1_catalog.json',
-            'CMMC_ver1_catalog.json'
-        ], "files")
-
     def _list_catalog_keys(self):
-
-        return self.extend_external_catalogs([
-            Catalogs.NIST_SP_800_53_rev4,
-            Catalogs.NIST_SP_800_53_rev5,
-            Catalogs.NIST_SP_800_171_rev1,
-            Catalogs.CMMC_ver1
-        ], "keys")
+        return list(CatalogData.objects.order_by('catalog_key').values_list('catalog_key', flat=True).distinct())
 
     def _load_catalog_json(self, catalog_key):
         catalog = Catalog(catalog_key)
-        #print(catalog_key, catalog._load_catalog_json())
         return catalog._load_catalog_json()
 
     def _build_index(self):
@@ -76,25 +67,12 @@ class Catalogs(object):
         """
         List catalog objects
         """
-        return [Catalog(key) for key in Catalogs()._list_catalog_keys()]
-
+        return [Catalog.GetInstance(catalog_key=key) for key in Catalogs()._list_catalog_keys()]
 
 def uhash(obj):
     """Return a positive hash code"""
     h = hash(obj)
     return h + sys.maxsize + 1
-
-def check_and_extend(values, external_values, extendtype, splitter):
-    """
-    Modularize value to extend
-    """
-    if extendtype == "keys":
-        keys = [key.split(f'{splitter}.json')[0] for key in external_values]
-        values.extend(keys)
-    elif extendtype == "files":
-        files = [file for file in external_values]
-        values.extend(files)
-    return values
 
 def de_oscalize_control(control_id):
     """
@@ -108,10 +86,10 @@ class Catalog(object):
 
     # Create a singleton instance of this class per catalog. GetInstance returns
     # that singleton instance. Instead of doing
-    # `cg = Catalog(catalog_key=Catalogs.NIST_SP_800_53_rev4)`,
-    # do `cg = Catalog.GetInstance(catalog_key=Catalogs.NIST_SP_800_53_rev4')`.
+    # `cg = Catalog(catalog_key='NIST_SP-800-53_rev4')`,
+    # do `cg = Catalog.GetInstance(catalog_key='NIST_SP-800-53_rev4')`.
     @classmethod
-    def GetInstance(cls, catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
+    def GetInstance(cls, catalog_key='NIST_SP-800-53_rev4', parameter_values=dict()):
         # Create a new instance of Catalog() the first time for each
         # catalog key / parameter combo
         # this method is called. Keep it in memory indefinitely.
@@ -132,11 +110,10 @@ class Catalog(object):
             catalog_instance_key += '_' + str(parameter_values_hash)
         return catalog_instance_key.replace('-', '_')
 
-    def __init__(self, catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
+    def __init__(self, catalog_key='NIST_SP-800-53_rev4', parameter_values=dict()):
         self.catalog_key = catalog_key
         self.catalog_key_display = catalog_key.replace("_", " ")
         self.catalog_path = CATALOG_PATH
-        self.external_catalog_path = EXTERNAL_CATALOG_PATH
         self.catalog_file = catalog_key + "_catalog.json"
         try:
             self.oscal = self._load_catalog_json()
@@ -163,22 +140,12 @@ class Catalog(object):
 
     def _load_catalog_json(self):
         """Read catalog file - JSON"""
-        catalog_file = os.path.join(self.catalog_path, self.catalog_file)
-        catalog_file_external = os.path.join(self.external_catalog_path, self.catalog_file)
-        # Get catalog file from internal or "external" catalog files
-        if os.path.isfile(catalog_file):
-            with open(catalog_file, 'r') as json_file:
-                data = json.load(json_file)
-                oscal = data['catalog']
-            return oscal
-        elif os.path.isfile(catalog_file_external):
-            with open(catalog_file_external, 'r') as json_file:
-                data = json.load(json_file)
-                oscal = data['catalog']
-            return oscal
-        else:
-            # Catalog file doesn't exist
-            return False
+
+        # Get catalog from database
+        # TODO: check for DB miss
+        catalog_record = CatalogData.objects.get(catalog_key=self.catalog_key)
+        oscal = catalog_record.catalog_json['catalog']
+        return oscal
 
     def find_dict_by_value(self, search_array, search_key, search_value):
         """Return the dictionary in an array of dictionaries with a key matching a value"""

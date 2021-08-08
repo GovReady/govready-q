@@ -14,6 +14,7 @@ v0.9.8-dev (August xx, 2021)
 **Data changes**
 
 * Add JSONfield `value` to SystemSettings model to support specific detail values.
+* Retrieve Catalog data from database instead of file system with new controls.models.CatalogData model.
 
 
 v0.9.7 (August 06, 2021)

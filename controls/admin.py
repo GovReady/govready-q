@@ -2,6 +2,7 @@ import csv
 from django.contrib import admin
 from django.http import HttpResponse
 from .models import ImportRecord, Statement, Element, ElementControl, ElementRole, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam, Deployment, SystemAssessmentResult
+from .oscal import CatalogData
 from guardian.admin import GuardedModelAdmin
 from simple_history.admin import SimpleHistoryAdmin
 
@@ -89,6 +90,9 @@ class SystemAssessmentResultAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'system', 'deployment', 'uuid')
     search_fields = ('id', 'name', 'system', 'deployment', 'uuid')
 
+class CatalogDataAdmin(admin.ModelAdmin):
+    list_display = ('catalog_key',)
+    search_fields = ('catalog_key',)
 
 admin.site.register(ImportRecord, ImportRecordAdmin)
 admin.site.register(Statement, StatementAdmin)
@@ -102,4 +106,4 @@ admin.site.register(ElementCommonControl, ElementCommonControlAdmin)
 admin.site.register(Poam, PoamAdmin)
 admin.site.register(Deployment, DeploymentAdmin)
 admin.site.register(SystemAssessmentResult, SystemAssessmentResultAdmin)
-
+admin.site.register(CatalogData, CatalogDataAdmin)
