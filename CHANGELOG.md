@@ -7,6 +7,7 @@ v0.9.8-dev (August xx, 2021)
 **Developer changes**
 
 * Support autostart of a project, taking user to first question of a project when starting a new project.
+* Retrieve Catalog data from database instead of file system with new controls.models.CatalogData model.
 
 
 v0.9.7 (August 06, 2021)
