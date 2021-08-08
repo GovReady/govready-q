@@ -9,6 +9,7 @@ v0.9.8-dev (August xx, 2021)
 * Add SystemSettings `auto_start_project` to permit the automatic start of a particular project and automatic start of a question.
 * Add questions actions to redirect to project home page or project components.
 * Support auto start of project via global System Setting.
+* Create new route for displaying a single system component control.
 
 **Data changes**
 
@@ -49,7 +50,6 @@ v0.9.6 (July 15, 2021)
 * Added a Select/Deselect button for component comparison choice.
 * Add accordion to assessment page to provide information on getting data from Wazuh.
 * Add form to Assessments page to collect Wazuh information.
-* Create new route for displaying a single system component control.
 
 **Bug fixes**
 
