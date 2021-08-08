@@ -67,6 +67,7 @@ v0.9.6 (July 15, 2021)
 * Create baselines for CMMC catalog.
 * Fisma impact level is now represented as Security Sensitivity level following OSCAL's schema.
 
+
 v0.9.5 (June 23, 2021)
 ----------------------
 
