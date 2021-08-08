@@ -50,6 +50,7 @@ v0.9.6 (July 15, 2021)
 * Added a Select/Deselect button for component comparison choice.
 * Add accordion to assessment page to provide information on getting data from Wazuh.
 * Add form to Assessments page to collect Wazuh information.
+* Support auto start of project via global System Setting.
 
 **Bug fixes**
 
@@ -60,13 +61,15 @@ v0.9.6 (July 15, 2021)
 * Add custom Django command to batch import legacy control implementation statements from legacy SSPs Excel spreadsheet exports. Currently supports CSAM.
 * Added missing unit test for portfolio project endpoint.
 * Add `sec_srvc.SecurityService` class to represent a security service from which data could be collected.
+* Add SystemSettings `auto_start_project` to permit the automatic start of a particular project and automatic start of a question.
+* Add questions actions to redirect to project home page or project components.
 
 **Data changes**
 
 * Set all `StatementTypeEnum.<LABEL>.value` to `StatementTypeEnum.<LABEL>.name` in order for relevant label/term to show up in Django database admin interface.
 * Create baselines for CMMC catalog.
 * Fisma impact level is now represented as Security Sensitivity level following OSCAL's schema.
-
+* Add JSONfield `value` to SystemSettings model to support specific detail values.
 
 v0.9.5 (June 23, 2021)
 ----------------------
