@@ -581,7 +581,6 @@ class System(auto_prefetch.Model):
         except Statement.DoesNotExist:
             return {}
 
-
     @property
     def smts_common_controls_as_dict(self):
         common_controls = self.root_element.common_controls.all()
@@ -735,6 +734,23 @@ class System(auto_prefetch.Model):
         return components
 
     producer_elements = cached_property(get_producer_elements)
+
+    def get_producer_elements_control_impl_smts_dict(self):
+        smts = self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
+        # components = set()
+        components_smts = {}
+        for smt in smts:
+            if smt.producer_element:
+                # components.add(smt.producer_element)
+                if smt.producer_element in components_smts:
+                    components_smts[smt.producer_element].append(smt)
+                else:
+                    components_smts[smt.producer_element] = [smt]
+        # components = list(components)
+        # components.sort(key = lambda component:component.name)
+        return components_smts
+
+    producer_elements_control_impl_smts_dict = cached_property(get_producer_elements_control_impl_smts_dict)
 
     def set_component_control_status(self, element, status):
         """Batch update status of system control implementation statements for a specific element."""
