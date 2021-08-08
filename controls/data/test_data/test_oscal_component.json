@@ -1,138 +1,48 @@
 {
   "component-definition": {
-    "uuid": "098040f9-a453-4854-ad88-f093bb683dae",
+    "uuid": "8223d65f-57a9-4689-8f06-2a975ae2ad72",
     "metadata": {
-      "title": "Sample OSCAL for Testing",
-      "published": "2020-12-01T20:38:51+00:00",
-      "last-modified": "2020-12-01T20:25:29+00:00",
-      "version": "string",
-      "oscal-version": "1.0.0-milestone2"
+      "title": "Test Component Definition",
+      "last-modified": "2021-06-08T13:57:28.355446-04:00",
+      "version": "2020073",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "ee47836c-877c-4007-bbf3-c9d9bd805a9a",
+          "name": "Test Vendor",
+          "type": "organization"
+        }
+      ]
     },
-    "components": {
-      "098040f9-a453-4854-ad88-f093bb683dab": {
+    "components": [
+      {
+        "uuid": "b036a6ac-6cff-4066-92bc-74ddfd9ad6fa",
         "type": "software",
-        "title": "Test OSCAL Component1",
-        "description": "This is a sample OSCAL component.",
-        "control-implementations": [
+        "title": "test component 1",
+        "description": "This is a software component that implements basic authentication mechanisms.",
+        "responsible-roles": [
           {
-            "uuid": "0ab0b252-90d3-4d2c-9785-0c4efb254dfc",
-            "source": "NIST_SP-800-53_rev4",
-            "description": "Valid Catalog, Partial implementation of NIST_SP-800-53_rev4",
-            "implemented-requirements": [
-              {
-                "uuid": "1ab0b252-90d3-4d2c-9785-0c4efb254dfc",
-                "control-id": "ac-7",
-                "description": "Default statement description",
-                "remarks": "",
-                "statements" : {
-                  "ac-7_smt.a": {
-                    "uuid": "2ab0b252-90d3-4d2c-9785-0c4efb254dfc",
-                    "description": "Part a description"
-                  },
-                  "ac-7_smt.b": {
-                    "uuid": "3ab0b252-90d3-4d2c-9785-0c4efb254dfc",
-                    "description": "Part b description"
-                  }
-                },
-                "props": [
-                  {
-                  "name": "n/a",
-                  "value": "test"
-                  }
-                ]
-              },
-              {
-                "uuid": "4ab0b252-90d3-4d2c-9785-0c4efb254dfc",
-                "control-id": "ac-17(9)",
-                "description": "Sample extended control",
-                "remarks": "",
-                "statements" : {
-                  "ac-17(9)_smt.c": {
-                    "uuid": "5ab0b252-90d3-4d2c-9785-0c4efb254dfc",
-                    "description": "Part c of a sample control extension."
-                  }
-                }
-              }
-            ]
-          },
-          {
-            "uuid": "6ab0b252-90d3-4d2c-9785-0c4efb254dfc",
-            "source": "NIST_SP-800-53_rev5",
-            "description": "Valid Catalog, Partial implementation of NIST_SP-800-53_rev5",
-            "implemented-requirements": [
-              {
-                "uuid": "7ab0b252-90d3-4d2c-9785-0c4efb254dfc",
-                "control-id": "ac-7",
-                "description": "Default statement description",
-                "remarks": "",
-                "statements" : {
-                  "ac-7_smt.d": {
-                    "uuid": "8ab0b252-90d3-4d2c-9785-0c4efb254dfc",
-                    "description": "Part d description"
-                  }
-                }
-              }
+            "role-id": "supplier",
+            "party-uuids": [
+              "ee47836c-877c-4007-bbf3-c9d9bd805a9a"
             ]
           }
-        ]
-      },
-      "198040f9-a453-4854-ad88-f093bb683dab": {
-        "title": "Test OSCAL Component2",
-        "type": "software",
-        "description": "Sample Component #2 with invalid statements",
+        ],
         "control-implementations": [
           {
-            "uuid": "9ab0b252-90d3-4d2c-9785-0c4efb254dfc",
-            "source": "SMPL_SP-800-53_rev20",
-            "description": "Invalid Catalog",
+            "uuid": "cfcdd674-8595-4f98-a9d1-3ac70825c49f",
+            "source": "../../../nist.gov/SP800-53/rev4/json/NIST_SP-800-53_rev4_catalog.json",
+            "description": "This is a partial implementation of the SP 800-53 rev4 catalog, focusing on the control enhancement AC-2 (3).",
             "implemented-requirements": [
               {
-                "uuid": "0bb0b252-90d3-4d2c-9785-0c4efb254dfc",
-                "control-id": "ac-5",
-                "description": "Allow a user 5 login attempts before locking them out.",
-                "remarks": "",
-                "statements" : {
-                  "ac-5_smt.d": {
-                    "uuid": "1bb0b252-90d3-4d2c-9785-0c4efb254dfc",
-                    "description": "Part d description"
-                  }
-                },
-                "props": [
-                  {
-                  "name": "unused",
-                  "value": "x"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "uuid": "2bb0b252-90d3-4d2c-9785-0c4efb254dfc",
-            "source": "NIST_SP-800-53_rev4",
-            "description": "Valid Catalog, Partial implementation of NIST_SP-800-53_rev4",
-            "implemented-requirements": [
-              {
-                "uuid": "3bb0b252-90d3-4d2c-9785-0c4efb254dfc",
-                "control-id": "xz-0",
-                "description": "Invalid Control ID",
-                "remarks": "",
-                "statements" : {
-                  "xz-0_smt.d": {
-                    "uuid": "4bb0b252-90d3-4d2c-9785-0c4efb254dfc",
-                    "description": "Part d description"
-                  }
-                },
-                "props": [
-                  {
-                  "name": "unused",
-                  "value": "x"
-                  }
-                ]
+                "uuid": "d1016df0-9b5c-4839-86cd-f9c1d113077b",
+                "description": "Inactive accounts are automatically disabled based on the duration specified by the duration parameter. Disabled accounts are expected to be reviewed and removed when appropriate.",
+                "control-id": "ac-2.3"
               }
             ]
           }
         ]
       }
-    }
+    ]
   }
 }

@@ -80,15 +80,22 @@
                 {{ control.get_flattened_oscal_control_as_dict.title }}
             </div>
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-              {% with total=impl_smts_count|get_item:control.oscal_ctl_id %}
-                {% if total > 0%}
-                  {{ total }} component{{ total|pluralize }}
-                {% else %}
-                  <div class="center-text">
-                    &mdash;
-                  </div>
-                {% endif %}
-              {% endwith %}
+              <div class="center-text">
+                {% with total=impl_smts_cmpts_count|get_item:control.oscal_ctl_id %}
+                  {% if total > 0 %}
+                    {{ total }} component{{ total|pluralize }}
+                  {% else %}
+                      &mdash;
+                  {% endif %}
+                {% endwith %}
+              </div>
+              <div class="center-text">
+                {% with total=impl_smts_legacy_dict|get_item:control.oscal_ctl_id %}
+                  {% if total %}
+                      1 legacy statement{{ total|pluralize }}
+                  {% endif %}
+                {% endwith %}
+              </div>
             </div>
             {% get_obj_perms request.user for system as "system_perms" %}
             {% if "view_system" in system_perms %}
