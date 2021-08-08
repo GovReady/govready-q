@@ -527,7 +527,6 @@ def save_answer(request, task, answered, context, __):
                         messages.add_message(request, messages.INFO,
                                                      f'I\'ve updated the system and project name.')
 
-
                 # Process element actions
                 # -----------------------------------
                 # Only two actions are currently supported:
@@ -602,6 +601,25 @@ def save_answer(request, task, answered, context, __):
                                 messages.add_message(request, messages.INFO,
                                                      f'I\'ve deleted "{producer_element.name}" and its {smts_assigned_count} control implementation statements from the system.')
 
+                # Process project actions
+                # -----------------------------------
+                if a_obj == 'project':
+
+                    # Get all elements assigned role specified in the action
+                    # elements_with_role = Element.objects.filter(element_type="system_element").filter(roles__role=a_filter)
+
+                    # Add elements matching role to the selected components of a system
+                    if a_verb == "view_project":
+
+                        if a_filter == "project":
+                            # Redirect to the project's home page.
+                            response = JsonResponse({ "status": "ok", "redirect": project.get_absolute_url() })
+                            return response
+
+                        if a_filter == "components":
+                            # Redirect to the new project's components.
+                            response = JsonResponse({ "status": "ok", "redirect": f"/systems/{system_id}/components/selected" })
+                            return response
 
     # Form a JSON response to the AJAX request and indicate the
     # URL to redirect to, to load the next question.
