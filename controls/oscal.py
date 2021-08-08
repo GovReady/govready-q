@@ -44,6 +44,7 @@ class Catalogs(object):
 
     def _list_catalog_keys(self):
         return [item['catalog_key'] for item in CatalogData.objects.order_by().values('catalog_key').distinct()]
+        # return CatalogData.objects.order_by('catalog_key').values_list('catalog_key', flat=True).distinct()
 
     def _load_catalog_json(self, catalog_key):
         catalog = Catalog(catalog_key)

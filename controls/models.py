@@ -22,7 +22,6 @@ from copy import deepcopy
 from django.db import transaction
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
-EXTERNAL_BASELINE_PATH = os.path.join(f"{os.getcwd()}",'local', 'controls', 'data', 'baselines')
 ORGPARAM_PATH = os.path.join(os.path.dirname(__file__),'data','org_defined_parameters')
 
 class ImportRecord(models.Model):
@@ -797,6 +796,7 @@ class Baselines (object):
     def _list_keys(self):
         # TODO: only return keys for records that have baselines?
         return [item['catalog_key'] for item in CatalogData.objects.order_by().values('catalog_key').distinct()]
+        # return CatalogData.objects.order_by('catalog_key').values_list('catalog_key', flat=True).distinct()
 
     def _load_json(self, baselines_key):
         """Read baseline file - JSON"""

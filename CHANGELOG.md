@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.8-dev (August xx, 2021)
+----------------------------
+
+**Developer changes**
+
+* Retrieve Catalog data from database instead of file system with new controls.models.CatalogData model.
+
 
 v0.9.7 (August 06, 2021)
 ------------------------
@@ -20,7 +27,6 @@ v0.9.7 (August 06, 2021)
 * Added a proxy for parties and responsible parties for component OSCAL export.
 * Coverage 6.0b1 starts to use a modern hash algorithm (sha256) when fingerprinting for high-security environments, upgrading to avoid this safety fail.
 * Validate Component import and SSP with trestle the package.
-* Retrieve Catalog data from database instead of file system with new controls.models.CatalogData model.
 
 * **Bug fixes**
 
