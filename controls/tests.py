@@ -791,7 +791,7 @@ class PoamUnitTests(TestCase):
         # poam.delete()
         # self.assertTrue(poam.uuid is None)
 
-class OrgParamTests(TestCase):
+class OrgParamTests(SeleniumTest):
     """Class for OrgParam Unit Tests"""
 
     def test_org_params(self):
