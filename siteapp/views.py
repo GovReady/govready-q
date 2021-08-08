@@ -532,6 +532,63 @@ def apps_catalog(request):
     # If user is superuser, enable creating new apps
     authoring_tool_enabled = request.user.has_perm('guidedmodules.change_module')
 
+    # Auto start a project if set in database
+    # Temporarily pretend values set in development
+    # TODO: Maybe refactor! This code is close duplicate to what is in `apps_catalog_item` POST section
+    if "start" in request.GET and request.GET["start"]=="true" and SystemSettings.objects.filter(setting="auto_start_project").exists():
+        setting_asp = SystemSettings.objects.get(setting="auto_start_project")
+        if setting_asp.active:
+            source_slug = setting_asp.details.get('source_slug', None)
+            app_name = setting_asp.details.get('app_name', None)
+            module = setting_asp.details.get('module', None)
+
+            # can user start the app?
+            # Is this a module the user has access to? The app store
+            # does some authz based on the organization.
+            from guidedmodules.models import AppSource
+            catalog, _ = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
+            for app_catalog_info in catalog:
+                if app_catalog_info["key"] == source_slug + "/" + app_name:
+                    # We found it.
+                    break
+            else:
+                raise Http404()
+
+            # Start the most recent version of the app.
+            appver = app_catalog_info["versions"][0]
+            from guidedmodules.app_loading import ModuleDefinitionError
+            organization = Organization.objects.first() # temporary
+            folder = None
+            task = None
+            q = None
+            # Get portfolio project should be included in.
+            if request.GET.get("portfolio"):
+                portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+            else:
+                if not request.user.default_portfolio:
+                    request.user.create_default_portfolio_if_missing()
+                portfolio = request.user.default_portfolio
+            try:
+                project = start_app(appver, organization, request.user, folder, task, q, portfolio)
+            except ModuleDefinitionError as e:
+                error = str(e)
+
+            if module:
+                # Can the user create a task within this project?
+                if not project.can_start_task(request.user):
+                    return HttpResponseForbidden()
+
+                # Create the new subtask.
+                question_key = list(project.root_task.get_answers().answertuples)[0]
+                task = project.root_task.get_or_create_subtask(request.user, question_key)
+
+                # Redirect.
+                url = task.get_absolute_url()
+                return HttpResponseRedirect(url)
+
+            # Redirect to the new project.
+            return HttpResponseRedirect(project.get_absolute_url())
+
     return render(request, "app-store.html", {
         "apps": catalog_by_category,
         "filter_description": filter_description,
