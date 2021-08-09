@@ -24,3 +24,13 @@ def json(value):
 def get_item(dictionary, key):
     return dictionary.get(key, None)
 
+@register.filter
+def divide(value, arg):
+    try:
+        return float(value) / float(arg)
+    except (ValueError, ZeroDivisionError):
+        return None
+
+@register.filter
+def multiply(value, arg):
+    return float(value) * float(arg)

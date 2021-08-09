@@ -765,7 +765,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                 "components": [
                    {
                         "uuid": comp_uuid,
-                       "type": self.element.component_type.lower() or "software",
+                       "type": self.element.component_type.lower() if self.element.component_type is not None else "software",
                        "title": self.element.full_name or self.element.name,
                         "description": self.element.description,
                          "responsible-roles": responsible_roles, # TODO: gathering party-uuids, just filling for now
@@ -1927,7 +1927,6 @@ def get_editor_system(catalog_key, system_id):
     """
     Retrieves oscalized control id and catalog key. Also system object from system id.
     """
-
 
     catalog_key = oscalize_catalog_key(catalog_key)
 
