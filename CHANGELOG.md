@@ -6,7 +6,16 @@ v0.9.8-dev (August xx, 2021)
 
 **Developer changes**
 
-* Support autostart of a project, taking user to first question of a project when starting a new project.
+* Add SystemSettings `auto_start_project` to permit the automatic start of a particular project and automatic start of a question.
+* Add questions actions to redirect to project home page or project components.
+* Support auto start of project via global System Setting.
+* Create new route for displaying a single system component control.
+* New controls.models.System property producer_elements_control_impl_smts_dict to get dictionary of control implementation statements associated with a system element.
+* New controls.models.System property producer_elements_control_impl_smts_status_dict to get dictionary of status of control implementation statements associated with a system element.
+
+**Data changes**
+
+* Add JSONfield `value` to SystemSettings model to support specific detail values.
 * Retrieve Catalog data from database instead of file system with new controls.models.CatalogData model.
 
 

@@ -1049,6 +1049,15 @@ def project(request, project):
     else:
         confidentiality, integrity, availability = None, None, None
 
+    # Retrieve components
+    model = Element
+    ordering = ['name']
+    elements = [element for element in project.system.producer_elements if element.element_type != "system"]
+
+    # Retrieve statements, smt statuses associated with system elements
+    producer_elements_control_impl_smts_dict = project.system.producer_elements_control_impl_smts_dict
+    producer_elements_control_impl_smts_status_dict = project.system.producer_elements_control_impl_smts_status_dict
+
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
@@ -1087,7 +1096,11 @@ def project(request, project):
         "class_status": Classification.objects.last(),
 
         "authoring_tool_enabled": authoring_tool_enabled,
-        "import_project_form": ImportProjectForm()
+        "import_project_form": ImportProjectForm(),
+
+        "elements": elements,
+        "producer_elements_control_impl_smts_dict": producer_elements_control_impl_smts_dict,
+        "producer_elements_control_impl_smts_status_dict": producer_elements_control_impl_smts_status_dict,
     })
 
 def project_edit(request, project_id):
