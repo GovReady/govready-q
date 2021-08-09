@@ -1054,8 +1054,9 @@ def project(request, project):
     ordering = ['name']
     elements = [element for element in project.system.producer_elements if element.element_type != "system"]
 
-    # Retrieve statements associated with system elements
+    # Retrieve statements, smt statuses associated with system elements
     producer_elements_control_impl_smts_dict = project.system.producer_elements_control_impl_smts_dict
+    producer_elements_control_impl_smts_status_dict = project.system.producer_elements_control_impl_smts_status_dict
 
     # Render.
     return render(request, "project.html", {
@@ -1098,7 +1099,8 @@ def project(request, project):
         "import_project_form": ImportProjectForm(),
 
         "elements": elements,
-        "producer_elements_control_impl_smts_dict": producer_elements_control_impl_smts_dict
+        "producer_elements_control_impl_smts_dict": producer_elements_control_impl_smts_dict,
+        "producer_elements_control_impl_smts_status_dict": producer_elements_control_impl_smts_status_dict,
     })
 
 def project_edit(request, project_id):

@@ -737,7 +737,6 @@ class System(auto_prefetch.Model):
 
     def get_producer_elements_control_impl_smts_dict(self):
         smts = self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
-        # components = set()
         components_smts = {}
         for smt in smts:
             if smt.producer_element:
@@ -746,11 +745,24 @@ class System(auto_prefetch.Model):
                     components_smts[smt.producer_element].append(smt)
                 else:
                     components_smts[smt.producer_element] = [smt]
-        # components = list(components)
-        # components.sort(key = lambda component:component.name)
         return components_smts
 
     producer_elements_control_impl_smts_dict = cached_property(get_producer_elements_control_impl_smts_dict)
+
+    def get_producer_elements_control_impl_smts_status_dict(self):
+        components_smts = self.producer_elements_control_impl_smts_dict
+        components_smts_status = {}
+        for component in components_smts.keys():
+            cmpt_smts_status = {}
+            for smt in components_smts[component]:
+                if smt.status in cmpt_smts_status:
+                    cmpt_smts_status[smt.status] += 1
+                else:
+                    cmpt_smts_status[smt.status] = 1
+            components_smts_status[component] = cmpt_smts_status
+        return components_smts_status
+
+    producer_elements_control_impl_smts_status_dict = cached_property(get_producer_elements_control_impl_smts_status_dict)
 
     def set_component_control_status(self, element, status):
         """Batch update status of system control implementation statements for a specific element."""

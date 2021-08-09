@@ -11,6 +11,7 @@ v0.9.8-dev (August xx, 2021)
 * Support auto start of project via global System Setting.
 * Create new route for displaying a single system component control.
 * New controls.models.System property producer_elements_control_impl_smts_dict to get dictionary of control implementation statements associated with a system element.
+* New controls.models.System property producer_elements_control_impl_smts_status_dict to get dictionary of status of control implementation statements associated with a system element.
 
 **Data changes**
 

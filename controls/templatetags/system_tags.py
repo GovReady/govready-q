@@ -26,6 +26,8 @@ def get_item(dictionary, key):
 
 @register.filter
 def divide(value, arg):
+    if value is None:
+        value = 0
     try:
         return float(value) / float(arg)
     except (ValueError, ZeroDivisionError):
