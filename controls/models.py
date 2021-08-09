@@ -15,14 +15,13 @@ from natsort import natsorted
 from controls.enums.components import ComponentTypeEnum, ComponentStateEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from controls.enums.statements import StatementTypeEnum
-from controls.oscal import Catalogs, Catalog, check_and_extend
+from controls.oscal import Catalogs, Catalog, CatalogData
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
 from copy import deepcopy
 from django.db import transaction
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
-EXTERNAL_BASELINE_PATH = os.path.join(f"{os.getcwd()}",'local', 'controls', 'data', 'baselines')
 ORGPARAM_PATH = os.path.join(os.path.dirname(__file__),'data','org_defined_parameters')
 
 class ImportRecord(models.Model):
@@ -582,7 +581,6 @@ class System(auto_prefetch.Model):
         except Statement.DoesNotExist:
             return {}
 
-
     @property
     def smts_common_controls_as_dict(self):
         common_controls = self.root_element.common_controls.all()
@@ -737,6 +735,35 @@ class System(auto_prefetch.Model):
 
     producer_elements = cached_property(get_producer_elements)
 
+    def get_producer_elements_control_impl_smts_dict(self):
+        smts = self.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
+        components_smts = {}
+        for smt in smts:
+            if smt.producer_element:
+                # components.add(smt.producer_element)
+                if smt.producer_element in components_smts:
+                    components_smts[smt.producer_element].append(smt)
+                else:
+                    components_smts[smt.producer_element] = [smt]
+        return components_smts
+
+    producer_elements_control_impl_smts_dict = cached_property(get_producer_elements_control_impl_smts_dict)
+
+    def get_producer_elements_control_impl_smts_status_dict(self):
+        components_smts = self.producer_elements_control_impl_smts_dict
+        components_smts_status = {}
+        for component in components_smts.keys():
+            cmpt_smts_status = {}
+            for smt in components_smts[component]:
+                if smt.status in cmpt_smts_status:
+                    cmpt_smts_status[smt.status] += 1
+                else:
+                    cmpt_smts_status[smt.status] = 1
+            components_smts_status[component] = cmpt_smts_status
+        return components_smts_status
+
+    producer_elements_control_impl_smts_status_dict = cached_property(get_producer_elements_control_impl_smts_status_dict)
+
     def set_component_control_status(self, element, status):
         """Batch update status of system control implementation statements for a specific element."""
 
@@ -783,9 +810,7 @@ class Baselines (object):
     def __init__(self):
 
         self.file_path = BASELINE_PATH
-        self.external_file_path = EXTERNAL_BASELINE_PATH
         self.baselines_keys = self._list_keys()
-        # self.index = self._build_index()
 
         # Usage
             # from controls.models import Baselines
@@ -796,44 +821,18 @@ class Baselines (object):
             # # Returns ['ac-1', 'ac-2', 'ac-2.1', 'ac-2.2', ...]
             # bs.get_baseline_controls('NIST_SP-800-53_rev4', 'moderate')
 
-    def _list_files(self):
-        return self.extend_external_baselines([
-            'NIST_SP-800-53_rev4_baselines.json',
-            # 'NIST_SP-800-53_rev5_baselines.json',
-            'NIST_SP-800-171_rev1_baselines.json',
-            'CMMC_ver1_baselines.json'
-        ], "files")
-
-
     def _list_keys(self):
-        return self.extend_external_baselines([
-            'NIST_SP-800-53_rev4',
-            # 'NIST_SP-800-53_rev5',
-            'NIST_SP-800-171_rev1',
-            'CMMC_ver1'
-        ], "keys")
-
+        # TODO: only return keys for records that have baselines?
+        return list(CatalogData.objects.order_by('catalog_key').values_list('catalog_key', flat=True).distinct())
 
     def _load_json(self, baselines_key):
         """Read baseline file - JSON"""
-        # TODO Escape baselines_key
-        self.data_file = baselines_key + "_baselines.json"
-        data_file = os.path.join(self.file_path, self.data_file)
-        # Does file exist?
-        if not os.path.isfile(data_file):
-            # Check if there any external oscal baseline files
-            try:
-                data_file = os.path.join(self.external_file_path, self.data_file)
-            except:
-                print("ERROR: {} does not exist".format(data_file))
-                return False
-        # Load file as json
-        try:
-            with open(data_file, 'r') as json_file:
-                data = json.load(json_file)
-            return data
-        except:
-            print("ERROR: {} could not be read or could not be read as json".format(data_file))
+
+        catalog_record = CatalogData.objects.get(catalog_key=baselines_key)
+        baselines = catalog_record.baselines_json
+        if baselines:
+            return baselines
+        else:
             return False
 
     def get_baseline_controls(self, baselines_key, baseline_name):
@@ -848,22 +847,6 @@ class Baselines (object):
         else:
             print("Requested baseline name not found in baselines_key data file")
             return False
-
-    @property
-    def body(self):
-        return self.legacy_imp_smt
-
-
-    def extend_external_baselines(self, baseline_info, extendtype):
-        """
-        Add external baselines to list of baselines
-        """
-        os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
-        external_baselines = [file for file in os.listdir(EXTERNAL_BASELINE_PATH) if
-                  file.endswith('.json')]
-
-        baseline_info = check_and_extend(baseline_info, external_baselines, extendtype, "_baselines")
-        return baseline_info
 
 class OrgParams(object):
     """
@@ -1015,4 +998,6 @@ class SystemAssessmentResult(auto_prefetch.Model):
 #     def __repr__(self):
 #         # For debugging.
 #         return "<AssesmentResult %s id=%d>" % (self.statement, self.id)
+
+
 

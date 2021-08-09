@@ -473,7 +473,7 @@ def save_answer(request, task, answered, context, __):
                 # The system actions are currently supported:
                 #   1. `system/assign_baseline/<value>` - Automatically sets the system baseline controls to the selected impact value
                 #   2. `system/update_system_and_project_name/<value>` - Automatically sets the system, project names
-                if a_obj == 'system':
+                if a_obj == 'system' and skipped_reason is None:
 
                     # Assign baseline set of controls to a root_element
                     if a_verb == "assign_baseline":
@@ -527,13 +527,12 @@ def save_answer(request, task, answered, context, __):
                         messages.add_message(request, messages.INFO,
                                                      f'I\'ve updated the system and project name.')
 
-
                 # Process element actions
                 # -----------------------------------
                 # Only two actions are currently supported:
                 #   1. `element/add_role/<role_value>` - Automatically add elements to the selected components of a system
                 #   2. `element/del_role/<role_value>` - Automatically delete elements from the selected components of a system
-                if a_obj == 'element':
+                if a_obj == 'element' and skipped_reason is None:
 
                     # Get all elements assigned role specified in the action
                     elements_with_role = Element.objects.filter(element_type="system_element").filter(roles__role=a_filter)
@@ -593,7 +592,7 @@ def save_answer(request, task, answered, context, __):
                                                  f'Oops. I tried adding "{producer_element.name}" to the system, but no control implementation statements were found.')
 
                     # Delete elements matching role from the selected components of a system
-                    if a_verb == "del_role":
+                    if a_verb == "del_role" and skipped_reason is None:
                         for producer_element in elements_with_role:
                             # Delete component from system
                             smts_assigned_count = len(Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name))
@@ -602,6 +601,25 @@ def save_answer(request, task, answered, context, __):
                                 messages.add_message(request, messages.INFO,
                                                      f'I\'ve deleted "{producer_element.name}" and its {smts_assigned_count} control implementation statements from the system.')
 
+                # Process project actions
+                # -----------------------------------
+                if a_obj == 'project' and skipped_reason is None:
+
+                    # Get all elements assigned role specified in the action
+                    # elements_with_role = Element.objects.filter(element_type="system_element").filter(roles__role=a_filter)
+
+                    # Add elements matching role to the selected components of a system
+                    if a_verb == "view_project":
+
+                        if a_filter == "project":
+                            # Redirect to the project's home page.
+                            response = JsonResponse({ "status": "ok", "redirect": project.get_absolute_url() })
+                            return response
+
+                        if a_filter == "components":
+                            # Redirect to the new project's components.
+                            response = JsonResponse({ "status": "ok", "redirect": f"/systems/{system_id}/components/selected" })
+                            return response
 
     # Form a JSON response to the AJAX request and indicate the
     # URL to redirect to, to load the next question.

@@ -1,6 +1,24 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.8 (August 09, 2021)
+------------------------
+
+**Developer changes**
+
+* Add SystemSettings `auto_start_project` to permit the automatic start of a particular project and automatic start of a question.
+* Add questions actions to redirect to project home page or project components.
+* Support auto start of project via global System Setting.
+* Create new route for displaying a single system component control.
+* New controls.models.System property producer_elements_control_impl_smts_dict to get dictionary of control implementation statements associated with a system element.
+* New controls.models.System property producer_elements_control_impl_smts_status_dict to get dictionary of status of control implementation statements associated with a system element.
+
+**Data changes**
+
+* Add JSONfield `value` to SystemSettings model to support specific detail values.
+* Retrieve Catalog data from database instead of file system with new controls.models.CatalogData model.
+
+
 v0.9.7 (August 06, 2021)
 ------------------------
 
@@ -12,7 +30,7 @@ v0.9.7 (August 06, 2021)
 **Developer changes**
 
 * Support datagrid specifying select type cell.
-* Added new function OSCAL_ssp_export in order to export a system's security plan in OSCAL, this replaces the usual JSON export. Added a several fields of data for OSCAL SSP. 
+* Added new function OSCAL_ssp_export in order to export a system's security plan in OSCAL, this replaces the usual JSON export. Added a several fields of data for OSCAL SSP.
 * If a component to be imported has a catalog key that is not found in the internal or external catalog list then it will be skipped and logged.
 * If no statements are created the resulting element/component is deleted.
 * Component and System Security Plan exports pass OSCAL 1.0.0 schema validation.
@@ -35,6 +53,7 @@ v0.9.6 (July 15, 2021)
 * Added a Select/Deselect button for component comparison choice.
 * Add accordion to assessment page to provide information on getting data from Wazuh.
 * Add form to Assessments page to collect Wazuh information.
+* Support auto start of project via global System Setting.
 
 **Bug fixes**
 
@@ -45,13 +64,15 @@ v0.9.6 (July 15, 2021)
 * Add custom Django command to batch import legacy control implementation statements from legacy SSPs Excel spreadsheet exports. Currently supports CSAM.
 * Added missing unit test for portfolio project endpoint.
 * Add `sec_srvc.SecurityService` class to represent a security service from which data could be collected.
+* Add SystemSettings `auto_start_project` to permit the automatic start of a particular project and automatic start of a question.
+* Add questions actions to redirect to project home page or project components.
 
 **Data changes**
 
 * Set all `StatementTypeEnum.<LABEL>.value` to `StatementTypeEnum.<LABEL>.name` in order for relevant label/term to show up in Django database admin interface.
 * Create baselines for CMMC catalog.
 * Fisma impact level is now represented as Security Sensitivity level following OSCAL's schema.
-
+* Add JSONfield `value` to SystemSettings model to support specific detail values.
 
 v0.9.5 (June 23, 2021)
 ----------------------

@@ -17,6 +17,7 @@ import re
 import tempfile
 import time
 import unittest
+import json
 
 from django.contrib.auth import authenticate
 from django.test.client import RequestFactory
@@ -35,6 +36,7 @@ from guidedmodules.tests import TestCaseWithFixtureData
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
 from controls.models import Statement, Element, System
+from controls.oscal import CatalogData, Catalogs, Catalog
 from siteapp.settings import HEADLESS, DOS
 from siteapp.views import project_edit
 from tools.utils.linux_to_dos import convert_w
@@ -140,6 +142,31 @@ class SeleniumTest(StaticLiveServerTestCase):
     def setUp(self):
         # clear the browser's cookies before each test
         self.browser.delete_all_cookies()
+        # Add catalogs to database
+        CATALOG_PATH = os.path.join(os.path.dirname(__file__),'..','controls','data','catalogs')
+        BASELINE_PATH = os.path.join(os.path.dirname(__file__),'..','controls','data','baselines')
+        catalog_files = [file for file in os.listdir(CATALOG_PATH) if file.endswith('.json')]
+        for cf in catalog_files:
+            catalog_key = cf.replace("_catalog.json", "")
+            with open(os.path.join(CATALOG_PATH,cf), 'r') as json_file:
+                catalog_json = json.load(json_file)
+            baseline_filename = cf.replace("_catalog.json", "_baselines.json")
+            if os.path.isfile(os.path.join(BASELINE_PATH, baseline_filename)):
+                with open(os.path.join(BASELINE_PATH, baseline_filename), 'r') as json_file:
+                    baselines_json = json.load(json_file)
+            else:
+                baselines_json = {}
+
+            catalog, created = CatalogData.objects.get_or_create(
+                    catalog_key=catalog_key,
+                    catalog_json=catalog_json,
+                    baselines_json=baselines_json
+                )
+            # if created:
+            #     print(f"{catalog_key} record created into database")
+            # else:
+            #     print(f"{catalog_key} record found in database")
+
 
     def navigateToPage(self, path):
         self.browser.get(self.url(path))

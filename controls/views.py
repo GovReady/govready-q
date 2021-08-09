@@ -765,7 +765,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                 "components": [
                    {
                         "uuid": comp_uuid,
-                       "type": self.element.component_type.lower() or "software",
+                       "type": self.element.component_type.lower() if self.element.component_type is not None else "software",
                        "title": self.element.full_name or self.element.name,
                         "description": self.element.description,
                          "responsible-roles": responsible_roles, # TODO: gathering party-uuids, just filling for now
@@ -1109,6 +1109,57 @@ def system_element(request, system_id, element_id):
         }
         return render(request, "systems/element_detail_tabs.html", context)
 
+@login_required
+def system_element_control(request, system_id, element_id, catalog_key, control_id):
+    """Display System's selected element detail view"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve element
+        element = Element.objects.get(id=element_id)
+
+        # Retrieve impl_smts produced by element and consumed by system
+        # Get the impl_smts contributed by this component to system
+        impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+        # Get the cont
+        impl_smt_ctl = next((ctl for ctl in impl_smts if ctl.sid == control_id and ctl.sid_class == catalog_key), None)
+
+        # Retrieve control ids
+        # TODO: Only need to individual control
+        catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+        # Retrieve control
+        control = next((ctl for ctl in catalog_controls if ctl['id'] == oscalize_control_id(control_id)), None)
+
+        # Build OSCAL and OpenControl
+        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+        opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+        states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
+        types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
+        # Return the system's element information
+        context = {
+            "states": states,
+            "types": types,
+            "system": system,
+            "project": project,
+            "element": element,
+            "impl_smts": impl_smts,
+            "impl_smt_ctl": impl_smt_ctl,
+            "catalog_controls": catalog_controls,
+            "catalog_key": catalog_key,
+            "control": control,
+            "oscal": oscal_string,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "opencontrol": opencontrol_string,
+        }
+        return render(request, "systems/element_detail_control.html", context)
+
+
 def edit_component_state(request, system_id, element_id):
     """
     Edit system component state
@@ -1289,21 +1340,18 @@ def component_library_component(request, element_id):
 def api_controls_select(request):
     """Return list of controls in json for select2 options from all control catalogs"""
 
-    # Create array to hold accumulated controls
+    cl_id = request.GET.get('q', None).lower()
+    # Search control catalogs in a loop and add results to an array
     cxs = []
-    # Loop through control catalogs
     catalogs = Catalogs()
     for ck in catalogs._list_catalog_keys():
         cx = Catalog.GetInstance(catalog_key=ck)
-        # Get controls
-        ctl_list = cx.get_flattened_controls_all_as_dict()
-        # Build objects for rendering Select2 auto complete list from catalog
-        select_list = [{'id': ctl_list[ctl]['id'], 'title': ctl_list[ctl]['title'], 'class': ctl_list[ctl]['class'], 'catalog_key_display': cx.catalog_key_display, 'display_text': f"{ctl_list[ctl]['label']} - {ctl_list[ctl]['title']} - {cx.catalog_key_display}"} for ctl in ctl_list]
-        # Extend array of accumuated controls with catalog's control list
-        cxs.extend(select_list)
-    # Sort the accummulated list
+        ctr = cx.get_control_by_id(cl_id)
+        # TODO: Better representation of control ids for case-insensitive searching insteading of listing ids in both cases
+        # TODO: OSCALizing control id?
+        if ctr:
+            cxs.append({'id': ctr['id'], 'title': ctr['title'], 'class': ctr['class'], 'catalog_key_display': cx.catalog_key_display, 'display_text': f"{ctr['id']} - {ctr['title']} - {cx.catalog_key_display} - ({ctr['id'].upper()})"})
     cxs.sort(key = operator.itemgetter('id', 'catalog_key_display'))
-
     status = "success"
     message = "Sending list."
     return JsonResponse( {"status": status, "message": message, "data": {"controls": cxs} })
@@ -1879,7 +1927,6 @@ def get_editor_system(catalog_key, system_id):
     """
     Retrieves oscalized control id and catalog key. Also system object from system id.
     """
-
 
     catalog_key = oscalize_catalog_key(catalog_key)
 
