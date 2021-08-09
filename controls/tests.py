@@ -144,68 +144,6 @@ class ControlUITests(SeleniumTest):
         catalog_list = Catalogs().list_catalogs()
         self.assertEqual(len(catalog_list), 4)
 
-    # def test_extend_external_catalogs(self):
-    #     """
-    #     Extending catalog file and key list
-    #     """
-    #     os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
-    #     with tempfile.TemporaryFile() as d:
-    #         temp_file_name = os.path.join(EXTERNAL_CATALOG_PATH, f'{d.name}_revtest_catalog.json')
-
-    #         # finding fixture data and dumping in the temp file
-    #         test_catalog = os.getcwd() + "/fixtures/test_catalog.json"
-    #         with open(test_catalog, 'r') as json_file:
-    #             catalog_data = json.load(json_file)
-    #         with open(temp_file_name, 'w') as cred:
-    #             json.dump(catalog_data, cred)
-
-    #         extended_files = Catalogs.extend_external_catalogs(self, [
-    #             'NIST_SP-800-53_rev4_catalog.json',
-    #             'NIST_SP-800-53_rev5_catalog.json',
-    #             'NIST_SP-800-171_rev1_catalog.json'
-    #         ], "files")
-
-    #         self.assertEqual(len(extended_files), 4)
-
-    #         extended_keys = Catalogs.extend_external_catalogs(self, [
-    #             Catalogs.NIST_SP_800_53_rev4,
-    #             Catalogs.NIST_SP_800_53_rev5,
-    #             Catalogs.NIST_SP_800_171_rev1
-    #         ], "keys")
-    #         self.assertEqual(len(extended_keys), 4)
-    #         # Delete temp file
-    #         os.remove(temp_file_name)
-#
-    # def test_extend_external_baseline(self):
-    #     """
-    #     Extending baseline file and key list
-    #     """
-    #     os.makedirs(EXTERNAL_BASELINE_PATH, exist_ok=True)
-    #     with tempfile.TemporaryFile() as d:
-    #         temp_file_name = os.path.join(EXTERNAL_BASELINE_PATH, f'{d.name}_revtest_baseline.json')
-
-    #         # finding fixture data and dumping in the temp file
-    #         test_baseline = os.getcwd() + "/fixtures/test_baselines.json"
-    #         with open(test_baseline, 'r') as json_file:
-    #             baseline_data = json.load(json_file)
-    #         with open(temp_file_name, 'w') as cred:
-    #             json.dump(baseline_data, cred)
-
-    #         extended_files = Baselines.extend_external_baselines(self, [
-    #         'NIST_SP-800-53_rev4_baselines.json',
-    #         'NIST_SP-800-171_rev1_baselines.json'
-    #     ], "files")
-
-    #         self.assertEqual(len(extended_files), 3)
-
-    #         extended_keys = Baselines.extend_external_baselines(self, [
-    #         'NIST_SP-800-53_rev4',
-    #         'NIST_SP-800-171_rev1'
-    #     ], "keys")
-
-    #         self.assertEqual(len(extended_keys), 3)
-    #     # Delete temp file
-    #     os.remove(temp_file_name)
 #####################################################################
 
 class ComponentUITests(OrganizationSiteFunctionalTests):
