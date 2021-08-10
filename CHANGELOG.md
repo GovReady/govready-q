@@ -1,11 +1,16 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.9-dev (August xx, 2021)
+v0.9.8.1-dev (August xx, 2021)
 ----------------------------
 
 **Developer changes**
 
+* Move creation of users in first_run to earlier in script.
+
+**Data changes**
+
+* Update sample components to OSCAL 1.0.0.
 
 
 v0.9.8 (August 09, 2021)
