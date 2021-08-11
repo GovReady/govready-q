@@ -1340,18 +1340,14 @@ def component_library_component(request, element_id):
 def api_controls_select(request):
     """Return list of controls in json for select2 options from all control catalogs"""
 
-    cl_id = request.GET.get('q', None).lower()
-    # Search control catalogs in a loop and add results to an array
+    cl_id = request.GET.get('q', None)
+    oscal_ctl_id = oscalize_control_id(cl_id)
+    catalogs_containing_cl_id = CatalogData.objects.filter(Q(catalog_json__catalog__groups__contains=[{"controls": [{"id": oscal_ctl_id}]}]) |
+        Q(catalog_json__catalog__groups__contains=[{"controls": [{"controls": [{"id": oscal_ctl_id}]}] }] ))
     cxs = []
-    catalogs = Catalogs()
-    for ck in catalogs._list_catalog_keys():
-        cx = Catalog.GetInstance(catalog_key=ck)
-        ctr = cx.get_control_by_id(cl_id)
-        # TODO: Better representation of control ids for case-insensitive searching insteading of listing ids in both cases
-        # TODO: OSCALizing control id?
-        if ctr:
-            cxs.append({'id': ctr['id'], 'title': ctr['title'], 'class': ctr['class'], 'catalog_key_display': cx.catalog_key_display, 'display_text': f"{ctr['id']} - {ctr['title']} - {cx.catalog_key_display} - ({ctr['id'].upper()})"})
-    cxs.sort(key = operator.itemgetter('id', 'catalog_key_display'))
+    for catalog in catalogs_containing_cl_id:
+        catalog_key_display = catalog.catalog_key.replace("_", " ")
+        cxs.append({"id": oscal_ctl_id, 'catalog_key_display': catalog_key_display, 'display_text': f"{oscal_ctl_id} - {catalog_key_display} - {cl_id}"})
     status = "success"
     message = "Sending list."
     return JsonResponse( {"status": status, "message": message, "data": {"controls": cxs} })

@@ -46,7 +46,7 @@
                                 <label for="control-selection">Control</label>
                                 <select class="form-control control-select" id="sid_control_panel_num" name="sid" style="width:580px;" onchange="set_catalog_key($('#sid_control_panel_num option:selected').text(), '#sid_class_panel_num');return false;">
                                     set_catalog_key(display_text)
-                                    <option value=''>Select a control</option>
+                                    <option value='' disabled selected>Enter control ID (e.g., ac-2, CM-3(1), 3.1.3)</option>
                                 </select>
                                 <input type="hidden" id="sid_class_panel_num" name="sid_class" prompt="Enter catalog_key" value="{{ catalog_key }}">
                                 <input type="hidden" id="form_source_panel_num" name="form_source" prompt="Form source" value="component_library">
