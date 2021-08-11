@@ -1,50 +1,22 @@
 <div id="panel-panel_num" class="">
-    <div class="panel-heading" role="tabx" id="document-panel_num-title">
-
-        <div class="row statement-text">
-            <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                    <span id="producer_element-panel_num-control" class="control-id-text">{{ smt.sid|upper }} {% if smt.pid %}{{ smt.pid }}.{% endif %}
-                    <b>New control statement</b>
-                    </span>
-            </div>
-            <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">
-                New control statement will appear here.
-            </div>
-            <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                <a role="button" class="" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="false" aria-controls="document-panel_num-body">edit</a>
-                <br/>
-                {{ smt.remarks }}
-            </div>
-        </div>
-
-
-        <h4 id="panel-panel_num-title" class="panel-title">
-            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-panel_num-body">
-
-            </a>
-        </h4>
-    </div>
     <div id="document-panel_num-body" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="document-panel_num-title">
         <div class="panel-body">
             <div class="smt_block">
-
                 <div class="row statement-text">
                     <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                        &nbsp;
+                        <b>New control statement</b>
                     </div>
                     <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-edit-text-block">
-
                         <form id="smt_panel_num" class="smt_form">
                             <div class="form-group">
                                 <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ element.id }}">
-                                <label for="component"><a href="/systems/{{ system.id }}/component/{{ element.id }}" style="color: black;">{{ element.name }}</a></label>
-                                <!-- <label for="component">Producer Component</label> -->
                                 <input type="hidden" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
                                        onchange="$('#producer_element-panel_num-title').text($(this).val());" value="{{ element.name }}">
-                            </div><br /><br />
+                            </div>
                             <div class="form-group">
-                                <label for="control-selection">Control</label>
-                                <select class="form-control control-select" id="sid_control_panel_num" name="sid" style="width:580px;" onchange="set_catalog_key($('#sid_control_panel_num option:selected').text(), '#sid_class_panel_num');return false;">
+                                <div>Add your statement information to "{{ element.name }}". </div><br>
+                                <label for="sid_control_panel_num">What control does the solution address?</label><br/>
+                                <select class="form-control control-select" id="sid_control_panel_num" name="sid" style="width:360px;" onchange="set_catalog_key($('#sid_control_panel_num option:selected').text(), '#sid_class_panel_num');return false;">
                                     set_catalog_key(display_text)
                                     <option value='' disabled selected>Enter control ID (e.g., ac-2, CM-3(1), 3.1.3)</option>
                                 </select>
@@ -53,16 +25,16 @@
                             </div>
                             <div class="form-group">
                                 <input type="hidden" id="smt_id" name="smt_id" value="">
-                                <label for="statement">What is the solution and how is it implemented?</label>
+                                <label for="body_panel_num">What is the solution and how is it implemented?</label>
                                 <textarea class="form-control" id="body_panel_num" name="body" placeholder="How component contributes to control" rows="5" cols="50"></textarea>
                             </div>
                             <div class="form-group">
-                                <label for="statement">Part</label>
-                                <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="" style="width:180px;">
+                                <label for="pid_body_num">Part</label>
+                                <input type="text" class="form-control" id="pid_body_num" name="pid" placeholder="Statement part (e.g., h)" value="" style="width:180px;">
                             </div>
                             <div class="form-group">
-                                <label for="status">Status</label>
-                                <select class=form-control id="status_{{ forloop.counter }}" name="status" style="width:180px;">
+                                <label for="status_panel_num">Status</label>
+                                <select class=form-control id="status_panel_num" name="status" style="width:180px;">
                                     <option value=''></option>
                                     <option value='Not Implemented'>Not Implemented</option>
                                     <option value='Planned'>Planned</option>
@@ -72,22 +44,24 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="remarks">Remarks</label>
+                                <label for="remarks_panel_num">Remarks</label>
                                 <textarea class="form-control" id="remarks_panel_num" name="remarks" placeholder="Add remarks for team" rows="4" cols="50"></textarea>
                             </div>
                             <input type="hidden" id="system_id_panel_num" name="system_id" value="{{ system.id }}">
                             <input type="hidden" id="statement_type_panel_num" name="statement_type" value="control_implementation">
                             <div class="pull-right">
                                 <div id="success-msg-smt_panel_num" style="display: inline; margin-right: 20px; color: gray;"></div>
-                                <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_panel_num');return false;">Delete</button>
                                 <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_panel_num');return false;">Save</button>
                             </div>
                         </form>
-
                     </div>
-
+                    <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                        <a role="button" class="pull-right" data-toggle="collapse" data-parent="#accordion"
+                            href="#document-panel_num-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-panel_num-body"
+                            onclick="$( '#new_component_statement' ).show();">close</a>
+                    </div>
                 </div>
-            </div><!-- end div class="panel-body"-->
+            </div>
         </div>
     </div>
 </div>

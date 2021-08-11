@@ -181,7 +181,6 @@
             {% for smt in page_obj %}
             <div id="panel-{{ forloop.counter }}" class="">
               <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
-
                 <div class="row statement-text">
                   <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                     <details>
@@ -196,8 +195,6 @@
                   <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">{{ smt.body }}</div>
                   <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 remark-text-block"><a role="button" class="glyphicon glyphicon-pencil pull-right" style="color: #aaa;" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body"></a>{% if smt.remarks %}<details><summary>Remarks</summary><div>{{ smt.remarks }}</div></details>{% endif %}</div>
                 </div>
-
-                <!-- <h4 id="panel-{{ forloop.counter }}-title" class="panel-title"></h4> -->
               </div>
               <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
                 <div class="panel-body">
@@ -259,11 +256,21 @@
                 </div>
               </div>
             </div>
+            {% if forloop.last %}
+            <div id="panel-{{ forloop.counter }}" class="">
+              <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
+                <div class="row statement-text">
+                  <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
+                  <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                    <button type="submit" id="new_component_statement" class="btn btn-xs btn-success" onclick="add_smt({{ impl_smts|length }})">Add component statement</button>
+                  </div>
+                  <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 remark-text-block">&nbsp;</div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
             {% endfor %}
           </div><!--/smt-list-->
-        <div>
-          <button type="submit" id="new_component_statement" class="small btn btn-xs btn-success" onclick="add_smt({{ impl_smts|length }})">Add component statement</button>
-        </div>
       </div>
 
       <!-- Tab panel: systems -->
@@ -334,10 +341,8 @@
           var panel_num = smt_count + 1
           var smt_form = `{% include 'controls/add_smt_form.html' %}`.replace(/panel_num/g, panel_num);
           $( "#smt-list" ).append(smt_form);
-
-
+          $( "#new_component_statement" ).hide();
           $(".control-select").select2({
-
                   language: { inputTooShort: function() { return 'Please enter your search'; } },
                   ajax: {
                       url: '{% url 'api_controls_select' %}',
@@ -387,7 +392,10 @@
           // Save a statement
           // serialize data from the identified statement form
           var data = $( '#'+smt_panel_num ).serialize();
-
+          if (data.indexOf("sid=")==-1) {
+            alert("Please select a control for the statement.");
+            return false;
+          }
           // send data via ajax to be saved
           ajax_with_indicator({
             url: "/controls/smt/_save/",

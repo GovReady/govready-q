@@ -7,6 +7,7 @@ v0.9.9-dev (August xx, 2021)
 **UI changes**
 
 * Improve speed control selection auto-complete.
+* Various improvements to domponent add statement form: better alignment, validate control selected before saving, show/hide "Add component statement" button appropriately.
 
 **Developer changes**
 
