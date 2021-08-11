@@ -9,7 +9,6 @@ import sys
 import auto_prefetch
 from django.db import models
 from django.utils.functional import cached_property
-from jsonfield import JSONField
 
 
 CATALOG_PATH = os.path.join(os.path.dirname(__file__), 'data', 'catalogs')
@@ -17,8 +16,8 @@ BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 
 class CatalogData(auto_prefetch.Model):
     catalog_key = models.CharField(max_length=100, help_text="Unique key for catalog", unique=True, blank=False, null=False)
-    catalog_json = JSONField(blank=True, null=True, help_text="JSON object representing the OSCAL-formatted control catalog.")
-    baselines_json = JSONField(blank=True, null=True, help_text="JSON object representing the baselines for the catalog.")
+    catalog_json = models.JSONField(blank=True, null=True, help_text="JSON object representing the OSCAL-formatted control catalog.")
+    baselines_json = models.JSONField(blank=True, null=True, help_text="JSON object representing the baselines for the catalog.")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
@@ -52,7 +51,7 @@ class Catalogs(object):
     def _build_index(self):
         """Build a small catalog_index from metadata"""
         index = []
-        for catalog_key in self._list_catalog_keys():
+        for catalog_key in self.catalog_keys:
             catalog = self._load_catalog_json(catalog_key)
             index.append(
                 {'id': catalog['id'], 'catalog_key': catalog_key, 'catalog_key_display': catalog_key.replace("_", " "),
@@ -67,7 +66,7 @@ class Catalogs(object):
         """
         List catalog objects
         """
-        return [Catalog.GetInstance(catalog_key=key) for key in Catalogs()._list_catalog_keys()]
+        return [Catalog.GetInstance(catalog_key=key) for key in self.catalog_keys]
 
 def uhash(obj):
     """Return a positive hash code"""
