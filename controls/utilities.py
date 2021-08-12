@@ -68,25 +68,26 @@ def oscalize_control_id(cl_id):
 
     return cl_id
 
-
-def oscalize_catalog_key(catalogkey):
-    """ Covers empty catalog key case. Otherwise, outputs an oscal standard catalog key from various common formats for catalog keys
-    NIST_SP_800_53_rev4 --> NIST_SP-800-53_rev4
+def oscalize_catalog_key(catalogkey=None):
+    """Outputs an oscal standard catalog key from various common formats for catalog keys
+    Covers empty catalog key case
+    Example: NIST_SP_800_53_rev4 --> NIST_SP-800-53_rev4
     """
+    DEFAULT_CATALOG_KEY = 'NIST_SP-800-53_rev5'
+    if catalogkey is None or catalogkey=='':
+        return DEFAULT_CATALOG_KEY
     # If coming with reference to some path to catalog json file
     # (e.g. '../../../nist.gov/SP800-53/rev4/json/NIST_SP-800-53_rev4_catalog.json', 'FedRAMP_rev4_HIGH-baseline_profile.json')
     if ".json" in catalogkey:
         catalogkey = catalogkey.split('/')[-1].split('_catalog.json')[0].split(".json")[0]
-    # A default catalog key
-    if catalogkey=='':
-        catalogkey = 'NIST_SP-800-53_rev4'
     # Handle the default improperly formatted control id
     if catalogkey.count("_") > 2 and "800" in catalogkey:
         split_key_list = catalogkey.split("_800_")
         catalogkey = split_key_list[0] + "-800-" + split_key_list[1]
+    # TODO: Handle other cases
+    #if catalogkey in ['NIST_SP-800-53_rev4', 'NIST_SP-800-53_rev4', 'CMMC_ver1', 'NIST_SP-800-171_rev1']:
 
     return catalogkey
-
 
 def get_control_statement_part(control_stmnt_id):
     """ Parses part from control statement id

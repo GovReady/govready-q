@@ -738,6 +738,15 @@ class OSCALComponentSerializer(ComponentSerializer):
 
         return f"{control_id}"
 
+    def generate_source(self, src_str):
+        """Return a valid catalog source given string"""
+        DEFAULT_SOURCE = "NIST_SP-800-53_rev5"
+        if not src_str:
+            return DEFAULT_SOURCE
+        # TODO: Handle other cases
+        source = src_str
+        return source
+
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
@@ -765,10 +774,10 @@ class OSCALComponentSerializer(ComponentSerializer):
                 "components": [
                    {
                         "uuid": comp_uuid,
-                       "type": self.element.component_type.lower() if self.element.component_type is not None else "software",
-                       "title": self.element.full_name or self.element.name,
+                        "type": self.element.component_type.lower() if self.element.component_type is not None else "software",
+                        "title": self.element.full_name or self.element.name,
                         "description": self.element.description,
-                         "responsible-roles": responsible_roles, # TODO: gathering party-uuids, just filling for now
+                        "responsible-roles": responsible_roles, # TODO: gathering party-uuids, just filling for now
                         "control-implementations": control_implementations
                     }
                 ]
@@ -813,7 +822,7 @@ class OSCALComponentSerializer(ComponentSerializer):
         for sid_class, requirements in by_class.items():
             control_implementation = {
                 "uuid":str(uuid4()),# TODO: Not sure if this should implemented or just generated here.
-                "source": smt.source if smt.source else "Govready",
+                "source": self.generate_source(smt.source if smt.source else None),
                 "description": f"This is a partial implementation of the {sid_class} catalog, focusing on the control enhancement {requirements[0].get('control-id')}.",
                 "implemented-requirements": [req for req in requirements]
             }
@@ -897,17 +906,6 @@ class ComponentImporter(object):
         new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
         return new_import_record
 
-    # def find_import_record_by_name(self, import_name):
-    #     """Returns most recent existing import record by name
-
-    #     @type import_name: str
-    #     @param import_name: Name of import file (if it exists)
-    #     """
-
-    #     found_import_record = ImportRecord.objects.filter(name=import_name).last()
-
-    #     return found_import_record
-
     def create_import_record(self, import_name, components, existing_import_record=False):
         """Associates components and statements to an import record
 
@@ -969,15 +967,11 @@ class ComponentImporter(object):
 
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
         control_implementation_statements = component_json.get('control-implementations', None)
-        catalog = "missing"
-        # If there is an data in the control-implementations key
+        # catalog = "missing"
+        # If there data exists the OSCAL component's control-implementations key
         if control_implementation_statements:
-            # For each element if there is a source and the oscalized key is in the available keys
-            # Then create statements otherwise it will return an empty list
             for control_element in control_implementation_statements:
-                if 'source' in control_element:
-                    if oscalize_catalog_key(control_element['source']) in Catalogs().catalog_keys:
-                        catalog = oscalize_catalog_key(control_element['source'])
+                catalog = oscalize_catalog_key(control_element.get('source', None))
                 created_statements = self.create_control_implementation_statements(catalog, control_element, new_component)
         # If there are no valid statements in the json object
         if created_statements == []:
@@ -1000,54 +994,26 @@ class ComponentImporter(object):
         @returns: New statement objects created
         """
 
-        statements_created = []
-        if catalog_key == "missing":
-            logger.info(f"Control Catalog {catalog_key} missing skipping Statement creation...")
-            return statements_created
+        new_statements = []
         implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
         for implemented_control in implemented_reqs:
-
-            control_id = implemented_control['control-id'] if 'control-id' in implemented_control else ''
-            #statements = implemented_control['statements'] if 'statements' in implemented_control else ''
-            if self.control_exists_in_catalog(catalog_key, control_id):
-                new_statement = Statement.objects.create(
-                    sid=control_id,
-                    sid_class=catalog_key,
-                    pid=get_control_statement_part(control_id),
-                    source=control_element['source'] if 'source' in control_element else catalog_key,
-                    uuid=control_element['uuid'] if 'uuid' in control_element else uuid.uuid4(),
-                    body=implemented_control['description'] if 'description' in implemented_control else '',
-                    statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
-                    remarks=implemented_control['remarks'] if 'remarks' in implemented_control else '',
-                    status=implemented_control['status'] if 'status' in implemented_control else None,
-                    producer_element=parent_component,
-                )
-
-                logger.info(f"New statement with UUID {new_statement.uuid} created.")
-                statements_created.append(new_statement)
-
-            else:
-                logger.info(f"Control {control_id} doesn't exist in catalog {catalog_key}. Skipping Statement...")
-
+            control_id = implemented_control['control-id'] if 'control-id' in implemented_control else 'missing'
+            new_statement = Statement(
+                sid=control_id,
+                sid_class=catalog_key,
+                pid=get_control_statement_part(control_id),
+                source=catalog_key,
+                uuid=control_element['uuid'] if 'uuid' in control_element else uuid.uuid4(),
+                body=implemented_control['description'] if 'description' in implemented_control else '',
+                statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
+                remarks=implemented_control['remarks'] if 'remarks' in implemented_control else '',
+                status=implemented_control['status'] if 'status' in implemented_control else None,
+                producer_element=parent_component,
+            )
+            logger.info(f"New statement with UUID {new_statement.uuid} being created.")
+            new_statements.append(new_statement)
+        statements_created = Statement.objects.bulk_create(new_statements)
         return statements_created
-
-    def control_exists_in_catalog(self, catalog_key, control_id):
-        """Searches for the presence of a specific control id in a catalog.
-
-        @type catalog_key: str
-        @param catalog_key: Catalog Key
-        @type control_id: str
-        @param control_id: Control id
-        @rtype: bool
-        @returns: True if control id exists in the catalog. False otherwise
-        """
-
-        if catalog_key not in Catalogs()._list_catalog_keys():
-            return False
-        else:
-            catalog = Catalog.GetInstance(catalog_key)
-            control = catalog.get_control_by_id(control_id)
-            return True if control is not None else False
 
 @login_required
 def add_selected_components(system, import_record):
@@ -1158,7 +1124,6 @@ def system_element_control(request, system_id, element_id, catalog_key, control_
             "opencontrol": opencontrol_string,
         }
         return render(request, "systems/element_detail_control.html", context)
-
 
 def edit_component_state(request, system_id, element_id):
     """
