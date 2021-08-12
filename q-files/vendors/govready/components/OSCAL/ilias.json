@@ -31,7 +31,7 @@
         "control-implementations": [
           {
             "uuid": "b5ab3785-5889-4d58-9bd0-19545f04fdb6",
-            "source": "Govready",
+            "source": "NIST_SP-800-53_rev4",
             "description": "This is a partial implementation of the at-2 catalog, focusing on the control enhancement at-2.",
             "implemented-requirements": [
               {
@@ -43,7 +43,7 @@
           },
           {
             "uuid": "58d71d4b-ce81-4608-afc7-c0892ddae0fe",
-            "source": "Govready",
+            "source": "NIST_SP-800-53_rev4",
             "description": "This is a partial implementation of the at-2.2 catalog, focusing on the control enhancement at-2.2.",
             "implemented-requirements": [
               {
@@ -55,7 +55,7 @@
           },
           {
             "uuid": "ac73dc57-d1cb-49b4-9996-fd13cc238061",
-            "source": "Govready",
+            "source": "NIST_SP-800-53_rev4",
             "description": "This is a partial implementation of the at-3 catalog, focusing on the control enhancement at-3.",
             "implemented-requirements": [
               {
