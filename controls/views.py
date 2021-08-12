@@ -1011,7 +1011,7 @@ class ComponentImporter(object):
                 producer_element=parent_component,
             )
             logger.info(f"New statement with UUID {new_statement.uuid} being created.")
-            statements_created.append(new_statement)
+            new_statements.append(new_statement)
         statements_created = Statement.objects.bulk_create(new_statements)
         return statements_created
 
