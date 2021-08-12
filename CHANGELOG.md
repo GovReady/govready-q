@@ -12,6 +12,7 @@ v0.9.9-dev (August xx, 2021)
 **Developer changes**
 
 * Change CatalogData JSONFields to Django JSONField for better searching options.
+* Import components and their statements even when catalog not found or statement control ids are not found in referenced catalog.
 
 
 v0.9.8 (August 09, 2021)
