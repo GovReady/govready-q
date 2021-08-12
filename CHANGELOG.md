@@ -12,6 +12,7 @@ v0.9.8.1-dev (August xx, 2021)
 **Developer changes**
 
 * Move creation of users in first_run to earlier in script.
+* Use faster bulk_create importing components.
 
 **Data changes**
 

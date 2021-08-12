@@ -75,8 +75,7 @@ def oscalize_catalog_key(catalogkey=None):
     """
     DEFAULT_CATALOG_KEY = 'NIST_SP-800-53_rev5'
     if catalogkey is None or catalogkey=='':
-        catalogkey = DEFAULT_CATALOG_KEY
-        return catalogkey
+        return DEFAULT_CATALOG_KEY
     # If coming with reference to some path to catalog json file
     # (e.g. '../../../nist.gov/SP800-53/rev4/json/NIST_SP-800-53_rev4_catalog.json', 'FedRAMP_rev4_HIGH-baseline_profile.json')
     if ".json" in catalogkey:

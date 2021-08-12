@@ -741,9 +741,8 @@ class OSCALComponentSerializer(ComponentSerializer):
     def generate_source(self, src_str):
         """Return a valid catalog source given string"""
         DEFAULT_SOURCE = "NIST_SP-800-53_rev5"
-        if src_str is None or src_str=='':
-            source = DEFAULT_SOURCE
-            return source
+        if not src_str:
+            return DEFAULT_SOURCE
         # TODO: Handle other cases
         source = src_str
         return source
@@ -995,11 +994,11 @@ class ComponentImporter(object):
         @returns: New statement objects created
         """
 
-        statements_created = []
+        new_statements = []
         implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
         for implemented_control in implemented_reqs:
             control_id = implemented_control['control-id'] if 'control-id' in implemented_control else 'missing'
-            new_statement = Statement.objects.create(
+            new_statement = Statement(
                 sid=control_id,
                 sid_class=catalog_key,
                 pid=get_control_statement_part(control_id),
@@ -1011,27 +1010,10 @@ class ComponentImporter(object):
                 status=implemented_control['status'] if 'status' in implemented_control else None,
                 producer_element=parent_component,
             )
-            logger.info(f"New statement with UUID {new_statement.uuid} created.")
+            logger.info(f"New statement with UUID {new_statement.uuid} being created.")
             statements_created.append(new_statement)
+        statements_created = Statement.objects.bulk_create(new_statements)
         return statements_created
-
-    # def control_exists_in_catalog(self, catalog_key, control_id):
-    #     """Searches for the presence of a specific control id in a catalog.
-
-    #     @type catalog_key: str
-    #     @param catalog_key: Catalog Key
-    #     @type control_id: str
-    #     @param control_id: Control id
-    #     @rtype: bool
-    #     @returns: True if control id exists in the catalog. False otherwise
-    #     """
-
-    #     if catalog_key not in Catalogs().catalog_keys:
-    #         return False
-    #     else:
-    #         catalog = Catalog.GetInstance(catalog_key)
-    #         control = catalog.get_control_by_id(control_id)
-    #         return True if control is not None else False
 
 @login_required
 def add_selected_components(system, import_record):
