@@ -1,6 +1,26 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.9 (August 12, 2021)
+------------------------
+
+**UI changes**
+
+* Improve speed control selection auto-complete.
+* Various improvements to domponent add statement form: better alignment, validate control selected before saving, show/hide "Add component statement" button appropriately.
+
+**Developer changes**
+
+* Move creation of users in first_run to earlier in script.
+* Use faster bulk_create importing components.
+
+**Data changes**
+
+* Update sample components to OSCAL 1.0.0.
+* Change CatalogData JSONFields to Django JSONField for better searching options.
+* Import components and their statements even when catalog not found or statement control ids are not found in referenced catalog.
+
+
 v0.9.8 (August 09, 2021)
 ------------------------
 
