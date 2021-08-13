@@ -20,6 +20,13 @@
         "type": "software",
         "title": "ILIAS",
         "description": "ILIAS Training course",
+        "props": [
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "sample"
+                }
+              ],
         "responsible-roles": [
           {
             "role-id": "supplier",
