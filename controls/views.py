@@ -30,7 +30,7 @@ from django.views import View
 from django.views.generic import ListView
 from simple_history.utils import update_change_reason
 
-from siteapp.models import Project, Organization
+from siteapp.models import Project, Organization, Tag
 from siteapp.settings import GOVREADY_URL
 from system_settings.models import SystemSettings
 from .forms import ElementEditForm
@@ -768,8 +768,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": self.element.updated.replace(microsecond=0).isoformat(),
                     "oscal-version": self.element.oscal_version,
-                    "parties": parties,
-                    "props": props
+                    "parties": parties
                 },
                 "components": [
                    {
@@ -778,6 +777,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                         "title": self.element.full_name or self.element.name,
                         "description": self.element.description,
                         "responsible-roles": responsible_roles, # TODO: gathering party-uuids, just filling for now
+                        "props": props,
                         "control-implementations": control_implementations
                     }
                 ]
@@ -966,8 +966,13 @@ class ComponentImporter(object):
         )
 
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
+
+        component_props = component_json.get('props', None)
+        if component_props is not None:
+            component_tags = [Tag.objects.get_or_create(label=prop['value'])[0].id for prop in component_props if prop['name'] == 'tag' and 'ns' in prop and prop['ns'] == "https://govready.com/ns/oscal"]
+            new_component.add_tags(component_tags)
+            new_component.save()
         control_implementation_statements = component_json.get('control-implementations', None)
-        # catalog = "missing"
         # If there data exists the OSCAL component's control-implementations key
         if control_implementation_statements:
             for control_element in control_implementation_statements:

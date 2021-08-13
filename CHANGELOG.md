@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.10-dev (August xx, 2021)
+------------------------
+
+**Developer changes**
+
+* Component tags now correctly included on OSCAL export and included on OSCAL import.
+
 v0.9.9 (August 12, 2021)
 ------------------------
 
