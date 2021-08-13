@@ -651,12 +651,21 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
 
         of["system-security-plan"]["metadata"]['roles'] =  [{"id": auths.get('role', "member").split(';')[0], "title": auths.get('role', "member").split(';')[0].capitalize()  } for user, auths in users]
         of["system-security-plan"]["system-implementation"]['users'] = [{"uuid":user_party_uuid, "title":user.username, "role-ids": [auths.get('role', "member").split(';')[0]]} for user, auths in users]
-        of["system-security-plan"]["system-implementation"]['components'] = [{"uuid":str(comp_ele.uuid), "title":comp_ele.name, "description":comp_ele.description, "status": {"state": comp_ele.component_state}, "type":comp_ele.component_type, "responsible-roles": [{
-              "role-id": "asset-owner",
-              "party-uuids": [
-                user_party_uuid
-              ]
-            }]} for comp_ele in components]# TODO: responsible-roles
+        of["system-security-plan"]["system-implementation"]['components'] = [{"uuid":str(comp_ele.uuid),
+                                                                              "title":comp_ele.name,
+                                                                              "description":comp_ele.description,
+                                                                              "status": {"state": comp_ele.component_state},
+                                                                              "type":comp_ele.component_type,
+                                                                              "responsible-roles": [{
+                                                                                "role-id": "asset-owner",
+                                                                                "party-uuids": [user_party_uuid]
+                                                                                }],
+                                                                              "props": [{"name": "tag",
+                                                                                         "ns": "https://govready.com/ns/oscal",
+                                                                                         "value": tag.label} for tag in
+                                                                                        comp_ele.tags.all()]
+                                                                              } for comp_ele in components]# TODO: responsible-roles
+
         # System characteristics
         # TODO: status remarks, authorization-boundary
         security_body = project.system.get_security_impact_level
