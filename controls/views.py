@@ -1312,6 +1312,8 @@ def api_controls_select(request):
     cxs = []
     for catalog in catalogs_containing_cl_id:
         catalog_key_display = catalog.catalog_key.replace("_", " ")
+        # TODO: get control title effectively from CatalogData
+        # title = "catalog.ctl_title"
         cxs.append({"id": oscal_ctl_id, 'catalog_key_display': catalog_key_display, 'display_text': f"{oscal_ctl_id} - {catalog_key_display} - {cl_id}"})
     status = "success"
     message = "Sending list."
@@ -1998,9 +2000,11 @@ def save_smt(request):
         else:
             new_statement_type_enum = StatementTypeEnum[form_values['statement_type'].upper()]
             # Create new Statement object
+            new_sid_class = form_values['sid_class'].replace(" ","_") # convert displayed catalog name to catalog_key
             statement = Statement(
                 sid=oscalize_control_id(form_values['sid']),
-                sid_class=form_values['sid_class'],
+                sid_class=new_sid_class,
+                source=new_sid_class,
                 body=form_values['body'],
                 pid=form_values['pid'],
                 statement_type=new_statement_type_enum.name,
@@ -2008,10 +2012,6 @@ def save_smt(request):
                 remarks=form_values['remarks'],
             )
             new_statement = True
-            # Convert the human readable catalog name to proper catalog key, if needed
-            # from human readable `NIST SP-800-53 rev4` to `NIST_SP-800-53_rev4`
-            statement.sid_class = statement.sid_class.replace(" ","_")
-
 
         # Updating or saving a new producer_element?
         try:

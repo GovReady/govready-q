@@ -1,8 +1,16 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.8.1-dev (August xx, 2021)
+v0.9.10-dev (August xx, 2021)
 ------------------------------
+
+**Bug fix**
+
+* Add the catalog_key to statement's `sid_class` and `source` fields when adding new statement to a component in library.
+
+
+v0.9.9 (August 12, 2021)
+------------------------
 
 **UI changes**
 
