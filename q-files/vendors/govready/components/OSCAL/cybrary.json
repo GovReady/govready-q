@@ -20,6 +20,18 @@
         "type": "software",
         "title": "Cybrary",
         "description": "Training course",
+        "props": [
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "sample"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "training"
+                }
+              ],
         "responsible-roles": [
           {
             "role-id": "supplier",

@@ -256,9 +256,14 @@ DATABASES = {
 		'ENGINE': 'django.db.backends.sqlite3',
 		'NAME': local('db.sqlite3'),
 		'CONN_MAX_AGE': 60*5, # 5 min
-		'timeout': 30,
+		'OPTIONS': {
+			'timeout': 30,  # in seconds
+			# see also
+			# https://docs.python.org/3.7/library/sqlite3.html#sqlite3.connect
+		}
 	}
 }
+
 if not environment.get('db'):
 	# Ensure the 'local' directory exists for the default Sqlite
 	# database and then try touching the path to check for write
