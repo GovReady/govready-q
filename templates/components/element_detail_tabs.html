@@ -388,16 +388,13 @@
         }
 
         function set_catalog_key(display_text, element) {
-          // Determine the catalog from the selected display_text
+          // Set the sid_class field to the catalogkey based on splitting the selected display_text
           // Split text
             displaytext = display_text.split(' - ');
             var first = displaytext.shift(); //or arr[arr.length-1];
-            var last = displaytext.pop(); //or arr[0];
-            dtv = [first, displaytext.join(" - "), last]; // [control_id, title, catalog_key]
-
-          ck = dtv[2]
-
-          $(element).val(ck)
+            var catalog = displaytext.shift(); //or arr[0];
+            dtv = [first, displaytext.join(" - "), catalog]; // [control_id, catalog_key - match string]
+          $(element).val(dtv[2])
         }
 
         function save_smt(smt_panel_num) {

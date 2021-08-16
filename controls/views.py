@@ -30,7 +30,7 @@ from django.views import View
 from django.views.generic import ListView
 from simple_history.utils import update_change_reason
 
-from siteapp.models import Project, Organization
+from siteapp.models import Project, Organization, Tag
 from siteapp.settings import GOVREADY_URL
 from system_settings.models import SystemSettings
 from .forms import ElementEditForm
@@ -651,12 +651,21 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
 
         of["system-security-plan"]["metadata"]['roles'] =  [{"id": auths.get('role', "member").split(';')[0], "title": auths.get('role', "member").split(';')[0].capitalize()  } for user, auths in users]
         of["system-security-plan"]["system-implementation"]['users'] = [{"uuid":user_party_uuid, "title":user.username, "role-ids": [auths.get('role', "member").split(';')[0]]} for user, auths in users]
-        of["system-security-plan"]["system-implementation"]['components'] = [{"uuid":str(comp_ele.uuid), "title":comp_ele.name, "description":comp_ele.description, "status": {"state": comp_ele.component_state}, "type":comp_ele.component_type, "responsible-roles": [{
-              "role-id": "asset-owner",
-              "party-uuids": [
-                user_party_uuid
-              ]
-            }]} for comp_ele in components]# TODO: responsible-roles
+        of["system-security-plan"]["system-implementation"]['components'] = [{"uuid":str(comp_ele.uuid),
+                                                                              "title":comp_ele.name,
+                                                                              "description":comp_ele.description,
+                                                                              "status": {"state": comp_ele.component_state},
+                                                                              "type":comp_ele.component_type,
+                                                                              "responsible-roles": [{
+                                                                                "role-id": "asset-owner",
+                                                                                "party-uuids": [user_party_uuid]
+                                                                                }],
+                                                                              "props": [{"name": "tag",
+                                                                                         "ns": "https://govready.com/ns/oscal",
+                                                                                         "value": tag.label} for tag in
+                                                                                        comp_ele.tags.all()]
+                                                                              } for comp_ele in components]# TODO: responsible-roles
+
         # System characteristics
         # TODO: status remarks, authorization-boundary
         security_body = project.system.get_security_impact_level
@@ -768,8 +777,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": self.element.updated.replace(microsecond=0).isoformat(),
                     "oscal-version": self.element.oscal_version,
-                    "parties": parties,
-                    "props": props
+                    "parties": parties
                 },
                 "components": [
                    {
@@ -778,6 +786,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                         "title": self.element.full_name or self.element.name,
                         "description": self.element.description,
                         "responsible-roles": responsible_roles, # TODO: gathering party-uuids, just filling for now
+                        "props": props,
                         "control-implementations": control_implementations
                     }
                 ]
@@ -966,8 +975,17 @@ class ComponentImporter(object):
         )
 
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
+
+        component_props = component_json.get('props', None)
+        if component_props is not None:
+            desired_tags = set([prop['value'] for prop in component_props if prop['name'] == 'tag' and 'ns' in prop and prop['ns'] == "https://govready.com/ns/oscal"])
+            existing_tags = Tag.objects.filter(label__in=desired_tags).values('id', 'label')
+            tags_to_create = desired_tags.difference(set([tag['label'] for tag in existing_tags]))
+            new_tags = Tag.objects.bulk_create([Tag(label=tag) for tag in tags_to_create])
+            all_tag_ids = [tag.id for tag in new_tags] + [tag['id'] for tag in existing_tags]
+            new_component.add_tags(all_tag_ids)
+            new_component.save()
         control_implementation_statements = component_json.get('control-implementations', None)
-        # catalog = "missing"
         # If there data exists the OSCAL component's control-implementations key
         if control_implementation_statements:
             for control_element in control_implementation_statements:
@@ -1250,6 +1268,7 @@ def component_library_component(request, element_id):
             "impl_smts": impl_smts,
             "is_admin": request.user.is_superuser,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "form_source": "component_library"
         }
         return render(request, "components/element_detail_tabs.html", context)
 
@@ -1298,6 +1317,7 @@ def component_library_component(request, element_id):
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
+        "form_source": "component_library"
     }
     return render(request, "components/element_detail_tabs.html", context)
 
@@ -1312,6 +1332,8 @@ def api_controls_select(request):
     cxs = []
     for catalog in catalogs_containing_cl_id:
         catalog_key_display = catalog.catalog_key.replace("_", " ")
+        # TODO: get control title effectively from CatalogData
+        # title = "catalog.ctl_title"
         cxs.append({"id": oscal_ctl_id, 'catalog_key_display': catalog_key_display, 'display_text': f"{oscal_ctl_id} - {catalog_key_display} - {cl_id}"})
     status = "success"
     message = "Sending list."
@@ -1998,9 +2020,11 @@ def save_smt(request):
         else:
             new_statement_type_enum = StatementTypeEnum[form_values['statement_type'].upper()]
             # Create new Statement object
+            new_sid_class = form_values['sid_class'].replace(" ","_") # convert displayed catalog name to catalog_key
             statement = Statement(
                 sid=oscalize_control_id(form_values['sid']),
-                sid_class=form_values['sid_class'],
+                sid_class=new_sid_class,
+                source=new_sid_class,
                 body=form_values['body'],
                 pid=form_values['pid'],
                 statement_type=new_statement_type_enum.name,
@@ -2008,10 +2032,6 @@ def save_smt(request):
                 remarks=form_values['remarks'],
             )
             new_statement = True
-            # Convert the human readable catalog name to proper catalog key, if needed
-            # from human readable `NIST SP-800-53 rev4` to `NIST_SP-800-53_rev4`
-            statement.sid_class = statement.sid_class.replace(" ","_")
-
 
         # Updating or saving a new producer_element?
         try:
@@ -2048,8 +2068,7 @@ def save_smt(request):
             except Exception as e:
                 statement_status = "error"
                 statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
-                return JsonResponse({"status": "error", "message": statement_msg})
-
+                return JsonResponse({"status": statement_status, "message": statement_msg})
         # Retain only prototype statement if statement is created in the component library
         # A statement of type `control_implementation` should only exists if associated a consumer_element.
         # When the statement is created in the component library, no consuming_element will exist.
@@ -2058,13 +2077,13 @@ def save_smt(request):
         # - Skip the associating the statement with the system's root_element because we do not have a system identified
         statement_del_msg = ""
         if "form_source" in form_values and form_values['form_source'] == 'component_library':
-            # Form source is part of form
             # Form received from component library
             from django.core import serializers
             serialized_obj = serializers.serialize('json', [statement, ])
             # Delete statement
+            Statement.objects.filter(pk=statement.id).delete()
             statement.delete()
-            statement_del_msg = "Statement unassociated with System/Consumer Element deleted."
+            statement_del_msg = "Orphaned Control_Implementation Statement deleted."
         else:
             # Associate Statement and System's root_element
             system_id = form_values['system_id']
@@ -2087,13 +2106,13 @@ def save_smt(request):
 
     # Save Statement object
     try:
-        statement.save()
+        if not new_statement:
+            statement.save()
         statement_msg = "Statement saved."
         messages.add_message(request, messages.INFO, f"Statement {smt_id} Saved")
     except Exception as e:
         statement_status = "error"
         statement_msg = "Statement save failed. Error reported {}".format(e)
-
         return JsonResponse({"status": statement_status, "message": statement_msg})
     # Return successful save result to web page's Ajax request
     return JsonResponse(

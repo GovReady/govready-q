@@ -324,6 +324,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
                 }
             }
         )
+        var_sleep(1)
         load_modules().handle() # load system modules
 
         AppSource.objects.get_or_create(
@@ -339,6 +340,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Log the user into the test client, which is used for API
         # tests. The Selenium tests require a separate log in via the
         # headless browser.
+
+        var_sleep(2)
 
         # self.user = User.objects.create_superuser(
         self.user = wait_for_sleep_after(lambda: User.objects.get_or_create(

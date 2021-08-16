@@ -1,6 +1,23 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.10 (August 16, 2021)
+-------------------------
+
+**Developer changes**
+
+* Component tags now correctly included on OSCAL component export and included on OSCAL component import.
+* Component tags now correctly included on OSCAL SSP generation.
+
+**Bug fix**
+
+* Add the catalog_key to statement's `sid_class` and `source` fields when adding new statement to a component in library.
+
+**Data fix**
+
+* Add migration in controls to load default control catalogs into CatalogData in database. Remove loading of catalogs via first_run command.
+
+
 v0.9.9 (August 12, 2021)
 ------------------------
 

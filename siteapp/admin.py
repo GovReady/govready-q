@@ -155,8 +155,9 @@ class SupportAdmin(admin.ModelAdmin):
   fields = ('text', 'email', 'phone', 'url')
 
 class TagAdmin(admin.ModelAdmin):
-  list_display = ('label', 'system_created')
-  fields = ('label', 'system_created')
+  list_display = ('id', 'label', 'system_created')
+  fields = ('id', 'label', 'system_created')
+  readonly_fields = ('id',)
 
 class ProjectAssetAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'asset_type', 'description', 'project', 'default', 'title', 'filename', 'created', 'updated')
