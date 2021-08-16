@@ -123,34 +123,6 @@ class Command(BaseCommand):
             # One or more superusers already exists
             print("\n[INFO] Superuser(s) already exists, not creating default admin superuser. Did you specify 'govready_admins' in 'local/environment.json'? Did you specify an admin or are you connecting to a persistent database?\n")
 
-        # Load the default control catalogs and baselines
-        CATALOG_PATH = os.path.join(os.path.dirname(__file__),'..','..','..','controls','data','catalogs')
-        BASELINE_PATH = os.path.join(os.path.dirname(__file__),'..','..','..','controls','data','baselines')
-
-        # TODO: Check directory exists
-        catalog_files = [file for file in os.listdir(CATALOG_PATH) if file.endswith('.json')]
-        # Load catalog and baseline data into database records from source files if data records do not exist in database
-        for cf in catalog_files:
-            catalog_key = cf.replace("_catalog.json", "")
-            with open(os.path.join(CATALOG_PATH,cf), 'r') as json_file:
-                catalog_json = json.load(json_file)
-            baseline_filename = cf.replace("_catalog.json", "_baselines.json")
-            if os.path.isfile(os.path.join(BASELINE_PATH, baseline_filename)):
-                with open(os.path.join(BASELINE_PATH, baseline_filename), 'r') as json_file:
-                    baselines_json = json.load(json_file)
-            else:
-                baselines_json = {}
-
-            catalog, created = CatalogData.objects.get_or_create(
-                    catalog_key=catalog_key,
-                    catalog_json=catalog_json,
-                    baselines_json=baselines_json
-                )
-            if created:
-                print(f"{catalog_key} record created into database")
-            else:
-                print(f"{catalog_key} record found in database")
-
         # Install default AppSources and compliance apps if no AppSources installed
         if not AppSource.objects.filter(slug="govready-q-files-startpack").exists():
             # Create AppSources that we want.

@@ -8,10 +8,9 @@ v0.9.10-dev (August xx, 2021)
 
 * Add the catalog_key to statement's `sid_class` and `source` fields when adding new statement to a component in library.
 
-
 **Data fix**
 
-* Add migration in controls to load default control catalogs into CatalogData in database.
+* Add migration in controls to load default control catalogs into CatalogData in database. Remove loading of catalogs via first_run command.
 
 
 v0.9.9 (August 12, 2021)
