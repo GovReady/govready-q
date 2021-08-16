@@ -1250,6 +1250,7 @@ def component_library_component(request, element_id):
             "impl_smts": impl_smts,
             "is_admin": request.user.is_superuser,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "form_source": "component_library"
         }
         return render(request, "components/element_detail_tabs.html", context)
 
@@ -1298,6 +1299,7 @@ def component_library_component(request, element_id):
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
+        "form_source": "component_library"
     }
     return render(request, "components/element_detail_tabs.html", context)
 
@@ -2048,8 +2050,7 @@ def save_smt(request):
             except Exception as e:
                 statement_status = "error"
                 statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
-                return JsonResponse({"status": "error", "message": statement_msg})
-
+                return JsonResponse({"status": statement_status, "message": statement_msg})
         # Retain only prototype statement if statement is created in the component library
         # A statement of type `control_implementation` should only exists if associated a consumer_element.
         # When the statement is created in the component library, no consuming_element will exist.
@@ -2058,13 +2059,13 @@ def save_smt(request):
         # - Skip the associating the statement with the system's root_element because we do not have a system identified
         statement_del_msg = ""
         if "form_source" in form_values and form_values['form_source'] == 'component_library':
-            # Form source is part of form
             # Form received from component library
             from django.core import serializers
             serialized_obj = serializers.serialize('json', [statement, ])
             # Delete statement
+            Statement.objects.filter(pk=statement.id).delete()
             statement.delete()
-            statement_del_msg = "Statement unassociated with System/Consumer Element deleted."
+            statement_del_msg = "Orphaned Control_Implementation Statement deleted."
         else:
             # Associate Statement and System's root_element
             system_id = form_values['system_id']
@@ -2087,13 +2088,13 @@ def save_smt(request):
 
     # Save Statement object
     try:
-        statement.save()
+        if not new_statement:
+            statement.save()
         statement_msg = "Statement saved."
         messages.add_message(request, messages.INFO, f"Statement {smt_id} Saved")
     except Exception as e:
         statement_status = "error"
         statement_msg = "Statement save failed. Error reported {}".format(e)
-
         return JsonResponse({"status": statement_status, "message": statement_msg})
     # Return successful save result to web page's Ajax request
     return JsonResponse(
