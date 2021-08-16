@@ -343,14 +343,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         var_sleep(2)
 
-        # Create the Organization.
-        try:
-            self.org = Organization.create(name="Our Organization", slug="testorg",
-                admin_user=self.user)
-        except:
-            self.org = Organization.create(name="Our Organization", slug="testorg2",
-                                                          admin_user=self.user)
-
         # self.user = User.objects.create_superuser(
         self.user = wait_for_sleep_after(lambda: User.objects.get_or_create(
             username="me",
@@ -368,6 +360,14 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Create a Portfolio and Grant Access
         portfolio = Portfolio.objects.get_or_create(title=self.user.username)[0]
         portfolio.assign_owner_permissions(self.user)
+
+        # Create the Organization.
+        try:
+            self.org = Organization.create(name="Our Organization", slug="testorg",
+                admin_user=self.user)
+        except:
+            self.org = Organization.create(name="Our Organization", slug="testorg2",
+                                                          admin_user=self.user)
 
         # Grant the user permission to change the review state of answers.
         self.org.reviewers.add(self.user)
