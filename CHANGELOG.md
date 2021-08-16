@@ -11,7 +11,7 @@ v0.9.10-dev (August xx, 2021)
 
 **Data fix**
 
-* Add migration in controls to load default control catalogs into CatalogData in database.
+* Add migration in controls to load default control catalogs into CatalogData in database. Remove loading of catalogs via first_run command.
 
 
 v0.9.9 (August 12, 2021)
