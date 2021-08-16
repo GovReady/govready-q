@@ -978,8 +978,12 @@ class ComponentImporter(object):
 
         component_props = component_json.get('props', None)
         if component_props is not None:
-            component_tags = [Tag.objects.get_or_create(label=prop['value'])[0].id for prop in component_props if prop['name'] == 'tag' and 'ns' in prop and prop['ns'] == "https://govready.com/ns/oscal"]
-            new_component.add_tags(component_tags)
+            desired_tags = set([prop['value'] for prop in component_props if prop['name'] == 'tag' and 'ns' in prop and prop['ns'] == "https://govready.com/ns/oscal"])
+            existing_tags = Tag.objects.filter(label__in=desired_tags).values('id', 'label')
+            tags_to_create = desired_tags.difference(set([tag['label'] for tag in existing_tags]))
+            new_tags = Tag.objects.bulk_create([Tag(label=tag) for tag in tags_to_create])
+            all_tag_ids = [tag.id for tag in new_tags] + [tag['id'] for tag in existing_tags]
+            new_component.add_tags(all_tag_ids)
             new_component.save()
         control_implementation_statements = component_json.get('control-implementations', None)
         # If there data exists the OSCAL component's control-implementations key
