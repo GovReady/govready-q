@@ -874,7 +874,7 @@ class OpenControlComponentSerializer(ComponentSerializer):
 
 class ComponentImporter(object):
 
-    def import_components_as_json(self, import_name, json_object, request=None, existing_import_record=False):
+    def import_components_as_json(self, import_name, json_object, request=None, existing_import_record=False, stopinvalid=True):
         """Imports Components from a JSON object
 
         @type import_name: str
@@ -887,6 +887,7 @@ class ComponentImporter(object):
         @returns: ImportRecord linked to the created components (if success) or False if failure
         """
 
+        issues = []
         try:
             # Create a temporary directory and dump the json_object in there.
             tempdir = tempfile.mkdtemp()
@@ -896,7 +897,6 @@ class ComponentImporter(object):
             oscal_json = json.loads(json_object)
             with open(path, 'w+') as cred:
                 json.dump(oscal_json, cred)
-
             # Read in temporary file and shape into trestle pydantic Component definition.
             trestle_oscal_json = trestlecomponent.ComponentDefinition.oscal_read(path_component_definition)
             # Finally validate that this object is valid by the component definition
@@ -905,10 +905,32 @@ class ComponentImporter(object):
             shutil.rmtree(tempdir)
         except Exception as e:
             logger.error(e)
-            if request.POST.get("json_content") is not None:
-                messages.add_message(request, messages.ERROR, f"Invalid Component JSON: {e.__context__}")
+            logger.warning(
+                event="error_importing_component",
+                object={"object": "component", "name": import_name, "error": {e.__context__}}
+                )
+            issues.append({"object": "component", "name": import_name, "error": {e.__context__}})
             shutil.rmtree(tempdir)
-            return HttpResponse(e)
+            # Check a component uploaded to form
+            if request and request.POST.get("json_content") is not None:
+                if stopinvalid:
+                    messages.add_message(request, messages.ERROR, f"IMPORT HALTED. Invalid Component JSON: {e.__context__}")
+                    return HttpResponse(e)
+                else:
+                    messages.add_message(request, messages.INFO, f"IMPORT CONTINUED WITH POSSIBLE ERROR. Invalid Component JSON: {e.__context__}")
+            else:
+                if stopinvalid:
+                    print("\nNOTICE - ISSUES DURING COMPONENT IMPORT\n")
+                    [print(issue) for issue in issues]
+                    print("\nPROGRAM HALTED\n")
+                    import sys
+                    sys.exit()
+
+
+        # If importing from importcomponents script print issues
+        if len(issues) > 0:
+            print("\nNOTICE - ISSUES DURING COMPONENT IMPORT\n")
+            [print(issue) for issue in issues]
 
         # Returns list of created components
         created_components = self.create_components(oscal_json)
