@@ -25,6 +25,9 @@ class Command(BaseCommand):
         parser.add_argument('--format', metavar='format', nargs='?', default="oscal", help="File format")
         parser.add_argument('--path', metavar='dir_or_pdf', nargs='?', default="local/export/components", help="The directory path containing component files to import.")
         parser.add_argument('--importname', metavar='importname', nargs='?', default="Batch component import", help="Name to identify the batch import")
+        parser.add_argument('--stopinvalid', default=True, action='store_true')
+        parser.add_argument('--no-stopinvalid', dest='stopinvalid', action='store_false')
+
 
     def handle(self, *args, **options):
 
@@ -32,6 +35,7 @@ class Command(BaseCommand):
         FORMAT = options['format']
         IMPORT_PATH = options['path']
         IMPORT_NAME = options['importname']
+        STOPINVALID = options['stopinvalid']
         # Check if import directory path exists
         if not os.path.exists(IMPORT_PATH):
             print(f"Import directory {IMPORT_PATH} not found.")
@@ -50,7 +54,7 @@ class Command(BaseCommand):
 
                 with open(path_in_str) as f:
                     oscal_component_json = f.read()
-                    result = ComponentImporter().import_components_as_json(IMPORT_NAME, oscal_component_json, existing_import_record=True)
+                    result = ComponentImporter().import_components_as_json(IMPORT_NAME, oscal_component_json, existing_import_record=True, stopinvalid=STOPINVALID)
 
         elif FORMAT == "csv":
             import csv

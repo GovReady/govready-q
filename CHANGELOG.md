@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.10.1 (August 16, 2021)
+---------------------------
+
+**Developer changes**
+
+* Add `--stopinvalid` and `--no-stopinvalid` to manage behavior on Trestle validation errors during bulk import of components.
+
+
 v0.9.10 (August 16, 2021)
 -------------------------
 
