@@ -4,6 +4,9 @@ GovReady-Q Release Notes
 v0.9.11-dev (August xx, 2021)
 -----------------------------
 
+**Bug fix**
+
+* Correctly handle exporting library components when component has zero statements to avoid crashing exportcomponentlibrary command.
 
 
 v0.9.10.1 (August 16, 2021)

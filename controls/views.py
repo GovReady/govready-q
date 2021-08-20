@@ -838,7 +838,7 @@ class OSCALComponentSerializer(ComponentSerializer):
             control_implementations.append(control_implementation)
         # Remove 'control-implementations' key if no implementations exist
         if len(control_implementations) == 0:
-            of['component-definition']['components'][uuid].pop('control-implementations', None)
+            of['component-definition']['components'][0].pop('control-implementations', None)
 
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
