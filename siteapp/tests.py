@@ -30,6 +30,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
 from django.utils.crypto import get_random_string
+from django import db
 
 from controls.enums.statements import StatementTypeEnum
 from guidedmodules.tests import TestCaseWithFixtureData
@@ -511,10 +512,10 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.assertIn("Introduction | GovReady Account Settings", self.browser.title))
 
         #  # - The user is looking at the Introduction page.
-        wait_for_sleep_after(lambda: self.click_element("#save-button"))
+        # wait_for_sleep_after(lambda: self.click_element("#save-button"))
         #  # - Now at the what is your name page?
-        wait_for_sleep_after(lambda: self.fill_field("#inputctrl", "John Doe"))
-        wait_for_sleep_after(lambda: self.click_element("#save-button"))
+        # wait_for_sleep_after(lambda: self.fill_field("#inputctrl", "John Doe"))
+        # wait_for_sleep_after(lambda: self.click_element("#save-button"))
 
         # - We're on the module finished page.
         # wait_for_sleep_after(lambda: self.assertNodeNotVisible('#return-to-project'))
