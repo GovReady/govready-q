@@ -391,6 +391,45 @@ class SelectedComponentsList(ListView):
             raise Http404
 
 @login_required
+def component_library_icons(request):
+    """Display the library of components"""
+
+    query = request.GET.get('search')
+    if query:
+        try:
+            element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)
+                                                  | Q(pk__in=set(Statement.objects.filter(body__search=query).values_list('producer_element', flat=True)))
+                                                 ).exclude(element_type='system').distinct()
+        except:
+            logger.info(f"Ah, you are not using Postgres for your Database!")
+            element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
+    else:
+        element_list = Element.objects.all().exclude(element_type='system').distinct()
+
+    # Natural sorting on name
+    element_list = natsorted(element_list, key=lambda x: x.name)
+
+    # Pagination
+    ele_paginator = Paginator(element_list, 50)
+    page_number = request.GET.get('page')
+
+    try:
+        page_obj = ele_paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = ele_paginator.page(1)
+    except EmptyPage:
+        page_obj = ele_paginator.page(ele_paginator.num_pages)
+
+    context = {
+        "page_obj": page_obj,
+        "import_form": ImportOSCALComponentForm(),
+        "total_comps": Element.objects.exclude(element_type='system').count(),
+        "comps_count": len(element_list),
+    }
+
+    return render(request, "components/component_library_icons.html", context)
+
+@login_required
 def component_library(request):
     """Display the library of components"""
 
@@ -447,12 +486,18 @@ def compare_components(request):
     """
     Compare submitted components
     """
-    
+
+    add_to_systems = request.POST.get('addToSystems', None)
+
     checks = json.loads(request.POST.get('hiddenChecks'))
     compare_list = list(checks.values())
-    if len(compare_list) <= 1:
+    if len(compare_list) < 1 and add_to_systems == "True":
         # add messages
-        messages.add_message(request, messages.WARNING, f"Not enough components were selected to compare!")
+        messages.add_message(request, messages.WARNING, f"Please select at least one component to add a system.")
+        return HttpResponseRedirect("/controls/components/icons")
+    if len(compare_list) <= 1 and add_to_systems != "True":
+        # add messages
+        messages.add_message(request, messages.WARNING, f"Please select at least one components to compare.")
         return HttpResponseRedirect("/controls/components")
     else:
         ele_q = Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct()
@@ -461,6 +506,21 @@ def compare_components(request):
         compare_prime, element_list = element_list[0], element_list[
                                                        1:]  # The first component selected will be compared against the rest
         compare_prime_smts = compare_prime.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
+
+    # Render add components to Systems form instead
+    if add_to_systems == "True":
+        if request.method == 'POST':
+            # TODO get projects with write priv
+            projects = Project.get_projects_with_read_priv(request.user, excludes={"contained_in_folders": None})
+
+            context = {
+                "element_list": element_list,
+                "add_to_systems": add_to_systems,
+                "projects": projects,
+            }
+            return render(request, "components/add_components_to_systems_form.html", context)
+
+    # Render component comparison
     difference_tuples = []
     for component in element_list:
         differences = []
@@ -484,7 +544,8 @@ def compare_components(request):
             "prime_smts": compare_prime_smts,
             "secondary_smts": cmt_smts,
             "differences": difference_tuples,
-            "compare_list": compare_list
+            "compare_list": compare_list,
+            "add_to_systems": add_to_systems,
         }
         return render(request, "components/compare_components.html", context)
 

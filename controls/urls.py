@@ -75,6 +75,7 @@ urlpatterns = [
     # Component Library
 
     url(r'^components$', views.component_library, name="component_library"),
+    url(r'^components/icons$', views.component_library_icons, name="component_library_icons"),
     url(r'^components/compare$', views.compare_components, name="compare_components"),
     url(r'^components/new$', views.new_element, name="new_element"),
     url(r'^components/(?P<element_id>.*)/_copy$', views.component_library_component_copy, name="component_library_component_copy"),

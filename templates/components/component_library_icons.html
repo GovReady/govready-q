@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}
+    {{ portfolio.title }} Components Selected
+{% endblock %}
+
+{% block head %}
+    {% include "controls/_style-controls.html" %}
+    <style>
+        .pagination {
+            text-align: right;
+            margin: 0px;
+            font-weight: normal;
+        }
+
+        .rows-header { font-weight: bold; }
+
+        .container { width:1100px; }
+
+        h1, h2 { text-align: center !important; }
+
+        #searchbox {
+            font-size: 24px;
+            width: 300px;
+        }
+
+        #searchicon { position: absolute; left: 8px; top: 0; bottom: 0; height: 24px; margin: auto; font-size: 14px; cursor: default; color: #999; text-decoration: none; }
+
+    </style>
+
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+    <div class="portfolio-top">
+
+        <style>
+            #search {text-align: center;}
+            #searchicon {font-size: 20px;}
+            .cmt1 { width:204px; display: inline-block; margin: 24px 0px 36px 0px;}
+            .cmt-icon { font-size: 60px; color: black; text-decoration: none;}
+            .cmt-name, .cmt-name a { font-size: 20px; color: black; text-decoration: none;}
+            #checkbox-container { max-width: 1060px; margin: auto; margin-top: 36px; border: 0px solid black;}
+        </style>
+        <div class="container">
+            <h2 class="" style="text-align: center !important; border: 0px solid black;">Security Components</h2>
+
+            <div style="text-center;">
+                <form id="search" action="{% url 'component_library_icons' %}" method="GET" role="search">
+                    <div class="form-inline ">
+                        <div class="form-group" style="text-align: center;">
+                            <div class="input-group">
+                                <input id="searchbox" name="search" value="{{ request.GET.search }}" type="text" placeholder="search" spellcheck="false" aria-label="Search" aria-describedby="search">
+                                <span id="searchicon" class="glyphicon glyphicon-search" href="{% url 'component_library' %}"></span>
+                                {% if request.GET.search %}
+                                    <a id="searchclear" class="glyphicon glyphicon-remove" href="{% url 'component_library_icons' %}"></a>
+                                {% endif %}
+                             </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <form action="{% url 'compare_components' %}" name="compare_form" onsubmit="return clearStorage()" method="POST">
+                <div id="checkbox-container">
+                    <div class="text-center">
+                        <a id="list-view" href="{% url 'component_library' %}" class="btn btn-link">[ List view ]</a>
+                        <button id="compare-select" onclick="select_all(true); return false;" href="#" class="btn btn-link">[ Select all ]</button>
+                        <button id="compare-deselect" onclick="select_all(false); return false;" href="#" class=" btn btn-link">[ Deselect all ]</button>
+                        <button id="compare-components" href="{% url 'compare_components' %}" class="btn btn-link">[ Compare ]</button>
+                        {% csrf_token %}
+                        <input type="hidden" name="hiddenChecks" id="hiddenChecks" value="" />
+                        <input type="hidden" name="addToSystems" id="addToSystems" value="" />
+
+                        <button id="component-add-to-system" href="{% url 'compare_components' %}" class="btn btn-link" onclick="$('#addToSystems').val('True');">[ Add to systems ]</button>
+                        <a id="component-new" href="{% url 'new_element' %}" class="btn btn-link">[ Create component ]</a>
+                        <a id="component-import-oscal" class="btn btn-link" onclick="show_import_component_modal(); return false;" href="#">[ Import OSCAL component ]</a>
+                        <a id="import_records_link" href="{% url 'import_records' %}" class="btn btn-link">[ Manage imported ]</a>
+
+                    </div>
+                    <div class="text-center">
+                        {% if page_obj|length > 0 %}
+                            {{ comps_count }} security component{{ total_comps|pluralize }}
+                        {% else %}
+                            You do not have access to any components.
+                        {% endif %}
+                        <div id="" class="col-xs-12"><span>{% include 'components/paginate_comp.html' %}</span></div>
+                    </div>
+
+                    {% for component in page_obj %}
+                        <div class="cmt1">
+                            <div class="text-center"><a href={% url 'component_library_component' element_id=component.id %}><span class="glyphicon glyphicon-globe cmt-icon"></span></a></div>
+                            <div class="cmt-name text-center"><a href={% url 'component_library_component' element_id=component.id %}>{{ component.name|truncatechars:20 }}</a></div>
+                            <div class="text-center">
+                                <span class="component-tag">{% if component.get_control_impl_smts_prototype_count > 0 %}{{ component.get_control_impl_smts_prototype_count }} control statement{{ component.get_control_impl_smts_prototype_count|pluralize }}</span>{% else %}
+                                 <span class="component-tag">No statements</span>{% endif %}
+                            </div>
+                            <div class="text-center">
+                                 <label for="comp_comparison_{{ forloop.counter }}"></label><input type="checkbox" id="comp_comparison_{{ forloop.counter }}" name="compareCheckbox" onchange="addCheck()" value="{{ component.id }}">
+                            </div>
+                            <!-- <div class="text-center">{% for tag in component.tags.all %}<span class="component-tag"><a href="{% url 'component_library' %}?search={{ tag.label }}">{{ tag.label }}</a></span> {% endfor %}</div> -->
+                        </div>
+                    {% endfor %}
+                </div>
+            </form>
+
+                {% include "components/import-component-modal.html" %}
+            </div>
+    </div>
+    {{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+//Hide submit button until 1 checkbox is checked
+$(document).ready(function () {
+    var checkBoxValues = JSON.parse(localStorage.getItem('checkBoxValues'))
+    // If are no previously checked components then hide button
+    var $submit = $("#compare-components").hide()
+    if (checkBoxValues !== null) {
+        $submit.toggle();
+    } else {
+        $cbs = $('input[name="compareCheckbox"]').click(function () {
+
+            $submit.toggle($cbs.is(":checked"));
+        });
+    }
+});
+
+function select_all(val) {
+    // select and deselect with toggle
+    var checkBoxValues = JSON.parse(localStorage.getItem('checkBoxValues')) || {};
+    var $checkboxes = $("#checkbox-container :checkbox");//$('input[type=checkbox]')
+    $checkboxes.prop('checked', val);
+
+    addStorage($checkboxes, checkBoxValues);
+
+    var compare_btn = $("#compare-components")
+    if ($checkboxes.prop('checked') && compare_btn.is(":hidden")) {
+        compare_btn.toggle()
+    }
+    if (!$checkboxes.prop('checked') && compare_btn.is(":visible")) {
+        clearStorage()
+    }
+}
+
+function addCheck() {
+    // maintain in localstorage checkboxes that have been checked
+    var checkBoxValues = JSON.parse(localStorage.getItem('checkBoxValues')) || {};
+
+    var $checkboxes = $("#checkbox-container :checkbox");
+    addStorage($checkboxes, checkBoxValues)
+
+}
+
+function addStorage($checkboxes, checkBoxValues) {
+    // add each check's value with a unique key made from id and value.
+    $checkboxes.each(function () {
+        if (this.checked) {
+            checkBoxValues[this.id + "_" + this.value] = this.value;
+        }
+
+    });
+    // set this json string in localstorage to then rewrite the hidden input
+    localStorage.setItem("checkBoxValues", JSON.stringify(checkBoxValues));
+    document.getElementById("hiddenChecks").value = localStorage.getItem('checkBoxValues');
+}
+
+function clearStorage() {
+    // clear local storage when deselecting all or after pressing the compare button
+    localStorage.clear()
+}
+</script>
+{% endblock %}
