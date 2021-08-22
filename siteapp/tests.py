@@ -509,7 +509,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.click_element('#user-menu-dropdown'))
         wait_for_sleep_after(lambda: self.click_element('#user-menu-account-settings'))
         var_sleep(.5) # wait for page to open
-        wait_for_sleep_after(lambda: self.assertIn("Introduction | GovReady Account Settings", self.browser.title))
+        wait_for_sleep_after(lambda: self.assertIn("Account Settings", self.browser.title))
 
         #  # - The user is looking at the Introduction page.
         # wait_for_sleep_after(lambda: self.click_element("#save-button"))

@@ -3,7 +3,7 @@ from django.forms import ModelForm
 from django.core.exceptions import ValidationError
 from django.db.models import Exists
 
-from .models import Portfolio, Project
+from .models import Portfolio, Project, User
 
 class EditProjectForm(ModelForm):
     class Meta:
@@ -39,4 +39,23 @@ class PortfolioForm(ModelForm):
         # Validate portfolio name does not exist case insensitive only when creating a new portfolio
         if Portfolio.objects.filter(title__iexact=cd['title']).exists() and self.data.get('action') == 'newportfolio':
             raise ValidationError("Portfolio name {} not available.".format(cd['title']))
+        return cd
+
+class AccountSettingsForm(ModelForm):
+    def __init__(self, request, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        user = User.objects.get(pk=request.user.id)
+        self.fields['name'].initial = user.name
+        self.fields['email'].initial = user.email
+
+    class Meta:
+        model = User
+        fields = ['name', 'email' ]
+
+    def clean(self):
+        cd = self.cleaned_data
+        # TODO: should name be unique? Handle Name collisions
+        # Validate portfolio name does not exist case insensitive only when creating a new portfolio
+        if User.objects.filter(name__iexact=cd['name']).exists():
+            raise ValidationError("User name {} not available.".format(cd['name']))
         return cd

@@ -33,7 +33,7 @@ from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
 from controls.models import Element, System, Statement, Poam, Deployment
 from system_settings.models import SystemSettings, Classification, Sitename
 
-from .forms import PortfolioForm, EditProjectForm
+from .forms import PortfolioForm, EditProjectForm, AccountSettingsForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
 from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, Tag, ProjectAsset
@@ -164,6 +164,27 @@ def homepage(request):
         "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
     })
 
+@login_required
+def account_settings(request):
+    user = User.objects.get(pk=request.user.id)
+    if request.method == 'POST':
+        form = AccountSettingsForm(request, request.POST)
+        if form.is_valid():
+            user.name = request.POST['name']
+            user.email = request.POST['email']
+            user.save()
+            logger.info(
+                event="update_account_settings",
+                object={"object": "user", "id": user.id, "username": user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return redirect('home_user')
+    else:
+        form = AccountSettingsForm(request)
+
+    return render(request, "account_settings.html", {
+        "form": form,
+    })
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -2165,7 +2186,7 @@ def accept_invitation(request, code=None):
         portfolio = request.user.create_default_portfolio_if_missing()
 
     # Some invitations create an interstitial before redirecting.
-    inv.from_user.preload_profile()
+    # inv.from_user.preload_profile()
     try:
         interstitial = inv.target.get_invitation_interstitial(inv)
     except AttributeError:  # inv.target may not have get_invitation_interstitial method
@@ -2362,7 +2383,7 @@ def organization_settings(request):
 
     def preload_profiles(users):
         users = list(users)
-        User.preload_profiles(users, sort=True)
+        # User.preload_profiles(users, sort=True)
         return users
 
     return render(request, "settings.html", {

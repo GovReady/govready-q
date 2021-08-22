@@ -8,6 +8,13 @@ v0.9.11-dev (August xx, 2021)
 
 * Correctly handle exporting library components when component has zero statements to avoid crashing exportcomponentlibrary command.
 
+**Data changes**
+
+* Add `name` field to `siteapp.models.User`.
+
+**Developer changes**
+
+* Refactoring profiles to be standard profiles instead of a special case compliance app. See issue #633.
 
 v0.9.10.1 (August 16, 2021)
 ---------------------------
