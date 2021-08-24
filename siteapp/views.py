@@ -109,6 +109,8 @@ def homepage(request):
                     new_user = signup_form.save(request)
                     # Add default permission, view AppSource
                     new_user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
+                    if new_user.name is None:
+                        new_user.name = new_user.username
                     new_user.save()
 
                     # Log them in.
@@ -172,18 +174,18 @@ def account_settings(request):
         if form.is_valid():
             user.name = request.POST['name']
             user.email = request.POST['email']
+            user.title = request.POST['title']
             user.save()
             logger.info(
                 event="update_account_settings",
                 object={"object": "user", "id": user.id, "username": user.username},
                 user={"id": request.user.id, "username": request.user.username}
             )
-            return redirect('home_user')
-    else:
-        form = AccountSettingsForm(request)
-
+            messages.add_message(request, messages.INFO, 'Account settings updated.')
+    form = AccountSettingsForm(request)
     return render(request, "account_settings.html", {
         "form": form,
+        "user": user,
     })
 
 class UserViewSet(viewsets.ModelViewSet):
