@@ -1081,7 +1081,11 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         self._new_project()
 
         # Checks the number of projects and components before the import
-        self.assertEqual(Project.objects.all().count(), 3)
+        # The number of projects should be 2  to start:
+        #  - the system project representing the organization (legacy)
+        #  - the sample project created during setup of GovReady
+        EXISTING_PROJECT_COUNT = 2
+        self.assertEqual(Project.objects.all().count(), EXISTING_PROJECT_COUNT)
         self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 0)
 
         ## Update current project
@@ -1098,7 +1102,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
 
         # Check the new number of projects, and validate that it's the same
         project_num = Project.objects.all().count()
-        self.assertEqual(project_num, 3)
+        self.assertEqual(project_num, EXISTING_PROJECT_COUNT)
         # Has the updated name?
         wait_for_sleep_after(lambda: self.assertEqual(Project.objects.all()[project_num - 1].title, "New Test Project"))
         # Components and their statements?
@@ -1120,7 +1124,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         self._new_project()
 
         # export the only project we have so far
-        self.navigateToPage('/systems/3/export')
+        self.navigateToPage(f'/systems/{EXISTING_PROJECT_COUNT}/export')
 
         # Project title to search for in file names
         project_title = "I_want_to_answer_some_questions_on_Q._3"

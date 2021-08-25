@@ -66,7 +66,7 @@ class User(AbstractUser):
     def name_and_email(self):
         if self.name:
             if self.email:
-                return "{} <{}>".format(name, self.email)
+                return "{} <{}>".format(self.name, self.email)
             else:
                 return self.name
         elif self.email:
