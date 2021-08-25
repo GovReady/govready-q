@@ -2188,7 +2188,6 @@ def accept_invitation(request, code=None):
         portfolio = request.user.create_default_portfolio_if_missing()
 
     # Some invitations create an interstitial before redirecting.
-    # inv.from_user.preload_profile()
     try:
         interstitial = inv.target.get_invitation_interstitial(inv)
     except AttributeError:  # inv.target may not have get_invitation_interstitial method
@@ -2385,7 +2384,6 @@ def organization_settings(request):
 
     def preload_profiles(users):
         users = list(users)
-        # User.preload_profiles(users, sort=True)
         return users
 
     return render(request, "settings.html", {

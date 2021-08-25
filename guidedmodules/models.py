@@ -1152,14 +1152,10 @@ class Task(models.Model):
         # elsewhere, sent from the user.
         from siteapp.models import Invitation
         invs = Invitation.get_for(self).filter(from_user=user)
-        # for inv in invs:
-        #     inv.from_user.preload_profile()
         return invs
 
     def get_source_invitation(self, user):
         inv = self.invitation_history.filter(accepted_user=user).order_by('-created').first()
-        # if inv:
-        #     inv.from_user.preload_profile()
         return inv
 
     # NOTIFICATION TARGET HELEPRS
@@ -1833,7 +1829,6 @@ class TaskAnswer(models.Model):
                 is_cleared = False
 
             # get a dict with information about the user
-            # TODO: Shouldn't a user be referenced in below statement?
             who = answer.answered_by.render_context_dict()
 
             history.append({
@@ -2015,7 +2010,6 @@ class TaskAnswer(models.Model):
         mentionable_users = set(discussion.get_all_participants()) \
                             | set(
             User.objects.filter(projectmembership__project__organization=organization).distinct())
-        # User.preload_profiles(mentionable_users)
         return {
             # @-mention participants in the discussion and other
             # users in mentionable_users.
