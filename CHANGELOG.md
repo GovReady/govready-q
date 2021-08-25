@@ -4,6 +4,14 @@ GovReady-Q Release Notes
 v0.9.11-dev (August xx, 2021)
 -----------------------------
 
+**Developer changes**
+
+* Add a set of default headers (through hidden inputs and a html form) for the SSP CSV export, dubbed Quick CSV. 
+
+**UI changes**
+
+* A Quick CSV button on the system security plan page.
+
 **Bug fix**
 
 * Correctly handle exporting library components when component has zero statements to avoid crashing exportcomponentlibrary command.
