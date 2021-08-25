@@ -1124,7 +1124,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         self._new_project()
 
         # export the only project we have so far
-        self.navigateToPage(f'/systems/{EXISTING_PROJECT_COUNT}/export')
+        self.navigateToPage('/systems/2/export')
 
         # Project title to search for in file names
         project_title = "I_want_to_answer_some_questions_on_Q._3"
