@@ -15,7 +15,7 @@ v0.9.11-dev (August xx, 2021)
 **Bug fix**
 
 * Correctly handle exporting library components when component has zero statements to avoid crashing exportcomponentlibrary command.
-
+* Add execute permissions to `/dev_env/docker/remote_interpreter/python_env.sh b/dev_env/docker/remote_interpreter/python_env.sh` (See: )
 
 v0.9.10.1 (August 16, 2021)
 ---------------------------

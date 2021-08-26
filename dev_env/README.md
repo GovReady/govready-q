@@ -41,12 +41,13 @@ This also assumes you can run as root/administrator.  This is due to ports being
 
 ### Pycharm
 #### Automated Sync via SSH Interpreter
-- `File -> Settings -> Project -> Project Interpreter  -> Cog -> Add -> SSH Interpreter`
+- `File -> Settings or Preferences -> Project -> Project Interpreter  -> Cog -> Add -> SSH Interpreter`
     - Host: `localhost`
     - Port: `2222`
     - User: `root`
     - Password: `root`
     - Interpreter: `/usr/src/app/dev_env/docker/remote_interpreter/python_env.sh`
+    - Set upload files to host server to FALSE/Never/Unchecked
 
 ### VIM
 - `docker exec -it govready_q_dev /bin/bash` - Connect to the Django container directly to code.
