@@ -6,13 +6,91 @@ orbs:
     snyk: snyk/snyk@0.0.13
 workflows:
     build:
-        jobs:
-            - build:
-                context:
-                    - snyk_api
+      jobs:
+        - security-checks:
+            context:
+              - snyk_api
+        - test
 
 jobs:
-  build:
+  security-checks:
+    docker:
+      - image: circleci/python
+      steps:
+        # Add .local/bin to PATH for utilities install by `pip install --user`.
+        - run: echo 'export PATH=~/.local/bin:$PATH' >> $BASH_ENV
+
+        # Get source code.
+        - checkout
+
+        # Install dependencies.
+        - run: sudo apt update && sudo apt install -y git curl unzip locales libmagic1 graphviz pandoc xvfb wkhtmltopdf
+        - run: sudo sed -i "s/^[# ]*en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen && sudo /usr/sbin/locale-gen # Install the U.S. locale (see `apt install locales` above), which we reference explicitly in Q for formatting and parsing numbers. Usually only needed on slim builds of Debian images.
+        - run:
+            name: |
+              [NIST SP 800-53 Rev 4 -- CM-2] Baseline packages are installed using pip, which reads the
+              requirements.txt file for a list of packages to install. Additionally, the script
+              fetch-vendor-resources.sh lists other external software packages needed by the program.
+              In both cases, package versions are pinned using version numbers and package hashes.
+            command: |
+              pip install --user --upgrade pip
+              pip install --user -r requirements.txt
+              pip install --user -r requirements_mysql.txt
+              # pip install --user -r requirements_util.txt
+              ./fetch-vendor-resources.sh
+
+        - run: pip3 install --user -U pip-tools
+        # Temporarily comment out below line - 08/06/2020
+        # - run: ./requirements_txt_checker.sh > requirements.txt.status.txt
+        - store_artifacts:
+            path: requirements.txt.status.txt
+
+        # Install packages necessary to check packages for known
+        # vulnerabilities using pyup.io, and run the check.
+        - run: pip3 install --user -U safety
+        - run: safety check --bare -r requirements.txt
+
+            # Run static code analysis using 'bandit'.
+            # Disable warning-like tests:
+            # B101: Test for use of assert
+            # B110: try_except_pass
+            # B603: subprocess_without_shell_equals_true
+        - run: bandit -s B101,B110,B603 -r discussion/ guidedmodules/ siteapp/
+
+
+        # - run: coverage run --source='.' --branch -p manage.py test discussion
+        # Commenting out tests until better solution for testing after page loaded
+        #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.LandingSiteFunctionalTests
+        # - run: coverage run --source='.' --branch -p manage.py test siteapp.tests.GeneralTests
+        #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.QuestionsTests
+        - run: coverage combine
+        - run: coverage report # output to stdout.
+        - run: coverage xml # generate report artifact coverage.xml.
+        - run: coverage html # generate report artifact htmlcov/*.
+        - store_artifacts:
+            path: coverage.xml
+        - store_artifacts:
+            path: htmlcov
+
+
+        # Snyk Scan
+        - run: pip install -r requirements_util.txt
+        - snyk/scan:
+            token-variable: SNYK_API_TOKEN
+            project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
+            additional-arguments: "--file=requirements_mysql.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
+
+        - snyk/scan:
+            token-variable: SNYK_API_TOKEN
+            project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
+            additional-arguments: "--file=requirements_util.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
+
+        - snyk/scan:
+            token-variable: SNYK_API_TOKEN
+            project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
+            additional-arguments: "--file=requirements.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
+
+  tests:
     docker:
     - image: circleci/python:3.8.1-browsers # when upgrading, check that it works with selenium
     parallelism: 4
@@ -66,18 +144,6 @@ jobs:
     - store_artifacts:
         path: requirements.txt.status.txt
 
-    # Install packages necessary to check packages for known
-    # vulnerabilities using pyup.io, and run the check.
-    - run: pip3 install --user -U safety
-    - run: safety check --bare -r requirements.txt
-
-    # Run static code analysis using 'bandit'.
-    # Disable warning-like tests:
-    # B101: Test for use of assert
-    # B110: try_except_pass
-    # B603: subprocess_without_shell_equals_true
-    - run: bandit -s B101,B110,B603 -r discussion/ guidedmodules/ siteapp/
-
     # Run unit and functional tests with code coverage, and store code coverage
     # results. CircleCI commands can't go on forever, so we run the tests
     # separately (with -p) and then combine code coverage results.
@@ -91,33 +157,4 @@ jobs:
         command: |
           TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split --split-by=timings --timings-type=filename)
           coverage run --source='.' --branch -p manage.py test  --verbosity=1 $TESTFILES -v 2
-    # - run: coverage run --source='.' --branch -p manage.py test discussion
-    # Commenting out tests until better solution for testing after page loaded
-    #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.LandingSiteFunctionalTests
-    # - run: coverage run --source='.' --branch -p manage.py test siteapp.tests.GeneralTests
-    #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.QuestionsTests
-    - run: coverage combine
-    - run: coverage report # output to stdout.
-    - run: coverage xml # generate report artifact coverage.xml.
-    - run: coverage html # generate report artifact htmlcov/*.
-    - store_artifacts:
-        path: coverage.xml
-    - store_artifacts:
-        path: htmlcov
 
-    # Snyk Scan
-    - run: pip install -r requirements_util.txt
-    - snyk/scan:
-        token-variable: SNYK_API_TOKEN
-        project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
-        additional-arguments: "--file=requirements_mysql.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
-
-    - snyk/scan:
-        token-variable: SNYK_API_TOKEN
-        project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
-        additional-arguments: "--file=requirements_util.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
-
-    - snyk/scan:
-        token-variable: SNYK_API_TOKEN
-        project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
-        additional-arguments: "--file=requirements.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
