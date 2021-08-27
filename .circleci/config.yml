@@ -10,7 +10,7 @@ workflows:
         - security-checks:
             context:
               - snyk_api
-        - test
+        - tests
 
 jobs:
   security-checks:
