@@ -20,13 +20,13 @@ class Migration(migrations.Migration):
             model_name='user',
             name='name',
             field=models.CharField(max_length=200, blank=True, null=True, unique=True,
-                                  help_text="The user's display name.")
+                                  help_text="Full name to display.")
         ),
         migrations.AddField(
             model_name='user',
             name='title',
             field=models.CharField(max_length=200, blank=True, null=True, unique=False,
-                                  help_text="The user's title.")
+                                  help_text="Position title.")
         ),
         migrations.RunPython(forwards_func, migrations.RunPython.noop),
     ]

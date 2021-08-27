@@ -4,17 +4,41 @@ GovReady-Q Release Notes
 v0.9.11-dev (August xx, 2021)
 -----------------------------
 
+IMPORTANT BREAKING CHANGE
+
+This release replaces questionnaire-style account settings (e.g., user profile) with traditional user information form.
+
+**Installing this release will reset all users dislay names, titles, and profile pics.**
+
+**Please contact info@govready.com for a free, custom fix to preserve this data if desired!!**
+
+Display names will be reset to the username, title set to blank, and profile pics set to blank.
+
+We sincerely apologize for not being able to find a practical, transparent solution to preserve existing display name
+and photos during this change. We think the short term pain of resetting of this information at each user's convenience
+is better than a complicated attempt to coordinate every install through a fragile, sequence-dependent, multi-version upgrade process.
+
+Until now, user profile information was set by gathering information via our questionnaire feature
+We thought that was cool, but the idea has turned out to be overly complex to support. Having a traditional account
+settings feature provides for better extensibility and easier use. We've been wanting to make this change for a while.
+
+**Feature changes**
+
+* Replace questionnaire-style account settings (e.g., user profile) with traditional user information form.
+
 **Bug fix**
 
 * Correctly handle exporting library components when component has zero statements to avoid crashing exportcomponentlibrary command.
 
 **Data changes**
 
-* Add `name` field to `siteapp.models.User`.
+* Add `name`, `title` fields to `siteapp.models.User`.
+* Set all user's `name` to `username` as part of data migration.
 
 **Developer changes**
 
 * Refactoring profiles to be standard profiles instead of a special case compliance app. See issue #633.
+
 
 v0.9.10.1 (August 16, 2021)
 ---------------------------
