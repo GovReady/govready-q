@@ -20,6 +20,18 @@
         "type": "software",
         "title": "Cybrary",
         "description": "Training course",
+        "props": [
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "sample"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "training"
+                }
+              ],
         "responsible-roles": [
           {
             "role-id": "supplier",
@@ -31,7 +43,7 @@
         "control-implementations": [
           {
             "uuid": "f986c0f5-47b3-4c06-aa74-e7d0d3683f8f",
-            "source": "Govready",
+            "source": "NIST_SP-800-53_rev4",
             "description": "This is a partial implementation of the at-2 catalog, focusing on the control enhancement at-2.",
             "implemented-requirements": [
               {
@@ -48,7 +60,7 @@
           },
           {
             "uuid": "5a8952e7-1846-49e1-9a4d-bd58f23610e4",
-            "source": "Govready",
+            "source": "NIST_SP-800-53_rev4",
             "description": "This is a partial implementation of the at-2.2 catalog, focusing on the control enhancement at-2.2.",
             "implemented-requirements": [
               {
@@ -60,7 +72,7 @@
           },
           {
             "uuid": "04507036-0a47-4612-b39a-576e60df614c",
-            "source": "Govready",
+            "source": "NIST_SP-800-53_rev4",
             "description": "This is a partial implementation of the at-3 catalog, focusing on the control enhancement at-3.",
             "implemented-requirements": [
               {

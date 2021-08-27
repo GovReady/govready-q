@@ -30,7 +30,7 @@ from django.views import View
 from django.views.generic import ListView
 from simple_history.utils import update_change_reason
 
-from siteapp.models import Project, Organization
+from siteapp.models import Project, Organization, Tag
 from siteapp.settings import GOVREADY_URL
 from system_settings.models import SystemSettings
 from .forms import ElementEditForm
@@ -651,12 +651,21 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
 
         of["system-security-plan"]["metadata"]['roles'] =  [{"id": auths.get('role', "member").split(';')[0], "title": auths.get('role', "member").split(';')[0].capitalize()  } for user, auths in users]
         of["system-security-plan"]["system-implementation"]['users'] = [{"uuid":user_party_uuid, "title":user.username, "role-ids": [auths.get('role', "member").split(';')[0]]} for user, auths in users]
-        of["system-security-plan"]["system-implementation"]['components'] = [{"uuid":str(comp_ele.uuid), "title":comp_ele.name, "description":comp_ele.description, "status": {"state": comp_ele.component_state}, "type":comp_ele.component_type, "responsible-roles": [{
-              "role-id": "asset-owner",
-              "party-uuids": [
-                user_party_uuid
-              ]
-            }]} for comp_ele in components]# TODO: responsible-roles
+        of["system-security-plan"]["system-implementation"]['components'] = [{"uuid":str(comp_ele.uuid),
+                                                                              "title":comp_ele.name,
+                                                                              "description":comp_ele.description,
+                                                                              "status": {"state": comp_ele.component_state},
+                                                                              "type":comp_ele.component_type,
+                                                                              "responsible-roles": [{
+                                                                                "role-id": "asset-owner",
+                                                                                "party-uuids": [user_party_uuid]
+                                                                                }],
+                                                                              "props": [{"name": "tag",
+                                                                                         "ns": "https://govready.com/ns/oscal",
+                                                                                         "value": tag.label} for tag in
+                                                                                        comp_ele.tags.all()]
+                                                                              } for comp_ele in components]# TODO: responsible-roles
+
         # System characteristics
         # TODO: status remarks, authorization-boundary
         security_body = project.system.get_security_impact_level
@@ -738,6 +747,15 @@ class OSCALComponentSerializer(ComponentSerializer):
 
         return f"{control_id}"
 
+    def generate_source(self, src_str):
+        """Return a valid catalog source given string"""
+        DEFAULT_SOURCE = "NIST_SP-800-53_rev5"
+        if not src_str:
+            return DEFAULT_SOURCE
+        # TODO: Handle other cases
+        source = src_str
+        return source
+
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
@@ -759,16 +777,16 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": self.element.updated.replace(microsecond=0).isoformat(),
                     "oscal-version": self.element.oscal_version,
-                    "parties": parties,
-                    "props": props
+                    "parties": parties
                 },
                 "components": [
                    {
                         "uuid": comp_uuid,
-                       "type": self.element.component_type.lower() if self.element.component_type is not None else "software",
-                       "title": self.element.full_name or self.element.name,
+                        "type": self.element.component_type.lower() if self.element.component_type is not None else "software",
+                        "title": self.element.full_name or self.element.name,
                         "description": self.element.description,
-                         "responsible-roles": responsible_roles, # TODO: gathering party-uuids, just filling for now
+                        "responsible-roles": responsible_roles, # TODO: gathering party-uuids, just filling for now
+                        "props": props,
                         "control-implementations": control_implementations
                     }
                 ]
@@ -813,14 +831,14 @@ class OSCALComponentSerializer(ComponentSerializer):
         for sid_class, requirements in by_class.items():
             control_implementation = {
                 "uuid":str(uuid4()),# TODO: Not sure if this should implemented or just generated here.
-                "source": smt.source if smt.source else "Govready",
+                "source": self.generate_source(smt.source if smt.source else None),
                 "description": f"This is a partial implementation of the {sid_class} catalog, focusing on the control enhancement {requirements[0].get('control-id')}.",
                 "implemented-requirements": [req for req in requirements]
             }
             control_implementations.append(control_implementation)
         # Remove 'control-implementations' key if no implementations exist
         if len(control_implementations) == 0:
-            of['component-definition']['components'][uuid].pop('control-implementations', None)
+            of['component-definition']['components'][0].pop('control-implementations', None)
 
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
@@ -856,7 +874,7 @@ class OpenControlComponentSerializer(ComponentSerializer):
 
 class ComponentImporter(object):
 
-    def import_components_as_json(self, import_name, json_object, request=None, existing_import_record=False):
+    def import_components_as_json(self, import_name, json_object, request=None, existing_import_record=False, stopinvalid=True):
         """Imports Components from a JSON object
 
         @type import_name: str
@@ -869,6 +887,7 @@ class ComponentImporter(object):
         @returns: ImportRecord linked to the created components (if success) or False if failure
         """
 
+        issues = []
         try:
             # Create a temporary directory and dump the json_object in there.
             tempdir = tempfile.mkdtemp()
@@ -878,7 +897,6 @@ class ComponentImporter(object):
             oscal_json = json.loads(json_object)
             with open(path, 'w+') as cred:
                 json.dump(oscal_json, cred)
-
             # Read in temporary file and shape into trestle pydantic Component definition.
             trestle_oscal_json = trestlecomponent.ComponentDefinition.oscal_read(path_component_definition)
             # Finally validate that this object is valid by the component definition
@@ -887,26 +905,37 @@ class ComponentImporter(object):
             shutil.rmtree(tempdir)
         except Exception as e:
             logger.error(e)
-            if request.POST.get("json_content") is not None:
-                messages.add_message(request, messages.ERROR, f"Invalid Component JSON: {e.__context__}")
+            logger.warning(
+                event="error_importing_component",
+                object={"object": "component", "name": import_name, "error": {e.__context__}}
+                )
+            issues.append({"object": "component", "name": import_name, "error": {e.__context__}})
             shutil.rmtree(tempdir)
-            return HttpResponse(e)
+            # Check a component uploaded to form
+            if request and request.POST.get("json_content") is not None:
+                if stopinvalid:
+                    messages.add_message(request, messages.ERROR, f"IMPORT HALTED. Invalid Component JSON: {e.__context__}")
+                    return HttpResponse(e)
+                else:
+                    messages.add_message(request, messages.INFO, f"IMPORT CONTINUED WITH POSSIBLE ERROR. Invalid Component JSON: {e.__context__}")
+            else:
+                if stopinvalid:
+                    print("\nNOTICE - ISSUES DURING COMPONENT IMPORT\n")
+                    [print(issue) for issue in issues]
+                    print("\nPROGRAM HALTED\n")
+                    import sys
+                    sys.exit()
+
+
+        # If importing from importcomponents script print issues
+        if len(issues) > 0:
+            print("\nNOTICE - ISSUES DURING COMPONENT IMPORT\n")
+            [print(issue) for issue in issues]
 
         # Returns list of created components
         created_components = self.create_components(oscal_json)
         new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
         return new_import_record
-
-    # def find_import_record_by_name(self, import_name):
-    #     """Returns most recent existing import record by name
-
-    #     @type import_name: str
-    #     @param import_name: Name of import file (if it exists)
-    #     """
-
-    #     found_import_record = ImportRecord.objects.filter(name=import_name).last()
-
-    #     return found_import_record
 
     def create_import_record(self, import_name, components, existing_import_record=False):
         """Associates components and statements to an import record
@@ -968,16 +997,21 @@ class ComponentImporter(object):
         )
 
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
+
+        component_props = component_json.get('props', None)
+        if component_props is not None:
+            desired_tags = set([prop['value'] for prop in component_props if prop['name'] == 'tag' and 'ns' in prop and prop['ns'] == "https://govready.com/ns/oscal"])
+            existing_tags = Tag.objects.filter(label__in=desired_tags).values('id', 'label')
+            tags_to_create = desired_tags.difference(set([tag['label'] for tag in existing_tags]))
+            new_tags = Tag.objects.bulk_create([Tag(label=tag) for tag in tags_to_create])
+            all_tag_ids = [tag.id for tag in new_tags] + [tag['id'] for tag in existing_tags]
+            new_component.add_tags(all_tag_ids)
+            new_component.save()
         control_implementation_statements = component_json.get('control-implementations', None)
-        catalog = "missing"
-        # If there is an data in the control-implementations key
+        # If there data exists the OSCAL component's control-implementations key
         if control_implementation_statements:
-            # For each element if there is a source and the oscalized key is in the available keys
-            # Then create statements otherwise it will return an empty list
             for control_element in control_implementation_statements:
-                if 'source' in control_element:
-                    if oscalize_catalog_key(control_element['source']) in Catalogs().catalog_keys:
-                        catalog = oscalize_catalog_key(control_element['source'])
+                catalog = oscalize_catalog_key(control_element.get('source', None))
                 created_statements = self.create_control_implementation_statements(catalog, control_element, new_component)
         # If there are no valid statements in the json object
         if created_statements == []:
@@ -1000,54 +1034,26 @@ class ComponentImporter(object):
         @returns: New statement objects created
         """
 
-        statements_created = []
-        if catalog_key == "missing":
-            logger.info(f"Control Catalog {catalog_key} missing skipping Statement creation...")
-            return statements_created
+        new_statements = []
         implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
         for implemented_control in implemented_reqs:
-
-            control_id = implemented_control['control-id'] if 'control-id' in implemented_control else ''
-            #statements = implemented_control['statements'] if 'statements' in implemented_control else ''
-            if self.control_exists_in_catalog(catalog_key, control_id):
-                new_statement = Statement.objects.create(
-                    sid=control_id,
-                    sid_class=catalog_key,
-                    pid=get_control_statement_part(control_id),
-                    source=control_element['source'] if 'source' in control_element else catalog_key,
-                    uuid=control_element['uuid'] if 'uuid' in control_element else uuid.uuid4(),
-                    body=implemented_control['description'] if 'description' in implemented_control else '',
-                    statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
-                    remarks=implemented_control['remarks'] if 'remarks' in implemented_control else '',
-                    status=implemented_control['status'] if 'status' in implemented_control else None,
-                    producer_element=parent_component,
-                )
-
-                logger.info(f"New statement with UUID {new_statement.uuid} created.")
-                statements_created.append(new_statement)
-
-            else:
-                logger.info(f"Control {control_id} doesn't exist in catalog {catalog_key}. Skipping Statement...")
-
+            control_id = implemented_control['control-id'] if 'control-id' in implemented_control else 'missing'
+            new_statement = Statement(
+                sid=control_id,
+                sid_class=catalog_key,
+                pid=get_control_statement_part(control_id),
+                source=catalog_key,
+                uuid=control_element['uuid'] if 'uuid' in control_element else uuid.uuid4(),
+                body=implemented_control['description'] if 'description' in implemented_control else '',
+                statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
+                remarks=implemented_control['remarks'] if 'remarks' in implemented_control else '',
+                status=implemented_control['status'] if 'status' in implemented_control else None,
+                producer_element=parent_component,
+            )
+            logger.info(f"New statement with UUID {new_statement.uuid} being created.")
+            new_statements.append(new_statement)
+        statements_created = Statement.objects.bulk_create(new_statements)
         return statements_created
-
-    def control_exists_in_catalog(self, catalog_key, control_id):
-        """Searches for the presence of a specific control id in a catalog.
-
-        @type catalog_key: str
-        @param catalog_key: Catalog Key
-        @type control_id: str
-        @param control_id: Control id
-        @rtype: bool
-        @returns: True if control id exists in the catalog. False otherwise
-        """
-
-        if catalog_key not in Catalogs()._list_catalog_keys():
-            return False
-        else:
-            catalog = Catalog.GetInstance(catalog_key)
-            control = catalog.get_control_by_id(control_id)
-            return True if control is not None else False
 
 @login_required
 def add_selected_components(system, import_record):
@@ -1158,7 +1164,6 @@ def system_element_control(request, system_id, element_id, catalog_key, control_
             "opencontrol": opencontrol_string,
         }
         return render(request, "systems/element_detail_control.html", context)
-
 
 def edit_component_state(request, system_id, element_id):
     """
@@ -1285,6 +1290,7 @@ def component_library_component(request, element_id):
             "impl_smts": impl_smts,
             "is_admin": request.user.is_superuser,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "form_source": "component_library"
         }
         return render(request, "components/element_detail_tabs.html", context)
 
@@ -1333,6 +1339,7 @@ def component_library_component(request, element_id):
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
+        "form_source": "component_library"
     }
     return render(request, "components/element_detail_tabs.html", context)
 
@@ -1340,18 +1347,16 @@ def component_library_component(request, element_id):
 def api_controls_select(request):
     """Return list of controls in json for select2 options from all control catalogs"""
 
-    cl_id = request.GET.get('q', None).lower()
-    # Search control catalogs in a loop and add results to an array
+    cl_id = request.GET.get('q', None)
+    oscal_ctl_id = oscalize_control_id(cl_id)
+    catalogs_containing_cl_id = CatalogData.objects.filter(Q(catalog_json__catalog__groups__contains=[{"controls": [{"id": oscal_ctl_id}]}]) |
+        Q(catalog_json__catalog__groups__contains=[{"controls": [{"controls": [{"id": oscal_ctl_id}]}] }] ))
     cxs = []
-    catalogs = Catalogs()
-    for ck in catalogs._list_catalog_keys():
-        cx = Catalog.GetInstance(catalog_key=ck)
-        ctr = cx.get_control_by_id(cl_id)
-        # TODO: Better representation of control ids for case-insensitive searching insteading of listing ids in both cases
-        # TODO: OSCALizing control id?
-        if ctr:
-            cxs.append({'id': ctr['id'], 'title': ctr['title'], 'class': ctr['class'], 'catalog_key_display': cx.catalog_key_display, 'display_text': f"{ctr['id']} - {ctr['title']} - {cx.catalog_key_display} - ({ctr['id'].upper()})"})
-    cxs.sort(key = operator.itemgetter('id', 'catalog_key_display'))
+    for catalog in catalogs_containing_cl_id:
+        catalog_key_display = catalog.catalog_key.replace("_", " ")
+        # TODO: get control title effectively from CatalogData
+        # title = "catalog.ctl_title"
+        cxs.append({"id": oscal_ctl_id, 'catalog_key_display': catalog_key_display, 'display_text': f"{oscal_ctl_id} - {catalog_key_display} - {cl_id}"})
     status = "success"
     message = "Sending list."
     return JsonResponse( {"status": status, "message": message, "data": {"controls": cxs} })
@@ -2037,9 +2042,11 @@ def save_smt(request):
         else:
             new_statement_type_enum = StatementTypeEnum[form_values['statement_type'].upper()]
             # Create new Statement object
+            new_sid_class = form_values['sid_class'].replace(" ","_") # convert displayed catalog name to catalog_key
             statement = Statement(
                 sid=oscalize_control_id(form_values['sid']),
-                sid_class=form_values['sid_class'],
+                sid_class=new_sid_class,
+                source=new_sid_class,
                 body=form_values['body'],
                 pid=form_values['pid'],
                 statement_type=new_statement_type_enum.name,
@@ -2047,10 +2054,6 @@ def save_smt(request):
                 remarks=form_values['remarks'],
             )
             new_statement = True
-            # Convert the human readable catalog name to proper catalog key, if needed
-            # from human readable `NIST SP-800-53 rev4` to `NIST_SP-800-53_rev4`
-            statement.sid_class = statement.sid_class.replace(" ","_")
-
 
         # Updating or saving a new producer_element?
         try:
@@ -2087,8 +2090,7 @@ def save_smt(request):
             except Exception as e:
                 statement_status = "error"
                 statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
-                return JsonResponse({"status": "error", "message": statement_msg})
-
+                return JsonResponse({"status": statement_status, "message": statement_msg})
         # Retain only prototype statement if statement is created in the component library
         # A statement of type `control_implementation` should only exists if associated a consumer_element.
         # When the statement is created in the component library, no consuming_element will exist.
@@ -2097,13 +2099,13 @@ def save_smt(request):
         # - Skip the associating the statement with the system's root_element because we do not have a system identified
         statement_del_msg = ""
         if "form_source" in form_values and form_values['form_source'] == 'component_library':
-            # Form source is part of form
             # Form received from component library
             from django.core import serializers
             serialized_obj = serializers.serialize('json', [statement, ])
             # Delete statement
+            Statement.objects.filter(pk=statement.id).delete()
             statement.delete()
-            statement_del_msg = "Statement unassociated with System/Consumer Element deleted."
+            statement_del_msg = "Orphaned Control_Implementation Statement deleted."
         else:
             # Associate Statement and System's root_element
             system_id = form_values['system_id']
@@ -2126,13 +2128,13 @@ def save_smt(request):
 
     # Save Statement object
     try:
-        statement.save()
+        if not new_statement:
+            statement.save()
         statement_msg = "Statement saved."
         messages.add_message(request, messages.INFO, f"Statement {smt_id} Saved")
     except Exception as e:
         statement_status = "error"
         statement_msg = "Statement save failed. Error reported {}".format(e)
-
         return JsonResponse({"status": statement_status, "message": statement_msg})
     # Return successful save result to web page's Ajax request
     return JsonResponse(

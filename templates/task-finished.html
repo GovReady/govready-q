@@ -168,6 +168,15 @@
                             <!-- <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/odt">Open Office (odt)</a>&nbsp;&nbsp; -->
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/html">HTML</a>&nbsp;&nbsp;
                             <button id="exportCSVTemplateSSPButton" type="button" class="btn-xs btn-primary glyphicon glyphicon-copy" data-toggle="modal" data-target="#exportCSVTemplateSSP" aria-label="CSV" tooltip="exportCSVTemplateSSP" style="text-align: center; margin-right:10px; margin-left:5px;">CSV</button>&nbsp;&nbsp;
+                              <form role="form" class="pull-left" method="POST">
+                                  {% csrf_token %}
+                              <button class="btn-xs btn-primary glyphicon glyphicon-copy" aria-label="quickCSV" style="text-align: center; margin-right:10px; margin-left:5px;" type="submit">&nbsp;Quick CSV</button>&nbsp;&nbsp;
+                                  <input type="hidden" name="info_system" value="Information System"/>
+                                  <input type="hidden" name="control_id" value="Control ID"/>
+                                  <input type="hidden" name="catalog" value="Control Set Version Number"/>
+                                  <input type="hidden" name="shared_imps" value="Shared Implementation Details"/>
+                                  <input type="hidden" name="private_imps" value="Private Implementation Details"/>
+                              </form>
                             <!-- <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/markdown">Markdown</a>&nbsp;&nbsp; -->
                             <!--<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/plain">Plain Text</a>&nbsp;&nbsp;-->
                           {% endif %}

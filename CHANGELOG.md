@@ -1,16 +1,65 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.8.1-dev (August xx, 2021)
-----------------------------
+v0.9.11-dev (August xx, 2021)
+-----------------------------
+
+**Developer changes**
+
+* Add a set of default headers (through hidden inputs and a html form) for the SSP CSV export, dubbed Quick CSV. 
+
+**UI changes**
+
+* A Quick CSV button on the system security plan page.
+
+**Bug fix**
+
+* Correctly handle exporting library components when component has zero statements to avoid crashing exportcomponentlibrary command.
+* Add execute permissions to `/dev_env/docker/remote_interpreter/python_env.sh b/dev_env/docker/remote_interpreter/python_env.sh` (See: )
+
+v0.9.10.1 (August 16, 2021)
+---------------------------
+
+**Developer changes**
+
+* Add `--stopinvalid` and `--no-stopinvalid` to manage behavior on Trestle validation errors during bulk import of components.
+
+
+v0.9.10 (August 16, 2021)
+-------------------------
+
+**Developer changes**
+
+* Component tags now correctly included on OSCAL component export and included on OSCAL component import.
+* Component tags now correctly included on OSCAL SSP generation.
+
+**Bug fix**
+
+* Add the catalog_key to statement's `sid_class` and `source` fields when adding new statement to a component in library.
+
+**Data fix**
+
+* Add migration in controls to load default control catalogs into CatalogData in database. Remove loading of catalogs via first_run command.
+
+
+v0.9.9 (August 12, 2021)
+------------------------
+
+**UI changes**
+
+* Improve speed control selection auto-complete.
+* Various improvements to domponent add statement form: better alignment, validate control selected before saving, show/hide "Add component statement" button appropriately.
 
 **Developer changes**
 
 * Move creation of users in first_run to earlier in script.
+* Use faster bulk_create importing components.
 
 **Data changes**
 
 * Update sample components to OSCAL 1.0.0.
+* Change CatalogData JSONFields to Django JSONField for better searching options.
+* Import components and their statements even when catalog not found or statement control ids are not found in referenced catalog.
 
 
 v0.9.8 (August 09, 2021)
