@@ -4,9 +4,6 @@ FROM ubuntu:focal-20210119
 # Update package list.
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Add dos2unix for Windows support of deployments for the CRLF issues
-RUN apt-get update && apt-get install -y dos2unix
-
 # Set up the locale.
 RUN apt-get update && \
   apt-get install -y locales openssh-sftp-server openssh-server xvfb libfontconfig libmariadbclient-dev && \
@@ -60,4 +57,3 @@ RUN pip3 install ipdb
 # the container is launched with --mount.
 # --mount type=bind,source="$(pwd)",dst=/mnt/q-files-host
 RUN mkdir -p /mnt/q-files-host
-RUN find . -type f -print0 | xargs -0 dos2unix
