@@ -34,6 +34,7 @@ settings feature provides for better extensibility and easier use. We've been wa
 
 * Add `name`, `title` fields to `siteapp.models.User`.
 * Set all user's `name` to `username` as part of data migration.
+* Add letter 'c' prefix to 800-171 rev 2 control ids to be compliant with NIST OSCAL.
 
 **Developer changes**
 
