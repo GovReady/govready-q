@@ -510,10 +510,13 @@ def import_record_details(request, import_record_id):
 
     import_record = ImportRecord.objects.get(id=import_record_id)
     component_statements = import_record.get_components_statements()
+    statements_prototype = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
+                                                    import_record=import_record)
 
     context = {
         "import_record": import_record,
         "component_statements": component_statements,
+        "statements_prototype": statements_prototype,
     }
     return render(request, "components/import_record_details.html", context)
 
@@ -527,6 +530,9 @@ def confirm_import_record_delete(request, import_record_id):
     statement_count = 0
     for component in component_statements:
         statement_count += component_statements[component].count()
+    statements_prototype = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
+                                                    import_record=import_record)
+    statement_prototype_count = len(statements_prototype)
     projects = import_record.import_record_projects.all()
     project_count = len(projects)
     elements = import_record.import_record_elements.all()
@@ -535,6 +541,7 @@ def confirm_import_record_delete(request, import_record_id):
         "import_record": import_record,
         "component_count": component_count,
         "statement_count": statement_count,
+        "statement_prototype_count": statement_prototype_count,
         "project_count": project_count,
         "element_count": element_count
     }

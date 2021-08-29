@@ -15,7 +15,9 @@ from natsort import natsorted
 from controls.enums.components import ComponentTypeEnum, ComponentStateEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from controls.enums.statements import StatementTypeEnum
+from controls.enums.remotes import RemoteTypeEnum
 from controls.oscal import Catalogs, Catalog, CatalogData
+from controls.utilities import *
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
 from copy import deepcopy
@@ -214,6 +216,18 @@ class Statement(auto_prefetch.Model):
     @property
     def oscal_statement_id(self):
         return Statement._statement_id_from_control(self.sid, self.pid)
+
+class StatementRemote(auto_prefetch.Model):
+    statement = models.ForeignKey(Statement, related_name="remotes", unique=False, blank=True, null=True, on_delete=models.CASCADE,
+                                  help_text="Descendent or cloned Statement.")
+    remote_statement = models.ForeignKey(Statement, related_name="descendents", unique=False, blank=True, null=True, on_delete=models.SET_NULL,
+                                         help_text="Remote or parent Statement.")
+    remote_type = models.CharField(max_length=80, help_text="Remote type.", unique=False, blank=True, null=True, choices=RemoteTypeEnum.choices())
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_statement_remotes", on_delete=models.CASCADE,
+                                             unique=False, blank=True, null=True, help_text="The Import Record which created this record.")
 
 class Element(auto_prefetch.Model, TagModelMixin):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)

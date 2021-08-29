@@ -36,6 +36,18 @@ def replace_colons(text, project):
     text = text.replace(u':', "&colon;")
     return text
 
+def uhash(obj):
+    """Return a positive hash code"""
+    h = hash(obj)
+    return h + sys.maxsize + 1
+
+def de_oscalize_control_id(control_id):
+    """
+    Returns the regular control formatting from an oscalized version of the control number.
+    de_oscalize_control("ac-2.3") --> AC-2 (3)
+    """
+    return re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)\.([0-9]*)$', r'\1\2(\3)', control_id).upper()
+
 def oscalize_control_id(cl_id):
     """ output an oscal standard control id from various common formats for control ids """
 
