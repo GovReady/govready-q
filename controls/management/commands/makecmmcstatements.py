@@ -24,6 +24,15 @@ from controls.views import OSCALComponentSerializer, ComponentImporter
 
 import fs, fs.errors
 
+import logging
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+
 
 class Command(BaseCommand):
     help = 'Make CMMC statements from 800-53 statements'
@@ -69,18 +78,34 @@ class Command(BaseCommand):
                 for rc in r:
                     new_smt, created = Statement.objects.get_or_create(sid=rc, sid_class=catalog_key, producer_element=emt, statement_type=CIP)
                     print("smt, created", smt, created)
+                    new_smt.change_log = { "change_log": {"changes": []} }
+                    change = {
+                        "datetimestamp": new_smt.updated.isoformat(),
+                        "event": None,
+                        "source": None,
+                        "user_id": "admin",
+                        "fields": {
+                            "sid": new_smt.sid,
+                            "sid_class": new_smt.sid_class,
+                            "body": new_smt.body
+                        }
+                    }
                     if created:
                         new_smt.import_record = import_rec
-                        new_smt.save()
+                        change['event'] = 'created'
                         new_smt.body = smt.body
+                        logger.info(event=f"new_statement makecmmcstatements",
+                                object={"object": "statement", "id": new_smt.id},
+                                user={"id": None, "username": None})
                     else:
                         # TODO test if remote_type origin already exists for record and skip if exists
                         new_smt.body = new_smt.body or "" + "\n\n" + smt.body
-                    smt_r = StatementRemote.objects.create(statement=new_smt, remote_statement=smt, remote_type=RemoteTypeEnum.ORIGIN.name)
-                    # print(f"new_smt.changelog_append(cl_entry)")
-                    # print(f"logger event")
+                        change['event'] = 'updated'
+                        logger.info(event=f"update_statement makecmmcstatements",
+                                object={"object": "statement", "id": new_smt.id},
+                                user={"id": None, "username": None})
+                    change['fields']['body'] = new_smt.body
+                    new_smt.change_log_add_entry(change)
                     new_smt.save()
-
-        # Done
-        # print(f"Imported {counter} components in {FORMAT} from folder `{IMPORT_PATH}`.")
+                    smt_r = StatementRemote.objects.create(statement=new_smt, remote_statement=smt, remote_type=RemoteTypeEnum.ORIGIN.name)
 
