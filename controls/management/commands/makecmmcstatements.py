@@ -1,3 +1,9 @@
+# Usage:
+#   python manage.py makecmmcstatements --component_ids <space-delimted list of element ids> --importname "<name for import record>"
+#
+# Example:
+#   python3 manage.py makecmmcstatements --component_ids 1 6 --importname "Generating CMMC statements"
+
 import sys
 import os.path
 
@@ -57,27 +63,33 @@ class Command(BaseCommand):
 
         import_rec = ImportRecord.objects.create(name=import_name)
         CIP = StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name
-        # print(f"existing ids", [e.id for e in Element.objects.all()])
-        # sys.exit()
 
         # Get the CMMC Catalog instance
         catalog_key = "CMMC_ver1"
         cmmc = Catalog.GetInstance(catalog_key=catalog_key)
         c_dict= cmmc.get_flattened_controls_all_as_dict()
 
-        # Start with a list of components from ids
-        emts = Element.objects.in_bulk(component_ids)
+        def get_catalog_key_from_ref(ref):
+            """Extract the catalog_key from a OSCAL catalog link href string"""
+            # Example: get 'NIST_SP-800-171_rev1' from ' "href": "/controls/catalogs/NIST_SP-800-171_rev1/control/3.1.3" '
+            # TODO: Make sure GovReady catalogs are consistent in href handling!
+            # TODO make parsing mor robust!
+            ref_items = ref.split("/")
+            catalog_key = ref_items[3]
+            return catalog_key
 
-        for emt_id in emts:
-            emt = emts[emt_id]
+        # Process components and their statements
+        for emt_id in component_ids:
+            emt = Element.objects.get(pk=emt_id)
+            print(f"\n{emt.name} ({emt.id})")
             emt_smts = emt.statements(CIP)
             for smt in emt_smts:
-                print(f"\nTrying {emts[emt_id].name} smt {smt}")
-                r = [sid for sid in c_dict.keys() if len([gl['text'] for gl in c_dict[sid]['guidance_links'] if gl['text']==de_oscalize_control_id(smt.sid) ])>0]
-                print("r",r)
+                print(f"# Analyze {smt}")
+
+                r = [sid for sid in c_dict.keys() if len([gl['text'] for gl in c_dict[sid]['guidance_links'] if gl['text']==de_oscalize_control_id(smt.sid, get_catalog_key_from_ref(gl['href']) ) ])>0]
+                print(f"- Found links to: {r}")
                 for rc in r:
                     new_smt, created = Statement.objects.get_or_create(sid=rc, sid_class=catalog_key, producer_element=emt, statement_type=CIP)
-                    print("smt, created", smt, created)
                     new_smt.change_log = { "change_log": {"changes": []} }
                     change = {
                         "datetimestamp": new_smt.updated.isoformat(),
@@ -91,6 +103,7 @@ class Command(BaseCommand):
                         }
                     }
                     if created:
+                        print(f"- Created smt id {new_smt.id}")
                         new_smt.import_record = import_rec
                         change['event'] = 'created'
                         new_smt.body = smt.body
@@ -99,7 +112,9 @@ class Command(BaseCommand):
                                 user={"id": None, "username": None})
                     else:
                         # TODO test if remote_type origin already exists for record and skip if exists
-                        new_smt.body = new_smt.body or "" + "\n\n" + smt.body
+                        print(f"- Updating smt id {new_smt.id}")
+                        if new_smt.body is None: new_smt.body = ""
+                        new_smt.body = new_smt.body + "\n\n" + smt.body
                         change['event'] = 'updated'
                         logger.info(event=f"update_statement makecmmcstatements",
                                 object={"object": "statement", "id": new_smt.id},
@@ -107,5 +122,6 @@ class Command(BaseCommand):
                     change['fields']['body'] = new_smt.body
                     new_smt.change_log_add_entry(change)
                     new_smt.save()
+                    # Create remote record
                     smt_r = StatementRemote.objects.create(statement=new_smt, remote_statement=smt, remote_type=RemoteTypeEnum.ORIGIN.name)
 
