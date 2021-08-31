@@ -6,7 +6,10 @@ v0.9.11-dev (August xx, 2021)
 
 **Developer changes**
 
-* Add a set of default headers (through hidden inputs and a html form) for the SSP CSV export, dubbed Quick CSV. 
+* Add a set of default headers (through hidden inputs and a html form) for the SSP CSV export, dubbed Quick CSV.
+* Add makecmmcstatements admin command to create library component statements with CMMC content based on existing content.
+* Create RemoteStatement model in controls to better track relationship between statements created from other statements.
+* Add `change_log` field to maintain more accessible history of changes made to statement.
 
 **UI changes**
 
@@ -20,6 +23,7 @@ v0.9.11-dev (August xx, 2021)
 **Data changes**
 
 * Add letter 'c' prefix to 800-171 rev 2 control ids to be compliant with NIST OSCAL.
+
 
 
 v0.9.10.1 (August 16, 2021)
