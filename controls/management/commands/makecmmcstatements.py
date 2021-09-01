@@ -3,29 +3,29 @@
 #
 # Example:
 #   python3 manage.py makecmmcstatements --component_ids 1 6 --importname "Generating CMMC statements"
+#
+# Example Docker:
+#   docker exec -it govready_q_dev python3 manage.py makecmmcstatements --importname "batch import" --component_ids 1 2 4 5 35
+#   docker exec -it govready_q_dev python3 manage.py makecmmcstatements --component_ids 1 2 4 5 35 --importname "batch import"
 
 import sys
 import os.path
 
+from collections import defaultdict
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, models
 from django.db.utils import OperationalError
 from django.conf import settings
 from pathlib import Path
-# Usage
-#   docker exec -it govready_q_dev python3 manage.py makecmmcstatements --importname "batch import" --component_ids 1 2 4 5 35
-#   docker exec -it govready_q_dev python3 manage.py makecmmcstatements --component_ids 1 2 4 5 35 --importname "batch import"
 from pathlib import PurePath
 from django.utils.text import slugify
 
-# from siteapp.models import User, Organization, Portfolio
 from controls.models import Element, Statement, StatementRemote, ImportRecord
 from controls.enums.statements import StatementTypeEnum
 from controls.enums.remotes import RemoteTypeEnum
 from controls.oscal import *
 
-# from controls.views import system_element_download_oscal_json
 from controls.views import OSCALComponentSerializer, ComponentImporter
 
 import fs, fs.errors
@@ -79,13 +79,14 @@ class Command(BaseCommand):
             return catalog_key
 
         # Process components and their statements
-        for emt_id in component_ids:
-            emt = Element.objects.get(pk=emt_id)
+        emt_smts = Statement.objects.filter(producer_element__in=component_ids, statement_type=CIP).order_by('producer_element')
+        smts_grouped = defaultdict(list)
+        for s in emt_smts:
+            smts_grouped[s.producer_element].append(s)
+        for emt in smts_grouped.keys():
             print(f"\n{emt.name} ({emt.id})")
-            emt_smts = emt.statements(CIP)
-            for smt in emt_smts:
+            for smt in smts_grouped[emt]:
                 print(f"# Analyze {smt}")
-
                 r = [sid for sid in c_dict.keys() if len([gl['text'] for gl in c_dict[sid]['guidance_links'] if gl['text']==de_oscalize_control_id(smt.sid, get_catalog_key_from_ref(gl['href']) ) ])>0]
                 print(f"- Found links to: {r}")
                 for rc in r:
