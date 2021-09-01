@@ -15,7 +15,9 @@ from natsort import natsorted
 from controls.enums.components import ComponentTypeEnum, ComponentStateEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from controls.enums.statements import StatementTypeEnum
+from controls.enums.remotes import RemoteTypeEnum
 from controls.oscal import Catalogs, Catalog, CatalogData
+from controls.utilities import *
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
 from copy import deepcopy
@@ -59,7 +61,6 @@ class Statement(auto_prefetch.Model):
     version = models.CharField(max_length=20, help_text="Optional version number.", unique=False, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
-
     parent = auto_prefetch.ForeignKey('self', help_text="Parent statement", related_name="children", on_delete=models.SET_NULL, blank=True, null=True)
     prototype = auto_prefetch.ForeignKey('self', help_text="Prototype statement", related_name="instances", on_delete=models.SET_NULL, blank=True, null=True)
     producer_element = auto_prefetch.ForeignKey('Element', related_name='statements_produced', on_delete=models.CASCADE, blank=True, null=True, help_text="The element producing this statement.")
@@ -68,6 +69,7 @@ class Statement(auto_prefetch.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
     import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_statements", on_delete=models.CASCADE,
                                       unique=False, blank=True, null=True, help_text="The Import Record which created this Statement.")
+    change_log = models.JSONField(blank=True, null=True, help_text="JSON object representing changes to the statement")
     history = HistoricalRecords(cascade_delete_history=True)
     class Meta:
         indexes = [models.Index(fields=['producer_element'], name='producer_element_idx'),]
@@ -214,6 +216,29 @@ class Statement(auto_prefetch.Model):
     @property
     def oscal_statement_id(self):
         return Statement._statement_id_from_control(self.sid, self.pid)
+
+    def change_log_add_entry(self, change):
+        # TODO: Test if entry is valid
+        if not isinstance(change, dict):
+            # change isn't a dictionary
+            messages.add_message(request, messages.ERROR, f"Statement {self.id} not update because change not in the form of a dctionary.")
+            return False
+        dictionary_copy = change.copy()
+        self.change_log['change_log']['changes'].append(dictionary_copy)
+        self.save()
+        return True
+
+class StatementRemote(auto_prefetch.Model):
+    statement = models.ForeignKey(Statement, related_name="remotes", unique=False, blank=True, null=True, on_delete=models.CASCADE,
+                                  help_text="Descendent or cloned Statement.")
+    remote_statement = models.ForeignKey(Statement, related_name="descendents", unique=False, blank=True, null=True, on_delete=models.SET_NULL,
+                                         help_text="Remote or parent Statement.")
+    remote_type = models.CharField(max_length=80, help_text="Remote type.", unique=False, blank=True, null=True, choices=RemoteTypeEnum.choices())
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_statement_remotes", on_delete=models.CASCADE,
+                                             unique=False, blank=True, null=True, help_text="The Import Record which created this record.")
 
 class Element(auto_prefetch.Model, TagModelMixin):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)

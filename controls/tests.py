@@ -29,7 +29,7 @@ from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTes
 from system_settings.models import SystemSettings
 from controls.models import *
 from controls.enums.statements import StatementTypeEnum
-from controls.oscal import Catalogs, Catalog, de_oscalize_control
+from controls.oscal import Catalogs, Catalog, de_oscalize_control_id
 from siteapp.models import User, Project, Portfolio
 from system_settings.models import SystemSettings
 
@@ -132,7 +132,7 @@ class ControlUITests(SeleniumTest):
 
     def test_control_enhancement_lookup(self):
         self.browser.get(self.url("/controls/catalogs/NIST_SP-800-53_rev4/control/AC-2 (4)"))
-        self.assertInNodeText("AC-2 (4)", "#control-heading")
+        self.assertInNodeText("AC-2(4)", "#control-heading")
         self.assertInNodeText("Automated Audit Actions", "#control-heading")
 
     def test_catalog_list(self):
@@ -1165,10 +1165,10 @@ class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
 
     def test_deoscalization_control_id(self):
         """
-        Tests de_oscalize_control function on expected formats from sid (oscal) format to regular.
+        Tests de_oscalize_control_id function on expected formats from sid (oscal) format to regular.
         """
         controls = ["ac-2.4", "ac-2.5", "ac-2.11","ac-2.13", "ac-3", "ac-4", "si-3.2", "si-4.2", "si-4.5"]
-        regular_sid_controls = [de_oscalize_control(control) for control in controls]
-        self.assertEqual(['AC-2 (4)', 'AC-2 (5)', 'AC-2 (11)', 'AC-2 (13)', 'AC-3', 'AC-4', 'SI-3 (2)', 'SI-4 (2)', 'SI-4 (5)'], regular_sid_controls)
+        regular_sid_controls = [de_oscalize_control_id(control) for control in controls]
+        self.assertEqual(['AC-2(4)', 'AC-2(5)', 'AC-2(11)', 'AC-2(13)', 'AC-3', 'AC-4', 'SI-3(2)', 'SI-4(2)', 'SI-4(5)'], regular_sid_controls)
 
 

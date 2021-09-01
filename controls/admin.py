@@ -1,7 +1,7 @@
 import csv
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import ImportRecord, Statement, Element, ElementControl, ElementRole, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam, Deployment, SystemAssessmentResult
+from .models import ImportRecord, Statement, StatementRemote, Element, ElementControl, ElementRole, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam, Deployment, SystemAssessmentResult
 from .oscal import CatalogData
 from guardian.admin import GuardedModelAdmin
 from simple_history.admin import SimpleHistoryAdmin
@@ -33,6 +33,11 @@ class StatementAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     list_display = ('id', 'sid', 'sid_class', 'producer_element', 'statement_type', 'uuid')
     search_fields = ('id', 'sid', 'sid_class', 'producer_element', 'uuid')
     actions = ["export_as_csv"]
+    readonly_fields = ('created', 'updated', 'uuid')
+
+class StatementRemoteAdmin(admin.ModelAdmin):
+    list_display = ('id', 'statement', 'remote_statement', 'remote_type')
+    search_fields = ('id', 'statement', 'remote_statement', 'remote_type')
     readonly_fields = ('created', 'updated', 'uuid')
 
 class ElementAdmin(GuardedModelAdmin, ExportCsvMixin):
@@ -96,6 +101,7 @@ class CatalogDataAdmin(admin.ModelAdmin):
 
 admin.site.register(ImportRecord, ImportRecordAdmin)
 admin.site.register(Statement, StatementAdmin)
+admin.site.register(StatementRemote, StatementRemoteAdmin)
 admin.site.register(Element, ElementAdmin)
 admin.site.register(ElementControl, ElementControlAdmin)
 admin.site.register(ElementRole, ElementRoleAdmin)
