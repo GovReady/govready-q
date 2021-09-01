@@ -1,5 +1,6 @@
 # Utility functions
 import re
+import sys
 from structlog import get_logger
 
 def replace_line_breaks(text, break_src="\n", break_trg="<br />"):
