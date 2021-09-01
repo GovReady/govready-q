@@ -219,7 +219,7 @@ class Statement(auto_prefetch.Model):
 
     def change_log_add_entry(self, change):
         # TODO: Test if entry is valid
-        if type(change) is not dict:
+        if not isinstance(change, dict):
             # change isn't a dictionary
             messages.add_message(request, messages.ERROR, f"Statement {self.id} not update because change not in the form of a dctionary.")
             return False
