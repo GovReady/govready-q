@@ -8,7 +8,7 @@ IMPORTANT BREAKING CHANGE
 
 This release replaces questionnaire-style account settings (e.g., user profile) with traditional user information form.
 
-**Installing this release will reset all users dislay names, titles, and profile pics.**
+**Installing this release will reset all users display names, titles, and profile pics.**
 
 **Please contact info@govready.com for a free, custom fix to preserve this data if desired!!**
 
