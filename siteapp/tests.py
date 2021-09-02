@@ -41,6 +41,7 @@ from controls.oscal import CatalogData, Catalogs, Catalog
 from siteapp.settings import HEADLESS, DOS
 from siteapp.views import project_edit
 from tools.utils.linux_to_dos import convert_w
+from urllib.parse import urlparse
 
 
 def var_sleep(duration):
@@ -750,6 +751,42 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # # Test that we can see the comment and the reaction.
         # self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
+
+# CURRENTLY WORKING HERE
+class AccountSettingsTests(OrganizationSiteFunctionalTests):
+
+    def fill_in_account_settings(self, email, title, name):
+        self.fill_field("#id_name", name)
+        self.fill_field("#id_email", email)
+        self.fill_field("#id_title", title)
+
+    def test_account_settings(self):
+        self.browser.get(self.url("/"))
+        self._login()
+        self.browser.get(self.url("/account/settings"))
+        self.assertEqual(urlparse(self.browser.current_url).path, "/account/settings")
+        # self.assertIn("Account Settings", self.browser.title)
+        self.fill_in_account_settings(email="tester@aol.com", name="Mr.Dude", title="Account_tester")
+        self.click_element("#edit_account_submit")
+        # Tests that the error Toast does not occur via error from bad submission
+        # self.assertNotInNodeText("User name None not available.", ".alert")
+        wait_for_sleep_after(lambda: self.assertNotInNodeText("User name None not available.", ".alert"))
+
+    def test_account_settings_name_is_required(self):
+        self.browser.get(self.url("/"))
+        self._login()
+        self.browser.get(self.url("/account/settings"))
+        self.assertEqual(urlparse(self.browser.current_url).path, "/account/settings")
+        # self.assertIn("Account Settings", self.browser.title)
+        self.fill_in_account_settings(email="tester@aol.com", name="", title="Account_tester")
+        import ipdb;  ipdb.set_trace()
+        self.click_element("#edit_account_submit")
+
+        # Tests that the error Toast does produce an error from bad submission
+        # self.assertInNodeText("User name None not available.", ".alert")
+        import ipdb; ipdb.set_trace()
+        self._getNodeText(".alert fade in alert-danger")
+        # wait_for_sleep_after(lambda: self.assertInNodeText('User name None not available.', ".alert fade in alert-danger"))
 
 class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
