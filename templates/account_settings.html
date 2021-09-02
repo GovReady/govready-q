@@ -23,7 +23,7 @@ Account Settings
                         {% csrf_token %}
                         {% bootstrap_form form %}
                         <p>
-                            <button type="submit" id="edit_account_submit" class="btn btn-success" href="{% url "account_settings" %}" aria-label="Update settings">Update</button>
+                            <button type="submit" id="edit_account_submit" class="btn btn-success" aria-label="Update settings">Update</button>
                             <a type="button" class="btn btn-default" href={% url "home_user" %}>Cancel</a>
                         </p>
                     </form>

@@ -168,24 +168,24 @@ def homepage(request):
 
 @login_required
 def account_settings(request):
+    """Update User account settings"""
     user = User.objects.get(pk=request.user.id)
     if request.method == 'POST':
-        form = AccountSettingsForm(request, request.POST)
+        form = AccountSettingsForm(request.POST, instance=user)
         if form.is_valid():
-            user.name = request.POST['name']
-            user.email = request.POST['email']
-            user.title = request.POST['title']
-            user.save()
+            form.save()
             logger.info(
                 event="update_account_settings",
                 object={"object": "user", "id": user.id, "username": user.username},
                 user={"id": request.user.id, "username": request.user.username}
             )
             messages.add_message(request, messages.INFO, 'Account settings updated.')
-    form = AccountSettingsForm(request)
+        else:
+            messages.add_message(request, messages.ERROR, 'Account settings not updated.')
+    else:
+        form = AccountSettingsForm(instance=user)
     return render(request, "account_settings.html", {
         "form": form,
-        "user": user,
     })
 
 class UserViewSet(viewsets.ModelViewSet):
