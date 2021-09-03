@@ -5,8 +5,8 @@
 #   python3 manage.py makecmmcstatements --component_ids 1 6 --importname "Generating CMMC statements"
 #
 # Example Docker:
-#   docker exec -it govready_q_dev python3 manage.py makecmmcstatements --importname "batch import" --component_ids 1 2 4 5 35
-#   docker exec -it govready_q_dev python3 manage.py makecmmcstatements --component_ids 1 2 4 5 35 --importname "batch import"
+#   docker exec -it govready-q-dev python3 manage.py makecmmcstatements --importname "batch import" --component_ids 1 2 4 5 35
+#   docker exec -it govready-q-dev python3 manage.py makecmmcstatements --component_ids 1 2 4 5 35 --importname "batch import"
 
 import sys
 import os.path
