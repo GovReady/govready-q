@@ -52,11 +52,11 @@ You will have to install a VNC Viewer (https://www.realvnc.com/en/connect/downlo
 
 Open VNC Viewer and connect to the browser image you chose in your environment.json.
 
-| Browser | Port | Password |
-|---------|------|----------|
-| Chrome  | 6900 | secret   |
-| Firefox | 6902 | secret   |
-| Opera   | 6903 | secret   |
+| Browser | Server         | Password |
+|---------|----------------|----------|
+| Chrome  | localhost:6900 | secret   |
+| Firefox | localhost:6902 | secret   |
+| Opera   | localhost:6903 | secret   |
 
 Then you can run your tests as you typically would by connecting to your container and running the tests.  Ex: 
 `docker exec -it govready-q-dev ./manage.py test`
