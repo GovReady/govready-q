@@ -1,8 +1,19 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.11-dev (August xx, 2021)
------------------------------
+v0.9.11-dev (September xx, 2021)
+--------------------------------
+
+Change in `environment.json` to better support visible Selenium tests will require deleting current containers and artifacts for local development. On next launch, run:
+```
+cd dev_env
+rm docker/environment.json
+python run.py wipedb
+python run.py init
+python run.py dev
+```
+
+NOTE: GovReady-q container name changed from `govready_q_dev` to `govready-q-dev`.
 
 **Developer changes**
 
@@ -10,6 +21,8 @@ v0.9.11-dev (August xx, 2021)
 * Add makecmmcstatements admin command to create library component statements with CMMC content based on existing content.
 * Create RemoteStatement model in controls to better track relationship between statements created from other statements.
 * Add `change_log` field to maintain more accessible history of changes made to statement.
+* Fixed Selenium to run properly in visbile mode while using Docker. Includes changes to `environment.json`
+* GovReady-q container name changed from `govready_q_dev` to `govready-q-dev` in all commands.
 
 **UI changes**
 
@@ -23,7 +36,6 @@ v0.9.11-dev (August xx, 2021)
 **Data changes**
 
 * Add letter 'c' prefix to 800-171 rev 2 control ids to be compliant with NIST OSCAL.
-
 
 
 v0.9.10.1 (August 16, 2021)
