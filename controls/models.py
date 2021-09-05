@@ -22,6 +22,7 @@ import uuid
 import tools.diff_match_patch.python3 as dmp_module
 from copy import deepcopy
 from django.db import transaction
+from django.contrib import messages
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 ORGPARAM_PATH = os.path.join(os.path.dirname(__file__),'data','org_defined_parameters')
@@ -70,6 +71,7 @@ class Statement(auto_prefetch.Model):
     import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_statements", on_delete=models.CASCADE,
                                       unique=False, blank=True, null=True, help_text="The Import Record which created this Statement.")
     change_log = models.JSONField(blank=True, null=True, help_text="JSON object representing changes to the statement")
+    oscal_data = models.JSONField(blank=True, null=True, help_text="JSON object representing additional OSCAL props, links, etc.")
     history = HistoricalRecords(cascade_delete_history=True)
     class Meta:
         indexes = [models.Index(fields=['producer_element'], name='producer_element_idx'),]
@@ -221,12 +223,39 @@ class Statement(auto_prefetch.Model):
         # TODO: Test if entry is valid
         if not isinstance(change, dict):
             # change isn't a dictionary
-            messages.add_message(request, messages.ERROR, f"Statement {self.id} not update because change not in the form of a dctionary.")
             return False
         dictionary_copy = change.copy()
         self.change_log['change_log']['changes'].append(dictionary_copy)
         self.save()
         return True
+
+    def add_item_oscal_data_key(self, key, item):
+        """Add an item to the array associated with the OSCAL key for implementation-requirements"""
+        # TODO: Test if item is valid
+        if not isinstance(item, dict):
+            # item isn't a dictionary
+            return False
+        dictionary_copy = item.copy()
+        if self.oscal_data is None:
+            self.oscal_data = {}
+        if key not in self.oscal_data:
+            self.oscal_data[key] = []
+        self.oscal_data[key].append(dictionary_copy)
+        self.save()
+        return True
+
+    def del_item_oscal_data_key(self, key):
+        """Delete an item from the array associated with the OSCAL key for implementation-requirements"""
+        if self.oscal_data is None:
+            return True
+        # Remove key and related value
+        self.oscal_data.pop('key', None)
+        self.save()
+        pass
+
+    def update_item_oscal_data_key(self, key, item):
+        """Update an item in the array associated with the OSCAL key for implementation-requirements"""
+        pass
 
 class StatementRemote(auto_prefetch.Model):
     statement = models.ForeignKey(Statement, related_name="remotes", unique=False, blank=True, null=True, on_delete=models.CASCADE,
