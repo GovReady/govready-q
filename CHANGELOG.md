@@ -2,29 +2,27 @@ GovReady-Q Release Notes
 ========================
 
 v0.9.11-dev (September xx, 2021)
------------------------------
+--------------------------------
 
-IMPORTANT BREAKING CHANGE
+Change in `environment.json` to better support visible Selenium tests will require deleting current containers and artifacts for local development. On next launch, run:
+```
+cd dev_env
+rm docker/environment.json
+python run.py wipedb
+python run.py init
+python run.py dev
+```
 
-This release replaces questionnaire-style account settings (e.g., user profile) with traditional user information form.
+NOTE: GovReady-q container name changed from `govready_q_dev` to `govready-q-dev`.
 
-**Installing this release will reset all users dislay names, titles, and profile pics.**
+**Developer changes**
 
-**Please contact info@govready.com for a free, custom fix to preserve this data if desired!!**
-
-Display names will be reset to the username, title set to blank, and profile pics set to blank.
-
-We apologize for not being able to find a practical, transparent solution to preserve existing display name
-and photos during this change. We think the short term pain of resetting of this information at each user's convenience
-is better than a complicated attempt to coordinate every install through a fragile, sequence-dependent, multi-version upgrade process.
-
-Until now, user profile information was set by gathering information via our questionnaire feature.
-We thought that was cool, but turned out to be overly complex to support. Having a traditional account
-settings feature provides for better extensibility and easier use. We've been wanting to make this change for a while.
-
-**Feature changes**
-
-* Replace questionnaire-style account settings (e.g., user profile) with traditional user information form.
+* Add a set of default headers (through hidden inputs and a html form) for the SSP CSV export, dubbed Quick CSV.
+* Add makecmmcstatements admin command to create library component statements with CMMC content based on existing content.
+* Create RemoteStatement model in controls to better track relationship between statements created from other statements.
+* Add `change_log` field to maintain more accessible history of changes made to statement.
+* Fixed Selenium to run properly in visbile mode while using Docker. Includes changes to `environment.json`
+* GovReady-q container name changed from `govready_q_dev` to `govready-q-dev` in all commands.
 
 **UI changes**
 
@@ -35,19 +33,9 @@ settings feature provides for better extensibility and easier use. We've been wa
 * Correctly handle exporting library components when component has zero statements to avoid crashing exportcomponentlibrary command.
 * Add execute permissions to `/dev_env/docker/remote_interpreter/python_env.sh b/dev_env/docker/remote_interpreter/python_env.sh` (See: )
 
-**Developer changes**
-
-* Add a set of default headers (through hidden inputs and a html form) for the SSP CSV export, dubbed Quick CSV.
-* Add makecmmcstatements admin command to create library component statements with CMMC content based on existing content.
-* Create RemoteStatement model in controls to better track relationship between statements created from other statements.
-* Add `change_log` field to maintain more accessible history of changes made to statement.
-* Refactoring profiles to be standard profiles instead of a special case compliance app. See issue #633.
-
 **Data changes**
 
 * Add letter 'c' prefix to 800-171 rev 2 control ids to be compliant with NIST OSCAL.
-* Add `name`, `title` fields to `siteapp.models.User`.
-* Set all user's `name` to `username` as part of data migration.
 
 
 v0.9.10.1 (August 16, 2021)

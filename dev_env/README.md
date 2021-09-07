@@ -28,15 +28,41 @@ This also assumes you can run as root/administrator.  This is due to ports being
     -  `python run.py wipedb` : Destroys your existing database and artifacts from previous runs
     
 4. Debugging
-    - `docker attach govready_q_dev`
+    - `docker attach govready-q-dev`
         - `crtl + c ` : This will detatch & kill the container and restart it
         - `ctrl + pq` : This will detatch
     - use ipdb as you normally would (https://gist.github.com/mono0926/6326015)
     
 5. Connect to Container
-    - `docker exec -it govready_q_dev /bin/bash`
+    - `docker exec -it govready-q-dev /bin/bash`
     
-    
+
+## Testing (Govready-Q uses Selenium)
+###  Enable Selenium with Head(GUI)
+By default Selenium will be ran as headless.  If you would like to run as head, then update your
+environment.json to include:
+```
+    "test_visible": true,
+    "test_browser": "chrome" 
+```````````
+You can choose from `firefox`, `chrome`, or `opera`
+
+### Connecting to the Selenium
+You will have to install a VNC Viewer (https://www.realvnc.com/en/connect/download/viewer/)
+
+Open VNC Viewer and connect to the browser image you chose in your environment.json.
+
+| Browser | Server         | Password |
+|---------|----------------|----------|
+| Chrome  | localhost:6900 | secret   |
+| Firefox | localhost:6902 | secret   |
+| Opera   | localhost:6903 | secret   |
+
+Then you can run your tests as you typically would by connecting to your container and running the tests.  Ex: 
+`docker exec -it govready-q-dev ./manage.py test`
+
+For the tests that are using Selenium you will see them pop up in your VNC Viewer
+
 ## IDE Interpreter Steps
 
 ### Pycharm
@@ -50,7 +76,7 @@ This also assumes you can run as root/administrator.  This is due to ports being
     - Set upload files to host server to FALSE/Never/Unchecked
 
 ### VIM
-- `docker exec -it govready_q_dev /bin/bash` - Connect to the Django container directly to code.
+- `docker exec -it govready-q-dev /bin/bash` - Connect to the Django container directly to code.
 - Code is synced in realtime.  Your code changes will be reflected on the host and will not be lost.
 
 
