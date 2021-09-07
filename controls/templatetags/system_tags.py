@@ -22,6 +22,8 @@ def json(value):
 
 @register.filter(is_safe=True)
 def get_item(dictionary, key):
+    if dictionary is None:
+        dictionary = {}
     return dictionary.get(key, None)
 
 @register.filter
