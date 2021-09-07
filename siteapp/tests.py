@@ -26,6 +26,7 @@ import selenium.webdriver
 from selenium.webdriver.remote.command import Command
 from django.urls import reverse
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver import DesiredCapabilities
 from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
@@ -38,7 +39,7 @@ from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
 from controls.models import Statement, Element, System
 from controls.oscal import CatalogData, Catalogs, Catalog
-from siteapp.settings import HEADLESS, DOS
+from siteapp.settings import HEADLESS, DOS, DOCKER, SELENIUM_BROWSER
 from siteapp.views import project_edit
 from tools.utils.linux_to_dos import convert_w
 
@@ -66,6 +67,11 @@ class SeleniumTest(StaticLiveServerTestCase):
 
     @classmethod
     def setUpClass(cls):
+        if DOCKER and not HEADLESS:
+            # Prevents auto localhost:random_port for remote docker selenium-grid
+            # cls.port = 8001
+            cls.host = "govready-q-dev"
+
         super(SeleniumTest, cls).setUpClass()
 
         # Override the email backend so that we can capture sent emails.
@@ -76,7 +82,7 @@ class SeleniumTest(StaticLiveServerTestCase):
         # because they may not be set or set properly in the local environment's
         # non-test settings for the URL assigned by the LiveServerTestCase server.
         # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
-        settings.ALLOWED_HOSTS = ['localhost', 'testserver']
+        settings.ALLOWED_HOSTS = ['localhost', 'testserver', "govready-q-dev"]
         settings.SITE_ROOT_URL = cls.live_server_url
         settings.DEBUG = True
 
@@ -89,11 +95,17 @@ class SeleniumTest(StaticLiveServerTestCase):
 
         # Start a headless browser.
 
-        options = selenium.webdriver.ChromeOptions()
-        options.add_argument("--disable-dev-shm-usage")  #overcome limited resource problems
-        options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
+        option_map = {
+            "chrome": (selenium.webdriver.ChromeOptions, DesiredCapabilities.CHROME),
+            "firefox": (selenium.webdriver.FirefoxOptions, DesiredCapabilities.FIREFOX),
+            "opera": (selenium.webdriver.ChromeOptions, DesiredCapabilities.OPERA),
+        }
+        option = option_map[SELENIUM_BROWSER]
+        options = option[0]()
+        options.add_argument("--disable-dev-shm-usage")  # overcome limited resource problems
+        options.add_argument("disable-infobars")  # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
-            options.add_argument("start-maximized") # too small screens make clicking some things difficult
+            options.add_argument("start-maximized")  # too small screens make clicking some things difficult
         else:
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
 
@@ -104,30 +116,40 @@ class SeleniumTest(StaticLiveServerTestCase):
             tempfile.tempdir = convert_w(os.getcwd())
         # enable Selenium support for downloads
         cls.download_path = pathlib.Path(tempfile.gettempdir())
-        options.add_experimental_option("prefs", {
-            "download.default_directory": str(cls.download_path),
-            "download.prompt_for_download": False,
-            "download.directory_upgrade": True,
-            "safebrowsing.enabled": True
-        })
-
+        if hasattr(options, 'add_experimental_option'):
+            options.add_experimental_option("prefs", {
+                "download.default_directory": str(cls.download_path),
+                "download.prompt_for_download": False,
+                "download.directory_upgrade": True,
+                "safebrowsing.enabled": True
+            })
         if HEADLESS:
             options.add_argument('--headless')
-            options.add_argument('--no-sandbox')
 
-        # Set up selenium Chrome browser for Windows or Linux
-        if DOS:
-            # TODO: Find out a way to get chromedriver implicit executable path in WSL
-            cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
+        if DOCKER:
+            if HEADLESS:
+                options.add_argument('--no-sandbox')
+                cls.browser = selenium.webdriver.Chrome(chrome_options=options)
+            else:
+                cls.browser = selenium.webdriver.Remote(command_executor='http://selenium-hub:4444/wd/hub',
+                                                        desired_capabilities=option[1],
+                                                        options=options)
         else:
-            cls.browser = selenium.webdriver.Chrome(chrome_options=options)
+            # Depreciated
+            # Set up selenium Chrome browser for Windows or Linux
+            if DOS:
+                # TODO: Find out a way to get chromedriver implicit executable path in WSL
+                cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
+            else:
+                cls.browser = selenium.webdriver.Chrome(chrome_options=options)
 
-        cls.browser.implicitly_wait(3) # seconds
+        cls.browser.implicitly_wait(5)  # seconds
 
         # Clean up and quit tests if Q is in SSO mode
         if getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', None):
             print("Cannot run tests.")
-            print("Tests will not run when IAM Proxy enabled (e.g., when `local/environment.json` sets `trust-user-authentication-headers` parameter.)")
+            print(
+                "Tests will not run when IAM Proxy enabled (e.g., when `local/environment.json` sets `trust-user-authentication-headers` parameter.)")
             cls.browser.quit()
             super(SeleniumTest, cls).tearDownClass()
             exit()

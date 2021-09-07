@@ -5,7 +5,7 @@ networks:
 
 services:
   govready-q:
-    container_name: govready_q_dev
+    container_name: govready-q-dev
     build:
       context: ../..
       dockerfile: dev_env/docker/Dockerfile
@@ -15,6 +15,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    environment:
+      - docker=True
     healthcheck:
       test: python3 dev_env/docker/healthcheck.py
       interval: 10s
