@@ -42,9 +42,9 @@ This also assumes you can run as root/administrator.  This is due to ports being
 By default Selenium will be ran as headless.  If you would like to run as head, then update your
 environment.json to include:
 ```
-    "selenium-headless": false,
-    "selenium-grid-browser": "chrome" 
-```
+    "test_visible": true,
+    "test_browser": "chrome" 
+```````````
 You can choose from `firefox`, `chrome`, or `opera`
 
 ### Connecting to the Selenium
