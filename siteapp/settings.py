@@ -485,13 +485,11 @@ def get_environment_bool(var, default=False):
 
 DOCKER = get_environment_bool("docker")
 
+HEADLESS = not environment.get("test_visible")
 if not DOCKER:
-	# Depreciated
-	HEADLESS = not get_environment_bool("test_visible")
 	SELENIUM_BROWSER = "chrome"
 else:
-	HEADLESS = get_environment_bool("selenium-headless")
-	SELENIUM_BROWSER = environment.get("selenium-grid-browser", "chrome")
+	SELENIUM_BROWSER = environment.get("test_browser", "chrome")
 
 DOS = True if system() == "Windows" or 'Microsoft' in uname().release else False
 # Load all additional settings from settings_application.py.

@@ -69,7 +69,7 @@ class SeleniumTest(StaticLiveServerTestCase):
     def setUpClass(cls):
         if DOCKER and not HEADLESS:
             # Prevents auto localhost:random_port for remote docker selenium-grid
-            cls.port = 8001
+            # cls.port = 8001
             cls.host = "govready-q-dev"
 
         super(SeleniumTest, cls).setUpClass()

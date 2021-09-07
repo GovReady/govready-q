@@ -37,8 +37,7 @@ class DockerCompose(Runner):
             "single-organization": "",
             "static": "static_root",
             "syslog": "",
-            "selenium-headless": True,
-            "selenium-grid-browser": "chrome",
+            "test_browser": "chrome",
             "test_visible": False,
             "trust-user-authentication-headers": {}
         }
@@ -111,8 +110,8 @@ class DockerCompose(Runner):
             "opera": {"port": 6903, "file": "selenium/selenium-opera.yml"},
         }
 
-        if not self.config['selenium-headless']:
-            browser = self.config.get('selenium-grid-browser')
+        if self.config['test_visible']:
+            browser = self.config.get('test_browser')
             if not browser or browser not in selenium_grid_map:
                 del selenium_grid_map['grid']
                 Prompt.error(f"If Selenium isn't running as Headless, then you must declare a valid browser type: "
