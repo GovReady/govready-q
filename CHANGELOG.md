@@ -2,7 +2,7 @@ GovReady-Q Release Notes
 ========================
 
 v0.9.11-dev (September xx, 2021)
------------------------------
+--------------------------------
 
 IMPORTANT BREAKING CHANGE
 
@@ -25,6 +25,12 @@ settings feature provides for better extensibility and easier use. We've been wa
 **Feature changes**
 
 * Replace questionnaire-style account settings (e.g., user profile) with traditional user information form.
+* Add a set of default headers (through hidden inputs and a html form) for the SSP CSV export, dubbed Quick CSV.
+* Add makecmmcstatements admin command to create library component statements with CMMC content based on existing content.
+* Create RemoteStatement model in controls to better track relationship between statements created from other statements.
+* Add `change_log` field to maintain more accessible history of changes made to statement.
+* Fixed Selenium to run properly in visbile mode while using Docker. Includes changes to `environment.json`
+* GovReady-q container name changed from `govready_q_dev` to `govready-q-dev` in all commands.
 
 **UI changes**
 
@@ -37,6 +43,17 @@ settings feature provides for better extensibility and easier use. We've been wa
 
 **Developer changes**
 
+Change in `environment.json` to better support visible Selenium tests will require deleting current containers and artifacts for local development. On next launch, run:
+```
+cd dev_env
+rm docker/environment.json
+python run.py wipedb
+python run.py init
+python run.py dev
+```
+
+NOTE: GovReady-q container name changed from `govready_q_dev` to `govready-q-dev`.
+
 * Add a set of default headers (through hidden inputs and a html form) for the SSP CSV export, dubbed Quick CSV.
 * Add makecmmcstatements admin command to create library component statements with CMMC content based on existing content.
 * Create RemoteStatement model in controls to better track relationship between statements created from other statements.
@@ -48,7 +65,6 @@ settings feature provides for better extensibility and easier use. We've been wa
 * Add letter 'c' prefix to 800-171 rev 2 control ids to be compliant with NIST OSCAL.
 * Add `name`, `title` fields to `siteapp.models.User`.
 * Set all user's `name` to `username` as part of data migration.
-
 
 v0.9.10.1 (August 16, 2021)
 ---------------------------
