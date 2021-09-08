@@ -1,9 +1,22 @@
 from django import forms
 from django.forms import ModelForm
 from django.core.exceptions import ValidationError
+from django.contrib import messages
 from django.db.models import Exists
+from django.db.models import Q
 
-from .models import Portfolio, Project
+
+from .models import Portfolio, Project, User
+import logging
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+
+
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
 
 class EditProjectForm(ModelForm):
     class Meta:
@@ -34,9 +47,23 @@ class PortfolioForm(ModelForm):
         fields = ['title', 'description' ]
 
     def clean(self):
-        """Extend clean to validate portfolio name is not reused."""
         cd = self.cleaned_data
-        # Validate portfolio name does not exist case insensitive only when creating a new portfolio
+        # Validate portfolio name does not exist (case insensitive) only when creating a new portfolio
         if Portfolio.objects.filter(title__iexact=cd['title']).exists() and self.data.get('action') == 'newportfolio':
             raise ValidationError("Portfolio name {} not available.".format(cd['title']))
+        return cd
+
+class AccountSettingsForm(ModelForm):
+
+    class Meta:
+        model = User
+        fields = ['name', 'email', 'title']
+
+    def clean(self):
+        cd = self.cleaned_data
+        # errors = {}
+        if User.objects.filter(Q(name__iexact=cd['name']) & ~Q(id=self.instance.id)).exists():
+            self.add_error('name', "Display name {} not available.".format(cd['name']))
+        if User.objects.filter(Q(email__iexact=cd['email']) & ~Q(email=self.instance.email)).exists():
+            self.add_error('email', "Email {} not available.".format(cd['email']))
         return cd

@@ -1062,7 +1062,6 @@ class ComponentImporter(object):
         statements_created = Statement.objects.bulk_create(new_statements)
         return statements_created
 
-@login_required
 def add_selected_components(system, import_record):
         """Add a component from the library or a compliance app to the project and its statements using the import record"""
 

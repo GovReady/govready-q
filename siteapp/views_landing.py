@@ -55,7 +55,6 @@ def user_profile_photo(request, user_id, hash):
     if not photo.answered_by_file.name: raise Http404()
 
     # Check that the fingerprint in the URL matches. See User.get_profile_picture_absolute_url.
-    user.preload_profile()
     path_with_fingerprint = user.get_profile_picture_absolute_url()
     if not path_with_fingerprint.endswith(request.path):
         raise Http404()

@@ -42,6 +42,7 @@ from controls.oscal import CatalogData, Catalogs, Catalog
 from siteapp.settings import HEADLESS, DOS, DOCKER, SELENIUM_BROWSER
 from siteapp.views import project_edit
 from tools.utils.linux_to_dos import convert_w
+from urllib.parse import urlparse
 
 
 def var_sleep(duration):
@@ -531,7 +532,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.click_element('#user-menu-dropdown'))
         wait_for_sleep_after(lambda: self.click_element('#user-menu-account-settings'))
         var_sleep(.5) # wait for page to open
-        wait_for_sleep_after(lambda: self.assertIn("Introduction | GovReady Account Settings", self.browser.title))
+        wait_for_sleep_after(lambda: self.assertIn("Account Settings", self.browser.title))
 
         #  # - The user is looking at the Introduction page.
         # wait_for_sleep_after(lambda: self.click_element("#save-button"))
@@ -772,6 +773,53 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # # Test that we can see the comment and the reaction.
         # self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
+
+# CURRENTLY WORKING HERE
+class AccountSettingsTests(OrganizationSiteFunctionalTests):
+
+    def fill_in_account_settings(self, email, title, name):
+        # import ipdb;  ipdb.set_trace()
+
+        self.clear_and_fill_field("#id_name", name)
+        self.clear_and_fill_field("#id_email", email)
+        self.clear_and_fill_field("#id_title", title)
+
+    def fail_fill_in_account_settings(self):
+        self.clear_and_fill_field('#id_name', "")
+
+    def test_account_settings(self):
+        self.browser.get(self.url("/"))
+        self._login()
+        self.browser.get(self.url("/account/settings"))
+        self.assertEqual(urlparse(self.browser.current_url).path, "/account/settings")
+        self.fill_in_account_settings(email="tester@aol.com", name="Mr.Dude", title="Account_tester")
+        self.click_element("#edit_account_submit")
+
+    def test_name_fail_account_settings(self):
+        self.browser.get(self.url("/"))
+        self._login()
+        self.browser.get(self.url("/account/settings"))
+        self.fill_in_account_settings(email="tester@govready.com", name="", title="Account_tester")
+        self.click_element("#edit_account_submit")
+        wait_for_sleep_after(lambda: self.assertInNodeText("Display name None not available.", ".has-error"))
+
+    def test_email_fail_account_settings(self):
+        # test for duplicate email name
+        self.browser.get(self.url("/"))
+        self._login()
+        self.browser.get(self.url("/account/settings"))
+        self.fill_in_account_settings(email="", name="Test_Name", title="Account_tester")
+        self.click_element("#edit_account_submit")
+        wait_for_sleep_after(lambda: self.assertInNodeText("Email not available.", ".has-error"))
+
+    def test_account_settings_name_is_required(self):
+        self.browser.get(self.url("/"))
+        self._login()
+        self.browser.get(self.url("/account/settings"))
+        self.assertEqual(urlparse(self.browser.current_url).path, "/account/settings")
+        self.assertIn("Account Settings", self.browser.title, 'String: "Account Settings" not included in browser title')
+        self.fill_in_account_settings(email="tester@aol.com", name="Dude Guy Man", title="Account_tester")
+        self.click_element("#edit_account_submit")
 
 class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 

@@ -86,7 +86,7 @@
               {{request.user}}
             </a>
             <ul class="dropdown-menu">
-              <li><a href="{{user.user_settings_task_create_if_doesnt_exist.get_absolute_url}}" id="user-menu-account-settings">Account Settings</a></li>
+              <li><a href="{% url 'account_settings' %}" id="user-menu-account-settings">Account settings</a></li>
               <li><a href="/api-keys">Your API Keys</a></li>
               {% if can_upgrade_app %}
               <li role="separator" class="divider"></li>
@@ -94,11 +94,11 @@
                   {% else %}
                   <a href="#" onclick="upgrade_app({{project.root_task.module.app.id}});">
                   {% endif %}
-                <em class="glyphicon glyphicon-upload"></em> Upgrade Project</a>
+                <em class="glyphicon glyphicon-upload"></em> Upgrade project</a>
               </li>
               {% endif %}
               <li role="separator" class="divider"></li>
-              <li><a href="/accounts/password/change/">Change Password</a></li>
+              <li><a href="/accounts/password/change/">Change password</a></li>
               <li><a href="/accounts/logout/">Log Out</a></li>
             </ul>
           </li>
