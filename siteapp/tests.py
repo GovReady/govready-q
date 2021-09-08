@@ -778,37 +778,48 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 class AccountSettingsTests(OrganizationSiteFunctionalTests):
 
     def fill_in_account_settings(self, email, title, name):
-        self.fill_field("#id_name", name)
-        self.fill_field("#id_email", email)
-        self.fill_field("#id_title", title)
+        # import ipdb;  ipdb.set_trace()
+
+        self.clear_and_fill_field("#id_name", name)
+        self.clear_and_fill_field("#id_email", email)
+        self.clear_and_fill_field("#id_title", title)
+
+    def fail_fill_in_account_settings(self):
+        self.clear_and_fill_field('#id_name', "")
 
     def test_account_settings(self):
         self.browser.get(self.url("/"))
         self._login()
         self.browser.get(self.url("/account/settings"))
         self.assertEqual(urlparse(self.browser.current_url).path, "/account/settings")
-        # self.assertIn("Account Settings", self.browser.title)
         self.fill_in_account_settings(email="tester@aol.com", name="Mr.Dude", title="Account_tester")
         self.click_element("#edit_account_submit")
-        # Tests that the error Toast does not occur via error from bad submission
-        # self.assertNotInNodeText("User name None not available.", ".alert")
-        wait_for_sleep_after(lambda: self.assertNotInNodeText("User name None not available.", ".alert"))
+
+    def test_name_fail_account_settings(self):
+        self.browser.get(self.url("/"))
+        self._login()
+        self.browser.get(self.url("/account/settings"))
+        self.fill_in_account_settings(email="tester@govready.com", name="", title="Account_tester")
+        self.click_element("#edit_account_submit")
+        wait_for_sleep_after(lambda: self.assertInNodeText("Display name None not available.", ".has-error"))
+
+    def test_email_fail_account_settings(self):
+        # test for duplicate email name
+        self.browser.get(self.url("/"))
+        self._login()
+        self.browser.get(self.url("/account/settings"))
+        self.fill_in_account_settings(email="", name="Test_Name", title="Account_tester")
+        self.click_element("#edit_account_submit")
+        wait_for_sleep_after(lambda: self.assertInNodeText("Email not available.", ".has-error"))
 
     def test_account_settings_name_is_required(self):
         self.browser.get(self.url("/"))
         self._login()
         self.browser.get(self.url("/account/settings"))
         self.assertEqual(urlparse(self.browser.current_url).path, "/account/settings")
-        # self.assertIn("Account Settings", self.browser.title)
-        self.fill_in_account_settings(email="tester@aol.com", name="", title="Account_tester")
-        import ipdb;  ipdb.set_trace()
+        self.assertIn("Account Settings", self.browser.title, 'String: "Account Settings" not included in browser title')
+        self.fill_in_account_settings(email="tester@aol.com", name="Dude Guy Man", title="Account_tester")
         self.click_element("#edit_account_submit")
-
-        # Tests that the error Toast does produce an error from bad submission
-        # self.assertInNodeText("User name None not available.", ".alert")
-        import ipdb; ipdb.set_trace()
-        self._getNodeText(".alert fade in alert-danger")
-        # wait_for_sleep_after(lambda: self.assertInNodeText('User name None not available.', ".alert fade in alert-danger"))
 
 class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
