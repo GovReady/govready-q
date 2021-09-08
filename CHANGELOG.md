@@ -39,7 +39,7 @@ settings feature provides for better extensibility and easier use. We've been wa
 **Bug fix**
 
 * Correctly handle exporting library components when component has zero statements to avoid crashing exportcomponentlibrary command.
-* Add execute permissions to `/dev_env/docker/remote_interpreter/python_env.sh b/dev_env/docker/remote_interpreter/python_env.sh` (See: )
+* Add execute permissions to `/dev_env/docker/remote_interpreter/python_env.sh b/dev_env/docker/remote_interpreter/python_env.sh`
 
 **Developer changes**
 
@@ -54,6 +54,7 @@ python run.py dev
 
 NOTE: GovReady-q container name changed from `govready_q_dev` to `govready-q-dev`.
 
+* Replace questionnaire-style account settings (e.g., user profile) with traditional user information form.
 * Add a set of default headers (through hidden inputs and a html form) for the SSP CSV export, dubbed Quick CSV.
 * Add makecmmcstatements admin command to create library component statements with CMMC content based on existing content.
 * Create RemoteStatement model in controls to better track relationship between statements created from other statements.
