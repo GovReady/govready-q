@@ -116,6 +116,7 @@ THIRD_PARTY_APPS = [
 	'allauth.socialaccount',
 	'simple_history',
 	'rest_framework',
+	'django_json_widget',
 	# add any allauth social providers as you like
 ]
 
