@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.models import Permission
 from guardian.admin import GuardedModelAdmin
-
+from django_json_widget.widgets import JSONEditorWidget
 import django.contrib.auth.admin as contribauthadmin
-
+from jsonfield import JSONField
 from .models import User, Organization, OrganizationalSetting, Folder, Project, ProjectMembership, Portfolio, Support, \
     Tag, Asset, ProjectAsset
 from notifications.models import Notification
@@ -36,6 +36,9 @@ class UserAdmin(contribauthadmin.UserAdmin):
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('slug', 'name', 'id')
     filter_horizontal = ('help_squad', 'reviewers')
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
 
     def save_model(self, request, obj, form, change):
         was_new = not obj.id
@@ -117,6 +120,9 @@ class FolderAdmin(admin.ModelAdmin):
     list_display = ('title', 'created')
     raw_id_fields = ('organization','admin_users')
     readonly_fields = ('projects', 'extra')
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
 
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ('id', 'recipient', 'actor', 'level', 'target', 'unread', 'public', 'emailed')
@@ -126,6 +132,9 @@ class ProjectAdmin(GuardedModelAdmin):
     list_display = ('id', 'portfolio_name', 'organization_name', 'title', 'root_task', 'created')
     raw_id_fields = ('root_task',)
     readonly_fields = ('id', 'extra',)
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
 
     def portfolio_name(self, obj):
         if obj.portfolio:
@@ -163,6 +172,9 @@ class ProjectAssetAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'asset_type', 'description', 'project', 'default', 'title', 'filename', 'created', 'updated')
     readonly_fields = ('content_hash', 'filename', )
     ordering = ('project', 'asset_type', 'created')
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Organization, OrganizationAdmin)

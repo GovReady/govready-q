@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django import forms
 from django.utils.html import escape as escape_html
+from django_json_widget.widgets import JSONEditorWidget
+from jsonfield import JSONField
+
 
 from .models import \
 	AppSource, AppVersion, Module, ModuleQuestion, ModuleAsset, \
@@ -198,6 +201,10 @@ class AppSourceAdmin(admin.ModelAdmin):
     filter_horizontal = ('available_to_orgs', "available_to_individual")
     readonly_fields = ('is_system_source', "available_to_role",)
     ordering = ('id',)
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
+
     def source(self, obj):
         return obj.get_description()
     def flags(self, obj):
@@ -234,6 +241,9 @@ class AppVersionAdmin(admin.ModelAdmin):
     list_filter = ('source', 'show_in_catalog', 'system_app')
     raw_id_fields = ('source', 'asset_files',)
     readonly_fields = ('asset_files', 'asset_paths', 'system_app')
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
 
 class AppInputAdmin(admin.ModelAdmin):
 	list_display = ('id', 'input_name', 'input_type', 'app', 'source', 'created')
@@ -246,17 +256,26 @@ class ModuleAdmin(admin.ModelAdmin):
     list_filter = ('source',)
     raw_id_fields = ('source', 'app', 'superseded_by')
     readonly_fields = ('id',)
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
     def app_(self, obj): return "{} [{}]".format(obj.app.appname, obj.app.id) if obj.app else "(not in an app)"
 
 class ModuleQuestionAdmin(admin.ModelAdmin):
     list_display = ('id', 'key', 'module')
     raw_id_fields = ('module', 'answer_type_module')
     readonly_fields = ("id",)
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
 
 class ModuleAssetAdmin(admin.ModelAdmin):
     list_display = ('id', 'source', 'content_hash', 'created')
     raw_id_fields = ('source',)
     readonly_fields = ('source', 'content_hash', 'file')
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
 
 class TaskAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'organization_and_project', 'module',
@@ -264,6 +283,9 @@ class TaskAdmin(admin.ModelAdmin):
     raw_id_fields = ('project', 'editor', 'module')
     readonly_fields = ('id', 'title', 'module', 'invitation_history')
     search_fields = ('project__organization__name', 'editor__username', 'editor__email', 'module__key')
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
 
     def submodule_of(self, obj):
         return obj.is_answer_to_unique()
@@ -280,6 +302,9 @@ class TaskAnswerAdmin(admin.ModelAdmin):
         (None, {"fields": ('notes',)}),
         (None, {"fields": ('extra',)}),
         ]
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
     def _project(self, obj): return obj.task.project
 
 class TaskAnswerHistoryAdmin(admin.ModelAdmin):
@@ -294,6 +319,9 @@ class TaskAnswerHistoryAdmin(admin.ModelAdmin):
         (None, {"fields": ('stored_value', 'stored_encoding', 'cleared')}),
         (None, {"fields": ('extra',)}),
         ]
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
     def answer(self, obj): return obj.get_answer_display()
 
 class InstrumentationEventAdmin(admin.ModelAdmin):
