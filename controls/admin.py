@@ -7,6 +7,7 @@ from guardian.admin import GuardedModelAdmin
 from simple_history.admin import SimpleHistoryAdmin
 from django_json_widget.widgets import JSONEditorWidget
 from jsonfield import JSONField
+from django.db import models
 
 
 class ExportCsvMixin:
@@ -37,8 +38,9 @@ class StatementAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     search_fields = ('id', 'sid', 'sid_class', 'producer_element', 'uuid')
     actions = ["export_as_csv"]
     readonly_fields = ('created', 'updated', 'uuid')
+    fields = ('sid', 'sid_class', 'producer_element', 'statement_type', 'uuid', 'change_log')
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        models.JSONField: {'widget': JSONEditorWidget},
     }
 
 class StatementRemoteAdmin(admin.ModelAdmin):
