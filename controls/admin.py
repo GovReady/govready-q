@@ -38,7 +38,6 @@ class StatementAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     search_fields = ('id', 'sid', 'sid_class', 'producer_element', 'uuid')
     actions = ["export_as_csv"]
     readonly_fields = ('created', 'updated', 'uuid')
-    fields = ('sid', 'sid_class', 'producer_element', 'statement_type', 'uuid', 'change_log')
     formfield_overrides = {
         models.JSONField: {'widget': JSONEditorWidget},
     }
@@ -115,6 +114,9 @@ class SystemAssessmentResultAdmin(admin.ModelAdmin):
 class CatalogDataAdmin(admin.ModelAdmin):
     list_display = ('catalog_key',)
     search_fields = ('catalog_key',)
+    formfield_overrides = {
+        models.JSONField: {'widget': JSONEditorWidget},
+    }
 
 admin.site.register(ImportRecord, ImportRecordAdmin)
 admin.site.register(Statement, StatementAdmin)
