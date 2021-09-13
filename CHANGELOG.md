@@ -40,6 +40,8 @@ settings feature provides for better extensibility and easier use. We've been wa
 
 * Correctly handle exporting library components when component has zero statements to avoid crashing exportcomponentlibrary command.
 * Add execute permissions to `/dev_env/docker/remote_interpreter/python_env.sh b/dev_env/docker/remote_interpreter/python_env.sh`
+* Fix control group titles not showing up in properly in generated SSPs.
+* Replace common Unicode characters in generated SSPs (e.g. smart apostrophe, bullets).
 
 **Developer changes**
 
@@ -67,6 +69,7 @@ NOTE: GovReady-q container name changed from `govready_q_dev` to `govready-q-dev
 * Add letter 'c' prefix to 800-171 rev 2 control ids to be compliant with NIST OSCAL.
 * Add `name`, `title` fields to `siteapp.models.User`.
 * Set all user's `name` to `username` as part of data migration.
+
 
 v0.9.10.1 (August 16, 2021)
 ---------------------------
