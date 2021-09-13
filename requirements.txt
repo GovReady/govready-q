@@ -497,9 +497,9 @@ jinja2==2.11.3 \
     # via
     #   -r requirements.in
     #   datamodel-code-generator
-josepy==1.8.0 \
-    --hash=sha256:6d632fcdaf0bed09e33f81f13b10575d4f0b7c37319350b725454e04a41e6a49 \
-    --hash=sha256:a5a182eb499665d99e7ec54bb3fe389f9cbc483d429c9651f20384ba29564269
+josepy==1.9.0 \
+    --hash=sha256:49798be66a467e7c81f071fe5ff03ac5e37c6d7081933612259028496bb05a68 \
+    --hash=sha256:51cce8d97ced0556aae0ce3161b26d5f0f54bc42c749d3c606edc6d97d9802dc
     # via mozilla-django-oidc
 jsonfield==3.1.0 \
     --hash=sha256:7e4e84597de21eeaeeaaa7cc5da08c61c48a9b64d0c446b2d71255d01812887a \
@@ -657,9 +657,9 @@ openapi-spec-validator==0.3.1 \
     --hash=sha256:3d70e6592754799f7e77a45b98c6a91706bdd309a425169d17d8e92173e198a2 \
     --hash=sha256:ba28b06e63274f2bc6de995a07fb572c657e534425b5baf68d9f7911efe6929f
     # via datamodel-code-generator
-openpyxl==3.0.7 \
-    --hash=sha256:46af4eaf201a89b610fcca177eed957635f88770a5462fb6aae4a2a52b0ff516 \
-    --hash=sha256:6456a3b472e1ef0facb1129f3c6ef00713cebf62e736cd7a75bcc3247432f251
+openpyxl==3.0.8 \
+    --hash=sha256:4f2770348c029ce9433316ced8f91ed37d2a605e654f8bfdc93a3524561a8ce2 \
+    --hash=sha256:52150a09b660fe444af7abe2592b156c14e324526b1968a57705525547317a7f
     # via -r requirements.in
 orderedmultidict==1.0.1 \
     --hash=sha256:04070bbb5e87291cc9bfa51df413677faf2141c73c61d2a5f7b26bea3cd882ad \
@@ -1161,9 +1161,9 @@ sniffio==1.2.0 \
     #   anyio
     #   httpcore
     #   httpx
-sqlparse==0.4.1 \
-    --hash=sha256:017cde379adbd6a1f15a61873f43e8274179378e95ef3fede90b5aa64d304ed0 \
-    --hash=sha256:0f91fd2e829c44362cbcfab3e9ae12e22badaa8a29ad5ff599f9ec109f0454e8
+sqlparse==0.4.2 \
+    --hash=sha256:0c00730c74263a94e5a9919ade150dfc3b19c574389985446148402998287dae \
+    --hash=sha256:48719e356bb8b42991bdbb1e8b83223757b93789c00910a616a071910ca4a64d
     # via
     #   django
     #   django-debug-toolbar
