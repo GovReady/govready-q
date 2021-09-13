@@ -1,0 +1,60 @@
+id: app
+title: Speedy SSP (CMMC)
+type: project
+version: 1.8.3
+icon: speedy.png
+introduction:
+  format: markdown
+  template: GovReady System Questionnaires
+
+catalog:
+  category: IT System Template
+  description:
+    long: |
+      New Compliance App
+      ==================
+
+      Edit this Markdown file to provide a long description of your compliance app. The contents of this file will be displayed in the GovReady-Q Compliance Apps Catalog.
+    short: Quick questionnaire for a Speedy System Security Plan
+  source_url: https://github.com/GovReady/apps
+  status: stub
+  vendor: GovReady
+  vendor_url: ~
+  version: 1.8.3
+  parameters:
+    - id: catalog_key
+      value: CMMC_ver1
+    - id: baseline
+      value: level 3
+questions:
+
+#Basic system info for speedy SSP
+- id: speedy_ssp_basic_info
+  title: Basic Info
+  type: module
+  icon: system_info.png
+  module-id: speedy_ssp_basic_info
+  group: Speedy SSP
+
+#SSP Template
+- id: ssp_intro
+  module-id: ssp_intro
+  icon: ssp_icon.png
+  title: System Security Plan
+  type: module
+  group: Speedy SSP
+
+#Additional Information for Speedy SSP
+- id: speedy_ssp_additional_info
+  title: Additional Info
+  type: module
+  icon: test_plan_new.png
+  module-id: speedy_ssp_additional_info
+  group: Speedy SSP
+
+- id: system_info_technical
+  title: System Profile - Technical
+  type: module
+  icon: system_info.png
+  module-id: system_info_technical
+  group: System Info
