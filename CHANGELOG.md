@@ -60,6 +60,7 @@ NOTE: GovReady-q container name changed from `govready_q_dev` to `govready-q-dev
 * Create RemoteStatement model in controls to better track relationship between statements created from other statements.
 * Add `change_log` field to maintain more accessible history of changes made to statement.
 * Refactoring profiles to be standard profiles instead of a special case compliance app. See issue #633.
+* Add listcomponents command to generate list of components and ids.
 
 **Data changes**
 
