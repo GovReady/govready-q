@@ -684,6 +684,8 @@ class System(auto_prefetch.Model):
             # parameter in the below statement.
             if smt.producer_element:
                 smt_formatted = smt.body.replace('\n','<br/>')
+                # TODO: Clean up special characters
+                smt_formatted = smt_formatted.replace(u"\u2019", "'").replace(u"\u2022", "<li>")
                 smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i><br/>{status_str}<br/><br/>{smt_formatted}<br/><br/>"
             # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
             # for testing purposes, the loop runs 3x faster

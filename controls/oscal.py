@@ -165,11 +165,11 @@ class Catalog(object):
     def get_group_id_by_control_id(self, control_id):
         """Return group id given id of a control"""
 
-        # For 800-53, 800-171, we can match by first few characters of control ID
+        # For 800-53, 800-171, CMMC, we can match by first few characters of control ID
         group_ids = self.get_group_ids()
         if group_ids:
             for group_id in group_ids:
-                if group_id.lower() == control_id.lower():
+                if group_id.lower() == control_id[:2].lower():
                     return group_id
         else:
             return None
