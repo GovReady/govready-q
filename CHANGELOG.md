@@ -40,6 +40,8 @@ settings feature provides for better extensibility and easier use. We've been wa
 
 * Correctly handle exporting library components when component has zero statements to avoid crashing exportcomponentlibrary command.
 * Add execute permissions to `/dev_env/docker/remote_interpreter/python_env.sh b/dev_env/docker/remote_interpreter/python_env.sh`
+* Fix control group titles not showing up in properly in generated SSPs.
+* Replace common Unicode characters in generated SSPs (e.g. smart apostrophe, bullets).
 
 **Developer changes**
 
@@ -60,6 +62,7 @@ NOTE: GovReady-q container name changed from `govready_q_dev` to `govready-q-dev
 * Create RemoteStatement model in controls to better track relationship between statements created from other statements.
 * Add `change_log` field to maintain more accessible history of changes made to statement.
 * Refactoring profiles to be standard profiles instead of a special case compliance app. See issue #633.
+* Add listcomponents command to generate list of components and ids.
 
 **Data changes**
 
@@ -67,6 +70,7 @@ NOTE: GovReady-q container name changed from `govready_q_dev` to `govready-q-dev
 * Add `name`, `title` fields to `siteapp.models.User`.
 * Set all user's `name` to `username` as part of data migration.
 * Add Speedy SSP with CMMC catalog.
+
 
 
 v0.9.10.1 (August 16, 2021)
