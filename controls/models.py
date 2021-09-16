@@ -70,6 +70,7 @@ class Statement(auto_prefetch.Model):
     import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_statements", on_delete=models.CASCADE,
                                       unique=False, blank=True, null=True, help_text="The Import Record which created this Statement.")
     change_log = models.JSONField(blank=True, null=True, help_text="JSON object representing changes to the statement")
+    inheritance = models.ForeignKey('Inheritance', related_name="statements", on_delete=models.SET_NULL, blank=True, null=True)
     history = HistoricalRecords(cascade_delete_history=True)
     class Meta:
         indexes = [models.Index(fields=['producer_element'], name='producer_element_idx'),]
@@ -239,6 +240,18 @@ class StatementRemote(auto_prefetch.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_statement_remotes", on_delete=models.CASCADE,
                                              unique=False, blank=True, null=True, help_text="The Import Record which created this record.")
+
+class Inheritance(models.Model):
+    name = models.CharField(max_length=120, unique=True, blank=False, null=False)
+    description = models.TextField(unique=False, blank=True, null=True)
+    responsibility = models.TextField(unique=False, blank=True, null=True)
+
+    def __str__(self):
+        return "'%s'" % (self.name)
+
+    def __repr__(self):
+        # For debugging.
+        return "'%s'" % (self.name, self.id)
 
 class Element(auto_prefetch.Model, TagModelMixin):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
