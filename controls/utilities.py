@@ -1,5 +1,6 @@
 # Utility functions
 import re
+import sys
 from structlog import get_logger
 
 def replace_line_breaks(text, break_src="\n", break_trg="<br />"):
@@ -35,6 +36,23 @@ def replace_colons(text, project):
     # for now do something hacking to prove it works
     text = text.replace(u':', "&colon;")
     return text
+
+def uhash(obj):
+    """Return a positive hash code"""
+    h = hash(obj)
+    return h + sys.maxsize + 1
+
+def de_oscalize_control_id(control_id, catalog_key=None):
+    """ return the conventional control formatting from an oscalized version of the control id.
+        de_oscalize_control("ac-2")     --> AC-2
+        de_oscalize_control("ac-2.3")   --> AC-2(3)
+        de_oscalize_control("3.1.3")    --> 3.1.3
+        de_oscalize_control("c3.1.3", 'NIST_SP-800-171_rev1')   --> 3.1.3
+    """
+
+    if catalog_key and catalog_key == 'NIST_SP-800-171_rev1':
+        control_id = control_id.lower().lstrip('c')
+    return re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)\.([0-9]*)$', r'\1\2(\3)', control_id).upper()
 
 def oscalize_control_id(cl_id):
     """ output an oscal standard control id from various common formats for control ids """

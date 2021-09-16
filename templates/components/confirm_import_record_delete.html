@@ -22,10 +22,11 @@
 
     <p>This import includes:
         <ul>
-            <li>{{ project_count }} project{{ project_count|pluralize }}</li>
-            <li>{{ element_count }} system{{ element_count|pluralize }} (e.g., system root element){{ element_count|pluralize }}</li>
-            <li>{{ component_count }} component{{ component_count|pluralize }}</li>
-            <li>{{ statement_count }} component statement{{ statement_count|pluralize }}</li>
+            {% if project_count > 0 %}<li>{{ project_count }} project{{ project_count|pluralize }}</li>{% endif %}
+            {% if element_count > 0 %}<li>{{ element_count }} system{{ element_count|pluralize }} (e.g., system root element){{ element_count|pluralize }}</li>{% endif %}
+            {% if component_count > 0 %}<li>{{ component_count }} component{{ component_count|pluralize }}</li>{% endif %}
+            {% if statement_count > 0 %}<li>{{ statement_count }} component statement{{ statement_count|pluralize }}</li>{% endif %}
+            {% if statement_prototype_count > 0 %}<li>{{ statement_prototype_count }} library component statement{{ statement_prototype_count|pluralize }}</li>{% endif %}
         </ul>
     </p>
 

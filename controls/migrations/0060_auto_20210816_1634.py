@@ -37,7 +37,7 @@ def load_catalog_data(apps, schema_editor):
         if created:
             print(f"{catalog_key} record created into database")
         else:
-                print(f"{catalog_key} record found in database")
+            print(f"{catalog_key} record found in database")
 
 
 class Migration(migrations.Migration):
