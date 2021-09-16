@@ -1121,6 +1121,7 @@ def system_element(request, system_id, element_id):
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": opencontrol_string,
+            "page_data": page_data,
         }
         return render(request, "systems/element_detail_tabs.html", context)
 
@@ -1176,6 +1177,7 @@ def system_element_control(request, system_id, element_id, catalog_key, control_
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": opencontrol_string,
+            "page_data": page_data,
         }
         return render(request, "systems/element_detail_control.html", context)
 
