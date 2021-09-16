@@ -1097,6 +1097,8 @@ def system_element(request, system_id, element_id):
 
         # Load only data needed for the page.
         page_data = get_component_page_data(cat, impl_smts)
+
+        # Retrieve control
         ctl_id = list(page_data.keys())[0]
         control = next((ctl for ctl in catalog_controls if ctl['id'] == oscalize_control_id(page_data[ctl_id]["sid"])), None)
 
@@ -1115,6 +1117,7 @@ def system_element(request, system_id, element_id):
             "impl_smts": impl_smts,
             "catalog_controls": catalog_controls,
             "catalog_key": catalog_key,
+            "control": control,
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": opencontrol_string,
@@ -1149,7 +1152,6 @@ def system_element_control(request, system_id, element_id, catalog_key, control_
 
         # Load only data needed for the page.
         page_data = get_component_page_data(cat, impl_smts)
-        ctl_id = list(page_data.keys())[0]
 
         # Retrieve control
         control = next((ctl for ctl in catalog_controls if ctl['id'] == oscalize_control_id(control_id)), None)
