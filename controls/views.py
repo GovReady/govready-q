@@ -1188,10 +1188,12 @@ def get_component_page_data(catalog, statements):
         ctrl = catalog.get_control_by_id(c.sid)
         cid = catalog.get_control_property_by_name(ctrl, "sort-id")
         page_data[cid] = {
-            "narrative": c.body,
             "description": catalog.get_control_prose_as_markdown(ctrl, "statement"),
+            "family": catalog.get_group_title_by_id(c.sid[:2]),
             "guidance": catalog.get_control_prose_as_markdown(ctrl, "guidance"),
             "implementation": catalog.get_control_prose_as_markdown(ctrl, "implementation"),
+            "label": catalog.get_control_property_by_name(ctrl, "label"),
+            "narrative": c.body,
             "sid": c.sid,
             "status": c.status,
         }
