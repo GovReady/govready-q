@@ -160,7 +160,10 @@ def controls_selected(request, system_id):
 
         # sort controls
         controls = list(controls)
-        controls.sort(key=lambda control: control.get_flattened_oscal_control_as_dict()['sort_id'])
+        try:
+            controls.sort(key=lambda control: control.get_flattened_oscal_control_as_dict()['sort_id'])
+        except Exception as e:
+            logger.error(f"Error flattening controls: {e}")
 
         # Determine if a legacy statement exists for the control
         impl_smts_legacy = Statement.objects.filter(consumer_element=system.root_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name)
