@@ -1,8 +1,8 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.11-dev (September xx, 2021)
---------------------------------
+v0.9.11 (September 18, 2021)
+----------------------------
 
 IMPORTANT BREAKING CHANGE
 
@@ -70,7 +70,6 @@ NOTE: GovReady-q container name changed from `govready_q_dev` to `govready-q-dev
 * Add `name`, `title` fields to `siteapp.models.User`.
 * Set all user's `name` to `username` as part of data migration.
 * Add Speedy SSP with CMMC catalog.
-
 
 
 v0.9.10.1 (August 16, 2021)
