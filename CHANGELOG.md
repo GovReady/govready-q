@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.11.1 (September 19, 2021)
+----------------------------
+
+**Developer changes**
+
+* Add orderby option to listcomponents command to generate list of components and ids.
+
+
 v0.9.11 (September 18, 2021)
 ----------------------------
 
