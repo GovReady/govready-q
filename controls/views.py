@@ -510,10 +510,13 @@ def import_record_details(request, import_record_id):
 
     import_record = ImportRecord.objects.get(id=import_record_id)
     component_statements = import_record.get_components_statements()
+    statements_prototype = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
+                                                    import_record=import_record)
 
     context = {
         "import_record": import_record,
         "component_statements": component_statements,
+        "statements_prototype": statements_prototype,
     }
     return render(request, "components/import_record_details.html", context)
 
@@ -527,6 +530,9 @@ def confirm_import_record_delete(request, import_record_id):
     statement_count = 0
     for component in component_statements:
         statement_count += component_statements[component].count()
+    statements_prototype = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
+                                                    import_record=import_record)
+    statement_prototype_count = len(statements_prototype)
     projects = import_record.import_record_projects.all()
     project_count = len(projects)
     elements = import_record.import_record_elements.all()
@@ -535,6 +541,7 @@ def confirm_import_record_delete(request, import_record_id):
         "import_record": import_record,
         "component_count": component_count,
         "statement_count": statement_count,
+        "statement_prototype_count": statement_prototype_count,
         "project_count": project_count,
         "element_count": element_count
     }
@@ -838,7 +845,7 @@ class OSCALComponentSerializer(ComponentSerializer):
             control_implementations.append(control_implementation)
         # Remove 'control-implementations' key if no implementations exist
         if len(control_implementations) == 0:
-            of['component-definition']['components'][uuid].pop('control-implementations', None)
+            of['component-definition']['components'][0].pop('control-implementations', None)
 
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
@@ -1055,7 +1062,6 @@ class ComponentImporter(object):
         statements_created = Statement.objects.bulk_create(new_statements)
         return statements_created
 
-@login_required
 def add_selected_components(system, import_record):
         """Add a component from the library or a compliance app to the project and its statements using the import record"""
 

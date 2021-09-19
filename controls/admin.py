@@ -1,10 +1,14 @@
 import csv
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import ImportRecord, Statement, Element, ElementControl, ElementRole, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam, Deployment, SystemAssessmentResult
+from .models import ImportRecord, Statement, StatementRemote, Element, ElementControl, ElementRole, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam, Deployment, SystemAssessmentResult
 from .oscal import CatalogData
 from guardian.admin import GuardedModelAdmin
 from simple_history.admin import SimpleHistoryAdmin
+from django_json_widget.widgets import JSONEditorWidget
+from jsonfield import JSONField
+from django.db import models
+
 
 class ExportCsvMixin:
     # From https://books.agiliq.com/projects/django-admin-cookbook/en/latest/export.html
@@ -33,6 +37,14 @@ class StatementAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     list_display = ('id', 'sid', 'sid_class', 'producer_element', 'statement_type', 'uuid')
     search_fields = ('id', 'sid', 'sid_class', 'producer_element', 'uuid')
     actions = ["export_as_csv"]
+    readonly_fields = ('created', 'updated', 'uuid')
+    formfield_overrides = {
+        models.JSONField: {'widget': JSONEditorWidget},
+    }
+
+class StatementRemoteAdmin(admin.ModelAdmin):
+    list_display = ('id', 'statement', 'remote_statement', 'remote_type')
+    search_fields = ('id', 'statement', 'remote_statement', 'remote_type')
     readonly_fields = ('created', 'updated', 'uuid')
 
 class ElementAdmin(GuardedModelAdmin, ExportCsvMixin):
@@ -71,6 +83,9 @@ class PoamAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('id', 'poam_id', 'statement', 'controls', 'uuid')
     search_fields = ('id', 'poam_id', 'statement', 'controls', 'uuid')
     actions = ["export_as_csv"]
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
 
     def uuid(self, obj):
         return obj.statement.uuid
@@ -82,6 +97,9 @@ class DeploymentAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     list_display = ('id', 'name', 'system')
     search_fields = ('id', 'name', 'uuid')
     actions = ["export_as_csv"]
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
 
     def uuid(self, obj):
         return obj.deployment.uuid
@@ -89,13 +107,20 @@ class DeploymentAdmin(SimpleHistoryAdmin, ExportCsvMixin):
 class SystemAssessmentResultAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'system', 'deployment', 'uuid')
     search_fields = ('id', 'name', 'system', 'deployment', 'uuid')
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
 
 class CatalogDataAdmin(admin.ModelAdmin):
     list_display = ('catalog_key',)
     search_fields = ('catalog_key',)
+    formfield_overrides = {
+        models.JSONField: {'widget': JSONEditorWidget},
+    }
 
 admin.site.register(ImportRecord, ImportRecordAdmin)
 admin.site.register(Statement, StatementAdmin)
+admin.site.register(StatementRemote, StatementRemoteAdmin)
 admin.site.register(Element, ElementAdmin)
 admin.site.register(ElementControl, ElementControlAdmin)
 admin.site.register(ElementRole, ElementRoleAdmin)

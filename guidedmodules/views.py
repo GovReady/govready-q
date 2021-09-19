@@ -5,7 +5,7 @@ from zipfile import ZipFile
 from zipfile import BadZipFile
 from django.shortcuts import render,  get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
-from controls.oscal import de_oscalize_control
+from controls.utilities import de_oscalize_control_id
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
@@ -2161,7 +2161,7 @@ def export_ssp_csv(form_data, system):
     # If the user selected to format the control id in OSCAL this will be skipped
     if not form_data.get('oscal_format'):
         # De-oscalize every control id (sid)
-        selected_controls = [de_oscalize_control(control) for control in selected_controls]
+        selected_controls = [de_oscalize_control_id(control) for control in selected_controls]
     db_catalog_keys = list(smts.values_list('sid_class', flat=True))
     catalog_keys = []
     # XYZ_3_0 --> XYZ 3.0

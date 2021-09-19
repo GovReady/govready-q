@@ -26,10 +26,12 @@ import selenium.webdriver
 from selenium.webdriver.remote.command import Command
 from django.urls import reverse
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver import DesiredCapabilities
 from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
 from django.utils.crypto import get_random_string
+from django import db
 
 from controls.enums.statements import StatementTypeEnum
 from guidedmodules.tests import TestCaseWithFixtureData
@@ -37,9 +39,10 @@ from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
 from controls.models import Statement, Element, System
 from controls.oscal import CatalogData, Catalogs, Catalog
-from siteapp.settings import HEADLESS, DOS
+from siteapp.settings import HEADLESS, DOS, DOCKER, SELENIUM_BROWSER
 from siteapp.views import project_edit
 from tools.utils.linux_to_dos import convert_w
+from urllib.parse import urlparse
 
 
 def var_sleep(duration):
@@ -65,6 +68,11 @@ class SeleniumTest(StaticLiveServerTestCase):
 
     @classmethod
     def setUpClass(cls):
+        if DOCKER and not HEADLESS:
+            # Prevents auto localhost:random_port for remote docker selenium-grid
+            # cls.port = 8001
+            cls.host = "govready-q-dev"
+
         super(SeleniumTest, cls).setUpClass()
 
         # Override the email backend so that we can capture sent emails.
@@ -75,7 +83,7 @@ class SeleniumTest(StaticLiveServerTestCase):
         # because they may not be set or set properly in the local environment's
         # non-test settings for the URL assigned by the LiveServerTestCase server.
         # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
-        settings.ALLOWED_HOSTS = ['localhost', 'testserver']
+        settings.ALLOWED_HOSTS = ['localhost', 'testserver', "govready-q-dev"]
         settings.SITE_ROOT_URL = cls.live_server_url
         settings.DEBUG = True
 
@@ -88,11 +96,17 @@ class SeleniumTest(StaticLiveServerTestCase):
 
         # Start a headless browser.
 
-        options = selenium.webdriver.ChromeOptions()
-        options.add_argument("--disable-dev-shm-usage")  #overcome limited resource problems
-        options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
+        option_map = {
+            "chrome": (selenium.webdriver.ChromeOptions, DesiredCapabilities.CHROME),
+            "firefox": (selenium.webdriver.FirefoxOptions, DesiredCapabilities.FIREFOX),
+            "opera": (selenium.webdriver.ChromeOptions, DesiredCapabilities.OPERA),
+        }
+        option = option_map[SELENIUM_BROWSER]
+        options = option[0]()
+        options.add_argument("--disable-dev-shm-usage")  # overcome limited resource problems
+        options.add_argument("disable-infobars")  # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
-            options.add_argument("start-maximized") # too small screens make clicking some things difficult
+            options.add_argument("start-maximized")  # too small screens make clicking some things difficult
         else:
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
 
@@ -103,30 +117,40 @@ class SeleniumTest(StaticLiveServerTestCase):
             tempfile.tempdir = convert_w(os.getcwd())
         # enable Selenium support for downloads
         cls.download_path = pathlib.Path(tempfile.gettempdir())
-        options.add_experimental_option("prefs", {
-            "download.default_directory": str(cls.download_path),
-            "download.prompt_for_download": False,
-            "download.directory_upgrade": True,
-            "safebrowsing.enabled": True
-        })
-
+        if hasattr(options, 'add_experimental_option'):
+            options.add_experimental_option("prefs", {
+                "download.default_directory": str(cls.download_path),
+                "download.prompt_for_download": False,
+                "download.directory_upgrade": True,
+                "safebrowsing.enabled": True
+            })
         if HEADLESS:
             options.add_argument('--headless')
-            options.add_argument('--no-sandbox')
 
-        # Set up selenium Chrome browser for Windows or Linux
-        if DOS:
-            # TODO: Find out a way to get chromedriver implicit executable path in WSL
-            cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
+        if DOCKER:
+            if HEADLESS:
+                options.add_argument('--no-sandbox')
+                cls.browser = selenium.webdriver.Chrome(chrome_options=options)
+            else:
+                cls.browser = selenium.webdriver.Remote(command_executor='http://selenium-hub:4444/wd/hub',
+                                                        desired_capabilities=option[1],
+                                                        options=options)
         else:
-            cls.browser = selenium.webdriver.Chrome(chrome_options=options)
+            # Depreciated
+            # Set up selenium Chrome browser for Windows or Linux
+            if DOS:
+                # TODO: Find out a way to get chromedriver implicit executable path in WSL
+                cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
+            else:
+                cls.browser = selenium.webdriver.Chrome(chrome_options=options)
 
-        cls.browser.implicitly_wait(3) # seconds
+        cls.browser.implicitly_wait(5)  # seconds
 
         # Clean up and quit tests if Q is in SSO mode
         if getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', None):
             print("Cannot run tests.")
-            print("Tests will not run when IAM Proxy enabled (e.g., when `local/environment.json` sets `trust-user-authentication-headers` parameter.)")
+            print(
+                "Tests will not run when IAM Proxy enabled (e.g., when `local/environment.json` sets `trust-user-authentication-headers` parameter.)")
             cls.browser.quit()
             super(SeleniumTest, cls).tearDownClass()
             exit()
@@ -508,13 +532,13 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.click_element('#user-menu-dropdown'))
         wait_for_sleep_after(lambda: self.click_element('#user-menu-account-settings'))
         var_sleep(.5) # wait for page to open
-        wait_for_sleep_after(lambda: self.assertIn("Introduction | GovReady Account Settings", self.browser.title))
+        wait_for_sleep_after(lambda: self.assertIn("Account Settings", self.browser.title))
 
         #  # - The user is looking at the Introduction page.
-        wait_for_sleep_after(lambda: self.click_element("#save-button"))
+        # wait_for_sleep_after(lambda: self.click_element("#save-button"))
         #  # - Now at the what is your name page?
-        wait_for_sleep_after(lambda: self.fill_field("#inputctrl", "John Doe"))
-        wait_for_sleep_after(lambda: self.click_element("#save-button"))
+        # wait_for_sleep_after(lambda: self.fill_field("#inputctrl", "John Doe"))
+        # wait_for_sleep_after(lambda: self.click_element("#save-button"))
 
         # - We're on the module finished page.
         # wait_for_sleep_after(lambda: self.assertNodeNotVisible('#return-to-project'))
@@ -749,6 +773,53 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # # Test that we can see the comment and the reaction.
         # self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
+
+# CURRENTLY WORKING HERE
+class AccountSettingsTests(OrganizationSiteFunctionalTests):
+
+    def fill_in_account_settings(self, email, title, name):
+        # import ipdb;  ipdb.set_trace()
+
+        self.clear_and_fill_field("#id_name", name)
+        self.clear_and_fill_field("#id_email", email)
+        self.clear_and_fill_field("#id_title", title)
+
+    def fail_fill_in_account_settings(self):
+        self.clear_and_fill_field('#id_name', "")
+
+    def test_account_settings(self):
+        self.browser.get(self.url("/"))
+        self._login()
+        self.browser.get(self.url("/account/settings"))
+        self.assertEqual(urlparse(self.browser.current_url).path, "/account/settings")
+        self.fill_in_account_settings(email="tester@aol.com", name="Mr.Dude", title="Account_tester")
+        self.click_element("#edit_account_submit")
+
+    def test_name_fail_account_settings(self):
+        self.browser.get(self.url("/"))
+        self._login()
+        self.browser.get(self.url("/account/settings"))
+        self.fill_in_account_settings(email="tester@govready.com", name="", title="Account_tester")
+        self.click_element("#edit_account_submit")
+        wait_for_sleep_after(lambda: self.assertInNodeText("Display name None not available.", ".has-error"))
+
+    def test_email_fail_account_settings(self):
+        # test for duplicate email name
+        self.browser.get(self.url("/"))
+        self._login()
+        self.browser.get(self.url("/account/settings"))
+        self.fill_in_account_settings(email="", name="Test_Name", title="Account_tester")
+        self.click_element("#edit_account_submit")
+        wait_for_sleep_after(lambda: self.assertInNodeText("Email not available.", ".has-error"))
+
+    def test_account_settings_name_is_required(self):
+        self.browser.get(self.url("/"))
+        self._login()
+        self.browser.get(self.url("/account/settings"))
+        self.assertEqual(urlparse(self.browser.current_url).path, "/account/settings")
+        self.assertIn("Account Settings", self.browser.title, 'String: "Account Settings" not included in browser title')
+        self.fill_in_account_settings(email="tester@aol.com", name="Dude Guy Man", title="Account_tester")
+        self.click_element("#edit_account_submit")
 
 class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 

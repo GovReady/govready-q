@@ -1,9 +1,0 @@
-id: app
-title: Account Settings Project
-type: system-project
-short_description: The structure of the account settings Project.
-questions:
-  - id: account_settings
-    title: Account Settings
-    type: module
-    module-id: account_settings

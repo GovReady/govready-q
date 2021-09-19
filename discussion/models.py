@@ -105,7 +105,7 @@ class Discussion(models.Model):
         # Batch load user information. For the user's own draft, load the requesting user's info too.
         # Don't use a set to uniquify Users since the comments may have different User instances and
         # we want to fill in info for all of them.
-        User.preload_profiles([ c.user for c in comments ] + [ user ])
+        # User.preload_profiles([ c.user for c in comments ] + [ user ])
 
         # Add.
         events.extend([
@@ -121,7 +121,7 @@ class Discussion(models.Model):
         if user:
             draft = self.comments.filter(user=user, draft=True).first()
             if draft:
-                draft.user = user # reuse instance for caching via User.preload_profiles
+                draft.user = user # reuse instance
                 draft.discussion = self # reuse instance for caching
                 draft = draft.render_context_dict(user)
 

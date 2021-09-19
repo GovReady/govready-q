@@ -60,8 +60,10 @@ urlpatterns = [
     url(r'^library$', views.apps_catalog),
     url(r'^library/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
 
-    # projects
+    # profile
+    url(r'account/settings$', views.account_settings, name="account_settings"),
 
+    # projects
     url(r"^projects$", views.ProjectList.as_view(), name="projects"),
     url(r"^projects/lifecycle$", views.project_list_lifecycle, name="projects_lifecycle"),
     url(r'^projects/(?P<project_id>.*)/__edit$', views.project_edit, name="edit_project"),

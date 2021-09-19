@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load bootstrap3 %}
+
+{% block title %}
+Account Settings
+{% endblock %}
+
+{% block contextbar %}
+  {# kill it on this page #}
+{% endblock %}
+
+{% block body %}
+  <h1>Account Settings</h1>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 portfolio-org-col ">
+                <h2>"{{ user.username }}" Account Settings</h2>
+                <p>Adjust you account and profile information.</p>
+            </div>
+            <div class="col-md-9 portfolio-org-col ">
+                <div class="well">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% bootstrap_form form %}
+                        <p>
+                            <button type="submit" id="edit_account_submit" class="btn btn-success" aria-label="Update settings">Update</button>
+                            <a type="button" class="btn btn-default" href={% url "home_user" %}>Cancel</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+</script>
+{% endblock %}
