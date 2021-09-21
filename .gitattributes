@@ -1,7 +1,7 @@
 # Set the default behavior, in case people don't have core.autocrlf disabled.
-* text eol=lf
+* text=auto
 
-
+*.py text
 #
 ## These files are binary and should be left untouched
 #
