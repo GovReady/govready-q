@@ -962,8 +962,44 @@ def show_question(request, task, answered, context, q):
     # get context of questions in module
     context_sorted = module_logic.get_question_context(answered, q)
 
-    # Split the `context.update` into smaller parts so it is possible to add in timing code
-    # to examine performance of certain embedded calls.
+    # replace choice options with dynamic data
+      # type: choice-from-data
+      # choices: ~
+      # choices_from_data:
+      #   - action: element/filter_role/AWSIAM
+      #   - action: element/filter_element_type/system_element
+      #   - action: system/filter_role/gss
+    # print(1,"=====\n",q.spec)
+    if q.spec['type'] == "choice-from-data" or q.spec['type'] == "multiple-choice-from-data":
+        choices_from_data = []
+        choices_from_data_keys = {}
+        for action in q.spec['choices_from_data']:
+            print(2,"=======",action)
+            a_obj, a_verb, a_filter = action['action'].split("/")
+            if a_obj == "system":
+                # c_items = Project.objects.all().order_by(system__root_element__name)
+                c_items = Project.objects.all()
+                for c_item in c_items:
+                    if str(c_item.system.root_element.uuid) not in choices_from_data_keys:
+                        choices_from_data.append(OrderedDict([
+                                        ('key', str(c_item.system.root_element.uuid)), ('text', c_item.system.root_element.name),
+                                        # ('help', f"str(c_item.system.root_element.uuid): {str(c_item.system.root_element.uuid)}")
+                                        ])
+                            )
+                        choices_from_data_keys[str(c_item.system.root_element.uuid)] = 1
+            if a_obj == "element":
+                # query database for elements
+                c_items = Element.objects.filter(element_type="system_element").order_by('name')
+                for c_item in c_items:
+                    if str(c_item.uuid) not in choices_from_data_keys:
+                        choices_from_data.append(OrderedDict([
+                                        ('key', str(c_item.uuid)), ('text', c_item.name),
+                                        # ('help', f"str(c_item.uuid): {str(c_item.uuid)} {c_item.element_type}")
+                                        ])
+                            )
+                        choices_from_data_keys[str(c_item.uuid)] = 1
+        q.spec.update({"choices": choices_from_data})
+
     context.update({
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
@@ -1030,7 +1066,7 @@ def show_question(request, task, answered, context, q):
     context.update({
          "back_url": back_url,
     })
- 
+
     return render(request, "question.html", context)
 
 @task_view

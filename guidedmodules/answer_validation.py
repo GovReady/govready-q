@@ -17,7 +17,7 @@ class question_input_parser:
     @classmethod
     def parse(_class, question, value):
         # Mangle value a bit.
-        if question.spec["type"] == "multiple-choice":
+        if question.spec["type"] == "multiple-choice" or question.spec["type"] == "multiple-choice-from-data":
             # A list of strings is what we want here.
             pass
 
@@ -61,10 +61,16 @@ class question_input_parser:
     # Likewise for the simple choice types.
     def parse_choice(question, value):
         return value
+    def parse_choice_from_data(question, value):
+        return value
     def parse_yesno(question, value):
         return value
 
     def parse_multiple_choice(question, value):
+        # Comes in from the view function as an array of strings, which is what we want.
+        return value
+
+    def parse_multiple_choice_from_data(question, value):
         # Comes in from the view function as an array of strings, which is what we want.
         return value
 
@@ -209,6 +215,14 @@ class validator:
             raise ValueError("invalid choice")
         return value
 
+    def validate_choice_from_data(question, value):
+        if not isinstance(value, str):
+            raise ValueError("Invalid data type (%s)." % type(value))
+        # TODO: Check against generated data?
+        # if value not in { choice['key'] for choice in question.spec["choices"] }:
+        #     raise ValueError("invalid choice")
+        return value
+
     def validate_yesno(question, value):
         if not isinstance(value, str):
             raise ValueError("Invalid data type (%s)." % type(value))
@@ -222,6 +236,19 @@ class validator:
         for item in value:
             if item not in { choice['key'] for choice in question.spec["choices"] }:
                 raise ValueError("invalid choice: " + item)
+        if len(value) < question.spec.get("min", 0):
+            raise ValueError("not enough choices")
+        if question.spec.get("max") and len(value) > question.spec["max"]:
+            raise ValueError("too many choices")
+        return value
+
+    def validate_multiple_choice_from_data(question, value):
+        if not isinstance(value, list):
+            raise ValueError("Invalid data type (%s)." % type(value))
+        # TODO: Check against generated data?
+        # for item in value:
+        #     if item not in { choice['key'] for choice in question.spec["choices"] }:
+        #         raise ValueError("invalid choice: " + item)
         if len(value) < question.spec.get("min", 0):
             raise ValueError("not enough choices")
         if question.spec.get("max") and len(value) > question.spec["max"]:
