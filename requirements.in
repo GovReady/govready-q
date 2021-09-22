@@ -83,7 +83,7 @@ parsel # BSD License
 markupsafe # BSD 3
 
 # Excel exports
-openpyxl==3.0.7 # MIT License
+openpyxl # MIT License
 
 # Session timeout & security
 django-session-security # MIT License

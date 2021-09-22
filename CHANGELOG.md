@@ -9,6 +9,21 @@ v0.9.12-dev (September xx, 2021)
 * Update .gitattributes configuration for EOL character for cross-platform development.
 
 
+v0.9.11.2 (September 22, 2021)
+----------------------------
+
+**Developer changes**
+
+* Update requirements.
+
+v0.9.11.1 (September 19, 2021)
+----------------------------
+
+**Developer changes**
+
+* Add orderby option to listcomponents command to generate list of components and ids.
+
+
 v0.9.11 (September 18, 2021)
 ----------------------------
 
