@@ -1908,6 +1908,9 @@ def editor(request, system_id, catalog_key, cl_id):
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
         project, catalog, cg_flat, impl_smts, impl_smts_legacy = get_editor_data(request, system, catalog_key, cl_id)
+
+        element_control = ElementControl.objects.filter(element_id=system.root_element_id, oscal_ctl_id=cl_id).get()
+
         # TODO: Update system-security-plan to oscal 1.0.0
         # need parties and roles to not be empty
         # Build OSCAL SSP
@@ -1940,6 +1943,7 @@ def editor(request, system_id, catalog_key, cl_id):
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": "opencontrol_string",
             "elements": elements,
+            "element_control": element_control,
         }
         return render(request, "controls/editor.html", context)
     else:
@@ -3585,3 +3589,47 @@ def new_system_assessment_result_wazuh(request, system_id):
         else:
             # TODO: better handling of response code; 401, 301, etc.
             raise Exception(wazuh_sec_svc.error_msg['error'])
+
+
+@login_required
+def update_control_status(request, system_id):
+    """Update the control status"""
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    else:
+        form_dict = dict(request.POST)
+
+        eid = form_dict["eid"][0]
+        status = form_dict["status"][0]
+
+        control = ElementControl.objects.get(id=eid)
+        control.status = status
+
+        system = System.objects.get(id=system_id)
+
+        if not request.user.has_perm('change_system', system):
+            # User does not have write permissions
+            # Log permission to save answer denied
+            logger.info(
+                event="update_control_status permission_denied",
+                object={"object": "control", "id": control.id},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return HttpResponseForbidden(
+                "Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+
+        if control is None:
+            control_status = "error"
+            control_msg = "The id for this control is no longer valid in the database."
+            return JsonResponse({ "status": control_status, "message": control_msg })
+
+        try:
+            control.save()
+            control_status = "ok"
+            control_msg = "Controls status updated."
+        except Exception as e:
+            control_status = "error"
+            control_msg = "Control status update failed. Error reported {}".format(e)
+            return JsonResponse({"status": control_status, "message": control_msg})
+
+        return JsonResponse({"status": "success", "message": control_msg})

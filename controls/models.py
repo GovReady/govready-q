@@ -414,6 +414,13 @@ class Element(auto_prefetch.Model, TagModelMixin):
         return oscal_ctl_ids
 
 class ElementControl(auto_prefetch.Model):
+
+    class Statuses(models.IntegerChoices):
+        NEEDSWORK = 2, 'Needs work'
+        READY = 3, 'Ready for assessment'
+        ASSESSED = 4, 'Assessed'
+        CHANGES = 5, 'Changes requested'
+
     element = auto_prefetch.ForeignKey(Element, related_name="controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which controls are associated.")
     oscal_ctl_id = models.CharField(max_length=20, help_text="OSCAL formatted Control ID (e.g., au-2.3)", blank=True, null=True)
     oscal_catalog_key = models.CharField(max_length=100, help_text="Catalog key from which catalog file can be derived (e.g., 'NIST_SP-800-53_rev4')", blank=True, null=True)
@@ -421,6 +428,7 @@ class ElementControl(auto_prefetch.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     smts_updated = models.DateTimeField(auto_now=False, db_index=True, help_text="Store date of most recent statement update", blank=True, null=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this ElementControl.")
+    status = models.IntegerField(default=Statuses.NEEDSWORK, choices=Statuses.choices)
 
     # Notes
     # from controls.oscal import *;from controls.models import *;
@@ -485,6 +493,9 @@ class ElementControl(auto_prefetch.Model):
     #     impl_smt = {"sid": "impl_smt sid", "body": "This is the statement itself"}
     #     # Error checking
     #     return impl_smt
+
+    def get_status(self):
+        return self.Statuses(self.status).label
 
 class ElementRole(auto_prefetch.Model):
     role = models.CharField(max_length=250, help_text="Common name or acronym of the role", unique=True, blank=False, null=False)

@@ -61,6 +61,9 @@ urlpatterns = [
     url(r'^smt/_delete/$', views.delete_smt),
     url(r'^smt/_update_smt_prototype/$', views.update_smt_prototype),
 
+    # ElementControls
+    url(r'^(?P<system_id>.*)/ctrl/_update/$', views.update_control_status),
+
     # System Components/Elements
     url(r'^(?P<system_id>.*)/components/selected$', views.SelectedComponentsList.as_view(), name="components_selected"),
     url(r'^(?P<system_id>.*)/components/selected/export/opencontrol$', views.export_system_opencontrol, name="export_system_opencontrol"),
