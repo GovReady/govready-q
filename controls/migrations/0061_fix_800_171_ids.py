@@ -44,7 +44,7 @@ def update_smt_800_171(apps, schema_editor):
     """Update sid statements that point to 800-171 catalog"""
 
     catalog_key = 'NIST_SP-800-171_rev1'
-    smts =  Statement.objects.filter(sid_class=catalog_key, sid__icontains='3.')
+    smts =  Statement.objects.filter(sid_class=catalog_key, sid__icontains='3.').only('sid')
     # update sid
     for smt in smts:
         # double check control starts with '3.'
@@ -56,7 +56,7 @@ def reverse_func(apps, schema_editor):
     """Reverse update sid statements that point to 800-171 catalog"""
 
     catalog_key = 'NIST_SP-800-171_rev1'
-    smts =  Statement.objects.filter(sid_class=catalog_key, sid__icontains='3.')
+    smts =  Statement.objects.filter(sid_class=catalog_key, sid__icontains='3.').only('sid')
     # update sid
     for smt in smts:
         # double check control starts with '3.'
