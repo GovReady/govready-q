@@ -3619,17 +3619,20 @@ def update_control_status(request, system_id):
                 "Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
 
         if control is None:
-            control_status = "error"
             control_msg = "The id for this control is no longer valid in the database."
-            return JsonResponse({ "status": control_status, "message": control_msg })
+            return JsonResponse({"message": control_msg}, status=422)
+
+        allowed = ["2","3","4","5"]
+        if status not in allowed:
+            control_msg = "Status choice not allowed."
+            return JsonResponse({"message": control_msg}, status=422)
 
         try:
             control.save()
-            control_status = "ok"
-            control_msg = "Controls status updated."
+            control_status = 200
+            control_msg = "Controls status updated;"
         except Exception as e:
-            control_status = "error"
             control_msg = "Control status update failed. Error reported {}".format(e)
-            return JsonResponse({"status": control_status, "message": control_msg})
+            return JsonResponse({"message": control_msg}, status=422)
 
-        return JsonResponse({"status": "success", "message": control_msg})
+        return JsonResponse({"message": control_msg}, status=control_status)
