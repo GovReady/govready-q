@@ -1328,13 +1328,16 @@ def component_library_component(request, element_id):
         # Get the impl_smts contributed by this component to system
         impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
+    inheritances = Inheritance.objects.all()
+
     if len(impl_smts) < 1:
         context = {
             "element": element,
             "impl_smts": impl_smts,
             "is_admin": request.user.is_superuser,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "form_source": "component_library"
+            "form_source": "component_library",
+            "inheritance": inheritance,
         }
         return render(request, "components/element_detail_tabs.html", context)
 
@@ -1383,7 +1386,8 @@ def component_library_component(request, element_id):
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
-        "form_source": "component_library"
+        "form_source": "component_library",
+        "inheritances": inheritances,
     }
     return render(request, "components/element_detail_tabs.html", context)
 
