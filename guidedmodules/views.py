@@ -962,42 +962,54 @@ def show_question(request, task, answered, context, q):
     # get context of questions in module
     context_sorted = module_logic.get_question_context(answered, q)
 
-    # replace choice options with dynamic data
-      # type: choice-from-data
-      # choices: ~
-      # choices_from_data:
-      #   - action: element/filter_role/AWSIAM
-      #   - action: element/filter_element_type/system_element
-      #   - action: system/filter_role/gss
-    # print(1,"=====\n",q.spec)
+
+
+    # Process any actions to get data for the question.
+    # -------------------------------------------------
+    # Can we automatically set question answers based on data from other sources?
+    # For example, can choices from a filter of systems in the database?
+    # Can we get a list of roles from Active Directory?
+    # This block processes any actions specified for generating the question.
+
+    # This requires a tightly controlled vocabulary.
+    #
+    # We assume user has sufficient permission because user is answering question.
+    #
     if q.spec['type'] == "choice-from-data" or q.spec['type'] == "multiple-choice-from-data":
         choices_from_data = []
         choices_from_data_keys = {}
         for action in q.spec['choices_from_data']:
-            print(2,"=======",action)
             a_obj, a_verb, a_filter = action['action'].split("/")
+            # Process system actions for generating question option choices
+            # -------------------------------------------------------------
+            # The system actions are currently supported:
+            #   1. `system/add_role/<value>` - Automatically makes choices from filter list of systems
             if a_obj == "system":
-                # c_items = Project.objects.all().order_by(system__root_element__name)
-                c_items = Project.objects.all()
-                for c_item in c_items:
-                    if str(c_item.system.root_element.uuid) not in choices_from_data_keys:
-                        choices_from_data.append(OrderedDict([
-                                        ('key', str(c_item.system.root_element.uuid)), ('text', c_item.system.root_element.name),
-                                        # ('help', f"str(c_item.system.root_element.uuid): {str(c_item.system.root_element.uuid)}")
-                                        ])
-                            )
-                        choices_from_data_keys[str(c_item.system.root_element.uuid)] = 1
+                if a_verb == "add_role":
+                    # Get all elements assigned role specified in the action
+                    c_items = Element.objects.filter(element_type="system", roles__role=a_filter).order_by("name")
+                    for c_item in c_items:
+                        if str(c_item.uuid) not in choices_from_data_keys:
+                            choices_from_data.append(OrderedDict([
+                                            ('key', str(c_item.uuid)), ('text', c_item.name),
+                                            # ('help', f"str(c_item.uuid): {str(c_item.uuid)}")
+                                            ]))
+                            choices_from_data_keys[str(c_item.uuid)] = 1
+            # Process element actions for generating question option choices
+            # --------------------------------------------------------------
+            # The system actions are currently supported:
+            #   1. `element/add_role/<value>` - Automatically makes choices from filter list of elements
             if a_obj == "element":
-                # query database for elements
-                c_items = Element.objects.filter(element_type="system_element").order_by('name')
-                for c_item in c_items:
-                    if str(c_item.uuid) not in choices_from_data_keys:
-                        choices_from_data.append(OrderedDict([
-                                        ('key', str(c_item.uuid)), ('text', c_item.name),
-                                        # ('help', f"str(c_item.uuid): {str(c_item.uuid)} {c_item.element_type}")
-                                        ])
-                            )
-                        choices_from_data_keys[str(c_item.uuid)] = 1
+                if a_verb == "add_role":
+                    # Get all elements assigned role specified in the action
+                    c_items = Element.objects.filter(element_type="system_element", roles__role=a_filter).order_by("name")
+                    for c_item in c_items:
+                        if str(c_item.uuid) not in choices_from_data_keys:
+                            choices_from_data.append(OrderedDict([
+                                            ('key', str(c_item.uuid)), ('text', c_item.name),
+                                            # ('help', f"str(c_item.uuid): {str(c_item.uuid)}")
+                                            ]))
+                            choices_from_data_keys[str(c_item.uuid)] = 1
         q.spec.update({"choices": choices_from_data})
 
     context.update({

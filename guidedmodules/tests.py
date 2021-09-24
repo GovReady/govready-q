@@ -457,7 +457,6 @@ class RenderTests(TestCaseWithFixtureData):
         test("q_date", None, escape("<date>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_date.text", None, escape("<not answered>"))
 
-
     def test_render_choice_questions(self):
         def test(*args, **kwargs):
             self._test_render_single_question_md("question_types_choice", *args, **kwargs)
@@ -542,7 +541,6 @@ class RenderTests(TestCaseWithFixtureData):
         # Interstitial questions never have value.
         test("q_interstitial", None, escape("<interstitial>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_interstitial.text", None, escape("<not answered>"))
-
 
     def test_render_module_questions(self):
         def test(*args):
@@ -831,7 +829,6 @@ class ImportExportTests(TestCaseWithFixtureData):
         if export_csv_form.is_valid():
             response = export_ssp_csv(export_csv_form.data, self.system)
             assert response.status_code == 200
-
 
 class ComplianceAppTests(TestCaseWithFixtureData):
     ## COMPLIANCE APP VISIBILITY DATA TESTS ##
