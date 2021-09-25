@@ -1,6 +1,15 @@
 GovReady-Q Release Notes
 ========================
 
+**Feature changes**
+
+* Add new question types `choice-from-data` and `multiple-choice-from-data` to get display choice with options created from dynamic data.
+
+**Developer changes**
+
+* Add new question types `choice-from-data` and `multiple-choice-from-data` to get display choice with options created from dynamic data.
+
+
 v0.9.11.2 (September 22, 2021)
 ----------------------------
 
