@@ -1693,7 +1693,7 @@ def authoring_new_question(request, task):
         question.save()
 
     # Write to disk. Write updates to disk if developing on local machine
-    with local App Source
+    # with local App Source
     try:
         question.module.serialize_to_disk()
     except Exception as e:
