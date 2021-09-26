@@ -1,5 +1,8 @@
 import logging
 import structlog
+import os.path
+import yaml
+import rtyaml
 from django.utils.functional import cached_property
 from structlog import get_logger
 
@@ -503,10 +506,6 @@ class Module(models.Model):
     def serialize(self):
         """Write out the in-memory module specification."""
 
-        import os.path
-        import yaml
-        import rtyaml
-
         spec = OrderedDict(self.spec)
         if self.module_name == "app" and self.app:
             # Add back compliance app catalog information!
@@ -528,48 +527,25 @@ class Module(models.Model):
             qspec = OrderedDict(q.spec)
             if q.answer_type_module:
                 qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
-
             spec["questions"].append(qspec)
+        return spec
+
+    def serialize_to_yaml(self):
+        """Dump the in-memory module specification to YAML."""
+
+        spec = self.serialize()
         return rtyaml.dump(spec)
 
     def serialize_to_disk(self):
         """Write out the in-memory module specification to disk."""
 
-        import os.path
-        import rtyaml
-        from django.http import HttpResponse, Http404
-
-        spec = OrderedDict(self.spec)
-        if self.module_name == "app" and self.app:
-            # Add back compliance app catalog information!
-            spec['catalog'] = recombine_catalog_metadata(self)
-        spec["questions"] = []
-        for i, q in enumerate(self.questions.order_by('definition_order')):
-            if i == 0 and q.key == "_introduction":
-                spec["introduction"] = {"format": "markdown", "template": q.spec["prompt"]}
-                continue
-
-            # TODO: get RTYAML fixed to recognize '\r\n' as well as '\n'
-            # Then we can remove this temporary fix to help out RTYAML
-            # to give us nice output
-            for q_key in ['prompt', 'help', 'default']:
-                if q_key in q.spec:
-                    q.spec[q_key] = q.spec[q_key].replace("\r\n", "\n")
-
-            # Rewrite some fields that get rewritten during module-loading.
-            qspec = OrderedDict(q.spec)
-            if q.answer_type_module:
-                qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
-            spec["questions"].append(qspec)
-        # TODO Add a message that appears on page that questionnaire has been updated.
-
+        spec = self.serialize()
         # Write update to disk if source is local and file is writeable
         if self.source.spec["type"] == "local" and self.source.spec["path"]:
             fn = os.path.join(self.source.spec["path"], self.app.appname, self.module_name + ".yaml")
             if os.access(fn, os.W_OK):
                 with open(fn, "w") as f:
                     f.write(rtyaml.dump(spec))
-
 
 class ModuleAsset(models.Model):
     source = models.ForeignKey(AppSource, on_delete=models.CASCADE, help_text="The source of the asset.")

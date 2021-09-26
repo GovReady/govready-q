@@ -1,5 +1,10 @@
 import json
 import random
+import os.path
+import yaml
+import rtyaml
+import tempfile
+import shutil
 
 from django.core import serializers
 from django.db import IntegrityError
@@ -27,8 +32,8 @@ from controls.enums.statements import StatementTypeEnum
 from controls.forms import ImportProjectForm
 from controls.views import add_selected_components
 from discussion.models import Discussion
-from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
-                                  Task)
+from guidedmodules.models import (AppSource, AppVersion, Module, ModuleQuestion,
+                                  ProjectMembership, Task)
 
 from controls.models import Element, System, Statement, Poam, Deployment
 from system_settings.models import SystemSettings, Classification, Sitename
@@ -718,6 +723,61 @@ def apps_catalog_item(request, source_slug, app_name):
         "portfolio": portfolio
     })
 
+
+@login_required
+def apps_catalog_item_zip(request, source_slug, app_name):
+    """Download the Compliance App files as a zip file."""
+
+    catalog, _ = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
+    for app_catalog_info in catalog:
+        if app_catalog_info["key"] == source_slug + "/" + app_name:
+            # We found it.
+            break
+    else:
+        raise Http404()
+
+    # Get app
+    # TODO: better filter
+    # Choices are: appname, asset_files, asset_paths, catalog_metadata, created, id, input_artifacts, input_files, input_paths, inputs, modules, show_in_catalog, source, source_id, system_app, trust_assets, trust_inputs, updated, version_name, version_number
+
+    app = AppVersion.objects.filter(appname=app_name).get()
+    # Create archive folder structure to download the app in a zip file
+    temp_dir = tempfile.TemporaryDirectory(dir=".")
+    app_dir = os.path.join(temp_dir.name, app_name)
+    # create dir for app with slug name
+    os.mkdir(app_dir)
+    # create related empty directories: assets, components, templates, utils, inputs
+    os.mkdir(os.path.join(app_dir, 'assets'))
+    os.mkdir(os.path.join(app_dir, 'components'))
+    os.mkdir(os.path.join(app_dir, 'templates'))
+    os.mkdir(os.path.join(app_dir, 'utils'))
+    os.mkdir(os.path.join(app_dir, 'inputs'))
+    # TODO: Create README.md
+    # create modules
+    for module in app.modules.all():
+        fn = os.path.join(app_dir, f"{module.module_name}.yaml")
+        serialized_content = module.serialize()
+        # print(rtyaml.dump(serialized_content))
+        with open(fn, "w") as f:
+            f.write(rtyaml.dump(serialized_content))
+    # Build Zip archive
+    # TODO URL ENCODE?
+    zip_file = os.path.join(temp_dir.name, app_name)
+    shutil.make_archive(f"/tmp/{zip_file}", 'zip', app_dir)
+    # Download Zip archive of files
+    with open(f"/tmp/{zip_file}.zip", 'rb') as tmp:
+        tmp.seek(0)
+        stream = tmp.read()
+        blob = stream
+    mime_type = "application/octet-stream"
+    filename = f"{app_name}.zip"
+    resp = HttpResponse(blob, mime_type)
+    resp['Content-Disposition'] = 'inline; filename=' + filename
+    # Clean up
+    # TODO: get clean up working
+    # shutil.rmtree(f"/tmp/{zip_file}.zip")
+    # clean up temp dir
+    return resp
 
 def start_app(appver, organization, user, folder, task, q, portfolio):
     from guidedmodules.app_loading import load_app_into_database
