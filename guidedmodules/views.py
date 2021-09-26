@@ -1617,7 +1617,6 @@ def authoring_new_question(request, task):
     definition_order = max([0] + list(task.module.questions.values_list("definition_order", flat=True))) + 1
 
     # Make a new spec.
-    # print(1,'======= task.module.spec.get("type")', task.module.spec.get("type"))
     # import ipdb; ipdb.set_trace()
     if task.module.spec.get("type") == "project":
         spec = {
@@ -1631,6 +1630,7 @@ def authoring_new_question(request, task):
                     }
                   ]
                 }
+
         # Probably in app.yaml
         spec = {
             "id": entry,

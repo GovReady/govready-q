@@ -23,7 +23,6 @@ urlpatterns = [
     url(r'^_authoring_tool/edit-question$', guidedmodules.views.authoring_edit_question),
     url(r'^_authoring_tool/edit-module$', guidedmodules.views.authoring_edit_module),
     url(r'^_authoring_tool/create-app-project$', guidedmodules.views.authoring_create_q),
-    url(r'^_authoring_tool/download-app-project/([\w_-]+)$', guidedmodules.views.authoring_download_app_project),
     url(r'^_authoring_tool/import-appsource$', guidedmodules.views.authoring_import_appsource),
     url(r'^_upgrade-app$', guidedmodules.views.upgrade_app),
     url(r'^_refresh-output-doc$', guidedmodules.views.refresh_output_doc),
