@@ -247,11 +247,11 @@ class Inheritance(models.Model):
     responsibility = models.TextField(unique=False, blank=True, null=True)
 
     def __str__(self):
-        return "'%s'" % (self.name)
+        return f"{self.name}"
 
     def __repr__(self):
         # For debugging.
-        return "'%s'" % (self.name, self.id)
+        return f"{self.name} - {self.id}"
 
 class Element(auto_prefetch.Model, TagModelMixin):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
