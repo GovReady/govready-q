@@ -962,8 +962,56 @@ def show_question(request, task, answered, context, q):
     # get context of questions in module
     context_sorted = module_logic.get_question_context(answered, q)
 
-    # Split the `context.update` into smaller parts so it is possible to add in timing code
-    # to examine performance of certain embedded calls.
+
+
+    # Process any actions to get data for the question.
+    # -------------------------------------------------
+    # Can we automatically set question answers based on data from other sources?
+    # For example, can choices from a filter of systems in the database?
+    # Can we get a list of roles from Active Directory?
+    # This block processes any actions specified for generating the question.
+
+    # This requires a tightly controlled vocabulary.
+    #
+    # We assume user has sufficient permission because user is answering question.
+    #
+    if q.spec['type'] == "choice-from-data" or q.spec['type'] == "multiple-choice-from-data":
+        choices_from_data = []
+        choices_from_data_keys = {}
+        for action in q.spec['choices_from_data']:
+            a_obj, a_verb, a_filter = action['action'].split("/")
+            # Process system actions for generating question option choices
+            # -------------------------------------------------------------
+            # The system actions are currently supported:
+            #   1. `system/add_role/<value>` - Automatically makes choices from filter list of systems
+            if a_obj == "system":
+                if a_verb == "add_role":
+                    # Get all elements assigned role specified in the action
+                    c_items = Element.objects.filter(element_type="system", roles__role=a_filter).order_by("name")
+                    for c_item in c_items:
+                        if str(c_item.uuid) not in choices_from_data_keys:
+                            choices_from_data.append(OrderedDict([
+                                            ('key', str(c_item.uuid)), ('text', c_item.name),
+                                            # ('help', f"str(c_item.uuid): {str(c_item.uuid)}")
+                                            ]))
+                            choices_from_data_keys[str(c_item.uuid)] = 1
+            # Process element actions for generating question option choices
+            # --------------------------------------------------------------
+            # The system actions are currently supported:
+            #   1. `element/add_role/<value>` - Automatically makes choices from filter list of elements
+            if a_obj == "element":
+                if a_verb == "add_role":
+                    # Get all elements assigned role specified in the action
+                    c_items = Element.objects.filter(element_type="system_element", roles__role=a_filter).order_by("name")
+                    for c_item in c_items:
+                        if str(c_item.uuid) not in choices_from_data_keys:
+                            choices_from_data.append(OrderedDict([
+                                            ('key', str(c_item.uuid)), ('text', c_item.name),
+                                            # ('help', f"str(c_item.uuid): {str(c_item.uuid)}")
+                                            ]))
+                            choices_from_data_keys[str(c_item.uuid)] = 1
+        q.spec.update({"choices": choices_from_data})
+
     context.update({
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
@@ -1030,7 +1078,7 @@ def show_question(request, task, answered, context, q):
     context.update({
          "back_url": back_url,
     })
- 
+
     return render(request, "question.html", context)
 
 @task_view

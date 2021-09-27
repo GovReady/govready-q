@@ -317,16 +317,20 @@ Next Question: {{q.spec.title}} | {{task.title}}
                 <p class="help-block">{{q.spec.help}}</p>
               </div>
 
-            {% elif q.spec.type == "choice" %}
+            {% elif q.spec.type == "choice" or q.spec.type == "choice-from-data" %}
               <div class="question-choice">
-              {% for choice in q.spec.choices %}
-              <div class="radio">
-                <label class="left-text">
-                  <input name="value" value="{{choice.key}}" type="radio" {% if answer == choice.key %}checked{% endif %}> {{choice.text}}
-                  <p class="help-block">{{choice.help}}</p>
-                </label>
-              </div>
-              {% endfor %}
+              {% if q.spec.choices|length > 0 %}
+                {% for choice in q.spec.choices %}
+                <div class="radio">
+                  <label class="left-text">
+                    <input name="value" value="{{choice.key}}" type="radio" {% if answer == choice.key %}checked{% endif %}> {{choice.text}}
+                    <p class="help-block">{{choice.help}}</p>
+                  </label>
+                </div>
+                {% endfor %}
+              {% else %}
+                <div class="text-danger">(No choices are available. Please report this issue to you system administrator.)</div>
+              {% endif %}
               </div>
 
             {% elif q.spec.type == "yesno" %}
@@ -344,16 +348,20 @@ Next Question: {{q.spec.title}} | {{task.title}}
               <p class="help-block">{{q.spec.help}}</p>
               </div>
 
-            {% elif q.spec.type == "multiple-choice" %}
+            {% elif q.spec.type == "multiple-choice" or q.spec.type == "multiple-choice-from-data" %}
               <div class="question-multiple-choice">
-              {% for choice in q.spec.choices %}
-              <div class="checkbox">
-                <label class="left-text">
-                  <input name="value" value="{{choice.key}}" type="checkbox" {% if choice.key in answer %}checked{% endif %}> {{choice.text}}
-                  <p class="help-block">{{choice.help}}</p>
-                </label>
-              </div>
-              {% endfor %}
+              {% if q.spec.choices|length > 0 %}
+                {% for choice in q.spec.choices %}
+                <div class="checkbox">
+                  <label class="left-text">
+                    <input name="value" value="{{choice.key}}" type="checkbox" {% if choice.key in answer %}checked{% endif %}> {{choice.text}}
+                    <p class="help-block">{{choice.help}}</p>
+                  </label>
+                </div>
+                {% endfor %}
+              {% else %}
+                <div class="text-danger">(No choices are available. Please report this issue to you system administrator.)</div>
+              {% endif %}
 
               {% if q.spec.min > 0 and q.spec.min == q.spec.max %}
                   <p class="help-block">You must choose exactly {{q.spec.min}} option{{q.spec.min|pluralize}}.</p>
