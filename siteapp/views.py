@@ -737,10 +737,7 @@ def apps_catalog_item_zip(request, source_slug, app_name):
         raise Http404()
 
     # Get app
-    # TODO: better filter
-    # Choices are: appname, asset_files, asset_paths, catalog_metadata, created, id, input_artifacts, input_files, input_paths, inputs, modules, show_in_catalog, source, source_id, system_app, trust_assets, trust_inputs, updated, version_name, version_number
-
-    app = AppVersion.objects.filter(appname=app_name).get()
+    app = AppVersion.objects.filter(source__slug=source_slug, appname=app_name).get()
     # Create archive folder structure to download the app in a zip file
     temp_dir = tempfile.TemporaryDirectory(dir=".")
     app_dir = os.path.join(temp_dir.name, app_name)
@@ -761,11 +758,10 @@ def apps_catalog_item_zip(request, source_slug, app_name):
         with open(fn, "w") as f:
             f.write(rtyaml.dump(serialized_content))
     # Build Zip archive
-    # TODO URL ENCODE?
     zip_file = os.path.join(temp_dir.name, app_name)
-    shutil.make_archive(f"/tmp/{zip_file}", 'zip', app_dir)
+    shutil.make_archive(zip_file, 'zip', app_dir)
     # Download Zip archive of files
-    with open(f"/tmp/{zip_file}.zip", 'rb') as tmp:
+    with open(f"{zip_file}.zip", 'rb') as tmp:
         tmp.seek(0)
         stream = tmp.read()
         blob = stream
@@ -773,10 +769,6 @@ def apps_catalog_item_zip(request, source_slug, app_name):
     filename = f"{app_name}.zip"
     resp = HttpResponse(blob, mime_type)
     resp['Content-Disposition'] = 'inline; filename=' + filename
-    # Clean up
-    # TODO: get clean up working
-    # shutil.rmtree(f"/tmp/{zip_file}.zip")
-    # clean up temp dir
     return resp
 
 def start_app(appver, organization, user, folder, task, q, portfolio):
