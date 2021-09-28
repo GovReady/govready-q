@@ -55,9 +55,12 @@ urlpatterns = [
 
     # app store
     url(r'^store$', views.apps_catalog, name="store"),
+    url(r'^store/(?P<source_slug>.*)/(?P<app_name>.*)/zip$', views.apps_catalog_item_zip),
     url(r'^store/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
+
     # app store
     url(r'^library$', views.apps_catalog),
+    url(r'^library/(?P<source_slug>.*)/(?P<app_name>.*)/zip$', views.apps_catalog_item_zip),
     url(r'^library/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
 
     # profile

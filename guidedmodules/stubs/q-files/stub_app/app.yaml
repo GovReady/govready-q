@@ -18,9 +18,45 @@ introduction:
   template: |
     Use this app to achieve compliance.
 questions:
-  - id: example
-    title: Example Module
+  - id: module_1
+    title: Module 1
     type: module
-    module-id: example
+    module-id: module_1
+  - id: module_2
+    title: Module 2
+    type: module
+    module-id: module_2
+  - id: module_3
+    title: Module 3
+    type: module
+    module-id: module_3
+  - id: module_4
+    title: Module 4
+    type: module
+    module-id: module_4
+  - id: module_5
+    title: Module 5
+    type: module
+    module-id: module_5
+  - id: module_6
+    title: Module 6
+    type: module
+    module-id: module_6
+  - id: module_7
+    title: Module 7
+    type: module
+    module-id: module_7
+  - id: module_8
+    title: Module 8
+    type: module
+    module-id: module_8
+  - id: module_9
+    title: Module 9
+    type: module
+    module-id: module_9
+  - id: module_10
+    title: Module 10
+    type: module
+    module-id: module_10
 input: []
 output: []
