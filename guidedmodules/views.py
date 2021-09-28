@@ -19,7 +19,7 @@ from django.utils.text import slugify
 
 from controls.enums.statements import StatementTypeEnum
 from discussion.validators import validate_file_extension
-from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
+from .models import AppVersion, Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
 
 import guidedmodules.module_logic as module_logic
 import guidedmodules.answer_validation as answer_validation
@@ -1606,97 +1606,6 @@ def upgrade_app(request):
     return JsonResponse({ "status": "ok" })
 
 @authoring_tool_auth
-@transaction.atomic
-def authoring_download_app(request, task):
-    question = get_object_or_404(ModuleQuestion, module=task.module, key=request.POST['question'])
-
-    # Download current questionnaire.
-    print("In `authoring_download_app` and attempting to download question/app")
-    try:
-        questionnaire_yaml = question.module.serialize()
-    except Exception as e:
-        return JsonResponse({ "status": "error", "message": "Could not download YAML file: " + str(e) })
-
-    # Clear cache...
-    from .module_logic import clear_module_question_cache
-    clear_module_question_cache()
-
-    # ////////////////////
-    # GET DOWNLOAD TO WORK
-    # mime_type = "text/x-yaml"
-    # disposition = "inline"
-    # resp = HttpResponse(questionnaire_yaml, content_type=mime_type)
-    # resp['Content-Disposition'] = disposition + '; filename=' + "q-file.yaml"
-
-    # # Browsers may guess the MIME type if it thinks it is wrong. Prevent
-    # # that so that if we are forcing application/octet-stream, it
-    # # doesn't guess around it and make the content executable.
-    # resp['X-Content-Type-Options'] = 'nosniff'
-
-    # # Browsers may still allow HTML to be rendered in the browser. IE8
-    # # apparently rendered HTML in the context of the domain even when a
-    # # user clicks "Open" in an attachment-disposition response. This
-    # # prevents that. Doesn't seem to affect anything else (like images).
-    # resp['X-Download-Options'] = 'noopen'
-
-    # return resp
-    # ////////////////////
-
-    # Return status. The browser will reload/redirect --- if the question key
-    # changed, this sends the new key.
-    return JsonResponse({ "status": "ok",
-                          "data": questionnaire_yaml,
-                          "redirect": task.get_absolute_url_to_question(question)
-                        })
-
-@authoring_tool_auth
-@transaction.atomic
-def authoring_download_app_project(request, task):
-    # Download a project
-    # print("Calling to download task: {}".format(task))
-    # Get project that this Task is a part of
-    project_obj = task.project
-    # print("project is {}".format(project_obj))
-
-    # Get module that this task is answering
-    # module_obj = task.module
-    # print("module_obj is {}".format(module_obj))
-    # print("module_obj.spec is {}".format(module_obj.spec))
-    # print("module.serialize: ")
-    # print("{}".format(module_obj.serialize()))
-    # Recreate the yaml of the module (e.g, app-project)
-    # print("text {}".format(task.module.serialize()))
-
-    # Download current project_app (.e.g, module) in use.
-    # print("In `authoring_download_app_project` and attempting to download project-app")
-    try:
-        module_yaml = task.module.serialize()
-    except Exception as e:
-        return JsonResponse({ "status": "error", "message": "Could not download YAML file: " + str(e) })
-
-    # Do I need something similar?
-    # Clear cache...
-    # from .module_logic import clear_module_question_cache
-    # clear_module_question_cache()
-
-    # As a project app, There also exists:
-    # - asset directory with assets
-    # - state information
-
-    # Get the app (AppVersion) connected to this module
-    # appversion_obj =  module_obj.app
-    # print("appversion_obj is {}".format(appversion_obj))
-    # print("appversion_obj version_name is {}".format(appversion_obj.version_name))
-    # print("appversion_obj version_number is {}".format(appversion_obj.version_number))
-
-    # Download current questionnaire.
-
-    # How do I dump the entire app?
-    return JsonResponse({ "status": "ok",
-                          "data": module_yaml,
-                        })
-
-@authoring_tool_auth
 def authoring_new_question(request, task):
     # Find a new unused question identifier.
     ids_in_use = set(task.module.questions.values_list("key", flat=True))
@@ -1708,50 +1617,63 @@ def authoring_new_question(request, task):
     definition_order = max([0] + list(task.module.questions.values_list("definition_order", flat=True))) + 1
 
     # Make a new spec.
+    # import ipdb; ipdb.set_trace()
     if task.module.spec.get("type") == "project":
+        spec = {
+                  "id": "example",
+                  "title": "Example Module2",
+                  "output": [
+                    {
+                      "format": "markdown",
+                      "title": "What You Chose",
+                      "template": "{{q1111}}"
+                    }
+                  ]
+                }
+
         # Probably in app.yaml
         spec = {
             "id": entry,
             "type": "module",
             "title": "New Question Title",
-            "protocol": ["choose-a-module-or-enter-a-protocol-id"],
+            "module-id": entry
+            # "protocol": ["choose-a-module-or-enter-a-protocol-id"],
         }
-        # # Make a new modular spec
-        # mspec = {"id": entry,
-        #          "title": entry.replace("_"," ").title(),
-        #          "questions": [
-        #             {"id": "mqo",
-        #              "type": "text",
-        #              "title": "New Question Title",
-        #              "prompt": "Enter some text.",
-        #              },
-        #          ],
-        #          "output": []
-        #          }
-        # # Make a new modular instance
-        # new_module = Module(
-        #     source=task.module.app.source,
-        #     app=task.module.app,
-        #     module_name=entry,
-        #     spec=mspec
-        # )
-        # new_module.save()
+        # Make a new modular spec
+        mspec = {"id": f"example-{entry}",
+                 "title": "Example Module " + entry.replace("_"," ").title(),
+                 "output": [
+                    {
+                      "format": "markdown",
+                      "title": "What You Chose",
+                      "template": "{{q1111}}"
+                    }
+                  ]
+                 }
+        # Make a new modular instance
+        new_module = Module(
+            source=task.module.app.source,
+            app=task.module.app,
+            module_name=f"example-{entry}",
+            spec=mspec
+        )
+        new_module.save()
 
-        # spec = {
-        #    "id": entry,
-        #    "type": "module",
-        #    "title": "New Question Title",
-        #    "module-id": entry,
-        # }
+        spec = {
+           "id": entry,
+           "type": "module",
+           "title": "New Question Title",
+           "module-id": entry,
+        }
 
-        # # Make a new question instance.
-        # question = ModuleQuestion(
-        #     module=task.module,
-        #     entry=entry,
-        #     definition_order=definition_order,
-        #     spec=spec
-        #     )
-        # question.save()
+        # Make a new question instance.
+        question = ModuleQuestion(
+            module=task.module,
+            key=entry,
+            definition_order=definition_order,
+            spec=spec
+            )
+        question.save()
 
     else:
         spec = {

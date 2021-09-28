@@ -11,6 +11,7 @@ v0.9.11.3-dev (September xx, 2021)
 **Developer changes**
 
 * Add new question types `choice-from-data` and `multiple-choice-from-data` to get display choice with options created from dynamic data.
+* Improve DRY-ness of module serialization.
 
 
 v0.9.11.2 (September 22, 2021)
