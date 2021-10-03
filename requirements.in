@@ -42,7 +42,16 @@ whitenoise # MIT License
 django-guardian # MIT License
 django-simple-history # BSD License
 django-auto-prefetch # MIT License
-djangorestframework # BSD License
+
+# Logging
+JSON-log-formatter==0.2.0 # MIT License
+
+# Rest Framework
+djangorestframework==3.12.4 # BSD License
+djangorestframework-filters==1.0.0.dev0 # MIT License
+drf-yasg==1.20.0 # BSD License
+djangorestframework-recursive==0.1.2 # ISC License
+drf-nested-routers==0.93.3 # Apache License 2.0
 mozilla-django-oidc==1.2.4 # Mozilla Public License Version 2.0
 
 # Python Packages Developed by GovReady and/or Josh

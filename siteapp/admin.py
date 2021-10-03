@@ -8,6 +8,7 @@ from .models import User, Organization, OrganizationalSetting, Folder, Project, 
     Tag, Asset, ProjectAsset
 from notifications.models import Notification
 
+
 def all_user_fields_still_exist(fieldlist):
     for f in fieldlist:
         try:
@@ -15,6 +16,7 @@ def all_user_fields_still_exist(fieldlist):
         except:
             return False
     return True
+
 
 def add_viewappsource_permission(modeladmin, request, queryset):
     """
@@ -24,14 +26,19 @@ def add_viewappsource_permission(modeladmin, request, queryset):
         # Adds permission if they dont the permission
         if 'guidedmodules.view_appsource' not in user.get_user_permissions():
             user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
+
+
 add_viewappsource_permission.short_description = "Add View Appsource permission to selected users."
+
 
 class UserAdmin(contribauthadmin.UserAdmin):
     ordering = ('username',)
-    list_display = ('id', 'username', 'name', 'email', 'date_joined', 'notifemails_enabled', 'notifemails_last_notif_id') # base has first_name, etc. fields that we don't have on our model
+    list_display = ('id', 'username', 'name', 'email', 'date_joined', 'notifemails_enabled',
+                    'notifemails_last_notif_id') # base has first_name, etc. fields that we don't have on our model
     search_fields = ('id', 'username', 'name', 'email', 'role', 'description')
     actions = [add_viewappsource_permission]
     pass
+
 
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('slug', 'name', 'id')
@@ -56,7 +63,7 @@ class OrganizationAdmin(admin.ModelAdmin):
             mb, isnew = ProjectMembership.objects.get_or_create(
                 user=request.user,
                 project=org.get_organization_project(),
-                )
+            )
 
             from django.contrib import messages
             if isnew or not mb.is_admin:
@@ -84,26 +91,28 @@ class OrganizationAdmin(admin.ModelAdmin):
 
         for org in queryset:
             for user in (
-                "SELF",
-                "oscar.goldman", "steve.austin", "jaime.sommers", "bigfoot"):
+                    "SELF",
+                    "oscar.goldman", "steve.austin", "jaime.sommers", "bigfoot"):
 
                 # Get or create user.
                 if user == "SELF":
                     user = request.user
                 else:
-                    user, is_new = User.objects.get_or_create(username=user, email=user+"@osi.group")
+                    user, is_new = User.objects.get_or_create(username=user, email=user + "@osi.group")
                     if is_new:
                         user.set_password(pw)
                         user.save()
-                        messages.add_message(request, messages.INFO, 'Create user %s with password %s.' % (user.username, pw))
+                        messages.add_message(request, messages.INFO,
+                                             'Create user %s with password %s.' % (user.username, pw))
 
                 # Add user as an admin to the organization.
                 mb, isnew = ProjectMembership.objects.get_or_create(
                     user=user,
                     project=org.get_organization_project(),
-                    )
+                )
                 if isnew or not mb.is_admin:
-                    messages.add_message(request, messages.INFO, '%s was added as an administrator to %s.' % (user, org))
+                    messages.add_message(request, messages.INFO,
+                                         '%s was added as an administrator to %s.' % (user, org))
                 mb.is_admin = True
                 mb.save()
 
@@ -112,21 +121,25 @@ class OrganizationAdmin(admin.ModelAdmin):
 
     actions = [add_me_as_admin, populate_test_organization]
 
+
 class OrganizationalSettingAdmin(admin.ModelAdmin):
     list_display = ('id', 'organization', 'catalog_key', 'parameter_key', 'value')
     readonly_fields = ('id',)
 
+
 class FolderAdmin(admin.ModelAdmin):
     list_display = ('title', 'created')
-    raw_id_fields = ('organization','admin_users')
+    raw_id_fields = ('organization', 'admin_users')
     readonly_fields = ('projects', 'extra')
     formfield_overrides = {
         JSONField: {'widget': JSONEditorWidget},
     }
 
+
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ('id', 'recipient', 'actor', 'level', 'target', 'unread', 'public', 'emailed')
     readonly_fields = ('id',)
+
 
 class ProjectAdmin(GuardedModelAdmin):
     list_display = ('id', 'portfolio_name', 'organization_name', 'title', 'root_task', 'created')
@@ -148,33 +161,40 @@ class ProjectAdmin(GuardedModelAdmin):
 
     organization_name.admin_order_field = 'organization'
 
+
 class ProjectMembershipAdmin(admin.ModelAdmin):
     list_display = ('project', 'organization', 'user', 'is_admin', 'created')
     raw_id_fields = ('project', 'user',)
+
     def organization(self, obj):
         return obj.project.organization
+
 
 class PortfolioAdmin(GuardedModelAdmin):
     list_display = ('title', 'description')
     search_fields = ('title', 'description')
     fields = ('title', 'description')
 
+
 class SupportAdmin(admin.ModelAdmin):
-  list_display = ('id', 'email',)
-  fields = ('text', 'email', 'phone', 'url')
+    list_display = ('id', 'email',)
+    fields = ('text', 'email', 'phone', 'url')
+
 
 class TagAdmin(admin.ModelAdmin):
-  list_display = ('id', 'label', 'system_created')
-  fields = ('id', 'label', 'system_created')
-  readonly_fields = ('id',)
+    list_display = ('id', 'label', 'system_created')
+    fields = ('id', 'label', 'system_created')
+    readonly_fields = ('id',)
 
 class ProjectAssetAdmin(admin.ModelAdmin):
-    list_display = ('uuid', 'asset_type', 'description', 'project', 'default', 'title', 'filename', 'created', 'updated')
-    readonly_fields = ('content_hash', 'filename', )
+    list_display = (
+    'uuid', 'asset_type', 'description', 'project', 'default', 'title', 'filename', 'created', 'updated')
+    readonly_fields = ('content_hash', 'filename',)
     ordering = ('project', 'asset_type', 'created')
     formfield_overrides = {
         JSONField: {'widget': JSONEditorWidget},
     }
+
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Organization, OrganizationAdmin)

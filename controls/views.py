@@ -28,6 +28,14 @@ from django.urls import reverse
 from django.utils.text import slugify
 from django.views import View
 from django.views.generic import ListView
+from django.urls import reverse
+from jsonschema import validate
+from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
+from urllib.parse import quote
+
+from api.siteapp.serializers.tags import SimpleTagSerializer
+from guidedmodules.models import Task, Module, AppVersion, AppSource
+from siteapp.model_mixins.tags import TagView
 from simple_history.utils import update_change_reason
 
 from siteapp.models import Project, Organization, Tag
@@ -447,7 +455,7 @@ def compare_components(request):
     """
     Compare submitted components
     """
-    
+
     checks = json.loads(request.POST.get('hiddenChecks'))
     compare_list = list(checks.values())
     if len(compare_list) <= 1:
@@ -1345,6 +1353,8 @@ def component_library_component(request, element_id):
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
+        # "project_form": AddProjectForm(request.user, initial={'portfolio': request.user.portfolio_list().first().id}),
+        "tags": json.dumps(SimpleTagSerializer(element.tags, many=True).data),
         "form_source": "component_library"
     }
     return render(request, "components/element_detail_tabs.html", context)

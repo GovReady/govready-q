@@ -9,6 +9,7 @@
 {% block head %}
 {% include "controls/_style-controls.html" %}
 <style>
+
   h3 {
     color: #888;
     font-weight: bold;
@@ -74,6 +75,7 @@
 {% block contextbar %}{% endblock %}
 
 {% block body %}
+
 <div style="margin-top: 30px;">
   <div class="container">
     <div class="row">
@@ -127,12 +129,14 @@
         <div class="row">
           <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8 description-text">
             <h3>Component Description</h3>
+            <h5>
             {% if element.description %}
               {{ element.description }}
             {% else %}
               No description exists for this component.
             {% endif %}
-            <div>{% for tag in element.tags.all %}<span class="component-tag"><a href="{% url 'component_library' %}?search={{ tag.label }}">{{ tag.label }}</a></span> {% endfor %}</div>
+            </h5>
+            <div id="show-tags"></div>
           </div>
           <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
 
@@ -347,6 +351,9 @@
 {% endblock %}
 
 {% block scripts %}
+      <script>
+        window.renderElementTags({{ element.id }}, {{ tags | safe }});
+      </script>
       <script>
         // Adds statement form to page
         function add_smt(smt_count) {

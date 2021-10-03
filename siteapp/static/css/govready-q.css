@@ -129,7 +129,7 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 .task-progress-project-title { color: black; font-size: 1.0em; text-align: left; }
 .task-progress-project-truncate-link { color: black; }
 
-.task-question-debug-links { color: #999; font-size: 80%; margin-top: 20px; border:1px; solid black;}
+.task-question-debug-links { color: #999; font-size: 80%; margin-top: 20px; border:1px solid black;}
 
 .question-source-invitation { margin-bottom: 2em; }
 .question-source-invitation-show { text-align: right; margin-bottom: -1.5em; }
@@ -231,7 +231,7 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 .project-glyphicon-ok { color: #96B; } /* this is not good */
 .project-new-task { position: absolute; left: -1px; top: -1px; }
 .project-progress { width:80%; height: 5px;margin: 8px 0 0 0; }
-.project-question-comment { line-height: 122%; font-size: italic; font-size: 95%; }
+.project-question-comment { line-height: 122%; font-type: italic; font-size: 95%; }
 .project-question-icon { position: relative;}
 .project-button-finished { color: rgb(57, 139, 37); }
 
@@ -293,6 +293,7 @@ a#delete-import.btn {float: right; margin-top: 1em;}
 
 form #id_json_content { width: 100%; overflow: auto !important; } /* The !important is to fix a bug with textareas not allowing scrolling. */
 
+/*.component-tag { font-size: 0.7em; color: #999; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; margin-right: 2px; }*/
 .component-tag { font-size: 0.7em; color: #999; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; }
 .component-tag a { color: #999; }
 .component-state { font-size: 0.8em; color: #444; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; }
