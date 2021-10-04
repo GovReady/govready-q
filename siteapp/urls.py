@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.conf import settings
@@ -13,18 +14,11 @@ from .models import Project
 
 admin.autodiscover()
 
-import controls.views_api
 import siteapp.views as views
 import siteapp.views_landing as views_landing
 import siteapp.views_health as views_health
 from .good_settings_helpers import signup_wrapper
 from .settings import *
-
-
-# Routers provide a way of automatically determining the URL conf.
-router = routers.DefaultRouter()
-router.register(r'users', UserViewSet)
-router.register(r'projects', ProjectViewSet)
 
 urlpatterns = [
     url(r"^(?![\s\S])$", views.home_user, name="home_user"),
@@ -38,7 +32,7 @@ urlpatterns = [
     url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook, name='notifications'),
 
     # Django rest framework
-    path('api/', include(router.urls)),
+    # path('api/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
     # Django admin site
@@ -77,16 +71,20 @@ urlpatterns = [
     url(r'^projects/(\d+)/__import$', views.import_project_questionnaire, name="import_project_questionnaire"),
     url(r'^projects/(\d+)/__upgrade$', views.upgrade_project, name="upgrade_project"),
     url(r'^projects/(\d+)/__move$', views.move_project, name="move_project"),
-    *build_tag_urls(r"^projects/(\d+)/", model=Project), # Tag Urls
+    *build_tag_urls(r"^projects/(\d+)/", model=Project),  # Tag Urls
     url(r'^projects/(\d+)/assets/(\d+)/__update$', views.update_project_asset,
         name="update_project_assets"),
     url(r'^projects/(\d+)/$', views.project, name="view_project_id"),
     url(r'^projects/(\d+)/(?:[\w\-]+)()$', views.project, name="view_project"), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/settings)$', views.project_settings, name="project_settings"),
-    url(r'^projects/(\d+)/(?:[\w\-]+)(/startapps)$', views.project_start_apps), # must be last because regex matches some previous URLs
-    url(r'^projects/(\d+)/(?:[\w\-]+)(/list)$', views.project_list_all_answers), # must be last because regex matches some previous URLs
-    url(r'^projects/(\d+)/(?:[\w\-]+)(/outputs)$', views.project_outputs), # must be last because regex matches some previous URLs
-    url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api), # must be last because regex matches some previous URLs
+    url(r'^projects/(\d+)/(?:[\w\-]+)(/startapps)$', views.project_start_apps),
+    # must be last because regex matches some previous URLs
+    url(r'^projects/(\d+)/(?:[\w\-]+)(/list)$', views.project_list_all_answers),
+    # must be last because regex matches some previous URLs
+    url(r'^projects/(\d+)/(?:[\w\-]+)(/outputs)$', views.project_outputs),
+    # must be last because regex matches some previous URLs
+    url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api),
+    # must be last because regex matches some previous URLs
 
     # portfolios
     url(r'^portfolios$', views.portfolio_list, name="list_portfolios"),
@@ -135,6 +133,7 @@ urlpatterns = [
     url(r'session_security/', include('session_security.urls')),
 ]
 
+urlpatterns += [url(r'^api/v2/', include('api.urls'))]
 
 if settings.OKTA_CONFIG:
     urlpatterns += [
@@ -157,13 +156,15 @@ if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKEN
     ]
 
 import notifications.urls
+
 urlpatterns += [
     url('^user/notifications/', include(notifications.urls, namespace='notifications')),
     url('^_mark_notifications_as_read', views.mark_notifications_as_read),
 ]
 
-if settings.DEBUG: # also in urls_landing
+if settings.DEBUG:  # also in urls_landing
     import debug_toolbar
+
     urlpatterns += [
         url(r'^__debug_toolbar__/', include(debug_toolbar.urls)),
     ]
@@ -174,6 +175,7 @@ if settings.DEBUG: # also in urls_landing
 if environment.get("trust-user-authentication-headers"):
     print("settings.PROXY_AUTHENTICATION_USER_HEADER enabled. Catching route accounts/logout/")
     import debug_toolbar
+
     urlpatterns += [
         url(r'^accounts/logout/$', views.sso_logout, name="sso-logout")
     ]

@@ -111,7 +111,7 @@
   }
 
   #project-members {
-  	margin-top: 1em;
+    margin-top: 1em;
   }
   #project-members .role {
     font-style: italic;
@@ -632,19 +632,19 @@ function make_admin(is_admin, user_id, user_name) {
   show_modal_confirm(
     (is_admin ? "Make Project Administrator" : "Revoke Administrator Privilege"),
     "Do you want to "
-		+ (is_admin ? "make" : "revoke the administrator privilege from")
-		+ " "
-		+ user_name
-		+ (is_admin ? " an administrator" : "")
-		+ " for this project?",
+    + (is_admin ? "make" : "revoke the administrator privilege from")
+    + " "
+    + user_name
+    + (is_admin ? " an administrator" : "")
+    + " for this project?",
     (is_admin ? "Make Admin" : "Revoke Privilege"),
     function() {
       ajax_with_indicator({
        url: '{% url "make_revoke_project_admin" project.id %}',
        method: "POST",
        data: {
-       	 user: user_id,
-       	 is_admin: is_admin ? "true" : false
+         user: user_id,
+         is_admin: is_admin ? "true" : false
        },
        success: function(res) {
          // reload page to show changes in UI

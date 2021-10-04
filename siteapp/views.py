@@ -1,4 +1,5 @@
 import json
+import logging
 import random
 import os.path
 import yaml
@@ -9,27 +10,27 @@ import shutil
 from django.core import serializers
 from django.db import IntegrityError
 from datetime import datetime
-from django.conf import settings
+
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Permission
+from django.db import IntegrityError
 from django.db import transaction
 from django.db.models import Q
-from django.forms import ModelForm, model_to_dict
 from django.http import (Http404, HttpResponse, HttpResponseForbidden,
-                         HttpResponseNotAllowed, HttpResponseRedirect,
-                         JsonResponse)
+                         HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.generic import ListView
+
+from api.siteapp.serializers.tags import SimpleTagSerializer
 from guardian.core import ObjectPermissionChecker
 from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model, get_perms, assign_perm
 
 from controls.enums.statements import StatementTypeEnum
 from controls.forms import ImportProjectForm
+from controls.models import Element, System, Deployment
 from controls.views import add_selected_components
 from discussion.models import Discussion
 from guidedmodules.models import (AppSource, AppVersion, Module, ModuleQuestion,
@@ -43,9 +44,6 @@ from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
 from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, Tag, ProjectAsset
 from .notifications_helpers import *
-
-import sys
-import logging
 
 from siteapp.serializers import UserSerializer, ProjectSerializer
 from rest_framework import serializers
@@ -61,7 +59,6 @@ from structlog.stdlib import LoggerFactory
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
-# logger = logging.getLogger(__name__)
 
 LOGIN = "login"
 SIGNUP = "signup"
@@ -74,6 +71,7 @@ def home_user(request):
             return HttpResponseRedirect("/oidc/authenticate")
         return HttpResponseRedirect("/login")
 
+    portfolio = request.user.portfolio_list().first()
     return render(request, "home-user.html", {
         "sitename": Sitename.objects.last(),
         "users": User.objects.all(),
@@ -197,13 +195,11 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-
 class ProjectViewSet(viewsets.ModelViewSet):
     url = serializers.HyperlinkedIdentityField(view_name="siteapp:task-detail")
 
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-
 
 def debug(request):
     # Raise Exception to see session information
@@ -532,7 +528,6 @@ def apps_catalog(request):
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
     catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
-
     # Group by category from catalog metadata.
     from collections import defaultdict
     catalog_by_category = defaultdict(lambda: {"title": None, "apps": []})
@@ -629,7 +624,6 @@ def apps_catalog(request):
 def apps_catalog_item(request, source_slug, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
-    from guidedmodules.models import AppSource
     catalog, _ = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
     for app_catalog_info in catalog:
         if app_catalog_info["key"] == source_slug + "/" + app_name:
@@ -772,8 +766,6 @@ def apps_catalog_item_zip(request, source_slug, app_name):
     return resp
 
 def start_app(appver, organization, user, folder, task, q, portfolio):
-    from guidedmodules.app_loading import load_app_into_database
-
     # Begin a transaction to create the Module and Task instances for the app.
     with transaction.atomic():
         # Create project.
@@ -1169,7 +1161,7 @@ def project(request, project):
         "users": User.objects.all(),
 
         "class_status": Classification.objects.last(),
-
+        "tags": json.dumps(SimpleTagSerializer(project.tags, many=True).data),
         "authoring_tool_enabled": authoring_tool_enabled,
         "import_project_form": ImportProjectForm(),
 
@@ -2259,9 +2251,8 @@ def accept_invitation(request, code=None):
 
 
 def accept_invitation_do_accept(request, inv):
-    from django.contrib.auth import authenticate, login, logout
+    from django.contrib.auth import logout
     from django.http import HttpResponseRedirect
-    import urllib.parse
 
     # Can't accept if this object has expired. Warn the user but
     # send them to the homepage.
