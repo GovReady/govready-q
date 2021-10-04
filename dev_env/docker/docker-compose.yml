@@ -18,11 +18,7 @@ services:
     environment:
       - docker=True
     healthcheck:
-# <<<<<<< HEAD
-      test: python3 /usr/src/app/dev_env/docker/images/backend/healthcheck.py
-# =======
       test: python3 dev_env/docker/healthcheck.py
-# >>>>>>> develop
       interval: 10s
       timeout: 5s
       retries: 15
