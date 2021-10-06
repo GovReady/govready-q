@@ -4,6 +4,15 @@ GovReady-Q Release Notes
 v0.9.11.5-dev (October x, 2021)
 -------------------------------
 
+**Developer changes**
+
+* Switch from `ElementRole` to `Tag` as value for dynamic actions in questions.
+* Provide `root_element` information for `System` SimpleSystemSerializer to make it easier to identify systems by name.
+
+**Data changes**
+
+* Add `created`, `updated` fields to `controls.System` to better align with base serializer.
+
 
 v0.9.11.4 (October 4, 2021)
 ---------------------------

@@ -30,15 +30,17 @@ Allocate to Docker as much Memory, Swap, and CPUS as you can. For example, GovRe
 4. Destroy DB
     -  `python run.py wipedb` : Destroys your existing database and artifacts from previous runs
     
-4. Debugging
+5. Debugging
     - `docker attach govready-q-dev`
         - `crtl + c ` : This will detatch & kill the container and restart it
         - `ctrl + pq` : This will detatch
     - use ipdb as you normally would (https://gist.github.com/mono0926/6326015)
     
-5. Connect to Container
+6. Connect to Container
     - `docker exec -it govready-q-dev /bin/bash`
-    
+
+7. Connect to Swagger
+    - http://localhost:8000/api/v2/docs/swagger/
 
 ## Testing (Govready-Q uses Selenium)
 ###  Enable Selenium with Head(GUI)
@@ -117,4 +119,8 @@ I just switched branches and my database is out of sync.  What do I do?
     - Exit the existing run by hitting "ctrl-c"
     - Run: python run.py dev --clean
     - This will clean up all artifacts and will wipe the existing database
-    
+
+How can I access the API?
+
+    - http://localhost:8000/api/v2/docs/swagger/
+

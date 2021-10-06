@@ -56,6 +56,7 @@ class DockerCompose(Runner):
         print()
         Prompt.title_banner(f"Service - Backend - Django Application", True)
         Prompt.warning(f"Access application via Browser: {Colors.CYAN}{self.config['govready-url']}")
+        Prompt.warning(f"Access api docs via Browser: {Colors.CYAN}{self.config['govready-url']}/api/v2/docs/swagger/")
         Prompt.warning(f"View logs & debug by running: {Colors.CYAN}docker attach govready-q-dev")
         Prompt.warning(f"Connect to container: {Colors.CYAN}docker exec -it govready-q-dev /bin/bash")
         Prompt.warning(f"Testing: {Colors.CYAN}docker exec -it govready-q-dev ./manage.py test")
