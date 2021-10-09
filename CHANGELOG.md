@@ -1,8 +1,9 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.11.5-dev (October x, 2021)
--------------------------------
+
+v0.9.11.5 (October 9, 2021)
+---------------------------
 
 Merge and synchronize api-tag work and supporting REACT structures from GovReady-Q-SPA into latest version GovReady-Q-Private (0.9.11.3)
 
