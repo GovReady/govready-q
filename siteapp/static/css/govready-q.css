@@ -348,7 +348,7 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 .pagination a { color: rgb(88, 144, 191); }
 
 /* systems */
-.systems-top { margin-top: 30px; }
+.systems-top { margin-top: 10px; }
 .systems-title { float: left;}
 .systems-link { color: black; }
 .systems-control-lookup { float: right; }

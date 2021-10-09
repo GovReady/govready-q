@@ -196,7 +196,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
     def test_component_download_oscal_json(self):
         self._login()
-        url = self.url(f"/systems/{self.system.id}/component/{self.component.id}")
+        url = self.url(f"/controls/components/{self.component.id}")
         self.browser.get(url)
         self.click_element('a[href="#oscal"]')
 

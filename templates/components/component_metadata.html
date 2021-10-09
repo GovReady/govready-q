@@ -1,11 +1,10 @@
 <div class="container pull-left">
-
-    <form id="edit_component_state" class="component-form" method="post" action="{% url 'edit_component_state' system_id=system.id element_id=element.id %}">
+    <form id="edit_component_state" class="component-form" method="post"
+        action="{% url 'edit_component_state' element_id=element.id %}"
+        style="margin: 12px 12px 0px -15px;">
         {% csrf_token %}
-        <div class="form-group">
-            <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
-            <select class="state_change" id="state_change" name="state_change" onchange="$(form).submit();" style="width:340px;">
-
+        <div class="form-group" style="padding-left: -10px;">
+            <select class="state_change" id="state_change" name="state_change" onchange="$(form).submit();" style="width:240px;">
                 {% if element.component_state %}
                     <option value="None" selected disabled hidden>State: {{ element.component_state }}</option>
                 {% else %}
@@ -19,11 +18,13 @@
             </select>
         </div>
     </form>
-    <form id="edit_component_type" class="component-form" method="post" action="{% url 'edit_component_type' system_id=system.id element_id=element.id %}">
+    <form id="edit_component_type" class="component-form" method="post"
+        action="{% url 'edit_component_type' element_id=element.id %}"
+        style="margin: 12px 0px 0px 12px;">
         {% csrf_token %}
         <div class="form-group">
             <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
-            <select class="type_change" id="type_change" name="type_change" onchange="$(form).submit();" style="width:340px;">
+            <select class="type_change" id="type_change" name="type_change" onchange="$(form).submit();" style="width:240px;">
                 {% if element.component_type %}
                     <option value="None" selected disabled hidden>Type: {{ element.component_type }}</option>
                 {% else %}

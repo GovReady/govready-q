@@ -1426,7 +1426,6 @@ def authoring_tool_auth(f):
             return HttpResponseNotAllowed(["POST"])
 
         # Get the task and question and check permissions.
-
         task = get_object_or_404(Task, id=request.POST["task"])
         if not task.has_write_priv(request.user):
             return HttpResponseForbidden()
@@ -1434,7 +1433,11 @@ def authoring_tool_auth(f):
             return HttpResponseForbidden()
 
         # Run inner function.
-        return f(request, task)
+        if "question_id" in request.POST:
+            mq = get_object_or_404(ModuleQuestion, id=request.POST["question_id"])
+            return f(request, task, mq)
+        else:
+            return f(request, task)
 
     return g
 
@@ -1604,15 +1607,14 @@ def upgrade_app(request):
     return JsonResponse({ "status": "ok" })
 
 @authoring_tool_auth
-def authoring_new_question(request, task):
+def authoring_new_question(request, task, mq):
+    """Insert a new question after current question"""
+
     # Find a new unused question identifier.
     ids_in_use = set(task.module.questions.values_list("key", flat=True))
     entry = 0
     while "q" + str(entry) in ids_in_use: entry += 1
     entry = "q" + str(entry)
-
-    # Get the highest definition_order in use so far.
-    definition_order = max([0] + list(task.module.questions.values_list("definition_order", flat=True))) + 1
 
     # Make a new spec.
     # import ipdb; ipdb.set_trace()
@@ -1668,7 +1670,7 @@ def authoring_new_question(request, task):
         question = ModuleQuestion(
             module=task.module,
             key=entry,
-            definition_order=definition_order,
+            definition_order=mq.definition_order+1,
             spec=spec
             )
         question.save()
@@ -1685,10 +1687,16 @@ def authoring_new_question(request, task):
         question = ModuleQuestion(
             module=task.module,
             key=entry,
-            definition_order=definition_order,
+            definition_order=mq.definition_order+1,
             spec=spec
             )
         question.save()
+
+    # Re-number question definition order that come after current question
+    for tmq in list(task.module.questions.order_by("definition_order")):
+        if tmq.definition_order > mq.definition_order:
+            ModuleQuestion.objects.filter(pk=tmq.id).update(definition_order=tmq.definition_order+1)
+            # TODO fix N+1 issue
 
     # Write to disk. Write updates to disk if developing on local machine
     # with local App Source

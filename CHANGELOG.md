@@ -4,6 +4,12 @@ GovReady-Q Release Notes
 v0.9.11.5-dev (October x, 2021)
 -------------------------------
 
+Merge and synchronize api-tag work and supporting REACT structures from GovReady-Q-SPA into latest version GovReady-Q-Private (0.9.11.3)
+
+**Feature changes**
+
+* Enable REACT-based api-tags.
+
 **Developer changes**
 
 * Switch from `ElementRole` to `Tag` as value for dynamic actions in questions.
@@ -14,14 +20,22 @@ v0.9.11.5-dev (October x, 2021)
 * Add `created`, `updated` fields to `controls.System` to better align with base serializer.
 
 
-v0.9.11.4 (October 4, 2021)
----------------------------
+v0.9.11.4.2 (October 8, 2021)
+-----------------------------
 
-* Merge and synchronize api-tag work and supporting REACT structures from GovReady-Q-SPA into latest version GovReady-Q-Private (0.9.11.3)
+**UI changes**
+
+* Fix component status and type to be set only in library rather than in systems.
+* Hide impact levels, POA&M status box from project mini-dashboard until UI can be improved.
+* Improve look of modules.
+
+
+v0.9.11.4.1 (October 7, 2021)
+-----------------------------
 
 **Feature changes**
 
-* Enable REACT-based api-tags.
+* Insert new questions after current question in authoring tool.
 
 
 v0.9.11.3 (September 28, 2021)

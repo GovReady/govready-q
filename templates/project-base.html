@@ -225,10 +225,9 @@
 
           {% if title != project.root_task.module.spec.title %}
           <div class="">
-          <br>
+            <br>
             {{project.root_task.module.spec.title}}  {% if project.version == None %}<strong><u>Project Version not set!</u></strong>{% else %}(ver {{project.version}}){% endif %} Compliance app (ver {{project.root_task.module.spec.version}}) -
             {{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}
-
           </div>
           <div class="small" style="color: #888;">
             project id: {{ project.id }}, &nbsp; {% if project.system %}system id: {{ project.system.id }}{% endif %}

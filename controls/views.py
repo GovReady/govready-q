@@ -1179,44 +1179,34 @@ def system_element_control(request, system_id, element_id, catalog_key, control_
         }
         return render(request, "systems/element_detail_control.html", context)
 
-def edit_component_state(request, system_id, element_id):
+def edit_component_state(request, element_id):
     """
     Edit system component state
     """
-    # Retrieve identified System
-    system = System.objects.get(id=system_id)
-    # Retrieve related selected controls if user has permission on system
-    if request.user.has_perm('change_system', system):
-        # Retrieve element
-        # TODO: Make atomic transaction
-        element = Element.objects.get(id=element_id)
-        element.component_state = request.POST['state_change']
-        element.save()
-        logger.info(event=f"change_system update_component_state {element} {element.component_state}",
-                    object={"object": "system", "id": system.id},
-                    user={"id": request.user.id, "username": request.user.username})
-        # Batch update status of control implementation statements provided by the element to the system
-        state_status = {"operational": "Implemented", "under-development": "Partially Implemented", "planned": "Planned"}
-        control_status = state_status.get(request.POST['state_change']) or "Not Implemented"
-        system.set_component_control_status(element, control_status)
-        logger.info(event=f"change_system batch_update_component_control_status {element} {control_status}",
-                    object={"object": "system", "id": system.id},
-                    user={"id": request.user.id, "username": request.user.username})
-    return redirect(reverse('system_element', args=[system_id, element_id]))
 
-def edit_component_type(request, system_id, element_id):
+    # Retrieve element
+    # TODO: Make atomic transaction
+    element = Element.objects.get(id=element_id)
+    element.component_state = request.POST['state_change']
+    element.save()
+    logger.info(event=f"change_system update_component_state {element} {element.component_state}",
+                object={"object": "element", "id": element.id},
+                user={"id": request.user.id, "username": request.user.username})
+    # Batch update status of control implementation statements provided by the element to the system
+    state_status = {"operational": "Implemented", "under-development": "Partially Implemented", "planned": "Planned"}
+    control_status = state_status.get(request.POST['state_change']) or "Not Implemented"
+    return redirect(reverse('component_library_component', args=[element_id]))
+
+def edit_component_type(request, element_id):
     """
-    Edit system component type
+    Edit component type
     """
-    # Retrieve identified System
-    system = System.objects.get(id=system_id)
-    # Retrieve related selected controls if user has permission on system
-    if request.user.has_perm('change_system', system):
-        # Retrieve element
-        element = Element.objects.get(id=element_id)
-        element.component_type = request.POST['type_change']
-        element.save()
-    return redirect(reverse('system_element', args=[system_id, element_id]))
+
+    # Retrieve element
+    element = Element.objects.get(id=element_id)
+    element.component_type = request.POST['type_change']
+    element.save()
+    return redirect(reverse('component_library_component', args=[element_id]))
 
 @login_required
 def system_element_remove(request, system_id, element_id):
@@ -1290,6 +1280,8 @@ def component_library_component(request, element_id):
 
     # Retrieve systems consuming element
     consuming_systems = element.consuming_systems()
+    states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
+    types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
 
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
@@ -1301,6 +1293,8 @@ def component_library_component(request, element_id):
     if len(impl_smts) < 1:
         context = {
             "element": element,
+            "element": element,
+            "states": states,
             "impl_smts": impl_smts,
             "is_admin": request.user.is_superuser,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
@@ -1344,6 +1338,8 @@ def component_library_component(request, element_id):
     context = {
         "page_obj": page_obj,
         "element": element,
+        "states": states,
+        "types": types,
         "consuming_systems": consuming_systems,
         "impl_smts": impl_smts,
         "catalog_controls": catalog_controls,
