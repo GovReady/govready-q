@@ -5,20 +5,18 @@
 const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 const TerserPlugin = require("terser-webpack-plugin");
 const dev = process.env.NODE_ENV !== 'production';
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 // const PATHS = {
 //   src: path.join(__dirname, 'src')
 // };
-
-module.exports = {
+let config = {
   watchOptions: {
     poll: true,
     ignored: /node_modules/
   },
   devtool: dev ? 'eval-cheap-module-source-map' : false,
   plugins: [
-    new BundleAnalyzerPlugin(),
+    // new BundleAnalyzerPlugin(),
     //   new MiniCssExtractPlugin({
     //   filename: "[name].css",
     // }),
@@ -78,4 +76,11 @@ module.exports = {
       }
     ]
   }
-};
+}
+
+if(dev){
+  const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+  config.plugins.push(new BundleAnalyzerPlugin())
+}
+
+module.exports = config;

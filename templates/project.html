@@ -65,9 +65,11 @@
 
   h3.question-group-title {
     color: black;
+    text-align: center;
     font-weight: bold;
     padding: 0 18px 14px 0;
     margin: 0;
+    width: 700px;
   }
 
   .question {
@@ -83,24 +85,33 @@
     /*box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);*/
 
   }
-    .question:hover {
-      background-color: rgb(246,250,249);
-    }
-    .question .question-icon {
-      margin: 0 auto;
-      width: 96px;
-      height: 96px;
-      padding:12px;
-    }
-    .question .question-title {
-      margin-top: .5em;
-      color: #222;
-    }
 
-    .question-title > .btn {
-      margin: 8px 0 0 0;
-    }
-    .question .invitation {
+  .question:hover {
+    background-color: #F6F7F7;
+  }
+
+  .question .question-icon {
+    margin: 0 auto;
+    width: 96px;
+    height: 96px;
+    padding:12px;
+  }
+
+  .question .question-title {
+    margin-top: .5em;
+    color: #222;
+  }
+
+  .question-title {
+    text-align: center;
+    margin: 0px 0px 0px -60px;
+  }
+
+  .question-title > .btn {
+    margin: 8px 0 20px 0;
+  }
+
+  .question .invitation {
       font-size: 14px;
       line-height: 128%;
     }
@@ -108,6 +119,17 @@
 
   .question .question-title {
     line-height: 124%;
+  }
+
+  .hr {
+
+  }
+  .hr span {
+      min-width: 130px;
+      max-width: 300px;
+      border-bottom: 1px solid #ccc;
+      display: inline-block;
+      margin: 5px;
   }
 
   #project-members {
@@ -135,7 +157,7 @@
   li { padding-left: -10px; }
   .status { font-size:2em; color:#2D3337;}
   .status-welcome { font-size:2em; margin:0 0 1em 0; }
-  .status-box { border:1px solid #C1C1C1; padding:5px; text-align:center; background: #F6F7F7;}
+  .status-box { border:1px solid #C1C1C1; padding:5px; text-align:center; background: rgb(243,250,246);}
   .status-box-invisible {padding:5px; text-align:center;}
   .status-small { font-size: .8em;}
 
@@ -183,11 +205,11 @@
           <span class="status-small">system components</span>
         </div>
       </div>
-      <div class="col-md-3">
+      <!-- <div class="col-md-3">
         <div id="status-box-poams" class="status-box" onclick="window.location.assign('{% url 'poams_list' system_id=project.system.id %}')" style="cursor: pointer;">
           <h2 class="status">{{ poam_status_count.Open }}</h2> <span class="status-small">open POA&Ms</span>
         </div>
-      </div>
+      </div> -->
       <div class="col-md-3">
         <div id="status-box-compliance-piechart" class="status-box-invisible">
           <h2 class="piechart" style="background-image: conic-gradient(#E1F8E2 {{ approx_compliance_degrees }}deg,
@@ -196,28 +218,35 @@
           <br/>
         </div>
       </div>
-
+    </div>
+    <!-- TODO: Make sure categorizations work and can be set
+    <div class="row" style="margin-top: 12px;">
       <div class="col-md-3">
         <div id="systems-security-confidentiality-level" class="status-box status-small" onclick="show_edit_security_objs_modal(); return false;" style="cursor: pointer;">
-          confidentiality objective: <b>{% if confidentiality %}{{ confidentiality|lower }}{% else %} Not Categorized{% endif %}</b>
+          confidentiality objective<br/>
+          {% if confidentiality %}{{ confidentiality|lower }}{% else %} --{% endif %}
         </div>
       </div>
       <div class="col-md-3">
         <div id="systems-security-integrity-level" class="status-box status-small" onclick="show_edit_security_objs_modal(); return false;" style="cursor: pointer;">
-          integrity objective: <b>{% if integrity %}{{ integrity|lower }}{% else %} Not Categorized{% endif %}</b>
+          integrity objective<br/>
+          {% if integrity %}{{ integrity|lower }}{% else %} --{% endif %}
         </div>
       </div>
       <div class="col-md-3">
         <div id="systems-security-availability-level" class="status-box status-small" onclick="show_edit_security_objs_modal(); return false;" style="cursor: pointer;">
-          availability objective: <b>{% if availability %}{{ availability|lower }}{% else %} Not Categorized{% endif %}</b>
+          availability objective<br/>
+          {% if availability %}{{ availability|lower }}{% else %} --{% endif %}
         </div>
       </div>
       <div class="col-md-3">
         <div id="systems-security-sensitivity-level" class="status-box status-small" onclick="" style="">
-          Mission Impact: <b>{% if security_sensitivity %}{{ security_sensitivity|lower }}{% else %} Not Categorized{% endif %}</b>
+          mission impact<br/>
+          {% if security_sensitivity %}{{ security_sensitivity|lower }}{% else %} --{% endif %}
         </div>
       </div>
-</div>
+    </div>
+    -->
 
 
   {% if enable_experimental_evidence %}
@@ -289,8 +318,8 @@
   {% endif %}
   <div class="col-md-12"><p>&nbsp;</p></div>
     <div class="row">
-      <div class="col-sm-12" class="project-row-style">
-        <span class="status-section-header">Questionnaires / Compliance App</span>
+      <!-- <div class="col-sm-12" class="project-row-style"> -->
+        <!-- <span class="status-section-header">Questionnaires / Compliance App</span> -->
         {% if project.root_task.module.spec.introduction %}
             {#<p class="project-text">#}
               {#{{project.root_task.render_introduction|safe}}#}
@@ -302,7 +331,7 @@
           <h2>Activate App</h2>
           <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
         {% endif %}
-      </div>
+      <!-- </div> -->
     </div>
     <div class="row">
     {% with ncolumns=columns|length %}
@@ -318,7 +347,13 @@
             <div class="question-group">
 
               {% if group.title %}
-              <h3 class="question-group-title">{{group.title}}</h3>
+              <h3 class="question-group-title hr">
+                <span></span>
+                &nbsp;
+                {{group.title}}
+                &nbsp;
+                <span></span>
+              </h3>
               {% endif %}
 
               <div class="row">
@@ -331,6 +366,7 @@
                     {% if layout_mode == "grid" %}col-sm-3 col-lg-2{% else %}col-xs-12{% endif %}
                     question
                     "
+                  style="width:700px;"
                     >
 
                     {# The user may not have permission to actually start a Task, however. If not, show the same UI but without the form element that actually makes the request to start the Task. #}
@@ -377,7 +413,7 @@
                     {% endif %}
 
                     {% if not q.hide_icon %}
-                    <div class="question-icon project-question-icon">
+                    <div class="question-icon project-question-icon" style="display: none;">
                         {# Show a checkmark if the question has been answered, can only be answered once (i.e. is a module-type question), and its Task has been completed. #}
                         <div class="project-new-task">
                           {% if not q.can_start_new_task and q.task.is_finished %}
@@ -436,9 +472,9 @@
                             {% if task.is_finished %}
                             <div class="btn btn-sm btn-default project-button-finished">Finished</div>
                             {% elif task.is_started %}
-                            <div class="btn btn-sm btn-default">In progress</div>
+                            <div class="btn btn-sm btn-default">In progress - click to finish</div>
                             {% else %}
-                            <div class="btn btn-sm btn-default">Start section</div>
+                            <div class="btn btn-sm btn-default">Click here to start section</div>
                             {% endif %}
                             {% endif %}
                           {% endwith %}

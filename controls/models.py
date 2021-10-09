@@ -516,11 +516,13 @@ class ElementRole(auto_prefetch.Model, BaseModel):
         return "'%s id=%d'" % (self.role, self.id)
 
 
-class System(auto_prefetch.Model, BaseModel):
+class System(auto_prefetch.Model, TagModelMixin):
     root_element = auto_prefetch.ForeignKey(Element, related_name="system", on_delete=models.CASCADE,
                                             help_text="The Element that is this System. Element must be type [Application, General Support System]")
     fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=True,
                                 null=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now_add=True, db_index=True)
 
     # Notes
     # Retrieve system implementation statements

@@ -25,7 +25,7 @@ import guidedmodules.module_logic as module_logic
 import guidedmodules.answer_validation as answer_validation
 
 from discussion.models import Discussion
-from siteapp.models import User, Invitation, Project, ProjectMembership
+from siteapp.models import User, Invitation, Project, ProjectMembership, Tag
 from guidedmodules.forms import ExportCSVTemplateSSPForm
 from controls.models import Element, ElementRole, Statement, System
 
@@ -535,10 +535,10 @@ def save_answer(request, task, answered, context, __):
                 if a_obj == 'element' and skipped_reason is None:
 
                     # Get all elements assigned role specified in the action
-                    elements_with_role = Element.objects.filter(element_type="system_element").filter(roles__role=a_filter)
+                    elements_with_tag = Element.objects.filter(element_type="system_element", tags__label=a_filter)
 
                     # Add elements matching role to the selected components of a system
-                    if a_verb == "add_role":
+                    if a_verb == "add_role" or a_verb == "add_tag":
                         # TODO: Optimize and improve DRY-ness of this code block
                         # The adding of a component code is copied from `controls.views.add_system_component`.
                         # It was not possible to easily combine the code because
@@ -552,7 +552,7 @@ def save_answer(request, task, answered, context, __):
                         elements_selected_ids = [e.id for e in elements_selected]
 
                         # Iterate through elements in role adding each to the selected components of the system
-                        for producer_element in elements_with_role:
+                        for producer_element in elements_with_tag:
                             # TODO: various use cases
                                 # - component previously added but element has statements not yet added to system
                                 #   this issue may be best addressed elsewhere.
@@ -592,8 +592,8 @@ def save_answer(request, task, answered, context, __):
                                                  f'Oops. I tried adding "{producer_element.name}" to the system, but no control implementation statements were found.')
 
                     # Delete elements matching role from the selected components of a system
-                    if a_verb == "del_role" and skipped_reason is None:
-                        for producer_element in elements_with_role:
+                    if (a_verb == "del_role" or a_verb == "del_tag") and skipped_reason is None:
+                        for producer_element in elements_with_tag:
                             # Delete component from system
                             smts_assigned_count = len(Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name))
                             if smts_assigned_count > 0:
@@ -604,9 +604,6 @@ def save_answer(request, task, answered, context, __):
                 # Process project actions
                 # -----------------------------------
                 if a_obj == 'project' and skipped_reason is None:
-
-                    # Get all elements assigned role specified in the action
-                    # elements_with_role = Element.objects.filter(element_type="system_element").filter(roles__role=a_filter)
 
                     # Add elements matching role to the selected components of a system
                     if a_verb == "view_project":
@@ -985,9 +982,9 @@ def show_question(request, task, answered, context, q):
             # The system actions are currently supported:
             #   1. `system/add_role/<value>` - Automatically makes choices from filter list of systems
             if a_obj == "system":
-                if a_verb == "add_role":
-                    # Get all elements assigned role specified in the action
-                    c_items = Element.objects.filter(element_type="system", roles__role=a_filter).order_by("name")
+                if a_verb == "add_role" or a_verb == "add_tag":
+                    # Get all elements assigned tag specified in the action
+                    c_items = Element.objects.filter(element_type="system", tags__label=a_filter).order_by("name")
                     for c_item in c_items:
                         if str(c_item.uuid) not in choices_from_data_keys:
                             choices_from_data.append(OrderedDict([
@@ -998,11 +995,12 @@ def show_question(request, task, answered, context, q):
             # Process element actions for generating question option choices
             # --------------------------------------------------------------
             # The system actions are currently supported:
-            #   1. `element/add_role/<value>` - Automatically makes choices from filter list of elements
+            #   1. `element/add_role/<value>` - Automatically makes choices from filter list of elements (backward compatible)
+            #   2. `element/add_tag/<value>` - Automatically makes choices from filter list of elements
             if a_obj == "element":
-                if a_verb == "add_role":
+                if a_verb == "add_role" or a_verb == "add_tag":
                     # Get all elements assigned role specified in the action
-                    c_items = Element.objects.filter(element_type="system_element", roles__role=a_filter).order_by("name")
+                    c_items = Element.objects.filter(element_type="system_element", tags__label=a_filter).order_by("name")
                     for c_item in c_items:
                         if str(c_item.uuid) not in choices_from_data_keys:
                             choices_from_data.append(OrderedDict([
@@ -1428,7 +1426,6 @@ def authoring_tool_auth(f):
             return HttpResponseNotAllowed(["POST"])
 
         # Get the task and question and check permissions.
-
         task = get_object_or_404(Task, id=request.POST["task"])
         if not task.has_write_priv(request.user):
             return HttpResponseForbidden()
@@ -1436,7 +1433,11 @@ def authoring_tool_auth(f):
             return HttpResponseForbidden()
 
         # Run inner function.
-        return f(request, task)
+        if "question_id" in request.POST:
+            mq = get_object_or_404(ModuleQuestion, id=request.POST["question_id"])
+            return f(request, task, mq)
+        else:
+            return f(request, task)
 
     return g
 
@@ -1606,15 +1607,14 @@ def upgrade_app(request):
     return JsonResponse({ "status": "ok" })
 
 @authoring_tool_auth
-def authoring_new_question(request, task):
+def authoring_new_question(request, task, mq):
+    """Insert a new question after current question"""
+
     # Find a new unused question identifier.
     ids_in_use = set(task.module.questions.values_list("key", flat=True))
     entry = 0
     while "q" + str(entry) in ids_in_use: entry += 1
     entry = "q" + str(entry)
-
-    # Get the highest definition_order in use so far.
-    definition_order = max([0] + list(task.module.questions.values_list("definition_order", flat=True))) + 1
 
     # Make a new spec.
     # import ipdb; ipdb.set_trace()
@@ -1670,7 +1670,7 @@ def authoring_new_question(request, task):
         question = ModuleQuestion(
             module=task.module,
             key=entry,
-            definition_order=definition_order,
+            definition_order=mq.definition_order+1,
             spec=spec
             )
         question.save()
@@ -1687,10 +1687,16 @@ def authoring_new_question(request, task):
         question = ModuleQuestion(
             module=task.module,
             key=entry,
-            definition_order=definition_order,
+            definition_order=mq.definition_order+1,
             spec=spec
             )
         question.save()
+
+    # Re-number question definition order that come after current question
+    for tmq in list(task.module.questions.order_by("definition_order")):
+        if tmq.definition_order > mq.definition_order:
+            ModuleQuestion.objects.filter(pk=tmq.id).update(definition_order=tmq.definition_order+1)
+            # TODO fix N+1 issue
 
     # Write to disk. Write updates to disk if developing on local machine
     # with local App Source

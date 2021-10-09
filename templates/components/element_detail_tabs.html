@@ -93,9 +93,6 @@
         <h2 class="">
           {{ element.name }}
         </h2>
-        <h3 class="" style="">
-          {% include 'components/component_metadata.html' %}
-          </h3>
       </div>
       <div class="col-sm-2">
         <div id="btn-edit-title" style="text-align: center;">
@@ -128,14 +125,15 @@
 
         <div class="row">
           <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8 description-text">
-            <h3>Component Description</h3>
-            <h5>
+            <h3>About {{ element.name }}</h3>
             {% if element.description %}
               {{ element.description }}
             {% else %}
               No description exists for this component.
             {% endif %}
-            </h5>
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 description-text">
+              {% include 'components/component_metadata.html' %}
+            </div>
             <div id="show-tags"></div>
           </div>
           <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
@@ -165,7 +163,7 @@
         <div class="row">
           <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9 description-text">
             <div id="" class="">
-              <h3>{{ impl_smts|length }} associated Control Implementation Statements</h3>
+              <h3>{{ element.name }} can contribute {{ impl_smts|length }} statements to system controls</h3>
             </div>
           </div>
           <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
@@ -507,13 +505,6 @@
             });
           });
         }
-          // Convert select field for Add Component to jQuery Select2 box
-  $(document).ready(function() {
-    $('#state_change').select2();
-  });
-          $(document).ready(function() {
-    $('#type_change').select2();
-  });
       </script>
 
 {% endblock %}

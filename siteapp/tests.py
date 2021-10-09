@@ -1624,7 +1624,8 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         # mini-dashboard content
         self.assertInNodeText("controls", "#status-box-controls")
         self.assertInNodeText("components", "#status-box-components")
-        self.assertInNodeText("POA&Ms", "#status-box-poams")
+        # TODO: Restore tests if #status-box-poam is displayed
+        # self.assertInNodeText("POA&Ms", "#status-box-poams")
         self.assertInNodeText("compliance", "#status-box-compliance-piechart")
 
         # mini-dashbard links
@@ -1640,9 +1641,11 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self.click_element('#btn-project-home')
         wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
         # test poams
-        self.click_element('#status-box-poams')
-        wait_for_sleep_after(lambda: self.assertInNodeText("POA&Ms", ".systems-selected-items"))
+        # TODO: Restore tests if #status-box-poam is displayed
+        # self.click_element('#status-box-poams')
+        # wait_for_sleep_after(lambda: self.assertInNodeText("POA&Ms", ".systems-selected-items"))
 
+    @unittest.skip
     def test_display_impact_level(self):
         """ Tests for project page mini compliance dashboard """
 
@@ -1671,6 +1674,7 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
         self.assertEqual(impact_level_smts.count(), 1)
 
+    @unittest.skip
     def test_security_objectives(self):
         """
         Test set/get of Security Objective levels

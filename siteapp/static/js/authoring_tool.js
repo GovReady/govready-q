@@ -249,11 +249,11 @@ function authoring_tool_delete_question() {
   })
 }
 
-function authoring_tool_new_question(task_id, is_project_page) {
+function authoring_tool_new_question(task_id, question_id, is_project_page) {
   ajax_with_indicator({
       url: "/tasks/_authoring_tool/new-question",
       method: "POST",
-      data: { task: task_id },
+      data: { "task": task_id, "question_id": question_id },
       keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
       success: function(res) {
         // Modal can stay up until the redirect finishes.
