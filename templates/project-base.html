@@ -230,9 +230,8 @@
             {{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}
 
           </div>
-          <div>
-            Project ID: {{ project.id }} &nbsp;&nbsp;
-            {% if project.system %}System ID: {{ project.system.id }}{% endif %}
+          <div class="small" style="color: #888;">
+            project id: {{ project.id }}, &nbsp; {% if project.system %}system id: {{ project.system.id }}{% endif %}
           </div>
           {% endif %}
           {% endif %}
