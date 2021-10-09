@@ -124,3 +124,6 @@ node_modules
 frontend/static/
 
 environment.okta.json
+
+# branding
+*_branding
