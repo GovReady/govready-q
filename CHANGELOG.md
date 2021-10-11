@@ -6,6 +6,10 @@ v0.9.11.6-dev (October x, 2021)
 
 Remove GPL3 License from repository.
 
+**UI changes**
+
+- Use left side vertical nav menu for project.
+
 
 v0.9.11.5 (October 9, 2021)
 ---------------------------
