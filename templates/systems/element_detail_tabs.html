@@ -160,7 +160,7 @@
                                     <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span class="glyphicon glyphicon-alert"></span> No related statement for component in library</a>
                                 </span>
                             {% endif %}
-                          <span class="pull-right"><a role="button" class="glyphicon glyphicon-pencil" style="color: #aaa;"  data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body"></a></span>
+                          <span class="pull-right"><a role="button" class="glyphicon glyphicon-pencil" style="color: #aaa;"  data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body"onclick="$('#document-{{ forloop.counter }}-title').css('background-color','#f4f5f8');$('#document-{{ forloop.counter }}-title').css('display','none');"></a></span>
                           {% if smt.remarks %}<details><summary>Remarks</summary><div>{{ smt.remarks }}</div></details>{% endif %}
                         {% endspaceless %}
                         </div>
@@ -170,20 +170,22 @@
                           &nbsp;
                         </h4>
                     </div>
-                    <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
+                    <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title" style="background-color: #f4f5f8;">
                         <div class="panel-body">
                             <div class="smt_block">
                               <div class="row statement-text">
-                                <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
-                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-edit-text-block">
-                                <form id="smt_{{ forloop.counter }}" class="smt_form">
-                                    <!-- Never change name of the producer element already associated with a statement -->
-                                    <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                                    <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
-                                    <div class="form-group">
-                                        <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
-
-                                    </div>
+                                <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                                  <details>
+                                      <summary>
+                                          <span id="producer_element-{{ forloop.counter }}-control-edit" class="control-id-text">
+                                          {{ smt.sid|upper }} {% if smt.pid not in smt.sid %}{{ smt.pid }}.{% endif %} - {{ smt.control_title }}
+                                          </span>
+                                      </summary>
+                                      <div class="component-control-description">{{ smt.catalog_control_as_dict.description }}</div>
+                                  </details>
+                                </div>
+                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-edit-text-block" style="background-color: #f4f5f8; margin-top:2px;">
+                                <form id="smt_{{ forloop.counter }}" class="smt_form" style="background-color: #f4f5f8;">
                                     <div class="form-group">
                                       <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
                                       <label for="statement">
@@ -222,7 +224,15 @@
                                               </div>
                                           </div>
                                       </label>
-                                      <textarea class="form-control systems-element-statement" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control" cols="50">{{ smt.body }}</textarea>
+                                      <textarea style="min-height:130px; width:101%;" class="form-control systems-element-statement"
+                                                id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control" cols="50"
+                                                onfocus="$('#body_{{ forloop.counter }}').css('height', this.scrollHeight);">{{ smt.body }}</textarea>
+                                    </div>
+                                    <!-- Never change name of the producer element already associated with a statement -->
+                                    <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
+                                    <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
+                                    <div class="form-group">
+                                        <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
                                     </div>
                                     <div class="form-group">
                                         <label for="statement">Part</label>
@@ -243,22 +253,23 @@
                                         <label for="remarks">Remarks</label>
                                         <textarea class="form-control systems-element-form-remarks" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
                                     </div>
-
                                     <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
                                     <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
                                     <input type="hidden" id="sid_class" name="sid_class" value="{{ smt.sid_class }}">
                                     <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
-                                    <div class="modal-footer">
+                                    <div class="pull-right">
                                       <!-- CURRENT LOCATION DEBUG -->
                                         <div id="success-msg-smt_{{ forloop.counter }}" class="systems-element-modal-footer"></div>
-                                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">Close</a>&nbsp;
+                                        <a href="">Cancel</a>&nbsp;
                                         <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_{{ forloop.counter }}');return false;">Delete</button>
                                         <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_{{ forloop.counter }}');return false;">Save</button>
                                         <button type="button" name="history" value="history" class="btn btn-xs btn-primary" onclick="location.href='{% url 'statement_history' smt_id=smt.id %}'">History</button>
                                     </div>
                                 </form>
                                 </div>
-                                <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
+                                <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3" style="color: gray;">
+                                  <a href="" class="pull-right">X</a>&nbsp;
+                                </div>
                               </div>
                             </div>
                         </div>

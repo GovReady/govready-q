@@ -1,18 +1,13 @@
 <div id="panel-panel_num" class="">
     <div id="document-panel_num-body" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="document-panel_num-title">
-        <div class="panel-body">
+        <div class="panel-body" style="background-color: #f4f5f8;">
             <div class="smt_block">
                 <div class="row statement-text">
                     <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                         <b>New control statement</b>
                     </div>
-                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-edit-text-block">
+                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-edit-text-block" style="background-color: #f4f5f8; margin-top:2px;">
                         <form id="smt_panel_num" class="smt_form">
-                            <div class="form-group">
-                                <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ element.id }}">
-                                <input type="hidden" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
-                                       onchange="$('#producer_element-panel_num-title').text($(this).val());" value="{{ element.name }}">
-                            </div>
                             <div class="form-group">
                                 <div>Add your statement information to "{{ element.name }}". </div><br>
                                 <label for="sid_control_panel_num">What control does the solution address?</label><br/>
@@ -22,6 +17,11 @@
                                 </select>
                                 <input type="hidden" id="sid_class_panel_num" name="sid_class" prompt="Enter catalog_key" value="{{ catalog_key }}">
                                 <input type="hidden" id="form_source_panel_num" name="form_source" prompt="Form source" value="{{ form_source }}">
+                                <div class="form-group">
+                                    <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ element.id }}">
+                                    <input type="hidden" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
+                                           onchange="$('#producer_element-panel_num-title').text($(this).val());" value="{{ element.name }}">
+                                </div>
                             </div>
                             <div class="form-group">
                                 <input type="hidden" id="smt_id" name="smt_id" value="">
@@ -58,7 +58,7 @@
                     <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                         <a role="button" class="pull-right" data-toggle="collapse" data-parent="#accordion"
                             href="#document-panel_num-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-panel_num-body"
-                            onclick="$( '#new_component_statement' ).show();">close</a>
+                            onclick="$( '#new_component_statement' ).show();">X</a>
                     </div>
                 </div>
             </div>
