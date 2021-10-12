@@ -75,8 +75,9 @@
 
 {% block body %}
 {{block.super}}
-<div class="row">
 
+
+<div class="row">
   <div class="col-md-3 border">
     <div id="focus-area-wrapper" style="padding-top:0px; margin-top:0px;">
       {% block above_title %}
@@ -132,7 +133,6 @@
           <div>&nbsp;</div>
         <!-- </div> -->
       </div><!-- /project-title-info -->
-
       {% block action_buttons %}
       <div class="btn-group" role="group" aria-label="action buttons group">
           {% if project.system is not None %}
