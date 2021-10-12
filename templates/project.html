@@ -699,6 +699,7 @@ function make_admin(is_admin, user_id, user_name) {
 <style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
 <script>
 $(function() {
+  window.projectMenu();
   $('.authoring-tool-edit-question').click(function(e) {
     e.stopPropagation();
     show_question_authoring_tool($(this).data('key'));
