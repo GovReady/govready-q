@@ -1,8 +1,8 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.11.6-dev (October x, 2021)
--------------------------------
+v0.9.11.6 (October 13, 2021)
+----------------------------
 
 Remove GPL3 License from repository.
 
