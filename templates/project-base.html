@@ -42,6 +42,8 @@
   .btn-action {text-align: left;padding-left: 25px;}
 
   #action-buttons, .action-button-box { width:150px; }
+
+  .border { border:0px solid black; }
 </style>
 {% endblock %}
 
@@ -74,10 +76,65 @@
 {% block body %}
 {{block.super}}
 <div class="row">
-  <div class="col-md-push-10 col-md-2">
-    <div id="action-buttons" class="action-row">
+
+  <div class="col-md-3 border">
+    <div id="focus-area-wrapper" style="padding-top:0px; margin-top:0px;">
+      {% block above_title %}
+        {% if authoring_tool_enabled %}
+          <center class="authoring-tool-hidden authoring-tool-box">
+            <p class="text-info">
+              You are in author mode. Authoring tools have been enabled for this module.
+            </p>
+          </center>
+
+          <center class="authoring-tool-hidden authoring-tool-box">
+            <p>
+              <a href="#" onclick="show_authoring_tool_module_editor(); return false;" class="authoring-tool-style">
+                <span class="glyphicon glyphicon-pencil"></span>
+                Edit App
+              </a>
+
+              <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" class="authoring-tool-style">
+              <span class="glyphicon glyphicon-plus"></span>
+              Add Module
+              </a>
+
+            </p>
+          </center>
+        {% endif %}
+      {% endblock %}
+
+      {# if is_project_page #}
+      <div id="project-title-info" class="row">
+        <!-- <div class="col-sm-12"> -->
+          <!-- {% if project.root_task.get_app_icon_url %}
+            <img id="project-icon" src="{{project.root_task.get_app_icon_url}}" alt="Project Icon">
+          {% endif %} -->
+
+          {% if project.organization %}
+          <h1 id="project-title">
+            <a href="{{project.get_absolute_url}}" class="link-black">{{project.title}}</a> <button class="btn btn-link" onclick="show_edit_project_modal(); return false;"><span class="glyphicon glyphicon-pencil"></button>
+            {% block title_suffix_text %}
+            {% endblock %}
+          </h1>
+
+          {% if title != project.root_task.module.spec.title %}
+          <div class="">
+            <br>
+            {{project.root_task.module.spec.title}}  {% if project.version == None %}<strong><u>Project Version not set!</u></strong>{% else %}(ver {{project.version}}){% endif %} Compliance app (ver {{project.root_task.module.spec.version}}) -
+            {{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}
+          </div>
+          <div class="small" style="color: #888;">
+            project id: {{ project.id }}, &nbsp; {% if project.system %}system id: {{ project.system.id }}{% endif %}
+          </div>
+          {% endif %}
+          {% endif %}
+          <div>&nbsp;</div>
+        <!-- </div> -->
+      </div><!-- /project-title-info -->
+
       {% block action_buttons %}
-        <div class="btn-group" role="group" aria-label="action buttons group">
+      <div class="btn-group" role="group" aria-label="action buttons group">
           {% if project.system is not None %}
             <button id="btn-project-home" class="btn btn-sm btn-default btn-action" onclick="window.location = '{{project.get_absolute_url}}';">
               <em class="glyphicon glyphicon-home"></em> Project Home</a>
@@ -150,7 +207,6 @@
           {% endif %}
         </div>
 
-        {# action buttons for compliance app tasks/modules #}
         {% if action_buttons %}
           {% for q in action_buttons %}
             <div class="action-button-box">
@@ -179,95 +235,15 @@
           {% endfor %}
         {% endif %}
       {% endblock %}
-    </div>
-  </div>
 
-  <div class="col-md-pull-2 col-md-10">
-    <div id="focus-area-wrapper">
-      {% block above_title %}
-        {% if authoring_tool_enabled %}
-          <center class="authoring-tool-hidden authoring-tool-box">
-            <p class="text-info">
-              You are in author mode. Authoring tools have been enabled for this module.
-            </p>
-          </center>
+    </div> <!-- /focus-area-wrapper -->
+  </div> <!-- /col -->
 
-          <center class="authoring-tool-hidden authoring-tool-box">
-            <p>
-              <a href="#" onclick="show_authoring_tool_module_editor(); return false;" class="authoring-tool-style">
-                <span class="glyphicon glyphicon-pencil"></span>
-                Edit App
-              </a>
-
-              <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" class="authoring-tool-style">
-              <span class="glyphicon glyphicon-plus"></span>
-              Add Module
-              </a>
-
-            </p>
-          </center>
-        {% endif %}
-      {% endblock %}
-
-      {# if is_project_page #}
-      <div id="project-title-info" class="row">
-        <div class="col-sm-10">
-          {% if project.root_task.get_app_icon_url %}
-            <img id="project-icon" src="{{project.root_task.get_app_icon_url}}" alt="Project Icon">
-          {% endif %}
-
-          {% if project.organization %}
-          <h1 id="project-title">
-            <a href="{{project.get_absolute_url}}" class="link-black">{{project.title}}</a>
-            {% block title_suffix_text %}
-            {% endblock %}
-          </h1>
-
-          {% if title != project.root_task.module.spec.title %}
-          <div class="">
-            <br>
-            {{project.root_task.module.spec.title}}  {% if project.version == None %}<strong><u>Project Version not set!</u></strong>{% else %}(ver {{project.version}}){% endif %} Compliance app (ver {{project.root_task.module.spec.version}}) -
-            {{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}
-          </div>
-          <div class="small" style="color: #888;">
-            project id: {{ project.id }}, &nbsp; {% if project.system %}system id: {{ project.system.id }}{% endif %}
-          </div>
-          {% endif %}
-          {% endif %}
-          <div>&nbsp;</div>
-        </div>
-        <div class="col-sm-2">
-          <div id="btn-edit-title" class="center-text">
-            {% if not project.is_account_project or project.is_deletable %}
-              {% if project.is_deletable and is_admin %}
-              <button class="btn btn-default btn-small" onclick="show_edit_project_modal(); return false;">Edit</button>
-              {% endif %}
-            {% endif %}
-          </div>
-        </div>
-      </div><!-- /project-title-info -->
-
-      {# endif #}
-      {% if is_project_page %}
-        {% if project.lifecycle_stage %}
-          {% with nstages=project.lifecycle_stage.0.stages|length %}
-          <div class="progress" style="cursor: default;">
-            {% for stage in project.lifecycle_stage.0.stages %}
-              <div class="progress-bar progress-bar-success" style="{% if stage.complete %}width: {{100|div:nstages|floatformat:0|add:-1}}%;{% else %}display: none;{% endif %}">
-                {{stage.label}}
-              </div>
-            {% endfor %}
-          </div>
-          {% endwith %}
-        {% endif %}
-      {% endif %}
-
-      <div class="project-body-block">
+      <div class="col-md-8 project-body-block border">
       {% block body_content %}
       {% endblock %}
       </div>
-    </div> <!-- /focus-area-wrapper -->
-  </div> <!-- /col -->
+
 </div> <!-- /row -->
 
 {% include "edit-project-modal.html" %}
