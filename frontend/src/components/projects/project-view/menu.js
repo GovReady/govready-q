@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { ProSidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
@@ -17,6 +17,8 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import CreateIcon from '@mui/icons-material/Create';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
 import Box from '@mui/material/Box';
+import { Link, BrowserRouter as Router } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 // import { projectTagsStateSlice } from "./slice"
 // import { Provider } from "react-redux";
@@ -26,52 +28,90 @@ import ReactDOM from 'react-dom';
 
 // const { setTags } = projectTagsStateSlice.actions;
 
-window.projectMenu = () => {
+window.projectMenu = (displayMap) => {
     // store.dispatch(setTags(existingTags));
     $(window).on('load', function () {
         $("#content").show();
     });
 
-    ReactDOM.render(
-        // <>Test finally there</>
-        // <Provider store={store}>
-        //     asdflasdk;fjaslf;jkafdsf
+    function redirect(url) {
+        window.location = url;
+    }
 
+    console.log(displayMap);
+    console.log(displayMap.system.urls)
+
+    ReactDOM.render(
         <>
             <Box >
-            <ProSidebar >
-                <Menu iconShape="square">
-                    <MenuItem icon={<HomeIcon />}>Project Home</MenuItem>
-                    {/* <MenuItem >Dashboard</MenuItem> */}
-                    <MenuItem icon={<ListAltIcon />}>Controls</MenuItem>
-                    <MenuItem icon={< SettingsInputComponentIcon/>}>Components</MenuItem>
-                    <MenuItem icon={<CheckBoxIcon />}>POA&Ms</MenuItem>
-                    <MenuItem icon={<ApiIcon  />}>Deployments</MenuItem>
-                    <MenuItem icon={<AssessmentIcon  />}>Assesments</MenuItem>
-                    <MenuItem icon={<ArrowUpwardIcon />}>Import Project</MenuItem>                    
-                    <MenuItem icon={<ArrowDownward />}>Export Project</MenuItem>
-                    <MenuItem icon={<SettingsIcon />}>Settings</MenuItem>
-                    <MenuItem icon={<PersonAddAlt1Icon />}>Invite</MenuItem>
-                    <MenuItem icon={<PreviewIcon />}>Review</MenuItem>
-                    <MenuItem icon={<InsertDriveFileIcon />}>Documents</MenuItem>
-                    <MenuItem icon={<CompareArrowsIcon />}>API Docs</MenuItem>
-                    <MenuItem icon={<CreateIcon />}>Authoring Tool</MenuItem>
-                    <MenuItem icon={<ImportExportIcon />}>Move Project</MenuItem>
+                <ProSidebar style={{ marginLeft: '-15px' }} >
+                    <Menu iconShape="square">
+                        {displayMap.system.visible && <>
+                            <MenuItem icon={<HomeIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.home}`)}> Project Home
+                            </MenuItem>
+                            <MenuItem icon={<ListAltIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.controls}`)}> Controls
+                            </MenuItem>
+                            <MenuItem icon={<SettingsInputComponentIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.components}`)}> Components
+                            </MenuItem>
+                            <MenuItem icon={<CheckBoxIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.poa_ms}`)}> POA&Ms
+                            </MenuItem>
+                            <MenuItem icon={<ApiIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.deployments}`)}> Deployments
+                            </MenuItem>
+                            <MenuItem icon={<AssessmentIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.assesments}`)}> Assesments
+                            </MenuItem>
+                            <MenuItem icon={<ArrowUpwardIcon />} onClick={() => {
+                                var m = $('#import_project_modal');
+                                $("#import_loading_spinner").hide();
+                                m.modal();
+                            }}> Import Project
+                            </MenuItem>
+                            <MenuItem icon={<ArrowDownward />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.export_project}`)}> Export Project
+                            </MenuItem>
+                        </>}
 
+                        {!displayMap.system.visible || displayMap.system.visible && <>
 
+                            <MenuItem icon={<SettingsIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.settings}`)} >Settings
+                            </MenuItem>
+                            <MenuItem icon={<PersonAddAlt1Icon />} onClick={() => {
+                                var info = project_invitation_info;
+                                show_invite_modal(
+                                    'Invite To Project Team (' + info.model_title + ')',
+                                    'Invite a colleague to join this project team.',
+                                    info,
+                                    'Please join the project team for ' + info.model_title + '.',
+                                    {
+                                        project: info.model_id,
+                                        add_to_team: "1"
+                                    },
+                                    function () { window.location.reload() }
+                                );
+                                return false;
+                            }}>Invite
+                            </MenuItem>
+                            <MenuItem icon={<PreviewIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.review}`)} >Review
+                            </MenuItem>
+                            <MenuItem icon={<InsertDriveFileIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.documents}`)} >Documents
+                            </MenuItem>
+                            <MenuItem icon={<CompareArrowsIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.apidocs}`)} >API Docs
+                            </MenuItem>
+                            <MenuItem icon={<CreateIcon />} onClick={() => {
+                                show_authoring_tool_module_editor()
+                                // redirect(`${window.origin}${displayMap.system.urls.authoring_tool}`)
+                            }}>Authoring Tool
+                            </MenuItem>
+                            <MenuItem icon={<ImportExportIcon />} onClick={() => {
+                                move_project()
+                            }}>Move Project
+                            </MenuItem>
+                        </>}
 
-                    {/* <SubMenu title="Components" icon={<MenuIcon />}> */}
-                    {/* <SubMenu title="Components" > */}
-                        {/* <MenuItem>Component 1</MenuItem> */}
-                        {/* <MenuItem>Component 2</MenuItem> */}
-                    {/* </SubMenu> */}
-
-                </Menu>
-            </ProSidebar>
+                    </Menu>
+                </ProSidebar>
             </Box>
-            
+
         </>
-            
+
 
 
         //   </Provider>, 

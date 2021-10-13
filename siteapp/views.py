@@ -1155,7 +1155,6 @@ def project(request, project):
         "layout_mode": layout_mode,
         "columns": columns,
         "action_buttons": action_buttons,
-
         "projects": Project.objects.all(),
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
@@ -1168,6 +1167,22 @@ def project(request, project):
         "elements": elements,
         "producer_elements_control_impl_smts_dict": producer_elements_control_impl_smts_dict,
         "producer_elements_control_impl_smts_status_dict": producer_elements_control_impl_smts_status_dict,
+        "display_urls": {
+            "system": {"visible": project.system is not None,
+                       "urls": {
+                           "home": project.get_absolute_url(),
+                           "controls": f"/systems/{project.system_id}/controls/selected",
+                           "components": f"/systems/{project.system_id}/components/selected",
+                           "poa_ms": f'/systems/{project.system_id}/poams',
+                           "deployments": f'/systems/{project.system_id}/deployments',
+                           "assesments": f"/systems/{project.system_id}/assessments",
+                           "export_project": f"/systems/{project.id}/export",
+                           "settings": f"{project.get_absolute_url()}/settings",
+                           "review": f'{project.get_absolute_url()}/list',
+                           "documents": f'{project.get_absolute_url()}/outputs',
+                           "apidocs": f'{project.get_absolute_url()}/api',
+                       }}
+        }
     })
 
 def project_edit(request, project_id):
