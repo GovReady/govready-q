@@ -152,8 +152,6 @@
                     <div>&nbsp;</div>
                     <!-- </div> -->
                 </div><!-- /project-title-info -->
-
-                {#    working here REACT NAVBAR#}
                 <div id="menu"></div>
                 {% block action_buttons %}
                     {#      <div class="btn-group" role="group" aria-label="action buttons group">#}
@@ -276,6 +274,7 @@
 
     {% block scripts %}
         <script>
+            window.projectMenu({{ display_urls | json }});
             function show_import_project_modal(id, callback) {
                 var m = $('#import_project_modal');
                 $("#import_loading_spinner").hide();

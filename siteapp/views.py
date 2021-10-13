@@ -55,6 +55,7 @@ logging.basicConfig()
 import structlog
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
+from .utils.views_helper import generate_project_navbar_urls
 
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
@@ -1167,22 +1168,7 @@ def project(request, project):
         "elements": elements,
         "producer_elements_control_impl_smts_dict": producer_elements_control_impl_smts_dict,
         "producer_elements_control_impl_smts_status_dict": producer_elements_control_impl_smts_status_dict,
-        "display_urls": {
-            "system": {"visible": project.system is not None,
-                       "urls": {
-                           "home": project.get_absolute_url(),
-                           "controls": f"/systems/{project.system_id}/controls/selected",
-                           "components": f"/systems/{project.system_id}/components/selected",
-                           "poa_ms": f'/systems/{project.system_id}/poams',
-                           "deployments": f'/systems/{project.system_id}/deployments',
-                           "assesments": f"/systems/{project.system_id}/assessments",
-                           "export_project": f"/systems/{project.id}/export",
-                           "settings": f"{project.get_absolute_url()}/settings",
-                           "review": f'{project.get_absolute_url()}/list',
-                           "documents": f'{project.get_absolute_url()}/outputs',
-                           "apidocs": f'{project.get_absolute_url()}/api',
-                       }}
-        }
+        "display_urls": generate_project_navbar_urls(project)
     })
 
 def project_edit(request, project_id):
@@ -1401,6 +1387,7 @@ def project_outputs(request, project):
         "project": project,
         "toc": toc,
         "combined_output": combined_output,
+        "display_urls": generate_project_navbar_urls(project)
     })
 
 

@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
 import { ProSidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
-import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import SettingsInputComponentIcon from '@mui/icons-material/SettingsInputComponent';
 import ListAltIcon from '@mui/icons-material/ListAlt';
@@ -17,8 +16,6 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import CreateIcon from '@mui/icons-material/Create';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
 import Box from '@mui/material/Box';
-import { Link, BrowserRouter as Router } from 'react-router-dom';
-import { useHistory } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 // import { projectTagsStateSlice } from "./slice"
 // import { Provider } from "react-redux";
