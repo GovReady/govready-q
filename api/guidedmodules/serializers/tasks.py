@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from api.base.serializers.types import ReadOnlySerializer
-from api.guidedmodules.serializers.modules import DetailedModuleSerializer, DetailedModuleQuestionSerializer
+from api.guidedmodules.serializers.modules import DetailedModuleSerializer, DetailedModuleQuestionSerializer, \
+    SimpleModuleSerializer
 from api.siteapp.serializers.invitations import DetailedInvitationSerializer
 from api.siteapp.serializers.users import SimpleUserSerializer
 from guidedmodules.models import Task, TaskAnswer, TaskAnswerHistory
@@ -11,6 +12,13 @@ class SimpleTaskSerializer(ReadOnlySerializer):
     class Meta:
         model = Task
         fields = ['title_override', 'notes', 'deleted_at', 'cached_state', 'extra', 'uuid']
+
+class TaskSerializer(SimpleTaskSerializer):
+    module = SimpleModuleSerializer()
+
+    class Meta:
+        model = Task
+        fields = SimpleTaskSerializer.Meta.fields + [ 'module']
 
 
 class DetailedTaskSerializer(SimpleTaskSerializer):

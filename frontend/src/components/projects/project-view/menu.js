@@ -36,9 +36,7 @@ window.projectMenu = (data) => {
         window.location = url;
     }
 
-    console.log(data)
-    // console.log(displayMap);
-    // console.log(displayMap.project);
+    console.log(data)    
     // console.log(displayMap.urls)
 
     ReactDOM.render(
@@ -50,24 +48,28 @@ window.projectMenu = (data) => {
                             <SidebarHeader>
                                 <Grid container >
                                     <Grid item xs={12}>
-                                        <h2 style={{ textAlign: 'center' }}>{data.project.title}</h2>
+                                        <h3 style={{ marginLeft: '20px' }}>{data.project.root_task.module.spec.title}</h3>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <h3 style={{ marginLeft: '20px' }}>Organization: {data.project.root_task.title_override}</h3>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <h3 style={{ marginLeft: '20px' }}>Portfolio Title: {data.project.portfolio.title}</h3>
                                     </Grid>
                                 </Grid>
-                                <Grid container spacing={1}>
+                                <Grid container spacing={.5}>
                                     <Grid item xs={6}>
                                         <h3 style={{ textAlign: 'center'  }}>Project ID: {data.project.id}</h3>
                                     </Grid>
                                     <Grid item xs={6}>
-                                        <h3 style={{ textAlign: 'center'  }}>System ID: {data.project.id}</h3>
+                                        <h3 style={{ textAlign: 'center'  }}>System ID: {data.project.system.id}</h3>
                                     </Grid>
                                 </Grid>
 
 
 
 
-                            </SidebarHeader>
-
-                            <MenuItem ><h2>{data.project.title}</h2></MenuItem>
+                            </SidebarHeader>                            
                             <MenuItem icon={<HomeIcon />} onClick={() => redirect(`${window.origin}${data.urls.home}`)}> Project Home
                             </MenuItem>
                             <MenuItem icon={<ListAltIcon />} onClick={() => redirect(`${window.origin}${data.urls.controls}`)}> Controls
@@ -89,11 +91,12 @@ window.projectMenu = (data) => {
                             <MenuItem icon={<ArrowDownward />} onClick={() => redirect(`${window.origin}${data.urls.export_project}`)}> Export Project
                             </MenuItem>
                         </>}
-
-                        {!data.visible || data.visible && <>
-
+                        {(!data.project.is_account_project || data.project.is_deletable) && <>
                             <MenuItem icon={<SettingsIcon />} onClick={() => redirect(`${window.origin}${data.urls.settings}`)} >Settings
                             </MenuItem>
+                        </>}
+                        {true && <>
+                            
                             <MenuItem icon={<PersonAddAlt1Icon />} onClick={() => {
                                 var info = project_invitation_info;
                                 show_invite_modal(
