@@ -40,7 +40,7 @@ from simple_history.utils import update_change_reason
 
 from siteapp.models import Project, Organization, Tag
 from siteapp.settings import GOVREADY_URL
-from siteapp.utils.views_helper import generate_project_navbar_urls
+from siteapp.utils.views_helper import project_context
 from system_settings.models import SystemSettings
 from .forms import ElementEditForm
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
@@ -199,7 +199,7 @@ def controls_selected(request, system_id):
             "impl_smts_cmpts_count": impl_smts_cmpts_count,
             "impl_smts_legacy_dict": impl_smts_legacy_dict,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "display_urls": generate_project_navbar_urls(project)
+            "display_urls": project_context(project)
         }
         return render(request, "systems/controls_selected.html", context)
     else:
@@ -395,7 +395,7 @@ class SelectedComponentsList(ListView):
             context['project'] = project
             context['system'] = system
             context['elements'] = Element.objects.all().exclude(element_type='system')
-            context["display_urls"] = generate_project_navbar_urls(project)
+            context["display_urls"] = project_context(project)
             return context
         else:
             # User does not have permission to this system
@@ -2787,7 +2787,7 @@ def poams_list(request, system_id):
             "controls": controls,
             "poam_smts": poam_smts,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "display_urls": generate_project_navbar_urls(project)
+            "display_urls": project_context(project)
         }
         return render(request, "systems/poams_list.html", context)
     else:
@@ -3243,7 +3243,7 @@ def system_deployments(request, system_id):
             "system": system,
             "project": project,
             "deployments": deployments,
-            "display_urls": generate_project_navbar_urls(project)
+            "display_urls": project_context(project)
         }
         return render(request, "systems/deployments_list.html", context)
     else:
@@ -3384,7 +3384,7 @@ def system_assessment_results_list(request, system_id=None):
             "api_key_ro": api_keys['ro'],
             "api_key_rw": api_keys['rw'],
             "api_key_wo": api_keys['wo'],
-            "display_urls": generate_project_navbar_urls(project)
+            "display_urls": project_context(project)
         }
         return render(request, "systems/sar_list.html", context)
 

@@ -55,7 +55,7 @@ logging.basicConfig()
 import structlog
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
-from .utils.views_helper import generate_project_navbar_urls
+from .utils.views_helper import project_context
 
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
@@ -1168,7 +1168,7 @@ def project(request, project):
         "elements": elements,
         "producer_elements_control_impl_smts_dict": producer_elements_control_impl_smts_dict,
         "producer_elements_control_impl_smts_status_dict": producer_elements_control_impl_smts_status_dict,
-        "display_urls": generate_project_navbar_urls(project)
+        "display_urls": project_context(project)
     })
 
 def project_edit(request, project_id):
@@ -1272,7 +1272,7 @@ def project_settings(request, project):
         "users": User.objects.all(),
 
         "import_project_form": ImportProjectForm(),
-        "display_urls": generate_project_navbar_urls(project)
+        "display_urls": project_context(project)
 
     })
 
@@ -1317,7 +1317,7 @@ def project_list_all_answers(request, project):
         "project": project,
         "answers": sections,
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
-        "display_urls": generate_project_navbar_urls(project)
+        "display_urls": project_context(project)
 
     })
 
@@ -1391,7 +1391,7 @@ def project_outputs(request, project):
         "project": project,
         "toc": toc,
         "combined_output": combined_output,
-        "display_urls": generate_project_navbar_urls(project)
+        "display_urls": project_context(project)
     })
 
 
@@ -1505,7 +1505,7 @@ def project_api(request, project):
         "sample_post_keyvalue": sample_post_keyvalue,
         "sample_post_json": format_sample(sample_post_json),
         "schema": schema,
-        "display_urls": generate_project_navbar_urls(project)
+        "display_urls": project_context(project)
 
     })
 

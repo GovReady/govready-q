@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
-import { ProSidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
+import { ProSidebar, Menu, MenuItem, SubMenu, SidebarHeader } from 'react-pro-sidebar';
+import Grid from '@mui/material/Grid';
 import HomeIcon from '@mui/icons-material/Home';
 import SettingsInputComponentIcon from '@mui/icons-material/SettingsInputComponent';
 import ListAltIcon from '@mui/icons-material/ListAlt';
@@ -25,7 +26,7 @@ import ReactDOM from 'react-dom';
 
 // const { setTags } = projectTagsStateSlice.actions;
 
-window.projectMenu = (displayMap) => {
+window.projectMenu = (data) => {
     // store.dispatch(setTags(existingTags));
     $(window).on('load', function () {
         $("#content").show();
@@ -33,30 +34,51 @@ window.projectMenu = (displayMap) => {
 
     function redirect(url) {
         window.location = url;
-    }       
-    
+    }
+
+    console.log(data)
     // console.log(displayMap);
-    console.log(displayMap.system.project);
-    // console.log(displayMap.system.urls)
+    // console.log(displayMap.project);
+    // console.log(displayMap.urls)
 
     ReactDOM.render(
         <>
             <Box >
                 <ProSidebar style={{ marginLeft: '-15px' }} >
                     <Menu iconShape="square">
-                        {displayMap.system.visible && <>
-                            <MenuItem ><h2>{displayMap.system.project.title}</h2></MenuItem>
-                            <MenuItem icon={<HomeIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.home}`)}> Project Home
+                        {data.project.system && <>
+                            <SidebarHeader>
+                                <Grid container >
+                                    <Grid item xs={12}>
+                                        <h2 style={{ textAlign: 'center' }}>{data.project.title}</h2>
+                                    </Grid>
+                                </Grid>
+                                <Grid container spacing={1}>
+                                    <Grid item xs={6}>
+                                        <h3 style={{ textAlign: 'center'  }}>Project ID: {data.project.id}</h3>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <h3 style={{ textAlign: 'center'  }}>System ID: {data.project.id}</h3>
+                                    </Grid>
+                                </Grid>
+
+
+
+
+                            </SidebarHeader>
+
+                            <MenuItem ><h2>{data.project.title}</h2></MenuItem>
+                            <MenuItem icon={<HomeIcon />} onClick={() => redirect(`${window.origin}${data.urls.home}`)}> Project Home
                             </MenuItem>
-                            <MenuItem icon={<ListAltIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.controls}`)}> Controls
+                            <MenuItem icon={<ListAltIcon />} onClick={() => redirect(`${window.origin}${data.urls.controls}`)}> Controls
                             </MenuItem>
-                            <MenuItem icon={<SettingsInputComponentIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.components}`)}> Components
+                            <MenuItem icon={<SettingsInputComponentIcon />} onClick={() => redirect(`${window.origin}${data.urls.components}`)}> Components
                             </MenuItem>
-                            <MenuItem icon={<CheckBoxIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.poa_ms}`)}> POA&Ms
+                            <MenuItem icon={<CheckBoxIcon />} onClick={() => redirect(`${window.origin}${data.urls.poa_ms}`)}> POA&Ms
                             </MenuItem>
-                            <MenuItem icon={<ApiIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.deployments}`)}> Deployments
+                            <MenuItem icon={<ApiIcon />} onClick={() => redirect(`${window.origin}${data.urls.deployments}`)}> Deployments
                             </MenuItem>
-                            <MenuItem icon={<AssessmentIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.assesments}`)}> Assesments
+                            <MenuItem icon={<AssessmentIcon />} onClick={() => redirect(`${window.origin}${data.urls.assesments}`)}> Assesments
                             </MenuItem>
                             <MenuItem icon={<ArrowUpwardIcon />} onClick={() => {
                                 var m = $('#import_project_modal');
@@ -64,13 +86,13 @@ window.projectMenu = (displayMap) => {
                                 m.modal();
                             }}> Import Project
                             </MenuItem>
-                            <MenuItem icon={<ArrowDownward />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.export_project}`)}> Export Project
+                            <MenuItem icon={<ArrowDownward />} onClick={() => redirect(`${window.origin}${data.urls.export_project}`)}> Export Project
                             </MenuItem>
                         </>}
 
-                        {!displayMap.system.visible || displayMap.system.visible && <>
+                        {!data.visible || data.visible && <>
 
-                            <MenuItem icon={<SettingsIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.settings}`)} >Settings
+                            <MenuItem icon={<SettingsIcon />} onClick={() => redirect(`${window.origin}${data.urls.settings}`)} >Settings
                             </MenuItem>
                             <MenuItem icon={<PersonAddAlt1Icon />} onClick={() => {
                                 var info = project_invitation_info;
@@ -88,11 +110,11 @@ window.projectMenu = (displayMap) => {
                                 return false;
                             }}>Invite
                             </MenuItem>
-                            <MenuItem icon={<PreviewIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.review}`)} >Review
+                            <MenuItem icon={<PreviewIcon />} onClick={() => redirect(`${window.origin}${data.urls.review}`)} >Review
                             </MenuItem>
-                            <MenuItem icon={<InsertDriveFileIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.documents}`)} >Documents
+                            <MenuItem icon={<InsertDriveFileIcon />} onClick={() => redirect(`${window.origin}${data.urls.documents}`)} >Documents
                             </MenuItem>
-                            <MenuItem icon={<CompareArrowsIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.apidocs}`)} >API Docs
+                            <MenuItem icon={<CompareArrowsIcon />} onClick={() => redirect(`${window.origin}${data.urls.apidocs}`)} >API Docs
                             </MenuItem>
                             <MenuItem icon={<CreateIcon />} onClick={() => {
                                 show_authoring_tool_module_editor()
