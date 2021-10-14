@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% load q %}
 
 {% block head %}
@@ -130,7 +130,7 @@
                         <h1 id="project-title">
                             <a href="{{ project.get_absolute_url }}" class="link-black">{{ project.title }}</a>
                             <button class="btn btn-link" onclick="show_edit_project_modal(); return false;"><span
-                                    class="glyphicon glyphicon-pencil"></button>
+                                    class="glyphicon glyphicon-pencil"></span></button>
                             {% block title_suffix_text %}
                             {% endblock %}
                         </h1>
@@ -271,7 +271,38 @@
     {% include "edit-project-modal.html" %}
     {% include "edit-project-security-impact-levels-modal.html" %}
     {% include "move-project-modal.html" %}
-
+    {% if authoring_tool_enabled %}
+        <script src="{% static "vendor/js-yaml.min.js" %}"></script>
+        <script src="{% static "js/authoring_tool.js" %}"></script>
+        <style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
+        <script>
+        $(function() {
+          $('.authoring-tool-edit-question').click(function(e) {
+            e.stopPropagation();
+            show_question_authoring_tool($(this).data('key'));
+          })
+          init_authoring_tool({
+            task: {{project.root_task.id}},
+            module: {{project.root_task.module.spec|json}},
+            module_yaml: "{{project.root_task.module.spec_yaml|escapejs}}",
+            catalog_yaml: "{{project.root_task.module.app.catalog_metadata_yaml|escapejs}}",
+            questions: {
+              {% for q in project.root_task.module.questions.all %}
+              {{q.key}}: {
+                spec: {{q.spec|json}},
+                choices: "{{q.choices_as_csv|escapejs}}",
+                answer_type_module_id: {% if q.answer_type_module %}{{q.answer_type_module.id}}{% else %}null{% endif %}
+              }{% if not forloop.last %},{% endif %}
+              {% endfor %}
+            },
+            answer_type_modules: [{% for m in project.root_task.module.get_referenceable_modules %}
+              { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
+              {% endfor %}],
+            autocomplete_questions: { }
+          });
+        });
+        </script>
+    {% endif %}
     {% block scripts %}
         <script>
             window.projectMenu({{ display_urls | json }});

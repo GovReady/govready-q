@@ -33,10 +33,11 @@ window.projectMenu = (displayMap) => {
 
     function redirect(url) {
         window.location = url;
-    }
-
-    console.log(displayMap);
-    console.log(displayMap.system.urls)
+    }       
+    
+    // console.log(displayMap);
+    console.log(displayMap.system.project);
+    // console.log(displayMap.system.urls)
 
     ReactDOM.render(
         <>
@@ -44,6 +45,7 @@ window.projectMenu = (displayMap) => {
                 <ProSidebar style={{ marginLeft: '-15px' }} >
                     <Menu iconShape="square">
                         {displayMap.system.visible && <>
+                            <MenuItem ><h2>{displayMap.system.project.title}</h2></MenuItem>
                             <MenuItem icon={<HomeIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.home}`)}> Project Home
                             </MenuItem>
                             <MenuItem icon={<ListAltIcon />} onClick={() => redirect(`${window.origin}${displayMap.system.urls.controls}`)}> Controls
@@ -94,7 +96,6 @@ window.projectMenu = (displayMap) => {
                             </MenuItem>
                             <MenuItem icon={<CreateIcon />} onClick={() => {
                                 show_authoring_tool_module_editor()
-                                // redirect(`${window.origin}${displayMap.system.urls.authoring_tool}`)
                             }}>Authoring Tool
                             </MenuItem>
                             <MenuItem icon={<ImportExportIcon />} onClick={() => {
@@ -108,10 +109,6 @@ window.projectMenu = (displayMap) => {
             </Box>
 
         </>
-
-
-
-        //   </Provider>, 
         ,
         document.getElementById('menu')
     );

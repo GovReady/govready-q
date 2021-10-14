@@ -1,5 +1,6 @@
 
 def generate_project_navbar_urls(project):
+    # talk about re-naming function to accurately reflect functionality
     return {"system":
              {"visible": project.system is not None,
                "urls": {
@@ -14,6 +15,14 @@ def generate_project_navbar_urls(project):
                    "review": f'{project.get_absolute_url()}/list',
                    "documents": f'{project.get_absolute_url()}/outputs',
                    "apidocs": f'{project.get_absolute_url()}/api',
-               }
+                   "Greg": f'{project.get_absolute_url()}/api'
+               },
+              "project": {
+                  "title": f"{project.title}",
+                  "id": f"{project.id}"
+              }
              }
+
+
+
         }

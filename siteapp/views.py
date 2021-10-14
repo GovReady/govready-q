@@ -1271,7 +1271,9 @@ def project_settings(request, project):
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
 
-        "import_project_form": ImportProjectForm()
+        "import_project_form": ImportProjectForm(),
+        "display_urls": generate_project_navbar_urls(project)
+
     })
 
 
@@ -1315,6 +1317,8 @@ def project_list_all_answers(request, project):
         "project": project,
         "answers": sections,
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
+        "display_urls": generate_project_navbar_urls(project)
+
     })
 
 
@@ -1501,6 +1505,8 @@ def project_api(request, project):
         "sample_post_keyvalue": sample_post_keyvalue,
         "sample_post_json": format_sample(sample_post_json),
         "schema": schema,
+        "display_urls": generate_project_navbar_urls(project)
+
     })
 
 
