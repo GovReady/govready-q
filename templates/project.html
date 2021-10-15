@@ -195,7 +195,7 @@
 {% block body_content %}
 
     <div class="row" style="max-width: 1200px; text-align: center;">
-      <h3 class="question-group-title hr" style="margin-left: 50px; font-size: 1.5em;">
+      <h3 id="project-title" class="question-group-title hr" style="margin-left: 50px; font-size: 1.5em;">
         <span></span>
         &nbsp;&nbsp;
         {{ project.title }}
@@ -330,7 +330,7 @@
     </div>
   {% endif %}
   <div class="col-md-12"><p>&nbsp;</p></div>
-    <div class="row">2
+    <div class="row">
       <!-- <div class="col-sm-12" class="project-row-style"> -->
         <!-- <span class="status-section-header">Questionnaires / Compliance App</span> -->
         {% if project.root_task.module.spec.introduction %}
