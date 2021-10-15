@@ -76,7 +76,7 @@ window.projectMenu = (data) => {
                                 </Grid>
 
                             </SidebarHeader>
-                            <MenuItem icon={<HomeIcon />} onClick={() => redirect(`${window.origin}${data.urls.home}`)}> Project Home
+                            <MenuItem icon={<HomeIcon />} id="btn-project-home" onClick={() => redirect(`${window.origin}${data.urls.home}`)}> Project Home
                             </MenuItem>
                             <MenuItem icon={<ListAltIcon />} onClick={() => redirect(`${window.origin}${data.urls.controls}`)}> Controls
                             </MenuItem>
@@ -88,7 +88,7 @@ window.projectMenu = (data) => {
                             </MenuItem>
                             <MenuItem icon={<AssessmentIcon />} onClick={() => redirect(`${window.origin}${data.urls.assesments}`)}> Assesments
                             </MenuItem>
-                            <MenuItem icon={<ArrowUpwardIcon />} onClick={() => {
+                            <MenuItem icon={<ArrowUpwardIcon />} id="btn-show-project-invite" onClick={() => {
                                 var m = $('#import_project_modal');
                                 $("#import_loading_spinner").hide();
                                 m.modal();

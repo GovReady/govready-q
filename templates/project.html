@@ -193,6 +193,18 @@
 <!-- authoring_tool_enabled included from project-base.html -->
 
 {% block body_content %}
+
+    <div class="row" style="max-width: 1200px; text-align: center;">
+      <h3 id="project-title" class="question-group-title hr" style="margin-left: 50px; font-size: 1.5em;">
+        <span></span>
+        &nbsp;&nbsp;
+        {{ project.title }}
+        &nbsp;&nbsp;
+        <span></span>
+      </h3>
+      <p>&nbsp;</p>
+    </div>
+
     <div class="row" style="max-width: 1200px;">
       <div class="col-md-3">
         <div id="status-box-controls" class="status-box" onclick="window.location.assign('{% url 'controls_selected' system_id=project.system.id %}')" style="cursor: pointer;">
