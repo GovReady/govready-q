@@ -64,7 +64,7 @@ class DockerCompose(Runner):
         creds_path = os.path.join(self.ROOT_DIR, 'local/admin.creds.json')
         if auto_admin:
             with open(creds_path, 'w') as f:
-                json.dump({"username": auto_admin[0][0], "password": auto_admin[0][1]}, f)
+                json.dump({"username": auto_admin[0][0], "password": auto_admin[0][1].replace("govready-q-dev", "")}, f)
         else:
             if os.path.exists(creds_path):
                 with open(creds_path, 'r') as f:

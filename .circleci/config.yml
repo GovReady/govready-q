@@ -15,7 +15,7 @@ workflows:
 jobs:
   security-checks:
     docker:
-      - image: circleci/python
+      - image: cimg/python:3.8.12
     steps:
       # Add .local/bin to PATH for utilities install by `pip install --user`.
       - run: echo 'export PATH=~/.local/bin:$PATH' >> $BASH_ENV
@@ -33,7 +33,7 @@ jobs:
             fetch-vendor-resources.sh lists other external software packages needed by the program.
             In both cases, package versions are pinned using version numbers and package hashes.
           command: |
-            pip install --user --upgrade pip
+            pip install --user --upgrade pip setuptools wheel
             pip install --user -r requirements.txt
             pip install --user -r requirements_mysql.txt
             # pip install --user -r requirements_util.txt
