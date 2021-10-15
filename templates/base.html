@@ -66,13 +66,13 @@
     {% endblock %}
 
     {% if messages %}
-    <div class="container-fluid message-margin">
+    <div class="message-margin">
       {% for message in messages %}
         {# Django levels are: debug (map to Boostrap 'info'), info, success, warning, error (map to Boostrap 'danger') #}
         {% if message.level_tag != "success" %}{# Skip success messages #}
-        <div class="alert fade in alert-{% if message.level_tag == "error" %}danger{% elif message.level_tag == "debug" %}info{% else %}{{message.level_tag}}{% endif %}">
+        <div class="alert fade in alert-{% if message.level_tag == "error" %}danger{% elif message.level_tag == "debug" %}info{% else %}{{message.level_tag}}{% endif %}" style="border-radius: 0px;margin:0px;">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ message }}
+            {{ message }}&nbsp;&nbsp;
         </div>
         {% endif %}
       {% endfor %}
@@ -80,7 +80,7 @@
     {% endif %}
 
     {% block body-wide %}
-    <div class="container-fluid" style="min-height: 70vh;">
+    <div class="container-fluid project-base-container" style="min-height: 70vh;">
       {% block body %}
       {% endblock %}
       {% block content %}
@@ -89,16 +89,18 @@
     </div>
 
       <!-- <hr> -->
-      <footer>
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col-sm-12">
-              <div class="row footer-row">
-              {% include "footer.html" %}
+      {% block footer %}
+        <footer>
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="row footer-row">
+                {% include "footer.html" %}
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      {% endblock %}
     {% endblock %}
 
     {% include "bootstrap-helpers.html" %}
@@ -149,8 +151,6 @@
       </div>
     </div>
 
-
-
     <script src="{% static "js/discussion.js" %}"></script>
     <script src="{% static "js/main.js" %}"></script>
 
@@ -191,7 +191,6 @@
     <link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
     {% endif %}
 {#    {% include 'session_security/all.html' %}#}
-    {% block scripts %}
-    {% endblock %}
+    {% block scripts %}{% endblock %}
     </body>
 </html>

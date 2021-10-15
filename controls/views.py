@@ -47,6 +47,7 @@ from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
 from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
 from .models import *
 from .utilities import *
+from siteapp.utils.views_helper import project_context
 
 logging.basicConfig()
 import structlog
@@ -1129,6 +1130,7 @@ def system_element(request, system_id, element_id):
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": opencontrol_string,
+            "display_urls": project_context(project)
         }
         return render(request, "systems/element_detail_tabs.html", context)
 
@@ -1911,6 +1913,7 @@ def editor(request, system_id, catalog_key, cl_id):
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": "opencontrol_string",
             "elements": elements,
+            "display_urls": project_context(project)
         }
         return render(request, "controls/editor.html", context)
     else:
@@ -2834,6 +2837,7 @@ def new_poam(request, system_id):
                 'system': system,
                 'project': project,
                 'controls': controls,
+                "display_urls": project_context(project)
             })
     else:
         # User does not have permission to this system
@@ -2891,6 +2895,7 @@ def edit_poam(request, system_id, poam_id):
                 'project': project,
                 'controls': controls,
                 'poam_smt': poam_smt,
+                "display_urls": project_context(project)
             })
     else:
         # User does not have permission to this system
@@ -3418,6 +3423,7 @@ def view_system_assessment_result_summary(request, system_id, sar_id=None):
         "sar_items": sar_items,
         "assessment_results_json": json.dumps(sar.assessment_results, indent=4, sort_keys=True),
         "summary": summary,
+        "display_urls": project_context(project)
     })
 
 @login_required
@@ -3429,6 +3435,10 @@ def manage_system_assessment_result(request, system_id, sar_id=None):
     if not request.user.has_perm('view_system', system):
         # User does not have permission to this system
         raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
 
     sari = get_object_or_404(SystemAssessmentResult, pk=sar_id) if sar_id else None
     if request.method == 'POST':
@@ -3462,11 +3472,16 @@ def manage_system_assessment_result(request, system_id, sar_id=None):
     return render(request, 'systems/sar_form.html', {
         'form': form,
         'system_id': system_id,
+        "display_urls": project_context(project)
     })
 
 @login_required
 def system_assessment_result_history(request, system_id, sar_id=None):
     """Returns the history for the given deployment system assessment result"""
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
 
     # TODO check user permission to view
     full_sar_history = None
@@ -3477,6 +3492,7 @@ def system_assessment_result_history(request, system_id, sar_id=None):
         messages.add_message(request, messages.ERROR, f'The system assessment result id is not valid. Is this still a system assessment result in GovReady?')
     context = {
         "deployment": full_sar_history,
+        "display_urls": project_context(project)
     }
     return render(request, "systems/sar_history.html", context)
 

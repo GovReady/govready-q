@@ -185,6 +185,7 @@
   .portfolio-table-component { font-size: 1.2em; font-weight:bold; padding:0; margin:0;}
   .portfolio-table-component-desc { font-size: .8em; }
 
+  body { height: 100vh; width: 100vw;}
 </style>
 {% endblock %}
 
@@ -192,7 +193,7 @@
 <!-- authoring_tool_enabled included from project-base.html -->
 
 {% block body_content %}
-    <div class="row">
+    <div class="row" style="max-width: 1200px;">
       <div class="col-md-3">
         <div id="status-box-controls" class="status-box" onclick="window.location.assign('{% url 'controls_selected' system_id=project.system.id %}')" style="cursor: pointer;">
           <h2 class="status">{{ controls_status_count.Addressed }} of {{ project.system.root_element.controls.all|length }}</h2>
@@ -333,7 +334,7 @@
         {% endif %}
       <!-- </div> -->
     </div>
-    <div class="row">
+    <div class="row" style="max-width: 1200px;">
     {% with ncolumns=columns|length %}
     {% for column in columns %}
       <div class="col-md-{{12|div:ncolumns|floatformat:0}}">
@@ -549,7 +550,6 @@
 {# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
 {% include "authoring-tool-modal.html" %}
 {% endif %}
-
 {% endblock %}
 
 {% block scripts %}
@@ -693,5 +693,4 @@ function make_admin(is_admin, user_id, user_name) {
   return false;
 }
 </script>
-
 {% endblock %}

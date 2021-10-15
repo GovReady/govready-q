@@ -16,7 +16,6 @@ def project_context(project):
             "settings": f"{project.get_absolute_url()}/settings",
             "review": f'{project.get_absolute_url()}/list',
             "documents": f'{project.get_absolute_url()}/outputs',
-            "apidocs": f'{project.get_absolute_url()}/api',
-            "Greg": f'{project.get_absolute_url()}/api'
+            "apidocs": f'{project.get_absolute_url()}/api'
         }
         }

@@ -41,33 +41,38 @@ window.projectMenu = (data) => {
 
     ReactDOM.render(
         <>
-            <Box >
-                <ProSidebar style={{ marginLeft: '-15px' }} >
+            <Box style={{ marginLeft: '0px', height: '100%', width: '320px' }}>
+                <ProSidebar style={{ marginLeft: '-5px', paddingLeft: '0px', width: '320px' }} >
                     <Menu iconShape="square">
                         {data.project.system && <>
                             <SidebarHeader>
                                 <Grid container >
                                     <Grid item xs={12}>
-                                        <h3 style={{ marginLeft: '20px' }}>{data.project.root_task.module.spec.title}</h3>
+                                        <h1 style={{ marginLeft: '20px', marginTop: '40px', color: 'white' }}>
+                                            {data.project.root_task.title_override}&nbsp;&nbsp;
+                                            <span className="glyphicon glyphicon-pencil" style={{ fontSize: '14px', color: '#aaa', cursor: 'pointer' }}
+                                                  onClick={() => show_edit_project_modal()}></span>
+                                        </h1>
+
                                     </Grid>
                                     <Grid item xs={12}>
-                                        <h3 style={{ marginLeft: '20px' }}>Organization: {data.project.root_task.title_override}</h3>
+                                        <h3 style={{ marginLeft: '20px' }}>Other: {data.project.portfolio.version}</h3>
                                     </Grid>
                                     <Grid item xs={12}>
-                                        <h3 style={{ marginLeft: '20px' }}>Portfolio Title: {data.project.portfolio.title}</h3>
+                                        <h3 style={{ marginLeft: '20px' }}>2 {data.project.root_task.module.spec.title}</h3>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <h3 style={{ marginLeft: '20px' }}>Portfolio: {data.project.portfolio.title}</h3>
                                     </Grid>
                                 </Grid>
                                 <Grid container spacing={.5}>
                                     <Grid item xs={6}>
-                                        <h3 style={{ textAlign: 'center'  }}>Project ID: {data.project.id}</h3>
+                                        <h3 style={{ marginLeft: '20px'  }}>Project ID: {data.project.id}</h3>
                                     </Grid>
                                     <Grid item xs={6}>
-                                        <h3 style={{ textAlign: 'center'  }}>System ID: {data.project.system.id}</h3>
+                                        <h3 style={{ marginLeft: '20px' }}>System ID: {data.project.system.id}</h3>
                                     </Grid>
                                 </Grid>
-
-
-
 
                             </SidebarHeader>                            
                             <MenuItem icon={<HomeIcon />} onClick={() => redirect(`${window.origin}${data.urls.home}`)}> Project Home

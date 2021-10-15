@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "project-base.html" %}
 {% load humanize %}
 {% load guardian_tags %}
 {% load static %}
@@ -40,6 +40,7 @@
 {% endblock %}
 
 {% block scripts %}
+    {{ block.super }}
 <script>
     function change_reason_update(restore_id, text_input) {
         // update reason value with text input value

@@ -1,4 +1,4 @@
-{% extends "../base.html" %}
+{% extends "../project-base.html" %}
 {% load bootstrap3 %}
 
 {% block title %}
@@ -36,6 +36,7 @@ Manage System Assessment Results
 {% endblock %}
 
 {% block scripts %}
+    {{ block.super }}
 <script>
     $('#id_name').on('keyup', function () {
         var slug = $(this).val();
