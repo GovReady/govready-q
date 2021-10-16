@@ -87,7 +87,7 @@ window.projectMenu = (data) => {
                             </MenuItem>
                             <MenuItem icon={<AssessmentIcon />} onClick={() => redirect(`${window.origin}${data.urls.assesments}`)}> Assesments
                             </MenuItem>
-                            <MenuItem icon={<ArrowUpwardIcon />} id="btn-show-project-invite" onClick={() => {
+                            <MenuItem icon={<ArrowUpwardIcon />} id="btn-import-project" onClick={() => {
                                 var m = $('#import_project_modal');
                                 $("#import_loading_spinner").hide();
                                 m.modal();
@@ -102,7 +102,7 @@ window.projectMenu = (data) => {
                         </>}
                         {true && <>
                             
-                            <MenuItem icon={<PersonAddAlt1Icon />} id="btn-import-project" onClick={() => {
+                            <MenuItem icon={<PersonAddAlt1Icon />} id="btn-show-project-invite" onClick={() => {
                                 var info = project_invitation_info;
                                 show_invite_modal(
                                     'Invite To Project Team (' + info.model_title + ')',
