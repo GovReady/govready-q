@@ -28,6 +28,7 @@ from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership, Tag
 from guidedmodules.forms import ExportCSVTemplateSSPForm
 from controls.models import Element, ElementRole, Statement, System
+from siteapp.utils.views_helper import project_context
 
 import fs, fs.errors
 
@@ -499,7 +500,7 @@ def save_answer(request, task, answered, context, __):
                             security_sensitivity_level, smt = system.set_security_sensitivity_level(baseline)
                             if security_sensitivity_level == baseline.lower():
                                 messages.add_message(request, messages.INFO,
-                                                              f'I\'ve set the system FISMA impact level to "{security_sensitivity_level}.')
+                                                              f'I\'ve set the system FISMA impact level to "{security_sensitivity_level}."')
                                 # Log setting security_sensitivity_level
                                 logger.info(
                                     event=f"system assign_security_sensitivity_level {security_sensitivity_level}",
@@ -509,7 +510,6 @@ def save_answer(request, task, answered, context, __):
                             else:
                                 messages.add_message(request, messages.ERROR,
                                                               f'I failed to set the system FISMA impact level to "{baseline}."')
-
 
                     # Update name of system and project
                     if a_verb == "update_system_and_project_name":
@@ -1072,6 +1072,7 @@ def show_question(request, task, answered, context, q):
         "can_upgrade_app": can_upgrade_app,
         "authoring_tool_enabled": authoring_tool_enabled,
         "is_question_page": True,
+        "display_urls": project_context(task.project)
     })
     context.update({
          "back_url": back_url,
@@ -1295,6 +1296,7 @@ def task_finished(request, task, answered, context, *unused_args):
         "next_module_spec": next_module_spec,
         "gr_pdf_generator": settings.GR_PDF_GENERATOR,
         "export_csv_form": ExportCSVTemplateSSPForm(),
+        "display_urls": project_context(task.project)
     })
     return render(request, "task-finished.html", context)
 

@@ -128,8 +128,8 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 .task-progress-project-question { font-size: 10px; line-height: 120%; padding-left: 2em; color: #222; }
 .task-progress-project-title { color: black; font-size: 1.0em; text-align: left; }
 .task-progress-project-truncate-link { color: black; }
-
-.task-question-debug-links { color: #999; font-size: 80%; margin-top: 20px; border:1px solid black;}
+.task-question-debug-links { color: #999; font-size: 70%; position: fixed; bottom: 12px;}
+.task-question-debug-links a:link { color: #999 }
 
 .question-source-invitation { margin-bottom: 2em; }
 .question-source-invitation-show { text-align: right; margin-bottom: -1.5em; }
@@ -164,7 +164,7 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 .dropdown-menu { width: 300px; }
 .nav-dropdown-item-text { margin: 0px 12px 8px 20px; }
 .nav-profile { margin: -5px 5px; }
-.message-margin { margin-top: 0em; position:absolute; right: 0px; top: 52px; }
+.message-margin { margin-top: 0em; position:absolute; right: 0px; top: 52px; z-index: 100;}
 .footer-row { width: 768px; margin: auto; border-top: 1px solid #eee; padding-top: 24px; }
 
 .invite-message-size { width: 100%; height: 4em; }
