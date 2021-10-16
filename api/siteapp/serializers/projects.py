@@ -14,7 +14,7 @@ from siteapp.models import Project, ProjectMembership, ProjectAsset, Tag
 class SimpleProjectsSerializer(ReadOnlySerializer):
     class Meta:
         model = Project
-        fields = ['is_account_project', 'is_account_project', 'is_deletable', 'extra', 'version', 'version_comment']
+        fields = ['is_account_project', 'is_deletable', 'extra', 'version', 'version_comment']
 
 
 class DetailedProjectsSerializer(SimpleProjectsSerializer):

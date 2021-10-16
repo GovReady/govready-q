@@ -223,7 +223,7 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 .authoring-tool-box { font-size: 90%; }
 .action-button-app-title {text-align: center; font-size: 0.8em; max-width:200px; font-weight: bold; margin-bottom: 8px;}
 
-.project-base-container { margin-left:0px; margin-right: 0px; margin-bottom: 0px; padding-bottom: 0px; padding-left: 0px; padding-right: 0px; height: 100%; }
+.project-base-container { margin-left:0px; margin-right: 0px; margin-bottom: 0px; padding-bottom: 0px; padding-left: 0px; padding-right: 0px; }
 .project-row-style { margin-bottom:1em; }
 .action-row { margin-bottom: 1em; }
 .project-body-block {}

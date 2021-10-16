@@ -1,9 +1,10 @@
 from api.siteapp.serializers.projects import DetailedProjectsSerializer
 
 
-def project_context(project):
+def project_context(project, is_project_page=False):
     # talk about re-naming function to accurately reflect functionality
     return {
+        "is_project_page": is_project_page,
         "project": DetailedProjectsSerializer(project).data,
         "urls": {
             "home": project.get_absolute_url(),
@@ -18,4 +19,4 @@ def project_context(project):
             "documents": f'{project.get_absolute_url()}/outputs',
             "apidocs": f'{project.get_absolute_url()}/api'
         }
-        }
+    }

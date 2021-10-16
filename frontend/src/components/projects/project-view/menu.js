@@ -36,7 +36,8 @@ window.projectMenu = (data) => {
         window.location = url;
     }
 
-    console.log(data)    
+
+    console.log(data)
     // console.log(displayMap.urls)
 
     ReactDOM.render(
@@ -51,7 +52,7 @@ window.projectMenu = (data) => {
                                         <h1 style={{ marginLeft: '20px', marginTop: '40px', color: 'white' }}>
                                             {data.project.root_task.title_override}&nbsp;&nbsp;
                                             <span className="glyphicon glyphicon-pencil" style={{ fontSize: '14px', color: '#aaa', cursor: 'pointer' }}
-                                                  onClick={() => show_edit_project_modal()}></span>
+                                                onClick={() => show_edit_project_modal()}></span>
                                         </h1>
 
                                     </Grid>
@@ -67,14 +68,14 @@ window.projectMenu = (data) => {
                                 </Grid>
                                 <Grid container spacing={.5}>
                                     <Grid item xs={6}>
-                                        <h3 style={{ marginLeft: '20px'  }}>Project ID: {data.project.id}</h3>
+                                        <h3 style={{ marginLeft: '20px' }}>Project ID: {data.project.id}</h3>
                                     </Grid>
                                     <Grid item xs={6}>
                                         <h3 style={{ marginLeft: '20px' }}>System ID: {data.project.system.id}</h3>
                                     </Grid>
                                 </Grid>
 
-                            </SidebarHeader>                            
+                            </SidebarHeader>
                             <MenuItem icon={<HomeIcon />} id="btn-project-home" onClick={() => redirect(`${window.origin}${data.urls.home}`)}> Project Home
                             </MenuItem>
                             <MenuItem icon={<ListAltIcon />} onClick={() => redirect(`${window.origin}${data.urls.controls}`)}> Controls
@@ -100,8 +101,7 @@ window.projectMenu = (data) => {
                             <MenuItem icon={<SettingsIcon />} onClick={() => redirect(`${window.origin}${data.urls.settings}`)} >Settings
                             </MenuItem>
                         </>}
-                        {true && <>
-                            
+                        {data.is_project_page && <>
                             <MenuItem icon={<PersonAddAlt1Icon />} id="btn-show-project-invite" onClick={() => {
                                 var info = project_invitation_info;
                                 show_invite_modal(
