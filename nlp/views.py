@@ -41,8 +41,6 @@ from simple_history.utils import update_change_reason
 from siteapp.models import Project, Organization, Tag
 from siteapp.settings import GOVREADY_URL
 from system_settings.models import SystemSettings
-# from .models import *
-# from .utilities import *
 
 logging.basicConfig()
 import structlog
