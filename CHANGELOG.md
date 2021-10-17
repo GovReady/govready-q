@@ -4,7 +4,11 @@ GovReady-Q Release Notes
 v0.9.11.7-dev (October xx, 2021)
 --------------------------------
 
+**Developer changes**
 
+* Add Django `nlp` app to system to support Natural Language Processing of SSPs and statements.
+* Include spaCy libraries as part of build.
+* Include initial, simplified candidate entity recognition script.
 
 
 v0.9.11.6 (October 13, 2021)
