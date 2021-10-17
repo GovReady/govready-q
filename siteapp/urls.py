@@ -31,6 +31,9 @@ urlpatterns = [
     # incoming email hook for responses to notifications
     url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook, name='notifications'),
 
+    # NLP
+    url(r"^nlp/", include("nlp.urls")),
+
     # Django rest framework
     # path('api/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
