@@ -54,6 +54,17 @@ djangorestframework-recursive==0.1.2 # ISC License
 drf-nested-routers==0.93.3 # Apache License 2.0
 mozilla-django-oidc==1.2.4 # Mozilla Public License Version 2.0
 
+# NLP
+dataset # MIT License
+click # BSD License (BSD-3-Clause)
+# more-itertools # MIT License
+simplejson # Academic Free License (AFL), MIT License
+pandas # BSD License (BSD-3-Clause)
+spacy # MIT License
+Unidecode # GNU General Public License
+wordcloud # MIT License
+
+
 # Python Packages Developed by GovReady and/or Josh
 rtyaml # CC0
 email-validator # CC0
