@@ -1090,7 +1090,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
 
         ## Update current project
         # click import project button, opening the modal
-        var_sleep(1)
+        var_sleep(2)
         self.click_element("#btn-import-project")
 
         file_input = self.browser.find_element_by_css_selector("#id_file")
