@@ -25,7 +25,7 @@ from django.test.client import RequestFactory
 import selenium.webdriver
 from selenium.webdriver.remote.command import Command
 from django.urls import reverse
-from selenium.common.exceptions import WebDriverException, NoSuchElementException
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import DesiredCapabilities
 from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
@@ -62,7 +62,7 @@ def wait_for_sleep_after(fn):
     while True:
         try:
             return fn()
-        except (AssertionError, WebDriverException, NoSuchElementException) as e:
+        except (AssertionError, WebDriverException) as e:
             if time.time() - start_time > MAX_WAIT:
                 raise e
             time.sleep(0.5)
