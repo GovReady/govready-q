@@ -1,3 +1,5 @@
+from rest_framework import serializers
+
 from api.base.serializers.types import ReadOnlySerializer
 from api.guidedmodules.serializers.app import DetailedAppVersionSerializer, SimpleAppSourceSerializer
 from guidedmodules.models import Module, ModuleAsset, ModuleQuestion
@@ -5,6 +7,11 @@ from rest_framework_recursive.fields import RecursiveField
 
 
 class SimpleModuleSerializer(ReadOnlySerializer):
+    spec = serializers.SerializerMethodField()
+
+    def get_spec(self, obj):
+        return dict(obj.spec)
+
     class Meta:
         model = Module
         fields = ['module_name', 'spec']

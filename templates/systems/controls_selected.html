@@ -129,6 +129,7 @@
 {% endblock %}
 
 {% block scripts %}
+    {{ block.super }}
 <script>
   function show_control_by_id() {
     var control_id = $('#control-lookup').find('input[name="id"]').val();

@@ -144,11 +144,11 @@ Next Question: {{q.spec.title}} | {{task.title}}
 {% endblock %}
 
 {% block body %}
-
 {{block.super}}
 
 <div class="row" style="padding-left: 22px;">
-  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-7 col-xl-6">
+  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-7 col-xl-6"
+       style="background-color: rgb(250, 250, 250); border: 0px solid gray; border-top: 4px solid #419641;">
     {% if source_invitation %}
       <div class="question-source-invitation">
         <div id="source-invitation-show" class="question-source-invitation-show" style="{% if not task.is_started %}display: none;{% endif %}">
@@ -605,6 +605,8 @@ Next Question: {{q.spec.title}} | {{task.title}}
   </div>
 </div> <!-- /row -->
 
+{% include "task-question-debug-links.html" %}
+
 {% if authoring_tool_enabled %}
 {# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
 {% include "authoring-tool-modal.html" %}
@@ -613,8 +615,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
 {% endblock %}
 
 {% block scripts %}
-
-{% include "task-question-debug-links.html" %}
+    {{ block.super }}
 
 {% if q.spec.type == "longtext" %}
   <script src="{% static "vendor/quill/quill.min.js" %}"></script>

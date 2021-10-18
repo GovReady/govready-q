@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "project-base.html" %}
 {% load bootstrap3 %}
 {% load humanize %}
 {% load guardian_tags %}
@@ -61,6 +61,7 @@
 {% endblock %}
 
 {% block scripts %}
+    {{ block.super }}
 <script>
 
 </script>

@@ -1,280 +1,215 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% load q %}
 
 {% block head %}
-<style>
+    <style>
 
-  #project-icon {
-    float: left;
-    margin: 0 1.5em 1em 0;
-    {% if title == project.root_task.module.spec.title %}
-     /* if there's no subhead, match icon size to font size */
-      width: 50px;
-      height: 50px;
-    {% else %}
-      width: 80px;
-      height: 80px;
-    {% endif %}
-  }
+        #project-icon {
+            float: left;
+            margin: 0 1.5em 1em 0;
+        {% if title == project.root_task.module.spec.title %}
+            /* if there's no subhead, match icon size to font size */
+            width: 50px;
+            height: 50px;
+        {% else %}
+            width: 80px;
+            height: 80px;
+        {% endif %}
+        }
 
-  h1 {
-    margin: 0;
-    font-size: 32px;
-  }
+        h1 {
+            margin: 0;
+            font-size: 32px;
+        }
 
-  div.subtitle {
-    margin: .2em 0 .75em 0;
-    font-weight: bold;
-  }
+        div.subtitle {
+            margin: .2em 0 .75em 0;
+            font-weight: bold;
+        }
 
-  .breadcrumb {
-    font-size: 1.0em;
-  }
+        .breadcrumb {
+            font-size: 1.0em;
+        }
 
-  #focus-area-wrapper {
-    padding: 2em 2em 3em 2em;
-  }
+        #focus-area-wrapper {
+            padding: 2em 2em 3em 2em;
+        }
 
-  .link-black { color: black; }
-  .link-black:hover { color: black; }
+        .link-black {
+            color: black;
+        }
 
-  .btn-action {text-align: left;padding-left: 25px;}
+        .link-black:hover {
+            color: black;
+        }
 
-  #action-buttons, .action-button-box { width:150px; }
+        .btn-action {
+            text-align: left;
+            padding-left: 25px;
+        }
 
-  .border { border:0px solid black; }
-</style>
+        #action-buttons, .action-button-box {
+            width: 150px;
+        }
+
+        body {
+            border-bottom: 0px !important;
+            padding-bottom: 0px !important;
+            height: 100vh;
+            width: 100vw;
+        }
+    </style>
 {% endblock %}
 
-{% block breadcrumbs %}
-  <li>
-    <a href="/" class="glyphicon-home-icon">
-      <span class="glyphicon glyphicon-home"></span>
-    </a>
-  </li>
-  <li class="hidden-xs">
-    <a href="{{project.portfolio.get_absolute_url}}">
-      {{project.portfolio.title}}
-    </a>
-  </li>
-  {% for parent_project in project.get_parent_projects %}
-    {% if not forloop.counter == 1 %} &gt; {% endif %}
-    <li>
-    <a href="{{parent_project.get_absolute_url}}" class="parent-project smidge-left">
-      {{parent_project.title}}
-    </a>
-    </li>
-  {% endfor %}
-    <li>
-    <a href="{{project.get_absolute_url}}">
-      {{project.title}}
-    </a>
-    </li>
-{% endblock %}
+{% block contextbar %}{% endblock %}
 
 {% block body %}
-{{block.super}}
-<div class="row">
+    {{ block.super }}
+    <div class="row" style="height:100%;">
 
-  <div class="col-md-3 border">
-    <div id="focus-area-wrapper" style="padding-top:0px; margin-top:0px;">
-      {% block above_title %}
-        {% if authoring_tool_enabled %}
-          <center class="authoring-tool-hidden authoring-tool-box">
-            <p class="text-info">
-              You are in author mode. Authoring tools have been enabled for this module.
-            </p>
-          </center>
+        <div class="col-md-3" style="margin:0px;padding:0px 0px 0px 0px;height:100%;">
+            <div id="focus-area-wrapper" style="padding:0px; margin-top:0px;height:100%;">
+                {% block above_title %}
+                    {% if authoring_tool_enabled %}
+                        <center class="authoring-tool-hidden authoring-tool-box">
+                            <p class="text-info">
+                                You are in author mode. Authoring tools have been enabled for this module.
+                            </p>
+                        </center>
 
-          <center class="authoring-tool-hidden authoring-tool-box">
-            <p>
-              <a href="#" onclick="show_authoring_tool_module_editor(); return false;" class="authoring-tool-style">
-                <span class="glyphicon glyphicon-pencil"></span>
-                Edit App
-              </a>
+                        <center class="authoring-tool-hidden authoring-tool-box">
+                            <p>
+                                <a href="#" onclick="show_authoring_tool_module_editor(); return false;"
+                                   class="authoring-tool-style">
+                                    <span class="glyphicon glyphicon-pencil"></span>
+                                    Edit App
+                                </a>
 
-              <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" class="authoring-tool-style">
-              <span class="glyphicon glyphicon-plus"></span>
-              Add Module
-              </a>
+                                <a href="#"
+                                   onclick="authoring_tool_new_question({{ project.root_task.id }}, true); return false;"
+                                   class="authoring-tool-style">
+                                    <span class="glyphicon glyphicon-plus"></span>
+                                    Add Module
+                                </a>
+                            </p>
+                        </center>
+                    {% endif %}
+                {% endblock %}
 
-            </p>
-          </center>
-        {% endif %}
-      {% endblock %}
+                {# if is_project_page #}
 
-      {# if is_project_page #}
-      <div id="project-title-info" class="row">
-        <!-- <div class="col-sm-12"> -->
-          <!-- {% if project.root_task.get_app_icon_url %}
-            <img id="project-icon" src="{{project.root_task.get_app_icon_url}}" alt="Project Icon">
-          {% endif %} -->
+                <div id="menu" style="height: 100%;"></div>
+                {% block action_buttons %}
+                    {% if action_buttons %}
+                        {% for q in action_buttons %}
+                            <div class="action-button-box">
+                                <div class="action-button-app-title">{{ project.root_task.module.spec.title }}</div>
+                                {# Display for started tasks #}
+                                {% if can_start_task and q.can_start_new_task %}
+                                    <form id="question-{{ q.question.key }}" class="start-task" method="post"
+                                          action="/tasks/start" style="display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="project" value="{{ project.id }}"/>
+                                        <input type="hidden" name="question" value="{{ q.question.key }}"/>
+                                        <input type="hidden" name="previous" value="project"/>
+                                        <a class="btn btn-sm btn-default" class="action-button"
+                                           href="#" onclick="$(this).parent('form').submit(); return false;">
+                                            {{ q.question.spec.title }} &raquo;
+                                        </a>
+                                    </form>
+                                {% else %}
+                                    {# Display for not yet started tasks #}
+                                    <a id="question-{{ q.question.key }}"
+                                       class="btn btn-sm btn-default" class="action-button"
+                                       href="{{ q.task.get_absolute_url }}?previous=project">
+                                        {{ q.question.spec.title }} &raquo;
+                                        {# use a stable title - dont make it depend on the task #}
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endblock %}
+            </div> <!-- /focus-area-wrapper -->
+        </div> <!-- /col -->
 
-          {% if project.organization %}
-          <h1 id="project-title">
-            <a href="{{project.get_absolute_url}}" class="link-black">{{project.title}}</a> <button class="btn btn-link" onclick="show_edit_project_modal(); return false;"><span class="glyphicon glyphicon-pencil"></button>
-            {% block title_suffix_text %}
+        <div class="col-md-8 project-body-block" style="margin-top: 60px;">
+            {% block body_content %}
             {% endblock %}
-          </h1>
 
-          {% if title != project.root_task.module.spec.title %}
-          <div class="">
-            <br>
-            {{project.root_task.module.spec.title}}  {% if project.version == None %}<strong><u>Project Version not set!</u></strong>{% else %}(ver {{project.version}}){% endif %} Compliance app (ver {{project.root_task.module.spec.version}}) -
-            {{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}
-          </div>
-          <div class="small" style="color: #888;">
-            project id: {{ project.id }}, &nbsp; {% if project.system %}system id: {{ project.system.id }}{% endif %}
-          </div>
-          {% endif %}
-          {% endif %}
-          <div>&nbsp;</div>
-        <!-- </div> -->
-      </div><!-- /project-title-info -->
-
-      {% block action_buttons %}
-      <div class="btn-group" role="group" aria-label="action buttons group">
-          {% if project.system is not None %}
-            <button id="btn-project-home" class="btn btn-sm btn-default btn-action" onclick="window.location = '{{project.get_absolute_url}}';">
-              <em class="glyphicon glyphicon-home"></em> Project Home</a>
-            </button>
-            <button id="btn-controls" class="btn btn-sm btn-default btn-action" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
-              <em class="glyphicon glyphicon-list-alt"></em> Controls</a>
-            </button>
-            <button id="btn-components" class="btn btn-sm btn-default btn-action" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
-              <em class="glyphicon glyphicon-book"></em>&nbsp; Components</a>
-            </button>
-            <button id="btn-poams" class="btn btn-sm btn-default btn-action" onclick="window.location = '/systems/{{project.system.id}}/poams';">
-              <em class="glyphicon glyphicon-check"></em>&nbsp; POA&Ms</a>
-            </button>
-            <button id="btn-deployments" class="btn btn-sm btn-default btn-action" onclick="window.location = '/systems/{{project.system.id}}/deployments';">
-              <em class="glyphicon glyphicon-th"></em>&nbsp; Deployments</a>
-            </button>
-            <button id="btn-sar" class="btn btn-sm btn-default btn-action" onclick="window.location = '/systems/{{project.system.id}}/assessments';">
-              <em class="glyphicon glyphicon-th"></em>&nbsp; Assessments</a>
-            </button>
-            {% if is_project_page %}
-              <button id="btn-import-project" class="btn btn-sm btn-default btn-action" onclick="show_import_project_modal('{{ portfolio.id }}'); return false;" href="#">
-                <em class="glyphicon glyphicon-arrow-up"></em>&nbsp; Import Project</a>
-              </button>
-              <button id="btn-export-project" class="btn btn-sm btn-default btn-action" onclick="window.location = '/systems/{{project.id}}/export';">
-                <em class="glyphicon glyphicon-arrow-down"></em>&nbsp; Export project</a>
-              </button>
-            {% endif %}
-          {% endif %}
-          {% if not project.is_account_project or project.is_deletable %}
-            <button id="btn-project-settings" class="btn btn-sm btn-default btn-action" onclick="window.location = '{{project.get_absolute_url|escapejs}}/settings';">
-              <em class="glyphicon glyphicon-cog"></em> Settings</a>
-            </button>
-          {% endif %}
-          {% if is_project_page and send_invitation.can_add_invitee_to_team %}
-            <button id="btn-show-project-invite" class="btn btn-sm  btn-default btn-action" onclick="invite_user_into_project()">
-              <em class="glyphicon glyphicon-user"></em><em class="glyphicon glyphicon-plus"></em>
-              Invite
-            </button>
-          {% endif %}
-
-          <button id="btn-review-answers" class="btn btn-sm  btn-default btn-action" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
-            <em class="glyphicon glyphicon-list"></em>
-            Review
-          </button>
-
-          {% if has_outputs %}
-            <button id="btn-related-controls" class="btn btn-sm  btn-default btn-action" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
-              <em class="glyphicon glyphicon-th"></em>
-              Documents
-            </button>
-          {% endif %}
-
-          <button id="btn-api" class="btn btn-sm btn-default btn-action" onclick="window.location = '{{project.get_absolute_url|escapejs}}/api';">
-            <em class="glyphicon glyphicon-sort"></em>
-            API Docs
-          </button>
-
-          {% if is_project_page and authoring_tool_enabled %}
-            <button id="btn-open-authoring-tools" class="btn btn-sm btn-default btn-action" onclick="$('.authoring-tool-hidden').toggle();">
-              <em class="glyphicon glyphicon-pencil"></em>
-              Authoring Tool
-            </button>
-          {% endif %}
-
-          {% if is_project_page %}
-            <button id="btn-move-project" class="btn btn-sm btn-default btn-action"  onclick='move_project()'>
-              <em class="glyphicon glyphicon-sort"></em>
-              Move Project
-            </button>
-          {% endif %}
-        </div>
-
-        {% if action_buttons %}
-          {% for q in action_buttons %}
-            <div class="action-button-box">
-              <div class="action-button-app-title">{{project.root_task.module.spec.title}}</div>
-              {# Display for started tasks #}
-              {% if can_start_task and q.can_start_new_task %}
-                <form id="question-{{q.question.key}}" class="start-task" method="post" action="/tasks/start" style="display:inline;">
-                  {% csrf_token %}
-                  <input type="hidden" name="project" value="{{project.id}}"/>
-                  <input type="hidden" name="question" value="{{q.question.key}}"/>
-                  <input type="hidden" name="previous" value="project"/>
-                  <a class="btn btn-sm btn-default" class="action-button"
-                    href="#" onclick="$(this).parent('form').submit(); return false;">
-                    {{q.question.spec.title}} &raquo;
-                  </a>
-                </form>
-              {% else %}
-              {# Display for not yet started tasks #}
-              <a id="question-{{q.question.key}}"
-                class="btn btn-sm btn-default" class="action-button"
-                href="{{q.task.get_absolute_url}}?previous=project">
-                {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
-              </a>
-              {% endif %}
+        <footer>
+            <div class="row footer-row" style="margin-left: -20px;position: fixed; bottom:50px;">
+                {% include "footer.html" %}
             </div>
-          {% endfor %}
-        {% endif %}
-      {% endblock %}
+        </footer>
 
-    </div> <!-- /focus-area-wrapper -->
-  </div> <!-- /col -->
+        </div>
+    </div> <!-- /row -->
 
-      <div class="col-md-8 project-body-block border">
-      {% block body_content %}
-      {% endblock %}
-      </div>
+    {% include "edit-project-modal.html" %}
+    {% include "edit-project-security-impact-levels-modal.html" %}
+    {% include "move-project-modal.html" %}
+    {% if authoring_tool_enabled %}
+        <script src="{% static "vendor/js-yaml.min.js" %}"></script>
+        <script src="{% static "js/authoring_tool.js" %}"></script>
+        <style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
+        <script>
+        $(function() {
+          $('.authoring-tool-edit-question').click(function(e) {
+            e.stopPropagation();
+            show_question_authoring_tool($(this).data('key'));
+          })
+          init_authoring_tool({
+            task: {{project.root_task.id}},
+            module: {{project.root_task.module.spec|json}},
+            module_yaml: "{{project.root_task.module.spec_yaml|escapejs}}",
+            catalog_yaml: "{{project.root_task.module.app.catalog_metadata_yaml|escapejs}}",
+            questions: {
+              {% for q in project.root_task.module.questions.all %}
+              {{q.key}}: {
+                spec: {{q.spec|json}},
+                choices: "{{q.choices_as_csv|escapejs}}",
+                answer_type_module_id: {% if q.answer_type_module %}{{q.answer_type_module.id}}{% else %}null{% endif %}
+              }{% if not forloop.last %},{% endif %}
+              {% endfor %}
+            },
+            answer_type_modules: [{% for m in project.root_task.module.get_referenceable_modules %}
+              { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
+              {% endfor %}],
+            autocomplete_questions: { }
+          });
+        });
+        </script>
+    {% endif %}
+    {% block scripts %}
+        <script>
+            window.projectMenu({{ display_urls | json }});
+            function show_import_project_modal(id, callback) {
+                var m = $('#import_project_modal');
+                $("#import_loading_spinner").hide();
+                m.modal();
+            }
 
-</div> <!-- /row -->
+            function fillJSONContent(file) {
+                filecontents = $('#{{import_project_form.file.auto_id}}').prop('files')[0];
+                var reader = new FileReader();
+                reader.readAsText(filecontents);
+                reader.onload = function (e) {
+                    $('#{{import_project_form.json_content.auto_id}}').val(e.target.result);
+                };
+            }
 
-{% include "edit-project-modal.html" %}
-{% include "edit-project-security-impact-levels-modal.html" %}
-{% include "move-project-modal.html" %}
+            function show_spinner() {
+                $("#import_loading_spinner").show();
+            }
 
-{% block scripts %}
-    <script>
-        function show_import_project_modal(id, callback) {
-            var m = $('#import_project_modal');
-            $("#import_loading_spinner").hide();
-            m.modal();
-        }
+        </script>
 
-        function fillJSONContent(file) {
-            filecontents = $('#{{import_project_form.file.auto_id}}').prop('files')[0];
-            var reader = new FileReader();
-            reader.readAsText(filecontents);
-            reader.onload = function (e) {
-                $('#{{import_project_form.json_content.auto_id}}').val(e.target.result);
-            };
-        }
+    {% endblock %}
+    {% block footer %}{% endblock %}
+    {% include "controls/import_project_modal.html" %}
 
-        function show_spinner() {
-            $("#import_loading_spinner").show();
-        }
-    </script>
-{% endblock %}
-{% include "controls/import_project_modal.html" %}
-
-{% block modals %}
-{% endblock %}
-
+    {% block modals %}
+    {% endblock %}
 {% endblock %}
