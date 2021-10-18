@@ -652,6 +652,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # because the element is not clickable -- it reports a coordinate
         # that's above the button in the site header. Not sure what's
         # happening. So load the modal using Javascript.
+        var_sleep(1)
         self.click_element("#btn-show-project-invite")
         self.browser.execute_script("invite_user_into_project()")
         # Toggle field to invite user by email
@@ -1632,6 +1633,7 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self.click_element('#status-box-controls')
         wait_for_sleep_after(lambda: self.assertInNodeText("Selected controls", ".systems-selected-items"))
         # click project button
+        var_sleep(1)
         self.click_element('#btn-project-home')
         wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
         # test components
