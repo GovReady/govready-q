@@ -55,6 +55,7 @@ logging.basicConfig()
 import structlog
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
+from .utils.views_helper import project_context
 
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
@@ -162,12 +163,13 @@ def homepage(request):
     if settings.OKTA_CONFIG:
         return HttpResponseRedirect("/oidc/authenticate")
     return render(request, "index.html", {
-        "hide_registration":  SystemSettings.hide_registration,
+        "hide_registration": SystemSettings.hide_registration,
         "sitename": Sitename.objects.last(),
         "signup_form": signup_form,
         "login_form": login_form,
         "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
     })
+
 
 @login_required
 def account_settings(request):
@@ -191,15 +193,18 @@ def account_settings(request):
         "form": form,
     })
 
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
 
 class ProjectViewSet(viewsets.ModelViewSet):
     url = serializers.HyperlinkedIdentityField(view_name="siteapp:task-detail")
 
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+
 
 def debug(request):
     # Raise Exception to see session information
@@ -558,7 +563,8 @@ def apps_catalog(request):
     # Auto start a project if set in database
     # Temporarily pretend values set in development
     # TODO: Maybe refactor! This code is close duplicate to what is in `apps_catalog_item` POST section
-    if "start" in request.GET and request.GET["start"]=="true" and SystemSettings.objects.filter(setting="auto_start_project").exists():
+    if "start" in request.GET and request.GET["start"] == "true" and SystemSettings.objects.filter(
+            setting="auto_start_project").exists():
         setting_asp = SystemSettings.objects.get(setting="auto_start_project")
         if setting_asp.active:
             source_slug = setting_asp.details.get('source_slug', None)
@@ -580,7 +586,7 @@ def apps_catalog(request):
             # Start the most recent version of the app.
             appver = app_catalog_info["versions"][0]
             from guidedmodules.app_loading import ModuleDefinitionError
-            organization = Organization.objects.first() # temporary
+            organization = Organization.objects.first()  # temporary
             folder = None
             task = None
             q = None
@@ -764,6 +770,7 @@ def apps_catalog_item_zip(request, source_slug, app_name):
     resp = HttpResponse(blob, mime_type)
     resp['Content-Disposition'] = 'inline; filename=' + filename
     return resp
+
 
 def start_app(appver, organization, user, folder, task, q, portfolio):
     # Begin a transaction to create the Module and Task instances for the app.
@@ -955,7 +962,8 @@ def project(request, project):
     from collections import OrderedDict
     questions = OrderedDict()
     can_start_any_apps = False
-    for (mq, is_answered, answer_obj, answer_value) in (root_task_answers.answertuples.values() if root_task_answers else []):
+    for (mq, is_answered, answer_obj, answer_value) in (
+    root_task_answers.answertuples.values() if root_task_answers else []):
         # Display module/module-set questions only. Other question types in a project
         # module are not valid.
         if mq.spec.get("type") not in ("module", "module-set"):
@@ -1086,7 +1094,8 @@ def project(request, project):
                 has_outputs = True
 
     can_upgrade_app = project.root_task.module.app.has_upgrade_priv(request.user) if project.root_task else True
-    authoring_tool_enabled = project.root_task.module.is_authoring_tool_enabled(request.user) if project.root_task else True
+    authoring_tool_enabled = project.root_task.module.is_authoring_tool_enabled(
+        request.user) if project.root_task else True
 
     # Calculate approximate compliance as degrees to display
     percent_compliant = 0
@@ -1098,16 +1107,17 @@ def project(request, project):
     if approx_compliance_degrees > 358:
         approx_compliance_degrees = 358
 
-
     # Fetch statement defining Security Sensitivity level if set
-    security_sensitivity_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
+    security_sensitivity_smts = project.system.root_element.statements_consumed.filter(
+        statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
     if len(security_sensitivity_smts) > 0:
         security_sensitivity = security_sensitivity_smts.first().body
 
     else:
         security_sensitivity = None
 
-    security_objective_smt = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name)
+    security_objective_smt = project.system.root_element.statements_consumed.filter(
+        statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name)
     if security_objective_smt.exists():
         security_body = project.system.get_security_impact_level
         confidentiality, integrity, availability = security_body.get('security_objective_confidentiality',
@@ -1127,7 +1137,6 @@ def project(request, project):
 
     # Render.
     return render(request, "project.html", {
-        "is_project_page": True,
         "project": project,
         "security_sensitivity": security_sensitivity,
         "confidentiality": confidentiality,
@@ -1155,7 +1164,6 @@ def project(request, project):
         "layout_mode": layout_mode,
         "columns": columns,
         "action_buttons": action_buttons,
-
         "projects": Project.objects.all(),
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
@@ -1168,7 +1176,10 @@ def project(request, project):
         "elements": elements,
         "producer_elements_control_impl_smts_dict": producer_elements_control_impl_smts_dict,
         "producer_elements_control_impl_smts_status_dict": producer_elements_control_impl_smts_status_dict,
+        "display_urls": project_context(project, is_project_page=True)
+
     })
+
 
 def project_edit(request, project_id):
     if request.method == 'POST':
@@ -1191,6 +1202,7 @@ def project_edit(request, project_id):
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
+
 def project_security_objs_edit(request, project_id):
     if request.method == 'POST':
 
@@ -1203,7 +1215,9 @@ def project_security_objs_edit(request, project_id):
             integrity = request.POST.get("integrity", "").strip() or None
             availability = request.POST.get("availability", "").strip() or None
 
-            new_security_objectives = {"security_objective_confidentiality":confidentiality,"security_objective_integrity":integrity,"security_objective_availability":availability}
+            new_security_objectives = {"security_objective_confidentiality": confidentiality,
+                                       "security_objective_integrity": integrity,
+                                       "security_objective_availability": availability}
             # Setting security objectives for project's statement
             security_objective_smt, smt = project.system.set_security_impact_level(new_security_objectives)
 
@@ -1253,7 +1267,6 @@ def project_settings(request, project):
 
     # Render.
     return render(request, "project_settings.html", {
-        "is_project_page": True,
         "project": project,
 
         "is_admin": request.user in project.get_admins(),
@@ -1270,7 +1283,9 @@ def project_settings(request, project):
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
 
-        "import_project_form": ImportProjectForm()
+        "import_project_form": ImportProjectForm(),
+        "display_urls": project_context(project)
+
     })
 
 
@@ -1314,6 +1329,8 @@ def project_list_all_answers(request, project):
         "project": project,
         "answers": sections,
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
+        "display_urls": project_context(project)
+
     })
 
 
@@ -1386,6 +1403,7 @@ def project_outputs(request, project):
         "project": project,
         "toc": toc,
         "combined_output": combined_output,
+        "display_urls": project_context(project)
     })
 
 
@@ -1499,6 +1517,8 @@ def project_api(request, project):
         "sample_post_keyvalue": sample_post_keyvalue,
         "sample_post_json": format_sample(sample_post_json),
         "schema": schema,
+        "display_urls": project_context(project)
+
     })
 
 

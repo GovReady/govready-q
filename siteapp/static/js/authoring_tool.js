@@ -59,6 +59,8 @@ function init_authoring_tool(state) {
 function init_authoring_tool_autocomplete(elem, expr_type) {
   // Add question IDs as autocompletes to the fields that use Jinja2
   // expressions.
+    if(elem[0] === undefined)
+        return
   var question_keys = window.q_authoring_tool_state.autocomplete_questions;
 
   var trigger = "{{";

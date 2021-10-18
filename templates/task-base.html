@@ -11,10 +11,10 @@
   }
 
   #question-debug-links {
-    max-width: 450px;
+    max-width: 80%;
   }
 
-  #question-history-context, #question-debug-links {
+  #question-history-context {
     font-size: 0.85em;
     background-color: rgba(255,255,255,0.2);
     padding: 8px;
@@ -47,7 +47,9 @@
   #question-history-context ul li.other {
   }
 
-
+  .question .question-title {
+    line-height: 124%;
+  }
 
   #page-transition-paragraph p {
     margin-bottom: 1em;
@@ -64,78 +66,56 @@
 </style>
 {% endblock %}
 
-  {% block navbar %}
-  {% endblock %}
+{% block navbar %}
+{% endblock %}
 
-  {% block breadcrumbs %}
-    {% if not task.project.is_account_project %}
-    <li>
-      <a href="/">
-        <span class="glyphicon glyphicon-home smidge-right"></span>
-      </a>
-    </li>
-    <li class="hidden-xs">
-      <a href="{{task.project.portfolio.get_absolute_url}}">
-        {{task.project.portfolio.title}}
-      </a>
-    </li>
-    {% for parent_project in task.project.get_parent_projects %}
-      <li class="hidden-xs">
-        <a href="{{parent_project.get_absolute_url}}">
-          {{parent_project.title}}
-        </a>
-      </li>
-    {% endfor %}
-
-    <li class="hidden-xs">
-      <a href="{{task.project.get_absolute_url}}">
-        {{task.project.title}}
-      </a>
-    </li>
-
-    {% if is_question_page and current_group %}
-         <li class="hidden-xs">
-      <a href="{{task.project.get_absolute_url}}#{{current_group}}">
-        {{current_group}}
-      </a>
-    </li>
-    {% endif %}
-
-    {% endif %}
-    <li class="active">
-      {{task.title}}
-    </li>
-
-    {% if is_admin %}
-    <div class="pull-right hidden-xs">
-      <a href="#" onclick="return delete_task();"><span class="glyphicon glyphicon-trash" title="Delete answers" style="color: #BBB;"></span></a>
-    </div>
-    {% endif %}
-
-    {% if authoring_tool_enabled %}
-    <div id="author-tools" class="pull-right task-authortools">
-      <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
-        <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
-        <!-- Edit -->
-      </a>
-      &nbsp;&nbsp;
-      <a id="add_new_question" href="#" target="_blank" onclick="authoring_tool_new_question({{task.id}}, {{q.id}}, false); return false;">
-        <span class="glyphicon glyphicon-plus-sign task-glypicons" title="New Question"></span>
-        <!-- New -->
-      </a>
-      &nbsp;&nbsp;
-      <a id="download_questionnaire" href="#" target="_blank" onclick="authoring_tool_download_app('{{q.key|escapejs}}'); return false;">
-        <span class="glyphicon glyphicon-eye-open task-glypicons" title="View Source"></span>
-        <!-- Source -->
-      </a>
-    </div>
-    {% endif %}
-
-  {% endblock %}
+{% block contextbar %}{% endblock %}
 
 {% block body %}
+
+<div class="row" style="height:100%;">
+
+  <div class="col-md-3" style="margin:0px;padding:0px 0px 0px 0px;height:100%;">
+    <div id="menu" style="height: 100%;"></div>
+  </div>
+
+  <div class="col-md-9">
+
+
+    <div id="context-bar">
+      {% if is_admin %}
+        <div class="pull-right hidden-xs">
+          <a href="#" onclick="return delete_task();"><span class="glyphicon glyphicon-trash" title="Delete answers" style="color: #BBB;"></span></a>
+        </div>
+      {% endif %}
+
+      {% if authoring_tool_enabled %}
+        <div id="author-tools" class="pull-right task-authortools">
+          <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
+            <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
+            <!-- Edit -->
+          </a>
+          &nbsp;&nbsp;
+          <a id="add_new_question" href="#" target="_blank" onclick="authoring_tool_new_question({{task.id}}, {{q.id}}, false); return false;">
+            <span class="glyphicon glyphicon-plus-sign task-glypicons" title="New Question"></span>
+            <!-- New -->
+          </a>
+          &nbsp;&nbsp;
+          <a id="download_questionnaire" href="#" target="_blank" onclick="authoring_tool_download_app('{{q.key|escapejs}}'); return false;">
+            <span class="glyphicon glyphicon-eye-open task-glypicons" title="View Source"></span>
+            <!-- Source -->
+          </a>
+        </div>
+      {% endif %}
+    </div><!-- div wrapper -->
+
+    <div class="" style="max-width: 75%; text-align: left; border:0px solid pink;padding:0px 0px 0px 10px; ">
+      {{task.title}}
+    </div>
+
+
 <div id="auth-status">
-{% if task.editor == request.user %}
+  {% if task.editor == request.user %}
 
     {% for inv in open_invitations %}
       <div data-invitation-id="{{inv.id}}" class="panel panel-warning task-invitation">
@@ -147,7 +127,7 @@
       </div>
     {% endfor %}
 
-{% elif is_discussion_guest %}
+  {% elif is_discussion_guest %}
 
 <div class="text-danger small task-invitation">
     You are participating in the discussion on this question as a guest.
@@ -191,4 +171,39 @@ function delete_task() {
   return false; // cancel link
 }
 </script>
+
+
+
 {% endblock %}
+
+
+</div><!-- col-md-8 -->
+
+</div><!-- /div class row -->
+    {% block scripts %}
+        <script>
+            window.projectMenu({{ display_urls | json }});
+            function show_import_project_modal(id, callback) {
+                var m = $('#import_project_modal');
+                $("#import_loading_spinner").hide();
+                m.modal();
+            }
+
+            function fillJSONContent(file) {
+                filecontents = $('#{{import_project_form.file.auto_id}}').prop('files')[0];
+                var reader = new FileReader();
+                reader.readAsText(filecontents);
+                reader.onload = function (e) {
+                    $('#{{import_project_form.json_content.auto_id}}').val(e.target.result);
+                };
+            }
+
+            function show_spinner() {
+                $("#import_loading_spinner").show();
+            }
+
+        </script>
+
+    {% endblock %}
+
+

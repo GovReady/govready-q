@@ -58,6 +58,7 @@
 {% endblock %}
 
 {% block scripts %}
+    {{ block.super }}
 <script>
   // The download button shows a modal to ask what file format to download in.
   function download_document(document_id, system_id) {

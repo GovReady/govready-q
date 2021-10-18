@@ -136,6 +136,7 @@ h2 { margin-top: 1.5em; }
 {% endblock %}
 
 {% block scripts %}
+    {{ block.super }}
 <script>
 function change_review_state(elem, can_review) {
   // If the element isn't 'inactive', then it's the current review

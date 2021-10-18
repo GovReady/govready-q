@@ -2,7 +2,7 @@ from rest_framework.relations import PrimaryKeyRelatedField
 
 from api.base.serializers.types import ReadOnlySerializer, WriteOnlySerializer
 from api.controls.serializers.system import SimpleSystemSerializer
-from api.guidedmodules.serializers.tasks import DetailedTaskSerializer, SimpleTaskSerializer
+from api.guidedmodules.serializers.tasks import DetailedTaskSerializer, SimpleTaskSerializer, TaskSerializer
 from api.siteapp.serializers.assets import AssetMixinSerializer
 from api.siteapp.serializers.organizations import DetailedOrganizationSerializer
 from api.siteapp.serializers.portfolios import SimplePortfolioSerializer
@@ -14,7 +14,7 @@ from siteapp.models import Project, ProjectMembership, ProjectAsset, Tag
 class SimpleProjectsSerializer(ReadOnlySerializer):
     class Meta:
         model = Project
-        fields = ['is_account_project', 'is_account_project', 'extra', 'version', 'version_comment']
+        fields = ['is_account_project', 'is_deletable', 'extra', 'version', 'version_comment']
 
 
 class DetailedProjectsSerializer(SimpleProjectsSerializer):
@@ -22,7 +22,7 @@ class DetailedProjectsSerializer(SimpleProjectsSerializer):
     portfolio = SimplePortfolioSerializer()
     tags = SimpleTagSerializer(many=True)
     system = SimpleSystemSerializer()
-    root_task = SimpleTaskSerializer()
+    root_task = TaskSerializer()
 
     class Meta:
         model = Project

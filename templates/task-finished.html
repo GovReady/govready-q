@@ -349,6 +349,7 @@
 {% endblock %}
 
 {% block scripts %}
+  {{ block.super }}
   {% include "task-question-debug-links.html" %}
 
   {% if authoring_tool_enabled %}
