@@ -652,8 +652,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # because the element is not clickable -- it reports a coordinate
         # that's above the button in the site header. Not sure what's
         # happening. So load the modal using Javascript.
-        var_sleep(2)
-        self.click_element("#btn-show-project-invite")
+        wait_for_sleep_after(lambda: self.click_element("#btn-show-project-invite"))
         self.browser.execute_script("invite_user_into_project()")
         # Toggle field to invite user by email
         self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
@@ -1632,14 +1631,13 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self.click_element('#status-box-controls')
         wait_for_sleep_after(lambda: self.assertInNodeText("Selected controls", ".systems-selected-items"))
         # click project button
-        var_sleep(2)
-        self.click_element('#btn-project-home')
+        wait_for_sleep_after(lambda: self.click_element("#btn-project-home"))
         wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
         # test components
         self.click_element('#status-box-components')
         wait_for_sleep_after(lambda: self.assertInNodeText("Selected components", ".systems-selected-items"))
         # click project button
-        self.click_element('#btn-project-home')
+        wait_for_sleep_after(lambda: self.click_element("#btn-project-home"))
         wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
         # test poams
         # TODO: Restore tests if #status-box-poam is displayed
