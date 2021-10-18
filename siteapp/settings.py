@@ -500,22 +500,6 @@ if environment.get("branding"):
     INSTALLED_APPS.append(environment["branding"])
     TEMPLATES[0].setdefault('DIRS', []) \
         .insert(0, os.path.join(environment["branding"], 'templates'))
-
-
-def get_environment_bool(var, default=False):
-    return True if os.getenv(var, default) in [True, "True", "TRUE", "true"] else False
-
-
-DOCKER = get_environment_bool("docker")
-
-if not DOCKER:
-    # Depreciated
-    HEADLESS = not get_environment_bool("test_visible")
-    SELENIUM_BROWSER = "chrome"
-else:
-    HEADLESS = get_environment_bool("selenium-headless")
-    SELENIUM_BROWSER = environment.get("selenium-grid-browser", "chrome")
-
 def get_environment_bool(var, default=False):
 	return True if os.getenv(var, default) in [True, "True", "TRUE", "true"] else False
 
