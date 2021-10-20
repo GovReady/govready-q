@@ -13,6 +13,7 @@ v0.9.11.7-dev (October xx, 2021)
 **UI changes**
 
 * Use left side vertical React navigation menu for project.
+* Improve toast message appearance by limiting width.
 
 
 v0.9.11.6 (October 13, 2021)
