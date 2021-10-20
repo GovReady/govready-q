@@ -409,9 +409,7 @@ def component_library(request):
     query = request.GET.get('search')
     if query:
         try:
-            element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)
-                                                  | Q(pk__in=set(Statement.objects.filter(body__search=query).values_list('producer_element', flat=True)))
-                                                 ).exclude(element_type='system').distinct()
+            element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
         except:
             logger.info(f"Ah, you are not using Postgres for your Database!")
             element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
