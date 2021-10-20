@@ -9,11 +9,14 @@ v0.9.11.7-dev (October xx, 2021)
 * Add Django `nlp` app to system to support Natural Language Processing of SSPs and statements.
 * Include spaCy libraries as part of build.
 * Include initial, simplified candidate entity recognition script.
+* Remove full text search of statements from component library search because it was slow and returned to many results.
 
 **UI changes**
 
 * Use left side vertical React navigation menu for project.
 * Improve toast message appearance by limiting width.
+* Improve styling of project page rollovers make module actions clearer
+* Improve styling of template library.
 
 
 v0.9.11.6 (October 13, 2021)
