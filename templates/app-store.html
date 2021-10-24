@@ -169,32 +169,30 @@ Compliance Apps
         </div>
         <div class="col-md-3">
           <div class="app-quick-start-form">
-            {% if app.icon %}
-                <div class="app-icon app-icon-appstore" style="width:100px; min-height: 60px;">
-                    <img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">
-                    <div class="">
-                      {# Offer quick start button if user can only start the app in a single organization context. #}
-                      {% if app.organizations|length >= 1 %}
-                        <form action="/store/{{ app.key|urlencode }}{{ forward_qsargs }}" method="post" style="display: inline-block;">
-                            {% csrf_token %}
-                            {% if app.organizations|length > 1 %}
-                                <select id="app-org-select" class="" onchange="update_org_choice('{{ app.key }}/organization_{{ forloop.counter }}', event)">
-                                    {% for org in app.organizations %}
-                                        <option value="{{ org.slug }}">{{ org }}</option>
-                                    {% endfor %}
-                                </select>
-                            {% endif %}
-                            {% with app.organizations|first as first_org %}
-                                <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
-                            {% endwith %}
-                            {% if 'portfolio' in forward_qsargs %}{% endif %}
-                              <button type="submit" class="btn btn-success btn-xs btn-justified start-app">Start</button>
-                        </form>
+            <div class="app-icon app-icon-appstore" style="width:100px; min-height: 60px;">
+              {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
+              <div class="">
+                {# Offer quick start button if user can only start the app in a single organization context. #}
+                {% if app.organizations|length >= 1 %}
+                  <form action="/store/{{ app.key|urlencode }}{{ forward_qsargs }}" method="post" style="display: inline-block;">
+                      {% csrf_token %}
+                      {% if app.organizations|length > 1 %}
+                          <select id="app-org-select" class="" onchange="update_org_choice('{{ app.key }}/organization_{{ forloop.counter }}', event)">
+                              {% for org in app.organizations %}
+                                  <option value="{{ org.slug }}">{{ org }}</option>
+                              {% endfor %}
+                          </select>
                       {% endif %}
-                      <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-link view-app"><span class="glyphicon glyphicon-info-sign"></span> More...</a>
-                    </div>
-                </div>
-            {% endif %}
+                      {% with app.organizations|first as first_org %}
+                          <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
+                      {% endwith %}
+                      {% if 'portfolio' in forward_qsargs %}{% endif %}
+                        <button type="submit" class="btn btn-success btn-xs btn-justified start-app">Start</button>
+                  </form>
+                {% endif %}
+                <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-link view-app"><span class="glyphicon glyphicon-info-sign"></span> More...</a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
