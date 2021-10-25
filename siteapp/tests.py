@@ -464,7 +464,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         wait_for_sleep_after(lambda: self.click_element("#new-project"))
 
-        var_sleep(2)
+        var_sleep(1)
         # Click Add Button
         wait_for_sleep_after(lambda: self.click_element(".app[data-app='project/simple_project'] .start-app"))
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "I want to answer some questions on Q."))

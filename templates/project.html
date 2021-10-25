@@ -77,10 +77,6 @@
     border: 1px solid #C1C1C1;
     margin-bottom: 15px;
     padding-top: .5em;
-    {% if layout_mode == "grid" %}
-      text-align: center;
-      margin-top: 10px;
-    {% endif %}
     border-radius: 2px; /* good for highlighting */
     /*box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);*/
 
@@ -107,23 +103,29 @@
     margin: 0px 0px 0px -60px;
   }
 
-  .question-title > .btn {
-    margin: 8px 0 20px 0;
+  .question-title:hover span {display:none}
+  .question-title:hover:before {content:"Click to edit this section...";
+                                font-weight: bold;
+                                font-style: italic;
+  }
+
+  .question-status {
+    margin: 12px auto 20px auto;
+    font-size: 0.8;
+    color: #777;
   }
 
   .question .invitation {
-      font-size: 14px;
-      line-height: 128%;
-    }
+    font-size: 14px;
+    line-height: 128%;
+  }
   {% endif %}
 
   .question .question-title {
     line-height: 124%;
   }
 
-  .hr {
-
-  }
+  .hr {  }
   .hr span {
       min-width: 130px;
       max-width: 300px;
@@ -465,34 +467,23 @@
 
                     {# The label for the icon is the title of the question in the question's specification. #}
                     <div class="question-title">
-                        {# If the question has been answered, can only be answered once (i.e. is a module-type question), and the question specification allows the use of Task's title as the label ('app_overrides_name_and_icon' is not set), then use it. #}
-                        {% if not q.can_start_new_task and q.question.spec.app_overrides_name_and_icon is None %}
-                          {{q.task.title}}
+                      <span>{{q.question.spec.title}}</span>
+                      {% if q.can_start_new_task and q.question.spec.type == "module-set" %}
+                        <span class="glyphicon glyphicon-plus pull-right"></span>
+                      {% endif %}
 
-                        {# Otherwise use the question's title as the label. #}
-                        {% else %}
-                          {% if q.can_start_new_task and q.question.spec.type == "module-set" %}
-                            <span class="glyphicon glyphicon-plus pull-right"></span>
+                      <div class="question-status">
+                        {% with task=q.task %}
+                          {% if task.is_finished %}
+                          <div class="">Finished</div>
+                          {% elif task.is_started %}
+                          <div class="">In progress</div>
+                          {% else %}
+                          <div class="">Not started</div>
                           {% endif %}
-                          {{q.question.spec.title}}
-                        {% endif %}
-
-                        {# In the rows layout mode, indicate the question's progress and show a button to start or continue the task #}
-                        {% if layout_mode != "grid" %}
-                          {% with task=q.task %}
-                            <div class=""></div>
-                            {% if layout_mode == "rows" %}
-                            {% if task.is_finished %}
-                            <div class="btn btn-sm btn-default project-button-finished">Finished</div>
-                            {% elif task.is_started %}
-                            <div class="btn btn-sm btn-default">In progress - click to finish</div>
-                            {% else %}
-                            <div class="btn btn-sm btn-default">Click here to start section</div>
-                            {% endif %}
-                            {% endif %}
-                          {% endwith %}
-                        {% endif %}
+                        {% endwith %}
                       </div>
+                    </div>
 
                     {# Once again, different HTML depending on the layout mode being used. For row mode, end the column and the row. #}
                     {% if layout_mode == "rows" %}
@@ -512,14 +503,6 @@
                   {# Show invitations and discussions for this question below the icon and label. #}
 
                   <div class="question-body">
-                    {# Show open invitations related to this question. #}
-                    {% for inv in q.invitations %}
-                      <p class="invitation" data-invitation-id="{{inv.id}}">
-                        You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
-                        (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
-                      </p>
-                    {% endfor %}
-
                       {# If the user is a guest participant in a discussion inside this question, link to this discussion. They can't view the task directly. (?) #}
                       {% if q.discussions %}
                       <div>
@@ -536,17 +519,6 @@
             </div> <!-- /question-group -->
             {% endfor %} {# group #}
 
-            {% comment %}
-            {% if columns|length > 0 and column.groups|length == 0 %}
-              <p class="project-question-comment">
-                {% if column.has_tasks_on_left %}
-                  There are no tasks in this column yet.
-                {% else %}
-                  There are no more tasks in this column. Congrats!
-                {% endif %}
-              </p>
-            {% endif %}
-            {% endcomment %}
         </div> <!-- /question-column -->
       </div> <!-- /col -->
     {% endfor %} {# column #}

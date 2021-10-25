@@ -10,6 +10,13 @@ This also assumes you can run as root/administrator.  This is due to ports being
 
 Allocate to Docker as much Memory, Swap, and CPUS as you can. For example, GovReady-Q performs much better on a 2015 Quad-Core MacBook Pro with CPUs: 3, Memory: 9GB, SWAP: 4GB, and Disk image size: 50+GB.
 
+## Docker on Mac Notes
+
+For Docker version 20.x on MacOS, disable docker-compose v-2 to avoid blocking automated restart of docker after code changes when in "dev" mode.
+
+```bash
+docker-compose disable-v2
+```
 
 ## How To
 1. Configure
