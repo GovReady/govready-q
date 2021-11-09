@@ -1,0 +1,211 @@
+{% extends "task-base.html" %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+Next Question: {{q.spec.title}} | {{task.title}}
+{% endblock %}
+
+{% block head %}
+
+<link href="{% static "vendor/emojione/emojione-sprite-24.min.css" %}" rel="stylesheet">
+{% if q.spec.type == "longtext" %}
+  <link href="{% static "vendor/quill/quill.snow.css" %}" rel="stylesheet">
+{% endif %}
+
+{{block.super}}
+
+<style>
+
+  h1 {
+    margin: 4px 0 18px 0;
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+/*  .form-control {
+    font-size: 14pt;
+    height: 34pt;
+  }*/
+
+  .question {
+    font-size: 10pt;
+  }
+    .question form.disabled label {
+      color: #777;
+      cursor: not-allowed;
+    }
+
+  .question-prompt blockquote {
+    font-size: inherit;
+  }
+
+  .question-prompt {
+    margin: 10px 10px 10px 0px;
+    font-weight: 700;
+  }
+
+  /* since prompts will likely use Markdown ##'s to delimit sections,
+      which we render as h3 because we demote all levels, re-adjust
+      styles */
+  .question-prompt h3 {
+    font-size: 110%;
+    font-weight: bold;
+  }
+
+  {% if q.spec.type == "module" %}
+  .question .radio label {
+    margin: .25em 0;
+  }
+  {% endif %}
+
+  {% if q.spec.type == "interstitial" %}
+    .question img {
+      display: block; /* so that horizontal auto margin centers */
+      margin: 30px auto;
+    }
+  {% endif %}
+
+  {% if q.spec.type == "longtext" %}
+  .question .ql-container {
+    font-size: 10pt !important; /* override default quill style */
+    /*font-family: trebuchet ms;*/
+  }
+  .question .ql-container p {
+    margin-bottom: .75em;
+  }
+    .question .ql-container p:last-child {
+      margin-bottom: 0;
+    }
+  {% endif %}
+
+  label .onhover { display: none; }
+  label:hover .onhover { display: inline; }
+
+
+  #reference-text-wrapper *:first-child { margin-top: 0; }
+
+  /* Legacy background and focus area styling for question pages */
+  body { /*background-color: rgb(247,247,247);*/ }
+
+  #focus-area-wrapper {
+    border-radius: 3px;
+    border: 3px solid rgb(204, 204, 204);
+    padding: 2em 2em 3em 2em;
+    background-color: white;
+    /*background-color: rgba(253,253,253,1);*/
+    /* on mobile, space between columns */
+    margin-bottom: 30px;
+    font-size: 10pt;
+  }
+
+  .datagrid-text {
+    font-size: 0.8em;
+  }
+
+  .datagrid-text-select {
+    font-size: 1.0em;
+  }
+
+</style>
+{% endblock %}
+
+{% block body %}
+{{block.super}}
+
+
+<h2>{{ module.spec.title }}</h2>
+
+{% for q in module_questions %}
+<div class="row" style="padding-left: 22px;">
+  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-7 col-xl-6" style="background-color: rgb(250, 250, 250); border: 0.5px solid #eee; border-bottom: 1px solid #bbb;">
+
+    <!-- <h1>{{q.spec.title|safe}}</h1> -->
+    <!-- {{ q.spec }}<br> -->
+
+    <div class="question">
+        <form {% if not write_priv %}class="disabled"{% endif %} autocomplete="off">
+            <input type="hidden" name="question" value="{{q.id}}">
+            <input type="hidden" name="method" value="save">
+
+            <p class="pull-right">{{ forloop.counter }}</p>
+            <div class="question-prompt" contenteditable="true">{{ q.spec.prompt|safe }}</div>
+            <p>{{ q.spec.type }}</p>
+
+<!--             <div class="form-group">
+              <label for="authoring_tool_qtitle" class="col-sm-2 control-label">Prompt</label>
+              <div class="col-sm-10">
+                <textarea id="authoring_tool_qtitle" name="title" style="width:100%;">{{q.spec.prompt}}</textarea>
+                <span class="help-block">Prompt for question</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="authoring_tool_qtitle" class="col-sm-2 control-label">Title</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="authoring_tool_qtitle" name="title" value="{{q.spec.title}}">
+                <span class="help-block">Title for question shown in progress list and elsewhere.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="authoring_tool_type" class="col-sm-2 control-label">Type</label>
+              <div class="col-sm-10">
+                <select class="form-control" id="authoring_tool_type" onchange="_val = $(this).val(); $('#authoring_tool_q_type_options>div, #authoring_tool_q_type_options .toggled').each(function() { $(this)[$(this).hasClass('authoring_q_type_' + _val) ? 'fadeIn' : 'hide']() });" name="type">
+                  <optgroup label="Text Questions">
+                    <option value="text" {% if q.spec.type == "text" %}selected{% endif %}>Text (Single Line)</option>
+                    <option value="password" {% if q.spec.type == "password" %}selected{% endif %}>Password</option>
+                    <option value="email-address" {% if q.spec.type == "email-address" %}selected{% endif %}>Email Address</option>
+                    <option value="url" {% if q.spec.type == "url" %}selected{% endif %}>Web Address (URL)</option>
+                    <option value="longtext" {% if q.spec.type == "longtext" %}selected{% endif %}>Paragraph (Rich Text/Markdown)</option>
+                  </optgroup>
+                  <optgroup label="Choice Questions">
+                    <option value="date" {% if q.spec.type == "date" %}selected{% endif %}>Date</option>
+                    <option value="yesno" {% if q.spec.type == "yesno" %}selected{% endif %}>Yes/No</option>
+                    <option value="choice" {% if q.spec.type == "choice" %}selected{% endif %}>Single Choice</option>
+                    <option value="choice-from-data" {% if q.spec.type == "choice-from-data" %}selected{% endif %}>Single Choice from Data</option>
+                    <option value="multiple-choice" {% if q.spec.type == "multiple-choice" %}selected{% endif %}>Multiple Choice</option>
+                    <option value="multiple-choice-from-data" {% if q.spec.type == "multiple-choice-from-data" %}selected{% endif %}>Multiple Choice from Data</option>
+                    <option value="datagrid" {% if q.spec.type == "datagrid" %}selected{% endif %}>Datagrid</option>
+                  </optgroup>
+                  <optgroup label="Number Questions">
+                    <option value="integer" {% if q.spec.type == "integer" %}selected{% endif %}>Integer</option>
+                    <option value="real" {% if q.spec.type == "real" %}selected{% endif %}>Any Number</option>
+                  </optgroup>
+                  <optgroup label="Media Questions">
+                    <option value="interstitial" {% if q.spec.type == "interstitial" %}selected{% endif %}>Interstitial</option>
+                    <option value="file" {% if q.spec.type == "file" %}selected{% endif %}>File Upload</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+            <p>&nbsp;</p>
+            <div class="form-group">
+              <label for="authoring_tool_qid" class="col-sm-2 control-label">ID</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="authoring_tool_qid" pattern="[a-zA-Z_][a-zA-Z0-9_]*" name="newid" value="{{q.spec.id}}">
+                <span class="help-block">Identifier for question used in templates and the API.</span>
+              </div>
+            </div> -->
+
+
+        </form>
+    </div><!-- /question -->
+  </div> <!-- /focus-area-wrapper -->
+</div> <!-- /row -->
+{% endfor %}
+
+{% include "task-question-debug-links.html" %}
+
+{% if authoring_tool_enabled %}
+{# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
+{% include "authoring-tool-modal.html" %}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+
+
+{% endblock %}

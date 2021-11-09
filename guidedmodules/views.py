@@ -625,6 +625,49 @@ def save_answer(request, task, answered, context, __):
     # Return the response.
     return response
 
+def show_questions(request, task_id, module):
+
+    print(0, "====", f"request: {request.__dict__}")
+    print(1, "====", f"task_id: {task_id}")
+    print(2, "====", f"module: {module}")
+
+    task = Task.objects.get(pk=task_id)
+    module_id = task.module_id
+    module = task.module
+    module_questions = module.questions.all()
+    import json
+    questions_list = "<br>".join([json.dumps(q.spec, indent=2) for q in module.questions.all()])
+    # module_questions = task.module.questions.all()
+
+    print(3, "====", f"module_questions: {module_questions}")
+
+
+    # quick hack to render prompt correctly
+    # What's the title/h1 of the page and the rest of the prompt? Render the
+    # prompt field. If it starts with a paragraph, turn that paragraph into
+    # the title.
+    for q in module_questions:
+        pass
+        # title = q.spec["title"]
+        # prompt = render_markdown_field("prompt", "html")
+        # m = re.match(r"^<p>([\w\W]*?)</p>\s*", prompt)
+        # if m:
+        #     title = m.group(1)
+        #     prompt = prompt[m.end():]
+
+    context = {}
+    context.update({
+        "module": module,
+        "module_questions": module_questions,
+        # "q": q,
+        # "title": title,
+        # "prompt": prompt,
+    })
+
+    # return HttpResponse(f"rendering show_questions<br>{task.__dict__}<br><pre>{questions_list}</pre>")
+    return render(request, "questions.html", context)
+
+
 @task_view
 def show_question(request, task, answered, context, q):
     # Let's talk about where the data is for this question. The 'q'
