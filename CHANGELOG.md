@@ -8,6 +8,12 @@ v0.9.12 (November 10, 2021)
 
 * Update .gitattributes configuration for EOL character for cross-platform development.
 
+v0.9.11.2.1 (October 7, 2021)
+-----------------------------
+
+**Developer changes**
+
+* Update requirements (again).
 
 v0.9.11.2 (September 22, 2021)
 ----------------------------
