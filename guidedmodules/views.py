@@ -634,7 +634,7 @@ def show_questions(request, task_id, module):
     task = Task.objects.get(pk=task_id)
     module_id = task.module_id
     module = task.module
-    module_questions = module.questions.all()
+    module_questions = module.questions.all().order_by('definition_order')
     import json
     questions_list = "<br>".join([json.dumps(q.spec, indent=2) for q in module.questions.all()])
     # module_questions = task.module.questions.all()
@@ -659,6 +659,10 @@ def show_questions(request, task_id, module):
     context.update({
         "module": module,
         "module_questions": module_questions,
+        "authoring_tool_enabled": False,
+        "task": task,
+        "system": task.project.system,
+        "ADMIN_ROOT_URL": settings.SITE_ROOT_URL + "/admin",
         # "q": q,
         # "title": title,
         # "prompt": prompt,

@@ -107,30 +107,49 @@ Next Question: {{q.spec.title}} | {{task.title}}
     font-size: 1.0em;
   }
 
+  textarea {
+    padding: 12px 12px 12px 12px;
+  }
+
+  input, textarea, select {
+    margin-bottom: 8px;
+  }
+
 </style>
 {% endblock %}
 
 {% block body %}
 {{block.super}}
 
-
-<h2>{{ module.spec.title }}</h2>
+<div class="col-sm-12 pull-left">{{ module_questions|length }} questions</div>
 
 {% for q in module_questions %}
+<div class="col-sm-12 pull-left hidden">{{ forloop.counter0 }}</div>
+<div>&nbsp;</div>
 <div class="row" style="padding-left: 22px;">
-  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-7 col-xl-6" style="background-color: rgb(250, 250, 250); border: 0.5px solid #eee; border-bottom: 1px solid #bbb;">
-
-    <!-- <h1>{{q.spec.title|safe}}</h1> -->
-    <!-- {{ q.spec }}<br> -->
+  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-9 col-lg-9 col-xl-9" style="background-color: rgb(250, 250, 250); border: 0.5px solid #eee; border-bottom: 1px solid #bbb;">
 
     <div class="question">
-        <form {% if not write_priv %}class="disabled"{% endif %} autocomplete="off">
+
+        <form autocomplete="off" action="" method="post" class="comment-form">
+          <div class="form-group">
             <input type="hidden" name="question" value="{{q.id}}">
             <input type="hidden" name="method" value="save">
+          </div>
 
-            <p class="pull-right">{{ forloop.counter }}</p>
-            <div class="question-prompt" contenteditable="true">{{ q.spec.prompt|safe }}</div>
-            <p>{{ q.spec.type }}</p>
+          <div class="form-group">
+              <label for="key" class="col-sm-2 control-label">Key</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="key" name="key" value="{{q.key}}">
+              </div>
+          </div>
+
+          <div class="form-group">
+              <label for="question_prompt" class="col-sm-2 control-label">Prompt</label>
+              <div class="col-sm-10">
+                <textarea class="form-control" name="question_prompt" style="width: 100%; min-height: 100px;">{{ q.spec.prompt }}</textarea>
+              </div>
+          </div>
 
 <!--             <div class="form-group">
               <label for="authoring_tool_qtitle" class="col-sm-2 control-label">Prompt</label>
@@ -147,7 +166,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
                 <span class="help-block">Title for question shown in progress list and elsewhere.</span>
               </div>
             </div>
-
+-->
             <div class="form-group">
               <label for="authoring_tool_type" class="col-sm-2 control-label">Type</label>
               <div class="col-sm-10">
@@ -179,6 +198,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
                 </select>
               </div>
             </div>
+<!--
             <p>&nbsp;</p>
             <div class="form-group">
               <label for="authoring_tool_qid" class="col-sm-2 control-label">ID</label>
@@ -188,6 +208,23 @@ Next Question: {{q.spec.title}} | {{task.title}}
               </div>
             </div> -->
 
+          <div class="form-group">
+              <label for="definition_order" class="col-sm-2 control-label">Order</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="definition_order" name="definition_order" value="{{q.definition_order}}">
+              </div>
+          </div>
+
+            <p>&nbsp;</p>
+          <div class="form-group col-sm-12">
+            <input class="pull-right" name="submit" class="submitform" type="submit" id="submit" value="save">
+          </div>
+
+          <div class="pull-right">
+            {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/modulequestion/{{q.id}}" target="_blank" style="color:#bbb; font-size:9pt;">{% endif %}
+            <div id="debug-question-key" title="guidedmodules/modulequestion/{{q.id}}">DB Record</div>{% if user.is_staff %}</a>{% endif %}
+            <div class="pull-right help" style="color:#bbb; font-size:9pt;">Add question</div>
+          </div>
 
         </form>
     </div><!-- /question -->
@@ -197,10 +234,27 @@ Next Question: {{q.spec.title}} | {{task.title}}
 
 {% include "task-question-debug-links.html" %}
 
-{% if authoring_tool_enabled %}
+{# if authoring_tool_enabled #}
 {# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
 {% include "authoring-tool-modal.html" %}
-{% endif %}
+
+
+<script>
+
+$('.comment-form').on('submit', function(e) {
+  e.preventDefault();
+  // var test2 = $(this).find('input[name="test2"]').val();
+  // console.log(test2);
+
+  var test2 = $(this).find('textarea[name="question_prompt"]').val();
+  console.log(test2);
+  // var question_prompt = $(this).find('.question-prompt').html();
+  // console.log(question_prompt);
+});
+</script>
+
+
+{# endif #}
 
 {% endblock %}
 
