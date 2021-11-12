@@ -121,7 +121,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
 {% block body %}
 {{block.super}}
 
-<div class="col-sm-12 pull-left">{{ module_questions|length }} questions</div>
+<div class="col-sm-12 pull-left" style="margin-top: 16px;">Edit "{{ task.title }}" module's {{ module_questions|length }} questions</div>
 
 {% for q in module_questions %}
 <div class="col-sm-12 pull-left hidden">{{ forloop.counter0 }}</div>
@@ -243,13 +243,10 @@ Next Question: {{q.spec.title}} | {{task.title}}
 
 $('.comment-form').on('submit', function(e) {
   e.preventDefault();
-  // var test2 = $(this).find('input[name="test2"]').val();
-  // console.log(test2);
 
   var test2 = $(this).find('textarea[name="question_prompt"]').val();
   console.log(test2);
-  // var question_prompt = $(this).find('.question-prompt').html();
-  // console.log(question_prompt);
+  alert('question_prompt: '+test2);
 });
 </script>
 
