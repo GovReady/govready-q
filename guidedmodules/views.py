@@ -627,9 +627,9 @@ def save_answer(request, task, answered, context, __):
 
 def show_questions(request, task_id, module):
 
-    print(0, "====", f"request: {request.__dict__}")
-    print(1, "====", f"task_id: {task_id}")
-    print(2, "====", f"module: {module}")
+    # print(0, "====", f"request: {request.__dict__}")
+    # print(1, "====", f"task_id: {task_id}")
+    # print(2, "====", f"module: {module}")
 
     task = Task.objects.get(pk=task_id)
     module_id = task.module_id
@@ -639,7 +639,7 @@ def show_questions(request, task_id, module):
     questions_list = "<br>".join([json.dumps(q.spec, indent=2) for q in module.questions.all()])
     # module_questions = task.module.questions.all()
 
-    print(3, "====", f"module_questions: {module_questions}")
+    # print(3, "====", f"module_questions: {module_questions}")
 
 
     # quick hack to render prompt correctly

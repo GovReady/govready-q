@@ -250,7 +250,27 @@ $('.comment-form').on('submit', function(e) {
 
   var test2 = $(this).find('textarea[name="question_prompt"]').val();
   console.log(test2);
-  alert('question_prompt: '+test2);
+
+
+  var data = $(this).serializeArray();
+  console.log(data);
+  // alert('data: '+data);
+  data.push( { name: "task", value: {{ task.id }} } );
+  // data.push( { name: "question", value: q_authoring_tool_state.current_question } );
+  // ajax_with_indicator({
+  //     url: "/tasks/_authoring_tool/edit-question",
+  //     method: "POST",
+  //     data: data,
+  //     keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+  //     success: function(res) {
+  //       // Modal can stay up until the redirect finishes.
+  //       window.location = res.redirect;
+  //       if (window.location.hash.length > 1)
+  //         window.location.reload(); // if there is a # in the URL, the browser won't actually reload
+  //     }
+  // })
+
+
 });
 </script>
 
