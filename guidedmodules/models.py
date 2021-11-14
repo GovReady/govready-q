@@ -705,6 +705,10 @@ class Task(BaseModel):
             import urllib.parse
             return self.get_absolute_url() + "/question/" + urllib.parse.quote(question.key)
 
+    def get_absolute_url_to_questions(self, question):
+        import urllib.parse
+        return self.get_absolute_url() + "/questions/"
+
     def get_static_asset_url(self, asset_path, use_data_urls=False):
         if asset_path not in self.module.app.asset_paths:
             # This path is not an asset, so just return the path as it's probably an absolute URL.

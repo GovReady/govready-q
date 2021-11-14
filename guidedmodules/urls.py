@@ -6,10 +6,13 @@ admin.autodiscover()
 import guidedmodules.views
 
 urlpatterns = [
+
+    # multi-question authoring tool
+    url(r'^(\d+)/([\w_-]+)/questions/$', guidedmodules.views.show_questions, name="show_questions"),
+    url(r'^_authoring_tool/edit-question-new$', guidedmodules.views.authoring_edit_question_new),
+
+    # question management urls
     url(r'^(\d+)/([\w_-]+)(/_save)()$', guidedmodules.views.save_answer),
-
-    url(r'^(\d+)/([\w_-]+)/questions/$', guidedmodules.views.show_questions),
-
     url(r'^(\d+)/([\w_-]+)(/question/)([\w_-]+)$', guidedmodules.views.show_question),
     url(r'^(\d+)/([\w_-]+)(/question/)([\w_-]+)/history/(\d+)/media$', guidedmodules.views.download_answer_file),
     url(r'^(\d+)/([\w_-]+)(/finished)()$', guidedmodules.views.task_finished),

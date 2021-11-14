@@ -148,10 +148,18 @@ Next Question: {{q.spec.title}} | {{task.title}}
               </div>
           </div>
 
-          <div class="form-group">
-              <label for="question_prompt" class="col-sm-2 control-label">Prompt</label>
+            <div class="form-group">
+              <label for="authoring_tool_qtitle" class="col-sm-2 control-label">Title</label>
               <div class="col-sm-10">
-                <textarea class="form-control" name="question_prompt" style="width: 100%; min-height: 100px;">{{ q.spec.prompt }}</textarea>
+                <input type="text" class="form-control" id="authoring_tool_qtitle" name="title" value="{{q.spec.title}}">
+                <span class="help-block">Title for question shown in progress list and elsewhere.</span>
+              </div>
+            </div>
+
+          <div class="form-group">
+              <label for="prompt" class="col-sm-2 control-label">Prompt</label>
+              <div class="col-sm-10">
+                <textarea class="form-control" name="prompt" style="width: 100%; min-height: 100px;">{{ q.spec.prompt }}</textarea>
               </div>
           </div>
 
@@ -162,15 +170,8 @@ Next Question: {{q.spec.title}} | {{task.title}}
                 <span class="help-block">Prompt for question</span>
               </div>
             </div>
-
-            <div class="form-group">
-              <label for="authoring_tool_qtitle" class="col-sm-2 control-label">Title</label>
-              <div class="col-sm-10">
-                <input type="text" class="form-control" id="authoring_tool_qtitle" name="title" value="{{q.spec.title}}">
-                <span class="help-block">Title for question shown in progress list and elsewhere.</span>
-              </div>
-            </div>
 -->
+
             <div class="form-group">
               <label for="authoring_tool_type" class="col-sm-2 control-label">Type</label>
               <div class="col-sm-10">
@@ -248,27 +249,29 @@ Next Question: {{q.spec.title}} | {{task.title}}
 $('.comment-form').on('submit', function(e) {
   e.preventDefault();
 
-  var test2 = $(this).find('textarea[name="question_prompt"]').val();
-  console.log(test2);
-
+  var prompt = $(this).find('textarea[name="prompt"]').val();
+  console.log(prompt);
 
   var data = $(this).serializeArray();
-  console.log(data);
+
   // alert('data: '+data);
   data.push( { name: "task", value: {{ task.id }} } );
-  // data.push( { name: "question", value: q_authoring_tool_state.current_question } );
-  // ajax_with_indicator({
-  //     url: "/tasks/_authoring_tool/edit-question",
-  //     method: "POST",
-  //     data: data,
-  //     keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
-  //     success: function(res) {
-  //       // Modal can stay up until the redirect finishes.
-  //       window.location = res.redirect;
-  //       if (window.location.hash.length > 1)
-  //         window.location.reload(); // if there is a # in the URL, the browser won't actually reload
-  //     }
-  // })
+  data.push( { name: "question", value: $(this).find('input[name="key"]').val() } );
+
+  console.log(data);
+
+  ajax_with_indicator({
+      url: "/tasks/_authoring_tool/edit-question-new",
+      method: "POST",
+      data: data,
+      keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      success: function(res) {
+        // Modal can stay up until the redirect finishes.
+        window.location = res.redirect;
+        if (window.location.hash.length > 1)
+          window.location.reload(); // if there is a # in the URL, the browser won't actually reload
+      }
+  })
 
 
 });
