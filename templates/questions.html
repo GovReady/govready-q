@@ -135,7 +135,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
 
     <div class="question">
 
-        <form autocomplete="off" action="" method="post" class="comment-form">
+        <form autocomplete="off" action="" method="post" class="comment-form" onsubmit="return false;">
           <div class="form-group">
             <input type="hidden" name="question" value="{{q.id}}">
             <input type="hidden" name="method" value="save">
@@ -223,6 +223,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
             <p>&nbsp;</p>
           <div class="form-group col-sm-12">
             <input class="pull-right" name="submit" class="submitform" type="submit" id="submit" value="save">
+            <div class="success-msg pull-right" style="display: inline; margin: 4px 20px 0px 0px; color: green;"></div>
           </div>
 
           <div class="pull-right">
@@ -248,32 +249,33 @@ Next Question: {{q.spec.title}} | {{task.title}}
 
 $('.comment-form').on('submit', function(e) {
   e.preventDefault();
-
-  var prompt = $(this).find('textarea[name="prompt"]').val();
+  var formElm = $(this)
+  var prompt = formElm.find('textarea[name="prompt"]').val();
   console.log(prompt);
-
-  var data = $(this).serializeArray();
-
-  // alert('data: '+data);
+  var data = formElm.serializeArray();
   data.push( { name: "task", value: {{ task.id }} } );
-  data.push( { name: "question", value: $(this).find('input[name="key"]').val() } );
-
+  data.push( { name: "question", value: formElm.find('input[name="key"]').val() } );
   console.log(data);
-
   ajax_with_indicator({
       url: "/tasks/_authoring_tool/edit-question-new",
       method: "POST",
       data: data,
-      keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
       success: function(res) {
         // Modal can stay up until the redirect finishes.
-        window.location = res.redirect;
-        if (window.location.hash.length > 1)
-          window.location.reload(); // if there is a # in the URL, the browser won't actually reload
+        console.log(res)
+        if (res['status'] == "success") {
+          formElm.find('.success-msg').fadeIn().text('saved')
+        }
+        // window.location = res.redirect;
+        // if (window.location.hash.length > 1)
+          // window.location.reload(); // if there is a # in the URL, the browser won't actually reload
       }
-  })
-
-
+  });
+  setTimeout(function () {
+      formElm.find('.success-msg').fadeOut().text('');
+  }, 2000);
+  return false; // Stop form reloading page
 });
 </script>
 

@@ -1770,10 +1770,6 @@ def authoring_edit_question_new(request):
     task = get_object_or_404(Task, id=request.POST["task"])
     question = get_object_or_404(ModuleQuestion, module=task.module, key=request.POST['key'])
 
-    print(1,"===","authoring_edit_question_new")
-    print(2,"===",request.POST)
-    print(3,"===question", question)
-
     try:
 
         # Get existing specification (json) for quesiton
@@ -1797,7 +1793,7 @@ def authoring_edit_question_new(request):
                 else:
                     spec[field] = value
 
-            # Save.
+        # Save.
         question.spec = spec
         question.save()
 
@@ -1807,7 +1803,9 @@ def authoring_edit_question_new(request):
 
         # Return status. The browser will reload/redirect --- if the question key
         # changed, this sends the new key.
-        return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url_to_questions(question) })
+        from django.core import serializers
+        serialized_obj = serializers.serialize('json', [question, ])
+        return JsonResponse({ "status": "success", "message": "the message", "questionobj": serialized_obj })
 
     except ValueError as e:
         return JsonResponse({ "status": "error", "message": str(e) })
