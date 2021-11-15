@@ -8,7 +8,7 @@ import guidedmodules.views
 urlpatterns = [
 
     # multi-question authoring tool
-    url(r'^(\d+)/([\w_-]+)/questions/$', guidedmodules.views.show_questions, name="show_questions"),
+    url(r'^module/(\d+)/questions$', guidedmodules.views.show_module_questions, name="show_module_questions"),
     url(r'^_authoring_tool/edit-question-new$', guidedmodules.views.authoring_edit_question_new),
 
     # question management urls

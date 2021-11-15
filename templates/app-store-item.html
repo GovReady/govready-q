@@ -129,6 +129,9 @@
                 <button id="" type="submit" class="btn btn-link">
                     <a href="/store/{{app.key|urlencode}}/zip" class="back-to-link"> <span class="glyphicon glyphicon-download"></span> Download zip</a>
                 </button>
+                <button id="" type="submit" class="btn btn-link">
+                    <a href="/store/app/{{app.appversion_id}}/modules" class="back-to-link"> <span class="glyphicon glyphicon-pencil"></span> Edit</a>
+                </button>
             </div>
         </div>
         <!-- Divider -->
@@ -180,6 +183,12 @@
                     {% endif %}
                 </div>
             </div>
+            <div class="col-lg4 col-sm-4">
+                <div><span class="meta-key">AppVersion ID</span><br>
+                      {{app.appversion_id}}
+                </div>
+            </div>
+
 
         </div>
     </div>

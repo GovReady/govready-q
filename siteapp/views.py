@@ -359,6 +359,7 @@ def get_compliance_apps_catalog_for_user(user):
     # Turn the organization sets into a list because the templates use |first.
     catalog = catalog.values()
     for app in catalog:
+        # print("\n\n app",app)
         app["organizations"] = sorted(app["organizations"], key=lambda org: org.name)
 
     return catalog
@@ -408,6 +409,7 @@ def render_app_catalog_entry(appversion, appversions, organization):
 
     return {
         # app identification
+        "appversion_id": appversion.id,
         "appsource_id": appversion.source.id,
         "key": key,
 
@@ -723,6 +725,15 @@ def apps_catalog_item(request, source_slug, app_name):
         "portfolio": portfolio
     })
 
+@login_required
+def apps_catalog_item_modules(request, appversion_id):
+
+    app = AppVersion.objects.get(pk=appversion_id)
+
+    # Show the "app" modules
+    return render(request, "appversion_modules.html", {
+        "app": app,
+    })
 
 @login_required
 def apps_catalog_item_zip(request, source_slug, app_name):

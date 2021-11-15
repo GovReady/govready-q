@@ -1,9 +1,9 @@
-{% extends "task-base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% load q %}
 
 {% block title %}
-Next Question: {{q.spec.title}} | {{task.title}}
+Question editor
 {% endblock %}
 
 {% block head %}
@@ -23,7 +23,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
     font-weight: bold;
   }
 
-/*  .form-control {
+  /*  .form-control {
     font-size: 14pt;
     height: 34pt;
   }*/
@@ -125,17 +125,25 @@ Next Question: {{q.spec.title}} | {{task.title}}
 {% block body %}
 {{block.super}}
 
-<div class="col-sm-12 pull-left" style="margin-top: 16px;">Edit "{{ task.title }}" module's {{ module_questions|length }} questions</div>
+
+<div class="row" style="width: 750px; margin-top: 16px;margin: auto;margin-bottom: 12px;">
+  <h2 style="font-weight:bold; padding-top:0; margin:0;">
+    {{ module.app.catalog_metadata.title }}
+    {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
+  </h2>
+  <div><span class="">Version</span> {{ module.app.version_number }}</div>
+</div>
+<div class="row" style="margin-top: 16px; width: 750px; margin: auto;margin-bottom: 20px;">
+  <p>Edit the <b>{{ module_questions|length }} questions</b> of module <b>{{ module.title }}</b></p>
+</div>
 
 {% for q in module_questions %}
-<div class="col-sm-12 pull-left hidden">{{ forloop.counter0 }}</div>
-<div>&nbsp;</div>
-<div class="row" style="padding-left: 22px;">
-  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-9 col-lg-9 col-xl-9" style="background-color: rgb(250, 250, 250); border: 0.5px solid #eee; border-bottom: 1px solid #bbb;">
-
+<div class="row" style="width: 750px; margin: auto; margin-bottom: 20px;">
+  <div id="focus-area-wrapper" class="" style="background-color: rgb(250, 250, 250); border: 0.5px solid #eee; border-bottom: 1px solid #bbb;">
     <div class="question">
 
         <form autocomplete="off" action="" method="post" class="comment-form" onsubmit="return false;">
+          <div>Question {{ forloop.counter0 }}</div>
           <div class="form-group">
             <input type="hidden" name="question" value="{{q.id}}">
             <input type="hidden" name="method" value="save">
@@ -152,7 +160,6 @@ Next Question: {{q.spec.title}} | {{task.title}}
               <label for="authoring_tool_qtitle" class="col-sm-2 control-label">Title</label>
               <div class="col-sm-10">
                 <input type="text" class="form-control" id="authoring_tool_qtitle" name="title" value="{{q.spec.title}}">
-                <span class="help-block">Title for question shown in progress list and elsewhere.</span>
               </div>
             </div>
 
@@ -220,15 +227,16 @@ Next Question: {{q.spec.title}} | {{task.title}}
               </div>
           </div>
 
-            <p>&nbsp;</p>
+          <p>&nbsp;</p>
           <div class="form-group col-sm-12">
             <input class="pull-right" name="submit" class="submitform" type="submit" id="submit" value="save">
             <div class="success-msg pull-right" style="display: inline; margin: 4px 20px 0px 0px; color: green;"></div>
           </div>
 
+          <div>&nbsp;</div>
           <div class="pull-right">
             {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/modulequestion/{{q.id}}" target="_blank" style="color:#bbb; font-size:9pt;">{% endif %}
-            <div id="debug-question-key" title="guidedmodules/modulequestion/{{q.id}}">DB Record</div>{% if user.is_staff %}</a>{% endif %}
+            <div id="debug-question-key" title="guidedmodules/modulequestion/{{q.id}}">Edit database</div>{% if user.is_staff %}</a>{% endif %}
             <div class="pull-right help" style="color:#bbb; font-size:9pt;">Add question</div>
           </div>
 
@@ -238,13 +246,6 @@ Next Question: {{q.spec.title}} | {{task.title}}
 </div> <!-- /row -->
 {% endfor %}
 
-{% include "task-question-debug-links.html" %}
-
-{# if authoring_tool_enabled #}
-{# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
-{% include "authoring-tool-modal.html" %}
-
-
 <script>
 
 $('.comment-form').on('submit', function(e) {
@@ -253,14 +254,14 @@ $('.comment-form').on('submit', function(e) {
   var prompt = formElm.find('textarea[name="prompt"]').val();
   console.log(prompt);
   var data = formElm.serializeArray();
-  data.push( { name: "task", value: {{ task.id }} } );
+  data.push( { name: "module_id", value: {{ module.id }} } );
   data.push( { name: "question", value: formElm.find('input[name="key"]').val() } );
   console.log(data);
   ajax_with_indicator({
       url: "/tasks/_authoring_tool/edit-question-new",
       method: "POST",
       data: data,
-      keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      keep_indicator_forever: false,
       success: function(res) {
         // Modal can stay up until the redirect finishes.
         console.log(res)

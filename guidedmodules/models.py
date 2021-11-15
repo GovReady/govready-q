@@ -182,6 +182,11 @@ class AppVersion(BaseModel):
             raise ValueError("{} is not an asset in {}.".format(asset_path, self))
         return self.asset_files.get(source=self.source, content_hash=self.asset_paths[asset_path]).file
 
+    @property
+    def icon(self):
+        size = 128
+        icon = image_to_dataurl(self.get_asset(self.catalog_metadata["icon"]), size)
+
     def catalog_metadata_yaml(self):
         import rtyaml
         return rtyaml.dump(self.catalog_metadata)
