@@ -24,6 +24,9 @@ class DetailedAppSourceSerializer(SimpleAppSourceSerializer):
 
 
 class SimpleAppVersionSourceSerializer(ReadOnlySerializer):
+    catalog_metadata = serializers.JSONField()
+    asset_paths = serializers.JSONField()
+
     class Meta:
         model = AppVersion
         fields = ['appname', 'system_app', 'catalog_metadata', 'version_number', 'version_name', 'input_paths',
