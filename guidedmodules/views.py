@@ -1,4 +1,5 @@
 import os
+import json
 
 from datetime import datetime
 from zipfile import ZipFile
@@ -627,36 +628,15 @@ def save_answer(request, task, answered, context, __):
 
 def show_module_questions(request, module_id):
 
-    module = Module.objects.get(pk=module_id)
+    module = Module.objects.select_related('app').get(pk=module_id)
+    module_questions = ModuleQuestion.objects.filter(module=module).order_by('definition_order')
 
-    # print(0, "====", f"request: {request.__dict__}")
-    # print(2, "====", f"module: {module}")
-
-    module_questions = module.questions.all().order_by('definition_order')
-    import json
-    questions_list = "<br>".join([json.dumps(q.spec, indent=2) for q in module.questions.all()])
-    # module_questions = task.module.questions.all()
-
-    # print(3, "====", f"module_questions: {module_questions}")
-
-    for q in module_questions:
-        pass
-        # title = q.spec["title"]
-        # prompt = render_markdown_field("prompt", "html")
-        # m = re.match(r"^<p>([\w\W]*?)</p>\s*", prompt)
-        # if m:
-        #     title = m.group(1)
-        #     prompt = prompt[m.end():]
-
-    context = {}
-    context.update({
+    context = {
         "module": module,
         "module_questions": module_questions,
         "authoring_tool_enabled": False,
         "ADMIN_ROOT_URL": settings.SITE_ROOT_URL + "/admin",
-    })
-
-    # return HttpResponse(f"rendering show_questions<br>{task.__dict__}<br><pre>{questions_list}</pre>")
+    }
     return render(request, "questions.html", context)
 
 @task_view
@@ -1522,36 +1502,81 @@ def authoring_create_q(request):
     from guidedmodules.models import AppSource
     from collections import OrderedDict
 
-    new_q_appsrc = AppSource.objects.get(slug="govready-q-files-stubs")
-
     # Get the values from submitted form
     new_q = OrderedDict()
     for field in (
-        "q_slug", "title", "short_description", "category"):
+        "app_id", "q_slug", "title", "short_description", "category"):
         value = request.POST.get(field, "").strip()
         # Example how we can test values and make changes
-        if value:
-            if field in ("min", "max"):
+        if field in ("q_slug", "title", "short_description", "category"):
+            new_q[field] = str(value)
+        elif field in ("app_id"):
+            if value:
                 new_q[field] = int(value)
-            elif field == "protocol":
-                # The protocol value is given as a space-separated list of
-                # of protocols.
-                new_q[field] = re.split(r"\s+", value)
             else:
-                new_q[field] = value
+                new_q[field] = None
+        elif field == "protocol":
+            # The protocol value is given as a space-separated list of
+            # of protocols.
+            new_q[field] = re.split(r"\s+", value)
+        else:
+            new_q[field] = value
 
-    # Use stub_app to publish our new app
     try:
-        appver = new_q_appsrc.add_app_to_catalog("stub_app" )
-        # Update app details
-        appver.appname = new_q["title"]
-        appver.catalog_metadata["title"] = new_q["title"]
-        appver.catalog_metadata["description"]["short"] = new_q['short_description']
-        appver.catalog_metadata["category"] = new_q["category"]
-        # appver.spec.introduction.template = new_q['short_description']
-        appver.save()
+        if new_q["app_id"] is None:
+            # Create a new stub questionnaire template
+            new_q_appsrc = AppSource.objects.get(slug="govready-q-files-stubs")
+            new_appversion = new_q_appsrc.add_app_to_catalog("stub_app")
+            # Update app details
+            new_appversion.appname = new_q["title"]
+            new_appversion.catalog_metadata["title"] = new_q["title"]
+            new_appversion.catalog_metadata["description"]["short"] = new_q['short_description']
+            new_appversion.catalog_metadata["category"] = new_q["category"]
+            # new_appversion.spec.introduction.template = new_q['short_description']
+            new_appversion.save()
+        else:
+            # Clone existing questionnaire template by copying all records
+            # TODO: Working out ModuleAsset Paths!
+            new_q_appsrc = AppSource.objects.get(slug="govready-q-files-startpack")
+            src_appversion = AppVersion.objects.get(pk=new_q["app_id"])
+
+            # copy Appversion record and change
+            new_appversion = src_appversion
+            new_appversion.pk = None
+            new_appversion.source = new_q_appsrc
+            new_appversion.appname = new_q["title"]
+            new_appversion.catalog_metadata["title"] = new_q["title"]
+            new_appversion.catalog_metadata["description"]["short"] = new_q['short_description']
+            new_appversion.catalog_metadata["category"] = new_q["category"]
+            # new_appversion.spec.introduction.template = new_q['short_description']
+            new_appversion.save()
+
+            # appver = new_q_appsrc.add_app_to_catalog(appversion.appname)
+
+            # Get src_appversion modules, copy, and associate with new_appversion
+            src_appversion = AppVersion.objects.get(pk=new_q["app_id"]) #Retrive again source AppVersion
+            modules = Module.objects.filter(app=src_appversion)
+            print(6,"=====", modules)
+            # for each src_appversion module, copy module and questions
+
+            # Copy inputs
+            # Copy assets
+            # Copy components
     except Exception as e:
         raise
+
+    # # Use stub_app to publish our new app
+    # try:
+    #     # appver = new_q_appsrc.add_app_to_catalog("stub_app")
+    #     # Update app details
+    #     appver.appname = new_q["title"]
+    #     appver.catalog_metadata["title"] = new_q["title"]
+    #     appver.catalog_metadata["description"]["short"] = new_q['short_description']
+    #     appver.catalog_metadata["category"] = new_q["category"]
+    #     # appver.spec.introduction.template = new_q['short_description']
+    #     appver.save()
+    # except Exception as e:
+    #     raise
 
     messages.add_message(request, messages.INFO, 'New Project "{}" added into the catalog.'.format(new_q["title"]))
 

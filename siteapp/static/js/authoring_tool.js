@@ -296,7 +296,19 @@ function authoring_tool_save_module() {
 }
 
 function authoring_tool_create_q_form(argument) {
+  console.log(argument);
   $('#create_q_authoring_tool').modal();
+  console.log(Object.keys(argument))
+  if (Object.keys(argument).includes('app_id')) {
+    $('#authoring_tool_app_id').val(argument['app_id']);
+  }
+  if (Object.keys(argument).includes('app_title')) {
+    console.log(argument);
+    $('#authoring_tool_q_2_title').val(argument['app_title']+" Copy");
+    var slug = $('#authoring_tool_q_2_title').val();
+    slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "_");
+    $('#authoring_tool_q_name').val(slug);
+  }
 }
 
 function authoring_tool_create_q() {

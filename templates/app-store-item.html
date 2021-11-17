@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}
 {{app.title}} - Compliance Apps
@@ -132,6 +133,12 @@
                 <button id="" type="submit" class="btn btn-link">
                     <a href="/store/app/{{app.appversion_id}}/modules" class="back-to-link"> <span class="glyphicon glyphicon-pencil"></span> Edit</a>
                 </button>
+                <button id="" type="submit" class="btn btn-link">
+                    <a href="#" class="back-to-link"
+                       onclick="authoring_tool_create_q_form(argument={ 'app_id': '{{ app.id }}', 'app_title': '{{ app.title }}' });
+                       return false;">
+                    <span class="glyphicon glyphicon-clone"></span> Clone</a>
+                </button>
             </div>
         </div>
         <!-- Divider -->
@@ -193,7 +200,43 @@
         </div>
     </div>
 
-
 <!-- Spacer bottom of page -->
 <div class="app-bottom-spacer">&nbsp;</div>
+
+{% include "authoring-tool-modal.html" %}
+{% if authoring_tool_enabled %}
+<script src="{% static 'vendor/js-yaml.min.js' %}"></script>
+<script src="{% static 'js/authoring_tool.js' %}"></script>
+<style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
+<script>
+  $(function() {
+    init_authoring_tool({
+      task: "{{task.id}}",
+      module: "{{task.module.spec}}",
+      questions: {
+        q_key: {
+          spec: "{{q.spec}}",
+          choices: "{{q.choices_as_csv|escapejs}}",
+          answer_type_module_id: "{% if q.answer_type_module %}{{q.answer_type_module.id}}{% else %}null{% endif %}"
+        }
+      },
+      answer_type_modules: [{% for m in q.module.get_referenceable_modules %}
+        { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
+        {% endfor %}],
+      autocomplete_questions: { {% for q in q.module.get_questions %}
+        "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}
+      }
+    });
+  });
+
+  // Auto update "slug" name based on title in Create a Q modal
+  $('#authoring_tool_q_2_title').on('keyup', function() {
+      var slug = $(this).val();
+      slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "_");
+      $('#authoring_tool_q_name').val(slug);
+  });
+</script>
+{% endif %}
+
+
 {% endblock %}

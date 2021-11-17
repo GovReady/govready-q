@@ -185,6 +185,7 @@ class AppVersion(BaseModel):
     @property
     def icon(self):
         size = 128
+        print(50,"===== image")
         icon = image_to_dataurl(self.get_asset(self.catalog_metadata["icon"]), size)
 
     def catalog_metadata_yaml(self):
