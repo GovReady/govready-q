@@ -727,12 +727,14 @@ def apps_catalog_item(request, source_slug, app_name):
 
 @login_required
 def apps_catalog_item_modules(request, appversion_id):
+    """Reurn the modules for an appversion in catalog"""
 
-    app = AppVersion.objects.get(pk=appversion_id)
+    appversion = AppVersion.objects.get(pk=appversion_id)
+    modules = Module.objects.prefetch_related('questions').filter(app=appversion)
 
-    # Show the "app" modules
     return render(request, "appversion_modules.html", {
-        "app": app,
+        "appversion": appversion,
+        "modules": modules,
     })
 
 @login_required
