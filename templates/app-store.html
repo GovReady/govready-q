@@ -57,7 +57,7 @@ Compliance Apps
   .app-version-info div { color: #888;margin: 1px 0 1px 0;}
   .app-version-info small { color: #888;}
   .start-app { width: 76px; margin: 8px 0px 0px 0px; }
-  .view-app { width: 76px; margin: 8px 0px 0px 0px; text-align: center; color: #888; }
+  .view-app { width: 48px; margin: 8px 0px 0px 0px; text-align: center; color: #888; padding: 3px 0px 4px 0px; font-size: 0.7em; }
   .view-app:hover { color: #888; }
   .view-app:hover div { display: none; }
   .app-category h4 { border-bottom: 1px solid #ccc; text-transform: uppercase; font-size: 0.8em; font-weight: bold;}
@@ -193,7 +193,6 @@ Compliance Apps
                          onclick="authoring_tool_create_q_form(argument={ 'app_id': '{{ app.id }}', 'app_title': '{{ app.title }}', 'app_description': '{{ app.description.short|safe }}' });
                          return false;">
                       <span class="glyphicon glyphicon-flash"></span> Clone</a>
-                      <a href="/store/app/{{app.appversion_id}}/modules" class="btn btn-link view-app"> <span class="glyphicon glyphicon-pencil"></span> Edit</a>
                       <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-link view-app"><span class="glyphicon glyphicon-info-sign"></span> More</a>
                     </div>
         </div>
