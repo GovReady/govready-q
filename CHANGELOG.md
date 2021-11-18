@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.11.7-dev (October xx, 2021)
+v0.9.11.7-dev (November xx, 2021)
 --------------------------------
 
 **Developer changes**
@@ -16,7 +16,7 @@ v0.9.11.7-dev (October xx, 2021)
 * Use left side vertical React navigation menu for project.
 * Improve toast message appearance by limiting width.
 * Improve styling of project page rollovers make module actions clearer
-* Improve styling of template library.
+* Improve styling of template library. Use bootstrap panels for each item.
 
 
 v0.9.11.6 (October 13, 2021)
