@@ -1528,7 +1528,9 @@ def authoring_create_q(request):
             new_q_appsrc = AppSource.objects.get(slug="govready-q-files-stubs")
             new_appversion = new_q_appsrc.add_app_to_catalog("stub_app")
             # Update app details
-            new_appversion.appname = new_q["title"]
+            # TODO: Should we save slug?
+            # new_appversion.appname = new_q["title"]
+            new_appversion.appname = new_q["q_slug"].replace("_", "-")
             new_appversion.catalog_metadata["title"] = new_q["title"]
             new_appversion.catalog_metadata["description"]["short"] = new_q['short_description']
             new_appversion.catalog_metadata["category"] = new_q["category"]
@@ -1544,23 +1546,39 @@ def authoring_create_q(request):
             new_appversion = src_appversion
             new_appversion.pk = None
             new_appversion.source = new_q_appsrc
-            new_appversion.appname = new_q["title"]
+            new_appversion.appname = new_q["q_slug"].replace("_", "-")
             new_appversion.catalog_metadata["title"] = new_q["title"]
             new_appversion.catalog_metadata["description"]["short"] = new_q['short_description']
             new_appversion.catalog_metadata["category"] = new_q["category"]
             # new_appversion.spec.introduction.template = new_q['short_description']
             new_appversion.save()
 
-            # appver = new_q_appsrc.add_app_to_catalog(appversion.appname)
-
             # Get src_appversion modules, copy, and associate with new_appversion
             src_appversion = AppVersion.objects.get(pk=new_q["app_id"]) #Retrive again source AppVersion
+            # Add asset files
+            for asset_file in src_appversion.asset_files.all():
+                new_appversion.asset_files.add(asset_file)
+
+            # Create copy of each module in a loop and bulk create each module_questions
             modules = Module.objects.filter(app=src_appversion)
-            print(6,"=====", modules)
-            # for each src_appversion module, copy module and questions
+            for src_module in modules:
+                src_module_questions = ModuleQuestion.objects.filter(module=src_module)
+                new_module = src_module
+                new_module.pk = None
+                new_module.app = new_appversion
+                new_module.save()
+                # Bulk create copies of module_questions
+                new_module_questions = src_module_questions
+                nmqs = []
+                for nmq in new_module_questions:
+                    nmq.pk = None
+                    nmq.module = new_module
+                    nmqs.append(nmq)
+                ModuleQuestion.objects.bulk_create(nmqs)
 
             # Copy inputs
-            # Copy assets
+            # asset paths
+            # copy templates?
             # Copy components
     except Exception as e:
         raise
@@ -1774,7 +1792,6 @@ def authoring_new_question(request, task, mq):
     # changed, this sends the new key.
     return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url_to_question(question) })
 
-
 @transaction.atomic
 def authoring_edit_question_new(request):
 
@@ -1821,7 +1838,6 @@ def authoring_edit_question_new(request):
 
     except ValueError as e:
         return JsonResponse({ "status": "error", "message": str(e) })
-
 
 @authoring_tool_auth
 @transaction.atomic
