@@ -116,7 +116,7 @@
                 </form>
                 <button id="" type="submit" class="btn btn-link">
                     <a href="#" class="back-to-link"
-                       onclick="authoring_tool_create_q_form(argument={ 'app_id': '{{ app.id }}', 'app_title': '{{ app.title }}', 'app_description': '{{ app.description.short|safe }}' });
+                       onclick="authoring_tool_create_q_form(argument={ 'app_id': '{{ app.id }}', 'app_title': '{{ app.title }}', 'app_category_title':'{{ app.categories.0 }}', 'app_description': '{{ app.description.short|safe }}' });
                        return false;">
                     <span class="glyphicon glyphicon-flash"></span> Clone</a>
                 </button>
