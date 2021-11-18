@@ -309,6 +309,9 @@ function authoring_tool_create_q_form(argument) {
     slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "_");
     $('#authoring_tool_q_name').val(slug);
   }
+  if (Object.keys(argument).includes('app_description')) {
+    $('#authoring_tool_q_description').val(argument['app_description']);
+  }
 }
 
 function authoring_tool_create_q() {
