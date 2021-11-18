@@ -157,14 +157,14 @@ Compliance Apps
 <div class="row">
   {% for app in app_category.apps %}
 
-    <div class=" col-sm-4">
+    <div class=" col-sm-3">
       <div class="panel panel-default">
         <div class="panel-heading hidden">
           {{ app.title }}
         </div>
         <div class="panel-body app" data-app="{{app.key}}" data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}">
-          <div style="height: 2em;line-height: 1em;"><b>{{ app.title }}</b></div>
-          <div style="height: 2em;line-height: 1em;"><small>{{app.description.short|safe|truncatewords_html:30}}</small></div>
+          <div style="height: 3em;line-height: 1em;"><b>{{ app.title }}</b></div>
+          <div style="height: 3em;line-height: 1em;"><small>{{app.description.short|safe|truncatewords_html:30}}</small></div>
           <div class="app-version-info">
             <span style="font-size: 0.8em;"><small>ver {{ app.version }}</small></span> <span id="{{ app.key }}" style="font-size: 0.8em;"><small>- {{ app.source_slug }}</small></span>
           </div>
@@ -190,7 +190,7 @@ Compliance Apps
                         </form>
                       {% endif %}
                       <a href="#" class="btn btn-link view-app"
-                         onclick="authoring_tool_create_q_form(argument={ 'app_id': '{{ app.id }}', 'app_title': '{{ app.title }}', 'app_description': '{{ app.description.short|safe }}' });
+                         onclick="authoring_tool_create_q_form(argument={ 'app_id': '{{ app.appversion_id }}', 'app_title': '{{ app.title }}', 'app_category_title':'{{ app_category.title }}', 'app_description': '{{ app.description.short|safe }}' });
                          return false;">
                       <span class="glyphicon glyphicon-flash"></span> Clone</a>
                       <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-link view-app"><span class="glyphicon glyphicon-info-sign"></span> More</a>
@@ -199,48 +199,6 @@ Compliance Apps
       </div>
     </div>
 
-    <div class="col-sm-4 hidden">
-      <div class="app" data-app="{{app.key}}" data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}">
-        <div class="col-md-9"  style="padding-top:12px;">
-          <div>
-              <div style="padding-top:0; margin:0;">{{ app.title }}</div>
-              <div class="app-description" style="margin-top: 8px;">{{app.description.short|safe|truncatewords_html:20}}</div>
-              {% if app.authz != "none" %}<div class="app-metadata">Admin approval required</div>{% endif %}
-              <div class="app-version-info">
-                <span style="font-size: 0.8em;"><small>ver {{ app.version }}</small></span> <span id="{{ app.key }}" style="font-size: 0.8em;"><small>- {{ app.source_slug }}</small></span>
-              </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="app-quick-start-form">
-            <div class="app-icon app-icon-appstore" style="width:100px; min-height: 60px;">
-              {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
-              <div class="">
-                {# Offer quick start button if user can only start the app in a single organization context. #}
-                {% if app.organizations|length >= 1 %}
-                  <form action="/store/{{ app.key|urlencode }}{{ forward_qsargs }}" method="post" style="display: inline-block;">
-                      {% csrf_token %}
-                      {% if app.organizations|length > 1 %}
-                          <select id="app-org-select" class="" onchange="update_org_choice('{{ app.key }}/organization_{{ forloop.counter }}', event)">
-                              {% for org in app.organizations %}
-                                  <option value="{{ org.slug }}">{{ org }}</option>
-                              {% endfor %}
-                          </select>
-                      {% endif %}
-                      {% with app.organizations|first as first_org %}
-                          <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
-                      {% endwith %}
-                      {% if 'portfolio' in forward_qsargs %}{% endif %}
-                        <button type="submit" class="btn btn-success btn-xs btn-justified start-app">Start</button>
-                  </form>
-                {% endif %}
-                <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-link view-app"><span class="glyphicon glyphicon-info-sign"></span> More...</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
     {% if forloop.counter|divisibleby:4 %} {# breaks dont play well with client-side search --- they are re-generated when search results are displayed #}
       <div class="visible-sm clearfix rowbrk"> </div>
       <div class="visible-md clearfix rowbrk"> </div>
@@ -317,7 +275,7 @@ function do_app_search(query) {
       // less to show, which will be applied *after* the client-side search filters
       // are applied, hence we wrap this in if (visible).
       if (visible) {
-        if (shown_counter >= 9) {
+        if (shown_counter >= 24) {
         	// This is an app in the second or later row.
           // If the "show more" link isn't active, hide.
         	if (!app_category.is('.show-more-apps'))
@@ -332,11 +290,11 @@ function do_app_search(query) {
         shown_counter += 1;
 
         // Re-add row breaks.
-        if ((shown_counter % 3) == 0) {
-          $('<div class="visible-sm clearfix rowbrk"> </div>').insertAfter($(this).parent());
-          $('<div class="visible-md clearfix rowbrk"> </div>').insertAfter($(this).parent());
-          $('<div class="visible-lg clearfix rowbrk"> </div>').insertAfter($(this).parent());
-        }
+        // if ((shown_counter % 4) == 0) {
+        //   $('<div class="visible-sm clearfix rowbrk"> </div>').insertAfter($(this).parent());
+        //   $('<div class="visible-md clearfix rowbrk"> </div>').insertAfter($(this).parent());
+        //   $('<div class="visible-lg clearfix rowbrk"> </div>').insertAfter($(this).parent());
+        // }
 
       }
 

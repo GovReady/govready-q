@@ -312,6 +312,9 @@ function authoring_tool_create_q_form(argument) {
   if (Object.keys(argument).includes('app_description')) {
     $('#authoring_tool_q_description').val(argument['app_description']);
   }
+  if (Object.keys(argument).includes('app_category_title')) {
+    $('#authoring_tool_q_category').val(argument['app_category_title']);
+  }
 }
 
 function authoring_tool_create_q() {
