@@ -735,10 +735,14 @@ def apps_catalog_item_modules(request, appversion_id):
     appversion = AppVersion.objects.get(pk=appversion_id)
     modules = Module.objects.prefetch_related('questions').filter(app=appversion)
 
-    return render(request, "appversion_modules.html", {
-        "appversion": appversion,
-        "modules": modules,
-    })
+    # Redirect to the AppVersion's first module's question page
+    return HttpResponseRedirect(f"/tasks/module/{modules[0].id}/questions")
+
+    # TODO: delete "appversion_modules.html"
+    # return render(request, "appversion_modules.html", {
+    #     "appversion": appversion,
+    #     "modules": modules,
+    # })
 
 @login_required
 def apps_catalog_item_zip(request, source_slug, app_name):

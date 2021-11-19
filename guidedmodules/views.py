@@ -634,7 +634,7 @@ def show_module_questions(request, module_id):
     context = {
         "module": module,
         "module_questions": module_questions,
-        "authoring_tool_enabled": False,
+        "authoring_tool_enabled": True,
         "ADMIN_ROOT_URL": settings.SITE_ROOT_URL + "/admin",
     }
     return render(request, "questions.html", context)

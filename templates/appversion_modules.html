@@ -114,23 +114,46 @@ Modules
     margin-top: 8px;
   }
 
+
+  /* styles for the table */
+  .question_grid td { padding: 10px 10px 10px 0; }
+  .question_grid tr { border-bottom:1px solid #ccc; padding: 5px; }
+  .question_grid th { font-size:.8em;}
+
+  .question_grid th.tot_col { width: 10%; }
+  .question_grid th.title_col { width: 25%; }
+  .question_grid th.intro_col { width: 65%; }
+
+
 </style>
 {% endblock %}
 
 {% block body %}
 {{block.super}}
 
-<div class="row" style="width: 750px; margin-top: 16px;margin: auto;margin-bottom: 12px;">
+<div class="row" style="width: 90%; margin-top: 16px;margin: auto;margin-bottom: 12px;">
   <h2 style="font-weight:bold; padding-top:0; margin:0;">
     {{ appversion.catalog_metadata.title }}
+
     {% if appversion.icon %}<img src="{{ appversion.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
   </h2>
   <div><span class="">Version</span> {{ appversion.version_number }}</div>
 </div>
-<div class="row" style="width: 750px; margin-top: 16px;margin: auto;">
-  <p>View and edit this template's <b>{{ appversion.modules.all|length }} modules</b></p>
+<div class="row" style="width: 90%; margin-top: 16px;margin: auto;">
+  <p>View and edit this template's <b>{{ appversion.modules.all|length }} modules</b></p><br />
 </div>
 
+<div class="row" style="width: 90%; margin: auto; margin-bottom: 20px; ">
+
+<table class="question_grid"><tr><th class="title_col">Module</th><th class="tot_col">Num. of Questions</th><th class="intro_col">Intro</th></tr>
+{% for m in modules %}
+<tr><td>{% if user.is_staff %}<a href="/tasks/module/{{m.id}}/questions">{{m.spec.title}}</a>{% endif %}</td><td>{% if user.is_staff %}<a href="/tasks/module/{{m.id}}/questions">{{ m.questions.all|length }} question{{ m.questions.all|pluralize }}</a>{% endif %}</td><td>{{ m.spec.introduction.template|truncatewords:20 }}</td></tr>
+
+{% endfor %}
+</table>
+</div>
+
+<!--
 {% for m in modules %}
 <div class="row" style="width: 750px; margin: auto; margin-bottom: 20px;">
   <div id="focus-area-wrapper" class="" style="background-color: rgb(250, 250, 250); border: 0.5px solid #eee; border-bottom: 1px solid #bbb;">
@@ -170,11 +193,11 @@ Modules
           </div>
 
         </form>
-    </div><!-- /question -->
-  </div> <!-- /focus-area-wrapper -->
-</div> <!-- /row -->
+    </div>
+  </div>
+</div>
 {% endfor %}
-
+-->
 <script>
 
 $('.comment-form').on('submit', function(e) {
