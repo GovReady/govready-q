@@ -128,6 +128,11 @@ Question editor
   .question_grid th.title_col { width: 30%; }
   .question_grid th.type_col { width: 20%; }
   .question_grid th.prompt_col { width: 25%; }
+
+.leftbox { display:block; font-size:.9em; padding:.5em; border:1px solid #E5E5E5; background:#F8F8F8; margin-bottom:.5em; color:#808080; }
+.leftbox:hover { background:#DCDCDC; }
+
+
 </style>
 {% endblock %}
 
@@ -135,43 +140,55 @@ Question editor
 {{block.super}}
 
 
-<div class="row" style="width: 90%; margin-top: 16px;margin: auto;margin-bottom: 12px;">
-
+<div class="row" style="width: 100%; margin: auto; margin-bottom: 12px;">
+<div style="padding-left:15px;">
   <h2 style="font-weight:bold; padding-top:0; margin:0;">
     {{ module.app.catalog_metadata.title }}
     {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
-  </h2>
-  <div><span class="">Version</span> {{ module.app.version_number }}</div>
+  </h2><span style="font-size:1em;">Version {{ module.app.version_number }}</span>
 </div>
+</div>
+<br />
+<div class="row" style="width: 100%;  margin: auto; ">
+<div class="col-md-2">
 
-<div class="row" style="width: 90%; margin-top: 16px;margin: auto;margin-bottom: 12px;">
   {% with app=module.app %}
+
     {% for m in app.modules.all %}
+
       {% if not forloop.last %}
-        <a href="/tasks/module/{{m.id}}/questions" class="btn btn-default" style="margin-bottom:8px;">{{forloop.counter}}. {{ m.title }}</a>&nbsp;&nbsp;
+      <a href="/tasks/module/{{m.id}}/questions" style="text-decoration:none;"><div style="" class="leftbox">
+        {{ m.title }}<br /><span style="color:#ABABAB; font-size:.8em;">{{ m.questions.all|length }} question{{ m.questions.all|pluralize }}</span>
+          </div></a>
       {% endif %}
+
     {% endfor %}
+
   {% endwith %}
-</div>
 
-<div class="row" style="margin-top: 16px; width: 90%; margin: auto; margin-bottom: 20px;">
-  <p><b>{{ module.title }}</b> module contains <b>{{ module_questions|length }} questions</b></p>
 </div>
+<div class="col-md-10" style="padding-left:2em;">
+  <p><strong>{{ module.title }}</strong> module contains <strong>{{ module_questions|length }} questions</strong>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; <a href="#">Add a Question</a><br />
+  </p>
 
-<div class="row" style="width: 90%; margin: auto; margin-bottom: 20px; ">
-  <table class="question_grid"><tr><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
-    {% for q in module_questions %}
-      <tr><td>{{q.definition_order}}</td><td>{{q.key}}</td><td>{{q.spec.title}}</td><td>{{q.spec.type}}</td><td>{{q.spec.prompt|truncatechars:50}}</td>
+    <table class="question_grid"><tr><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
+      {% for q in module_questions %}
+        <tr><td>{{q.definition_order}}</td><td>{{q.key}}</td><td>{{q.spec.title}}</td><td>{{q.spec.type}}</td><td>{{q.spec.prompt|truncatechars:50}}</td>
 
-        <td><a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
-            <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
-            <!-- Edit -->
-          </a>
-        </td>
-      </tr>
-    {% endfor %}
-  </table>
-</div>
+          <td><a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
+              <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
+              <!-- Edit -->
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  </div>
+
+
+
 
 <!-- hiding code here -->
 <div style="display:none;">
