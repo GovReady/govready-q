@@ -143,8 +143,19 @@ Question editor
   </h2>
   <div><span class="">Version</span> {{ module.app.version_number }}</div>
 </div>
+
+<div class="row" style="width: 90%; margin-top: 16px;margin: auto;margin-bottom: 12px;">
+  {% with app=module.app %}
+    {% for m in app.modules.all %}
+      {% if not forloop.last %}
+        <a href="/tasks/module/{{m.id}}/questions" class="btn btn-default" style="margin-bottom:8px;">{{forloop.counter}}. {{ m.title }}</a>&nbsp;&nbsp;
+      {% endif %}
+    {% endfor %}
+  {% endwith %}
+</div>
+
 <div class="row" style="margin-top: 16px; width: 90%; margin: auto; margin-bottom: 20px;">
-  <p>Edit the <b>{{ module_questions|length }} questions</b> of module <b>{{ module.title }}</b></p>
+  <p><b>{{ module.title }}</b> module contains <b>{{ module_questions|length }} questions</b></p>
 </div>
 
 <div class="row" style="width: 90%; margin: auto; margin-bottom: 20px; ">
