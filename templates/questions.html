@@ -130,7 +130,9 @@ Question editor
   .question_grid th.prompt_col { width: 25%; }
 
 .leftbox { display:block; font-size:.9em; padding:.5em; border:1px solid #E5E5E5; background:#F8F8F8; margin-bottom:.5em; color:#808080; }
-.leftbox:hover { background:#DCDCDC; }
+.tot_q {  font-size:.8em; }
+
+.leftbox:hover { background:#DCDCDC; color:#505050; }
 
 
 </style>
@@ -157,8 +159,8 @@ Question editor
     {% for m in app.modules.all %}
 
       {% if not forloop.last %}
-      <a href="/tasks/module/{{m.id}}/questions" style="text-decoration:none;"><div style="" class="leftbox">
-        {{ m.title }}<br /><span style="color:#ABABAB; font-size:.8em;">{{ m.questions.all|length }} question{{ m.questions.all|pluralize }}</span>
+      <a href="/tasks/module/{{m.id}}/questions" style="text-decoration:none;"><div class="leftbox">
+        {{ m.title }}<br /><span class="tot_q">{{ m.questions.all|length }} question{{ m.questions.all|pluralize }}</span>
           </div></a>
       {% endif %}
 
