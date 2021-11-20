@@ -310,10 +310,13 @@ function authoring_tool_create_q_form(argument) {
     $('#authoring_tool_q_name').val(slug);
   }
   if (Object.keys(argument).includes('app_description')) {
-    $('#authoring_tool_q_description').val(argument['app_description']);
+    $('#authoring_tool_q_description').val(argument['app_description'].replace('<p>','').replace('</p>',''));
   }
   if (Object.keys(argument).includes('app_category_title')) {
     $('#authoring_tool_q_category').val(argument['app_category_title']);
+  }
+  if (Object.keys(argument).includes('modal_title')) {
+    $('#create_q_authoring_tool_title').html(argument['modal_title']);
   }
 }
 

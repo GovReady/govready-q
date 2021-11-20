@@ -182,7 +182,7 @@ Startable: {% if app.authz == "none" %}Yes{% else %} Requires Admin{% endif %}
 
           <div>
           <a href="#" class="btn btn-link view-app"
-             onclick="authoring_tool_create_q_form(argument={ 'app_id': '{{ app.appversion_id }}', 'app_title': '{{ app.title }}', 'app_category_title':'{{ app_category.title }}', 'app_description': '{{ app.description.short|safe }}' });
+             onclick="authoring_tool_create_q_form(argument={ 'modal_title': 'Clone Template', 'app_id': '{{ app.appversion_id }}', 'app_title': '{{ app.title }}', 'app_category_title':'{{ app_category.title }}', 'app_description': '{{ app.description.short }}' });
              return false;">
           <span class="glyphicon glyphicon-flash" ></span> Clone</a>
           <a href="/store/app/{{app.appversion_id}}/modules" class="btn btn-link view-app"> <span class="glyphicon glyphicon-pencil"></span> Edit</a>
