@@ -1792,56 +1792,78 @@ def authoring_new_question(request, task, mq):
     # changed, this sends the new key.
     return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url_to_question(question) })
 
-@transaction.atomic
-def authoring_edit_question_new(request):
+# @transaction.atomic
+# def authoring_edit_question_new(request):
 
-    module = get_object_or_404(Module, id=request.POST["module_id"])
-    # TODO: change to get use question id
-    question = get_object_or_404(ModuleQuestion, module=module, key=request.POST['key'])
+#     module = get_object_or_404(Module, id=request.POST["module_id"])
+#     # TODO: change to get use question id
+#     question = get_object_or_404(ModuleQuestion, module=module, key=request.POST['key'])
 
-    try:
+#     try:
 
-        # Get existing specification (json) for quesiton
-        spec = question.spec
-        # spec["id"] = request.POST['newid']
-        for field in ("title", "prompt",):
-            value = request.POST.get(field, "").strip()
-            if value:
-                if field in ("min", "max"):
-                    spec[field] = int(value)
-                elif field == "choices":
-                    spec[field] = ModuleQuestion.choices_from_csv(value)
-                elif field == "protocol" and request.POST.get("module-id") != "/app/":
-                    # The protocol value is only valid if "/app/" was chosen
-                    # in the UI as the module type. It wasn't, so skip it.
-                    continue
-                elif field == "protocol":
-                    # The protocol value is given as a space-separated list of
-                    # of protocols.
-                    spec[field] = re.split(r"\s+", value)
-                else:
-                    spec[field] = value
+#         # Get existing specification (json) for quesiton
+#         spec = question.spec
+#         # spec["id"] = request.POST['newid']
+#         for field in ("title", "prompt",):
+#             value = request.POST.get(field, "").strip()
+#             if value:
+#                 if field in ("min", "max"):
+#                     spec[field] = int(value)
+#                 elif field == "choices":
+#                     spec[field] = ModuleQuestion.choices_from_csv(value)
+#                 elif field == "protocol" and request.POST.get("module-id") != "/app/":
+#                     # The protocol value is only valid if "/app/" was chosen
+#                     # in the UI as the module type. It wasn't, so skip it.
+#                     continue
+#                 elif field == "protocol":
+#                     # The protocol value is given as a space-separated list of
+#                     # of protocols.
+#                     spec[field] = re.split(r"\s+", value)
+#                 else:
+#                     spec[field] = value
 
-        # Save.
-        question.spec = spec
-        question.save()
+#         # Save.
+#         question.spec = spec
+#         question.save()
 
-        # Clear cache...
-        from .module_logic import clear_module_question_cache
-        clear_module_question_cache()
+#         # Clear cache...
+#         from .module_logic import clear_module_question_cache
+#         clear_module_question_cache()
 
-        # Return status. The browser will reload/redirect --- if the question key
-        # changed, this sends the new key.
-        from django.core import serializers
-        serialized_obj = serializers.serialize('json', [question, ])
-        return JsonResponse({ "status": "success", "message": "the message", "questionobj": serialized_obj })
+#         # Return status. The browser will reload/redirect --- if the question key
+#         # changed, this sends the new key.
+#         from django.core import serializers
+#         serialized_obj = serializers.serialize('json', [question, ])
+#         return JsonResponse({ "status": "success", "message": "the message", "questionobj": serialized_obj })
 
-    except ValueError as e:
-        return JsonResponse({ "status": "error", "message": str(e) })
+#     except ValueError as e:
+#         return JsonResponse({ "status": "error", "message": str(e) })
 
-@authoring_tool_auth
-@transaction.atomic
-def authoring_edit_question(request, task):
+
+
+# @authoring_tool_auth
+# @transaction.atomic
+def authoring_edit_question2(request):
+
+    print(2,"2=======2", 'authoring_edit_question2')
+
+    print(3,"=======",request.POST['q_id'])
+
+    print(request)
+
+    question = get_object_or_404(ModuleQuestion, id=request.POST['q_id'])
+    print(4,"======= question",question)
+
+
+    # module = get_object_or_404(Module, id=request.POST["module_id"])
+#     # TODO: change to get use question id
+#     question = get_object_or_404(ModuleQuestion, module=module, key=request.POST['key'])
+
+
+
+    # print(2,"======= task", task)
+    import sys
+    sys.exit()
 
     question = get_object_or_404(ModuleQuestion, module=task.module, key=request.POST['question'])
 

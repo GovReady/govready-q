@@ -7,6 +7,7 @@ Question editor
 {% endblock %}
 
 {% block head %}
+<meta name="description" content="Edit compliance app questioonaire.">
 
 <link href="{% static "vendor/emojione/emojione-sprite-24.min.css" %}" rel="stylesheet">
 {% if q.spec.type == "longtext" %}
@@ -129,10 +130,12 @@ Question editor
   .question_grid th.type_col { width: 20%; }
   .question_grid th.prompt_col { width: 25%; }
 
-.leftbox { display:block; font-size:.9em; padding:.5em; border:1px solid #E5E5E5; background:#F8F8F8; margin-bottom:.5em; color:#808080; }
-.tot_q {  font-size:.8em; }
+  .leftbox { display:block; font-size:.9em; padding:.5em; border:1px solid #E5E5E5; background:#F8F8F8; margin-bottom:.5em; color:#808080; }
+  .tot_q {  font-size:.8em; }
 
-.leftbox:hover { background:#DCDCDC; color:#505050; }
+  .leftbox:hover { background:#DCDCDC; color:#505050; }
+
+  .hidden-field { display: none; }
 
 
 </style>
@@ -141,6 +144,7 @@ Question editor
 {% block body %}
 {{block.super}}
 
+<h1>page title</h1>
 
 <div class="row" style="width: 100%; margin: auto; margin-bottom: 12px;">
 <div style="padding-left:15px;">
@@ -177,10 +181,30 @@ Question editor
       {% for q in module_questions %}
         <tr><td>{{q.definition_order}}</td><td>{{q.key}}</td><td>{{q.spec.title}}</td><td>{{q.spec.type}}</td><td>{{q.spec.prompt|truncatechars:50}}</td>
 
-          <td><a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
+          <td>
+            <form autocomplete="off" action="" method="post" class="question-form" onsubmit="return false;">
+              <input type="hidden" name="method" value="save">
+              <input type="hidden" name="q_id" value="{{q.id}}">
+              <input type="hidden" name="q_key" value="{{q.key}}">
+              <textarea class="hidden-field" name="q_spec_obj">{{q.spec|json}}</textarea>
+              <textarea class="hidden-field" name="m_spec_obj">{{module.spec|json}}</textarea>
+              <textarea class="hidden-field" name="answer_type_modules">"[{% for m in q.module.get_referenceable_modules %}
+      { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
+      {% endfor %}]"</textarea>
+              <textarea class="hidden-field" name="autocomplete_questions">{ {% for q in q.module.get_questions %}
+      "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}
+    }</textarea>
+
+              <p>&nbsp;</p>
+              <div class="form-group col-sm-12">
+                <input class="pull-right submitform btn btn-link" name="submit" type="submit" id="submit" value="edit">
+              </div>
+            </form>
+
+            <!-- <a id="show_question_authoring_tool" href="#" onclick=" console.log('1'); return false;">
               <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
-              <!-- Edit -->
-            </a>
+            </a> -->
+
           </td>
         </tr>
       {% endfor %}
@@ -188,8 +212,6 @@ Question editor
   </div>
 
   </div>
-
-
 
 
 <!-- hiding code here -->
@@ -297,43 +319,86 @@ Question editor
   </div>
 <!-- end hidden code -->
 
-
-
 <script>
-$('.comment-form').on('submit', function(e) {
+$('.question-form').on('submit', function(e) {
   e.preventDefault();
   var formElm = $(this)
-  var prompt = formElm.find('textarea[name="prompt"]').val();
-  console.log(prompt);
-  var data = formElm.serializeArray();
-  data.push( { name: "module_id", value: {{ module.id }} } );
-  data.push( { name: "question", value: formElm.find('input[name="key"]').val() } );
-  console.log(data);
-  ajax_with_indicator({
-      url: "/tasks/_authoring_tool/edit-question-new",
-      method: "POST",
-      data: data,
-      keep_indicator_forever: false,
-      success: function(res) {
-        // Modal can stay up until the redirect finishes.
-        console.log(res)
-        if (res['status'] == "success") {
-          formElm.find('.success-msg').fadeIn().text('saved')
-        }
-        // window.location = res.redirect;
-        // if (window.location.hash.length > 1)
-          // window.location.reload(); // if there is a # in the URL, the browser won't actually reload
-      }
+  var q_id = formElm.find('input[name="q_id"]').val();
+  var q_key = formElm.find('input[name="q_key"]').val();
+  console.log(q_id);
+  // console.log(q_key);
+
+  var q_spec_obj = JSON.parse(formElm.find('textarea[name="q_spec_obj"]').val());
+  // console.log(q_spec_obj);
+
+  // console.log('q_key:'+q_key);
+  var questions = {}
+  questions[q_key] = { spec: q_spec_obj,
+                      // choices: "{{q.choices_as_csv|escapejs}}",
+                      answer_type_module_id: null
+                    }
+  console.log('questions:');
+  console.log(questions);
+  var m_spec_obj = JSON.parse(formElm.find('textarea[name="m_spec_obj"]').val());
+  // console.log(m_spec_obj);
+
+  // answer_type_modules = JSON.parse(formElm.find('input[name="answer_type_modules"]').val());
+  // autocomplete_questions = JSON.parse(formElm.find('input[name="autocomplete_questions"]').val());
+
+  // var data = formElm.serializeArray();
+  // console.log(data);
+
+  // TODO remove task: key as not needed
+  init_authoring_tool({
+    task: 3,
+    module: m_spec_obj,
+    questions: questions,
+    answer_type_modules: [],
+    autocomplete_questions: {}
   });
-  setTimeout(function () {
-      formElm.find('.success-msg').fadeOut().text('');
-  }, 2000);
-  return false; // Stop form reloading page
+
+  show_question_authoring_tool(q_id, q_key);
 });
+
+// Previous question form
+// $('.comment-form').on('submit', function(e) {
+//   e.preventDefault();
+//   var formElm = $(this)
+//   var prompt = formElm.find('textarea[name="prompt"]').val();
+//   console.log(prompt);
+//   var data = formElm.serializeArray();
+//   data.push( { name: "module_id", value: {{ module.id }} } );
+//   data.push( { name: "question", value: formElm.find('input[name="key"]').val() } );
+//   console.log(data);
+//   ajax_with_indicator({
+//       url: "/tasks/_authoring_tool/edit-question-new",
+//       method: "POST",
+//       data: data,
+//       keep_indicator_forever: false,
+//       success: function(res) {
+//         // Modal can stay up until the redirect finishes.
+//         console.log(res)
+//         if (res['status'] == "success") {
+//           formElm.find('.success-msg').fadeIn().text('saved')
+//         }
+//         // window.location = res.redirect;
+//         // if (window.location.hash.length > 1)
+//           // window.location.reload(); // if there is a # in the URL, the browser won't actually reload
+//       }
+//   });
+//   setTimeout(function () {
+//       formElm.find('.success-msg').fadeOut().text('');
+//   }, 2000);
+//   return false; // Stop form reloading page
+// });
 </script>
 
-
-{# endif #}
+{% if authoring_tool_enabled %}
+  {% include "authoring-tool-modal.html" %}
+  <script src="{% static 'vendor/js-yaml.min.js' %}"></script>
+  <script src="{% static 'js/authoring_tool.js' %}"></script>
+  <style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
+{% endif %}
 
 {% endblock %}
 

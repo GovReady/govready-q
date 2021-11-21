@@ -94,11 +94,23 @@ function init_authoring_tool_autocomplete(elem, expr_type) {
   });
 }
 
-function show_question_authoring_tool(question_key) {
+function show_question_authoring_tool(question_id, question_key) {
   // Initialize form state.
   window.q_authoring_tool_state.current_question = question_key;
+  // console.log( 'window.q_authoring_tool_state');
+  // console.log( window.q_authoring_tool_state);
   var qinfo = window.q_authoring_tool_state.questions[question_key];
+    // $('#question_authoring_tool').modal();
+
   var spec = JSON.parse(JSON.stringify(qinfo.spec)); // clone since we delete properties
+
+  console.log('qinfo');
+  console.log(qinfo);
+  console.log('qinfo.spec');
+  console.log(qinfo.spec);
+
+  $('#at_q_id').val(question_id);
+
   $('#authoring_tool_qid').val(question_key); delete spec.id;
   $('#authoring_tool_qtitle').val(spec.title); delete spec.title;
   $('#authoring_tool_qprompt').val(spec.prompt); delete spec.prompt;
@@ -217,8 +229,10 @@ function authoring_tool_save_question() {
   var data = $('#question_authoring_tool form').serializeArray();
   data.push( { name: "task", value: q_authoring_tool_state.task } );
   data.push( { name: "question", value: q_authoring_tool_state.current_question } );
+  console.log('authoring_tool_save_question')
+  console.log(data)
   ajax_with_indicator({
-      url: "/tasks/_authoring_tool/edit-question",
+      url: "/tasks/_authoring_tool/edit-question2",
       method: "POST",
       data: data,
       keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
