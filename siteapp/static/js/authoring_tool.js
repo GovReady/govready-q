@@ -1,7 +1,6 @@
 function init_authoring_tool(state) {
   // Save state. Should be:
   // {
-  //  task: task_id,
   //  module: { module spec data },
   //  questions: {
   //    question_key: {
@@ -97,22 +96,12 @@ function init_authoring_tool_autocomplete(elem, expr_type) {
 function show_question_authoring_tool(question_id, question_key) {
   // Initialize form state.
   window.q_authoring_tool_state.current_question = question_key;
-  // console.log( 'window.q_authoring_tool_state');
-  // console.log( window.q_authoring_tool_state);
   var qinfo = window.q_authoring_tool_state.questions[question_key];
-    // $('#question_authoring_tool').modal();
-
   var spec = JSON.parse(JSON.stringify(qinfo.spec)); // clone since we delete properties
 
-  console.log('qinfo');
-  console.log(qinfo);
-  console.log('qinfo.spec');
-  console.log(qinfo.spec);
-
   $('#at_q_id').val(question_id);
-
   $('#authoring_tool_qid').val(question_key); delete spec.id;
-  $('#authoring_tool_qtitle').val(spec.title); delete spec.title;
+  $('#authoring_tool_q_title').val(spec.title); delete spec.title;
   $('#authoring_tool_qprompt').val(spec.prompt); delete spec.prompt;
   $('#authoring_tool_type').val(spec.type)
     .change(); // trigger event that hides/shows the appropriate fields
@@ -148,7 +137,6 @@ function show_question_authoring_tool(question_id, question_key) {
   if (Object.keys(spec).length == 0) spec = "";
   else spec = jsyaml.safeDump(spec);
   $('#authoring_tool_qspec').val(spec);
-
   // Show modal.
   $('#question_authoring_tool').modal();
 }
@@ -227,7 +215,7 @@ function authoring_tool_download_app_project(task_id, is_project_page) {
 
 function authoring_tool_save_question() {
   var data = $('#question_authoring_tool form').serializeArray();
-  data.push( { name: "task", value: q_authoring_tool_state.task } );
+  // data.push( { name: "task", value: q_authoring_tool_state.task } );
   data.push( { name: "question", value: q_authoring_tool_state.current_question } );
   console.log('authoring_tool_save_question')
   console.log(data)

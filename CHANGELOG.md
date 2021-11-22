@@ -6,7 +6,7 @@ v0.9.11.7-dev (November xx, 2021)
 
 **Feature changes**
 
-* Enabling batch editing of questions for questionnaire.
+* Enabling batch viewing of questions for easier questionnaire authoring.
 * Enabling cloning entire templates in template library.
 
 **Developer changes**
@@ -23,6 +23,7 @@ v0.9.11.7-dev (November xx, 2021)
 * Improve toast message appearance by limiting width.
 * Improve styling of project page rollovers make module actions clearer
 * Improve styling of template library. Use bootstrap panels for each item.
+* Remove authoring tool modal from task question page.
 
 
 v0.9.11.6 (October 13, 2021)

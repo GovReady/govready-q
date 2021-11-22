@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
+from django.urls import reverse
 
 import re
 
@@ -1840,32 +1841,13 @@ def authoring_new_question(request, task, mq):
 #         return JsonResponse({ "status": "error", "message": str(e) })
 
 
-
 # @authoring_tool_auth
-# @transaction.atomic
+@transaction.atomic
 def authoring_edit_question2(request):
+    """Update question from authoring tool """
 
-    print(2,"2=======2", 'authoring_edit_question2')
-
-    print(3,"=======",request.POST['q_id'])
-
-    print(request)
-
-    question = get_object_or_404(ModuleQuestion, id=request.POST['q_id'])
-    print(4,"======= question",question)
-
-
-    # module = get_object_or_404(Module, id=request.POST["module_id"])
-#     # TODO: change to get use question id
-#     question = get_object_or_404(ModuleQuestion, module=module, key=request.POST['key'])
-
-
-
-    # print(2,"======= task", task)
-    import sys
-    sys.exit()
-
-    question = get_object_or_404(ModuleQuestion, module=task.module, key=request.POST['question'])
+    question = get_object_or_404(ModuleQuestion.objects.select_related('module'), id=request.POST['q_id'])
+    module = question.module
 
     # Delete the question?
     if request.POST.get("delete") == "1":
@@ -1877,12 +1859,10 @@ def authoring_edit_question2(request):
             return JsonResponse({ "status": "error", "message": "The question cannot be deleted because it has already been answered." })
 
     # Update the question...
-
     # Update the key.
     question.key = request.POST['newid']
 
     try:
-
         # Create the spec dict, starting with the standard fields.
         # Most fields are strings and need no extra processing but
         # some need to be parsed.
@@ -1968,20 +1948,13 @@ def authoring_edit_question2(request):
     question.spec = spec
     question.save()
 
-    # Write to disk. Errors writing should not be suppressed because
-    # saving to disk is a part of the contract of how app editing works.
-    try:
-        question.module.serialize_to_disk()
-    except Exception as e:
-        return JsonResponse({ "status": "error", "message": "Could not update local YAML file: " + str(e) })
-
     # Clear cache...
     from .module_logic import clear_module_question_cache
     clear_module_question_cache()
 
-    # Return status. The browser will reload/redirect --- if the question key
-    # changed, this sends the new key.
-    return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url_to_question(question) })
+    # Return response and reload page
+    # TODO convert to a JSON result and don't reload page
+    return JsonResponse({ "status": "ok", "redirect": reverse('show_module_questions', args=[module.id]) })
 
 @authoring_tool_auth
 @transaction.atomic

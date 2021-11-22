@@ -137,14 +137,13 @@ Question editor
 
   .hidden-field { display: none; }
 
+  .current-module { background:#DCDCDC; color:#505050; font-weight: bold;}
 
 </style>
 {% endblock %}
 
 {% block body %}
 {{block.super}}
-
-<h1>page title</h1>
 
 <div class="row" style="width: 100%; margin: auto; margin-bottom: 12px;">
 <div style="padding-left:15px;">
@@ -156,31 +155,28 @@ Question editor
 </div>
 <br />
 <div class="row" style="width: 100%;  margin: auto; ">
-<div class="col-md-2">
-
-  {% with app=module.app %}
-
-    {% for m in app.modules.all %}
-
-      {% if not forloop.last %}
-      <a href="/tasks/module/{{m.id}}/questions" style="text-decoration:none;"><div class="leftbox">
-        {{ m.title }}<br /><span class="tot_q">{{ m.questions.all|length }} question{{ m.questions.all|pluralize }}</span>
-          </div></a>
-      {% endif %}
-
-    {% endfor %}
-
-  {% endwith %}
-
-</div>
-<div class="col-md-10" style="padding-left:2em;">
-  <p><strong>{{ module.title }}</strong> module contains <strong>{{ module_questions|length }} questions</strong>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; <a href="#">Add a Question</a><br />
-  </p>
-
+  <div class="col-md-2">
+    {% with app=module.app %}
+      {% for m in app.modules.all %}
+        {% if not forloop.last %}
+        <a href="/tasks/module/{{m.id}}/questions" style="text-decoration:none;"><div class="leftbox {% if module.id == m.id %}current-module{% endif %}">
+          {{ m.title }}<br /><span class="tot_q">{{ m.questions.all|length }} question{{ m.questions.all|pluralize }}</span>
+            </div></a>
+        {% endif %}
+      {% endfor %}
+    {% endwith %}
+  </div>
+  <div class="col-md-10" style="padding-left:2em;">
+    <p><strong>{{ module.title }}</strong> module contains <strong>{{ module_questions|length }} questions</strong>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; <a href="#">Add a Question</a><br />
+    </p>
     <table class="question_grid"><tr><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
       {% for q in module_questions %}
-        <tr><td>{{q.definition_order}}</td><td>{{q.key}}</td><td>{{q.spec.title}}</td><td>{{q.spec.type}}</td><td>{{q.spec.prompt|truncatechars:50}}</td>
-
+        <tr>
+          <td>{{q.definition_order}}</td>
+          <td>{{q.key}}</td>
+          <td>{{q.spec.title}}</td>
+          <td>{{q.spec.type}}</td>
+          <td>{{q.spec.prompt|truncatechars:50}}</td>
           <td>
             <form autocomplete="off" action="" method="post" class="question-form" onsubmit="return false;">
               <input type="hidden" name="method" value="save">
@@ -189,135 +185,24 @@ Question editor
               <textarea class="hidden-field" name="q_spec_obj">{{q.spec|json}}</textarea>
               <textarea class="hidden-field" name="m_spec_obj">{{module.spec|json}}</textarea>
               <textarea class="hidden-field" name="answer_type_modules">"[{% for m in q.module.get_referenceable_modules %}
-      { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
-      {% endfor %}]"</textarea>
+                { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
+                {% endfor %}]"</textarea>
               <textarea class="hidden-field" name="autocomplete_questions">{ {% for q in q.module.get_questions %}
-      "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}
-    }</textarea>
-
-              <p>&nbsp;</p>
+                "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}}</textarea>
+              <textarea class="hidden-field" name="q_choices">{{q.choices_as_csv}}</textarea>
               <div class="form-group col-sm-12">
                 <input class="pull-right submitform btn btn-link" name="submit" type="submit" id="submit" value="edit">
               </div>
+              <!-- <a id="show_question_authoring_tool" href="#" onclick=" console.log('1'); return false;">
+                <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
+              </a> -->
             </form>
-
-            <!-- <a id="show_question_authoring_tool" href="#" onclick=" console.log('1'); return false;">
-              <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
-            </a> -->
-
           </td>
         </tr>
       {% endfor %}
     </table>
   </div>
-
-  </div>
-
-
-<!-- hiding code here -->
-<div style="display:none;">
-  <form autocomplete="off" action="" method="post" class="comment-form" onsubmit="return false;">
-    <div>Question {{ forloop.counter0 }}</div>
-    <div class="form-group">
-      <input type="hidden" name="question" value="{{q.id}}">
-      <input type="hidden" name="method" value="save">
-    </div>
-
-    <div class="form-group">
-        <label for="key" class="col-sm-2 control-label">Key</label>
-        <div class="col-sm-10">
-          <input type="text" class="form-control" id="key" name="key" value="{{q.key}}">
-        </div>
-    </div>
-
-      <div class="form-group">
-        <label for="authoring_tool_qtitle" class="col-sm-2 control-label">Title</label>
-        <div class="col-sm-10">
-          <input type="text" class="form-control" id="authoring_tool_qtitle" name="title" value="{{q.spec.title}}">
-        </div>
-      </div>
-
-    <div class="form-group">
-        <label for="prompt" class="col-sm-2 control-label">Prompt</label>
-        <div class="col-sm-10">
-          <textarea class="form-control" name="prompt" style="width: 100%; min-height: 100px;">{{ q.spec.prompt }}</textarea>
-        </div>
-    </div>
-
-      <!--
-      <div class="form-group">
-        <label for="authoring_tool_qtitle" class="col-sm-2 control-label">Prompt</label>
-        <div class="col-sm-10">
-          <textarea id="authoring_tool_qtitle" name="title" style="width:100%;">{{q.spec.prompt}}</textarea>
-          <span class="help-block">Prompt for question</span>
-        </div>
-      </div>
-      -->
-
-      <div class="form-group">
-        <label for="authoring_tool_type" class="col-sm-2 control-label">Type</label>
-        <div class="col-sm-10">
-          <select class="form-control" id="authoring_tool_type" onchange="_val = $(this).val(); $('#authoring_tool_q_type_options>div, #authoring_tool_q_type_options .toggled').each(function() { $(this)[$(this).hasClass('authoring_q_type_' + _val) ? 'fadeIn' : 'hide']() });" name="type">
-            <optgroup label="Text Questions">
-              <option value="text" {% if q.spec.type == "text" %}selected{% endif %}>Text (Single Line)</option>
-              <option value="password" {% if q.spec.type == "password" %}selected{% endif %}>Password</option>
-              <option value="email-address" {% if q.spec.type == "email-address" %}selected{% endif %}>Email Address</option>
-              <option value="url" {% if q.spec.type == "url" %}selected{% endif %}>Web Address (URL)</option>
-              <option value="longtext" {% if q.spec.type == "longtext" %}selected{% endif %}>Paragraph (Rich Text/Markdown)</option>
-            </optgroup>
-            <optgroup label="Choice Questions">
-              <option value="date" {% if q.spec.type == "date" %}selected{% endif %}>Date</option>
-              <option value="yesno" {% if q.spec.type == "yesno" %}selected{% endif %}>Yes/No</option>
-              <option value="choice" {% if q.spec.type == "choice" %}selected{% endif %}>Single Choice</option>
-              <option value="choice-from-data" {% if q.spec.type == "choice-from-data" %}selected{% endif %}>Single Choice from Data</option>
-              <option value="multiple-choice" {% if q.spec.type == "multiple-choice" %}selected{% endif %}>Multiple Choice</option>
-              <option value="multiple-choice-from-data" {% if q.spec.type == "multiple-choice-from-data" %}selected{% endif %}>Multiple Choice from Data</option>
-              <option value="datagrid" {% if q.spec.type == "datagrid" %}selected{% endif %}>Datagrid</option>
-            </optgroup>
-            <optgroup label="Number Questions">
-              <option value="integer" {% if q.spec.type == "integer" %}selected{% endif %}>Integer</option>
-              <option value="real" {% if q.spec.type == "real" %}selected{% endif %}>Any Number</option>
-            </optgroup>
-            <optgroup label="Media Questions">
-              <option value="interstitial" {% if q.spec.type == "interstitial" %}selected{% endif %}>Interstitial</option>
-              <option value="file" {% if q.spec.type == "file" %}selected{% endif %}>File Upload</option>
-            </optgroup>
-          </select>
-        </div>
-      </div>
-      <!--
-      <p>&nbsp;</p>
-      <div class="form-group">
-        <label for="authoring_tool_qid" class="col-sm-2 control-label">ID</label>
-        <div class="col-sm-10">
-          <input type="text" class="form-control" id="authoring_tool_qid" pattern="[a-zA-Z_][a-zA-Z0-9_]*" name="newid" value="{{q.spec.id}}">
-          <span class="help-block">Identifier for question used in templates and the API.</span>
-        </div>
-      </div> -->
-
-    <div class="form-group">
-        <label for="definition_order" class="col-sm-2 control-label">Order</label>
-        <div class="col-sm-10">
-          <input type="text" class="form-control" id="definition_order" name="definition_order" value="{{q.definition_order}}">
-        </div>
-    </div>
-
-    <p>&nbsp;</p>
-    <div class="form-group col-sm-12">
-      <input class="pull-right" name="submit" class="submitform" type="submit" id="submit" value="save">
-      <div class="success-msg pull-right" style="display: inline; margin: 4px 20px 0px 0px; color: green;"></div>
-    </div>
-
-    <div>&nbsp;</div>
-    <div class="pull-right">
-      {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/modulequestion/{{q.id}}" target="_blank" style="color:#bbb; font-size:9pt;">{% endif %}
-      <div id="debug-question-key" title="guidedmodules/modulequestion/{{q.id}}">Edit database</div>{% if user.is_staff %}</a>{% endif %}
-      <div class="pull-right help" style="color:#bbb; font-size:9pt;">Add question</div>
-    </div>
-
-  </form>
-  </div>
-<!-- end hidden code -->
+</div>
 
 <script>
 $('.question-form').on('submit', function(e) {
@@ -325,32 +210,24 @@ $('.question-form').on('submit', function(e) {
   var formElm = $(this)
   var q_id = formElm.find('input[name="q_id"]').val();
   var q_key = formElm.find('input[name="q_key"]').val();
-  console.log(q_id);
-  // console.log(q_key);
-
+  var q_choices = formElm.find('textarea[name="q_choices"]').val();
   var q_spec_obj = JSON.parse(formElm.find('textarea[name="q_spec_obj"]').val());
-  // console.log(q_spec_obj);
-
-  // console.log('q_key:'+q_key);
   var questions = {}
+  // TODO better error handling for empty values, etc.
   questions[q_key] = { spec: q_spec_obj,
-                      // choices: "{{q.choices_as_csv|escapejs}}",
+                      choices: q_choices,
                       answer_type_module_id: null
                     }
   console.log('questions:');
   console.log(questions);
   var m_spec_obj = JSON.parse(formElm.find('textarea[name="m_spec_obj"]').val());
-  // console.log(m_spec_obj);
 
+  // module and module-set questions that we wont support moving forward
   // answer_type_modules = JSON.parse(formElm.find('input[name="answer_type_modules"]').val());
   // autocomplete_questions = JSON.parse(formElm.find('input[name="autocomplete_questions"]').val());
 
-  // var data = formElm.serializeArray();
-  // console.log(data);
-
   // TODO remove task: key as not needed
   init_authoring_tool({
-    task: 3,
     module: m_spec_obj,
     questions: questions,
     answer_type_modules: [],
@@ -358,39 +235,8 @@ $('.question-form').on('submit', function(e) {
   });
 
   show_question_authoring_tool(q_id, q_key);
+  return false
 });
-
-// Previous question form
-// $('.comment-form').on('submit', function(e) {
-//   e.preventDefault();
-//   var formElm = $(this)
-//   var prompt = formElm.find('textarea[name="prompt"]').val();
-//   console.log(prompt);
-//   var data = formElm.serializeArray();
-//   data.push( { name: "module_id", value: {{ module.id }} } );
-//   data.push( { name: "question", value: formElm.find('input[name="key"]').val() } );
-//   console.log(data);
-//   ajax_with_indicator({
-//       url: "/tasks/_authoring_tool/edit-question-new",
-//       method: "POST",
-//       data: data,
-//       keep_indicator_forever: false,
-//       success: function(res) {
-//         // Modal can stay up until the redirect finishes.
-//         console.log(res)
-//         if (res['status'] == "success") {
-//           formElm.find('.success-msg').fadeIn().text('saved')
-//         }
-//         // window.location = res.redirect;
-//         // if (window.location.hash.length > 1)
-//           // window.location.reload(); // if there is a # in the URL, the browser won't actually reload
-//       }
-//   });
-//   setTimeout(function () {
-//       formElm.find('.success-msg').fadeOut().text('');
-//   }, 2000);
-//   return false; // Stop form reloading page
-// });
 </script>
 
 {% if authoring_tool_enabled %}
@@ -404,6 +250,5 @@ $('.question-form').on('submit', function(e) {
 
 {% block scripts %}
     {{ block.super }}
-
 
 {% endblock %}
