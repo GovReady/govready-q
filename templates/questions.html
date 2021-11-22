@@ -54,6 +54,8 @@ Question editor
     font-weight: bold;
   }
 
+  .question-row:hover {}
+
   {% if q.spec.type == "module" %}
   .question .radio label {
     margin: .25em 0;
@@ -171,12 +173,12 @@ Question editor
     </p>
     <table class="question_grid"><tr><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
       {% for q in module_questions %}
-        <tr>
+        <tr class="question-row">
           <td>{{q.definition_order}}</td>
           <td>{{q.key}}</td>
           <td>{{q.spec.title}}</td>
           <td>{{q.spec.type}}</td>
-          <td>{{q.spec.prompt|truncatechars:50}}</td>
+          <td title="{{q.spec.prompt}}">{{q.spec.prompt|truncatechars:50}}</td>
           <td>
             <form autocomplete="off" action="" method="post" class="question-form" onsubmit="return false;">
               <input type="hidden" name="method" value="save">
