@@ -142,10 +142,11 @@ Question editor
 
   .current-module { background:#DCDCDC; color:#505050; font-weight: bold;}
 
-.the_edit_col {  padding:0;}
+.the_edit_col { }
 
 .modal-body, .modal-header, .modal-header-authoring{ padding: 35px 50px 25px 25px; }
-
+.edit_button { margin-top:1em; border-left:1px solid #DCDCDC; border-bottom:1px solid #DCDCDC; padding:.2em .6em;}
+.edit_button:hover { background-color:#DCDCDC;}
 </style>
 {% endblock %}
 
@@ -193,7 +194,7 @@ Question editor
                 "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}}</textarea>
               <textarea class="hidden-field" name="q_choices">{{q.choices_as_csv}}</textarea>
               <div class="form-group col-sm-12">
-                <input class="submitform btn" name="submit" type="submit" id="submit" value="edit">
+                <input class="submitform btn edit_button" name="submit" type="submit" id="submit" value="edit">
               </div>
               <!--<a id="show_question_authoring_tool" href="#" onclick=" console.log('1'); return false;">
                 <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
