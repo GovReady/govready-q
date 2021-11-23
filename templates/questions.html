@@ -124,13 +124,14 @@ Question editor
   }
 
   /* styles for the table */
+table.question_grid  {width:100%;}
   .question_grid td { padding: 0 10px 0 0; }
-  .question_grid tr { border-bottom:1px solid #ccc; padding: 5px; }
+  .question_grid tr { border-bottom:1px solid #eee; padding: 5px; }
   .question_grid th { font-size:.8em;}
-  .question_grid th.edit_col { width: 3%; }
-  .question_grid th.order_col { width: 5%; }
-  .question_grid th.key_col { width: 20%; }
-  .question_grid th.title_col { width: 30%; }
+  .question_grid th.edit_col { width:10%; }
+  .question_grid th.order_col { width:5%; }
+  .question_grid th.key_col { width: 15%; }
+  .question_grid th.title_col { width:25%; }
   .question_grid th.type_col { width: 20%; }
   .question_grid th.prompt_col { width: 25%; }
 
@@ -203,6 +204,7 @@ Question editor
         {% endif %}
       {% endfor %}
     {% endwith %}
+    <br />
   </div>
   <div class="col-md-10" style="padding-left:2em;">
     <div class="row" style="margin-bottom:1.5em;">
@@ -211,10 +213,10 @@ Question editor
     <div class="col-md-2"><button type="button" class="btn btn-success pull-right" data-dismiss="modal">Add a new question</button></div>
     </div>
 
-    <table class="question_grid"><tr><th class=""></th><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
+    <table class="question_grid"><tr><th class="edit_col"></th><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
       {% for q in module_questions %}
         <tr class="question-row">
-          <td class="edit_col">
+          <td>
             <form autocomplete="off" action="" method="post" class="question-form" onsubmit="return false;">
               <input type="hidden" name="method" value="save">
               <input type="hidden" name="q_id" value="{{q.id}}">
@@ -227,9 +229,9 @@ Question editor
               <textarea class="hidden-field" name="autocomplete_questions">{ {% for q in q.module.get_questions %}
                 "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}}</textarea>
               <textarea class="hidden-field" name="q_choices">{{q.choices_as_csv}}</textarea>
-              <div class="form-group col-sm-12">
+              <div class="form-group">
                 <input class="submitform btn edit_button" name="submit" type="submit" id="submit" value="edit">
-                <input class="submitform btn edit_button" type="submit" onclick="authoring_tool_new_question2({{q.id}}); return false;" value="add">
+                <input class="submitform btn edit_button" type="submit" onclick="authoring_tool_new_question2({{q.id}}); return false;" value="insert">
                   <!-- <span class="glyphicon glyphicon-plus-sign task-glypicons" title="New Question"></span> -->
                 </a>
               </div>
