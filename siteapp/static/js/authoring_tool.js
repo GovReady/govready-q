@@ -269,6 +269,18 @@ function authoring_tool_new_question(task_id, question_id, is_project_page) {
   })
 }
 
+function authoring_tool_new_question2(question_id) {
+  ajax_with_indicator({
+      url: "/tasks/_authoring_tool/new-question2",
+      method: "POST",
+      data: { "question_id": question_id },
+      keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      success: function(res) {
+        window.location = res.redirect;
+      }
+  })
+}
+
 function show_authoring_tool_module_editor() {
   // Initialize form state for the compliance app catalog information
   // field and the module specification field.

@@ -143,21 +143,22 @@ Question editor
 
   .current-module { background:#DCDCDC; color:#505050; font-weight: bold;}
 
-.the_edit_col { }
+  .edit_col { min-width: 120px;}
 
-.modal-body, .modal-header, .modal-header-authoring{ padding: 5px 25px 0 5px; }
-
-
-.modal-header .form-group {margin-bottom:0;}
-.modal-body { padding-top:25px;}
-
-.edit_button { margin-top:1em; border-left:1px solid #DCDCDC; border-bottom:1px solid #DCDCDC; padding:.2em .6em;}
-.edit_button:hover { background-color:#DCDCDC;}
+  .modal-body, .modal-header, .modal-header-authoring{ padding: 5px 25px 0 5px; }
 
 
-h3.module-top-title { font-weight:normal; font-size:1.2em; padding:0; margin:0 0 .5em 0;}
-.header-modules-head { font-size:.8em; color:#505050;}
+  .modal-header .form-group {margin-bottom:0;}
+  .modal-body { padding-top:25px;}
 
+  .edit_button { margin-top:1em; border-left:1px solid #DCDCDC; border-bottom:1px solid #DCDCDC; padding:.2em .6em;}
+  .edit_button:hover { background-color:#DCDCDC;}
+
+
+  h3.module-top-title { font-weight:normal; font-size:1.2em; padding:0; margin:0 0 .5em 0;}
+  .header-modules-head { font-size:.8em; color:#505050;}
+
+  .add_new_question { color:#505050; font-size: 0.75em; text-align: center; }
 
 </style>
 {% endblock %}
@@ -171,8 +172,7 @@ h3.module-top-title { font-weight:normal; font-size:1.2em; padding:0; margin:0 0
 
 {% block body %}
 
-
- <div id="" style="margin-top: 20px !important;">
+  <div id="" style="margin-top: 20px !important;">
         <a href="/" class="glyphicon-home-icon">
           <span class="glyphicon glyphicon-home"></span>
         </a>
@@ -182,9 +182,7 @@ h3.module-top-title { font-weight:normal; font-size:1.2em; padding:0; margin:0 0
   </div>
   <p>&nbsp;</p>
 
-
 {{block.super}}
-
 
 <div class="row" style="width: 100%;  margin: auto; ">
   <div class="col-md-2">
@@ -197,8 +195,8 @@ h3.module-top-title { font-weight:normal; font-size:1.2em; padding:0; margin:0 0
 
 
     {% with app=module.app %}
-      {% for m in app.modules.all %}
-        {% if not forloop.last %}
+      {% for m in app_modules  %}
+        {% if m.spec.type != 'project' %}
         <a href="/tasks/module/{{m.id}}/questions" style="text-decoration:none;"><div class="leftbox {% if module.id == m.id %}current-module{% endif %}">
           {{ m.title }}<br /><span class="tot_q">{{ m.questions.all|length }} question{{ m.questions.all|pluralize }}</span>
             </div></a>
@@ -231,10 +229,10 @@ h3.module-top-title { font-weight:normal; font-size:1.2em; padding:0; margin:0 0
               <textarea class="hidden-field" name="q_choices">{{q.choices_as_csv}}</textarea>
               <div class="form-group col-sm-12">
                 <input class="submitform btn edit_button" name="submit" type="submit" id="submit" value="edit">
+                <input class="submitform btn edit_button" type="submit" onclick="authoring_tool_new_question2({{q.id}}); return false;" value="add">
+                  <!-- <span class="glyphicon glyphicon-plus-sign task-glypicons" title="New Question"></span> -->
+                </a>
               </div>
-              <!-- <a id="show_question_authoring_tool" href="#" onclick=" console.log('1'); return false;">
-                <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
-              </a> -->
             </form>
           </td>
           <td>{{q.definition_order}}</td>
@@ -242,7 +240,6 @@ h3.module-top-title { font-weight:normal; font-size:1.2em; padding:0; margin:0 0
           <td>{{q.spec.title}}</td>
           <td>{{q.spec.type}}</td>
           <td title="{{q.spec.prompt}}">{{q.spec.prompt|truncatechars:50}}</td>
-
         </tr>
       {% endfor %}
     </table>

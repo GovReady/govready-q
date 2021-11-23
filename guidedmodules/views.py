@@ -630,11 +630,14 @@ def save_answer(request, task, answered, context, __):
 def show_module_questions(request, module_id):
 
     module = Module.objects.select_related('app').get(pk=module_id)
+    app = module.app
+    app_modules = app.modules.order_by('id').all()
     module_questions = ModuleQuestion.objects.filter(module=module).order_by('definition_order')
 
     context = {
         "module": module,
         "module_questions": module_questions,
+        "app_modules": app_modules,
         "authoring_tool_enabled": True,
         "ADMIN_ROOT_URL": settings.SITE_ROOT_URL + "/admin",
     }
@@ -1792,6 +1795,53 @@ def authoring_new_question(request, task, mq):
     # Return status. The browser will reload/redirect --- if the question key
     # changed, this sends the new key.
     return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url_to_question(question) })
+
+# @authoring_tool_auth
+def authoring_new_question2(request):
+    """Insert a new question after current question"""
+
+    # Find a new unused question identifier.
+    question = get_object_or_404(ModuleQuestion.objects.select_related('module'), id=request.POST['question_id'])
+    module = question.module
+
+    ids_in_use = set(module.questions.values_list("key", flat=True))
+    entry = 0
+    while "q" + str(entry) in ids_in_use: entry += 1
+    entry = "q" + str(entry)
+    # Make a new spec.
+    # import ipdb; ipdb.set_trace()
+
+    spec = {
+        "id": entry,
+        "type": "text",
+        "title": "New Question Title",
+        "prompt": "Enter some text.",
+    }
+
+    # Make a new question instance.
+    question_new = ModuleQuestion(
+        module=module,
+        key=entry,
+        definition_order=question.definition_order+1,
+        spec=spec
+        )
+    question_new.save()
+
+    # Re-number question definition order that come after current question
+    for tmq in list(module.questions.order_by("definition_order")):
+        if tmq.definition_order > question.definition_order and tmq.id != question_new.id:
+            ModuleQuestion.objects.filter(pk=tmq.id).update(definition_order=tmq.definition_order+1)
+            # TODO fix N+1 issue
+
+    # Clear cache...
+    from .module_logic import clear_module_question_cache
+    clear_module_question_cache()
+
+    # Return status. The browser will reload/redirect --- if the question key
+    # changed, this sends the new key.
+
+    return JsonResponse({ "status": "ok", "redirect": reverse('show_module_questions', args=[module.id]) })
+
 
 # @transaction.atomic
 # def authoring_edit_question_new(request):
