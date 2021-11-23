@@ -149,7 +149,25 @@ Question editor
 </style>
 {% endblock %}
 
+{% block contextbar %}
+  {# kill breadcrumbs but add some space below site header #}
+  <div id="contextbar">
+    &nbsp;
+  </div>
+{% endblock %}
+
 {% block body %}
+ <div id="" style="">
+        <a href="/" class="glyphicon-home-icon">
+          <span class="glyphicon glyphicon-home"></span>
+        </a>
+        / <a href="{% url 'store' %}">Template Library</a>
+        / {{ module.app.catalog_metadata.title }}
+        / {{ module.title }}
+  </div>
+  <p>&nbsp;</p>
+
+
 {{block.super}}
 
 <div class="row" style="width: 100%; margin: auto; margin-bottom: 12px;">
@@ -164,8 +182,8 @@ Question editor
 <div class="row" style="width: 100%;  margin: auto; ">
   <div class="col-md-2">
     {% with app=module.app %}
-      {% for m in app.modules.all %}
-        {% if not forloop.last %}
+      {% for m in app_modules  %}
+        {% if m.spec.type != 'project' %}
         <a href="/tasks/module/{{m.id}}/questions" style="text-decoration:none;"><div class="leftbox {% if module.id == m.id %}current-module{% endif %}">
           {{ m.title }}<br /><span class="tot_q">{{ m.questions.all|length }} question{{ m.questions.all|pluralize }}</span>
             </div></a>
@@ -194,10 +212,10 @@ Question editor
               <textarea class="hidden-field" name="q_choices">{{q.choices_as_csv}}</textarea>
               <div class="form-group col-sm-12">
                 <input class="submitform btn" name="submit" type="submit" id="submit" value="edit">
+                <a id="add_new_question" href="" onclick="authoring_tool_new_question2({{q.id}}); return false;">
+                <span class="glyphicon glyphicon-plus-sign task-glypicons" title="New Question"></span>
+              </a>
               </div>
-              <!--<a id="show_question_authoring_tool" href="#" onclick=" console.log('1'); return false;">
-                <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
-              </a>-->
             </form>
           </td>
           <td>{{q.definition_order}}</td>

@@ -26,6 +26,7 @@ urlpatterns = [
     url(r'^_start_discussion', guidedmodules.views.start_a_discussion, name="start_a_discussion"),
     url(r'^analytics$', guidedmodules.views.analytics, name="guidedmodules_analytics"),
     url(r'^_authoring_tool/new-question$', guidedmodules.views.authoring_new_question),
+    url(r'^_authoring_tool/new-question2$', guidedmodules.views.authoring_new_question2),
     url(r'^_authoring_tool/edit-module$', guidedmodules.views.authoring_edit_module),
     url(r'^_authoring_tool/create-app-project$', guidedmodules.views.authoring_create_q),
     url(r'^_authoring_tool/import-appsource$', guidedmodules.views.authoring_import_appsource),
