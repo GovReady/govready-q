@@ -124,10 +124,10 @@ Question editor
   }
 
   /* styles for the table */
-  .question_grid td { padding: 10px 10px 10px 0; }
+  .question_grid td { padding: 0 10px 0 0; }
   .question_grid tr { border-bottom:1px solid #ccc; padding: 5px; }
   .question_grid th { font-size:.8em;}
-    .question_grid th.edit_col { width: 3%; }
+  .question_grid th.edit_col { width: 3%; }
   .question_grid th.order_col { width: 5%; }
   .question_grid th.key_col { width: 20%; }
   .question_grid th.title_col { width: 30%; }
@@ -155,7 +155,7 @@ Question editor
 .edit_button:hover { background-color:#DCDCDC;}
 
 
-h3.module-top-title { font-weight:normal; font-size:1.2em; padding:0; margin:0 0 1em 0;}
+h3.module-top-title { font-weight:normal; font-size:1.2em; padding:0; margin:0 0 .5em 0;}
 .header-modules-head { font-size:.8em; color:#505050;}
 
 
@@ -207,7 +207,12 @@ h3.module-top-title { font-weight:normal; font-size:1.2em; padding:0; margin:0 0
     {% endwith %}
   </div>
   <div class="col-md-10" style="padding-left:2em;">
-    <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> module contains <strong>{{ module_questions|length }}</strong> questions <sup>(<a href="#">add a new question</a>)</sup></h3>
+    <div class="row" style="margin-bottom:1.5em;">
+    <div class="col-md-10">
+        <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> module contains <strong>{{ module_questions|length }}</strong> question{{ module_questions|pluralize }}</h3></div>
+    <div class="col-md-2"><button type="button" class="btn btn-success pull-right" data-dismiss="modal">Add a new question</button></div>
+    </div>
+
     <table class="question_grid"><tr><th class=""></th><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
       {% for q in module_questions %}
         <tr class="question-row">
