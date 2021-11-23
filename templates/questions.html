@@ -126,6 +126,7 @@ Question editor
   .question_grid td { padding: 10px 10px 10px 0; }
   .question_grid tr { border-bottom:1px solid #ccc; padding: 5px; }
   .question_grid th { font-size:.8em;}
+    .question_grid th.edit_col { width: 3%; }
   .question_grid th.order_col { width: 5%; }
   .question_grid th.key_col { width: 20%; }
   .question_grid th.title_col { width: 30%; }
@@ -146,6 +147,12 @@ Question editor
 .modal-body, .modal-header, .modal-header-authoring{ padding: 35px 50px 25px 25px; }
 .edit_button { margin-top:1em; border-left:1px solid #DCDCDC; border-bottom:1px solid #DCDCDC; padding:.2em .6em;}
 .edit_button:hover { background-color:#DCDCDC;}
+
+
+.module-top-title { font-weight:normal; font-size:1.4em; padding:0; margin:0;}
+.header-modules-head { font-size:.8em; color:#505050;}
+
+
 </style>
 {% endblock %}
 
@@ -172,17 +179,17 @@ Question editor
 
 {{block.super}}
 
-<div class="row" style="width: 100%; margin: auto; margin-bottom: 12px;">
-<div style="padding-left:15px;">
-  <h2 style="font-weight:bold; padding-top:0; margin:0;">
-    {{ module.app.catalog_metadata.title }}
-    {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
-  </h2><span style="font-size:1em;">Version {{ module.app.version_number }}</span>
-</div>
-</div>
-<br />
+
 <div class="row" style="width: 100%;  margin: auto; ">
   <div class="col-md-2">
+
+      <h2 style="font-weight:bold; padding-top:0; margin:0;">
+        {{ module.app.catalog_metadata.title }}
+        {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
+      </h2><span style="font-size:1em;">Version {{ module.app.version_number }}</span>
+    <br />  <br /><span class="header-modules-head">Included modules</span>
+
+
     {% with app=module.app %}
       {% for m in app.modules.all %}
         {% if not forloop.last %}
@@ -194,17 +201,11 @@ Question editor
     {% endwith %}
   </div>
   <div class="col-md-10" style="padding-left:2em;">
-    <p><strong>{{ module.title }}</strong> module contains <strong>{{ module_questions|length }} questions</strong>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; <a href="#">Add a Question</a><br />
-    </p>
-    <table class="question_grid"><tr><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
+    <h2 class="module-top-title">"{{ module.title }}" module contains {{ module_questions|length }} questions</h2> <a href="#">Add a Question</a>
+    <table class="question_grid"><tr><th class=""></th><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
       {% for q in module_questions %}
         <tr class="question-row">
-          <td>{{q.definition_order}}</td>
-          <td>{{q.key}}</td>
-          <td>{{q.spec.title}}</td>
-          <td>{{q.spec.type}}</td>
-          <td title="{{q.spec.prompt}}">{{q.spec.prompt|truncatechars:50}}</td>
-          <td>
+          <td class="edit_col">
             <form autocomplete="off" action="" method="post" class="question-form" onsubmit="return false;">
               <input type="hidden" name="method" value="save">
               <input type="hidden" name="q_id" value="{{q.id}}">
@@ -218,17 +219,19 @@ Question editor
                 "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}}</textarea>
               <textarea class="hidden-field" name="q_choices">{{q.choices_as_csv}}</textarea>
               <div class="form-group col-sm-12">
-<<<<<<< HEAD
                 <input class="submitform btn edit_button" name="submit" type="submit" id="submit" value="edit">
-=======
-                <input class="pull-right submitform btn btn-link" name="submit" type="submit" id="submit" value="edit">
->>>>>>> a038bc9352b287c3f93950c2b83e8f62e5bc4a0e
               </div>
               <!-- <a id="show_question_authoring_tool" href="#" onclick=" console.log('1'); return false;">
                 <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
               </a> -->
             </form>
           </td>
+          <td>{{q.definition_order}}</td>
+          <td>{{q.key}}</td>
+          <td>{{q.spec.title}}</td>
+          <td>{{q.spec.type}}</td>
+          <td title="{{q.spec.prompt}}">{{q.spec.prompt|truncatechars:50}}</td>
+
         </tr>
       {% endfor %}
     </table>
