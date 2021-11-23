@@ -174,47 +174,44 @@ h3.app_store { font-size:.9em; color:#808080; padding:0 0 0 0; margin:0; line-he
           <h2 class="app_store">{{ app.title }}</h2>
           <h3 class="app_store">{{app.description.short|safe|truncatewords_html:50}}</h3>
           <div class="app-version-info">
-Version: {{ app.version }}<br />
-AppSource: {{ app.source_slug }}<br />
-Information Provider:  {% if app.vendor_url is not None %} <a href="{{ app.vendor_url }}">{{ app.vendor }}</a> {% else %} {{ app.vendor }} {% endif %}<br />
-Startable: {% if app.authz == "none" %}Yes{% else %} Requires Admin{% endif %}
-</div>
-
+            Version: {{ app.version }}<br />
+            AppSource: {{ app.source_slug }}<br />
+            Information Provider:  {% if app.vendor_url is not None %} <a href="{{ app.vendor_url }}">{{ app.vendor }}</a> {% else %} {{ app.vendor }} {% endif %}<br />
+            Startable: {% if app.authz == "none" %}Yes{% else %} Requires Admin{% endif %}
+          </div>
           <div>
-          <a href="#" class="btn btn-link view-app"
-             onclick="authoring_tool_create_q_form(argument={ 'modal_title': 'Clone Template', 'app_id': '{{ app.appversion_id }}', 'app_title': '{{ app.title }}', 'app_category_title':'{{ app_category.title }}', 'app_description': '{{ app.description.short }}' });
-             return false;">
-          <span class="glyphicon glyphicon-flash" ></span> Clone</a>
-          <a href="/store/app/{{app.appversion_id}}/modules" class="btn btn-link view-app"> <span class="glyphicon glyphicon-pencil"></span> Edit</a>
+            <a href="#" class="btn btn-link view-app"
+               onclick="authoring_tool_create_q_form(argument={ 'modal_title': 'Clone Template', 'app_id': '{{ app.appversion_id }}', 'app_title': '{{ app.title }}', 'app_category_title':'{{ app_category.title }}', 'app_description': '{{ app.description.short }}' });
+               return false;">
+            <span class="glyphicon glyphicon-flash" ></span> Clone</a>
+            <a href="/store/app/{{app.appversion_id}}/modules" class="btn btn-link view-app"> <span class="glyphicon glyphicon-pencil"></span> Edit</a>
 
-          <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-link view-app"><span class="glyphicon glyphicon-info-sign"></span> More</a>
+            <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-link view-app"><span class="glyphicon glyphicon-info-sign"></span> More</a>
+          </div>
+        </div>
+          <div class="text-center" style="padding-bottom:1em;">
+            <div style="display: inline-block;">
+              {# Offer quick start button if user can only start the app in a single organization context. #}
+              {% if app.organizations|length >= 1 %}
+                <form action="/store/{{ app.key|urlencode }}{{ forward_qsargs }}" method="post" style="display: inline-block;" class="app-form" data-app="{{app.key}}">
+                    {% csrf_token %}
+                    {% if app.organizations|length > 1 %}
+                        <select id="app-org-select" class="" onchange="update_org_choice('{{ app.key }}/organization_{{ forloop.counter }}', event)">
+                            {% for org in app.organizations %}
+                                <option value="{{ org.slug }}">{{ org }}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
+                    {% with app.organizations|first as first_org %}
+                        <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
+                    {% endwith %}
+                    {% if 'portfolio' in forward_qsargs %}{% endif %}
+                      <button type="submit" class="btn btn-success btn-xs btn-justified start-app" style="width:150px; padding:.25em;">Start</button>
+                </form>
+              {% endif %}
+            </div>
           </div>
 
-
-        </div>
-        <div class=" text-center" style="padding-bottom:1em;">
-                        <div style="display: inline-block;">
-                      {# Offer quick start button if user can only start the app in a single organization context. #}
-                      {% if app.organizations|length >= 1 %}
-                        <form action="/store/{{ app.key|urlencode }}{{ forward_qsargs }}" method="post" style="display: inline-block;">
-                            {% csrf_token %}
-                            {% if app.organizations|length > 1 %}
-                                <select id="app-org-select" class="" onchange="update_org_choice('{{ app.key }}/organization_{{ forloop.counter }}', event)">
-                                    {% for org in app.organizations %}
-                                        <option value="{{ org.slug }}">{{ org }}</option>
-                                    {% endfor %}
-                                </select>
-                            {% endif %}
-                            {% with app.organizations|first as first_org %}
-                                <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
-                            {% endwith %}
-                            {% if 'portfolio' in forward_qsargs %}{% endif %}
-                              <button type="submit" class="btn btn-success btn-xs btn-justified start-app" style="width:150px; padding:.25em;">Start</button>
-                        </form>
-                      {% endif %}
-                      </div>
-
-        </div>
       </div>
     </div>
 
