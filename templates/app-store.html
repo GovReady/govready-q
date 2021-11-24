@@ -57,9 +57,16 @@ Compliance Apps
   .app-version-info div { color: #888;margin: 1px 0 1px 0;}
   .app-version-info small { color: #888;}
   .start-app { width: 76px; margin: 8px 0px 0px 0px; }
+  /*
   .view-app { width: 48px; margin: 8px 0px 0px 0px; text-align: center; color: #888; padding: 3px 0px 4px 0px; font-size: 0.7em; }
   .view-app:hover { color: #888; }
-  .view-app:hover div { display: none; }
+  .view-app:hover div { display: block; }
+*/
+.view-app { padding:0 1.5em 0 0; font-size: 0.8em;}
+.box-of-links { display:block; margin-top:1em;}
+
+
+
   .app-category h4 { border-bottom: 1px solid #ccc; text-transform: uppercase; font-size: 0.8em; font-weight: bold;}
 
   @media screen and (max-width: 1200px) {
@@ -179,14 +186,14 @@ h3.app_store { font-size:.9em; color:#808080; padding:0 0 0 0; margin:0; line-he
             Information Provider:  {% if app.vendor_url is not None %} <a href="{{ app.vendor_url }}">{{ app.vendor }}</a> {% else %} {{ app.vendor }} {% endif %}<br />
             Startable: {% if app.authz == "none" %}Yes{% else %} Requires Admin{% endif %}
           </div>
-          <div>
-            <a href="#" class="btn btn-link view-app"
+          <div class="box-of-links">
+            <a href="#" class="view-app"
                onclick="authoring_tool_create_q_form(argument={ 'modal_title': 'Clone Template', 'app_id': '{{ app.appversion_id }}', 'app_title': '{{ app.title }}', 'app_category_title':'{{ app_category.title }}', 'app_description': '{{ app.description.short }}' });
                return false;">
             <span class="glyphicon glyphicon-flash" ></span> Clone</a>
-            <a href="/store/app/{{app.appversion_id}}/modules" class="btn btn-link view-app"> <span class="glyphicon glyphicon-pencil"></span> Edit</a>
+            <a href="/store/app/{{app.appversion_id}}/modules" class="view-app"> <span class="glyphicon glyphicon-pencil"></span> Edit</a>
 
-            <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-link view-app"><span class="glyphicon glyphicon-info-sign"></span> More</a>
+            <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="view-app"><span class="glyphicon glyphicon-info-sign"></span> More</a>
           </div>
         </div>
           <div class="text-center" style="padding-bottom:1em;">
