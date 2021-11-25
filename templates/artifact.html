@@ -209,18 +209,18 @@ Question editor
   </div>
   <div class="col-md-10" style="padding-left:2em;">
     <div class="row" style="margin-bottom:1.5em;">
-    <div class="col-md-10">
+      <div class="col-md-10">
         <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> module's output artifact <strong>"{{ artifact.title }}"</strong>
-        </h3></div>
+        </h3>
+      </div>
     </div>
-
-    <form class="form-horizontal" method="POST" action="_authoring_tool/edit-artifact">
+    <form class="form-horizontal" method="POST" action="{% url 'authoring_edit_artifact' %}">
+      {% csrf_token %}
       <div class="modal-body">
-
-          <div class="form-group hidden">
-            <label for="at_q_id" class="col-sm-1 control-label">q_id</label>
+          <div class="form-group">
+            <label for="at_m_id" class="col-sm-1 control-label">module_id</label>
             <div class="col-sm-5">
-              <input id="at_q_id" name="q_id" type="text" class="form-control" value="">
+              <input id="at_m_id" name="module_id" type="text" class="form-control" value="{{ module.id }}">
             </div>
           </div>
           <div class="form-group">
@@ -250,17 +250,13 @@ Question editor
               <textarea class="form-control" id="artifact_template" name="template" style="max-height: 1000px;">{{ artifact.template }}</textarea>
             </div>
           </div>
-        </form>
-
       </div>
       <div class="modal-footer">
-        <button type="submit" class="btn btn-danger btn pull-left" name="submit" value="delete">Delete Artifact</button>
+        <input type="submit" class="btn btn-danger btn pull-left" name="submit" value="Delete Artifact"></input>
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="submit" class="btn btn-success" name="submit" value="save">Save Changes</button>
+        <input type="submit" class="btn btn-success" value="Save Changes"></input>
       </div>
-    </div>
     </form>
-
   </div>
 </div>
 
