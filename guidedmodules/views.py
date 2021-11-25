@@ -627,6 +627,7 @@ def save_answer(request, task, answered, context, __):
     # Return the response.
     return response
 
+# TODO: Add access control
 def show_module_questions(request, module_id):
 
     module = Module.objects.select_related('app').get(pk=module_id)
@@ -642,6 +643,25 @@ def show_module_questions(request, module_id):
         "ADMIN_ROOT_URL": settings.SITE_ROOT_URL + "/admin",
     }
     return render(request, "questions.html", context)
+
+# TODO: Add access control
+def show_module_artifact(request, module_id, artifact_id):
+
+    module = Module.objects.select_related('app').get(pk=module_id)
+    app = module.app
+    app_modules = app.modules.order_by('id').all()
+    # module_questions = ModuleQuestion.objects.filter(module=module).order_by('definition_order')
+    artifact = next((x for x in module.spec['output'] if x['id'] == artifact_id), None)
+
+    context = {
+        "module": module,
+        # "module_questions": module_questions,
+        "app_modules": app_modules,
+        "authoring_tool_enabled": True,
+        "ADMIN_ROOT_URL": settings.SITE_ROOT_URL + "/admin",
+        "artifact": artifact,
+    }
+    return render(request, "artifact.html", context)
 
 @task_view
 def show_question(request, task, answered, context, q):
@@ -1842,55 +1862,6 @@ def authoring_new_question2(request):
 
     return JsonResponse({ "status": "ok", "redirect": reverse('show_module_questions', args=[module.id]) })
 
-
-# @transaction.atomic
-# def authoring_edit_question_new(request):
-
-#     module = get_object_or_404(Module, id=request.POST["module_id"])
-#     # TODO: change to get use question id
-#     question = get_object_or_404(ModuleQuestion, module=module, key=request.POST['key'])
-
-#     try:
-
-#         # Get existing specification (json) for quesiton
-#         spec = question.spec
-#         # spec["id"] = request.POST['newid']
-#         for field in ("title", "prompt",):
-#             value = request.POST.get(field, "").strip()
-#             if value:
-#                 if field in ("min", "max"):
-#                     spec[field] = int(value)
-#                 elif field == "choices":
-#                     spec[field] = ModuleQuestion.choices_from_csv(value)
-#                 elif field == "protocol" and request.POST.get("module-id") != "/app/":
-#                     # The protocol value is only valid if "/app/" was chosen
-#                     # in the UI as the module type. It wasn't, so skip it.
-#                     continue
-#                 elif field == "protocol":
-#                     # The protocol value is given as a space-separated list of
-#                     # of protocols.
-#                     spec[field] = re.split(r"\s+", value)
-#                 else:
-#                     spec[field] = value
-
-#         # Save.
-#         question.spec = spec
-#         question.save()
-
-#         # Clear cache...
-#         from .module_logic import clear_module_question_cache
-#         clear_module_question_cache()
-
-#         # Return status. The browser will reload/redirect --- if the question key
-#         # changed, this sends the new key.
-#         from django.core import serializers
-#         serialized_obj = serializers.serialize('json', [question, ])
-#         return JsonResponse({ "status": "success", "message": "the message", "questionobj": serialized_obj })
-
-#     except ValueError as e:
-#         return JsonResponse({ "status": "error", "message": str(e) })
-
-
 # @authoring_tool_auth
 @transaction.atomic
 def authoring_edit_question2(request):
@@ -2005,6 +1976,61 @@ def authoring_edit_question2(request):
     # Return response and reload page
     # TODO convert to a JSON result and don't reload page
     return JsonResponse({ "status": "ok", "redirect": reverse('show_module_questions', args=[module.id]) })
+
+# @authoring_tool_auth
+@transaction.atomic
+def authoring_edit_artifact(request):
+    """Update question from output artifact tool"""
+
+    module = get_object_or_404(Module.objects.select_related('app'), id=request.POST['module_id'])
+    # artifact = next((x for x in module.spec.output if x.id == artifact_id), None)
+    print(1, "======", 'authoring_edit_artifact')
+    try:
+        # Create the spec dict, starting with the standard fields.
+        # Most fields are strings and need no extra processing but
+        # some need to be parsed.
+        from collections import OrderedDict
+        new_output_artifact = OrderedDict()
+        new_output_artifact["id"] = artifact_id = request.POST['newid']
+        for field in (
+            "id", "title", "format", "template"):
+            value = request.POST.get(field, "").strip()
+            if value:
+                if field in ("min", "max"):
+                    new_output_artifact[field] = int(value)
+                elif field == "id":
+                    artifact_id = id
+                elif field == "protocol":
+                    # The protocol value is given as a space-separated list of
+                    # of protocols.
+                    new_output_artifact[field] = re.split(r"\s+", value)
+                else:
+                    new_output_artifact[field] = value
+
+        # TODO: Validate
+
+        # Update correct artifact
+        # TODO: What if artifact ID changes?
+        next((x for x in module.spec['output'] if x['id'] == artifact_id), None)
+
+        counter = 0
+        for output in module.spec['output']:
+            if output['id'] == artifact_id:
+                module.spec['output'][counter] = new_output_artifact
+                module.save()
+                messages.add_message(request, messages.INFO,
+                    f'I\'ve saved the artifact.')
+                # Clear cache...
+                from .module_logic import clear_module_question_cache
+                clear_module_question_cache()
+                break
+            else:
+                counter += 1
+    except ValueError as e:
+        return JsonResponse({ "status": "error", "message": str(e) })
+
+    # return JsonResponse({ "status": "ok", "redirect": reverse('show_module_artifact', args=[module.id, artifact_id]) })
+    return HttpResponseRedirect(reverse('show_module_artifact', args=[module.id, artifact_id]))
 
 @authoring_tool_auth
 @transaction.atomic
