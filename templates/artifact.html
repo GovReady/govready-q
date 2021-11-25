@@ -180,6 +180,7 @@ Question editor
         / <a href="{% url 'store' %}">Template Library</a>
         / {{ module.app.catalog_metadata.title }}
         / {{ module.title }}
+        / {{ artifact.title }}
   </div>
   <p>&nbsp;</p>
 
@@ -193,7 +194,6 @@ Question editor
         {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
       </h2><span style="font-size:1em;">Version {{ module.app.version_number }}</span>
     <br />  <br /><span class="header-modules-head">Included modules</span>
-
 
     {% with app=module.app %}
       {% for m in app_modules  %}
@@ -210,111 +210,59 @@ Question editor
   <div class="col-md-10" style="padding-left:2em;">
     <div class="row" style="margin-bottom:1.5em;">
     <div class="col-md-10">
-        <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> module contains <strong>{{ module_questions|length }}</strong> question{{ module_questions|pluralize }}
-          {% if module.spec.output and module.spec.output|length > 0 %} and <strong>{{module.spec.output|length }}</strong>  artifact{{module.spec.output|length|pluralize }}{% endif %}
+        <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> module's output artifact <strong>"{{ artifact.title }}"</strong>
         </h3></div>
-    <div class="col-md-2"><button type="button" class="btn btn-success pull-right" data-dismiss="modal">Add a new question</button></div>
     </div>
 
-    <h3>Questions</h3>
-    <table class="question_grid"><tr><th class="edit_col"></th><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
-      {% for q in module_questions %}
-        <tr class="question-row">
-          <td>
-            <form autocomplete="off" action="" method="post" class="question-form" onsubmit="return false;">
-              <input type="hidden" name="method" value="save">
-              <input type="hidden" name="q_id" value="{{q.id}}">
-              <input type="hidden" name="q_key" value="{{q.key}}">
-              <textarea class="hidden-field" name="q_spec_obj">{{q.spec|json}}</textarea>
-              <textarea class="hidden-field" name="m_spec_obj">{{module.spec|json}}</textarea>
-              <textarea class="hidden-field" name="answer_type_modules">"[{% for m in q.module.get_referenceable_modules %}
-                { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
-                {% endfor %}]"</textarea>
-              <textarea class="hidden-field" name="autocomplete_questions">{ {% for q in q.module.get_questions %}
-                "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}}</textarea>
-              <textarea class="hidden-field" name="q_choices">{{q.choices_as_csv}}</textarea>
-              <div class="form-group">
-                <input class="submitform btn edit_button" name="submit" type="submit" id="submit" value="edit">
-                <input class="submitform btn edit_button" type="submit" onclick="authoring_tool_new_question2({{q.id}}); return false;" value="insert &#8595;">
-                  <!-- <span class="glyphicon glyphicon-plus-sign task-glypicons" title="New Question"></span> -->
-                </a>
-              </div>
-            </form>
-          </td>
-          <td>{{q.definition_order}}</td>
-          <td>{{q.key}}</td>
-          <td>{{q.spec.title}}</td>
-          <td>{{q.spec.type}}</td>
-          <td title="{{q.spec.prompt}}">{{q.spec.prompt|truncatechars:50}}</td>
-        </tr>
-      {% endfor %}
-    </table>
+    <form class="form-horizontal" method="POST" action="_authoring_tool/edit-artifact">
+      <div class="modal-body">
 
-    <h3>Artifacts</h3>
-      <table class="question_grid"><tr><th class="edit_col"></th><th class="key_col">ID</th><th class="title_col">Title</th><th class="type_col">Format</th><th class="prompt_col">Prompt</th></tr>
-      {% for artifact in module.spec.output %}
-         <tr class="question-row">
-          <td>
-            <form autocomplete="off" action="" method="post" class="artifact-form" onsubmit="return false;">
-              <div class="form-group">
-                <a href="{% url 'show_module_artifact' module.id artifact.id %}" class="submitform btn edit_button" name="submit" type="submit" id="submit" value="edit">edit</a>
-                <!-- <input class="submitform btn edit_button" type="submit" onclick="authoring_tool_new_question2({{q.id}}); return false;" value="insert &#8595;"> -->
-                  <!-- <span class="glyphicon glyphicon-plus-sign task-glypicons" title="New Question"></span> -->
-                </a>
-              </div>
-            </form>
-          </td>
-          <td>{{artifact.id}}</td>
-          <td>{{artifact.title}}</td>
-          <td>{{artifact.format}}</td>
-          <td title="{{artifact.template|truncatechars:600}}">{{artifact.filename}}</td>
-        </tr>
-      {% endfor %}
-    </table>
+          <div class="form-group hidden">
+            <label for="at_q_id" class="col-sm-1 control-label">q_id</label>
+            <div class="col-sm-5">
+              <input id="at_q_id" name="q_id" type="text" class="form-control" value="">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="artifact_id" class="col-sm-1 control-label">ID</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="artifact_id" pattern="[a-zA-Z_][a-zA-Z0-9_]*" name="newid" value="{{ artifact.id }}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="artifact_title" class="col-sm-1 control-label">Title</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="artifact_title" name="title" value="{{ artifact.title }}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="authoring_tool_type" class="col-sm-1 control-label">Type</label>
+            <div class="col-sm-5">
+              <select class="form-control" id="type" name="type">
+                  <option value="markdown" {% if artifact.type == "markdown" %}selected{% endif %}>markdown</option>
+                  <option value="html" {% if artifact.type == "markdown" %}selected{% endif %}>html</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="artifact_template" class="col-sm-1 control-label">Template</label>
+            <div class="col-sm-11">
+              <textarea class="form-control" id="artifact_template" name="template" style="max-height: 1000px;">{{ artifact.template }}</textarea>
+            </div>
+          </div>
+        </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-danger btn pull-left" name="submit" value="delete">Delete Artifact</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-success" name="submit" value="save">Save Changes</button>
+      </div>
+    </div>
+    </form>
+
   </div>
 </div>
-
-<script>
-$('.question-form').on('submit', function(e) {
-  e.preventDefault();
-  var formElm = $(this)
-  var q_id = formElm.find('input[name="q_id"]').val();
-  var q_key = formElm.find('input[name="q_key"]').val();
-  var q_choices = formElm.find('textarea[name="q_choices"]').val();
-  var q_spec_obj = JSON.parse(formElm.find('textarea[name="q_spec_obj"]').val());
-  var questions = {}
-  // TODO better error handling for empty values, etc.
-  questions[q_key] = { spec: q_spec_obj,
-                      choices: q_choices,
-                      answer_type_module_id: null
-                    }
-  console.log('questions:');
-  console.log(questions);
-  var m_spec_obj = JSON.parse(formElm.find('textarea[name="m_spec_obj"]').val());
-
-  // module and module-set questions that we wont support moving forward
-  // answer_type_modules = JSON.parse(formElm.find('input[name="answer_type_modules"]').val());
-  // autocomplete_questions = JSON.parse(formElm.find('input[name="autocomplete_questions"]').val());
-
-  // TODO remove task: key as not needed
-  init_authoring_tool({
-    module: m_spec_obj,
-    questions: questions,
-    answer_type_modules: [],
-    autocomplete_questions: {}
-  });
-
-  show_question_authoring_tool(q_id, q_key);
-  return false
-});
-</script>
-
-{% if authoring_tool_enabled %}
-  {% include "authoring-tool-modal.html" %}
-  <script src="{% static 'vendor/js-yaml.min.js' %}"></script>
-  <script src="{% static 'js/authoring_tool.js' %}"></script>
-  <style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
-{% endif %}
 
 {% endblock %}
 
