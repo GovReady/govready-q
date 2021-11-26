@@ -663,6 +663,25 @@ def show_module_artifact(request, module_id, artifact_id):
     }
     return render(request, "artifact.html", context)
 
+# TODO: Add access control
+def add_module_artifact(request, module_id):
+
+    module = Module.objects.select_related('app').get(pk=module_id)
+    app = module.app
+    app_modules = app.modules.order_by('id').all()
+    # module_questions = ModuleQuestion.objects.filter(module=module).order_by('definition_order')
+    artifact = None
+
+    context = {
+        "module": module,
+        # "module_questions": module_questions,
+        "app_modules": app_modules,
+        "authoring_tool_enabled": True,
+        "ADMIN_ROOT_URL": settings.SITE_ROOT_URL + "/admin",
+        "artifact": artifact,
+    }
+    return render(request, "artifact.html", context)
+
 @task_view
 def show_question(request, task, answered, context, q):
     # Let's talk about where the data is for this question. The 'q'

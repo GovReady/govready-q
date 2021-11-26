@@ -270,6 +270,10 @@ Question editor
         </tr>
       {% endfor %}
     </table>
+    <form action="{% url 'add_module_artifact' module.id %}" method="post" class="artifact-form">
+      {% csrf_token %}
+      <input class="submitform btn edit_button" name="submit" type="submit" id="submit" value="add artifact">
+    </form>
   </div>
 </div>
 

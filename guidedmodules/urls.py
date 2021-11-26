@@ -10,6 +10,7 @@ urlpatterns = [
     # multi-question authoring tool
     url(r'^module/(\d+)/questions$', guidedmodules.views.show_module_questions, name="show_module_questions"),
     url(r'^_authoring_tool/edit-question2$', guidedmodules.views.authoring_edit_question2),
+    url(r'^module/(\d+)/artifact/new$', guidedmodules.views.add_module_artifact, name="add_module_artifact"),
     url(r'^module/(\d+)/artifact/([\w_-]+)$', guidedmodules.views.show_module_artifact, name="show_module_artifact"),
     url(r'^_authoring_tool/edit-artifact$', guidedmodules.views.authoring_edit_artifact, name="authoring_edit_artifact"),
 
