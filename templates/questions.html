@@ -236,7 +236,6 @@ Question editor
               <div class="form-group">
                 <input class="submitform btn edit_button" name="submit" type="submit" id="submit" value="edit">
                 <input class="submitform btn edit_button" type="submit" onclick="authoring_tool_new_question2({{q.id}}); return false;" value="insert &#8595;">
-                  <!-- <span class="glyphicon glyphicon-plus-sign task-glypicons" title="New Question"></span> -->
                 </a>
               </div>
             </form>
@@ -255,10 +254,10 @@ Question editor
       {% for artifact in module.spec.output %}
          <tr class="question-row">
           <td>
-            <form autocomplete="off" action="" method="post" class="artifact-form" onsubmit="return false;">
+            <form action="{% url 'show_module_artifact' module.id artifact.id %}" method="post" class="artifact-form">
+              {% csrf_token %}
               <div class="form-group">
-                <a href="{% url 'show_module_artifact' module.id artifact.id %}" class="submitform btn edit_button" name="submit" type="submit" id="submit" value="edit">edit</a>
-                <!-- <input class="submitform btn edit_button" type="submit" onclick="authoring_tool_new_question2({{q.id}}); return false;" value="insert &#8595;"> -->
+                <input class="submitform btn edit_button" name="submit" type="submit" id="submit" value="edit">
                   <!-- <span class="glyphicon glyphicon-plus-sign task-glypicons" title="New Question"></span> -->
                 </a>
               </div>
