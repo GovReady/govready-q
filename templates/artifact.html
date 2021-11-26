@@ -161,6 +161,8 @@ Question editor
 
   .add_new_question { color:#505050; font-size: 0.75em; text-align: center; }
 
+  #artifact_template { max-height: 700px; }
+
 </style>
 {% endblock %}
 
@@ -236,18 +238,24 @@ Question editor
             </div>
           </div>
           <div class="form-group">
-            <label for="authoring_tool_type" class="col-sm-1 control-label">Type</label>
+            <label for="authoring_tool_type" class="col-sm-1 control-label">Format</label>
             <div class="col-sm-5">
-              <select class="form-control" id="type" name="type">
-                  <option value="markdown" {% if artifact.type == "markdown" %}selected{% endif %}>markdown</option>
-                  <option value="html" {% if artifact.type == "markdown" %}selected{% endif %}>html</option>
+              <select class="form-control" id="format" name="format">
+                  <option value="markdown" {% if artifact.format == "markdown" %}selected{% endif %}>markdown</option>
+                  <option value="html" {% if artifact.format == "html" %}selected{% endif %}>html</option>
               </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="artifact_filename" class="col-sm-1 control-label">File name</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="artifact_filename" name="filename" value="{{ artifact.filename }}">
             </div>
           </div>
           <div class="form-group">
             <label for="artifact_template" class="col-sm-1 control-label">Template</label>
             <div class="col-sm-11">
-              <textarea class="form-control" id="artifact_template" name="template" style="max-height: 1000px;">{{ artifact.template }}</textarea>
+              <textarea class="form-control" id="artifact_template" name="template">{{ artifact.template }}</textarea>
             </div>
           </div>
       </div>
@@ -259,6 +267,7 @@ Question editor
     </form>
   </div>
 </div>
+
 
 {% endblock %}
 

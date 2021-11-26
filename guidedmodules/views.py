@@ -1984,7 +1984,6 @@ def authoring_edit_artifact(request):
 
     module = get_object_or_404(Module.objects.select_related('app'), id=request.POST['module_id'])
     # artifact = next((x for x in module.spec.output if x.id == artifact_id), None)
-    print(1, "======", 'authoring_edit_artifact')
     try:
         # Create the spec dict, starting with the standard fields.
         # Most fields are strings and need no extra processing but
@@ -1993,7 +1992,7 @@ def authoring_edit_artifact(request):
         new_output_artifact = OrderedDict()
         new_output_artifact["id"] = artifact_id = request.POST['newid']
         for field in (
-            "id", "title", "format", "template"):
+            "id", "title", "format", "filename", "template"):
             value = request.POST.get(field, "").strip()
             if value:
                 if field in ("min", "max"):
@@ -2008,24 +2007,28 @@ def authoring_edit_artifact(request):
                     new_output_artifact[field] = value
 
         # TODO: Validate
-
         # Update correct artifact
-        # TODO: What if artifact ID changes?
-        next((x for x in module.spec['output'] if x['id'] == artifact_id), None)
-
         counter = 0
+        artifact_id_matched = False
         for output in module.spec['output']:
             if output['id'] == artifact_id:
+                artifact_id_matched = True
                 module.spec['output'][counter] = new_output_artifact
                 module.save()
                 messages.add_message(request, messages.INFO,
-                    f'I\'ve saved the artifact.')
+                    f"Artifact saved.")
                 # Clear cache...
                 from .module_logic import clear_module_question_cache
                 clear_module_question_cache()
                 break
             else:
                 counter += 1
+        if not artifact_id_matched:
+            # Append new artifact since artifact_id not matched
+            module.spec['output'].append(new_output_artifact)
+            module.save()
+            messages.add_message(request, messages.INFO,
+                f"New artifact added.")
     except ValueError as e:
         return JsonResponse({ "status": "error", "message": str(e) })
 
