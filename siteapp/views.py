@@ -359,6 +359,7 @@ def get_compliance_apps_catalog_for_user(user):
     # Turn the organization sets into a list because the templates use |first.
     catalog = catalog.values()
     for app in catalog:
+        # print("\n\n app",app)
         app["organizations"] = sorted(app["organizations"], key=lambda org: org.name)
 
     return catalog
@@ -408,6 +409,7 @@ def render_app_catalog_entry(appversion, appversions, organization):
 
     return {
         # app identification
+        "appversion_id": appversion.id,
         "appsource_id": appversion.source.id,
         "key": key,
 
@@ -638,6 +640,8 @@ def apps_catalog_item(request, source_slug, app_name):
     else:
         raise Http404()
 
+    app_catalog_info["id"] = app_catalog_info["versions"][0].id
+
     # Get portfolio project should be included in.
     if request.GET.get("portfolio"):
         portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
@@ -720,9 +724,25 @@ def apps_catalog_item(request, source_slug, app_name):
         "app": app_catalog_info,
         "error": error,
         "source_slug": source_slug,
-        "portfolio": portfolio
+        "portfolio": portfolio,
+        "authoring_tool_enabled": True,
     })
 
+@login_required
+def apps_catalog_item_modules(request, appversion_id):
+    """Return the modules for an appversion in catalog"""
+
+    appversion = AppVersion.objects.get(pk=appversion_id)
+    modules = Module.objects.prefetch_related('questions').filter(app=appversion)
+
+    # Redirect to the AppVersion's first module's question page
+    return HttpResponseRedirect(f"/tasks/module/{modules[0].id}/questions")
+
+    # TODO: delete "appversion_modules.html"
+    # return render(request, "appversion_modules.html", {
+    #     "appversion": appversion,
+    #     "modules": modules,
+    # })
 
 @login_required
 def apps_catalog_item_zip(request, source_slug, app_name):

@@ -81,7 +81,6 @@
 
   <div class="col-md-9">
 
-
     <div id="context-bar">
       {% if is_admin %}
         <div class="pull-right hidden-xs">
@@ -113,71 +112,68 @@
       {{task.title}}
     </div>
 
+    <div id="auth-status">
+      {% if task.editor == request.user %}
 
-<div id="auth-status">
-  {% if task.editor == request.user %}
+        {% for inv in open_invitations %}
+          <div data-invitation-id="{{inv.id}}" class="panel panel-warning task-invitation">
+            <div class="panel-body">
+              You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
+              (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
+              <br />You may <a href="{{task.project.get_absolute_url}}">close</a> this task.
+            </div>
+          </div>
+        {% endfor %}
 
-    {% for inv in open_invitations %}
-      <div data-invitation-id="{{inv.id}}" class="panel panel-warning task-invitation">
-        <div class="panel-body">
-          You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
-          (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
-          <br />You may <a href="{{task.project.get_absolute_url}}">close</a> this task.
-        </div>
+      {% elif is_discussion_guest %}
+
+      <div class="text-danger small task-invitation">
+          You are participating in the discussion on this question as a guest.
       </div>
-    {% endfor %}
 
-  {% elif is_discussion_guest %}
+      {% endif %}
+    </div>
 
-<div class="text-danger small task-invitation">
-    You are participating in the discussion on this question as a guest.
-</div>
+    <script>
+      function invite_to_transfer_editor() {
+        var info = {{send_invitation|json}};
+        show_invite_modal(
+          'Ask a Colleague',
+          'Invite a colleague to complete {{task.title|escapejs}}.',
+          info,
+          '{{task.render_invitation_message|escapejs}}',
+          {
+            project: info.project_id,
+            into_task_editorship: {{task.id}}
+          });
+        return false;
+      }
 
-{% endif %}
-</div>
-
-<script>
-function invite_to_transfer_editor() {
-  var info = {{send_invitation|json}};
-  show_invite_modal(
-    'Ask a Colleague',
-    'Invite a colleague to complete {{task.title|escapejs}}.',
-    info,
-    '{{task.render_invitation_message|escapejs}}',
-    {
-      project: info.project_id,
-      into_task_editorship: {{task.id}}
-    });
-  return false;
-}
-
-function delete_task() {
-  show_modal_confirm(
-    "Delete Task",
-    "Are you sure you want to delete {{task.title|escapejs}}?",
-    "Delete", function() {
-      ajax_with_indicator({
-          url: "{% url 'delete_task' %}",
-          method: "POST",
-          data: {
-            id: {{task.id}}
-          },
-          keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
-          success: function(res) {
-            window.location = "{{task.project.get_absolute_url|escapejs}}";
-          }
-      });
-    });
-  return false; // cancel link
-}
-</script>
-
-
+      function delete_task() {
+        show_modal_confirm(
+          "Delete Task",
+          "Are you sure you want to delete {{task.title|escapejs}}?",
+          "Delete", function() {
+            ajax_with_indicator({
+                url: "{% url 'delete_task' %}",
+                method: "POST",
+                data: {
+                  id: {{task.id}}
+                },
+                keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+                success: function(res) {
+                  window.location = "{{task.project.get_absolute_url|escapejs}}";
+                }
+            });
+          });
+        return false; // cancel link
+      }
+    </script>
 
 {% endblock %}
 
 
-</div><!-- col-md-8 -->
+</div><!-- col-md-9 -->
 
 </div><!-- /div class row -->
     {% block scripts %}

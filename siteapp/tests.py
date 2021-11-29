@@ -466,7 +466,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         var_sleep(1)
         # Click Add Button
-        wait_for_sleep_after(lambda: self.click_element(".app[data-app='project/simple_project'] .start-app"))
+        wait_for_sleep_after(lambda: self.click_element(".app-form[data-app='project/simple_project'] .start-app"))
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "I want to answer some questions on Q."))
 
         m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)

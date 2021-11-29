@@ -182,6 +182,12 @@ class AppVersion(BaseModel):
             raise ValueError("{} is not an asset in {}.".format(asset_path, self))
         return self.asset_files.get(source=self.source, content_hash=self.asset_paths[asset_path]).file
 
+    @property
+    def icon(self):
+        size = 128
+        print(50,"===== image")
+        icon = image_to_dataurl(self.get_asset(self.catalog_metadata["icon"]), size)
+
     def catalog_metadata_yaml(self):
         import rtyaml
         return rtyaml.dump(self.catalog_metadata)
@@ -704,6 +710,10 @@ class Task(BaseModel):
         else:
             import urllib.parse
             return self.get_absolute_url() + "/question/" + urllib.parse.quote(question.key)
+
+    def get_absolute_url_to_questions(self, question):
+        import urllib.parse
+        return self.get_absolute_url() + "/questions/"
 
     def get_static_asset_url(self, asset_path, use_data_urls=False):
         if asset_path not in self.module.app.asset_paths:

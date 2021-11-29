@@ -1,4 +1,5 @@
 import os
+import json
 
 from datetime import datetime
 from zipfile import ZipFile
@@ -11,6 +12,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
+from django.urls import reverse
 
 import re
 
@@ -624,6 +626,61 @@ def save_answer(request, task, answered, context, __):
 
     # Return the response.
     return response
+
+# TODO: Add access control
+def show_module_questions(request, module_id):
+
+    module = Module.objects.select_related('app').get(pk=module_id)
+    app = module.app
+    app_modules = app.modules.order_by('id').all()
+    module_questions = ModuleQuestion.objects.filter(module=module).order_by('definition_order')
+
+    context = {
+        "module": module,
+        "module_questions": module_questions,
+        "app_modules": app_modules,
+        "authoring_tool_enabled": True,
+        "ADMIN_ROOT_URL": settings.SITE_ROOT_URL + "/admin",
+    }
+    return render(request, "questions.html", context)
+
+# TODO: Add access control
+def show_module_artifact(request, module_id, artifact_id):
+
+    module = Module.objects.select_related('app').get(pk=module_id)
+    app = module.app
+    app_modules = app.modules.order_by('id').all()
+    # module_questions = ModuleQuestion.objects.filter(module=module).order_by('definition_order')
+    artifact = next((x for x in module.spec['output'] if x['id'] == artifact_id), None)
+
+    context = {
+        "module": module,
+        # "module_questions": module_questions,
+        "app_modules": app_modules,
+        "authoring_tool_enabled": True,
+        "ADMIN_ROOT_URL": settings.SITE_ROOT_URL + "/admin",
+        "artifact": artifact,
+    }
+    return render(request, "artifact.html", context)
+
+# TODO: Add access control
+def add_module_artifact(request, module_id):
+
+    module = Module.objects.select_related('app').get(pk=module_id)
+    app = module.app
+    app_modules = app.modules.order_by('id').all()
+    # module_questions = ModuleQuestion.objects.filter(module=module).order_by('definition_order')
+    artifact = None
+
+    context = {
+        "module": module,
+        # "module_questions": module_questions,
+        "app_modules": app_modules,
+        "authoring_tool_enabled": True,
+        "ADMIN_ROOT_URL": settings.SITE_ROOT_URL + "/admin",
+        "artifact": artifact,
+    }
+    return render(request, "artifact.html", context)
 
 @task_view
 def show_question(request, task, answered, context, q):
@@ -1488,36 +1545,99 @@ def authoring_create_q(request):
     from guidedmodules.models import AppSource
     from collections import OrderedDict
 
-    new_q_appsrc = AppSource.objects.get(slug="govready-q-files-stubs")
-
     # Get the values from submitted form
     new_q = OrderedDict()
     for field in (
-        "q_slug", "title", "short_description", "category"):
+        "app_id", "q_slug", "title", "short_description", "category"):
         value = request.POST.get(field, "").strip()
         # Example how we can test values and make changes
-        if value:
-            if field in ("min", "max"):
+        if field in ("q_slug", "title", "short_description", "category"):
+            new_q[field] = str(value)
+        elif field in ("app_id"):
+            if value:
                 new_q[field] = int(value)
-            elif field == "protocol":
-                # The protocol value is given as a space-separated list of
-                # of protocols.
-                new_q[field] = re.split(r"\s+", value)
             else:
-                new_q[field] = value
+                new_q[field] = None
+        elif field == "protocol":
+            # The protocol value is given as a space-separated list of
+            # of protocols.
+            new_q[field] = re.split(r"\s+", value)
+        else:
+            new_q[field] = value
 
-    # Use stub_app to publish our new app
     try:
-        appver = new_q_appsrc.add_app_to_catalog("stub_app" )
-        # Update app details
-        appver.appname = new_q["title"]
-        appver.catalog_metadata["title"] = new_q["title"]
-        appver.catalog_metadata["description"]["short"] = new_q['short_description']
-        appver.catalog_metadata["category"] = new_q["category"]
-        # appver.spec.introduction.template = new_q['short_description']
-        appver.save()
+        if new_q["app_id"] is None:
+            # Create a new stub questionnaire template
+            new_q_appsrc = AppSource.objects.get(slug="govready-q-files-stubs")
+            new_appversion = new_q_appsrc.add_app_to_catalog("stub_app")
+            # Update app details
+            # TODO: Should we save slug?
+            # new_appversion.appname = new_q["title"]
+            new_appversion.appname = new_q["q_slug"].replace("_", "-")
+            new_appversion.catalog_metadata["title"] = new_q["title"]
+            new_appversion.catalog_metadata["description"]["short"] = new_q['short_description']
+            new_appversion.catalog_metadata["category"] = new_q["category"]
+            # new_appversion.spec.introduction.template = new_q['short_description']
+            new_appversion.save()
+        else:
+            # Clone existing questionnaire template by copying all records
+            # TODO: Working out ModuleAsset Paths!
+            new_q_appsrc = AppSource.objects.get(slug="govready-q-files-startpack")
+            src_appversion = AppVersion.objects.get(pk=new_q["app_id"])
+
+            # copy Appversion record and change
+            new_appversion = src_appversion
+            new_appversion.pk = None
+            new_appversion.source = new_q_appsrc
+            new_appversion.appname = new_q["q_slug"].replace("_", "-")
+            new_appversion.catalog_metadata["title"] = new_q["title"]
+            new_appversion.catalog_metadata["description"]["short"] = new_q['short_description']
+            new_appversion.catalog_metadata["category"] = new_q["category"]
+            # new_appversion.spec.introduction.template = new_q['short_description']
+            new_appversion.save()
+
+            # Get src_appversion modules, copy, and associate with new_appversion
+            src_appversion = AppVersion.objects.get(pk=new_q["app_id"]) #Retrive again source AppVersion
+            # Add asset files
+            for asset_file in src_appversion.asset_files.all():
+                new_appversion.asset_files.add(asset_file)
+
+            # Create copy of each module in a loop and bulk create each module_questions
+            modules = Module.objects.filter(app=src_appversion)
+            for src_module in modules:
+                src_module_questions = ModuleQuestion.objects.filter(module=src_module)
+                new_module = src_module
+                new_module.pk = None
+                new_module.app = new_appversion
+                new_module.save()
+                # Bulk create copies of module_questions
+                new_module_questions = src_module_questions
+                nmqs = []
+                for nmq in new_module_questions:
+                    nmq.pk = None
+                    nmq.module = new_module
+                    nmqs.append(nmq)
+                ModuleQuestion.objects.bulk_create(nmqs)
+
+            # Copy inputs
+            # asset paths
+            # copy templates?
+            # Copy components
     except Exception as e:
         raise
+
+    # # Use stub_app to publish our new app
+    # try:
+    #     # appver = new_q_appsrc.add_app_to_catalog("stub_app")
+    #     # Update app details
+    #     appver.appname = new_q["title"]
+    #     appver.catalog_metadata["title"] = new_q["title"]
+    #     appver.catalog_metadata["description"]["short"] = new_q['short_description']
+    #     appver.catalog_metadata["category"] = new_q["category"]
+    #     # appver.spec.introduction.template = new_q['short_description']
+    #     appver.save()
+    # except Exception as e:
+    #     raise
 
     messages.add_message(request, messages.INFO, 'New Project "{}" added into the catalog.'.format(new_q["title"]))
 
@@ -1715,11 +1835,59 @@ def authoring_new_question(request, task, mq):
     # changed, this sends the new key.
     return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url_to_question(question) })
 
-@authoring_tool_auth
-@transaction.atomic
-def authoring_edit_question(request, task):
+# @authoring_tool_auth
+def authoring_new_question2(request):
+    """Insert a new question after current question"""
 
-    question = get_object_or_404(ModuleQuestion, module=task.module, key=request.POST['question'])
+    # Find a new unused question identifier.
+    question = get_object_or_404(ModuleQuestion.objects.select_related('module'), id=request.POST['question_id'])
+    module = question.module
+
+    ids_in_use = set(module.questions.values_list("key", flat=True))
+    entry = 0
+    while "q" + str(entry) in ids_in_use: entry += 1
+    entry = "q" + str(entry)
+    # Make a new spec.
+    # import ipdb; ipdb.set_trace()
+
+    spec = {
+        "id": entry,
+        "type": "text",
+        "title": "New Question Title",
+        "prompt": "Enter some text.",
+    }
+
+    # Make a new question instance.
+    question_new = ModuleQuestion(
+        module=module,
+        key=entry,
+        definition_order=question.definition_order+1,
+        spec=spec
+        )
+    question_new.save()
+
+    # Re-number question definition order that come after current question
+    for tmq in list(module.questions.order_by("definition_order")):
+        if tmq.definition_order > question.definition_order and tmq.id != question_new.id:
+            ModuleQuestion.objects.filter(pk=tmq.id).update(definition_order=tmq.definition_order+1)
+            # TODO fix N+1 issue
+
+    # Clear cache...
+    from .module_logic import clear_module_question_cache
+    clear_module_question_cache()
+
+    # Return status. The browser will reload/redirect --- if the question key
+    # changed, this sends the new key.
+
+    return JsonResponse({ "status": "ok", "redirect": reverse('show_module_questions', args=[module.id]) })
+
+# @authoring_tool_auth
+@transaction.atomic
+def authoring_edit_question2(request):
+    """Update question from authoring tool """
+
+    question = get_object_or_404(ModuleQuestion.objects.select_related('module'), id=request.POST['q_id'])
+    module = question.module
 
     # Delete the question?
     if request.POST.get("delete") == "1":
@@ -1731,12 +1899,10 @@ def authoring_edit_question(request, task):
             return JsonResponse({ "status": "error", "message": "The question cannot be deleted because it has already been answered." })
 
     # Update the question...
-
     # Update the key.
     question.key = request.POST['newid']
 
     try:
-
         # Create the spec dict, starting with the standard fields.
         # Most fields are strings and need no extra processing but
         # some need to be parsed.
@@ -1822,20 +1988,71 @@ def authoring_edit_question(request, task):
     question.spec = spec
     question.save()
 
-    # Write to disk. Errors writing should not be suppressed because
-    # saving to disk is a part of the contract of how app editing works.
-    try:
-        question.module.serialize_to_disk()
-    except Exception as e:
-        return JsonResponse({ "status": "error", "message": "Could not update local YAML file: " + str(e) })
-
     # Clear cache...
     from .module_logic import clear_module_question_cache
     clear_module_question_cache()
 
-    # Return status. The browser will reload/redirect --- if the question key
-    # changed, this sends the new key.
-    return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url_to_question(question) })
+    # Return response and reload page
+    # TODO convert to a JSON result and don't reload page
+    return JsonResponse({ "status": "ok", "redirect": reverse('show_module_questions', args=[module.id]) })
+
+# @authoring_tool_auth
+@transaction.atomic
+def authoring_edit_artifact(request):
+    """Update question from output artifact tool"""
+
+    module = get_object_or_404(Module.objects.select_related('app'), id=request.POST['module_id'])
+    # artifact = next((x for x in module.spec.output if x.id == artifact_id), None)
+    try:
+        # Create the spec dict, starting with the standard fields.
+        # Most fields are strings and need no extra processing but
+        # some need to be parsed.
+        from collections import OrderedDict
+        new_output_artifact = OrderedDict()
+        new_output_artifact["id"] = artifact_id = request.POST['newid']
+        for field in (
+            "id", "title", "format", "filename", "template"):
+            value = request.POST.get(field, "").strip()
+            if value:
+                if field in ("min", "max"):
+                    new_output_artifact[field] = int(value)
+                elif field == "id":
+                    artifact_id = id
+                elif field == "protocol":
+                    # The protocol value is given as a space-separated list of
+                    # of protocols.
+                    new_output_artifact[field] = re.split(r"\s+", value)
+                else:
+                    new_output_artifact[field] = value
+
+        # TODO: Validate
+        # Update correct artifact
+        counter = 0
+        artifact_id_matched = False
+        for output in module.spec['output']:
+            if output['id'] == artifact_id:
+                artifact_id_matched = True
+                module.spec['output'][counter] = new_output_artifact
+                module.save()
+                messages.add_message(request, messages.INFO,
+                    f"Artifact saved.")
+                # Clear cache...
+                from .module_logic import clear_module_question_cache
+                clear_module_question_cache()
+                break
+            else:
+                counter += 1
+        if not artifact_id_matched:
+            # Append new artifact since artifact_id not matched
+            module.spec['output'].append(new_output_artifact)
+            module.save()
+            messages.add_message(request, messages.INFO,
+                f"New artifact added.")
+    except ValueError as e:
+        return JsonResponse({ "status": "error", "message": str(e) })
+
+    # return JsonResponse({ "status": "ok", "redirect": reverse('show_module_artifact', args=[module.id, artifact_id]) })
+    return HttpResponseRedirect(reverse('show_module_artifact', args=[module.id, artifact_id]))
 
 @authoring_tool_auth
 @transaction.atomic
