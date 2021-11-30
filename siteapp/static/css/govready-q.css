@@ -271,7 +271,7 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 
 /* projects */
 .projects-top { margin-top: 30px; }
-.projects-row { border-top: 1px solid #aaa;padding: 8px 0px 8px 0px; }
+.projects-row { border-top: 1px solid #dddddd; padding: 8px 0px 8px 0px; }
 .projects-link { color: black; }
 
 /* TASK */
