@@ -63,12 +63,13 @@ Compliance Apps
   .view-app:hover div { display: block; }
 */
 .view-app { padding:0 1.5em 0 0; font-size: 0.8em;}
-.box-of-links { display:block; margin-top:1em;}
+.box-of-links { display:block; margin-top:1em; font-size:.9em;}
 
-
+/* override app-category width */
+.app-category { width:100%;}
 
   .app-category h4 { border-bottom: 1px solid #ccc; text-transform: uppercase; font-size: 0.8em; font-weight: bold;}
-
+/*
   @media screen and (max-width: 1200px) {
     .app h3 { font-size: 17px; }
   }
@@ -78,7 +79,7 @@ Compliance Apps
   @media screen and (max-width: 768px) {
     .app .app-icon { width: 20%; }
   }
-
+*/
 /*  .app .body {  }
   .app .body p { }
   .app .body p:last-child { margin: 0; }*/
@@ -101,134 +102,143 @@ Compliance Apps
   .has-more-apps .if-has-more-apps { display: block; }
   .show-more-apps .if-has-more-apps .show-more { display: none; }
   .show-more-apps .if-has-more-apps .show-less { display: inline; }
+
+h2.app_store { font-size:1.1em; padding:0 0 .5em 0; margin:0; text-align:left; border:0; background:transparent;}
+h3.app_store { font-size:.9em; color:#808080; padding:0 0 0 0; margin:0; line-height:1.4em;}
+.app-version-info { font-size:.7em; color:#999999;}
+
+.panel:hover { background-color:#F8F8F8; border-color:#999999;}
+
+
 </style>
 {% endblock %}
 
 {% block contextbar %}
   {# kill breadcrumbs but add some space below site header #}
-  <div id="contextbar">
-    &nbsp;
-  </div>
+  <div id="contextbar"> &nbsp;</div>
 {% endblock %}
 
 {% block body %}
-      <div>
-        <a href="/" class="glyphicon-home-icon">
-          <span class="glyphicon glyphicon-home"></span>
-        </a>
-        / Template Library
 
-      <div class="pull-right create-nav">
-        <form class="form-inline" onsubmit="return false;">
-          <div class="form-group">
-            {% if authoring_tool_enabled %}
-            <span class="create-new-project">
-              <a id="new-project" href="#" class="btn btn-success" onclick="authoring_tool_create_q_form('argument'); return false;">Create template</a>
-            </span>
-            <span class="create-new-project">
-              <a id="import-appsource" href="#" class="btn btn-success" onclick="authoring_tool_import_appsource_form('argument'); return false;">Import templates</a>
-            </span>
-            {% endif %}
-            <label class="sr-only" for="app-search">search apps for</label>
-            <div class="input-group">
-              <div class="input-group-addon">search</div>
-              <input type="text" class="form-control" id="app-search" placeholder="template name">
-            </div>
-          </div>
-          &nbsp;&nbsp;
-        </form>
+<div class="container">
+  <div class="row">
+  <a href="/" class="glyphicon-home-icon"><span class="glyphicon glyphicon-home"></span></a> / Template Library
+
+<div class="pull-right create-nav">
+  <form class="form-inline" onsubmit="return false;">
+    <div class="form-group">
+      {% if authoring_tool_enabled %}
+      <span class="create-new-project">
+        <a id="new-project" href="#" class="btn btn-success" onclick="authoring_tool_create_q_form('argument'); return false;">Create template</a>
+      </span>
+      <span class="create-new-project">
+        <a id="import-appsource" href="#" class="btn btn-success" onclick="authoring_tool_import_appsource_form('argument'); return false;">Import templates</a>
+      </span>
+      {% endif %}
+      <label class="sr-only" for="app-search">search apps for</label>
+      <div class="input-group">
+        <div class="input-group-addon">search</div>
+        <input type="text" class="form-control" id="app-search" placeholder="template name">
       </div>
+    </div>
+    &nbsp;&nbsp;
+  </form>
+</div>
 
 {% if filter_description %}
 <p class="app-bottom-margin">These apps can help you with <em>{{filter_description}}</em>.</p>
 {% endif %}
+</div>
 
 {# since the category links disappear in response to search queries, this should come after the search box so the search box's position doesn't jump around if this element changes size or disappears #}
 <!-- <div class="pull-left app-category-nav">
-  {% for app_category in apps %}
-    <span data-category="{{app_category.title}}" {% if forloop.first %}class="first"{% endif %}>
-      <a href="#" onclick="smooth_scroll_to($('.app-category').filter(function() { return this.getAttribute('data-category') == '{{app_category.title|escapejs}}' })); return false;">{{app_category.title}}</a>
-    </span>
-  {% endfor %}
+{% for app_category in apps %}
+<span data-category="{{app_category.title}}" {% if forloop.first %}class="first"{% endif %}>
+<a href="#" onclick="smooth_scroll_to($('.app-category').filter(function() { return this.getAttribute('data-category') == '{{app_category.title|escapejs}}' })); return false;">{{app_category.title}}</a>
+</span>
+{% endfor %}
 </div> -->
-
 <div class="clearfix"> </div>
 
+
 {% for app_category in apps %}
+<div class="row">
 <div class="app-category" data-category="{{app_category.title}}">
 {% if apps|length > 1 %} {# only display category titles if there is more than one category available #}
 <h4>{{app_category.title}} Apps</h4>
 {% endif %}
 
-<style>
-h2.app_store { font-size:1.1em; padding:0 0 .5em 0; margin:0; text-align:left; border:0; background:transparent;}
-h3.app_store { font-size:.9em; color:#808080; padding:0 0 0 0; margin:0; line-height:1.4em;}
-.app-version-info { font-size:.7em; color:#999999;}
+{% for app in app_category.apps %}
 
-.panel:hover { background-color:#ECECEC; border-color:#999999;}
+<div class="col-lg-3 col-md-4 col-sm-6" >
 
-</style>
+  <!-- inside the card -->
+        <div class="panel panel-default">
+          <div class="panel-heading hidden">{{ app.title }}</div>
+          <div class="panel-body app" style="min-height:210px;" data-app="{{app.key}}" data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}">
+            <h2 class="app_store">{{ app.title }}</h2>
+            <h3 class="app_store">{{app.description.short|safe|truncatewords_html:50}}</h3>
+            <div class="app-version-info">
+              Version: {{ app.version }}<br />
+              AppSource: {{ app.source_slug }}<br />
+              Information Provider:  {% if app.vendor_url is not None %} <a href="{{ app.vendor_url }}">{{ app.vendor }}</a> {% else %} {{ app.vendor }} {% endif %}<br />
+              Startable: {% if app.authz == "none" %}Yes{% else %} Requires Admin{% endif %}
+            </div>
+            <div class="box-of-links">
+              <a href="#" class="view-app"
+                 onclick="authoring_tool_create_q_form(argument={ 'modal_title': 'Clone Template', 'app_id': '{{ app.appversion_id }}', 'app_title': '{{ app.title }}', 'app_category_title':'{{ app_category.title }}', 'app_description': '{{ app.description.short }}' });
+                 return false;">
+              <span class="glyphicon glyphicon-flash" ></span> Clone</a>
+              <a href="/store/app/{{app.appversion_id}}/modules" class="view-app"> <span class="glyphicon glyphicon-pencil"></span> Edit</a>
 
-
-
-<div class="row">
-  {% for app in app_category.apps %}
-
-    <div class=" col-sm-3">
-      <div class="panel panel-default">
-        <div class="panel-heading hidden">{{ app.title }}</div>
-        <div class="panel-body app" style="min-height:210px;" data-app="{{app.key}}" data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}">
-          <h2 class="app_store">{{ app.title }}</h2>
-          <h3 class="app_store">{{app.description.short|safe|truncatewords_html:50}}</h3>
-          <div class="app-version-info">
-            Version: {{ app.version }}<br />
-            AppSource: {{ app.source_slug }}<br />
-            Information Provider:  {% if app.vendor_url is not None %} <a href="{{ app.vendor_url }}">{{ app.vendor }}</a> {% else %} {{ app.vendor }} {% endif %}<br />
-            Startable: {% if app.authz == "none" %}Yes{% else %} Requires Admin{% endif %}
-          </div>
-          <div class="box-of-links">
-            <a href="#" class="view-app"
-               onclick="authoring_tool_create_q_form(argument={ 'modal_title': 'Clone Template', 'app_id': '{{ app.appversion_id }}', 'app_title': '{{ app.title }}', 'app_category_title':'{{ app_category.title }}', 'app_description': '{{ app.description.short }}' });
-               return false;">
-            <span class="glyphicon glyphicon-flash" ></span> Clone</a>
-            <a href="/store/app/{{app.appversion_id}}/modules" class="view-app"> <span class="glyphicon glyphicon-pencil"></span> Edit</a>
-
-            <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="view-app"><span class="glyphicon glyphicon-info-sign"></span> More</a>
-          </div>
-        </div>
-          <div class="text-center" style="padding-bottom:1em;">
-            <div style="display: inline-block;">
-              {# Offer quick start button if user can only start the app in a single organization context. #}
-              {% if app.organizations|length >= 1 %}
-                <form action="/store/{{ app.key|urlencode }}{{ forward_qsargs }}" method="post" style="display: inline-block;" class="app-form" data-app="{{app.key}}">
-                    {% csrf_token %}
-                    {% if app.organizations|length > 1 %}
-                        <select id="app-org-select" class="" onchange="update_org_choice('{{ app.key }}/organization_{{ forloop.counter }}', event)">
-                            {% for org in app.organizations %}
-                                <option value="{{ org.slug }}">{{ org }}</option>
-                            {% endfor %}
-                        </select>
-                    {% endif %}
-                    {% with app.organizations|first as first_org %}
-                        <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
-                    {% endwith %}
-                    {% if 'portfolio' in forward_qsargs %}{% endif %}
-                      <button type="submit" class="btn btn-success btn-xs btn-justified start-app" style="width:150px; padding:.25em;">Start</button>
-                </form>
-              {% endif %}
+              <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="view-app"><span class="glyphicon glyphicon-info-sign"></span> More</a>
             </div>
           </div>
+            <div class="text-center" style="padding-bottom:1em;">
+              <div style="display: inline-block;">
+                {# Offer quick start button if user can only start the app in a single organization context. #}
+                {% if app.organizations|length >= 1 %}
+                  <form action="/store/{{ app.key|urlencode }}{{ forward_qsargs }}" method="post" style="display: inline-block;" class="app-form" data-app="{{app.key}}">
+                      {% csrf_token %}
+                      {% if app.organizations|length > 1 %}
+                          <select id="app-org-select" class="" onchange="update_org_choice('{{ app.key }}/organization_{{ forloop.counter }}', event)">
+                              {% for org in app.organizations %}
+                                  <option value="{{ org.slug }}">{{ org }}</option>
+                              {% endfor %}
+                          </select>
+                      {% endif %}
+                      {% with app.organizations|first as first_org %}
+                          <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
+                      {% endwith %}
+                      {% if 'portfolio' in forward_qsargs %}{% endif %}
+                        <button type="submit" class="btn btn-default btn-xs btn-justified start-app" style="width:150px; padding:.25em;">Start</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
 
-      </div>
-    </div>
+        </div>
+        </div>
 
-    {% if forloop.counter|divisibleby:4 %} {# breaks dont play well with client-side search --- they are re-generated when search results are displayed #}
-      <div class="visible-sm clearfix rowbrk"> </div>
-      <div class="visible-md clearfix rowbrk"> </div>
-      <div class="visible-lg clearfix rowbrk"> </div>
-    {% endif %}
+
+
+      {% if forloop.counter|divisibleby:4 %} {# breaks dont play well with client-side search --- they are re-generated when search results are displayed #}
+        <div class="visible-sm clearfix rowbrk"> </div>
+        <div class="visible-md clearfix rowbrk"> </div>
+        <div class="visible-lg clearfix rowbrk"> </div>
+      {% endif %}
+
+
+
+
+
+
+
 {% endfor %}
 </div> <!--/row-->
+
+
+
 
 <a class="if-has-more-apps" href="#" onclick="$(this).parent().toggleClass('show-more-apps'); do_app_search(last_app_search); return false;">
   <span class="show-more">Show More &raquo;</span>
@@ -236,6 +246,9 @@ h3.app_store { font-size:.9em; color:#808080; padding:0 0 0 0; margin:0; line-he
 </a>
 
 </div> <!--/.app-category-->
+
+
+
 
 {% empty %}
   {% if request.GET.q %}
