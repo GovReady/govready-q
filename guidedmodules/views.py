@@ -1582,8 +1582,8 @@ def authoring_create_q(request):
         else:
             # Clone existing questionnaire template by copying all records
             # TODO: Working out ModuleAsset Paths!
-            new_q_appsrc = AppSource.objects.get(slug="govready-q-files-startpack")
             src_appversion = AppVersion.objects.get(pk=new_q["app_id"])
+            new_q_appsrc = src_appversion.source
 
             # copy Appversion record and change
             new_appversion = src_appversion
@@ -1603,6 +1603,7 @@ def authoring_create_q(request):
                 new_appversion.asset_files.add(asset_file)
 
             # Create copy of each module in a loop and bulk create each module_questions
+
             modules = Module.objects.filter(app=src_appversion)
             for src_module in modules:
                 src_module_questions = ModuleQuestion.objects.filter(module=src_module)
@@ -1625,19 +1626,6 @@ def authoring_create_q(request):
             # Copy components
     except Exception as e:
         raise
-
-    # # Use stub_app to publish our new app
-    # try:
-    #     # appver = new_q_appsrc.add_app_to_catalog("stub_app")
-    #     # Update app details
-    #     appver.appname = new_q["title"]
-    #     appver.catalog_metadata["title"] = new_q["title"]
-    #     appver.catalog_metadata["description"]["short"] = new_q['short_description']
-    #     appver.catalog_metadata["category"] = new_q["category"]
-    #     # appver.spec.introduction.template = new_q['short_description']
-    #     appver.save()
-    # except Exception as e:
-    #     raise
 
     messages.add_message(request, messages.INFO, 'New Project "{}" added into the catalog.'.format(new_q["title"]))
 
