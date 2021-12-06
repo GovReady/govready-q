@@ -255,6 +255,7 @@ Question editor
       {% for artifact in module.spec.output %}
          <tr class="question-row">
           <td>
+            {% if artifact.id %}
             <form action="{% url 'show_module_artifact' module.id artifact.id %}" method="post" class="artifact-form">
               {% csrf_token %}
               <div class="form-group">
@@ -263,8 +264,11 @@ Question editor
                 </a>
               </div>
             </form>
+            {% else %}
+            <span class="text-danger">Artifact error.</span>
+            {% endif %}
           </td>
-          <td>{{artifact.id}}</td>
+          <td>{% if artifact.id %}{{artifact.id}}{% else %}<span class="text-danger">Artifact error. Please ask adimistrator "Fix missing artifact.id for module {{module.id}}."{% endif %}</span></td>
           <td>{{artifact.title}}</td>
           <td>{{artifact.format}}</td>
           <td title="{{artifact.template|truncatechars:600}}">{{artifact.filename}}</td>

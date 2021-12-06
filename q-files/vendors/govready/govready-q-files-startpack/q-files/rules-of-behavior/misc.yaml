@@ -16,7 +16,8 @@ introduction:
 
 output:
 
-- format: markdown
+- id: artifact_1
+  format: markdown
   title: What You Chose
   template: |2
 
