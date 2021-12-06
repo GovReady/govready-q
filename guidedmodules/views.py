@@ -1746,6 +1746,7 @@ def authoring_new_question(request, task, mq):
                   "title": "Example Module2",
                   "output": [
                     {
+                      "id": "artifact_1",
                       "format": "markdown",
                       "title": "What You Chose",
                       "template": "{{q1111}}"
@@ -1766,6 +1767,7 @@ def authoring_new_question(request, task, mq):
                  "title": "Example Module " + entry.replace("_"," ").title(),
                  "output": [
                     {
+                      "id": "artifact_1",
                       "format": "markdown",
                       "title": "What You Chose",
                       "template": "{{q1111}}"
