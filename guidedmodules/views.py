@@ -1603,14 +1603,20 @@ def authoring_create_q(request):
                 new_appversion.asset_files.add(asset_file)
 
             # Create copy of each module in a loop and bulk create each module_questions
-
             modules = Module.objects.filter(app=src_appversion)
+            old_modules_to_new_modules = {}
             for src_module in modules:
+                src_module_id = src_module.id
                 src_module_questions = ModuleQuestion.objects.filter(module=src_module)
                 new_module = src_module
                 new_module.pk = None
                 new_module.app = new_appversion
+                if new_module.module_name == 'app':
+                    new_module.spec['title'] = new_q["title"]
                 new_module.save()
+                # remember module mapping
+                old_modules_to_new_modules[src_module_id] = new_module
+
                 # Bulk create copies of module_questions
                 new_module_questions = src_module_questions
                 nmqs = []
@@ -1619,6 +1625,13 @@ def authoring_create_q(request):
                     nmq.module = new_module
                     nmqs.append(nmq)
                 ModuleQuestion.objects.bulk_create(nmqs)
+
+            # Re-map all new questions to newly created modules
+            for q in ModuleQuestion.objects.filter(module__app=new_appversion).exclude(answer_type_module=None):
+                new_module = old_modules_to_new_modules[q.answer_type_module.id]
+                q.spec['module-id'] = new_module.id
+                q.answer_type_module = new_module
+                q.save()
 
             # Copy inputs
             # asset paths
