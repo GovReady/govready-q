@@ -1,12 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.11.7-dev (November xx, 2021)
---------------------------------
+v0.9.11.8-dev (December xx, 2021)
+---------------------------------
 
 **Feature changes**
 
 * Enabling batch viewing of questions for easier questionnaire authoring.
+* Enable editing of artifacts.
 * Enabling cloning entire templates in template library.
 
 **Developer changes**
