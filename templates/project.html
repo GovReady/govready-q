@@ -156,7 +156,7 @@
 
 {% block body_content %}
 
-    <div class="row" style="max-width: 1200px; text-align: center;">
+    <div class="row hidden" style="max-width: 1200px; text-align: center;">
       <h3 id="project-title" class="question-group-title hr" style="margin-left: 50px; font-size: 1.5em;">
         <span></span>
         &nbsp;&nbsp;
@@ -238,7 +238,7 @@
         {% endif %}
     </div>
     <div class="row" style="max-width: 1200px;">
-      <div class="col-md-{{12}}">
+      <div class="col-md-12">
         <div class="question-column">
             {% for group in question_groups.groups %}
             {% if group.title %}<div><a id="{{group.title}}"></a>&nbsp;</div>{% endif %}
@@ -257,7 +257,7 @@
                 <div id="question-{{q.question.key}}"
                   {% if q.task  %}data-task-id="{{q.task.id}}"{% endif %}
                   class="col-xs-12 question"
-                  style="width:700px;"
+                  style="width:760px;"
                 >
 
                     {# The user may not have permission to actually start a Task, however. If not, show the same UI but without the form element that actually makes the request to start the Task. #}
@@ -299,11 +299,23 @@
                       <div class="question-status">
                         {% with task=q.task %}
                           {% if task.is_finished %}
-                          <div class="">Finished</div>
+                            <div class="">Finished</div>
                           {% elif task.is_started %}
-                          <div class="">In progress</div>
+                            <div class="">In progress</div>
                           {% else %}
-                          <div class="">Not started</div>
+                            <div class="">Not started</div>
+
+                            {% if q.module.spec.output|length > 0 %}
+                              <p><br>
+                                {# If task started we can link artifacts on task finished page, otherwise we can only know artifacts exist #}
+
+                                {{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }} will be generated:
+
+                                {% for artif in q.module.spec.output %}
+                                  {{ artif.title }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                              </p>
+                            {% endif %}
                           {% endif %}
                         {% endwith %}
                       </div>
@@ -318,16 +330,19 @@
                       {% endif %}
                     {% endif %}
 
-                    {% if q.module.spec.output|length > 0 %}
-                      {# If task started we can link artifacts on task finished page, otherwise we can only know artifacts exist #}
-                      {% if q.task %}
-                        <a href="{{q.task.get_absolute_url}}/finished">{{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }}</a>:
-                      {% else %}
-                        {{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }} once task started:
+                    {% if q.task.is_started or q.task.is_finished %}
+                    <p class="" style="text-align: center; margin-bottom:12px;">
+                      {% if q.module.spec.output|length > 0 %}
+                        {# If task started we can link artifacts on task finished page, otherwise we can only know artifacts exist #}
+                        {% if q.task %}
+                          <a href="{{q.task.get_absolute_url}}/finished">{{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }} available</a>:
+                        {% else %}
+                        {% endif %}
+                        {% for artif in q.module.spec.output %}
+                          {{ artif.title }}{% if not forloop.last %}, {% endif %}
+                          {% endfor %}
                       {% endif %}
-                      {% for artif in q.module.spec.output %}
-                        {{ artif.title }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
+                    </p>
                     {% endif %}
 
                 </div> <!-- /#question-__.question -->
