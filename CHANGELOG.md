@@ -4,6 +4,8 @@ GovReady-Q Release Notes
 v0.9.11.8-dev (December xx, 2021)
 ---------------------------------
 
+Introuduce new authoring tool. Remove authoring tool modal from task question page.
+
 **Feature changes**
 
 * Enabling batch viewing of questions for easier questionnaire authoring.
@@ -16,7 +18,9 @@ v0.9.11.8-dev (December xx, 2021)
 * Include spaCy libraries as part of build.
 * Include initial, simplified candidate entity recognition script.
 * Remove full text search of statements from component library search because it was slow and returned to many results.
-* Add serializers for Modules and ModuleQuestions
+* Add serializers for Modules and ModuleQuestions.
+* Refactor siteapp.views.project and templates/project.html to remove vestigial column vs row layout code and previous authoring tools.
+* Remove authoring tool modal from task question page.
 
 **UI changes**
 

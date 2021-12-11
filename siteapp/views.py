@@ -975,6 +975,12 @@ def project(request, project):
     # Check if this user has authorization to start tasks in this Project.
     can_start_task = project.can_start_task(request.user)
 
+    # Collect all "modules" of project
+    modules = Module.objects.filter(pk__in=[q.spec['module-id'] for q in project.root_task.module.questions.all()])
+    module_dict = {}
+    for m in modules:
+        module_dict[m.id] = m
+
     # Collect all of the questions and answers, i.e. the sub-tasks, that we'll display.
     # Create a "question" record for each question that is displayed by the template.
     # For module-set questions, create one record to start new entries and separate
@@ -1008,10 +1014,10 @@ def project(request, project):
         # If the question specification specifies an icon asset, load the asset.
         # This saves the browser a request to fetch it, which is somewhat
         # expensive because assets are behind authorization logic.
-        if "icon" in mq.spec:
-            icon = project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
-        else:
-            icon = None
+        # if "icon" in mq.spec:
+        #     icon = project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
+        # else:
+        #     icon = None
 
         for i, module_answers in enumerate(answer_value):
             # Create template context dict for this question.
@@ -1020,11 +1026,12 @@ def project(request, project):
                 key = (mq.id, i)
             questions[key] = {
                 "question": mq,
-                "icon": icon,
+                # "icon": icon,
                 "invitations": [],  # filled in below
                 "task": module_answers.task,
                 "can_start_new_task": False,
-                "discussions": []  # no longer tracking discussions per question,
+                "discussions": [],  # no longer tracking discussions per question,
+                "module": module_dict[mq.spec['module-id']]
             }
 
         # Create a "question" record for the question itself it is is unanswered or if
@@ -1032,9 +1039,10 @@ def project(request, project):
         if can_start_task and (len(answer_value) == 0 or mq.spec["type"] == "module-set"):
             questions[mq.id] = {
                 "question": mq,
-                "icon": icon,
+                # "icon": icon,
                 "invitations": [],  # filled in below
                 "can_start_new_task": True,
+                "module": module_dict[mq.spec['module-id']]
             }
 
             # Set a flag if any app can be started, i.e. if this question has a protocol field.
@@ -1052,61 +1060,19 @@ def project(request, project):
         elif mq.spec.get("placement") == "action-buttons":
             action_buttons.append(q)
 
-    # Choose a layout mode. Use the "columns" layout if any question
-    # has a 'protocol' field. Otherwise use the "rows" layout.
-    layout_mode = "rows"
+    # Assign questions in main_area_questions to groups
+    question_groups = OrderedDict()
     for q in main_area_questions:
-        if q["question"].spec.get("protocol"):
-            layout_mode = "columns"
+        mq = q["question"]
+        groupname = mq.spec.get("group")
+        group = question_groups.setdefault(groupname, {
+            "title": groupname,
+            "questions": [],
+        })
+        group["questions"].append(q)
+        question_groups["groups"] = list(question_groups.values())
 
-    # Assign main-area questions to columns. For non-"columns" layouts,
-    # assign to one giant column.
-    if layout_mode != "columns":
-        columns = [{
-            "questions": main_area_questions,
-        }]
-    else:
-        # number of columns must divide 12 evenly
-        columns = [
-            {"title": "To Do"},
-            {"title": "In Progress"},
-            {"title": "Completed"},
-            {"title": "Submitted"},
-            {"title": "Under Review"},
-            {"title": "Accepted"},
-        ]
-        for column in columns:
-            column["questions"] = []
-
-        for question in main_area_questions:
-            if "task" not in question:
-                col = 0
-                question["hide_icon"] = True
-            elif question["task"].is_finished():
-                col = 2
-            elif question["task"].is_started():
-                col = 1
-            else:
-                col = 1
-            columns[col]["questions"].append(question)
-
-    # Assign questions in columns to groups.
-    for i, column in enumerate(columns):
-        column["groups"] = OrderedDict()
-        for q in column["questions"]:
-            mq = q["question"]
-            groupname = mq.spec.get("group")
-            group = column["groups"].setdefault(groupname, {
-                "title": groupname,
-                "questions": [],
-            })
-            group["questions"].append(q)
-        del column["questions"]
-        column["groups"] = list(column["groups"].values())
-
-        # column["has_tasks_on_left"] = ((i > 0) and (columns[i-1]["groups"] or columns[i-1]["has_tasks_on_left"]))
-
-    # Are there any output documents that we can render?
+    # Does the root task ("app") have any output documents that we can render?
     has_outputs = False
     if project.root_task:
         for doc in project.root_task.module.spec.get("output", []):
@@ -1175,14 +1141,12 @@ def project(request, project):
         "can_start_any_apps": can_start_any_apps,
 
         "title": project.title,
-        # "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
         "has_outputs": has_outputs,
 
         "enable_experimental_evidence": SystemSettings.enable_experimental_evidence,
 
-        "layout_mode": layout_mode,
-        "columns": columns,
+        "question_groups": question_groups,
         "action_buttons": action_buttons,
         "projects": Project.objects.all(),
         "portfolios": Portfolio.objects.all(),
