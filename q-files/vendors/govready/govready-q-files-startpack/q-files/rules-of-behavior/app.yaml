@@ -43,7 +43,6 @@ questions:
   title: 800-53r4 Controls
   type: module
   module-id: controls_80053r4
-  placement: action-buttons
 
 output:
 

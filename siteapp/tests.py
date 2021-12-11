@@ -1618,7 +1618,8 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self._login()
         self._new_project()
         # On project page?
-        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
+        # wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h1"))
 
         # mini-dashboard content
         self.assertInNodeText("controls", "#status-box-controls")
@@ -1632,13 +1633,15 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.assertInNodeText("Selected controls", ".systems-selected-items"))
         # click project button
         wait_for_sleep_after(lambda: self.click_element("#btn-project-home"))
-        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
+        # wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h1"))
         # test components
         self.click_element('#status-box-components')
         wait_for_sleep_after(lambda: self.assertInNodeText("Selected components", ".systems-selected-items"))
         # click project button
         wait_for_sleep_after(lambda: self.click_element("#btn-project-home"))
-        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
+        # wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h1"))
         # test poams
         # TODO: Restore tests if #status-box-poam is displayed
         # self.click_element('#status-box-poams')

@@ -531,7 +531,6 @@ questions:
   icon: ssp_icon.png
   title: System Security Plan
   type: module
-  placement: action-buttons
 
 #ato letter
 - id: ato_letter
