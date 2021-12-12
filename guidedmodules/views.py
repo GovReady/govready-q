@@ -1995,9 +1995,15 @@ def authoring_edit_question2(request):
     from .module_logic import clear_module_question_cache
     clear_module_question_cache()
 
-    # Return response and reload page
-    # TODO convert to a JSON result and don't reload page
-    return JsonResponse({ "status": "ok", "redirect": reverse('show_module_questions', args=[module.id]) })
+    # Return to question in module if Task defined or reload question in authoring tool if not
+    if 'task' in request.POST:
+        # Return status. The browser will reload/redirect --- if the question key changed, this sends the new key.
+        task = get_object_or_404(Task, id=request.POST['task'])
+        return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url_to_question(question) })
+    else:
+        # Return response and reload page
+        # TODO convert to a JSON result and don't reload page
+        return JsonResponse({ "status": "ok", "redirect": reverse('show_module_questions', args=[module.id]) })
 
 # @authoring_tool_auth
 @transaction.atomic

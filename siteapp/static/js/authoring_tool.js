@@ -215,7 +215,11 @@ function authoring_tool_download_app_project(task_id, is_project_page) {
 
 function authoring_tool_save_question() {
   var data = $('#question_authoring_tool form').serializeArray();
-  // data.push( { name: "task", value: q_authoring_tool_state.task } );
+
+  // alert('task '+q_authoring_tool_state.task);
+  if (q_authoring_tool_state.task) {
+    data.push( { name: "task", value: q_authoring_tool_state.task } );
+  }
   data.push( { name: "question", value: q_authoring_tool_state.current_question } );
   console.log('authoring_tool_save_question')
   console.log(data)

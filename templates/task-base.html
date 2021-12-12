@@ -90,20 +90,15 @@
 
       {% if authoring_tool_enabled %}
         <div id="author-tools" class="pull-right task-authortools">
-          <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
-            <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
-            <!-- Edit -->
-          </a>
+          <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool({{q.id}},'{{q.key|escapejs}}');return false;">
+            <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span></a>
           &nbsp;&nbsp;
           <a id="add_new_question" href="#" target="_blank" onclick="authoring_tool_new_question({{task.id}}, {{q.id}}, false); return false;">
-            <span class="glyphicon glyphicon-plus-sign task-glypicons" title="New Question"></span>
-            <!-- New -->
-          </a>
+            <span class="glyphicon glyphicon-plus-sign task-glypicons" title="New Question"></span></a>
           &nbsp;&nbsp;
-          <a id="download_questionnaire" href="#" target="_blank" onclick="authoring_tool_download_app('{{q.key|escapejs}}'); return false;">
-            <span class="glyphicon glyphicon-eye-open task-glypicons" title="View Source"></span>
-            <!-- Source -->
-          </a>
+          <a id="edit_module" href="/tasks/module/{{q.module.id}}/questions" target="_blank"><span class="glyphicon glyphicon-eye-open task-glypicons" title="View questionnaire"></span></a>
+          <!-- <a id="download_questionnaire" href="#" target="_blank" onclick="authoring_tool_download_app('{{q.key|escapejs}}'); return false;">
+            <span class="glyphicon glyphicon-eye-open task-glypicons" title="View Source"></span></a> -->
         </div>
       {% endif %}
     </div><!-- div wrapper -->
