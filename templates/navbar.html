@@ -48,7 +48,7 @@
         {% endif %}
 
         {% if user.is_staff %}
-          <li><a href="{% url "guidedmodules_analytics" %}" aria-label="Analytics" tooltip="Analytics"><span class="glyphicon glyphicon-dashboard" aria-label="Analytics" tooltip="Analytics"></span></a></li>
+          <li><a href="{% url "guidedmodules_analytics" %}" aria-label="Analytics" tooltip="Analytics" target="_blank"><span class="glyphicon glyphicon-dashboard" aria-label="Analytics" tooltip="Analytics"></span></a></li>
         {% endif %}
         {# if user.can_see_any_org_settings or user.is_staff #}
         {% if user.is_staff %}
@@ -56,9 +56,9 @@
           <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="settings-menu-dropdown"><span class="glyphicon glyphicon-cog" aria-label="Settings" tooltip="Settings"></span>
           </a>
           <ul class="dropdown-menu">
-            <li><a href="/settings" id="menu-settings" aria-label="GovReady-Q settings" tooltip="GovReady-Q settings"><span class="glyphicon glyphicon-cog" aria-label="Settings"></span> GovReady-Q settings</a></li>
+            <li><a href="/settings" id="menu-settings" aria-label="GovReady-Q settings" tooltip="GovReady-Q settings" target="_blank"><span class="glyphicon glyphicon-cog" aria-label="Settings"></span> GovReady-Q settings</a></li>
             {% if user.is_staff %}
-              <li><a href="{{settings.SITE_ROOT_URL}}/admin" id="menu-settings" aria-label="Database administration" tooltip="Database administration"><span class="glyphicon glyphicon-cog" aria-label="Database administration"></span> Database administration</a></li>
+              <li><a href="{{settings.SITE_ROOT_URL}}/admin" id="menu-settings" aria-label="Database administration" tooltip="Database administration" target="_blank"><span class="glyphicon glyphicon-cog" aria-label="Database administration"></span> Database administration</a></li>
             {% endif %}
           </ul>
         </li>
