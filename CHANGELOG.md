@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.11.8-dev (December xx, 2021)
+v0.9.11.9-dev (December xx, 2021)
 ---------------------------------
 
 Introuduce new authoring tool. Remove authoring tool modal from task question page.
@@ -29,6 +29,10 @@ Introuduce new authoring tool. Remove authoring tool modal from task question pa
 * Improve styling of project page rollovers make module actions clearer
 * Improve styling of template library. Use bootstrap panels for each item.
 * Remove authoring tool modal from task question page.
+
+**Bug fixes**
+
+* Fix permissions to allow non-administrator to clone project templates in project template.
 
 
 v0.9.11.6 (October 13, 2021)
