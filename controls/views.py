@@ -1467,6 +1467,8 @@ def restore_to_history(request, smt_id, history_id):
     # Get statement if exists else 404
     smt = get_object_or_404(Statement, id=smt_id)
 
+    print(1, "==== smt", smt)
+
     # Check permission
     raise_404_if_not_permitted_to_statement(request, smt, 'change_system')
 
@@ -1483,8 +1485,8 @@ def restore_to_history(request, smt_id, history_id):
         historical_smt.instance.save()
 
         # Update the reason for the new statement record
-        recent_smt     = smt.history.first()
-        update_change_reason(recent_smt.instance, change_reason)
+        recent_smt = smt.history.first()
+        # update_change_reason(recent_smt.instance, change_reason)
 
         logger.info( f"Change reason: {change_reason}")
 
