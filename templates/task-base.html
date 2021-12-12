@@ -6,6 +6,10 @@
 <style>
   {% include "focus-area-styles.css" %}
 
+  #author-tools a {
+    color: #666;
+  }
+
   #question-debug-links {
     max-width: 80%;
   }
@@ -81,6 +85,25 @@
       {% if is_admin %}
         <div class="pull-right hidden-xs">
           <a href="#" onclick="return delete_task();"><span class="glyphicon glyphicon-trash" title="Delete answers" style="color: #BBB;"></span></a>
+        </div>
+      {% endif %}
+
+      {% if authoring_tool_enabled %}
+        <div id="author-tools" class="pull-right task-authortools">
+          <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
+            <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
+            <!-- Edit -->
+          </a>
+          &nbsp;&nbsp;
+          <a id="add_new_question" href="#" target="_blank" onclick="authoring_tool_new_question({{task.id}}, {{q.id}}, false); return false;">
+            <span class="glyphicon glyphicon-plus-sign task-glypicons" title="New Question"></span>
+            <!-- New -->
+          </a>
+          &nbsp;&nbsp;
+          <a id="download_questionnaire" href="#" target="_blank" onclick="authoring_tool_download_app('{{q.key|escapejs}}'); return false;">
+            <span class="glyphicon glyphicon-eye-open task-glypicons" title="View Source"></span>
+            <!-- Source -->
+          </a>
         </div>
       {% endif %}
     </div><!-- div wrapper -->
