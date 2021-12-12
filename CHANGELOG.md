@@ -34,6 +34,7 @@ Introuduce new authoring tool. Remove authoring tool modal from task question pa
 
 * Fix permissions to allow non-administrator to clone project templates in project template.
 * Fix crash when restoring a previous version of a statement.
+* Fix setting control baseline by proper use of `update_or_create` in `System.set_security_impact_level`.
 
 
 v0.9.11.6 (October 13, 2021)

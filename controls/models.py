@@ -590,8 +590,8 @@ class System(auto_prefetch.Model, TagModelMixin):
     @transaction.atomic
     def set_security_sensitivity_level(self, security_sensitivity_level):
         """Assign Security Sensitivty level to system"""
-        # Get or create the security_sensitivity_level smt for system's root_element; should only have 1 statement
-        smt = Statement.objects.create(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element, body=security_sensitivity_level)
+        # Update or create the security_sensitivity_level smt for system's root_element; should only have 1 statement
+        smt, created = Statement.objects.update_or_create(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element, body=security_sensitivity_level)
         return security_sensitivity_level, smt
 
     @property
