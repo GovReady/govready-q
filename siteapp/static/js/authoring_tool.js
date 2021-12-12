@@ -215,8 +215,6 @@ function authoring_tool_download_app_project(task_id, is_project_page) {
 
 function authoring_tool_save_question() {
   var data = $('#question_authoring_tool form').serializeArray();
-
-  // alert('task '+q_authoring_tool_state.task);
   if (q_authoring_tool_state.task) {
     data.push( { name: "task", value: q_authoring_tool_state.task } );
   }
