@@ -560,7 +560,8 @@ def apps_catalog(request):
         ))
 
     # If user is superuser, enable creating new apps
-    authoring_tool_enabled = request.user.has_perm('guidedmodules.change_module')
+    # authoring_tool_enabled = request.user.has_perm('guidedmodules.change_module')
+    authoring_tool_enabled = True
 
     # Auto start a project if set in database
     # Temporarily pretend values set in development
