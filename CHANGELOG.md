@@ -5,6 +5,10 @@ GovReady-Q Release Notes
 v0.9.11.11-dev (December xx, 2021)
 ---------------------------------
 
+**UI changes**
+
+* Simplify task progress history. Only display questions of current module. Only colorize to glyphicons.
+
 **Bug fixes**
 
 * Stop scrubching of progress-project-area-wrapper on question page.

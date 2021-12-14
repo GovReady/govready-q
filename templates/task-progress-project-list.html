@@ -1,7 +1,7 @@
-<div class="truncate task-progress-project-truncate">
-  {% if current_group %}<br><button id="btn-current_group" class="btn btn-sm btn-default text-center" onclick="window.location = '{{task.project.get_absolute_url}}#{{current_group}}';">
+<div class="hidden truncate task-progress-project-truncate">
+  {% if current_group %}<b><a href="#" id="btn-current_group" class="text-center" onclick="window.location = '{{task.project.get_absolute_url}}#{{current_group}}';">
       Section: {{current_group}}</a>
-  </button>
+  </b>
   {% endif %}
 </div>
 
@@ -10,28 +10,29 @@
   {% if pt.group == current_group %}
     <div class="truncate task-progress-project-group">
       {% if pt.task_id == task.id %}
-        <span class="glyphicon glyphicon-play-circle"> </span> <b>{{task.title}}</b>
+        <!-- <span class="glyphicon glyphicon-play-circle"> </span> <b>{{task.title}}</b> -->
         {% if context|length > 0 %}
-        <div id="question-history-context">
+        <div id="question-history-context" style="border:1px solid rgb(204, 204, 204);">
           <ul>
           {% if context %}
-            <!-- <p>Progress:</p> -->
+            <p class="truncate">Progress: {{task.title}}</p>
             {% include "task-progress-question-list.html" with previous="question" %}
             <div class="task-progress-project-question">
-            <li>&nbsp;</li>
+              <li>&nbsp;</li>
             </div>
             <li>
-              <a href="{{task.get_absolute_url}}/finished">Module summary</a>
+              &nbsp;<a href="{{task.get_absolute_url}}/finished"><span class="glyphicon glyphicon-list-alt"> </span> Module summary</a>
             </li>
           {% endif %}
           </ul>
+
         </div> <!-- /question-history-context -->
         {% endif %}
       {% else %}
         {% if pt.link == "/TODO" %}
           {% if pt.type == "module" or pt.type == "module-set" %}
             {# Start a task directly using the module type in the specification. #}
-            <form class="" method="post" action="/tasks/start"
+            <form class="hidden" method="post" action="/tasks/start"
               onclick="$(this).submit();" style="cursor: pointer;display: inline;text-align: left;">
               {% csrf_token %}
               <input type="hidden" name="project" value="{{task.project.id}}"/>
@@ -39,16 +40,16 @@
               <input type="hidden" name="previous" value="project"/>
           {% else %}
             {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
-            <form method="get" action="{% url 'store' %}"
+            <form class="hidden" method="get" action="{% url 'store' %}"
               onclick="$(this).submit();" style="cursor: pointer; display: inline">
               <input type="hidden" name="q" value="{{task.project.root_task.id}}/{{q.question.key}}">
           {% endif %}
-              <div class="btn btn-sm btn-link truncate task-progress-project-title">
+              <div class="hidden btn btn-sm btn-link truncate task-progress-project-title">
                 <span class="glyphicon glyphicon-unchecked"> </span> <!-- Start --> {{pt.title}}
               </div>
             </form>
         {% else %}
-          <form class="truncate">&nbsp;&nbsp;
+          <form class="hidden truncate">&nbsp;&nbsp;
             {% if pt.task_started and pt.task_answered %}
               <span class="glyphicon glyphicon-check"> </span><a href="{{pt.link}}" class="task-progress-project-truncate-link"> {{pt.title}}</a>
             {% elif pt.task_started %}

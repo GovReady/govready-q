@@ -154,8 +154,8 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 .question-can-review { margin-top: -10px; }
 .question-select-review { display: block; margin: 1em 0; font-size: 80%; background-color: white; padding: .2em .2em .15em .2em; }
 .question-review-status { margin-top: 1em; font-size: 85%; color: #666; }
-.question-progress-project { background-color: rgba(247,247,247,1); border-radius: 3px; border: 1px solid rgb(204, 204, 204); }
-.question-form-group { width: auto; border:  none; padding: 0; display: inline-block; }
+.question-progress-project {  }
+.question-form-group { width: auto; border: none; padding: 0; display: inline-block; }
 .question-input-font { font-size: 14px; }
 .question-glyphicon-comment { color: #56A; }
 
