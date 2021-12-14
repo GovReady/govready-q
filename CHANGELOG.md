@@ -1,6 +1,15 @@
 GovReady-Q Release Notes
 ========================
 
+
+v0.9.11.11-dev (December xx, 2021)
+---------------------------------
+
+**Bug fixes**
+
+* Stop scrubching of progress-project-area-wrapper on question page.
+
+
 v0.9.11.10-dev (December xx, 2021)
 ---------------------------------
 
