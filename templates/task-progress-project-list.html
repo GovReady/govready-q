@@ -14,18 +14,17 @@
         {% if context|length > 0 %}
         <div id="question-history-context" style="border:1px solid rgb(204, 204, 204);">
           <ul>
-          {% if context %}
-            <p class="truncate">Progress: {{task.title}}</p>
-            {% include "task-progress-question-list.html" with previous="question" %}
-            <div class="task-progress-project-question">
-              <li>&nbsp;</li>
-            </div>
-            <li>
-              &nbsp;<a href="{{task.get_absolute_url}}/finished"><span class="glyphicon glyphicon-list-alt"> </span> Module summary</a>
-            </li>
-          {% endif %}
+            {% if context %}
+              <p class="truncate">Progress: {{task.title}}</p>
+              {% include "task-progress-question-list.html" with previous="question" %}
+              <div class="task-progress-project-question">
+                <li>&nbsp;</li>
+              </div>
+              <li>
+                &nbsp;<a href="{{task.get_absolute_url}}/finished"><span class="glyphicon glyphicon-list-alt"> </span> Module summary</a>
+              </li>
+            {% endif %}
           </ul>
-
         </div> <!-- /question-history-context -->
         {% endif %}
       {% else %}
@@ -49,7 +48,7 @@
               </div>
             </form>
         {% else %}
-          <form class="hidden truncate">&nbsp;&nbsp;
+          <form class="hidden truncate">
             {% if pt.task_started and pt.task_answered %}
               <span class="glyphicon glyphicon-check"> </span><a href="{{pt.link}}" class="task-progress-project-truncate-link"> {{pt.title}}</a>
             {% elif pt.task_started %}
