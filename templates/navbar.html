@@ -13,7 +13,7 @@
         <span class="icon-bar"></span>
       </button>
       <a class="navbar-brand" href="/">
-          <img alt="Logo" src="{% static "img/brand/navbar-logo.png" %}">
+          <img alt="navbar-logo" aria-label="Logo for home page" src="{% static "img/brand/navbar-logo.png" %}">
       </a>
     </div>
 
@@ -104,9 +104,9 @@
           </li>
 
         {% elif LOGIN_ENABLED %}
-            <li><a><form name="form" method="post" action={% url 'homepage' %}>
+            <li><a><form id="login-form" aria-label="login-form" name="form" method="post" action={% url 'homepage' %}>
                    {% csrf_token %}
-        <input type="submit" name="action" value="login"/>
+        <input type="submit" id="login-button" aria-label="login-button" name="action" value="login"/>
         </form></a></li>
         {% endif %}
       </ul>
