@@ -135,7 +135,7 @@
           <div id="smt-list" class="" style="width: 100%">
             <!-- Loop through existing component-control statements -->
             {% for smt in impl_smts %}
-                <div id="panel-{{ forloop.counter }}" class="">
+                <div id="panel-{{ forloop.counter }}" class="panel-smt">
                     <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
 
                       <div class="row statement-text">
@@ -277,6 +277,17 @@
                 </div>
             {% endfor %}
           </div>
+
+          <div class="row">
+            <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
+            <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+              <!-- Add component statement-->
+              <div>
+                  <button type="submit" id="new_component_statement" class="btn btn-xs btn-success" onclick="add_smt()">Add component statement</button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
   </div>
@@ -285,6 +296,14 @@
 {% block scripts %}
       {{block.super}}
       <script>
+
+        // Adds statement form to page
+        function add_smt() {
+          var panel_num = $('.panel-smt').length + 1
+          var smt_form = `{% include 'components/element_details_tabs_smtform.html' %}`.replace(/panel_num/g, panel_num);
+          $( "#smt-list" ).append(smt_form);
+        }
+
         function save_smt(smt_panel_num) {
           // Save a statement
           // serialize data from the identified statement form

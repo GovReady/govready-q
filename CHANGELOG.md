@@ -8,6 +8,7 @@ v0.9.11.11-dev (December xx, 2021)
 **UI changes**
 
 * Simplify task progress history. Only display questions of current module. Only colorize to glyphicons.
+* Enable adding component control statement from System selected component.
 
 **Bug fixes**
 
