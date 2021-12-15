@@ -325,6 +325,11 @@
                 smt_saved = JSON.parse(res['statement']);
                 console.log("printing smt_saved");
                 console.log(smt_saved);
+
+                // Temporarily redirect
+                window.location = '/controls/{{system.id}}/component/{{element.id}}';
+
+                // TODO: Get page to clean up just using AJAX.
                 $( '#'+smt_panel_num+' input[name=smt_id]' ).val(smt_saved[0]['pk']);
 
                 // If saving first time remove producer_element_name input field

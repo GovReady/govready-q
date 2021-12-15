@@ -2094,6 +2094,7 @@ def save_smt(request):
                 if 'system_id' in form_values:
                     # Associate Consumer Element
                     statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
+                    statement_msg = "Statement associated with System/Consumer Element."
                 statement.save()
                 statement_element_status = "ok"
                 statement_element_msg = "Statement associated with Producer Element."
