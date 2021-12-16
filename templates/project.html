@@ -96,11 +96,13 @@
   .question .question-title {
     margin-top: .5em;
     color: #222;
+
   }
 
   .question-title {
     text-align: center;
     margin: 0px 0px 0px -60px;
+
   }
 
   .question-title:hover span {display:none}
@@ -108,6 +110,9 @@
                                 font-weight: bold;
                                 font-style: italic;
   }
+
+.question-title-style { font-size:1.2em;}
+
 
   .question-status {
     margin: 12px auto 20px auto;
@@ -467,7 +472,7 @@
 
                     {# The label for the icon is the title of the question in the question's specification. #}
                     <div class="question-title">
-                      <span>{{q.question.spec.title}}</span>
+                      <span class="question-title-style">{{q.question.spec.title}}</span>
                       {% if q.can_start_new_task and q.question.spec.type == "module-set" %}
                         <span class="glyphicon glyphicon-plus pull-right"></span>
                       {% endif %}
@@ -475,11 +480,11 @@
                       <div class="question-status">
                         {% with task=q.task %}
                           {% if task.is_finished %}
-                          <div class="">Finished</div>
+                          <div class="project-status-finished">(completed)</div>
                           {% elif task.is_started %}
-                          <div class="">In progress</div>
+                          <div class="project-status-inprogress">(in progress)</div>
                           {% else %}
-                          <div class="">Not started</div>
+                          <div class="project-status-not-started">(not started)</div>
                           {% endif %}
                         {% endwith %}
                       </div>

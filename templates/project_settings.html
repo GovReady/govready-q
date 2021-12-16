@@ -275,14 +275,14 @@ h3.question-group-title {
           </div>
           <div class="row project-settings-row">
             <div class="col-sm-12 project-settings-description"><small>{{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}</small></div>
-            <div class="col-sm-3"><small><span class="text-muted">App Source:</span><br>{{project.root_task.module.app.source.slug|safe}}</small></div>
-            <div class="col-sm-3"><small><span class="text-muted">Compliance App:</span><br>{{project.root_task.module.spec.title}}</small></div>
-            <div class="col-sm-3"><small><span class="text-muted">Project ID:</span><br>{{project.id}}</small></div>
-            <div class="col-sm-3"><small><span class="text-muted">Started:</span><br>{{project.created}}</small></div>
+            <div class="col-sm-3"><small><span class="project-settings-desc-item">App Source:</span><br>{{project.root_task.module.app.source.slug|safe}}</small></div>
+            <div class="col-sm-3"><small><span class="project-settings-desc-item">Compliance App:</span><br>{{project.root_task.module.spec.title}}</small></div>
+            <div class="col-sm-3"><small><span class="project-settings-desc-item">Project ID:</span><br>{{project.id}}</small></div>
+            <div class="col-sm-3"><small><span class="project-settings-desc-item">Started:</span><br>{{project.created}}</small></div>
           </div>
           <div class="row project-settings-row">
-            <div class="col-sm-3"><small><span class="text-muted">App Version:</span><br>{{project.root_task.module.app.version_number|safe}}</small></div>
-            <div class="col-sm-3"><small><span class="text-muted">Project Version Comment:</span><br>{{project.version_comment|safe}}</small></div>
+            <div class="col-sm-3"><small><span class="project-settings-desc-item">App Version:</span><br>{{project.root_task.module.app.version_number|safe}}</small></div>
+            <div class="col-sm-3"><small><span class="project-settings-desc-item">Project Version Comment:</span><br>{{project.version_comment|safe}}</small></div>
           </div>
         </div>
 
@@ -364,7 +364,7 @@ h3.question-group-title {
 
         <div class="row" style="">
           <div class="col-sm-12">
-            <h2 style="border-bottom:1px solid #ccc;">Permissions</h2>
+            <h2 class="project-settings-header">Permissions</h2>
           </div>
           <div class="col-sm-12">
             {% include "permissions.html" with users=users portfolios=portfolios project=project %}
@@ -421,8 +421,8 @@ h3.question-group-title {
                 <span class="glyphicon glyphicon-cloud-upload" style="margin-right: .25em"> </span> Import Answers From File
               </button>
               <form id="import-form" style="display: none;"
-                method="post" 
-                enctype="multipart/form-data" 
+                method="post"
+                enctype="multipart/form-data"
                 action="{% url "import_project_questionnaire" project.id %}"
                 aria-label="Import a file"
               >
