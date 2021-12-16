@@ -131,6 +131,10 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 
 .glyphicon-pencil:before { color:#555555;}
 
+.navbar-inverse .navbar-nav>li>a { color:#ccc;}
+
+.dropdown-toggle { }
+
 
 /* misc templates */
 .task-progress-project-truncate { margin: 12px auto 12px auto; text-align: center; }
