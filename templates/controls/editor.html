@@ -101,10 +101,6 @@
     </style>
 {% endblock %}
 
-<!-- action buttons included from project-base.html -->
-
-<!-- authoring_tool_enabled included from project-base.html -->
-
 {% block body_content %}
     <div class="systems-top">
 
@@ -131,35 +127,32 @@
                 </form>
             </div>
         </div>
+    </div>
 
-        <!-- Tab panels -->
-        <div id="tab-content" class="row">
-            <!-- Nav tabs -->
-            <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
-                <li role="presentation"><a href="#control" aria-controls="control" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-book"></span> Control</a></li>
-            </ul>
+    <div role="" class="" id="control" style="">
+        {% if control.title is not None %}
+        <details>
+            <summary>
+                <div id="control-description" class="control-text"><h3>View Control Description</h3></div>
+            </summary>
+            <div class="control-text">{{ control.description }}</div>
+        </details>
 
-            <!-- Tab panels -->
-            <div id="component-detail-content" class="tab-content">
+        <details>
+            <summary>
+                <div id="control-guidance" class="control-text"><h3>View Control Guidance</h3></div>
+            </summary>
+            <div class="control-text">{{ control.guidance }}</div>
+        </details>
 
-                <!-- Tab panel: control -->
-                <div role="tabpanel" class="tab-pane" id="control">
-                    {% if control.title is not None %}
-                        <div class="row" style="width:90%; padding: 0 0 0 1em;">
-                            <div id="control-description" class="control-text"><h3>Control Description</h3>{{ control.description }}</div>
-                            <div id="control-guidance" class="control-text"><h3>Control Guidance</h3>{{ control.guidance }}</div>
-                        </div>
-                    {% else %}
-                        <div id="control-message">
-                            <p>The control {{ control.id }} was not found in the control catalog.</p>
-                        </div>
-                    {% endif %}
-                </div>
+        {% else %}
+            <div id="control-message">
+                <p>The control {{ control.id }} was not found in the control catalog.</p>
+            </div>
+        {% endif %}
+    </div>
 
-                <!-- Tab panel: component control -->
-                <div role="tabpanel" class="tab-pane active" id="component_controls">
-
+    <div>
                     {% if impl_smts_legacy|length > 0 %}
                     <div id="smt-list" class="" style="width: 100%">
                         <p>&nbsp</p>
@@ -333,11 +326,46 @@
                             </div>
                         {% endfor %}
                     </div><!--/smt-list-->
-                </div>
-            </div>
-
-        </div>
     </div>
+
+<p>&nbsp;</p>
+
+<div>
+                    <!-- Add existing component -->
+                    <div id="tab-content" class="row row-control" style="border:0px solid green; margin-top:40px;">
+                        <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
+                            {% csrf_token %}
+                            <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
+                                <div class="form-group" >
+                                    <label for="component">Add existing component</label>&nbsp;&nbsp;
+                                    <input type="text" class="form-control" id="producer_element_search" name="text" placeholder="Name of component"
+                                           onchange="producer_autocomplete($(this).val(), {{ system.id }})">
+                                </div>
+                               <div class="form-group">
+                                    <select name="selected_producer_element_form_id" id="selected_producer_element_form_id" style="width:340px;">
+                                      {% for component in elements %}
+                                          <option value="{{ component.id }}">{{ component.name }}</option>
+                                      {% endfor %}
+                                    </select>
+                                    <div hidden id="statement_alert" class="alert alert-danger">
+                                       <strong>Danger!</strong> This alert box could indicate a dangerous or potentially negative action.
+                                    </div>
+                                  <input type="hidden" id="catalog_key" name="catalog_key" value="{{ catalog.catalog_key }}">
+                                  <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
+                                  <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
+                              </div>
+                              &nbsp;&nbsp;<button type="submit" id="add_existing_component" class="small btn btn-sm btn-success" style="color: white;" onclick="add_smt()">Add</button>
+                          </div>
+                        </form>
+                    </div>
+                    <!-- Add component button -->
+                    <div>
+                        <h3>
+                            <button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button>
+                        </h3>
+                    </div>
+                    <!-- /Add component button -->
+</div>
 
 {% endblock %}
 
