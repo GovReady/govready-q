@@ -135,6 +135,8 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 
 .dropdown-toggle { }
 
+/* style changes for the react sidebar to comply with 508 */
+a:focus { outline-style:solid; outline-color: #60BF60; outline-width: 1px;}
 
 /* misc templates */
 .task-progress-project-truncate { margin: 12px auto 12px auto; text-align: center; }
