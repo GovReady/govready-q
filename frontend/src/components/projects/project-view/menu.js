@@ -57,21 +57,21 @@ window.projectMenu = (data) => {
 
                                     </Grid>
                                     <Grid item xs={12}>
-                                        <h3 style={{ marginLeft: '20px' }}>Other: {data.project.portfolio.version}</h3>
+                                        <h3 style={{ marginLeft: '20px', color: '#ADADAD' }}>Other: {data.project.portfolio.version}</h3>
                                     </Grid>
                                     <Grid item xs={12}>
-                                        <h3 style={{ marginLeft: '20px' }}>{data.project.root_task.module.spec.title}</h3>
+                                        <h3 style={{ marginLeft: '20px', color: '#ADADAD'  }}>{data.project.root_task.module.spec.title}</h3>
                                     </Grid>
                                     <Grid item xs={12}>
-                                        <h3 style={{ marginLeft: '20px' }}>Portfolio: {data.project.portfolio.title}</h3>
+                                        <h3 style={{ marginLeft: '20px', color: '#ADADAD'  }}>Portfolio: {data.project.portfolio.title}</h3>
                                     </Grid>
                                 </Grid>
                                 <Grid container spacing={.5}>
                                     <Grid item xs={6}>
-                                        <h3 style={{ marginLeft: '20px' }}>Project ID: {data.project.id}</h3>
+                                        <h3 style={{ marginLeft: '20px', color: '#ADADAD'  }}>Project ID: {data.project.id}</h3>
                                     </Grid>
                                     <Grid item xs={6}>
-                                        <h3 style={{ marginLeft: '20px' }}>System ID: {data.project.system.id}</h3>
+                                        <h3 style={{ marginLeft: '20px', color: '#ADADAD'  }}>System ID: {data.project.system.id}</h3>
                                     </Grid>
                                 </Grid>
 
