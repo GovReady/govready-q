@@ -31,7 +31,7 @@
       <ul class="nav navbar-nav navbar-right" id="navbar-create">
 
         {% if request.user.is_authenticated %}
-        <!-- Create new projects, portfolios -->
+        <!-- Create new projects, portfolios  class="dropdown-toggle" was removed from all li for 508 compliance and does not seem to have any effect on functionality. (km)-->
           <li class="dropdown">
             <a href="#" class="" data-toggle="dropdown" role="link" aria-haspopup="true" aria-expanded="false" id="create-menu-dropdown" aria-label="Create project or portfolio dropdown menu">
               <span class="glyphicon glyphicon-plus"></span>
