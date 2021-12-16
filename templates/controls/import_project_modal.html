@@ -9,16 +9,16 @@
             <form id="project_import_form" action="{% url 'project_import' project.id %}" onsubmit="show_spinner();" role="form" method="POST">
                 {% csrf_token %}
                   <input type="hidden" name="import_name" value=""/>
-                <div class="modal-body">
+                <div class="modal-body" aria-label="model for importing a project form">
                     {{ import_project_form.file }}
 
-                    <label for="{{ import_project_form.json_content.id_auto }}">{{ import_project_form.json_content.label }}:</label>
+                    <label aria-label="Importing project form" for="{{ import_project_form.json_content.id_auto }}">{{ import_project_form.json_content.label }}:</label>
                     {{ import_project_form.json_content }}
 
                     <div class="modal-footer">
                         <input id="import_project_submit" class="btn btn-success btn-submit" type="submit" value="Import"/>
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                        <img id="import_loading_spinner" src="{% static "img/icons/spinner.gif" %}"/>
+                        <img id="import_loading_spinner" aria-label="Loading Spinner" src="{% static "img/icons/spinner.gif" %}"/>
                     </div>
                 </div>
             </form>

@@ -140,7 +140,7 @@
                   <div class="form-inline pull-right create-nav">
                       <div class="form-group">
                           <div class="input-group">
-                              <input id="searchbox" name="search" value="{{ request.GET.search }}" type="text" placeholder="search control">
+                              <input id="searchbox" aria-label="search components" name="search" value="{{ request.GET.search }}" type="text" placeholder="search control">
                               <span id="searchicon" class="glyphicon glyphicon-search" href="{% url 'component_library' %}"></span>
                               {% if request.GET.search %}
                                 <a id="searchclear" class="glyphicon glyphicon-remove" href="{% url 'component_library_component' element_id=element.id %}"></a>

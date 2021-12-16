@@ -105,7 +105,7 @@ Your Compliance Projects
 <div class="container">
 
 <div class="project-main">
-  <a id="new-project" href="{% url 'store' %}" class=" btn btn-success">Start a project</a>
+  <a id="new-project-button" href="{% url 'store' %}" class=" btn btn-success">Start a project</a>
 </div>
 
 <h2>Welcome to {% if sitename %}{{sitename}}{% else %}GovReady-Q{% endif %}</h2>
@@ -122,7 +122,7 @@ Your Compliance Projects
         </div>
         <div class="col-md-9">
 
-          <h3><a id="new-project" href="/projects">You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}</a></h3>
+          <h3><a id="new-project-link" href="/projects">You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}</a></h3>
           <p>Projects are your organization's questionnaires, assessments and guides needed for authorizations.
           </p>
         </div>

@@ -3,7 +3,7 @@
 
 {% notifications_unread as unread_count %}
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="badge">{{ unread_count }}</span></a>
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="navbar-notification" aria-label="Dropdown menu for notifications"><span class="badge">{{ unread_count }}</span></a>
   <ul class="dropdown-menu">
     <li>
         <div style="display: block; padding: 3px 20px; clear: both; font-weight: 400; line-height: 1.42857143; white-space: nowrap;"> {# copied bootstrap's .dropdown-menu>li>a styles so we can have an drop-down entry that isn't a link #}
