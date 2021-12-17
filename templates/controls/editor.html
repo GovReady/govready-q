@@ -176,7 +176,26 @@
                     {% endif %}
 
                     <div class="row">
-                        <div id="control-description" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 control-text"><h3>{{ impl_smts|length }} associated Componented Control Implementations Statements</h3></div>
+                        <div id="control-description" class="col-md-6 control-text"><h3>{{ impl_smts|length }} associated Componented Control Implementations Statements</h3></div>
+                        <div class="col-md-6" style="">
+                            <h3>
+                                <form id="add_component" class="form-inline pull-right" method="post" action="{%  url 'add_system_component' system_id=system.id %}">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="component">Add component</label>&nbsp;&nbsp;
+                                        <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
+                                        <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onchange="$(form).submit();" style="width:340px;">
+                                            <option value="None" selected disabled hidden>Select a Component</option>
+                                            {% for component in elements %}
+                                                {% if component not in system.producer_elements %}
+                                                    <option value="{{ component.id }}">{{ component.name }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </form>
+                            </h3>
+                        </div>
                     </div><!-- Needed for proper styling -->
 
                     <div class="row statement-column-headings" style="">
@@ -188,7 +207,7 @@
                     <div id="smt-list" class="" style="width: 100%">
                         <!-- Loop through existing component-control statements -->
                         {% for smt in impl_smts %}
-                            <div id="panel-{{ forloop.counter }}" class="smt-panel">
+                            <div id="panel-{{ forloop.counter }}" class="smt-panel panel-smt">
                                 <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
                                     <div class="row statement-text">
                                       <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
@@ -330,42 +349,17 @@
 
 <p>&nbsp;</p>
 
-<div>
-                    <!-- Add existing component -->
-                    <div id="tab-content" class="row row-control" style="border:0px solid green; margin-top:40px;">
-                        <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
-                            {% csrf_token %}
-                            <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-                                <div class="form-group" >
-                                    <label for="component">Add existing component</label>&nbsp;&nbsp;
-                                    <input type="text" class="form-control" id="producer_element_search" name="text" placeholder="Name of component"
-                                           onchange="producer_autocomplete($(this).val(), {{ system.id }})">
-                                </div>
-                               <div class="form-group">
-                                    <select name="selected_producer_element_form_id" id="selected_producer_element_form_id" style="width:340px;">
-                                      {% for component in elements %}
-                                          <option value="{{ component.id }}">{{ component.name }}</option>
-                                      {% endfor %}
-                                    </select>
-                                    <div hidden id="statement_alert" class="alert alert-danger">
-                                       <strong>Danger!</strong> This alert box could indicate a dangerous or potentially negative action.
-                                    </div>
-                                  <input type="hidden" id="catalog_key" name="catalog_key" value="{{ catalog.catalog_key }}">
-                                  <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
-                                  <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
-                              </div>
-                              &nbsp;&nbsp;<button type="submit" id="add_existing_component" class="small btn btn-sm btn-success" style="color: white;" onclick="add_smt()">Add</button>
-                          </div>
-                        </form>
+                    <div class="row" style="">
+                        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
+                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                            <h3>
+                                <button type="submit" id="new_component_statement"
+                                        class="small btn btn-md btn-success"
+                                        style="color: white;" onclick="add_smt()">Add component statement</button>
+                            </h3>
+                        </div>
+                        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
                     </div>
-                    <!-- Add component button -->
-                    <div>
-                        <h3>
-                            <button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button>
-                        </h3>
-                    </div>
-                    <!-- /Add component button -->
-</div>
 
 {% endblock %}
 
@@ -381,6 +375,15 @@
     </script>
 
     <script>
+        // Adds statement form to page
+        function add_smt() {
+          var panel_num = $('.panel-smt').length + 1
+          var smt_form = `{% include 'controls/add_producer_form.html' %}`.replace(/panel_num/g, panel_num);
+          $( "#smt-list" ).append(smt_form);
+
+          $('#producer_element_id_to_add').select2();
+
+        }
 
         function save_smt(smt_panel_num) {
             // Save a statement
@@ -398,7 +401,7 @@
                 method: "POST",
                 data: data,
                 indicator_parent: $('#page-content'),
-                keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+                keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
                 success: function (res) {
                     console.log('success');
                     console.log(res);
@@ -406,8 +409,6 @@
                         // Update field values from saved
                         // Initially update a few fields
                         smt_saved = JSON.parse(res['statement']);
-                        console.log("printing smt_saved");
-                        console.log(smt_saved);
                         $('#' + smt_panel_num + ' input[name=smt_id]').val(smt_saved[0]['pk']);
 
                         // If saving first time remove producer_element_name input field
@@ -417,7 +418,6 @@
 
                         // Update panel statement
                         $('#' + smt_panel_num.replace("smt_", "panel-") + ' .panel-heading-smt-body').html(smt_saved[0]['fields']['body']);
-
                         $('#' + smt_panel_num + ' input[name=producer_element_id]').val(smt_saved[0]['fields']['producer_element']);
                         $('#success-msg-' + smt_panel_num).fadeIn().text('Saved');
                         // Update combined statement
@@ -474,8 +474,8 @@
                     });
                 } else {
                     // Remove statement accordian from page
-                    console.log("removing from page " + '#panel-' + smt_panel_num)
-                    $('#panel-' + smt_panel_num.replace("smt_", "")).remove()
+                    console.log("removing from page " + '#panel-' + smt_panel_num);
+                    $('#panel-' + smt_panel_num.replace("smt_", "")).remove();
                 }
             }
         }
@@ -493,6 +493,12 @@
             $('#diff_comparison_' + smt_panel_num).text('Texts are identical.');
         }
 
+    </script>
+    <script>
+        // Convert select field for Add Component to jQuery Select2 box
+        $(document).ready(function() {
+            $('#producer_element_id').select2();
+        });
     </script>
 
 {% endblock %}

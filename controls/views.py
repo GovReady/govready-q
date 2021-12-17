@@ -2091,7 +2091,7 @@ def save_smt(request):
         if new_statement:
             try:
                 statement.producer_element = producer_element
-                if 'system_id' in form_values:
+                if 'system_id' in form_values and form_values['system_id'] is not "":
                     # Associate Consumer Element
                     statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
                     statement_msg = "Statement associated with System/Consumer Element."
@@ -2101,7 +2101,7 @@ def save_smt(request):
                 messages.add_message(request, messages.INFO, f"{statement_element_msg} {producer_element.id}.")
             except Exception as e:
                 statement_element_status = "error"
-                statement_element_msg = "Failed to associate statement with Producer Element {}".format(e)
+                statement_element_msg = "Failed to associate statement with Producer Element. Error reported {}".format(e)
                 return JsonResponse(
                     {"status": statement_element_status, "message": statement_element_msg + " " + producer_element_msg + " " + statement_element_msg})
         # Create new Prototype Statement object on new statement creation (not statement edit)

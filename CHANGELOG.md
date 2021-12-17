@@ -9,6 +9,7 @@ v0.9.11.11-dev (December xx, 2021)
 
 * Simplify task progress history. Only display questions of current module. Only colorize to glyphicons.
 * Enable adding component control statement from System selected component.
+* Enable adding component control statement from System selected controls.
 
 **Bug fixes**
 
