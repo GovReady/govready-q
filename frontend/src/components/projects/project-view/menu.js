@@ -76,29 +76,29 @@ window.projectMenu = (data) => {
                                 </Grid>
 
                             </SidebarHeader>
-                            <MenuItem icon={<HomeIcon />} id="btn-project-home" onClick={() => redirect(`${window.origin}${data.urls.home}`)}> Project Home
+                            <MenuItem icon={<HomeIcon />} id="btn-project-home" onClick={() => redirect(`${window.origin}${data.urls.home}`)}> <button class="button-sidebar-react">Project Home</button>
                             </MenuItem>
-                            <MenuItem icon={<ListAltIcon />} onClick={() => redirect(`${window.origin}${data.urls.controls}`)}> Controls
+                            <MenuItem icon={<ListAltIcon />} id="btn-controls" onClick={() => redirect(`${window.origin}${data.urls.controls}`)}> <button class="button-sidebar-react">Controls</button>
                             </MenuItem>
-                            <MenuItem icon={<SettingsInputComponentIcon />} onClick={() => redirect(`${window.origin}${data.urls.components}`)}> Components
+                            <MenuItem icon={<SettingsInputComponentIcon />} id="btn-components" onClick={() => redirect(`${window.origin}${data.urls.components}`)}> <button class="button-sidebar-react">Components</button>
                             </MenuItem>
-                            <MenuItem icon={<CheckBoxIcon />} onClick={() => redirect(`${window.origin}${data.urls.poa_ms}`)}> POA&Ms
+                            <MenuItem icon={<CheckBoxIcon />} id="btn-poams" onClick={() => redirect(`${window.origin}${data.urls.poa_ms}`)}> <button class="button-sidebar-react">POA&Ms</button>
                             </MenuItem>
-                            <MenuItem icon={<ApiIcon />} onClick={() => redirect(`${window.origin}${data.urls.deployments}`)}> Deployments
+                            <MenuItem icon={<ApiIcon />} id="btn-deployments" onClick={() => redirect(`${window.origin}${data.urls.deployments}`)}> <button class="button-sidebar-react">Deployments</button>
                             </MenuItem>
-                            <MenuItem icon={<AssessmentIcon />} onClick={() => redirect(`${window.origin}${data.urls.assesments}`)}> Assesments
+                            <MenuItem icon={<AssessmentIcon />} id="btn-assessments" onClick={() => redirect(`${window.origin}${data.urls.assesments}`)}> <button class="button-sidebar-react">Assesments</button>
                             </MenuItem>
                             <MenuItem icon={<ArrowUpwardIcon />} id="btn-import-project" onClick={() => {
                                 var m = $('#import_project_modal');
                                 $("#import_loading_spinner").hide();
                                 m.modal();
-                            }}> Import Project
+                            }}> <button class="button-sidebar-react">Import Project</button>
                             </MenuItem>
-                            <MenuItem icon={<ArrowDownward />} onClick={() => redirect(`${window.origin}${data.urls.export_project}`)}> Export Project
+                            <MenuItem icon={<ArrowDownward />} onClick={() => redirect(`${window.origin}${data.urls.export_project}`)}> <button class="button-sidebar-react">Export Project</button>
                             </MenuItem>
                         </>}
                         {(!data.project.is_account_project || data.project.is_deletable) && <>
-                            <MenuItem icon={<SettingsIcon />} onClick={() => redirect(`${window.origin}${data.urls.settings}`)} >Settings
+                            <MenuItem icon={<SettingsIcon />} id="btn-settings" onClick={() => redirect(`${window.origin}${data.urls.settings}`)} ><button class="button-sidebar-react"> Settings</button>
                             </MenuItem>
                         </>}
                         {data.is_project_page && <>
@@ -116,21 +116,21 @@ window.projectMenu = (data) => {
                                     function () { window.location.reload() }
                                 );
                                 return false;
-                            }}>Invite
+                            }}> <button class="button-sidebar-react">Invite</button>
                             </MenuItem>
-                            <MenuItem icon={<PreviewIcon />} onClick={() => redirect(`${window.origin}${data.urls.review}`)} >Review
+                            <MenuItem icon={<PreviewIcon />} id="btn-review" onClick={() => redirect(`${window.origin}${data.urls.review}`)} ><button class="button-sidebar-react">Review</button>
                             </MenuItem>
-                            <MenuItem icon={<InsertDriveFileIcon />} onClick={() => redirect(`${window.origin}${data.urls.documents}`)} >Documents
+                            <MenuItem icon={<InsertDriveFileIcon />} id="btn-documents" onClick={() => redirect(`${window.origin}${data.urls.documents}`)} ><button class="button-sidebar-react">Documents</button>
                             </MenuItem>
-                            <MenuItem icon={<CompareArrowsIcon />} onClick={() => redirect(`${window.origin}${data.urls.apidocs}`)} >API Docs
+                            <MenuItem icon={<CompareArrowsIcon />} id="btn-apidocs" onClick={() => redirect(`${window.origin}${data.urls.apidocs}`)} ><button class="button-sidebar-react">API Docs</button>
                             </MenuItem>
-                            <MenuItem icon={<CreateIcon />} onClick={() => {
+                            <MenuItem icon={<CreateIcon />} id="btn-authoring-tool" onClick={() => {
                                 show_authoring_tool_module_editor()
-                            }}>Authoring Tool
+                            }}><button class="button-sidebar-react">Authoring Tool</button>
                             </MenuItem>
-                            <MenuItem icon={<ImportExportIcon />} onClick={() => {
+                            <MenuItem icon={<ImportExportIcon />} id="btn-move-project" onClick={() => {
                                 move_project()
-                            }}>Move Project
+                            }}><button class="button-sidebar-react">Move Project</button>
                             </MenuItem>
                         </>}
 
