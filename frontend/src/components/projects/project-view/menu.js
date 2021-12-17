@@ -76,61 +76,225 @@ window.projectMenu = (data) => {
                                 </Grid>
 
                             </SidebarHeader>
-                            <MenuItem icon={<HomeIcon />} id="btn-project-home" onClick={() => redirect(`${window.origin}${data.urls.home}`)}> <button class="button-sidebar-react">Project Home</button>
+                            <MenuItem 
+                                icon={<HomeIcon />}
+                                id="menu-btn-project-home"
+                                onClick={() => redirect(`${window.origin}${data.urls.home}`)}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        redirect(`${window.origin}${data.urls.home}`)
+                                    }
+                                }}
+                            >
+                                Project Home
                             </MenuItem>
-                            <MenuItem icon={<ListAltIcon />} id="btn-controls" onClick={() => redirect(`${window.origin}${data.urls.controls}`)}> <button class="button-sidebar-react">Controls</button>
+                            <MenuItem
+                                id="menu-btn-project-controls"
+                                icon={<ListAltIcon />}
+                                onClick={() => redirect(`${window.origin}${data.urls.controls}`)}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        redirect(`${window.origin}${data.urls.controls}`)
+                                    }
+                                }}
+                            >
+                                Controls
                             </MenuItem>
-                            <MenuItem icon={<SettingsInputComponentIcon />} id="btn-components" onClick={() => redirect(`${window.origin}${data.urls.components}`)}> <button class="button-sidebar-react">Components</button>
+                            <MenuItem
+                                id="menu-btn-project-components"
+                                icon={<SettingsInputComponentIcon />}
+                                onClick={() => redirect(`${window.origin}${data.urls.components}`)}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        redirect(`${window.origin}${data.urls.components}`)
+                                    }
+                                }}
+                            >
+                                Components
                             </MenuItem>
-                            <MenuItem icon={<CheckBoxIcon />} id="btn-poams" onClick={() => redirect(`${window.origin}${data.urls.poa_ms}`)}> <button class="button-sidebar-react">POA&Ms</button>
+                            <MenuItem
+                                id="menu-btn-project-poa_ms"
+                                icon={<CheckBoxIcon />}
+                                onClick={() => redirect(`${window.origin}${data.urls.poa_ms}`)}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        redirect(`${window.origin}${data.urls.poa_ms}`)
+                                    }
+                                }}
+                            >
+                                POA&Ms
                             </MenuItem>
-                            <MenuItem icon={<ApiIcon />} id="btn-deployments" onClick={() => redirect(`${window.origin}${data.urls.deployments}`)}> <button class="button-sidebar-react">Deployments</button>
+                            <MenuItem
+                                id="menu-btn-project-deployments"
+                                icon={<ApiIcon />}
+                                onClick={() => redirect(`${window.origin}${data.urls.deployments}`)}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        redirect(`${window.origin}${data.urls.deployments}`)
+                                    }
+                                }}
+                            >
+                                Deployments
                             </MenuItem>
-                            <MenuItem icon={<AssessmentIcon />} id="btn-assessments" onClick={() => redirect(`${window.origin}${data.urls.assesments}`)}> <button class="button-sidebar-react">Assesments</button>
+                            <MenuItem
+                                id="menu-btn-project-assesments"
+                                icon={<AssessmentIcon />}
+                                onClick={() => redirect(`${window.origin}${data.urls.assesments}`)}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        redirect(`${window.origin}${data.urls.assesments}`)
+                                    }
+                                }}
+                            >
+                                Assesments
                             </MenuItem>
-                            <MenuItem icon={<ArrowUpwardIcon />} id="btn-import-project" onClick={() => {
-                                var m = $('#import_project_modal');
-                                $("#import_loading_spinner").hide();
-                                m.modal();
-                            }}> <button class="button-sidebar-react">Import Project</button>
+                            <MenuItem
+                                icon={<ArrowUpwardIcon />}
+                                id="menu-btn-project-import"
+                                onClick={() => {
+                                    var m = $('#import_project_modal');
+                                    $("#import_loading_spinner").hide();
+                                    m.modal();
+                                }}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        var m = $('#import_project_modal');
+                                        $("#import_loading_spinner").hide();
+                                        m.modal();
+                                    }
+                                }}
+                            >
+                                Import Project
                             </MenuItem>
-                            <MenuItem icon={<ArrowDownward />} onClick={() => redirect(`${window.origin}${data.urls.export_project}`)}> <button class="button-sidebar-react">Export Project</button>
+                            <MenuItem
+                                id="menu-btn-project-export_project"
+                                icon={<ArrowDownward />}
+                                onClick={() => redirect(`${window.origin}${data.urls.export_project}`)}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        redirect(`${window.origin}${data.urls.export_project}`)
+                                    }
+                                }}
+                            >
+                                Export Project
                             </MenuItem>
                         </>}
                         {(!data.project.is_account_project || data.project.is_deletable) && <>
-                            <MenuItem icon={<SettingsIcon />} id="btn-settings" onClick={() => redirect(`${window.origin}${data.urls.settings}`)} ><button class="button-sidebar-react"> Settings</button>
+                            <MenuItem
+                                id="menu-btn-project-is_account_project"
+                                icon={<SettingsIcon />}
+                                onClick={() => redirect(`${window.origin}${data.urls.settings}`)}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        redirect(`${window.origin}${data.urls.settings}`)
+                                    }
+                                }}
+                            >
+                                Settings
                             </MenuItem>
                         </>}
                         {data.is_project_page && <>
-                            <MenuItem icon={<PersonAddAlt1Icon />} id="btn-show-project-invite" onClick={() => {
-                                var info = project_invitation_info;
-                                show_invite_modal(
-                                    'Invite To Project Team (' + info.model_title + ')',
-                                    'Invite a colleague to join this project team.',
-                                    info,
-                                    'Please join the project team for ' + info.model_title + '.',
-                                    {
-                                        project: info.model_id,
-                                        add_to_team: "1"
-                                    },
-                                    function () { window.location.reload() }
-                                );
-                                return false;
-                            }}> <button class="button-sidebar-react">Invite</button>
+                            <MenuItem
+                                icon={<PersonAddAlt1Icon />}
+                                id="menu-btn-show-project-invite"
+                                onClick={() => {
+                                    var info = project_invitation_info;
+                                    show_invite_modal(
+                                        'Invite To Project Team (' + info.model_title + ')',
+                                        'Invite a colleague to join this project team.',
+                                        info,
+                                        'Please join the project team for ' + info.model_title + '.',
+                                        {
+                                            project: info.model_id,
+                                            add_to_team: "1"
+                                        },
+                                        function () { window.location.reload() }
+                                    );
+                                    return false;
+                                }}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        var info = project_invitation_info;
+                                        show_invite_modal(
+                                            'Invite To Project Team (' + info.model_title + ')',
+                                            'Invite a colleague to join this project team.',
+                                            info,
+                                            'Please join the project team for ' + info.model_title + '.',
+                                            {
+                                                project: info.model_id,
+                                                add_to_team: "1"
+                                            },
+                                            function () { window.location.reload() }
+                                        );
+                                        return false;
+                                    }
+                                }}
+                            >
+                                Invite
                             </MenuItem>
-                            <MenuItem icon={<PreviewIcon />} id="btn-review" onClick={() => redirect(`${window.origin}${data.urls.review}`)} ><button class="button-sidebar-react">Review</button>
+                            <MenuItem
+                                id="menu-btn-project-reviews"
+                                icon={<PreviewIcon />}
+                                onClick={() => redirect(`${window.origin}${data.urls.review}`)}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        redirect(`${window.origin}${data.urls.review}`)
+                                    }
+                                }}
+                            >
+                                Review
                             </MenuItem>
-                            <MenuItem icon={<InsertDriveFileIcon />} id="btn-documents" onClick={() => redirect(`${window.origin}${data.urls.documents}`)} ><button class="button-sidebar-react">Documents</button>
+                            <MenuItem
+                                id="menu-btn-project-documents"
+                                icon={<InsertDriveFileIcon />}
+                                onClick={() => redirect(`${window.origin}${data.urls.documents}`)}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        redirect(`${window.origin}${data.urls.documents}`)
+                                    }
+                                }}
+                            >
+                                Documents
                             </MenuItem>
-                            <MenuItem icon={<CompareArrowsIcon />} id="btn-apidocs" onClick={() => redirect(`${window.origin}${data.urls.apidocs}`)} ><button class="button-sidebar-react">API Docs</button>
+                            <MenuItem
+                                id="menu-btn-project-apidocs"
+                                icon={<CompareArrowsIcon />}
+                                onClick={() => redirect(`${window.origin}${data.urls.apidocs}`)}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        redirect(`${window.origin}${data.urls.apidocs}`)
+                                    }
+                                }}
+                            >
+                                API Docs
                             </MenuItem>
-                            <MenuItem icon={<CreateIcon />} id="btn-authoring-tool" onClick={() => {
-                                show_authoring_tool_module_editor()
-                            }}><button class="button-sidebar-react">Authoring Tool</button>
+                            <MenuItem
+                                id="menu-btn-project-authoring_tool"
+                                icon={<CreateIcon />}
+                                onClick={() => {
+                                    show_authoring_tool_module_editor()
+                                }}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        show_authoring_tool_module_editor()
+                                    }
+                                }}
+                            >
+                                Authoring Tool
                             </MenuItem>
-                            <MenuItem icon={<ImportExportIcon />} id="btn-move-project" onClick={() => {
-                                move_project()
-                            }}><button class="button-sidebar-react">Move Project</button>
+                            <MenuItem
+                                id="menu-btn-move_project"
+                                icon={<ImportExportIcon />}
+                                onClick={() => {
+                                    move_project()
+                                }}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        move_project()
+                                    }
+                                }}
+                            >
+                                Move Project
                             </MenuItem>
                         </>}
 
