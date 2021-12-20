@@ -150,8 +150,8 @@ a:focus-visible {
 .task-progress-project-question { font-size: 10px; line-height: 120%; padding-left: 2em; color: #222; }
 .task-progress-project-title { color: black; font-size: 1.0em; text-align: left; }
 .task-progress-project-truncate-link { color: black; }
-.task-question-debug-links { color: #999; font-size: 70%; position: fixed; bottom: 12px;}
-.task-question-debug-links a:link { color: #999 }
+.task-question-debug-links { color: #666; font-size: 70%; position: fixed; bottom: 12px;}
+.task-question-debug-links a:link { color: #666 }
 
 .question-source-invitation { margin-bottom: 2em; }
 .question-source-invitation-show { text-align: right; margin-bottom: -1.5em; }

@@ -111,7 +111,9 @@
                                 font-style: italic;
   }
 
-.question-title-style { font-size:1.2em;}
+.question-title-style { 
+  font-size: 1.2em;
+}
 
 
   .question-status {
@@ -472,7 +474,9 @@
 
                     {# The label for the icon is the title of the question in the question's specification. #}
                     <div class="question-title">
-                      <span class="question-title-style">{{q.question.spec.title}}</span>
+                      <span class="question-title-style" tabindex="0" onkeypress="handleEnter(event)">
+                        {{q.question.spec.title}}
+                      </span>
                       {% if q.can_start_new_task and q.question.spec.type == "module-set" %}
                         <span class="glyphicon glyphicon-plus pull-right"></span>
                       {% endif %}
@@ -546,6 +550,12 @@
 <script>
 var project_invitation_info = {{send_invitation|json}};
 
+function handleEnter(e){
+  var keycode = (e.keycode ? e.keycode : e.which);
+  if(keycode == '13'){
+    document.activeElement.click();
+  }
+}
 $(function() {
   set_state_from_url_fragment();
   $(window).on('hashchange', set_state_from_url_fragment);
