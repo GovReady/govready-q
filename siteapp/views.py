@@ -129,7 +129,7 @@ def homepage(request):
                         messages.error(request,
                                        "[ERROR] new_user '{}' did not authenticate during account creation. Account not created. Report error to System Administrator. {}".format(
                                            new_user.username, vars(new_user)))
-                        return HttpResponseRedirect("/")
+                        return HttpResponseRedirect("/warningmessage")
                 else:
                     user = request.user
                 # Create user's default portfolio
@@ -154,7 +154,7 @@ def homepage(request):
         login_form = LoginForm(request.POST, request=request)
         if login_form.is_valid():
             login_form.login(request)
-            return HttpResponseRedirect('/')  # reload
+            return HttpResponseRedirect('/warningmessage')  # reload
 
     elif request.POST.get("action") == "logout" and request.user.is_authenticated:
         from django.contrib.auth import logout

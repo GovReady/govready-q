@@ -3,7 +3,7 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.conf import settings
 from django.urls import path, re_path
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
 from rest_framework import routers
 from rest_framework import serializers
 from siteapp.views import UserViewSet
@@ -21,6 +21,7 @@ from .good_settings_helpers import signup_wrapper
 from .settings import *
 
 urlpatterns = [
+    path(r'warningmessage/', TemplateView.as_view(template_name='warning_message.html')),
     url(r"^(?![\s\S])$", views.home_user, name="home_user"),
     url(r"^login$", views.homepage, name="homepage"),
     url(r"^(privacy|terms-of-service|love-assessments)$", views.shared_static_pages, name="privacy_terms_love"),

@@ -80,34 +80,13 @@ Welcome to Compliance Automation
       </div><!-- /Tab panes -->
     </div>
   </div>
-</div>
-  <div class="row footer-row" style="width: 100%;">
-  {% include "warning_message.html" %}
-</div>
-  {% comment %} <footer>
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-12">
-          <div class="row footer-row">
-          {% include "warning_message.html" %}
-        </div>
-      </div>
-    </div>
-  </footer> {% endcomment %}
 
   {{ block.super }}
 {% endblock %}
 
 {% block scripts %}
 <script>
-let button = document.querySelector(".btn btn-success");
-button.disabled = true;
-input.addEventListener("submit", stateHandler);
-function stateHandler(){
-  if(document.querySelector("warning_message_button").onclick) {
-    button.disabled = false;
-  }
-}
+  
 {% if request.method == "POST" %}
 
 smooth_scroll_to($('input[name=action][value={{request.POST.action|escapejs}}]').parent('form'));
