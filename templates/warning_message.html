@@ -1,0 +1,24 @@
+{% load bootstrap3 %}
+
+{% block body-wide %}
+<body>
+    <div class="warning" style="background-color: hsl(240 100% 95% / 3);border: hsl(217deg 57% 85%);border-style: solid;">
+        <div class="last_login" style="text-align: end;">
+            Last successful login: December 07, 2021 7:35 AM
+        </div>
+        <br />
+        <div class="message">
+            You are accessing a US Government information system, which includes (1) this computer, (2) this computer network, (3) all computer sconnected to this network, and (4) all devices and storage media attached to this network or to a computer on this network. This information system is provided for US Government-authorized use only. Unauthorized or improper use of this system may result in disciplinary action, as well as civil and criminal penalties. By using this information system, you understand and consent to the following: You have no reasonable expectation of privacy regarding any communications or data transiting or stored on this information system. At any time, the government may for any lawful government purpose monitor, intercept, search and seize any communication or data transiting or stored on this information system. Any communication or data transiting or stored on this information system may be disclosed or used for any lawful government purpose. Your consent is final and irrevocable. You may not rely on any statements or informal policies purporting to provide you with any exepectation of privacy regarding communications on this system, whether oral or written, by your supervisor or any other official, except your corresponding Chief Information Officer.
+        </div>
+        <br />
+        <button type="button" class="warning_message_button" style="color: hsl(240deg 100% 23%);border: hsl(217deg 57% 85%);border-style: solid;background-color:hsl(0deg 0% 100%);margin-bottom: 0.5rem;margin-left: 0.5rem;" onclick="location.href='/';">
+            Accept
+        </button>
+    </div>
+    <div style="text-align:end;border: hsl(217deg 57% 85%);border-left-style: solid;border-right-style: solid;border-bottom-style: solid;">
+        <span style="font-style: italic;font-weight: bold;color: hsl(240deg 100% 23%);">
+            Limited Official Use
+        </span>
+    </div>
+</body>
+{% endblock %}

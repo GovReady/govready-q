@@ -28,14 +28,18 @@ Welcome to Compliance Automation
         <div role="tabpanel" class="tab-pane {% if hide_registration or request.POST.action|escapejs == 'login' %}active{% endif %}" id="signin">
           <div class="well">
             {% if not request.user.is_authenticated %}
-            <a name="signin"></a>
-            <form id="login_form" method="post">
-              {% csrf_token %}
-              <input type=hidden name=action value=login>
-              {% bootstrap_form login_form %}
-              <p><button type="submit" class="btn btn-success">Sign in &raquo;</button></p>
-            </form>
-            <div><a href="/accounts/password/reset">Forgot password?</a></div>
+              <a name="signin"></a>
+              <form id="login_form" method="post">
+                {% csrf_token %}
+                <input type=hidden name=action value=login>
+                {% bootstrap_form login_form %}
+                <p>
+                  <button type="submit" class="btn btn-success">Sign in &raquo;</button>
+                </p>
+              </form>
+              <div>
+                <a href="/accounts/password/reset">Forgot password?</a>
+              </div>
             {% else %}
             <h2 style="margin-top: 0;">Your organizations</h2>
             {% if member_of_orgs %}
@@ -66,7 +70,9 @@ Welcome to Compliance Automation
               {% if not request.user.is_authenticated %}
                 {% bootstrap_form signup_form %}
               {% endif %}
-              <p><button type="submit" id="signup-button" class="btn btn-success">Next &raquo;</button></p>
+              <p>
+                <button type="submit" id="signup-button" class="btn btn-success">Next &raquo;</button>
+              </p>
             </form>
           </div>
         </div>
@@ -75,13 +81,33 @@ Welcome to Compliance Automation
     </div>
   </div>
 </div>
+  <div class="row footer-row" style="width: 100%;">
+  {% include "warning_message.html" %}
+</div>
+  {% comment %} <footer>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="row footer-row">
+          {% include "warning_message.html" %}
+        </div>
+      </div>
+    </div>
+  </footer> {% endcomment %}
 
   {{ block.super }}
 {% endblock %}
 
 {% block scripts %}
 <script>
-
+let button = document.querySelector(".btn btn-success");
+button.disabled = true;
+input.addEventListener("submit", stateHandler);
+function stateHandler(){
+  if(document.querySelector("warning_message_button").onclick) {
+    button.disabled = false;
+  }
+}
 {% if request.method == "POST" %}
 
 smooth_scroll_to($('input[name=action][value={{request.POST.action|escapejs}}]').parent('form'));
