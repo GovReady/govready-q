@@ -166,7 +166,7 @@
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (docx)</a><button id="projectAssetWordConfigButton" type="button" class="btn-xs btn-primary glyphicon glyphicon-cog" data-toggle="modal" data-target="#projectAssetWordConfig" aria-label="Word (docx) Settings" tooltip="Word (docx) Settings" style="text-align: center; margin-right:10px; margin-left:5px;"></button>
                             {% if gr_pdf_generator == 'wkhtmltopdf' %}<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/pdf">PDF</a>&nbsp;&nbsp;{% endif %}
                             <!-- <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/odt">Open Office (odt)</a>&nbsp;&nbsp; -->
-                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/html">HTML</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/html" target="_blank">HTML</a>&nbsp;&nbsp;
                             <button id="exportCSVTemplateSSPButton" type="button" class="btn-xs btn-primary glyphicon glyphicon-copy" data-toggle="modal" data-target="#exportCSVTemplateSSP" aria-label="CSV" tooltip="exportCSVTemplateSSP" style="text-align: center; margin-right:10px; margin-left:5px;">CSV</button>&nbsp;&nbsp;
                               <form role="form" class="pull-left" method="POST">
                                   {% csrf_token %}

@@ -1467,6 +1467,8 @@ def restore_to_history(request, smt_id, history_id):
     # Get statement if exists else 404
     smt = get_object_or_404(Statement, id=smt_id)
 
+    print(1, "==== smt", smt)
+
     # Check permission
     raise_404_if_not_permitted_to_statement(request, smt, 'change_system')
 
@@ -1483,8 +1485,8 @@ def restore_to_history(request, smt_id, history_id):
         historical_smt.instance.save()
 
         # Update the reason for the new statement record
-        recent_smt     = smt.history.first()
-        update_change_reason(recent_smt.instance, change_reason)
+        recent_smt = smt.history.first()
+        # update_change_reason(recent_smt.instance, change_reason)
 
         logger.info( f"Change reason: {change_reason}")
 
@@ -2014,7 +2016,6 @@ def save_smt(request):
         #     cleared = False
         #     skipped_reason = request.POST.get("skipped_reason") or None
         #     unsure = bool(request.POST.get("unsure"))
-
         # Track if we are creating a new statement
         new_statement = False
         form_dict = dict(request.POST)
@@ -2086,10 +2087,14 @@ def save_smt(request):
             producer_element_msg = "Producer Element save failed. Error reported {}".format(e)
             return JsonResponse({"status": producer_element_status, "message": producer_element_msg})
 
-        # Associate Statement and Producer Element if creating new statement
+        # Associate Statement, Producer Element, and optionally Consumer Element (system) if creating new statement
         if new_statement:
             try:
                 statement.producer_element = producer_element
+                if 'system_id' in form_values:
+                    # Associate Consumer Element
+                    statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
+                    statement_msg = "Statement associated with System/Consumer Element."
                 statement.save()
                 statement_element_status = "ok"
                 statement_element_msg = "Statement associated with Producer Element."

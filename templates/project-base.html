@@ -79,30 +79,6 @@
         <div class="col-md-3" style="margin:0px;padding:0px 0px 0px 0px;height:100%;">
             <div id="focus-area-wrapper" style="padding:0px; margin-top:0px;height:100%;">
                 {% block above_title %}
-                    {% if authoring_tool_enabled %}
-                        <center class="authoring-tool-hidden authoring-tool-box">
-                            <p class="text-info">
-                                You are in author mode. Authoring tools have been enabled for this module.
-                            </p>
-                        </center>
-
-                        <center class="authoring-tool-hidden authoring-tool-box">
-                            <p>
-                                <a href="#" onclick="show_authoring_tool_module_editor(); return false;"
-                                   class="authoring-tool-style">
-                                    <span class="glyphicon glyphicon-pencil"></span>
-                                    Edit App
-                                </a>
-
-                                <a href="#"
-                                   onclick="authoring_tool_new_question({{ project.root_task.id }}, true); return false;"
-                                   class="authoring-tool-style">
-                                    <span class="glyphicon glyphicon-plus"></span>
-                                    Add Module
-                                </a>
-                            </p>
-                        </center>
-                    {% endif %}
                 {% endblock %}
 
                 {# if is_project_page #}

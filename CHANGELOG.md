@@ -1,8 +1,24 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.11.8-dev (December xx, 2021)
+
+v0.9.11.11-dev (December xx, 2021)
 ---------------------------------
+
+**UI changes**
+
+* Simplify task progress history. Only display questions of current module. Only colorize to glyphicons.
+* Enable adding component control statement from System selected component.
+
+**Bug fixes**
+
+* Stop scrubching of progress-project-area-wrapper on question page.
+
+
+v0.9.11.10-dev (December xx, 2021)
+---------------------------------
+
+Introuduce new authoring tool. Remove authoring tool modal from task question page.
 
 **Feature changes**
 
@@ -16,7 +32,9 @@ v0.9.11.8-dev (December xx, 2021)
 * Include spaCy libraries as part of build.
 * Include initial, simplified candidate entity recognition script.
 * Remove full text search of statements from component library search because it was slow and returned to many results.
-* Add serializers for Modules and ModuleQuestions
+* Add serializers for Modules and ModuleQuestions.
+* Refactor siteapp.views.project and templates/project.html to remove vestigial column vs row layout code and previous authoring tools.
+* Remove authoring tool modal from task question page.
 
 **UI changes**
 
@@ -25,6 +43,12 @@ v0.9.11.8-dev (December xx, 2021)
 * Improve styling of project page rollovers make module actions clearer
 * Improve styling of template library. Use bootstrap panels for each item.
 * Remove authoring tool modal from task question page.
+
+**Bug fixes**
+
+* Fix permissions to allow non-administrator to clone project templates in project template.
+* Fix crash when restoring a previous version of a statement.
+* Fix setting control baseline by proper use of `update_or_create` in `System.set_security_impact_level`.
 
 
 v0.9.11.6 (October 13, 2021)
