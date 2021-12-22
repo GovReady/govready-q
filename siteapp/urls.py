@@ -21,7 +21,7 @@ from .good_settings_helpers import signup_wrapper
 from .settings import *
 
 urlpatterns = [
-    path(r'warningmessage/', TemplateView.as_view(template_name='warning_message.html')),
+    url(r"^warningmessage/$", views.banner, name="banner"),
     url(r"^(?![\s\S])$", views.home_user, name="home_user"),
     url(r"^login$", views.homepage, name="homepage"),
     url(r"^(privacy|terms-of-service|love-assessments)$", views.shared_static_pages, name="privacy_terms_love"),

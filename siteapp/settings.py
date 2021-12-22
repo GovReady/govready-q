@@ -167,6 +167,10 @@ MIDDLEWARE = [
 	#'django.middleware.cache.FetchFromCacheMiddleware',
 	'session_security.middleware.SessionSecurityMiddleware',
 ]
+
+# if environment.get("BANNER"):
+MIDDLEWARE.append("siteapp.middleware.banner.BannerMiddleware")
+
 # The cache connection to use for the cache middleware.
 # CACHE_MIDDLEWARE_ALIAS='default'
 # The default number of seconds to cache a page for the cache middleware.
