@@ -1,18 +1,28 @@
 from django.http.response import HttpResponseRedirect
+from django.template.exceptions import TemplateDoesNotExist
+from django.template.loader import get_template
 
 
 class BannerMiddleware:
 
+    BANNER_ENABLED = True
+
     def __init__(self, get_response):
+        # Will load banner middleware if template is provided in branding or another template loader        
+        try:
+            get_template("warning_message.html")
+        except TemplateDoesNotExist:
+            self.BANNER_ENABLED = False
         self.get_response = get_response
 
     def __call__(self, request):
         # Code that is executed in each request before the view is called
-        banner_url = "/warningmessage/"
-        
-        if request.user.is_authenticated and request.path != banner_url:
-            if not request.session.get("_banner_checked"):   
-                return HttpResponseRedirect(banner_url)            
+        if self.BANNER_ENABLED:
+            banner_url = "/warningmessage/"
+            
+            if request.user.is_authenticated and request.path != banner_url:
+                if not request.session.get("_banner_checked"):   
+                    return HttpResponseRedirect(banner_url)            
 
         response = self.get_response(request)
         # Code that is executed in each request after the view is called
