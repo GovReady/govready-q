@@ -46,33 +46,22 @@ window.projectMenu = (data) => {
                 <ProSidebar style={{ marginLeft: '-5px', paddingLeft: '0px', width: '320px' }} >
                     <Menu iconShape="square">
                         {data.project.system && <>
-                            <SidebarHeader>
+                            <SidebarHeader class="sidebardarkheader">
                                 <Grid container >
                                     <Grid item xs={12}>
-                                        <h1 style={{ marginLeft: '20px', marginTop: '40px', color: 'white' }}>
+                                    <h3 class="sidebardark-hed">Portfolio: <span class="sidebardark-hed-title">{data.project.portfolio.title}</span></h3>
+                                        <h2 class="sidebardark-header">
                                             {data.project.root_task.title_override}&nbsp;&nbsp;
                                             <span className="glyphicon glyphicon-pencil" style={{ fontSize: '14px', color: '#aaa', cursor: 'pointer' }}
                                                 onClick={() => show_edit_project_modal()}></span>
-                                        </h1>
+                                        </h2>
+
+
+                                      <span class="sidebardark-project-details">  Project ID: {data.project.id}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;System ID: {data.project.system.id}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Version: {data.project.portfolio.version}</span>
 
                                     </Grid>
-                                    <Grid item xs={12}>
-                                        <h3 style={{ marginLeft: '20px' }}>Other: {data.project.portfolio.version}</h3>
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <h3 style={{ marginLeft: '20px' }}>{data.project.root_task.module.spec.title}</h3>
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <h3 style={{ marginLeft: '20px' }}>Portfolio: {data.project.portfolio.title}</h3>
-                                    </Grid>
-                                </Grid>
-                                <Grid container spacing={.5}>
-                                    <Grid item xs={6}>
-                                        <h3 style={{ marginLeft: '20px' }}>Project ID: {data.project.id}</h3>
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <h3 style={{ marginLeft: '20px' }}>System ID: {data.project.system.id}</h3>
-                                    </Grid>
+
+
                                 </Grid>
 
                             </SidebarHeader>
