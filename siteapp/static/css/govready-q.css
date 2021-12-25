@@ -573,3 +573,12 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
      font-size: .7em;
     color: #777777;
 }
+
+/* dark sidebar styles */
+
+.sidebardark-header { margin:0; color: #F9F9F9; font-size: 1.3em;}
+.sidebardark-head {color: #B9B9B9; font-size:.8em; margin:0;}
+.sidebardark-project-details { color: #D9D9D9; font-size:.7em; margin: 10px 0 20px 0; display:block; border-top:1px solid #B9B9B9; border-bottom:1px solid #B9B9B9; padding:5px 0 5px 0; margin:10px 20px 0 0;}
+.sidebardark-head-title {color: #D9D9D9; }
+
+.sidebardarkheader { border:none; display:block; margin:25px 0 25px 20px; }
