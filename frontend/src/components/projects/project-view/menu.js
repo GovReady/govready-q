@@ -49,21 +49,16 @@ window.projectMenu = (data) => {
                             <SidebarHeader class="sidebardarkheader">
                                 <Grid container >
                                     <Grid item xs={12}>
-                                    <h3 class="sidebardark-hed">Portfolio: <span class="sidebardark-hed-title">{data.project.portfolio.title}</span></h3>
                                         <h2 class="sidebardark-header">
                                             {data.project.root_task.title_override}&nbsp;&nbsp;
                                             <span className="glyphicon glyphicon-pencil" style={{ fontSize: '14px', color: '#aaa', cursor: 'pointer' }}
                                                 onClick={() => show_edit_project_modal()}></span>
                                         </h2>
-
-
-                                      <span class="sidebardark-project-details">  Project ID: {data.project.id}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;System ID: {data.project.system.id}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Version: {data.project.portfolio.version}</span>
-
+                                        <span class="sidebardark-project-details">  Project ID: {data.project.id}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;System ID: {data.project.system.id}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Version: {data.project.portfolio.version}</span>
+                                        <br/>
+                                        <h3 class="sidebardark-hed">Portfolio: <span class="sidebardark-hed-title">{data.project.portfolio.title}</span></h3>
                                     </Grid>
-
-
                                 </Grid>
-
                             </SidebarHeader>
                             <MenuItem icon={<HomeIcon />} id="btn-project-home" onClick={() => redirect(`${window.origin}${data.urls.home}`)}> Project Home
                             </MenuItem>
