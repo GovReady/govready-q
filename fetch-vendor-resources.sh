@@ -76,6 +76,11 @@ download \
   'f7f6a5894f1d19ddad6fa392b2ece2c5e578cbf7da4ea805b6885eb6985b6e3d'
 
 download \
+  https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js \
+  $VENDOR/jquery.cookie.min.js \
+  'd40efcac911d8964f3728eaa767de281306ff55ba9377435a3364d4d1e1613f6'
+
+download \
   https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js \
   $VENDOR/jquery-ui.js \
   '55accff7b642c2d7a402cbe03c1494c0f14a76bc03dee9d47d219562b6a152a5'
