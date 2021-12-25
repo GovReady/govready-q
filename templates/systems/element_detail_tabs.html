@@ -90,9 +90,11 @@
         <h2>
             {{ element.name }} System Component
         </h2>
-        <h3 class="" style="">
-             {{ catalog.catalog_key_display }}
-        </h3>
+        {% if catalog.catalog_key_display %}
+          <h3 id="catalog-key-display">
+            {{ catalog.catalog_key_display }}
+          </h3>
+        {% endif %}
       </div>
       <div class="col-sm-2">
         <div id="btn-edit-title" style="text-align: center;">
@@ -160,15 +162,23 @@
                                     <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span class="glyphicon glyphicon-alert"></span> No related statement for component in library</a>
                                 </span>
                             {% endif %}
-                          <span class="pull-right"><a role="button" class="glyphicon glyphicon-pencil" style="color: #aaa;"  data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body"onclick="$('#document-{{ forloop.counter }}-title').css('background-color','#f4f5f8');$('#document-{{ forloop.counter }}-title').css('display','none');"></a></span>
-                          {% if smt.remarks %}<details><summary>Remarks</summary><div>{{ smt.remarks }}</div></details>{% endif %}
+                          <span class="pull-right">
+                            <a role="button" class="glyphicon glyphicon-pencil" style="color: #aaa;" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body"onclick="$('#document-{{ forloop.counter }}-title').css('background-color','#f4f5f8');$('#document-{{ forloop.counter }}-title').css('display','none');"></a>
+                          </span>
+                          {% if smt.remarks %}
+                            <details>
+                              <summary>
+                                Remarks
+                              </summary>
+                              <div>
+                                {{ smt.remarks }}
+                              </div>
+                            </details>
+                          {% endif %}
                         {% endspaceless %}
                         </div>
                       </div>
-
-                        <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
-                          &nbsp;
-                        </h4>
+                      <br/>
                     </div>
                     <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title" style="background-color: #f4f5f8;">
                         <div class="panel-body">
@@ -224,19 +234,19 @@
                                               </div>
                                           </div>
                                       </label>
-                                      <textarea style="min-height:130px; width:101%;" class="form-control systems-element-statement"
+                                      <textarea aria-label="How component body_{{ forloop.counter }} contribute to control" style="min-height:130px; width:101%;" class="form-control systems-element-statement"
                                                 id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control" cols="50"
                                                 onfocus="$('#body_{{ forloop.counter }}').css('height', this.scrollHeight);">{{ smt.body }}</textarea>
                                     </div>
                                     <!-- Never change name of the producer element already associated with a statement -->
                                     <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                                    <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
+                                    <input type="hidden" aria-label="Statement input" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
                                     <div class="form-group">
                                         <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
                                     </div>
                                     <div class="form-group">
                                         <label for="statement">Part</label>
-                                        <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="{{ smt.pid }}" style="width:180px;">
+                                        <input aria-label="Statement parts input" type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="{{ smt.pid }}" style="width:180px;">
                                     </div>
                                     <div class="form-group">
                                         <label for="status">Status</label>
@@ -251,7 +261,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="remarks">Remarks</label>
-                                        <textarea class="form-control systems-element-form-remarks" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
+                                        <textarea aria-label="Remarks textarea" class="form-control systems-element-form-remarks" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
                                     </div>
                                     <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
                                     <input type="hidden" id="sid" name="sid" value="{{ control.id }}">

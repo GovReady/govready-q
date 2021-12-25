@@ -33,7 +33,7 @@ Remove contextbar from top of page
         {% if can_edit_portfolio %}
             <a id="edit-portfolio" href='{% url "edit_portfolio" portfolio.id %}' class="btn btn-success" aria-label="Edit portfolio">Edit Portfolio</a>
         {% endif %}
-        <a id="new-project" href="{% url 'store' %}?portfolio={{ portfolio.id }}" class="btn btn-success">Start a project</a>
+        <a id="new-project-detail-link" href="{% url 'store' %}?portfolio={{ portfolio.id }}" class="btn btn-success">Start a project</a>
         {% if can_invite_to_portfolio %}
             <a href="#" onclick="invite_user_into_portfolio(); return false;" id="grant-portfolio-access"
                class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Grant access to member</a>

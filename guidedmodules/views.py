@@ -1891,7 +1891,6 @@ def authoring_edit_question2(request):
 
     question = get_object_or_404(ModuleQuestion.objects.select_related('module'), id=request.POST['q_id'])
     module = question.module
-
     # Delete the question?
     if request.POST.get("delete") == "1":
         try:
@@ -1899,7 +1898,7 @@ def authoring_edit_question2(request):
             return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url() })
         except Exception as e:
             # The only reason it would fail is a protected foreign key.
-            return JsonResponse({ "status": "error", "message": "The question cannot be deleted because it has already been answered." })
+            return JsonResponse({ "status": "error", "message": "The question #"+request.POST['q_id']+" cannot be deleted because it has been answered in a Project. Contact an administrator to delete." })
 
     # Update the question...
     # Update the key.
