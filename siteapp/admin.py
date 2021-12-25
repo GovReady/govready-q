@@ -4,7 +4,7 @@ from guardian.admin import GuardedModelAdmin
 from django_json_widget.widgets import JSONEditorWidget
 import django.contrib.auth.admin as contribauthadmin
 from jsonfield import JSONField
-from .models import User, Organization, OrganizationalSetting, Folder, Project, ProjectMembership, Portfolio, Support, \
+from .models import User, Organization, OrganizationalSetting, Folder, Invitation, Project, ProjectMembership, Portfolio, Support, \
     Tag, Asset, ProjectAsset
 from notifications.models import Notification
 
@@ -136,6 +136,13 @@ class FolderAdmin(admin.ModelAdmin):
     }
 
 
+class InvitationAdmin(admin.ModelAdmin):
+    list_display = ('to_user', 'to_email', 'into_project', 'email_invitation_code', 'from_user', 'sent_at')
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
+
+
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ('id', 'recipient', 'actor', 'level', 'target', 'unread', 'public', 'emailed')
     readonly_fields = ('id',)
@@ -201,7 +208,7 @@ admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(OrganizationalSetting, OrganizationalSettingAdmin)
 
 admin.site.register(Folder, FolderAdmin)
-
+admin.site.register(Invitation, InvitationAdmin)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(ProjectMembership, ProjectMembershipAdmin)
 admin.site.register(Portfolio, PortfolioAdmin)

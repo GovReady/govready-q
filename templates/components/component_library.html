@@ -40,8 +40,8 @@
             <form action="{% url 'component_library' %}" method="GET" role="search">
                 <div class="form-inline pull-right create-nav">
                     <div class="form-group">
-                        <div class="input-group">
-                            <input id="searchbox" name="search" value="{{ request.GET.search }}" type="text" placeholder="search components" spellcheck="false" aria-label="Search" aria-describedby="search">
+                        <div class="input-group" id="searchbox-input">
+                            <input id="searchbox" name="search" value="{{ request.GET.search }}" type="text" placeholder="search components" spellcheck="false" aria-labelledby="searchbox-input" />
                             <span id="searchicon" class="glyphicon glyphicon-search" href="{% url 'component_library' %}"></span>
                             {% if request.GET.search %}
                                 <a id="searchclear" class="glyphicon glyphicon-remove" href="{% url 'component_library' %}"></a>
@@ -82,8 +82,9 @@
                         {% if component.description %}{{ component.description }}{% else %}<span class="not-provided">No description provided.</span>{% endif %}
                         <div>{% for tag in component.tags.all %}<span class="component-tag"><a href="{% url 'component_library' %}?search={{ tag.label }}">{{ tag.label }}</a></span> {% endfor %}</div>
                     </div>
-                    <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
-                        <label for="comp_comparison_{{ forloop.counter }}"></label><input type="checkbox" id="comp_comparison_{{ forloop.counter }}" name="compareCheckbox" onchange="addCheck()" value="{{ component.id }}">
+                    <div id="" aria-label="Select component to compare" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+                        {% comment %} <label for="comp_comparison_{{ forloop.counter }}" aria-label="Checkbox to select component"></label> {% endcomment %}
+                        <input aria-label="Checkbox for selecting a component" type="checkbox" id="comp_comparison_{{ forloop.counter }}" name="compareCheckbox" onchange="addCheck()" value="{{ component.id }}">
                     </div>
                     <div id="" class="pull-right col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
                         <span class="pull-right">{% if component.get_control_impl_smts_prototype_count > 0 %}{{ component.get_control_impl_smts_prototype_count }} control{{ component.get_control_impl_smts_prototype_count|pluralize }}</span>{% else %}
