@@ -4,7 +4,7 @@ from guardian.admin import GuardedModelAdmin
 from django_json_widget.widgets import JSONEditorWidget
 import django.contrib.auth.admin as contribauthadmin
 from jsonfield import JSONField
-from .models import User, Organization, OrganizationalSetting, Folder, Project, ProjectMembership, Portfolio, Support, \
+from .models import User, Organization, OrganizationalSetting, Folder, Invitation, Project, ProjectMembership, Portfolio, Support, \
     Tag, Asset, ProjectAsset
 from notifications.models import Notification
 
@@ -136,6 +136,57 @@ class FolderAdmin(admin.ModelAdmin):
     }
 
 
+class InvitationAdmin(admin.ModelAdmin):
+    list_display = ('to_user', 'to_email', 'into_project', 'email_invitation_code', 'from_user', 'sent_at')
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
+
+    # from_user = models.ForeignKey(User, related_name="invitations_sent", on_delete=models.CASCADE,
+    #                               help_text="The User who sent the invitation.")
+    # from_project = models.ForeignKey(Project, related_name="invitations_sent", on_delete=models.CASCADE,
+    #                                  help_text="The Project within which the invitation exists.", blank=True, null=True)
+    # from_portfolio = models.ForeignKey(Portfolio, related_name="portfolio_invitations_sent", on_delete=models.CASCADE,
+    #                                    help_text="The Portfolio within which the invitation exists.", blank=True,
+    #                                    null=True)
+
+    # # what is the recipient being invited to?
+    # into_project = models.BooleanField(default=False,
+    #                                    help_text="Whether the user being invited is being invited to join from_project.")
+    # target_content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    # target_object_id = models.PositiveIntegerField()
+    # target = GenericForeignKey('target_content_type', 'target_object_id')
+    # target_info = JSONField(blank=True, help_text="Additional information about the target of the invitation.")
+
+    # # who is the recipient of the invitation?
+    # to_user = models.ForeignKey(User, related_name="invitations_received", blank=True, null=True,
+    #                             on_delete=models.CASCADE,
+    #                             help_text="The user who the invitation was sent to, if to an existing user.")
+    # to_email = models.CharField(max_length=255, blank=True, null=True,
+    #                             help_text="The email address the invitation was sent to, if to a non-existing user.")
+
+    # # personalization
+    # text = models.TextField(blank=True, help_text="The personalized text of the invitation.")
+
+    # # what state is this invitation in?
+    # sent_at = models.DateTimeField(blank=True, null=True,
+    #                                help_text="If the invitation has been sent by email, when it was sent.")
+    # accepted_at = models.DateTimeField(blank=True, null=True,
+    #                                    help_text="If the invitation has been accepted, when it was accepted.")
+    # revoked_at = models.DateTimeField(blank=True, null=True,
+    #                                   help_text="If the invitation has been revoked, when it was revoked.")
+
+    # # what resulted from this invitation?
+    # accepted_user = models.ForeignKey(User, related_name="invitations_accepted", blank=True, null=True,
+    #                                   on_delete=models.CASCADE,
+    #                                   help_text="The user that accepted the invitation (i.e. if the invitation was by email address and an account was created).")
+
+    # # random string to generate unique code for recipient
+    # email_invitation_code = models.CharField(max_length=64, blank=True,
+    #                                          help_text="For emails, a unique verification code.")
+
+
+
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ('id', 'recipient', 'actor', 'level', 'target', 'unread', 'public', 'emailed')
     readonly_fields = ('id',)
@@ -201,7 +252,7 @@ admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(OrganizationalSetting, OrganizationalSettingAdmin)
 
 admin.site.register(Folder, FolderAdmin)
-
+admin.site.register(Invitation, InvitationAdmin)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(ProjectMembership, ProjectMembershipAdmin)
 admin.site.register(Portfolio, PortfolioAdmin)
