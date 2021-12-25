@@ -237,14 +237,16 @@ function authoring_tool_save_question() {
 
 function authoring_tool_delete_question() {
   if (!confirm("Are you sure you want to delete this question?")) return;
+  var data = $('#question_authoring_tool form').serializeArray();
+  if (q_authoring_tool_state.task) {
+    data.push( { name: "task", value: q_authoring_tool_state.task } );
+  }
+  data.push( { name: "question", value: q_authoring_tool_state.current_question } );
+  data.push( { name: "delete", value: 1 } );
   ajax_with_indicator({
-      url: "/tasks/_authoring_tool/edit-question",
+      url: "/tasks/_authoring_tool/edit-question2",
       method: "POST",
-      data: {
-        task: q_authoring_tool_state.task,
-        question: q_authoring_tool_state.current_question,
-        delete: 1
-      },
+      data: data,
       keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
       success: function(res) {
         // Modal can stay up until the redirect finishes.
