@@ -90,7 +90,6 @@
         <h2>
             {{ element.name }} System Component
         </h2>
-        {% comment %}  {% endcomment %}
         {% if catalog.catalog_key_display %}
           <h3 id="catalog-key-display">
             {{ catalog.catalog_key_display }}
@@ -164,7 +163,7 @@
                                 </span>
                             {% endif %}
                           <span class="pull-right">
-                            <a role="button" class="glyphicon glyphicon-pencil" style="color: #aaa;"  data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body"onclick="$('#document-{{ forloop.counter }}-title').css('background-color','#f4f5f8');$('#document-{{ forloop.counter }}-title').css('display','none');"></a>
+                            <a role="button" class="glyphicon glyphicon-pencil" style="color: #aaa;" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body"onclick="$('#document-{{ forloop.counter }}-title').css('background-color','#f4f5f8');$('#document-{{ forloop.counter }}-title').css('display','none');"></a>
                           </span>
                           {% if smt.remarks %}
                             <details>
