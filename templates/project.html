@@ -25,36 +25,6 @@
     /*box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);*/
   }
 
-  {% if layout_mode == "rows" %}
-    .question-column {
-      padding: 0px 30px 0px 30px;
-  }
-  {% endif %}
-  {% if layout_mode == "columns" %}
-    .question-column h2 {
-      color: black;
-      margin: 5px 0 10px 0;
-      text-align: center;
-    }
-
-  .question-group {}
-
-    .question-group h3 {
-      font-size: inherit;
-      font-weight: bold;
-    }
-
-    .question-group > .row {
-      margin: 5px 0;
-    }
-
-  .question-icon {
-    width: 30px;
-    float: left !important;
-    margin: 4px 0 5px 8px;
-  }
-
-  {% else %}
   .question-group {
     margin: 0px 0 20px 0;
     padding-top: 0px;
@@ -96,13 +66,11 @@
   .question .question-title {
     margin-top: .5em;
     color: #222;
-
   }
 
   .question-title {
     text-align: center;
     margin: 0px 0px 0px -60px;
-
   }
 
   .question-title:hover span {display:none}
@@ -110,11 +78,6 @@
                                 font-weight: bold;
                                 font-style: italic;
   }
-
-.question-title-style { 
-  font-size: 1.2em;
-}
-
 
   .question-status {
     margin: 12px auto 20px auto;
@@ -126,7 +89,6 @@
     font-size: 14px;
     line-height: 128%;
   }
-  {% endif %}
 
   .question .question-title {
     line-height: 124%;
@@ -150,15 +112,6 @@
   }
   #project-members .action {
     font-size: 85%;
-  }
-
-  .authoring-tool-hidden {
-    display: none; /* hidden by default */
-  }
-  .authoring-tool-edit-question {
-    position: absolute;
-    right: 0;
-    color: #31708f;
   }
 
   /* New styles for project dashboard elements */
@@ -203,7 +156,7 @@
 
 {% block body_content %}
 
-    <div class="row" style="max-width: 1200px; text-align: center;">
+    <div class="row hidden" style="max-width: 1200px; text-align: center;">
       <h3 id="project-title" class="question-group-title hr" style="margin-left: 50px; font-size: 1.5em;">
         <span></span>
         &nbsp;&nbsp;
@@ -270,78 +223,8 @@
     </div>
     -->
 
-
-  {% if enable_experimental_evidence %}
-    <!-- <div style="text-align: right;"><a href="#">view more</a></div> -->
-    <!--
-    <div class="row">
-      <div class="col-md-12">
-        <div>
-          <table style="width:100%;">
-            <tr style="border-bottom:1px solid #ccc;">
-              <td>
-                <span style="font-size:1.3em;">Project Timeline</span>
-              </td>
-              <td>
-                <span style="display:block; text-align: right; font-size:1em; color:#262626;"><strong>Start:</strong> 10/14/20&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<strong>Status:</strong> 65% @  12/18/20&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<strong>Projected Completion:</strong> 01/22/21</span>
-              </td>
-            </tr>
-            <tr>
-              <td colspan="2" style="width:100%;">
-                <table style="background:#E1F8E2; width:100%; margin-top:1em;">
-                  <tr>
-                    <td style="background:#B2E0B2; border-right:2px solid #fff; padding:5px; ">&nbsp;</td>
-                    <td style="background:#B2E0B2; border-right:2px solid #fff; padding:5px;">&nbsp;</td>
-                    <td style="background:#B2E0B2; border-right:2px solid #fff; padding:5px;">&nbsp;</td>
-                    <td style="background:#E1F8E2; border-right:2px solid #fff; padding:5px;">&nbsp;</td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-    </div>
-    -->
-    <div class="row" style="margin-top:0.3em;">
-      <div class="col-md-4">
-        <div style="padding:10px 0 40px 0;">
-          <span class="status-section-header">Description</span>
-            <p>
-                This system provides important services to the organization.
-                This system provides important services to the organization.
-                This system provides important services to the organization... (<a href="#">view more</a>)
-            </p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div style="padding:10px 0 10px 0;">
-          <span class="status-section-header">To do next</span>
-            <ul style="list-style-type: none;">
-              <li><input type="checkbox"></input><span class="input-todo">Review OSCAL import</span></li>
-              <li><input type="checkbox"></input><span class="input-todo">Approve CISCO ASA Firewall component</span></li>
-              <li><input type="checkbox"></input><span class="input-todo">Export OSCAL for Jeff at InitTech</span></li>
-                {# <li><input type="checkbox"></input><span class="input-todo">Submit SSP</span></li>#}
-            </ul>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div style="padding:10px 0 40px 0;">
-          <span class="status-section-header">Recently changed</span>
-            <ul>
-              <li>Tiffany edited CISCO ASA Firewall component</li>
-              <li>1 component updated. (<a href="#">view changes</a>)</li>
-              <li>2 components added. (<a href="#">view additions</a>)</li>
-              <li>John left <a href="#">a comment</a> on your Project. </li>
-            </ul>
-        </div>
-      </div>
-    </div>
-  {% endif %}
   <div class="col-md-12"><p>&nbsp;</p></div>
     <div class="row">
-      <!-- <div class="col-sm-12" class="project-row-style"> -->
-        <!-- <span class="status-section-header">Questionnaires / Compliance App</span> -->
         {% if project.root_task.module.spec.introduction %}
             {#<p class="project-text">#}
               {#{{project.root_task.render_introduction|safe}}#}
@@ -353,21 +236,13 @@
           <h2>Activate App</h2>
           <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
         {% endif %}
-      <!-- </div> -->
     </div>
     <div class="row" style="max-width: 1200px;">
-    {% with ncolumns=columns|length %}
-    {% for column in columns %}
-      <div class="col-md-{{12|div:ncolumns|floatformat:0}}">
+      <div class="col-md-12">
         <div class="question-column">
-            {% if column.title %}
-              <h2 class="question-column-title">{{column.title}}</h2>
-            {% endif %}
-
-            {% for group in column.groups %}
+            {% for group in question_groups.groups %}
             {% if group.title %}<div><a id="{{group.title}}"></a>&nbsp;</div>{% endif %}
             <div class="question-group">
-
               {% if group.title %}
               <h3 class="question-group-title hr">
                 <span></span>
@@ -377,19 +252,13 @@
                 <span></span>
               </h3>
               {% endif %}
-
               <div class="row">
-
               {% for q in group.questions %}
                 <div id="question-{{q.question.key}}"
                   {% if q.task  %}data-task-id="{{q.task.id}}"{% endif %}
-                  class="
-                    {# The layout of the project page is either a grid of components or a vertical list of components. #}
-                    {% if layout_mode == "grid" %}col-sm-3 col-lg-2{% else %}col-xs-12{% endif %}
-                    question
-                    "
-                  style="width:700px;"
-                    >
+                  class="col-xs-12 question"
+                  style="width:760px;"
+                >
 
                     {# The user may not have permission to actually start a Task, however. If not, show the same UI but without the form element that actually makes the request to start the Task. #}
 
@@ -421,62 +290,8 @@
                       {% endif %}
                     {% endif %}
 
-                    {# Once again, different HTML depending on the layout mode being used. For rows, start a new Bootstrap row and put the icon in the first column div. #}
-                    {% if layout_mode == "rows" %}
-                      <div class="row">
-                      <div class="col-sm-2">
-                    {% endif %}
-
-                    {% if authoring_tool_enabled %}
-                      {# Pencil icon to edit this question. #}
-                      <div class="authoring-tool-edit-question authoring-tool-hidden" data-key="{{q.question.key}}">
-                        <span class="glyphicon glyphicon-pencil"></span>
-                      </div>
-                    {% endif %}
-
-                    {% if not q.hide_icon %}
-                    <div class="question-icon project-question-icon" style="display: none;">
-                        {# Show a checkmark if the question has been answered, can only be answered once (i.e. is a module-type question), and its Task has been completed. #}
-                        <div class="project-new-task">
-                          {% if not q.can_start_new_task and q.task.is_finished %}
-                            <span class="glyphicon glyphicon-ok project-glyphicon-ok"></span>
-                          {% endif %}
-                        </div>
-
-                        {# Select and show an icon. #}
-                        <img
-                          {# If the question has been answered, can only be answered once (i.e. is a module-type question), its Task comes with its own icon, and the question specification allows the use of that icon ('app_overrides_name_and_icon' is not set), then use it. #}
-                          {% if not q.can_start_new_task and q.task.get_app_icon_url and q.question.spec.app_overrides_name_and_icon is None %}
-                          src="{{q.task.get_app_icon_url}}"
-
-                          {# If the view computed an icon to show, show it. It's probably the icon from the question's specification. #}
-                          {% elif q.icon %}
-                          src="{{q.icon}}"
-
-                          {# Fall back to a shopping cart (if this question redirects/redirected to the Apps Catalog) or a default icon if this is just a Module. #}
-                          {% elif not q.question.spec.protocol %}
-                          src="{% static "img/default_app_icon.png" %}"
-                          {% else %}
-                          src="{% static "img/default_cart_icon_sm.png" %}"
-                          {% endif %}
-
-                          title="{{q.question.spec.title}}"
-                          class="img-responsive"
-                          alt="App Icon">
-                    </div>
-                    {% endif %}
-
-                    {# Once again, different HTML depending on the layout mode being used. For row mode, move to the second column for the question's title. #}
-                    {% if layout_mode == "rows" %}
-                      </div> <!-- /col -->
-                      <div class="col-sm-9">
-                    {% endif %}
-
-                    {# The label for the icon is the title of the question in the question's specification. #}
                     <div class="question-title">
-                      <span class="question-title-style" tabindex="0" onkeypress="handleEnter(event)">
-                        {{q.question.spec.title}}
-                      </span>
+                      <span>{{q.question.spec.title}}</span>
                       {% if q.can_start_new_task and q.question.spec.type == "module-set" %}
                         <span class="glyphicon glyphicon-plus pull-right"></span>
                       {% endif %}
@@ -484,21 +299,27 @@
                       <div class="question-status">
                         {% with task=q.task %}
                           {% if task.is_finished %}
-                          <div class="project-status-finished">(completed)</div>
+                            <div class="">Finished</div>
                           {% elif task.is_started %}
-                          <div class="project-status-inprogress">(in progress)</div>
+                            <div class="">In progress</div>
                           {% else %}
-                          <div class="project-status-not-started">(not started)</div>
+                            <div class="">Not started</div>
+
+                            {% if q.module.spec.output|length > 0 %}
+                              <p><br>
+                                {# If task started we can link artifacts on task finished page, otherwise we can only know artifacts exist #}
+
+                                {{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }} will be generated:
+
+                                {% for artif in q.module.spec.output %}
+                                  {{ artif.title }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                              </p>
+                            {% endif %}
                           {% endif %}
                         {% endwith %}
                       </div>
                     </div>
-
-                    {# Once again, different HTML depending on the layout mode being used. For row mode, end the column and the row. #}
-                    {% if layout_mode == "rows" %}
-                      </div> <!-- /col -->
-                      </div> <!-- /row -->
-                    {% endif %}
 
                     {# If the user had permission to start a task and we started an 'a' or 'form' element, end it. #}
                     {% if can_start_task %}
@@ -509,40 +330,33 @@
                       {% endif %}
                     {% endif %}
 
-                  {# Show invitations and discussions for this question below the icon and label. #}
-
-                  <div class="question-body">
-                      {# If the user is a guest participant in a discussion inside this question, link to this discussion. They can't view the task directly. (?) #}
-                      {% if q.discussions %}
-                      <div>
-                        <div><strong>Discussions:</strong></div>
-                        {% for d in q.discussions %}
-                          <div><a href="{{d.get_absolute_url}}">{{d.attached_to.question.spec.title}}</a></div>
-                        {% endfor %}
-                      </div>
+                    {% if q.task.is_started or q.task.is_finished %}
+                    <p class="" style="text-align: center; margin-bottom:12px;">
+                      {% if q.module.spec.output|length > 0 %}
+                        {# If task started we can link artifacts on task finished page, otherwise we can only know artifacts exist #}
+                        {% if q.task %}
+                          <a href="{{q.task.get_absolute_url}}/finished">{{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }} available</a>:
+                        {% else %}
+                        {% endif %}
+                        {% for artif in q.module.spec.output %}
+                          {{ artif.title }}{% if not forloop.last %}, {% endif %}
+                          {% endfor %}
                       {% endif %}
-                  </div> <!-- /.question-body -->
+                    </p>
+                    {% endif %}
+
                 </div> <!-- /#question-__.question -->
               {% endfor %} {# question #}
               </div> <!-- /row -->
-            </div> <!-- /question-group -->
+            </div>
             {% endfor %} {# group #}
-
-        </div> <!-- /question-column -->
-      </div> <!-- /col -->
-    {% endfor %} {# column #}
-    {% endwith %}
-    </div> <!-- /row for columns -->
-  <!-- </div> -->
-<!-- </div> -->
+        </div> <!-- end .question-column -->
+      </div>
+    </div>
 {% endblock %}
 
 {% block modals %}
 {% include "controls/import_project_modal.html" %}
-{% if authoring_tool_enabled %}
-{# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
-{% include "authoring-tool-modal.html" %}
-{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -550,12 +364,6 @@
 <script>
 var project_invitation_info = {{send_invitation|json}};
 
-function handleEnter(e){
-  var keycode = (e.keycode ? e.keycode : e.which);
-  if(keycode == '13'){
-    document.activeElement.click();
-  }
-}
 $(function() {
   set_state_from_url_fragment();
   $(window).on('hashchange', set_state_from_url_fragment);
@@ -646,50 +454,5 @@ function set_state_from_url_fragment() {
   }
 }
 
-function delete_project() {
-  show_modal_confirm(
-    "Delete Project",
-    "Are you sure you want to delete this project? All information will be permanently deleted.",
-    "Delete",
-    function() {
-      ajax_with_indicator({
-       url: '{% url "delete_project" project.id %}',
-       method: "POST",
-       success: function(res) {
-         // redirect to home to see other projects
-         window.location = res.redirect;
-       }
-      });
-    }
-  )
-}
-
-function make_admin(is_admin, user_id, user_name) {
-  show_modal_confirm(
-    (is_admin ? "Make Project Administrator" : "Revoke Administrator Privilege"),
-    "Do you want to "
-    + (is_admin ? "make" : "revoke the administrator privilege from")
-    + " "
-    + user_name
-    + (is_admin ? " an administrator" : "")
-    + " for this project?",
-    (is_admin ? "Make Admin" : "Revoke Privilege"),
-    function() {
-      ajax_with_indicator({
-       url: '{% url "make_revoke_project_admin" project.id %}',
-       method: "POST",
-       data: {
-         user: user_id,
-         is_admin: is_admin ? "true" : false
-       },
-       success: function(res) {
-         // reload page to show changes in UI
-         window.location.reload();
-       }
-      });
-    }
-  )
-  return false;
-}
 </script>
 {% endblock %}
