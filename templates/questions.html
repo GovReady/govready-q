@@ -189,11 +189,12 @@ Question editor
   <div class="col-md-2">
 
       <h2 style="font-weight:bold; padding-top:0; margin:0;">
-        {{ module.app.catalog_metadata.title }}
+        {{ module.app.catalog_metadata.title }}&nbsp;&nbsp;<a onclick="show_edit_appversion_modal('{{ module.id }}', '{{ module.app.catalog_metadata.title }}', '{{ module.app.catalog_metadata.description.short }}', '{{ module.app.version_number }}'); return false;" style="cursor: pointer;"><span class="glyphicon glyphicon-pencil"></span></a>
         {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
-      </h2><span style="font-size:1em;">Version {{ module.app.version_number }}</span>
+      </h2>
+      <div style="font-size:0.8em;">{{ module.app.catalog_metadata.description.short }}</div>
+      <div style="font-size:0.8em;">Version: {{ module.app.version_number }}</div> 
     <br />  <br /><span class="header-modules-head">Included modules</span>
-
 
     {% with app=module.app %}
       {% for m in app_modules  %}
@@ -213,7 +214,7 @@ Question editor
         <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> module contains <strong>{{ module_questions|length }}</strong> question{{ module_questions|pluralize }}
           {% if module.spec.output and module.spec.output|length > 0 %} and <strong>{{module.spec.output|length }}</strong>  artifact{{module.spec.output|length|pluralize }}{% endif %}
         </h3></div>
-    <div class="col-md-2"><button type="button" class="btn btn-success pull-right" data-dismiss="modal">Add a new question</button></div>
+    <div class="col-md-2 hidden"><button type="button" class="btn btn-success pull-right" data-dismiss="modal">Add a new question</button></div>
     </div>
 
     <h3>Questions</h3>
@@ -283,9 +284,59 @@ Question editor
 </div>
 
 <script>
+  // function show_edit_appversion_modal() {
+  //   var m = $('#appversion_authoring_tool');
+  //   m.modal();
+  // }
+
+  function show_edit_appversion_modal(module_id,title,description,version) {
+
+    document.getElementById("module_id").value = module_id;
+    document.getElementById("appversion_title").value = title;
+    document.getElementById("appversion_description").value = description;
+    document.getElementById("appversion_version").value = version;
+
+    $('#appversion_authoring_tool').modal();
+
+    // $('#submit-btn').on('click', (e) =>{
+    //   e.preventDefault();
+    //   alert('is_submitting');
+    //   var formElm = $(this);
+    //   var appversion_id = formElm.find('input[name="appversion_id"]').val();
+    //   var appversion_title = formElm.find('input[name="appversion_title"]').val();
+    //   var appversion_version = formElm.find('input[name="appversion_version"]').val();
+
+    //   ajax_with_indicator({
+    //       url: "/tasks/_authoring_tool/edit-appversion",
+    //       method: "POST",
+    //       data: {
+    //         id: appversion_id,
+    //         title: appversion_title,
+    //         version: appversion_version
+    //       },
+    //       keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect or reload
+    //       success: function(res) {
+    //         location.reload();
+    //       }
+    //   });
+    //   // callback(document.getElementById("appversion_title").value,document.getElementById("appversion_version").value);
+    // });
+  }
+  function hide_edit_appversion_modal(){
+    $('#appversion_authoring_tool').modal('hide');
+  }
+  function show_edit_appversion_modal_error(errorMessage){
+    $("#error-alert").html(errorMessage);
+    $('#error-alert').fadeIn();
+  }
+
+
+</script>
+
+<script>
 $('.question-form').on('submit', function(e) {
   e.preventDefault();
-  var formElm = $(this)
+  var formElm = $(this);
   var q_id = formElm.find('input[name="q_id"]').val();
   var q_key = formElm.find('input[name="q_key"]').val();
   var q_choices = formElm.find('textarea[name="q_choices"]').val();
