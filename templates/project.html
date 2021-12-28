@@ -309,8 +309,11 @@
                           {% else %}
                             <div class="">status: Not started</div>
 
+                            <p><br>
+                              Answer {% if q.module.questions.all|length > 1 %}up to{% endif %} {{ q.module.questions.all|length }} question{{ q.module.questions.all|pluralize }}.
+                            </p>
                             {% if q.module.spec.output|length > 0 %}
-                              <p><br>
+                              <p>
                                 {# If task started we can link artifacts on task finished page, otherwise we can only know artifacts exist #}
 
                                 This module prepares {{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }}:
