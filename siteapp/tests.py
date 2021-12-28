@@ -462,7 +462,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
     def _new_project(self):
         self.browser.get(self.url("/projects"))
 
-        wait_for_sleep_after(lambda: self.click_element("#new-project"))
+        wait_for_sleep_after(lambda: self.click_element("#new-project-link-from-projects"))
 
         var_sleep(1)
         # Click Add Button
@@ -1619,7 +1619,7 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self._new_project()
         # On project page?
         # wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
-        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h1"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h2"))
 
         # mini-dashboard content
         self.assertInNodeText("controls", "#status-box-controls")
@@ -1634,14 +1634,14 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         # click project button
         wait_for_sleep_after(lambda: self.click_element("#btn-project-home"))
         # wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
-        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h1"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h2"))
         # test components
         self.click_element('#status-box-components')
         wait_for_sleep_after(lambda: self.assertInNodeText("Selected components", ".systems-selected-items"))
         # click project button
         wait_for_sleep_after(lambda: self.click_element("#btn-project-home"))
         # wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
-        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h1"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h2"))
         # test poams
         # TODO: Restore tests if #status-box-poam is displayed
         # self.click_element('#status-box-poams')
