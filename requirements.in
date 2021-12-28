@@ -65,7 +65,6 @@ Unidecode # GNU General Public License
 wordcloud # MIT License
 numpy==1.21.5 # BSD 3-Clause "New" or "Revised" License
 
-
 # Python Packages Developed by GovReady and/or Josh
 rtyaml # CC0
 email-validator # CC0
