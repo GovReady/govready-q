@@ -54,7 +54,7 @@ window.projectMenu = (data) => {
                                             <span className="glyphicon glyphicon-pencil" style={{ fontSize: '14px', color: '#aaa', cursor: 'pointer' }}
                                                 onClick={() => show_edit_project_modal()}></span>
                                         </h2>
-                                        <span class="sidebardark-project-details">  Project ID: {data.project.id}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;System ID: {data.project.system.id}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Version: {data.project.portfolio.version}</span>
+                                        <span class="sidebardark-project-details">  Project ID: {data.project.id}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;System ID: {data.project.system.id}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Version: {data.project.root_task.module.spec.version}</span>
                                         <br/>
                                         <h3 class="sidebardark-head">Portfolio: <span class="sidebardark-head-title">{data.project.portfolio.title}</span></h3>
                                     </Grid>
