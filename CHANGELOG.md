@@ -9,6 +9,9 @@ v0.9.11.11-dev (December xx, 2021)
 
 * Simplify task progress history. Only display questions of current module. Only colorize to glyphicons.
 * Enable adding component control statement from System selected component.
+* Switch to "I want to..." language on landing page.
+* Align module text left and add numbers to project page.
+* Add big button back to project home page on module summary page.
 
 **Bug fixes**
 

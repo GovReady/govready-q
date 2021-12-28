@@ -49,12 +49,16 @@
     padding-top: .5em;
     border-radius: 2px; /* good for highlighting */
     /*box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);*/
-
+    /*border-left: 6px solid #999999;*/
   }
 
-  .question:hover {
+  .question-finished {
+    border-left: 6px solid #88BB88;
+  }
+
+  /*.question:hover {
     background-color: #F6F7F7;
-  }
+  }*/
 
   .question .question-icon {
     margin: 0 auto;
@@ -69,8 +73,8 @@
   }
 
   .question-title {
-    text-align: center;
-    margin: 0px 0px 0px -60px;
+    text-align: left;
+    margin: 0px 0px 0px 40px;
   }
 
   .question-title:hover span {display:none}
@@ -256,7 +260,7 @@
               {% for q in group.questions %}
                 <div id="question-{{q.question.key}}"
                   {% if q.task  %}data-task-id="{{q.task.id}}"{% endif %}
-                  class="col-xs-12 question"
+                  class="col-xs-12 question {% if q.task.is_finished %}question-finished{% endif %}"
                   style="width:760px;"
                 >
 
@@ -291,7 +295,7 @@
                     {% endif %}
 
                     <div class="question-title">
-                      <span>{{q.question.spec.title}}</span>
+                      <span style="font-weight:bold;">{{ forloop.counter }}. {{q.question.spec.title}}</span>
                       {% if q.can_start_new_task and q.question.spec.type == "module-set" %}
                         <span class="glyphicon glyphicon-plus pull-right"></span>
                       {% endif %}
@@ -299,17 +303,17 @@
                       <div class="question-status">
                         {% with task=q.task %}
                           {% if task.is_finished %}
-                            <div class="">Finished</div>
+                            <div class="">status: Finished</div>
                           {% elif task.is_started %}
-                            <div class="">In progress</div>
+                            <div class="">status: In progress</div>
                           {% else %}
-                            <div class="">Not started</div>
+                            <div class="">status: Not started</div>
 
                             {% if q.module.spec.output|length > 0 %}
                               <p><br>
                                 {# If task started we can link artifacts on task finished page, otherwise we can only know artifacts exist #}
 
-                                {{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }} will be generated:
+                                This module prepares {{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }}:
 
                                 {% for artif in q.module.spec.output %}
                                   {{ artif.title }}{% if not forloop.last %}, {% endif %}
@@ -331,11 +335,11 @@
                     {% endif %}
 
                     {% if q.task.is_started or q.task.is_finished %}
-                    <p class="" style="text-align: center; margin-bottom:12px;">
+                    <p class="" style="margin-left: 40px; margin-bottom:12px;">
                       {% if q.module.spec.output|length > 0 %}
                         {# If task started we can link artifacts on task finished page, otherwise we can only know artifacts exist #}
                         {% if q.task %}
-                          <a href="{{q.task.get_absolute_url}}/finished">{{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }} available</a>:
+                          <a href="{{q.task.get_absolute_url}}/finished">This module has {{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }} available</a>:
                         {% else %}
                         {% endif %}
                         {% for artif in q.module.spec.output %}
