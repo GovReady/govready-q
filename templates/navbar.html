@@ -61,9 +61,9 @@
             <span class="glyphicon glyphicon-cog"></span>
           </a>
           <ul class="dropdown-menu">
-            <li><a href="/settings" id="menu-settings" aria-label="GovReady-Q settings" tooltip="GovReady-Q settings"><span class="glyphicon glyphicon-cog" aria-label="Settings"></span> GovReady-Q settings</a></li>
+            <li><a href="/settings" id="menu-settings" aria-label="GovReady-Q settings" target="_blank" tooltip="GovReady-Q settings"><span class="glyphicon glyphicon-cog" aria-label="Settings"></span> GovReady-Q settings</a></li>
             {% if user.is_staff %}
-              <li><a href="{{settings.SITE_ROOT_URL}}/admin" id="menu-settings" aria-label="Database administration" tooltip="Database administration"><span class="glyphicon glyphicon-cog" aria-label="Database administration"></span> Database administration</a></li>
+              <li><a href="{{settings.SITE_ROOT_URL}}/admin" id="menu-settings" aria-label="Database administration" target="_blank" tooltip="Database administration"><span class="glyphicon glyphicon-cog" aria-label="Database administration"></span> Database administration</a></li>
             {% endif %}
           </ul>
         </li>
