@@ -2639,16 +2639,3 @@ def update_project_asset(request, project_id, asset_id):
     import json
     response_data = json.loads(serializers.serialize('json', [asset]))[0]
     return JsonResponse({"status": "ok", "data": response_data})
-
-
-# def warning_page(request):
-#     """Warning Message Page"""
-
-#     # logger.info(
-#     #     event="portfolio_list",
-#     #     user={"id": request.user.id, "username": request.user.username}
-#     # )
-
-#     return render(request, "warning_message.html", {
-#         "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None,
-#     })
