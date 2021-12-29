@@ -194,8 +194,24 @@ Question editor
       </h2>
       <div style="font-size:0.8em;">{{ module.app.catalog_metadata.description.short }}</div>
       <div style="font-size:0.8em;">Version: {{ module.app.version_number }}</div> 
-    <br />  <br /><span class="header-modules-head">Included modules</span>
 
+     <br /><br />
+    <!-- Display app.yaml project module -->
+    {% with app=module.app %}
+      {% for m in app_modules  %}
+        {% if m.spec.type == 'project' %}
+        <a href="/tasks/module/{{m.id}}/questions" style="text-decoration:none;"><div class="leftbox {% if module.id == m.id %}current-module{% endif %}">
+          Main Project Template Module (app.yaml)<br /><span class="tot_q">{{ m.questions.all|length }} module{{ m.questions.all|pluralize }}</span>
+          {% if m.spec.output and m.spec.output|length > 0 %}&nbsp;<span class="tot_q">{{ m.spec.output|length }} artifact{{ m.spec.output|pluralize }}</span>{% endif %}
+            </div></a>
+        {% endif %}
+      {% endfor %}
+    {% endwith %}
+
+    <br />
+    <span class="header-modules-head">Included modules</span>
+
+    <!-- Display project other modules -->
     {% with app=module.app %}
       {% for m in app_modules  %}
         {% if m.spec.type != 'project' %}
@@ -211,13 +227,24 @@ Question editor
   <div class="col-md-10" style="padding-left:2em;">
     <div class="row" style="margin-bottom:1.5em;">
     <div class="col-md-10">
-        <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> module contains <strong>{{ module_questions|length }}</strong> question{{ module_questions|pluralize }}
-          {% if module.spec.output and module.spec.output|length > 0 %} and <strong>{{module.spec.output|length }}</strong>  artifact{{module.spec.output|length|pluralize }}{% endif %}
-        </h3></div>
+        {% if module.spec.type == 'project' %}
+          <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> main project template contains <strong>{{ module_questions|length }}</strong> module{{ module_questions|pluralize }}
+            {% if module.spec.output and module.spec.output|length > 0 %} and <strong>{{module.spec.output|length }}</strong>  artifact{{module.spec.output|length|pluralize }}{% endif %}
+          </h3>
+        {% else %}
+          <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> module contains <strong>{{ module_questions|length }}</strong> question{{ module_questions|pluralize }}
+            {% if module.spec.output and module.spec.output|length > 0 %} and <strong>{{module.spec.output|length }}</strong>  artifact{{module.spec.output|length|pluralize }}{% endif %}
+          </h3>
+        {% endif %}
+    </div>
     <div class="col-md-2 hidden"><button type="button" class="btn btn-success pull-right" data-dismiss="modal">Add a new question</button></div>
     </div>
 
-    <h3>Questions</h3>
+    {% if module.spec.type == 'project' %}
+      <h3>Modules</h3>
+    {% else %}
+      <h3>Questions</h3>
+    {% endif %}
     <table class="question_grid"><tr><th class="edit_col">Edit</th><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
       {% for q in module_questions %}
         <tr class="question-row">

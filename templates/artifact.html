@@ -220,9 +220,9 @@ Question editor
       {% csrf_token %}
       <div class="modal-body">
           <div class="form-group">
-            <label for="at_m_id" class="col-sm-1 control-label">module_id</label>
+            <label for="at_m_id" class="col-sm-1 control-label hidden">module_id</label>
             <div class="col-sm-5">
-              <input id="at_m_id" name="module_id" type="text" class="form-control" value="{{ module.id }}">
+              <input id="at_m_id" name="module_id" type="hidden" class="form-control" value="{{ module.id }}">
             </div>
           </div>
           <div class="form-group">

@@ -5,6 +5,10 @@ GovReady-Q Release Notes
 v0.9.11.11-dev (December xx, 2021)
 ---------------------------------
 
+**Feature changes**
+
+* Ability to add modules in new authoring tool.
+
 **UI changes**
 
 * Simplify task progress history. Only display questions of current module. Only colorize to glyphicons.
@@ -13,10 +17,12 @@ v0.9.11.11-dev (December xx, 2021)
 * Align module text left and add numbers to project page.
 * Add big button back to project home page on module summary page.
 * Edit AppVersion title, version, and description in new authoring tool.
+* Reinstate Database Administration opening in new browser tab.
 
 **Bug fixes**
 
 * Stop scrubching of progress-project-area-wrapper on question page.
+* Always make sure output param exists in all modules that get edited.
 
 
 v0.9.11.10-dev (December xx, 2021)
