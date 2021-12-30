@@ -253,9 +253,9 @@ Question editor
               <input type="hidden" name="q_key" value="{{q.key}}">
               <textarea class="hidden-field" name="q_spec_obj">{{q.spec|json}}</textarea>
               <textarea class="hidden-field" name="m_spec_obj">{{module.spec|json}}</textarea>
-              <textarea class="hidden-field" name="answer_type_modules">"[{% for m in q.module.get_referenceable_modules %}
-                { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
-                {% endfor %}]"</textarea>
+              <textarea class="hidden-field" name="answer_type_modules">[{% for m in q.module.get_referenceable_modules %}
+                { "id": "{{m.id}}", "title": "{{m.title|escapejs}} ({{m.module_name|escapejs}})" }{% if not forloop.last %},{% endif %}
+                {% endfor %}]</textarea>
               <textarea class="hidden-field" name="autocomplete_questions">{ {% for q in q.module.get_questions %}
                 "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}}</textarea>
               <textarea class="hidden-field" name="q_choices">{{q.choices_as_csv}}</textarea>
@@ -372,19 +372,14 @@ $('.question-form').on('submit', function(e) {
                       choices: q_choices,
                       answer_type_module_id: null
                     }
-  console.log('questions:');
-  console.log(questions);
   var m_spec_obj = JSON.parse(formElm.find('textarea[name="m_spec_obj"]').val());
-
-  // module and module-set questions that we wont support moving forward
-  // answer_type_modules = JSON.parse(formElm.find('input[name="answer_type_modules"]').val());
+  answer_type_modules = JSON.parse(formElm.find('textarea[name="answer_type_modules"]').val());
   // autocomplete_questions = JSON.parse(formElm.find('input[name="autocomplete_questions"]').val());
 
-  // TODO remove task: key as not needed
   init_authoring_tool({
     module: m_spec_obj,
     questions: questions,
-    answer_type_modules: [],
+    answer_type_modules: answer_type_modules,
     autocomplete_questions: {}
   });
 

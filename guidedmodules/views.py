@@ -2021,6 +2021,7 @@ def authoring_edit_question2(request):
         # as in the Question.spec["module-id"] field for validation and serialization
         # to YAML on disk. The value "/app/" is used when a protocol ID is specified
         # instead (which is handled above).
+        # import ipdb; ipdb.set_trace()
         question.answer_type_module = None
         if spec["type"] in ("module", "module-set") \
          and request.POST.get("module-id") not in (None, "", "/app/"):
