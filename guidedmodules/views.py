@@ -1877,8 +1877,16 @@ def authoring_new_question2(request):
 
     if module.spec.get("type") == "project":
         # Adding a module question to top level of appversion
+
+        # Find unique module name among appversion module, modulequestion identifiers
         module_count = Module.objects.get(pk=9).app.modules.all().count()
         entry = "new_module_" + str(module_count)
+        # Avoid DB duplicates for Module, ModuleQuestion
+        while Module.objects.filter(app=module.app,module_name=entry).exists():
+            entry = "new_module_" + str( int(entry.replace("new_module_","")) + 1)
+        while ModuleQuestion.objects.filter(key=entry,module__module_name=entry).exists():
+            entry = "new_module_" + str( int(entry.replace("new_module_","")) + 1)
+
         # Make a new modular spec
         mspec = {"id": f"{entry}",
                  "title": entry.replace("_"," ").title(),
@@ -1897,7 +1905,7 @@ def authoring_new_question2(request):
         spec = {
             "id": entry,
             "type": "module",
-            "title": f"New Module {module_count}",
+            "title": entry.replace("_"," ").title(),
             "module-id": module_id,
             "group": group,
             "output": []
