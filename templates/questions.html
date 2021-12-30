@@ -188,12 +188,26 @@ Question editor
 <div class="row" style="width: 100%;  margin: auto; ">
   <div class="col-md-2">
 
-      <h2 style="font-weight:bold; padding-top:0; margin:0;">
-        {{ module.app.catalog_metadata.title }}&nbsp;&nbsp;<a onclick="show_edit_appversion_modal('{{ module.id }}', '{{ module.app.catalog_metadata.title }}', '{{ module.app.catalog_metadata.description.short }}', '{{ module.app.version_number }}'); return false;" style="cursor: pointer;"><span class="glyphicon glyphicon-pencil"></span></a>
-        {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
-      </h2>
-      <div style="font-size:0.8em;">{{ module.app.catalog_metadata.description.short }}</div>
-      <div style="font-size:0.8em;">Version: {{ module.app.version_number }}</div> 
+    <h2 style="font-weight:bold; padding-top:0; margin:0;">
+      {{ module.app.catalog_metadata.title }}&nbsp;&nbsp;<a onclick='console.log("{{module.app.catalog_metadata.description.short}}");show_edit_appversion_modal("{{ module.id }}", "{{ module.app.catalog_metadata.title }}", "{{ module.app.catalog_metadata.description.short }}", "{{ module.app.version_number }}"); return false;' style="cursor: pointer;"><span class="glyphicon glyphicon-pencil"></span></a>
+      {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
+    </h2>
+    <div style="font-size:0.8em;">{{ module.app.catalog_metadata.description.short }}</div>
+    <div style="font-size:0.8em;">Version: {{ module.app.version_number }}</div>
+
+    <br /><br />
+    <!-- Display app.yaml project module -->
+    {% with app=module.app %}
+      {% for m in app_modules  %}
+        {% if m.spec.type == 'project' %}
+        <a href="/tasks/module/{{m.id}}/questions" style="text-decoration:none;"><div class="leftbox {% if module.id == m.id %}current-module{% endif %}">
+          Main Project Template Module (app.yaml)<br /><span class="tot_q">{{ m.questions.all|length }} module{{ m.questions.all|pluralize }}</span>
+          {% if m.spec.output and m.spec.output|length > 0 %}&nbsp;<span class="tot_q">{{ m.spec.output|length }} artifact{{ m.spec.output|pluralize }}</span>{% endif %}
+            </div></a>
+        {% endif %}
+      {% endfor %}
+    {% endwith %}
+
     <br />  <br /><span class="header-modules-head">Included modules</span>
 
     {% with app=module.app %}
@@ -210,14 +224,25 @@ Question editor
   </div>
   <div class="col-md-10" style="padding-left:2em;">
     <div class="row" style="margin-bottom:1.5em;">
-    <div class="col-md-10">
-        <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> module contains <strong>{{ module_questions|length }}</strong> question{{ module_questions|pluralize }}
-          {% if module.spec.output and module.spec.output|length > 0 %} and <strong>{{module.spec.output|length }}</strong>  artifact{{module.spec.output|length|pluralize }}{% endif %}
-        </h3></div>
-    <div class="col-md-2 hidden"><button type="button" class="btn btn-success pull-right" data-dismiss="modal">Add a new question</button></div>
+      <div class="col-md-10">
+          {% if module.spec.type == 'project' %}
+            <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> main project template contains <strong>{{ module_questions|length }}</strong> module{{ module_questions|pluralize }}
+              {% if module.spec.output and module.spec.output|length > 0 %} and <strong>{{module.spec.output|length }}</strong>  artifact{{module.spec.output|length|pluralize }}{% endif %}
+            </h3>
+          {% else %}
+            <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> module contains <strong>{{ module_questions|length }}</strong> question{{ module_questions|pluralize }}
+              {% if module.spec.output and module.spec.output|length > 0 %} and <strong>{{module.spec.output|length }}</strong>  artifact{{module.spec.output|length|pluralize }}{% endif %}
+            </h3>
+          {% endif %}
+      </div>
+      <div class="col-md-2 hidden"><button type="button" class="btn btn-success pull-right" data-dismiss="modal">Add a new question</button></div>
     </div>
 
-    <h3>Questions</h3>
+    {% if module.spec.type == 'project' %}
+      <h3>Modules</h3>
+    {% else %}
+      <h3>Questions</h3>
+    {% endif %}
     <table class="question_grid"><tr><th class="edit_col">Edit</th><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
       {% for q in module_questions %}
         <tr class="question-row">
@@ -228,9 +253,9 @@ Question editor
               <input type="hidden" name="q_key" value="{{q.key}}">
               <textarea class="hidden-field" name="q_spec_obj">{{q.spec|json}}</textarea>
               <textarea class="hidden-field" name="m_spec_obj">{{module.spec|json}}</textarea>
-              <textarea class="hidden-field" name="answer_type_modules">"[{% for m in q.module.get_referenceable_modules %}
-                { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
-                {% endfor %}]"</textarea>
+              <textarea class="hidden-field" name="answer_type_modules">[{% for m in q.module.get_referenceable_modules %}
+                { "id": "{{m.id}}", "title": "{{m.title|escapejs}} ({{m.module_name|escapejs}})" }{% if not forloop.last %},{% endif %}
+                {% endfor %}]</textarea>
               <textarea class="hidden-field" name="autocomplete_questions">{ {% for q in q.module.get_questions %}
                 "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}}</textarea>
               <textarea class="hidden-field" name="q_choices">{{q.choices_as_csv}}</textarea>
@@ -289,13 +314,11 @@ Question editor
   //   m.modal();
   // }
 
-  function show_edit_appversion_modal(module_id,title,description,version) {
-
+  function show_edit_appversion_modal(module_id, title, description, version) {
     document.getElementById("module_id").value = module_id;
     document.getElementById("appversion_title").value = title;
     document.getElementById("appversion_description").value = description;
     document.getElementById("appversion_version").value = version;
-
     $('#appversion_authoring_tool').modal();
 
     // $('#submit-btn').on('click', (e) =>{
@@ -347,19 +370,14 @@ $('.question-form').on('submit', function(e) {
                       choices: q_choices,
                       answer_type_module_id: null
                     }
-  console.log('questions:');
-  console.log(questions);
   var m_spec_obj = JSON.parse(formElm.find('textarea[name="m_spec_obj"]').val());
-
-  // module and module-set questions that we wont support moving forward
-  // answer_type_modules = JSON.parse(formElm.find('input[name="answer_type_modules"]').val());
+  answer_type_modules = JSON.parse(formElm.find('textarea[name="answer_type_modules"]').val());
   // autocomplete_questions = JSON.parse(formElm.find('input[name="autocomplete_questions"]').val());
 
-  // TODO remove task: key as not needed
   init_authoring_tool({
     module: m_spec_obj,
     questions: questions,
-    answer_type_modules: [],
+    answer_type_modules: answer_type_modules,
     autocomplete_questions: {}
   });
 

@@ -627,13 +627,16 @@ def save_answer(request, task, answered, context, __):
     # Return the response.
     return response
 
-# TODO: Add access control
+@login_required
 def show_module_questions(request, module_id):
 
     module = Module.objects.select_related('app').get(pk=module_id)
+    module_questions = ModuleQuestion.objects.filter(module=module).order_by('definition_order')
+
     app = module.app
     app_modules = app.modules.order_by('id').all()
-    module_questions = ModuleQuestion.objects.filter(module=module).order_by('definition_order')
+    # TODO: Does user have permission to edit this module
+    # User must be admin or have change_appversion permission
 
     context = {
         "module": module,
@@ -1867,36 +1870,95 @@ def authoring_new_question2(request):
 
     # Find a new unused question identifier.
     question = get_object_or_404(ModuleQuestion.objects.select_related('module'), id=request.POST['question_id'])
+    group = question.spec['group']
     module = question.module
 
-    ids_in_use = set(module.questions.values_list("key", flat=True))
-    entry = 0
-    while "q" + str(entry) in ids_in_use: entry += 1
-    entry = "q" + str(entry)
-    # Make a new spec.
     # import ipdb; ipdb.set_trace()
 
-    spec = {
-        "id": entry,
-        "type": "text",
-        "title": "New Question Title",
-        "prompt": "Enter some text.",
-    }
-
-    # Make a new question instance.
-    question_new = ModuleQuestion(
-        module=module,
-        key=entry,
-        definition_order=question.definition_order+1,
-        spec=spec
+    if module.spec.get("type") == "project":
+        # Adding a module question to top level of appversion
+        module_count = Module.objects.get(pk=9).app.modules.all().count()
+        entry = "new_module_" + str(module_count)
+        # Make a new modular spec
+        mspec = {"id": f"{entry}",
+                 "title": entry.replace("_"," ").title(),
+                 "output": []
+                 }
+        # Add a new module
+        new_module = Module(
+            source=module.app.source,
+            app=module.app,
+            module_name=f"{entry}",
+            spec=mspec
         )
-    question_new.save()
+        new_module.save()
+        module_id = new_module.id
+        # Add new ModuleQuestion for module as question related to AppVersion
+        spec = {
+            "id": entry,
+            "type": "module",
+            "title": f"New Module {module_count}",
+            "module-id": module_id,
+            "group": group,
+            "output": []
+            # "protocol": ["choose-a-module-or-enter-a-protocol-id"],
+        }
+        question_new = ModuleQuestion(
+            module=module,
+            key=entry,
+            definition_order=question.definition_order+1,
+            answer_type_module=new_module,
+            spec=spec
+            )
+        question_new.save()
+        # Creating ordinary question for new mdoule
+        spec = {
+            "id": f"first_question",
+            "type": "text",
+            "title": "New Question Title",
+            "prompt": "Enter some text.",
+        }
+        # Make a new question instance.
+        question_new = ModuleQuestion(
+            module=new_module,
+            key="new_question",
+            definition_order=0,
+            spec=spec
+            )
+        question_new.save()
 
-    # Re-number question definition order that come after current question
-    for tmq in list(module.questions.order_by("definition_order")):
-        if tmq.definition_order > question.definition_order and tmq.id != question_new.id:
-            ModuleQuestion.objects.filter(pk=tmq.id).update(definition_order=tmq.definition_order+1)
-            # TODO fix N+1 issue
+        # Re-number question definition order that come after current question
+        for tmq in list(module.questions.order_by("definition_order")):
+            if tmq.definition_order > question.definition_order and tmq.id != question_new.id:
+                ModuleQuestion.objects.filter(pk=tmq.id).update(definition_order=tmq.definition_order+1)
+
+    else:
+        # Creating ordinary question
+        ids_in_use = set(module.questions.values_list("key", flat=True))
+        entry = 0
+        while "q" + str(entry) in ids_in_use: entry += 1
+        entry = "q" + str(entry)
+        spec = {
+            "id": entry,
+            "type": "text",
+            "title": "New Question Title",
+            "prompt": "Enter some text.",
+        }
+
+        # Make a new question instance.
+        question_new = ModuleQuestion(
+            module=module,
+            key=entry,
+            definition_order=question.definition_order+1,
+            spec=spec
+            )
+        question_new.save()
+
+        # Re-number question definition order that come after current question
+        for tmq in list(module.questions.order_by("definition_order")):
+            if tmq.definition_order > question.definition_order and tmq.id != question_new.id:
+                ModuleQuestion.objects.filter(pk=tmq.id).update(definition_order=tmq.definition_order+1)
+                # TODO fix N+1 issue
 
     # Clear cache...
     from .module_logic import clear_module_question_cache
@@ -1959,6 +2021,7 @@ def authoring_edit_question2(request):
         # as in the Question.spec["module-id"] field for validation and serialization
         # to YAML on disk. The value "/app/" is used when a protocol ID is specified
         # instead (which is handled above).
+        # import ipdb; ipdb.set_trace()
         question.answer_type_module = None
         if spec["type"] in ("module", "module-set") \
          and request.POST.get("module-id") not in (None, "", "/app/"):
@@ -2060,6 +2123,9 @@ def authoring_edit_artifact(request):
         # Update correct artifact
         counter = 0
         artifact_id_matched = False
+        # Make sure an output parameter exists
+        if 'output' not in module.spec:
+            module.spec['output'] = []
         for output in module.spec['output']:
             if output['id'] == artifact_id:
                 artifact_id_matched = True
