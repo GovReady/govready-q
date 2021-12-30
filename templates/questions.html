@@ -188,14 +188,14 @@ Question editor
 <div class="row" style="width: 100%;  margin: auto; ">
   <div class="col-md-2">
 
-      <h2 style="font-weight:bold; padding-top:0; margin:0;">
-        {{ module.app.catalog_metadata.title }}&nbsp;&nbsp;<a onclick="show_edit_appversion_modal('{{ module.id }}', '{{ module.app.catalog_metadata.title }}', '{{ module.app.catalog_metadata.description.short }}', '{{ module.app.version_number }}'); return false;" style="cursor: pointer;"><span class="glyphicon glyphicon-pencil"></span></a>
-        {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
-      </h2>
-      <div style="font-size:0.8em;">{{ module.app.catalog_metadata.description.short }}</div>
-      <div style="font-size:0.8em;">Version: {{ module.app.version_number }}</div> 
+    <h2 style="font-weight:bold; padding-top:0; margin:0;">
+      {{ module.app.catalog_metadata.title }}&nbsp;&nbsp;<a onclick="show_edit_appversion_modal('{{ module.id }}', '{{ module.app.catalog_metadata.title }}', '{{ module.app.catalog_metadata.description.short }}', '{{ module.app.version_number }}'); return false;" style="cursor: pointer;"><span class="glyphicon glyphicon-pencil"></span></a>
+      {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
+    </h2>
+    <div style="font-size:0.8em;">{{ module.app.catalog_metadata.description.short }}</div>
+    <div style="font-size:0.8em;">Version: {{ module.app.version_number }}</div>
 
-     <br /><br />
+    <br /><br />
     <!-- Display app.yaml project module -->
     {% with app=module.app %}
       {% for m in app_modules  %}
@@ -208,10 +208,8 @@ Question editor
       {% endfor %}
     {% endwith %}
 
-    <br />
-    <span class="header-modules-head">Included modules</span>
+    <br />  <br /><span class="header-modules-head">Included modules</span>
 
-    <!-- Display project other modules -->
     {% with app=module.app %}
       {% for m in app_modules  %}
         {% if m.spec.type != 'project' %}
@@ -226,18 +224,18 @@ Question editor
   </div>
   <div class="col-md-10" style="padding-left:2em;">
     <div class="row" style="margin-bottom:1.5em;">
-    <div class="col-md-10">
-        {% if module.spec.type == 'project' %}
-          <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> main project template contains <strong>{{ module_questions|length }}</strong> module{{ module_questions|pluralize }}
-            {% if module.spec.output and module.spec.output|length > 0 %} and <strong>{{module.spec.output|length }}</strong>  artifact{{module.spec.output|length|pluralize }}{% endif %}
-          </h3>
-        {% else %}
-          <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> module contains <strong>{{ module_questions|length }}</strong> question{{ module_questions|pluralize }}
-            {% if module.spec.output and module.spec.output|length > 0 %} and <strong>{{module.spec.output|length }}</strong>  artifact{{module.spec.output|length|pluralize }}{% endif %}
-          </h3>
-        {% endif %}
-    </div>
-    <div class="col-md-2 hidden"><button type="button" class="btn btn-success pull-right" data-dismiss="modal">Add a new question</button></div>
+      <div class="col-md-10">
+          {% if module.spec.type == 'project' %}
+            <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> main project template contains <strong>{{ module_questions|length }}</strong> module{{ module_questions|pluralize }}
+              {% if module.spec.output and module.spec.output|length > 0 %} and <strong>{{module.spec.output|length }}</strong>  artifact{{module.spec.output|length|pluralize }}{% endif %}
+            </h3>
+          {% else %}
+            <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> module contains <strong>{{ module_questions|length }}</strong> question{{ module_questions|pluralize }}
+              {% if module.spec.output and module.spec.output|length > 0 %} and <strong>{{module.spec.output|length }}</strong>  artifact{{module.spec.output|length|pluralize }}{% endif %}
+            </h3>
+          {% endif %}
+      </div>
+      <div class="col-md-2 hidden"><button type="button" class="btn btn-success pull-right" data-dismiss="modal">Add a new question</button></div>
     </div>
 
     {% if module.spec.type == 'project' %}
