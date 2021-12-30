@@ -189,7 +189,7 @@ Question editor
   <div class="col-md-2">
 
     <h2 style="font-weight:bold; padding-top:0; margin:0;">
-      {{ module.app.catalog_metadata.title }}&nbsp;&nbsp;<a onclick="show_edit_appversion_modal('{{ module.id }}', '{{ module.app.catalog_metadata.title }}', '{{ module.app.catalog_metadata.description.short }}', '{{ module.app.version_number }}'); return false;" style="cursor: pointer;"><span class="glyphicon glyphicon-pencil"></span></a>
+      {{ module.app.catalog_metadata.title }}&nbsp;&nbsp;<a onclick='console.log("{{module.app.catalog_metadata.description.short}}");show_edit_appversion_modal("{{ module.id }}", "{{ module.app.catalog_metadata.title }}", "{{ module.app.catalog_metadata.description.short }}", "{{ module.app.version_number }}"); return false;' style="cursor: pointer;"><span class="glyphicon glyphicon-pencil"></span></a>
       {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
     </h2>
     <div style="font-size:0.8em;">{{ module.app.catalog_metadata.description.short }}</div>
@@ -314,13 +314,11 @@ Question editor
   //   m.modal();
   // }
 
-  function show_edit_appversion_modal(module_id,title,description,version) {
-
+  function show_edit_appversion_modal(module_id, title, description, version) {
     document.getElementById("module_id").value = module_id;
     document.getElementById("appversion_title").value = title;
     document.getElementById("appversion_description").value = description;
     document.getElementById("appversion_version").value = version;
-
     $('#appversion_authoring_tool').modal();
 
     // $('#submit-btn').on('click', (e) =>{
