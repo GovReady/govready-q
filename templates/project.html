@@ -241,8 +241,10 @@
           <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
         {% endif %}
     </div>
+
     <div class="row" style="max-width: 1200px;">
       <div class="col-md-12">
+        <h2>Things to do</h2>
         <div class="question-column">
             {% for group in question_groups.groups %}
             {% if group.title %}<div><a id="{{group.title}}"></a>&nbsp;</div>{% endif %}
