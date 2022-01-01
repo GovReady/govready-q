@@ -1988,7 +1988,7 @@ def authoring_edit_question2(request):
     if request.POST.get("delete") == "1":
         try:
             question.delete()
-            return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url() })
+            return JsonResponse({ "status": "ok", "redirect": reverse('show_module_questions', args=[module.id]) })
         except Exception as e:
             # The only reason it would fail is a protected foreign key.
             return JsonResponse({ "status": "error", "message": "The question #"+request.POST['q_id']+" cannot be deleted because it has been answered in a Project. Contact an administrator to delete." })

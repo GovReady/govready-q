@@ -236,7 +236,7 @@ function authoring_tool_save_question() {
 }
 
 function authoring_tool_delete_question() {
-  if (!confirm("Are you sure you want to delete this question?")) return;
+  if (!confirm("WARNING! CLICKING 'OK' WILL PERMANENTLY DELETE THIS QUESTION (AND ANSWERS) FROM ALL PROJECTS USING THIS TEMPLATE.")) return;
   var data = $('#question_authoring_tool form').serializeArray();
   if (q_authoring_tool_state.task) {
     data.push( { name: "task", value: q_authoring_tool_state.task } );

@@ -576,7 +576,7 @@ class ModuleQuestion(BaseModel):
         help_text="An integer giving the order in which this question is defined by the Module.")
     spec = JSONField(help_text="Module definition data.", load_kwargs={'object_pairs_hook': OrderedDict})
     answer_type_module = models.ForeignKey(Module, blank=True, null=True, related_name="is_type_of_answer_to",
-                                           on_delete=models.PROTECT,
+                                           on_delete=models.CASCADE,
                                            help_text="For module and module-set typed questions, this is the Module that Tasks that answer this question must be for.")
 
     class Meta:
@@ -646,9 +646,9 @@ class Task(BaseModel):
                                 help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
     title_override = models.CharField(max_length=256, blank=True, null=True,
                                       help_text="The title of this Task if overriding the computed instance-name or Module.title default.")
-    editor = models.ForeignKey(User, related_name="tasks_editor_of", on_delete=models.PROTECT,
+    editor = models.ForeignKey(User, related_name="tasks_editor_of", on_delete=models.CASCADE,
                                help_text="The user that has primary responsibility for completing this Task.")
-    module = models.ForeignKey(Module, on_delete=models.PROTECT, help_text="The Module that this Task is answering.")
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, help_text="The Module that this Task is answering.")
     notes = models.TextField(blank=True, help_text="Notes set by the user about why they are completing this task.")
     deleted_at = models.DateTimeField(blank=True, null=True, db_index=True,
                                       help_text="If 'deleted' by a user, the date & time the Task was deleted.")
@@ -1730,7 +1730,7 @@ class Task(BaseModel):
 class TaskAnswer(BaseModel):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="answers",
                              help_text="The Task that this TaskAnswer is a part of.")
-    question = models.ForeignKey(ModuleQuestion, on_delete=models.PROTECT,
+    question = models.ForeignKey(ModuleQuestion, on_delete=models.CASCADE,
                                  help_text="The question (within the Task's Module) that this TaskAnswer is answering.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by editors working on this question.")
@@ -2033,7 +2033,7 @@ class TaskAnswerHistory(BaseModel):
     taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE,
                                    help_text="The TaskAnswer that this is an answer to.")
 
-    answered_by = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that provided this answer.")
+    answered_by = models.ForeignKey(User, on_delete=models.CASCADE, help_text="The user that provided this answer.")
     answered_by_method = models.CharField(max_length=3, choices=[("web", "Web"), ("imp", "Import"), ("api", "API"),
                                                                  ("del", ("Task Deletion"))],
                                           help_text="How this answer was submitted, via the website by a user, via the Export/Import mechanism, or via an API programmatically.")

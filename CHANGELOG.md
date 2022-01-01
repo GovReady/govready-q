@@ -8,6 +8,7 @@ v0.9.11.11-dev (December xx, 2021)
 **Feature changes**
 
 * Ability to add modules in new authoring tool.
+* Allow deleting of questions, modules in new authoring tool by removing protection on foreign key references.
 
 **UI changes**
 
