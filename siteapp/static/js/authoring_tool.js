@@ -27,12 +27,18 @@ function init_authoring_tool(state) {
   $('#authoring_tool_qmoduletype').append(optgroup_apps);
   optgroup_apps.append('<option value="/app/">Based on Protocol ID (Enter Next)</option>');
   if (state.answer_type_modules.length > 0) {
+    var module_question = Object.keys(state.questions)[0];
+    var module_question_module_id = state.questions[module_question].spec['module-id'];
     var optgroup_modules = $('<optgroup label="Modules in This App"></optgroup>');
     $('#authoring_tool_qmoduletype').append(optgroup_modules);
     state.answer_type_modules.forEach(function(item) {
       var opt = $("<option/>");
       opt.attr('value', item.id);
       opt.text(item.title);
+      // select current module
+      if (item.id == module_question_module_id) {
+        opt.attr('selected', 'selected');
+      }
       optgroup_modules.append(opt);
     });
   }
