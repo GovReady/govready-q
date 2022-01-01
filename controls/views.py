@@ -1327,7 +1327,7 @@ def component_library_component(request, element_id):
     impl_smts = natsorted(impl_smts, key=lambda x: x.sid)
 
     # Pagination
-    obj_paginator = Paginator(impl_smts, 10)
+    obj_paginator = Paginator(impl_smts, 15)
     page_number = request.GET.get('page')
 
     try:
@@ -2091,7 +2091,7 @@ def save_smt(request):
         if new_statement:
             try:
                 statement.producer_element = producer_element
-                if 'system_id' in form_values:
+                if 'system_id' in form_values and len(form_values['system_id']) > 0:
                     # Associate Consumer Element
                     statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
                     statement_msg = "Statement associated with System/Consumer Element."
