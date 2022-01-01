@@ -196,7 +196,6 @@ class SeleniumTest(StaticLiveServerTestCase):
             # else:
             #     print(f"{catalog_key} record found in database")
 
-
     def navigateToPage(self, path):
         self.browser.get(self.url(path))
 
@@ -236,6 +235,10 @@ class SeleniumTest(StaticLiveServerTestCase):
     def find_selected_option(self, css_selector):
         selected_option = self.browser.find_element_by_css_selector(f"{css_selector}")
         return selected_option
+
+    def get_page_title(self):
+        # self.browser.find_element()
+        return "Warning Message - GovReady-Q"
 
     def select_option(self, css_selector, value):
         from selenium.webdriver.support.select import Select
@@ -459,6 +462,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.fill_field("#id_password", password or self.user.clear_password)
         self.click_element("form#login_form button[type=submit]")
 
+        print(2, "======== self.get_page_title():", self.get_page_title())
+        if "Warning Messagex" in self.get_page_title():
+            self.click_element("#btn-agree")
+
+
     def _new_project(self):
         self.browser.get(self.url("/projects"))
 
@@ -532,8 +540,12 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # We should only get the account settings questions on the
         # first login.
         self._login()
+        # Accept warning message
+        wait_for_sleep_after(lambda: self.click_element("#btn-agree"))
         self.browser.get(self.url("/accounts/logout/"))
         self._login()
+        # Accept warning message
+        wait_for_sleep_after(lambda: self.click_element("#btn-agree"))
 
     def test_new_user_account_settings(self):
         # Log in as the user, who is new. Complete the account settings.
@@ -947,7 +959,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
             self.assertEqual(response.context[context], True)
 
         self.assertEqual(response.context["portfolio"].id, portfolio_id)
-
 
     def test_grant_portfolio_access(self):
         # Grant another member access to portfolio

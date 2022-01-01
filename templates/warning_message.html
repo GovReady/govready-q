@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% load bootstrap3 %}
+
+{% load i18n %}
+{% block head_title %}{% trans "Warning Message" %}{% endblock %}
+
 {% block body-wide %}
 <style>
     #warning-message { margin-top:5%; margin-left: 25%; width: 50%; }
