@@ -18,11 +18,14 @@ v0.9.11.11-dev (December xx, 2021)
 * Add big button back to project home page on module summary page.
 * Edit AppVersion title, version, and description in new authoring tool.
 * Reinstate Database Administration opening in new browser tab.
+* Display pagination control btm of component page.
+* Add 'Things to do' text to project.html.
 
 **Bug fixes**
 
 * Stop scrubching of progress-project-area-wrapper on question page.
 * Always make sure output param exists in all modules that get edited.
+* Fix adding statements to components in library.
 
 
 v0.9.11.10-dev (December xx, 2021)
