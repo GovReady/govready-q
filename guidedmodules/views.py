@@ -1870,7 +1870,8 @@ def authoring_new_question2(request):
 
     # Find a new unused question identifier.
     question = get_object_or_404(ModuleQuestion.objects.select_related('module'), id=request.POST['question_id'])
-    group = question.spec['group']
+    if 'group' in question.spec.keys():
+        group = question.spec['group']
     module = question.module
 
     # import ipdb; ipdb.set_trace()
