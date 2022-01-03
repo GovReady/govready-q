@@ -1985,11 +1985,23 @@ def authoring_edit_question2(request):
 
     question = get_object_or_404(ModuleQuestion.objects.select_related('module'), id=request.POST['q_id'])
     module = question.module
+    task_id = request.POST.get('task', None)
+    if task_id:
+        task = get_object_or_404(Task.objects.select_related('project'), id=task_id)
+
     # Delete the question?
     if request.POST.get("delete") == "1":
         try:
             question.delete()
-            return JsonResponse({ "status": "ok", "redirect": reverse('show_module_questions', args=[module.id]) })
+            # Clear cache...
+            from .module_logic import clear_module_question_cache
+            clear_module_question_cache()
+            if task_id:
+                # if coming from editor on a question page, return to project page after deleting question
+                return JsonResponse({ "status": "ok", "redirect": task.project.get_absolute_url() })
+            else:
+                # if coming show_module_questions, return to show_module_questions after deleting question
+                return JsonResponse({ "status": "ok", "redirect": reverse('show_module_questions', args=[module.id]) })
         except Exception as e:
             # The only reason it would fail is a protected foreign key.
             return JsonResponse({ "status": "error", "message": "The question #"+request.POST['q_id']+" cannot be deleted because it has been answered in a Project. Contact an administrator to delete." })
