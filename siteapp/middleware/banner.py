@@ -1,6 +1,7 @@
 from django.http.response import HttpResponseRedirect
 from django.template.exceptions import TemplateDoesNotExist
 from django.template.loader import get_template
+from django.contrib.auth import logout
 
 
 class BannerMiddleware:
@@ -20,9 +21,13 @@ class BannerMiddleware:
         if self.BANNER_ENABLED:
             banner_url = "/warningmessage/"
             
+            if request.user.is_authenticated and request.path == "/decline/":
+                logout(request)
+                return HttpResponseRedirect("/")
+
             if request.user.is_authenticated and request.path != banner_url:
                 if not request.session.get("_banner_checked"):   
-                    return HttpResponseRedirect(banner_url)            
+                    return HttpResponseRedirect(banner_url)  
 
         response = self.get_response(request)
         # Code that is executed in each request after the view is called
