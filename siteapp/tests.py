@@ -674,6 +674,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_login", self.user2.username)
         self.fill_field("#id_password", self.user2.clear_password)
         self.click_element("form button.primaryAction")
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
 
         self.assertRegex(self.browser.title, "I want to answer some questions on Q")  # user is on the project page
         wait_for_sleep_after(lambda: self.click_element('#question-simple_module'))  # go to the task page
