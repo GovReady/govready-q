@@ -236,10 +236,6 @@ class SeleniumTest(StaticLiveServerTestCase):
         selected_option = self.browser.find_element_by_css_selector(f"{css_selector}")
         return selected_option
 
-    def get_page_title(self):
-        # self.browser.find_element()
-        return "Warning Message - GovReady-Q"
-
     def select_option(self, css_selector, value):
         from selenium.webdriver.support.select import Select
         e = self.browser.find_element_by_css_selector(css_selector)
@@ -461,11 +457,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.fill_field("#id_login", username or self.user.username)
         self.fill_field("#id_password", password or self.user.clear_password)
         self.click_element("form#login_form button[type=submit]")
-
-        print(2, "======== self.get_page_title():", self.get_page_title())
-        if "Warning Messagex" in self.get_page_title():
-            self.click_element("#btn-agree")
-
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
 
     def _new_project(self):
         self.browser.get(self.url("/projects"))
@@ -540,12 +533,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # We should only get the account settings questions on the
         # first login.
         self._login()
-        # Accept warning message
-        wait_for_sleep_after(lambda: self.click_element("#btn-agree"))
         self.browser.get(self.url("/accounts/logout/"))
         self._login()
-        # Accept warning message
-        wait_for_sleep_after(lambda: self.click_element("#btn-agree"))
 
     def test_new_user_account_settings(self):
         # Log in as the user, who is new. Complete the account settings.
