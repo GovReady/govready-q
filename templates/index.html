@@ -86,10 +86,8 @@ Welcome to Compliance Automation
 
 {% block scripts %}
 <script>
-  
-{% if request.method == "POST" %}
-
-smooth_scroll_to($('input[name=action][value={{request.POST.action|escapejs}}]').parent('form'));
-{% endif %}
+  {% if request.method == "POST" %}
+    smooth_scroll_to($('input[name=action][value={{request.POST.action|escapejs}}]').parent('form'));
+  {% endif %}
 </script>
 {% endblock %}
