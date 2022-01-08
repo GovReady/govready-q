@@ -2,13 +2,14 @@ GovReady-Q Release Notes
 ========================
 
 
-v0.9.11.11-dev (December xx, 2021)
+v0.9.11.11-dev (January xx, 2022)
 ---------------------------------
 
 **Feature changes**
 
 * Ability to add modules in new authoring tool.
 * Allow deleting of questions, modules in new authoring tool by removing protection on foreign key references.
+* Superusers can see all projects.
 
 **UI changes**
 
@@ -27,6 +28,10 @@ v0.9.11.11-dev (December xx, 2021)
 * Stop scrubching of progress-project-area-wrapper on question page.
 * Always make sure output param exists in all modules that get edited.
 * Fix adding statements to components in library.
+
+**Developer changes**
+
+* Superusers can see all projects.
 
 
 v0.9.11.10-dev (December xx, 2021)
