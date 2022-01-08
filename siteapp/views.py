@@ -447,8 +447,9 @@ def render_app_catalog_entry(appversion, appversions, organization):
             catalog.get("description", {}).get("short", ""),
             catalog.get("description", {}).get("long", ""),
         ]),
-        "icon": None if "icon" not in catalog
-        else image_to_dataurl(appversion.get_asset(catalog["icon"]), 128),
+        # "icon": None if "icon" not in catalog
+        # else image_to_dataurl(appversion.get_asset(catalog["icon"]), 128),
+        "icon": None,
         "protocol": app_module.spec.get("protocol", []) if app_module else [],
 
         # catalog detail page metadata

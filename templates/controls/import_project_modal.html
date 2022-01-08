@@ -6,19 +6,19 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h2 class="modal-title" id="import_project_modal_title">Select a Project</h2>
             </div>
-            <form id="project_import_form" action="{% url 'project_import' project.id %}" onsubmit="show_spinner();" role="form" method="POST">
+            <form id="project_import_form" aria-label="Form for importing projects" action="{% url 'project_import' project.id %}" onsubmit="show_spinner();" role="form" method="POST">
                 {% csrf_token %}
                   <input type="hidden" name="import_name" value=""/>
-                <div class="modal-body">
+                <div class="modal-body" aria-label="Import project form file">
                     {{ import_project_form.file }}
 
-                    <label for="{{ import_project_form.json_content.id_auto }}">{{ import_project_form.json_content.label }}:</label>
+                    <label aria-label="Importing project form" for="{{ import_project_form.json_content.id_auto }}">{{ import_project_form.json_content.label }}:</label>
                     {{ import_project_form.json_content }}
 
                     <div class="modal-footer">
                         <input id="import_project_submit" class="btn btn-success btn-submit" type="submit" value="Import"/>
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                        <img id="import_loading_spinner" src="{% static "img/icons/spinner.gif" %}"/>
+                        <img id="import_loading_spinner" aria-label="Loading Spinner" src="{% static "img/icons/spinner.gif" %}"/>
                     </div>
                 </div>
             </form>

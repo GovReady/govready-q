@@ -12,11 +12,12 @@
 
   #question-debug-links {
     max-width: 80%;
+    color: #666;
   }
 
   #question-history-context {
     font-size: 0.85em;
-    background-color: rgba(255,255,255,0.2);
+    color: #666;
     padding: 8px;
     /*max-width: 40vw;*/
     border-radius: 6px;
@@ -84,7 +85,9 @@
     <div id="context-bar">
       {% if is_admin %}
         <div class="pull-right hidden-xs">
-          <a href="#" onclick="return delete_task();"><span class="glyphicon glyphicon-trash" title="Delete answers" style="color: #BBB;"></span></a>
+          <a href="#" onclick="return delete_task();">
+            <span class="glyphicon glyphicon-trash" title="Delete answers" style="color: #BBB;"></span>
+          </a>
         </div>
       {% endif %}
 

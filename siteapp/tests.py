@@ -462,7 +462,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
     def _new_project(self):
         self.browser.get(self.url("/projects"))
 
-        wait_for_sleep_after(lambda: self.click_element("#new-project"))
+        wait_for_sleep_after(lambda: self.click_element("#new-project-link-from-projects"))
 
         var_sleep(1)
         # Click Add Button
@@ -652,7 +652,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # because the element is not clickable -- it reports a coordinate
         # that's above the button in the site header. Not sure what's
         # happening. So load the modal using Javascript.
-        wait_for_sleep_after(lambda: self.click_element("#btn-show-project-invite"))
+        wait_for_sleep_after(lambda: self.click_element("#menu-btn-show-project-invite"))
         self.browser.execute_script("invite_user_into_project()")
         # Toggle field to invite user by email
         self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
@@ -663,7 +663,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
                                                            "#global_modal"))  # make sure we get a stern message.
         wait_for_sleep_after(lambda: self.click_element("#global_modal button"))  # dismiss the warning.
 
-        wait_for_sleep_after(lambda: self.click_element("#btn-show-project-invite"))  # Re-open the invite box.
+        wait_for_sleep_after(lambda: self.click_element("#menu-btn-show-project-invite"))  # Re-open the invite box.
         self.browser.execute_script("invite_user_into_project()")  # See comment above.
         # Toggle field to invite user by email
 
@@ -707,7 +707,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # But now go back to the project page.
         self.browser.get(project_page)
-        wait_for_sleep_after(lambda: self.click_element("#btn-show-project-invite"))
+        wait_for_sleep_after(lambda: self.click_element("#menu-btn-show-project-invite"))
 
         # Select username "me3"
         wait_for_sleep_after(lambda: self.select_option_by_visible_text('#invite-user-select', "me3"))
@@ -1619,7 +1619,7 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self._new_project()
         # On project page?
         # wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
-        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h1"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h2"))
 
         # mini-dashboard content
         self.assertInNodeText("controls", "#status-box-controls")
@@ -1632,16 +1632,16 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         self.click_element('#status-box-controls')
         wait_for_sleep_after(lambda: self.assertInNodeText("Selected controls", ".systems-selected-items"))
         # click project button
-        wait_for_sleep_after(lambda: self.click_element("#btn-project-home"))
+        wait_for_sleep_after(lambda: self.click_element("#menu-btn-project-home"))
         # wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
-        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h1"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h2"))
         # test components
         self.click_element('#status-box-components')
         wait_for_sleep_after(lambda: self.assertInNodeText("Selected components", ".systems-selected-items"))
         # click project button
-        wait_for_sleep_after(lambda: self.click_element("#btn-project-home"))
+        wait_for_sleep_after(lambda: self.click_element("#menu-btn-project-home"))
         # wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
-        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h1"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h2"))
         # test poams
         # TODO: Restore tests if #status-box-poam is displayed
         # self.click_element('#status-box-poams')
@@ -1670,7 +1670,7 @@ class ProjectPageTests(OrganizationSiteFunctionalTests):
         # Check value changed worked
         self.assertEqual(project.system.get_security_sensitivity_level, fil)
         # Refresh project page
-        self.click_element('#btn-project-home')
+        self.click_element('#menu-btn-project-home')
         # See if project page has changed
         wait_for_sleep_after( lambda: self.assertInNodeText("low", "#systems-security-sensitivity-level") )
         impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)

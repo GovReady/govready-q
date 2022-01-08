@@ -191,10 +191,26 @@ Question editor
 <div class="row" style="width: 100%;  margin: auto; ">
   <div class="col-md-2">
 
-      <h2 style="font-weight:bold; padding-top:0; margin:0;">
-        {{ module.app.catalog_metadata.title }}
-        {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
-      </h2><span style="font-size:1em;">Version {{ module.app.version_number }}</span>
+    <h2 style="font-weight:bold; padding-top:0; margin:0;">
+      {{ module.app.catalog_metadata.title }}&nbsp;&nbsp;<a onclick="show_edit_appversion_modal('{{ module.id }}', '{{ module.app.catalog_metadata.title }}', '{{ module.app.catalog_metadata.description.short }}', '{{ module.app.version_number }}'); return false;" style="cursor: pointer;"><span class="glyphicon glyphicon-pencil"></span></a>
+      {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
+    </h2>
+    <div style="font-size:0.8em;">{{ module.app.catalog_metadata.description.short }}</div>
+    <div style="font-size:0.8em;">Version: {{ module.app.version_number }}</div> 
+
+    <br /><br />
+    <!-- Display app.yaml project module -->
+    {% with app=module.app %}
+      {% for m in app_modules  %}
+        {% if m.spec.type == 'project' %}
+        <a href="/tasks/module/{{m.id}}/questions" style="text-decoration:none;"><div class="leftbox {% if module.id == m.id %}current-module{% endif %}">
+          Main Project Template Module (app.yaml)<br /><span class="tot_q">{{ m.questions.all|length }} module{{ m.questions.all|pluralize }}</span>
+          {% if m.spec.output and m.spec.output|length > 0 %}&nbsp;<span class="tot_q">{{ m.spec.output|length }} artifact{{ m.spec.output|pluralize }}</span>{% endif %}
+            </div></a>
+        {% endif %}
+      {% endfor %}
+    {% endwith %}
+
     <br />  <br /><span class="header-modules-head">Included modules</span>
 
     {% with app=module.app %}
@@ -220,9 +236,9 @@ Question editor
       {% csrf_token %}
       <div class="modal-body">
           <div class="form-group">
-            <label for="at_m_id" class="col-sm-1 control-label">module_id</label>
+            <label for="at_m_id" class="col-sm-1 control-label hidden">module_id</label>
             <div class="col-sm-5">
-              <input id="at_m_id" name="module_id" type="text" class="form-control" value="{{ module.id }}">
+              <input id="at_m_id" name="module_id" type="hidden" class="form-control" value="{{ module.id }}">
             </div>
           </div>
           <div class="form-group">

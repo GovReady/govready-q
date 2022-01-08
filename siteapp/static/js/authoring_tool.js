@@ -27,12 +27,18 @@ function init_authoring_tool(state) {
   $('#authoring_tool_qmoduletype').append(optgroup_apps);
   optgroup_apps.append('<option value="/app/">Based on Protocol ID (Enter Next)</option>');
   if (state.answer_type_modules.length > 0) {
+    var module_question = Object.keys(state.questions)[0];
+    var module_question_module_id = state.questions[module_question].spec['module-id'];
     var optgroup_modules = $('<optgroup label="Modules in This App"></optgroup>');
     $('#authoring_tool_qmoduletype').append(optgroup_modules);
     state.answer_type_modules.forEach(function(item) {
       var opt = $("<option/>");
       opt.attr('value', item.id);
       opt.text(item.title);
+      // select current module
+      if (item.id == module_question_module_id) {
+        opt.attr('selected', 'selected');
+      }
       optgroup_modules.append(opt);
     });
   }
@@ -236,15 +242,17 @@ function authoring_tool_save_question() {
 }
 
 function authoring_tool_delete_question() {
-  if (!confirm("Are you sure you want to delete this question?")) return;
+  if (!confirm("WARNING! CLICKING 'OK' WILL PERMANENTLY DELETE THIS QUESTION (AND ANSWERS) FROM ALL PROJECTS USING THIS TEMPLATE.")) return;
+  var data = $('#question_authoring_tool form').serializeArray();
+  if (q_authoring_tool_state.task) {
+    data.push( { name: "task", value: q_authoring_tool_state.task } );
+  }
+  data.push( { name: "question", value: q_authoring_tool_state.current_question } );
+  data.push( { name: "delete", value: 1 } );
   ajax_with_indicator({
-      url: "/tasks/_authoring_tool/edit-question",
+      url: "/tasks/_authoring_tool/edit-question2",
       method: "POST",
-      data: {
-        task: q_authoring_tool_state.task,
-        question: q_authoring_tool_state.current_question,
-        delete: 1
-      },
+      data: data,
       keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
       success: function(res) {
         // Modal can stay up until the redirect finishes.

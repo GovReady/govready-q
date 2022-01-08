@@ -50,7 +50,7 @@ h3 { font-size: 18px; }
 
 footer { margin-top:60px;
   font-size: .75em;
-  color: #888;
+  color: #555555;
 }
 
 footer .container-fluid {
@@ -121,6 +121,28 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 /* New CSS based on removing inline CSS */
 .btn-sm { width:95%; max-width:200px;  } /* this makes the action buttons all the same width.
 
+/* 508 related */
+.text-muted {color: #555555;}
+.project-settings-desc-item { font-weight:bold;}
+
+.project-status-not-started { color:#444444; font-size:.8em;}
+.project-status-finished {color:#444444; font-size:.8em;}
+.project-status-inprogress {color:#444444; font-size:.8em;}
+
+.glyphicon-pencil:before { color:#555555;}
+
+.navbar-inverse .navbar-nav>li>a { color:#ccc;}
+
+.dropdown-toggle { }
+
+.button-sidebar-react { background: none; border: none; padding:none;}
+
+a:focus-visible {
+  outline: 2px dashed #60BF60;
+}
+
+
+
 /* misc templates */
 .task-progress-project-truncate { margin: 12px auto 12px auto; text-align: center; }
 .task-progress-project-url { color:#444; }
@@ -128,8 +150,8 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 .task-progress-project-question { font-size: 10px; line-height: 120%; padding-left: 2em; color: #222; }
 .task-progress-project-title { color: black; font-size: 1.0em; text-align: left; }
 .task-progress-project-truncate-link { color: black; }
-.task-question-debug-links { color: #999; font-size: 70%; position: fixed; bottom: 12px;}
-.task-question-debug-links a:link { color: #999 }
+.task-question-debug-links { color: #666; font-size: 70%; position: fixed; bottom: 12px;}
+.task-question-debug-links a:link { color: #666 }
 
 .question-source-invitation { margin-bottom: 2em; }
 .question-source-invitation-show { text-align: right; margin-bottom: -1.5em; }
@@ -199,7 +221,7 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 .breadcrumb-link { color: black; }
 .app-header { max-width:968px; margin: auto; padding-top: 30px;}
 .btn-start-project { width:100%;}
-.back-to-link { color: #888; }
+.back-to-link { color: #555555; }
 .app-max-width-row { max-width:968px; margin: auto; }
 .app-information-row { border-top: 1px solid #eee; padding-top: 0px; }
 .app-form-margin { margin: 1em; }
@@ -241,7 +263,7 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 .smidge-left { margin-left: .25em }
 
 .project-settings-glyphicons { margin: 0 1em; }
-.project-settings-header { border-bottom:1px solid #ccc; }
+.project-settings-header { border-bottom:1px solid #ccc; margin-bottom:1.5em; margin-top:1.5em;}
 .project-settings-row { margin: 8px 0 20px 0;}
 .project-settings-description { margin-bottom:8px; }
 .project-settings-rows { margin-top:12px;  }
@@ -297,7 +319,7 @@ form #id_json_content { width: 100%; overflow: auto !important; } /* The !import
 
 /*.component-tag { font-size: 0.7em; color: #999; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; margin-right: 2px; }*/
 .component-tag { font-size: 0.7em; color: #999; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; }
-.component-tag a { color: #999; }
+.component-tag a { color:#555555; }
 .component-state { font-size: 0.8em; color: #444; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; }
 .component-type { font-size: 0.8em; color: #444; padding: 0px 6px 0px 6px; border: 1px solid #bbb; border-radius: 24px; }
 
@@ -308,7 +330,7 @@ form #id_json_content { width: 100%; overflow: auto !important; } /* The !import
 details summary { cursor: pointer; }
 details summary > * { display: inline; }
 
-#common-tab-count, #component-tab-count { display: inline-block; color: #666; background-color: #dedede; border-radius: 20px; line-height: 1; padding: 2px 6px; font-size: 0.8em; font-weight: 600; }
+#common-tab-count, #component-tab-count { display: inline-block; color: #444444; background-color: #eeeeee; border-radius: 20px; line-height: 1; padding: 2px 6px; font-size: 0.8em; font-weight: 600; }
 .component-control-description { white-space: pre-wrap; max-height: 200px !important;overflow-y: scroll; }
 #component-detail-content { border-left:1px solid #ccc; border-right:1px solid #ccc; border-bottom:1px solid #ccc; border-radius: 0; padding: 0 0 8px 12px; }
 /*details > summary::before { content: '▶'; }*/
@@ -333,7 +355,7 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 /* portfolios */
 .portfolio-top { margin-top: 30px; }
 .portfolio-main { float: right; margin: 0 0.5em 0em 5em; }
-.portfolio-small { color: #888; }
+.portfolio-small { color: #555555; font-size:.8em;}
 .portfolio-row { border-top: 1px solid #aaa;padding: 8px 0px 8px 0px; }
 .portfolio-project-link { color: black; }
 .portfolio-project-top { margin-top: 60px; }
@@ -369,7 +391,7 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 .systems-element-name { font-size: 14pt; font-weight: bold;}
 .systems-poam { margin-top: 4px; }
 .systems-poam-glyphicon { margin-top: 6px; }
-.systems-control-catalog { font-size: 0.65em; color:#aaa; border:1px solid #aaa; border-radius: 12px; padding:0px 8px 0px 8px; }
+.systems-control-catalog { font-size: 0.65em; color:#555555; border:1px solid #aaa; border-radius: 12px; padding:0px 8px 0px 8px; }
 
 .pagination {
   white-space: nowrap;
@@ -551,3 +573,12 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
      font-size: .7em;
     color: #777777;
 }
+
+/* dark sidebar styles */
+
+.sidebardark-header { margin:0; color: #F9F9F9; font-size: 1.3em;}
+.sidebardark-head {color: #B9B9B9; font-size:.8em; margin:0;}
+.sidebardark-project-details { color: #D9D9D9; font-size:.7em; margin: 10px 0 20px 0; display:block; border-top:1px solid #B9B9B9; border-bottom:1px solid #B9B9B9; padding:5px 0 5px 0; margin:10px 20px 0 0;}
+.sidebardark-head-title {color: #D9D9D9; }
+
+.sidebardarkheader { border:none; display:block; margin:25px 0 25px 20px; }
