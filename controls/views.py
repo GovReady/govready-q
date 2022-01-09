@@ -1888,6 +1888,28 @@ def editor(request, system_id, catalog_key, cl_id):
         # oscalize key
         cl_id = oscalize_control_id(cl_id)
 
+        # Determine previous and next selected controls
+        selected_controls_info = list(system.root_element.controls.all().values('id','oscal_ctl_id','oscal_catalog_key'))
+        cur_selected_control_index = next((i for i, item in enumerate(selected_controls_info) if (item['oscal_ctl_id'] == cl_id and item['oscal_catalog_key'] == catalog_key)), None)
+        if cur_selected_control_index is not None and cur_selected_control_index < len(selected_controls_info)-1:
+            next_selected_cl_id = selected_controls_info[cur_selected_control_index + 1]['oscal_ctl_id']
+            next_selected_cl_catalog_key = selected_controls_info[cur_selected_control_index + 1]['oscal_catalog_key']
+        elif len(selected_controls_info) > 0:
+            next_selected_cl_id = selected_controls_info[0]['oscal_ctl_id']
+            next_selected_cl_catalog_key = selected_controls_info[0]['oscal_catalog_key']
+        else:
+            next_selected_cl_id = None
+            next_selected_cl_catalog_key = None
+        if cur_selected_control_index is not None and cur_selected_control_index > 0:
+            prev_selected_cl_id = selected_controls_info[cur_selected_control_index - 1]['oscal_ctl_id']
+            prev_selected_cl_catalog_key = selected_controls_info[cur_selected_control_index - 1]['oscal_catalog_key']
+        elif len(selected_controls_info) > 1:
+            prev_selected_cl_id = selected_controls_info[len(selected_controls_info)-1]['oscal_ctl_id']
+            prev_selected_cl_catalog_key = selected_controls_info[len(selected_controls_info)-1]['oscal_catalog_key']
+        else:
+            prev_selected_cl_id = None
+            prev_selected_cl_catalog_key = None
+
         # Build combined statement if it exists
         if cl_id in system.control_implementation_as_dict:
             combined_smt = system.control_implementation_as_dict[cl_id]['combined_smt']
@@ -1913,7 +1935,11 @@ def editor(request, system_id, catalog_key, cl_id):
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": "opencontrol_string",
             "elements": elements,
-            "display_urls": project_context(project)
+            "display_urls": project_context(project),
+            "prev_selected_cl_id": prev_selected_cl_id,
+            "prev_selected_cl_catalog_key": prev_selected_cl_catalog_key,
+            "next_selected_cl_id": next_selected_cl_id,
+            "next_selected_cl_catalog_key": next_selected_cl_catalog_key
         }
         return render(request, "controls/editor.html", context)
     else:

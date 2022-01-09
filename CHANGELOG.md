@@ -22,6 +22,7 @@ v0.9.11.11-dev (January xx, 2022)
 * Reinstate Database Administration opening in new browser tab.
 * Display pagination control btm of component page.
 * Add 'Things to do' text to project.html.
+* Display links to previous and next selected control on System selected control editor page.
 
 **Bug fixes**
 
