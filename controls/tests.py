@@ -194,6 +194,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
             os.remove(self.json_download.name)
         super().tearDown()
 
+    @unittest.skip
     def test_component_download_oscal_json(self):
         self._login()
         url = self.url(f"/controls/components/{self.component.id}")
