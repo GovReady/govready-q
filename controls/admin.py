@@ -35,7 +35,7 @@ class ImportRecordAdmin(admin.ModelAdmin, ExportCsvMixin):
 
 class StatementAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     list_display = ('id', 'sid', 'sid_class', 'producer_element', 'statement_type', 'uuid')
-    search_fields = ('id', 'sid', 'sid_class', 'producer_element', 'uuid')
+    search_fields = ('id', 'sid', 'producer_element__name', 'statement_type')
     actions = ["export_as_csv"]
     readonly_fields = ('created', 'updated', 'uuid')
     formfield_overrides = {
