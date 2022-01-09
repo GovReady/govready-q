@@ -23,12 +23,14 @@ v0.9.11.11-dev (January xx, 2022)
 * Reinstate Database Administration opening in new browser tab.
 * Display pagination control btm of component page.
 * Add 'Things to do' text to project.html.
+* Display links to previous and next selected control on System selected control editor page.
 
 **Bug fixes**
 
 * Stop scrubching of progress-project-area-wrapper on question page.
 * Always make sure output param exists in all modules that get edited.
 * Fix adding statements to components in library.
+* Correctly escape carriage returns in multi-line component descriptions in edit component modal.
 
 **Developer changes**
 
