@@ -497,7 +497,7 @@
         }
 
         function edit_component() {
-          show_edit_component_modal("{{element.name}}","{{element.description}}",(newName, newDescription)=>{
+          show_edit_component_modal("{{element.name}}",`{{element.description}}`,(newName, newDescription)=>{
             ajax_with_indicator({
               url: '{% url "edit_element" element.id %}',
               method: "POST",
