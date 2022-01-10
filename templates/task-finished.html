@@ -54,7 +54,7 @@
 
 <div class="row">
   <div id="focus-area-wrapper" class="col-xs-12 col-sm-12 col-md-9 col-lg-8">
-    <h1 class="task-done">Module Summary</h1>
+    <h1 class="task-done">Module Summary {% if task.title %}- {{ task.title}}{% endif %}</h1>
     {% if top_of_page_output %}
       <div class="task-bottom-margin">
         {{top_of_page_output.html|safe}}
@@ -64,7 +64,7 @@
         {% if previous_page_type == "project" %}
           <p>This module was last updated on {{task.updated|date}}.</p>
         {% elif previous_page_type == "nquestion" %}
-          <p>You've reached the end of the {{ task.title}} module.</p>
+          <p>You've reached the end of the module.</p>
         {% endif %}
       </div>
     {% endif %}
@@ -96,16 +96,26 @@
                         onclick="$(this).submit();" style="cursor: pointer">
                         <input type="hidden" name="q" value="{{task.project.root_task.id}}/{{next_module_spec.id}}">
                     {% endif %}
-                    <div class="btn btn-success">Continue to {{next_module_spec.title}} &raquo;</div>
+                    <a href="{{project.get_absolute_url}}" class="btn btn-success">Return to Project Home {{project.name}} &raquo;</a>
+                    <div class="btn btn-link pull-right">Continue to next module &raquo;</div>
                   </form>
                   <br>
+                {% else %}
+                  <p>
+                    <a href="{{project.get_absolute_url}}" class="btn btn-success">Return to Project Home {{project.name}} &raquo;</a>
+                  </p>
+                    <br />
                 {% endif %}
               </p>
             {% else %}
               {# return to non-project parent task #}
-              <p><a id="return-to-supertask" href="{{answers_question.task.get_absolute_url}}" class="btn btn-success">
+
+              <p>
+                <a href="{{project.get_absolute_url}}" class="btn btn-success">Return to Project Home {{project.name}} &raquo;</a>
+                <a id="return-to-supertask" href="{{answers_question.task.get_absolute_url}}" class="btn btn-success pull-right">
                 Continue Answering {{answers_question.task.title}} &raquo;
               </a></p>
+
             {% endif %}
             {# TODO: Does module-set work correctly? #}
             {% if answers_question.question.spec.type == "module-set" %}
@@ -119,7 +129,9 @@
                 </a>
               </form>
             {% endif %}
+
           {% endif %}
+
         {% else %}
           {# every task, except projects, are now subtasks of other tasks, so this only occurs if a task is a subtask to multiple super-tasks #}
           <p><a href="{{task.project.get_absolute_url}}" class="btn btn-success">

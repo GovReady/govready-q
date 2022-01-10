@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^_authoring_tool/edit-module$', guidedmodules.views.authoring_edit_module),
     url(r'^_authoring_tool/create-app-project$', guidedmodules.views.authoring_create_q),
     url(r'^_authoring_tool/import-appsource$', guidedmodules.views.authoring_import_appsource),
+    url(r'^_authoring_tool/edit-appversion$', guidedmodules.views.authoring_edit_appversion, name="authoring_edit_appversion"),
     url(r'^_upgrade-app$', guidedmodules.views.upgrade_app),
     url(r'^_refresh-output-doc$', guidedmodules.views.refresh_output_doc),
 ]

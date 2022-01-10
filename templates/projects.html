@@ -105,7 +105,7 @@ Your Compliance Projects
 <div class="container">
 
 <div class="project-main">
-  <a id="new-project" href="{% url 'store' %}?start=true" class=" btn btn-success">Start a project</a>
+  <a id="new-project-link-from-projects" href="{% url 'store' %}?start=true" class=" btn btn-success">Start a project</a>
 </div>
 
 <h2 class="">Projects</h2>
@@ -113,16 +113,20 @@ Your Compliance Projects
 {% if projects_access|length < 1 %}
 <p>You do not currently have access to any projects.</p>
 {% else %}
-<p>You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}</p>
-
-<div class="container">
-<div class="row">
-  <div class="col-xs-10 col-md-5"><strong>Project</strong></div>
-  <div class="col-xs-6 col-sm-1"><strong>ID</strong></div>
-  <div class="col-xs-6 col-sm-2"><strong>Portfolio</strong></div>
-  <div class="col-xs-6 col-sm-2"><strong>Role</strong></div>
-  <div class="col-xs-12 col-md-2"><strong>Updated</strong></div>
-</div>
+  {% if user.is_superuser %}
+    <p>You are a Superuser and have access to all {{ projects_access|length }} project{{ projects_access|pluralize }}.</p>
+  {% else %}
+    <p>You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}.</p>
+  {% endif %}
+  <p>&nbsp;</p>
+  <div class="container">
+  <div class="row">
+    <div class="col-xs-10 col-md-5"><strong>Project</strong></div>
+    <div class="col-xs-6 col-sm-1"><strong>ID</strong></div>
+    <div class="col-xs-6 col-sm-2"><strong>Portfolio</strong></div>
+    <div class="col-xs-6 col-sm-2"><strong>My Role</strong></div>
+    <div class="col-xs-12 col-md-2"><strong>Updated</strong></div>
+  </div>
 {% endif %}
 
 {% for project in projects %}

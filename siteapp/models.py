@@ -683,52 +683,58 @@ class Project(TagModelMixin, BaseModel):
         if not user.is_authenticated:
             return projects
 
-        # Add all of the Projects the user is a member of.
-        for pm in ProjectMembership.objects \
-                .filter(user=user) \
-                .filter(**{"project__" + k: v for k, v in filters.items()}) \
-                .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
-                .select_related('project__root_task__module', 'project__portfolio') \
-                .prefetch_related('project__root_task__module'):
-            projects.add(pm.project)
-            if pm.is_admin:
-                # Annotate with whether the user is an admin of the project.
-                pm.project.user_is_admin = True
-
-        # Add projects that the user is the editor of a task in, even if
-        # the user isn't a team member of that project.
-        from guidedmodules.models import Task
-        for task in Task.get_all_tasks_readable_by(user) \
-                .filter(**{"project__" + k: v for k, v in filters.items()}) \
-                .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
-                .order_by('-created') \
-                .select_related('project__root_task__module', 'project__portfolio') \
-                .prefetch_related('project__root_task__module'):
-            projects.add(task.project)
-
-        # Add projects that the user is participating in a Discussion in
-        # as a guest.
-        from discussion.models import Discussion
-        for d in Discussion.objects.filter(guests=user):
-            if d.attached_to is not None:  # because it is generic there is no cascaded delete and the Discussion can become dangling
-                if not filters or d.attached_to.task.project in Project.objects.filter(**filters):
-                    if not excludes or d.attached_to.task.project not in Project.objects.exclude(**filters):
-                        projects.add(d.attached_to.task.project)
-
-        # Add projects the user has permissions for
-        for project in Project.objects.all():
-            user_permissions = get_user_perms(user, project)
-            if len(user_permissions):
+        # Add all projects if user is admin
+        if user.is_superuser:
+            for project in Project.objects.all():
                 projects.add(project)
-
-        # Add projects the user has permissions for through a portfolio
-        for portfolio in Portfolio.objects.prefetch_related('projects').all():
-            user_permissions = get_user_perms(user, portfolio)
-            if len(user_permissions):
-                for project in portfolio.projects.all():
+        else:
+            # Add projects the user has permissions for
+            for project in Project.objects.all():
+                user_permissions = get_user_perms(user, project)
+                if len(user_permissions):
                     projects.add(project)
 
-        # Don't show system projects.
+            # TODO: Remove all of these permissions by setting project permissions
+            # Add all of the Projects the user is a member of.
+            for pm in ProjectMembership.objects \
+                    .filter(user=user) \
+                    .filter(**{"project__" + k: v for k, v in filters.items()}) \
+                    .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
+                    .select_related('project__root_task__module', 'project__portfolio') \
+                    .prefetch_related('project__root_task__module'):
+                projects.add(pm.project)
+                if pm.is_admin:
+                    # Annotate with whether the user is an admin of the project.
+                    pm.project.user_is_admin = True
+
+            # Add projects that the user is the editor of a task in, even if
+            # the user isn't a team member of that project.
+            from guidedmodules.models import Task
+            for task in Task.get_all_tasks_readable_by(user) \
+                    .filter(**{"project__" + k: v for k, v in filters.items()}) \
+                    .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
+                    .order_by('-created') \
+                    .select_related('project__root_task__module', 'project__portfolio') \
+                    .prefetch_related('project__root_task__module'):
+                projects.add(task.project)
+
+            # Add projects that the user is participating in a Discussion in
+            # as a guest.
+            from discussion.models import Discussion
+            for d in Discussion.objects.filter(guests=user):
+                if d.attached_to is not None:  # because it is generic there is no cascaded delete and the Discussion can become dangling
+                    if not filters or d.attached_to.task.project in Project.objects.filter(**filters):
+                        if not excludes or d.attached_to.task.project not in Project.objects.exclude(**filters):
+                            projects.add(d.attached_to.task.project)
+
+            # Add projects the user has permissions for through a portfolio
+            for portfolio in Portfolio.objects.prefetch_related('projects').all():
+                user_permissions = get_user_perms(user, portfolio)
+                if len(user_permissions):
+                    for project in portfolio.projects.all():
+                        projects.add(project)
+
+        # Remove system projects.
         system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
         projects -= system_projects
 

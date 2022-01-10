@@ -28,8 +28,10 @@ docker-compose disable-v2
         * A restart will be required if you modify the values between runs.
      
 2. Start
-    -  `python run.py dev`         : This will run + reuse previously built artifacts (database, files, etc)
-    -  `python run.py dev --clean` : This will run + destroys your existing database and artifacts from previous runs
+    - `python run.py dev`         : This will run + reuse previously built artifacts (database, files, etc)
+    - `python run.py dev --clean` : This will run + destroys your existing database and artifacts from previous runs
+    - `python run.py dev --amd`   : This will run + build for the m1 chipset.  Make sure to change your 
+      environment.json to `"test_browser": "firefox"`
     
 3. Stop
     -  `python run.py remove` : Stops the server but keeps persisted items (database volume, artifacts, etc)

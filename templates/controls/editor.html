@@ -101,10 +101,6 @@
     </style>
 {% endblock %}
 
-<!-- action buttons included from project-base.html -->
-
-<!-- authoring_tool_enabled included from project-base.html -->
-
 {% block body_content %}
     <div class="systems-top">
 
@@ -126,45 +122,47 @@
                 <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
                     <input type="text" name="id" placeholder="Enter control id" title="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
                     <button type="submit" class="btn btn-success">Look up</button>
-                    <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <a href="/">families</a> -->
                 </form>
+                <div id="control-prev-next">
+                    <a href="{% url 'control_editor' system_id=system.id catalog_key=prev_selected_cl_catalog_key cl_id=prev_selected_cl_id %}"
+                       title="Previous System control">&laquo; {{prev_selected_cl_id|upper}}</a>
+                    &nbsp;|&nbsp;
+                    <a href="{% url 'control_editor' system_id=system.id catalog_key=next_selected_cl_catalog_key cl_id=next_selected_cl_id %}"
+                       title="Next System control">{{next_selected_cl_id|upper}} &raquo;</a>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Tab panels -->
-        <div id="tab-content" class="row">
-            <!-- Nav tabs -->
-            <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
-                <li role="presentation"><a href="#control" aria-controls="control" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-book"></span> Control</a></li>
-            </ul>
+    <div role="" class="hidden" id="control" style="">
+        {% if control.title is not None %}
+        <details>
+            <summary>
+                <div id="control-description" class="control-text"><h3>View Control Description</h3></div>
+            </summary>
+            <div class="control-text">{{ control.description }}</div>
+        </details>
 
-            <!-- Tab panels -->
-            <div id="component-detail-content" class="tab-content">
+        <details>
+            <summary>
+                <div id="control-guidance" class="control-text"><h3>View Control Guidance</h3></div>
+            </summary>
+            <div class="control-text">{{ control.guidance }}</div>
+        </details>
 
-                <!-- Tab panel: control -->
-                <div role="tabpanel" class="tab-pane" id="control">
-                    {% if control.title is not None %}
-                        <div class="row" style="width:90%; padding: 0 0 0 1em;">
-                            <div id="control-description" class="control-text"><h3>Control Description</h3>{{ control.description }}</div>
-                            <div id="control-guidance" class="control-text"><h3>Control Guidance</h3>{{ control.guidance }}</div>
-                        </div>
-                    {% else %}
-                        <div id="control-message">
-                            <p>The control {{ control.id }} was not found in the control catalog.</p>
-                        </div>
-                    {% endif %}
-                </div>
+        {% else %}
+            <div id="control-message">
+                <p>The control {{ control.id }} was not found in the control catalog.</p>
+            </div>
+        {% endif %}
+    </div>
 
-                <!-- Tab panel: component control -->
-                <div role="tabpanel" class="tab-pane active" id="component_controls">
-
+    <div>
                     {% if impl_smts_legacy|length > 0 %}
                     <div id="smt-list" class="" style="width: 100%">
                         <p>&nbsp</p>
                         <details>
-                            <summary>&nbsp;<span class="glyphicon glyphicon-eye-open"></span> Read legacy implementation statement from original SSP</summary>
+                            <summary>&nbsp;<span class="glyphicon glyphicon-eye-open"></span>Read legacy implementation statement from original SSP</summary>
                             {% for smt in impl_smts_legacy %}
                             <div id="legacy-panel-{{ forloop.counter }}" class="smt-panel-x" style="border:2px solid #aaddaa; border-radius: 20px;margin-bottom:12px; margin-right:12px; ">
                                 <div class="panel-heading" role="tab" id="legacy-document-{{ forloop.counter }}-title" style="">
@@ -183,7 +181,7 @@
                     {% endif %}
 
                     <div class="row">
-                        <div id="control-description" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 control-text"><h3>{{ impl_smts|length }} associated Componented Control Implementations Statements</h3></div>
+                        <div id="control-description" class="col-md-10 control-text"><h3>{{ impl_smts|length }} associated Componented Control Implementations Statements</h3></div>
                     </div><!-- Needed for proper styling -->
 
                     <div class="row statement-column-headings" style="">
@@ -195,7 +193,7 @@
                     <div id="smt-list" class="" style="width: 100%">
                         <!-- Loop through existing component-control statements -->
                         {% for smt in impl_smts %}
-                            <div id="panel-{{ forloop.counter }}" class="smt-panel">
+                            <div id="panel-{{ forloop.counter }}" class="smt-panel panel-smt">
                                 <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
                                     <div class="row statement-text">
                                       <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
@@ -288,7 +286,7 @@
                                                     <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
                                                     <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
                                                     <div class="form-group">
-                                                        <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
+                                                        <input type="hidden" id="producer_element_id_hidden" name="producer_element_id" value="{{ smt.producer_element.id }}">
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="statement">Part</label>
@@ -333,11 +331,36 @@
                             </div>
                         {% endfor %}
                     </div><!--/smt-list-->
-                </div>
-            </div>
-
-        </div>
     </div>
+
+                    <p>&nbsp;</p>
+                    <div class="row" style="">
+                        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3" style="margin-top:20px;">
+                            <form id="add_component" class="form-inline pull-left" method="post" action="{%  url 'add_system_component' system_id=system.id %}">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
+                                    <input type="hidden" name="redirect_url" value="{% url 'control_editor' system_id=system.id catalog_key=control.catalog_key cl_id=control.id %}">
+                                    <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onchange="$(form).submit();" style="width:190px;">
+                                        <option value="None" selected disabled hidden>Add a component</option>
+                                        {% for component in elements %}
+                                            {% if component not in system.producer_elements %}
+                                                <option value="{{ component.id }}">{{ component.name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                            <h3>
+                                <button type="submit" id="new_component_statement"
+                                        class="small btn btn-md btn-success"
+                                        style="color: white;" onclick="add_smt()">Add component statement</button>
+                            </h3>
+                        </div>
+                        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
+                    </div>
 
 {% endblock %}
 
@@ -353,6 +376,15 @@
     </script>
 
     <script>
+        // Adds statement form to page
+        function add_smt() {
+          var panel_num = $('.panel-smt').length + 1
+          var smt_form = `{% include 'controls/add_producer_form.html' %}`.replace(/panel_num/g, panel_num);
+          $( "#smt-list" ).append(smt_form);
+
+          $('#producer_element_id_to_add').select2();
+
+        }
 
         function save_smt(smt_panel_num) {
             // Save a statement
@@ -370,7 +402,7 @@
                 method: "POST",
                 data: data,
                 indicator_parent: $('#page-content'),
-                keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+                keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
                 success: function (res) {
                     console.log('success');
                     console.log(res);
@@ -378,8 +410,6 @@
                         // Update field values from saved
                         // Initially update a few fields
                         smt_saved = JSON.parse(res['statement']);
-                        console.log("printing smt_saved");
-                        console.log(smt_saved);
                         $('#' + smt_panel_num + ' input[name=smt_id]').val(smt_saved[0]['pk']);
 
                         // If saving first time remove producer_element_name input field
@@ -389,7 +419,6 @@
 
                         // Update panel statement
                         $('#' + smt_panel_num.replace("smt_", "panel-") + ' .panel-heading-smt-body').html(smt_saved[0]['fields']['body']);
-
                         $('#' + smt_panel_num + ' input[name=producer_element_id]').val(smt_saved[0]['fields']['producer_element']);
                         $('#success-msg-' + smt_panel_num).fadeIn().text('Saved');
                         // Update combined statement
@@ -446,8 +475,8 @@
                     });
                 } else {
                     // Remove statement accordian from page
-                    console.log("removing from page " + '#panel-' + smt_panel_num)
-                    $('#panel-' + smt_panel_num.replace("smt_", "")).remove()
+                    console.log("removing from page " + '#panel-' + smt_panel_num);
+                    $('#panel-' + smt_panel_num.replace("smt_", "")).remove();
                 }
             }
         }
@@ -465,6 +494,12 @@
             $('#diff_comparison_' + smt_panel_num).text('Texts are identical.');
         }
 
+    </script>
+    <script>
+        // Convert select field for Add Component to jQuery Select2 box
+        $(document).ready(function() {
+            $('#producer_element_id').select2();
+        });
     </script>
 
 {% endblock %}

@@ -89,7 +89,7 @@ class DiscussionTests(SeleniumTest):
 
     # def _new_project(self):
     #     self.browser.get(self.url("/projects"))
-    #     self.click_element("#new-project")
+    #     self.click_element("#new-project-link-from-projects")
 
     #     # Start a project
     #     wait_for_sleep_after(lambda: self.click_element(".app[data-app='project/simple_project'] .view-app"))
@@ -101,7 +101,7 @@ class DiscussionTests(SeleniumTest):
     def _new_project(self):
         self.browser.get(self.url("/projects"))
 
-        wait_for_sleep_after(lambda: self.click_element("#new-project"))
+        wait_for_sleep_after(lambda: self.click_element("#new-project-link-from-projects"))
 
         var_sleep(1)
         # Click Add Button
