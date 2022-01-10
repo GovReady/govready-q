@@ -46,17 +46,17 @@ window.projectMenu = (data) => {
                 <ProSidebar style={{ marginLeft: '-5px', paddingLeft: '0px', width: '320px' }} >
                     <Menu iconShape="square">
                         {data.project.system && <>
-                            <SidebarHeader class="sidebardarkheader">
+                            <SidebarHeader className="sidebardarkheader">
                                 <Grid container >
                                     <Grid item xs={12}>
-                                        <h2 class="sidebardark-header">
+                                        <h2 className="sidebardark-header">
                                             {data.project.root_task.title_override}&nbsp;&nbsp;
                                             <span className="glyphicon glyphicon-pencil" style={{ fontSize: '14px', color: '#aaa', cursor: 'pointer' }}
                                                 onClick={() => show_edit_project_modal()}></span>
                                         </h2>
                                         <span className="sidebardark-project-details" title={`${data.project.version_comment}`}> Project ID: {data.project.id}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;System ID: {data.project.system.id}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Version: {data.project.version} <br/>{data.project.version_comment}</span>
                                         <br/>
-                                        <h3 class="sidebardark-head">Portfolio: <span class="sidebardark-head-title">{data.project.portfolio.title}</span></h3>
+                                        <h3 className="sidebardark-head">Portfolio: <span className="sidebardark-head-title">{data.project.portfolio.title}</span></h3>
                                     </Grid>
                                 </Grid>
                             </SidebarHeader>
