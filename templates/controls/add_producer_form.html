@@ -1,5 +1,5 @@
-<div id="panel-panel_num" class="">
-    <div class="panel-heading" role="tabx" id="document-panel_num-title">
+<div id="panel-panel_num" class="" style="">
+    <div class="panel-heading hidden" role="tabx" id="document-panel_num-title">
 
         <div class="row statement-text">
             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
@@ -7,20 +7,15 @@
                     <b>New control statement</b>
                     </span>
             </div>
-            <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-edit-text-block">
-                New control statement will appear here.
-            </div>
             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                <a role="button" class="" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="false" aria-controls="document-panel_num-body">edit</a>
-                <br/>
+                <!-- <a role="button" class="" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="false" aria-controls="document-panel_num-body">edit</a>
+                <br/> -->
                 {{ smt.remarks }}
             </div>
         </div>
 
-
         <h4 id="panel-panel_num-title" class="panel-title">
             <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-panel_num-body">
-
             </a>
         </h4>
     </div>
@@ -35,13 +30,18 @@
                     <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-edit-text-block">
 
                         <form id="smt_panel_num" class="smt_form">
-                      <div class="form-group">
-                        <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
-                        <input type="hidden" id="producer_element_id" name="producer_element_id" value="">
-                        <label for="component">Producer Component</label>
-                        <input type="text" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
-                          onchange="$('#producer_element-panel_num-title').text($(this).val());">
-                      </div><br /><br />
+                            <div class="form-group">
+                              <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
+                              <input type="hidden" id="producer_element_id" name="producer_element_id" value="">
+                              <label for="component">Component</label>
+
+                              <!-- <select class="producer_element_id" id="producer_element_id_to_add" name="producer_element_id" style="width:340px;">
+                                <option value="None" selected disabled hidden>Select a Component</option>
+                              </select> -->
+
+                              <input type="text" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
+                                onchange="$('#producer_element-panel_num-title').text($(this).val());">
+                            </div><br /><br />
                             <div class="form-group">
                                 <input type="hidden" id="smt_id" name="smt_id" value="">
                                 <label for="statement">What is the solution and how is it implemented?</label>

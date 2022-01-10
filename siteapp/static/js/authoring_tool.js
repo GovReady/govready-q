@@ -176,9 +176,6 @@ function authoring_tool_add_impute_condition_fields() {
 }
 
 function authoring_tool_download_app() {
-  // console.log(q_authoring_tool_state.questions)
-  // console.log(q_authoring_tool_state.questions.spec)
-  // console.log(Object.getOwnPropertyNames(q_authoring_tool_state.questions)[0]);
   var data = [{ name: "task", value: q_authoring_tool_state.task }]
   data.push( { name: "question", value: Object.getOwnPropertyNames(q_authoring_tool_state.questions)[0] } );
   ajax_with_indicator({
@@ -196,11 +193,6 @@ function authoring_tool_download_app() {
 }
 
 function authoring_tool_download_app_project(task_id, is_project_page) {
-  console.log("calling authoring_tool_download_app_project");
-  console.log("task_id sent: "+task_id);
-  // alert("check console");
-  // console.log(q_authoring_tool_state.questions.spec)
-  // console.log(Object.getOwnPropertyNames(q_authoring_tool_state.questions)[0]);
   ajax_with_indicator({
       url: "/tasks/_authoring_tool/download-app-project",
       method: "POST",

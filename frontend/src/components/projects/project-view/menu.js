@@ -37,7 +37,7 @@ window.projectMenu = (data) => {
     }
 
 
-    console.log(data)
+    // console.log(data)
     // console.log(displayMap.urls)
 
     ReactDOM.render(

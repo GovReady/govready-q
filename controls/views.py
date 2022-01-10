@@ -1888,6 +1888,28 @@ def editor(request, system_id, catalog_key, cl_id):
         # oscalize key
         cl_id = oscalize_control_id(cl_id)
 
+        # Determine previous and next selected controls
+        selected_controls_info = list(system.root_element.controls.all().values('id','oscal_ctl_id','oscal_catalog_key'))
+        cur_selected_control_index = next((i for i, item in enumerate(selected_controls_info) if (item['oscal_ctl_id'] == cl_id and item['oscal_catalog_key'] == catalog_key)), None)
+        if cur_selected_control_index is not None and cur_selected_control_index < len(selected_controls_info)-1:
+            next_selected_cl_id = selected_controls_info[cur_selected_control_index + 1]['oscal_ctl_id']
+            next_selected_cl_catalog_key = selected_controls_info[cur_selected_control_index + 1]['oscal_catalog_key']
+        elif len(selected_controls_info) > 0:
+            next_selected_cl_id = selected_controls_info[0]['oscal_ctl_id']
+            next_selected_cl_catalog_key = selected_controls_info[0]['oscal_catalog_key']
+        else:
+            next_selected_cl_id = None
+            next_selected_cl_catalog_key = None
+        if cur_selected_control_index is not None and cur_selected_control_index > 0:
+            prev_selected_cl_id = selected_controls_info[cur_selected_control_index - 1]['oscal_ctl_id']
+            prev_selected_cl_catalog_key = selected_controls_info[cur_selected_control_index - 1]['oscal_catalog_key']
+        elif len(selected_controls_info) > 1:
+            prev_selected_cl_id = selected_controls_info[len(selected_controls_info)-1]['oscal_ctl_id']
+            prev_selected_cl_catalog_key = selected_controls_info[len(selected_controls_info)-1]['oscal_catalog_key']
+        else:
+            prev_selected_cl_id = None
+            prev_selected_cl_catalog_key = None
+
         # Build combined statement if it exists
         if cl_id in system.control_implementation_as_dict:
             combined_smt = system.control_implementation_as_dict[cl_id]['combined_smt']
@@ -1913,7 +1935,11 @@ def editor(request, system_id, catalog_key, cl_id):
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": "opencontrol_string",
             "elements": elements,
-            "display_urls": project_context(project)
+            "display_urls": project_context(project),
+            "prev_selected_cl_id": prev_selected_cl_id,
+            "prev_selected_cl_catalog_key": prev_selected_cl_catalog_key,
+            "next_selected_cl_id": next_selected_cl_id,
+            "next_selected_cl_catalog_key": next_selected_cl_catalog_key
         }
         return render(request, "controls/editor.html", context)
     else:
@@ -2101,7 +2127,7 @@ def save_smt(request):
                 messages.add_message(request, messages.INFO, f"{statement_element_msg} {producer_element.id}.")
             except Exception as e:
                 statement_element_status = "error"
-                statement_element_msg = "Failed to associate statement with Producer Element {}".format(e)
+                statement_element_msg = "Failed to associate statement with Producer Element. Error reported {}".format(e)
                 return JsonResponse(
                     {"status": statement_element_status, "message": statement_element_msg + " " + producer_element_msg + " " + statement_element_msg})
         # Create new Prototype Statement object on new statement creation (not statement edit)
@@ -2337,7 +2363,10 @@ def add_system_component(request, system_id):
         messages.add_message(request, messages.ERROR,
                             f'Component "{producer_element.name}" already exists in selected components.')
         # Redirect to selected element page
-        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+        if "redirect_url" in form_values:
+            return HttpResponseRedirect(form_values['redirect_url'])
+        else:
+            return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
     smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
@@ -2348,7 +2377,10 @@ def add_system_component(request, system_id):
         messages.add_message(request, messages.ERROR,
                             f'I couldn\'t add "{producer_element.name}" to the system because the component does not currently have any control implementation statements to add.')
         # Redirect to selected element page
-        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+        if "redirect_url" in form_values:
+            return HttpResponseRedirect(form_values['redirect_url'])
+        else:
+            return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
     # Loop through all element's prototype statements and add to control implementation statements.
     # System's selected controls will filter what controls and control statements to display.
@@ -2367,7 +2399,10 @@ def add_system_component(request, system_id):
                          f'Oops. I tried adding "{producer_element.name}" to the system, but the component added 0 controls.')
 
     # Redirect to selected element page
-    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+    if "redirect_url" in form_values:
+        return HttpResponseRedirect(form_values['redirect_url'])
+    else:
+        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
 @login_required
 def search_system_component(request):

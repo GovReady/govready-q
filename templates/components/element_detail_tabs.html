@@ -121,7 +121,7 @@
 
         <div class="row">
           <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8 description-text">
-            <h3>About {{ element.name }}</h3>
+            <h3>About</h3>
             {% if element.description %}
               {{ element.description }}
             {% else %}
@@ -497,7 +497,7 @@
         }
 
         function edit_component() {
-          show_edit_component_modal("{{element.name}}","{{element.description}}",(newName, newDescription)=>{
+          show_edit_component_modal("{{element.name}}",`{{element.description}}`,(newName, newDescription)=>{
             ajax_with_indicator({
               url: '{% url "edit_element" element.id %}',
               method: "POST",
