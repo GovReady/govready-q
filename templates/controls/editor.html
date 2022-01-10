@@ -134,7 +134,7 @@
         </div>
     </div>
 
-    <div role="" class="" id="control" style="">
+    <div role="" class="hidden" id="control" style="">
         {% if control.title is not None %}
         <details>
             <summary>
@@ -162,7 +162,7 @@
                     <div id="smt-list" class="" style="width: 100%">
                         <p>&nbsp</p>
                         <details>
-                            <summary>&nbsp;<span class="glyphicon glyphicon-eye-open"></span> Read legacy implementation statement from original SSP</summary>
+                            <summary>&nbsp;<span class="glyphicon glyphicon-eye-open"></span>Read legacy implementation statement from original SSP</summary>
                             {% for smt in impl_smts_legacy %}
                             <div id="legacy-panel-{{ forloop.counter }}" class="smt-panel-x" style="border:2px solid #aaddaa; border-radius: 20px;margin-bottom:12px; margin-right:12px; ">
                                 <div class="panel-heading" role="tab" id="legacy-document-{{ forloop.counter }}-title" style="">
@@ -181,26 +181,7 @@
                     {% endif %}
 
                     <div class="row">
-                        <div id="control-description" class="col-md-6 control-text"><h3>{{ impl_smts|length }} associated Componented Control Implementations Statements</h3></div>
-                        <div class="col-md-6" style="">
-                            <h3>
-                                <form id="add_component" class="form-inline pull-right" method="post" action="{%  url 'add_system_component' system_id=system.id %}">
-                                    {% csrf_token %}
-                                    <div class="form-group">
-                                        <label for="component">Add component</label>&nbsp;&nbsp;
-                                        <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
-                                        <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onchange="$(form).submit();" style="width:340px;">
-                                            <option value="None" selected disabled hidden>Select a Component</option>
-                                            {% for component in elements %}
-                                                {% if component not in system.producer_elements %}
-                                                    <option value="{{ component.id }}">{{ component.name }}</option>
-                                                {% endif %}
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                </form>
-                            </h3>
-                        </div>
+                        <div id="control-description" class="col-md-10 control-text"><h3>{{ impl_smts|length }} associated Componented Control Implementations Statements</h3></div>
                     </div><!-- Needed for proper styling -->
 
                     <div class="row statement-column-headings" style="">
@@ -305,7 +286,7 @@
                                                     <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
                                                     <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
                                                     <div class="form-group">
-                                                        <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
+                                                        <input type="hidden" id="producer_element_id_hidden" name="producer_element_id" value="{{ smt.producer_element.id }}">
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="statement">Part</label>
@@ -352,10 +333,25 @@
                     </div><!--/smt-list-->
     </div>
 
-<p>&nbsp;</p>
-
+                    <p>&nbsp;</p>
                     <div class="row" style="">
-                        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
+                        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3" style="margin-top:20px;">
+                            <form id="add_component" class="form-inline pull-left" method="post" action="{%  url 'add_system_component' system_id=system.id %}">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
+                                    <input type="hidden" name="redirect_url" value="{% url 'control_editor' system_id=system.id catalog_key=control.catalog_key cl_id=control.id %}">
+                                    <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onchange="$(form).submit();" style="width:190px;">
+                                        <option value="None" selected disabled hidden>Add a component</option>
+                                        {% for component in elements %}
+                                            {% if component not in system.producer_elements %}
+                                                <option value="{{ component.id }}">{{ component.name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
                         <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
                             <h3>
                                 <button type="submit" id="new_component_statement"

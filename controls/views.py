@@ -2363,7 +2363,10 @@ def add_system_component(request, system_id):
         messages.add_message(request, messages.ERROR,
                             f'Component "{producer_element.name}" already exists in selected components.')
         # Redirect to selected element page
-        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+        if "redirect_url" in form_values:
+            return HttpResponseRedirect(form_values['redirect_url'])
+        else:
+            return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
     smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
@@ -2374,7 +2377,10 @@ def add_system_component(request, system_id):
         messages.add_message(request, messages.ERROR,
                             f'I couldn\'t add "{producer_element.name}" to the system because the component does not currently have any control implementation statements to add.')
         # Redirect to selected element page
-        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+        if "redirect_url" in form_values:
+            return HttpResponseRedirect(form_values['redirect_url'])
+        else:
+            return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
     # Loop through all element's prototype statements and add to control implementation statements.
     # System's selected controls will filter what controls and control statements to display.
@@ -2393,7 +2399,10 @@ def add_system_component(request, system_id):
                          f'Oops. I tried adding "{producer_element.name}" to the system, but the component added 0 controls.')
 
     # Redirect to selected element page
-    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+    if "redirect_url" in form_values:
+        return HttpResponseRedirect(form_values['redirect_url'])
+    else:
+        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
 @login_required
 def search_system_component(request):
