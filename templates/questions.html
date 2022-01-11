@@ -55,6 +55,7 @@ Question editor
   }
 
   .question-row:hover {}
+  .question-cell { vertical-align: top; }
 
   {% if q.spec.type == "module" %}
   .question .radio label {
@@ -161,6 +162,8 @@ Question editor
 
   .add_new_question { color:#505050; font-size: 0.75em; text-align: center; }
 
+  .prompt_col { min-width: 320px; }
+
 </style>
 {% endblock %}
 
@@ -243,10 +246,10 @@ Question editor
     {% else %}
       <h3>Questions</h3>
     {% endif %}
-    <table class="question_grid"><tr><th class="edit_col">Edit</th><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
+    <table class="question_grid"><tr><th class="edit_col">Edit</th><th class="prompt_col">Prompt</th><th class="order_col">Order</th><th class="key_col">Key/Title</th><th class="type_col">Type</th></tr>
       {% for q in module_questions %}
         <tr class="question-row">
-          <td>
+          <td style='vertical-align: top;'>
             <form autocomplete="off" action="" method="post" class="question-form" onsubmit="return false;">
               <input type="hidden" name="method" value="save">
               <input type="hidden" name="q_id" value="{{q.id}}">
@@ -266,18 +269,21 @@ Question editor
               </div>
             </form>
           </td>
-          <td>{{q.definition_order}}</td>
-          <td>{{q.key}}</td>
-          <td>{{q.spec.title}}</td>
-          <td>{{q.spec.type}}</td>
-          <td title="{{q.spec.prompt}}">{{q.spec.prompt|truncatechars:50}}</td>
+          <td title="{{q.spec.prompt}}" class="question-cell">{{q.spec.prompt|truncatechars:160}}</td>
+          <td class="question-cell">{{q.definition_order}}</td>
+          <td class="question-cell">Key: {{q.key}} <br>Title: {{q.spec.title}}</td>
+          <td class="question-cell">{{q.spec.type}}</td>
         </tr>
       {% endfor %}
     </table>
 
     <p>&nbsp;</p>
     <h3>Artifacts</h3>
-      <table class="question_grid"><tr><th class="edit_col">Edit</th><th class="key_col">ID</th><th class="title_col">Title</th><th class="type_col">Format</th><th class="prompt_col">Prompt</th></tr>
+      <table class="question_grid">
+        {% if artifact in module.spec.output and artifact|length > 0 %}
+          <tr><th class="edit_col">Edit</th><th class="key_col">ID</th><th class="title_col">Title</th><th class="type_col">Format</th><th class="prompt_col">Prompt</th></tr>
+        {% endif %}
+
       {% for artifact in module.spec.output %}
          <tr class="question-row">
           <td>
