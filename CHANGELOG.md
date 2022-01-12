@@ -24,6 +24,9 @@ v0.9.11.11-dev (January xx, 2022)
 * Display pagination control btm of component page.
 * Add 'Things to do' text to project.html.
 * Display links to previous and next selected control on System selected control editor page.
+* Reduce number of Group Django messages from question actions into single message for adding actions.
+* Simplify new authoring tool. Move prompt from right to left. Only show first line of question prompt.
+* Fix sizing of catalog listing panel in app store to keep rows clean.
 
 **Bug fixes**
 
