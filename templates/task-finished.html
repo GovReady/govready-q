@@ -376,6 +376,10 @@
     .popover()
     .css({ cursor: 'pointer' });
 
+    $("#ssp_csv_submit").click(function () { 
+      $('#exportCSVTemplateSSP').modal('toggle');  
+  });
+
   $('.modal .table tbody tr').click(function(event) {
       if (event.target.type !== 'radio') {
         var previouslySelected = $('input[name="projectAssets"]:checked')[0];
@@ -389,12 +393,14 @@
             },
             dataType: "json",
             method: "POST",
-            success: function (res) {}, error: function (res) {
+            success: function (res) {  
+            }, error: function (res) {
                 previouslySelected.checked = true;
                 var errorjson = $.parseJSON(res);
                 show_modal_error("Search Error", errorjson["message"]);
             }
-        })
+        }) 
+        $('.modal-dialog modal-xl').modal('toggle');
       }
     });
 
@@ -413,6 +419,7 @@
     show_modal_confirm("Download Document", dom, "Download", function() {
       var format = dom.find("select").val();
       window.location = "{{task.get_absolute_url|escapejs}}/download/document/" + encodeURIComponent(document_id) + "/" + format;
+      
     });
   }
 
