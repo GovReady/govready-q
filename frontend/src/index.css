@@ -3,3 +3,14 @@
  */
 
  @import 'react-pro-sidebar/dist/css/styles.css';
+
+
+ body{
+    overflow-x: hidden;
+ }
+
+ .sticky{     
+   height: 100vh;
+   position: sticky;
+   top: 0; 
+ }
