@@ -236,7 +236,10 @@ class DiscussionTests(SeleniumTest):
         # Start a team conversation.
         wait_for_sleep_after(lambda: self.click_element("#start-a-discussion"))
         wait_for_sleep_after(lambda: self.fill_field("#discussion-your-comment", "Hello is anyone *here*?"))
+        var_sleep(.5)
         wait_for_sleep_after(lambda: self.click_element("#discussion .comment-input button.btn-primary"))
+        var_sleep(1.0)
+        self.assertInNodeText("Hello", '.comment[data-id="1"] .comment-text p')
 
         # Test Script injection
         script = "<script id='injectiontest2'>document.getElementsByTagName('body')[0]" \
@@ -255,8 +258,8 @@ class DiscussionTests(SeleniumTest):
         # Test some special characters
         wait_for_sleep_after(lambda: self.fill_field("#discussion-your-comment", "¥"))
         wait_for_sleep_after(lambda: self.click_element("#discussion .comment-input button.btn-primary"))
-
-        wait_for_sleep_after(lambda: self.assertInNodeText("¥", '.comment[data-id="3"] .comment-text p'))
+        var_sleep(0.5)
+        self.assertInNodeText("¥", '.comment[data-id="3"] .comment-text p')
 
         # Test file attachments upload successfully
 
