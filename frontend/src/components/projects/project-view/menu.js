@@ -40,10 +40,12 @@ window.projectMenu = (data) => {
     // console.log(data)
     // console.log(displayMap.urls)
 
+
+
     ReactDOM.render(
         <>
             <Box style={{ marginLeft: '0px', height: '100%', width: '320px' }}>
-                <ProSidebar style={{ marginLeft: '-5px', paddingLeft: '0px', width: '320px' }} >
+                <ProSidebar style={{ marginLeft: '-5px', paddingLeft: '0px', width: '320px' }} className="sticky" >
                     <Menu iconShape="square">
                         {data.project.system && <>
                             <SidebarHeader className="sidebardarkheader">
