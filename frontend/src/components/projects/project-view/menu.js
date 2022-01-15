@@ -75,24 +75,6 @@ window.projectMenu = (data) => {
                                 Project Home
                             </MenuItem>
                             <MenuItem
-                                id="menu-btn-project-import"
-                                icon={<ArrowUpwardIcon />}
-                                onClick={() => {
-                                    let m = $('#import_project_modal');
-                                    $("#import_loading_spinner").hide();
-                                    m.modal();
-                                }}
-                                onKeyPress={(e) => {
-                                    if(e.key === 'Enter'){
-                                        let m = $('#import_project_modal');
-                                        $("#import_loading_spinner").hide();
-                                        m.modal();
-                                    }
-                                }}
-                            >
-                                Import Project
-                            </MenuItem>
-                            <MenuItem
                                 id="menu-btn-project-controls"
                                 icon={<ListAltIcon />}
                                 onClick={() => redirect(`${window.origin}${data.urls.controls}`)}
@@ -151,6 +133,24 @@ window.projectMenu = (data) => {
                                 }}
                             >
                                 Assesments
+                            </MenuItem>
+                            <MenuItem
+                                id="menu-btn-project-import"
+                                icon={<ArrowUpwardIcon />}
+                                onClick={() => {
+                                    let m = $('#import_project_modal');
+                                    $("#import_loading_spinner").hide();
+                                    m.modal();
+                                }}
+                                onKeyPress={(e) => {
+                                    if(e.key === 'Enter'){
+                                        let m = $('#import_project_modal');
+                                        $("#import_loading_spinner").hide();
+                                        m.modal();
+                                    }
+                                }}
+                            >
+                                Import Project
                             </MenuItem>
                             <MenuItem
                                 id="menu-btn-project-export_project"
