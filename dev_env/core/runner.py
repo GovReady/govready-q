@@ -80,7 +80,7 @@ class DockerCompose(Runner):
 
         if auto_admin:
             Prompt.warning(f"Administrator Account - "
-                           f"{Colors.CYAN}{auto_admin[0][0]} / {auto_admin[0][1]} - {Colors.FAIL}"
+                           f"{Colors.CYAN}{auto_admin[0][0]} / {auto_admin[0][1].replace('govready-q-dev', '')} - {Colors.FAIL}"
                            f" This is stored in local/admin.creds.json")
 
         Prompt.title_banner(f"Service - Frontend - Webpack")

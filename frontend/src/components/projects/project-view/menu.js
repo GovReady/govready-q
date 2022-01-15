@@ -40,10 +40,12 @@ window.projectMenu = (data) => {
     // console.log(data)
     // console.log(displayMap.urls)
 
+
+
     ReactDOM.render(
         <>
             <Box style={{ marginLeft: '0px', height: '100%', width: '320px' }}>
-                <ProSidebar style={{ marginLeft: '-5px', paddingLeft: '0px', width: '320px' }} >
+                <ProSidebar style={{ marginLeft: '-5px', paddingLeft: '0px', width: '320px' }} className="sticky" >
                     <Menu iconShape="square">
                         {data.project.system && <>
                             <SidebarHeader className="sidebardarkheader">
@@ -133,16 +135,16 @@ window.projectMenu = (data) => {
                                 Assesments
                             </MenuItem>
                             <MenuItem
-                                icon={<ArrowUpwardIcon />}
                                 id="menu-btn-project-import"
+                                icon={<ArrowUpwardIcon />}
                                 onClick={() => {
-                                    var m = $('#import_project_modal');
+                                    let m = $('#import_project_modal');
                                     $("#import_loading_spinner").hide();
                                     m.modal();
                                 }}
                                 onKeyPress={(e) => {
                                     if(e.key === 'Enter'){
-                                        var m = $('#import_project_modal');
+                                        let m = $('#import_project_modal');
                                         $("#import_loading_spinner").hide();
                                         m.modal();
                                     }
@@ -251,20 +253,6 @@ window.projectMenu = (data) => {
                                 }}
                             >
                                 API Docs
-                            </MenuItem>
-                            <MenuItem
-                                id="menu-btn-project-authoring_tool"
-                                icon={<CreateIcon />}
-                                onClick={() => {
-                                    show_authoring_tool_module_editor()
-                                }}
-                                onKeyPress={(e) => {
-                                    if(e.key === 'Enter'){
-                                        show_authoring_tool_module_editor()
-                                    }
-                                }}
-                            >
-                                Authoring Tool
                             </MenuItem>
                             <MenuItem
                                 id="menu-btn-move_project"
