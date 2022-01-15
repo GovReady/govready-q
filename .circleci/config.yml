@@ -58,16 +58,16 @@ jobs:
       - run: bandit -s B101,B110,B603 -r discussion/ guidedmodules/ siteapp/
 
       # Snyk Scan
-      - run: pip install -r requirements_util.txt
-      - snyk/scan:
-          token-variable: SNYK_API_TOKEN
-          project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
-          additional-arguments: "--file=requirements_mysql.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
+      # - run: pip install -r requirements_util.txt
+      # - snyk/scan:
+      #     token-variable: SNYK_API_TOKEN
+      #     project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
+      #     additional-arguments: "--file=requirements_mysql.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
 
-      - snyk/scan:
-          token-variable: SNYK_API_TOKEN
-          project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
-          additional-arguments: "--file=requirements_util.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
+      # - snyk/scan:
+      #     token-variable: SNYK_API_TOKEN
+      #     project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
+      #     additional-arguments: "--file=requirements_util.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
 
       - snyk/scan:
           token-variable: SNYK_API_TOKEN
