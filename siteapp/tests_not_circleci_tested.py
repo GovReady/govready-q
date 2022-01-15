@@ -265,4 +265,213 @@ class GeneralTestsInvitations(OrganizationSiteFunctionalTests):
     # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
 
+class PortfolioProjectTests(OrganizationSiteFunctionalTests):
+
+    def _fill_in_signup_form(self, email, username=None):
+        if username:
+            self.fill_field("#id_username", username)
+        else:
+            self.fill_field("#id_username", "test+%s@q.govready.com" % get_random_string(8))
+        self.fill_field("#id_email", email)
+        new_test_user_password = get_random_string(16)
+        self.fill_field("#id_password1", new_test_user_password)
+        self.fill_field("#id_password2", new_test_user_password)
+
+    def test_create_portfolios(self):
+        # Create a new account
+        self.browser.get(self.url("/"))
+        self.click_element('#tab-register')
+        self._fill_in_signup_form("test+account@q.govready.com", "portfolio_user")
+        self.click_element("#signup-button")
+
+        # Go to portfolio page
+        self.browser.get(self.url("/portfolios"))
+
+        # Navigate to portfolio created on signup
+        self.click_element_with_link_text("portfolio_user")
+
+        # Test creating a portfolio using the form
+        # Navigate to the portfolio form
+        wait_for_sleep_after(lambda: self.click_element_with_link_text("Portfolios"))
+        # Click Create Portfolio button
+        self.click_element("#new-portfolio")
+        var_sleep(0.5)
+        # Fill in form
+        wait_for_sleep_after(lambda: self.fill_field("#id_title", "Test 1"))
+        self.fill_field("#id_description", "Test 1 portfolio")
+        # Submit form
+        self.click_element("#create-portfolio-button")
+        # Test we are on portfolio page we just created
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q"))
+
+        # Test we cannot create a portfolio with the same name
+        # Navigate to the portfolio form
+        self.click_element_with_link_text("Portfolios")
+        # Click Create Portfolio button
+        self.click_element("#new-portfolio")
+        var_sleep(0.5)
+        # Fill in form
+        wait_for_sleep_after(lambda: self.fill_field("#id_title", "Test 1"))
+        self.fill_field("#id_description", "Test 1 portfolio")
+        # Submit form
+        self.click_element("#create-portfolio-button")
+        # We should get an error
+
+        # test error
+        wait_for_sleep_after(lambda: self.assertIn("Portfolio name Test 1 not available.", self._getNodeText(
+            "div.alert.alert-danger.alert-dismissable.alert-link")))
+        # Test uniqueness with case insensitivity
+        # Navigate to the portfolio form
+        self.click_element_with_link_text("Portfolios")
+        # Click Create Portfolio button
+        self.click_element("#new-portfolio")
+        var_sleep(0.5)
+        # Fill in form
+        wait_for_sleep_after(lambda: self.fill_field("#id_title", "test 1"))
+        # Submit form
+        wait_for_sleep_after(lambda: self.click_element("#create-portfolio-button"))
+        # We should get an error
+        var_sleep(0.5)
+        # test error
+        wait_for_sleep_after(lambda: self.assertIn("Portfolio name test 1 not available.", self._getNodeText(
+            "div.alert.alert-danger.alert-dismissable.alert-link")))
+
+    def test_create_portfolio_project(self):
+        # Create new project within portfolio
+        self._login()
+        self._new_project()
+
+        # Create new portfolio
+        wait_for_sleep_after(lambda: self.browser.get(self.url("/portfolios")))
+        wait_for_sleep_after(lambda: self.click_element("#new-portfolio"))
+        self.fill_field("#id_title", "Security Projects")
+        self.fill_field("#id_description", "Project Description")
+        self.click_element("#create-portfolio-button")
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Security Projects"))
+
+    def test_portfolio_projects(self):
+        """
+        Ensure key parts of the portfolio page
+        """
+        # Login as authenticated user
+        self.client.force_login(user=self.user)
+        # Reset login
+        self.browser.get(self.url("/accounts/logout/"))
+        self._login()
+        # If the above is not done a new project cannot be created
+        self._new_project()
+
+        portfolio_id = Project.objects.last().portfolio.id
+        url = reverse('portfolio_projects', args=[portfolio_id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'portfolios/detail.html')
+        self.assertContains(response, 'Owner', 1)
+        # Context
+        bool_context_objects = ["can_invite_to_portfolio", "can_edit_portfolio"]
+        for context in bool_context_objects:
+            self.assertEqual(response.context[context], True)
+
+        self.assertEqual(response.context["portfolio"].id, portfolio_id)
+
+
+    def test_grant_portfolio_access(self):
+        # Grant another member access to portfolio
+        self._login()
+        self.browser.get(self.url("/portfolios"))
+        self.click_element("#portfolio_{}".format(self.user.username))
+        self.click_element("#grant-portfolio-access")
+        var_sleep(.5)
+        wait_for_sleep_after(lambda: self.select_option_by_visible_text('#invite-user-select', 'me2'))
+        wait_for_sleep_after(lambda: self.click_element("#invitation_modal button.btn-submit"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("me2", "#portfolio-member-me2"))
+
+        # Grant another member ownership of portfolio
+        wait_for_sleep_after(lambda: self.click_element("#me2_grant_owner_permission"))
+        var_sleep(0.5)
+        wait_for_sleep_after(lambda: self.assertInNodeText("me2 (Owner)", "#portfolio-member-me2"))
+
+        # Grant another member access to portfolio
+        self.click_element("#grant-portfolio-access")
+        self.select_option_by_visible_text('#invite-user-select', 'me3')
+        self.click_element("#invitation_modal button.btn-submit")
+        wait_for_sleep_after(lambda: self.assertInNodeText("me3", "#portfolio-member-me3"))
+
+        # Remove another member access to portfolio
+        self.click_element("#me3_remove_permissions")
+        self.assertNotInNodeText("me3", "#portfolio-members")
+        self.assertNodeNotVisible("#portfolio-member-me3")
+
+    def test_move_project_create(self):
+        """Test moving a project to another portfolio"""
+        initial_porfolio = Portfolio.objects.create(title="Portfolio 1")
+        new_portfolio = Portfolio.objects.create(title="Portfolio 2")
+        project = Project.objects.create(portfolio=initial_porfolio)
+        project.portfolio = initial_porfolio
+        self.assertIsNotNone(initial_porfolio.id)
+        self.assertIsNotNone(new_portfolio.id)
+        self.assertIsNotNone(project.id)
+        self.assertIsNotNone(project.portfolio.id)
+        self.assertEqual(project.portfolio.title, "Portfolio 1")
+        project.portfolio = new_portfolio
+        self.assertEqual(project.portfolio.title, "Portfolio 2")
+        project.delete()
+        self.assertTrue(project.id is None)
+
+    def test_edit_portfolio(self):
+        """
+        Editing a portfolio's title and/or description provides appropriate validation and messaging
+        """
+        # journey to portfolios and ensure i have multiple portfolios if not then create new portfolios
+        self._login()
+        self.browser.get(self.url("/portfolios"))
+        # Navigate to the portfolio form
+        self.click_element_with_link_text("Portfolios")
+        # Click Create Portfolio button
+        self.click_element("#new-portfolio")
+        var_sleep(0.5)
+        # Fill in form
+        wait_for_sleep_after(lambda: self.fill_field("#id_title", "Test 1"))
+        self.fill_field("#id_description", "Test 1 portfolio")
+        # Submit form
+        self.click_element("#create-portfolio-button")
+        # Test we are on portfolio page we just created
+        var_sleep(0.35)
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q"))
+        # Navigate to portfolios
+        self.browser.get(self.url("/portfolios"))
+
+        # Navigate to portfolios
+        self.browser.get(self.url("/portfolios"))
+        # Click on the pencil anchor tag to edit
+        self.browser.find_elements_by_class_name("portfolio-project-link")[-1].click()
+
+        # Edit title to a real new name and press update
+        self.clear_and_fill_field("#id_title", "new me")
+        self.clear_and_fill_field("#id_description", "new me portfolio")
+        # Submit form
+        self.click_element("#edit_portfolio_submit")
+
+        # Verify new portfolio name is listed under portfolios
+        self.assertIn("new me", self._getNodeText("#portfolio_new\ me"))
+        # Verify 'updated' message is correct
+        self.assertIn("The portfolio 'new me' has been updated.", self._getNodeText("div.alert.fade.in.alert-info"))
+
+        # verify new description by journeying back to edit_form
+        self.browser.find_elements_by_class_name("portfolio-project-link")[-1].click()
+
+    def test_delete_portfolio(self):
+        """
+        Delete a portfolio from the database
+        """
+        portfolio = Portfolio.objects.all().first()
+        # Login and journey to portfolios
+        self._login()
+        self.browser.get(self.url("/portfolios"))
+        # Hit deletion pattern
+        self.browser.get(self.url(f"/portfolios/{portfolio.id}/delete"))
+
+        # Verify 'deleted' message is correct
+        self.assertIn("The portfolio 'me' has been deleted.", self._getNodeText("div.alert.fade.in.alert-info"))
+
 
