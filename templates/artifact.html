@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+Question editor
+{% endblock %}
+
+{% block head %}
+<meta name="description" content="Edit compliance app questioonaire.">
+
+<link href="{% static "vendor/emojione/emojione-sprite-24.min.css" %}" rel="stylesheet">
+{% if q.spec.type == "longtext" %}
+  <link href="{% static "vendor/quill/quill.snow.css" %}" rel="stylesheet">
+{% endif %}
+
+{{block.super}}
+
+<style>
+
+  h1 {
+    margin: 4px 0 18px 0;
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  /*  .form-control {
+    font-size: 14pt;
+    height: 34pt;
+  }*/
+
+  .question {
+    font-size: 10pt;
+  }
+    .question form.disabled label {
+      color: #777;
+      cursor: not-allowed;
+    }
+
+  .question-prompt blockquote {
+    font-size: inherit;
+  }
+
+  .question-prompt {
+    margin: 10px 10px 10px 0px;
+    font-weight: 700;
+  }
+
+  /* since prompts will likely use Markdown ##'s to delimit sections,
+      which we render as h3 because we demote all levels, re-adjust
+      styles */
+  .question-prompt h3 {
+    font-size: 110%;
+    font-weight: bold;
+  }
+
+  .question-row:hover {}
+
+  {% if q.spec.type == "module" %}
+  .question .radio label {
+    margin: .25em 0;
+  }
+  {% endif %}
+
+  {% if q.spec.type == "interstitial" %}
+    .question img {
+      display: block; /* so that horizontal auto margin centers */
+      margin: 30px auto;
+    }
+  {% endif %}
+
+  {% if q.spec.type == "longtext" %}
+  .question .ql-container {
+    font-size: 10pt !important; /* override default quill style */
+    /*font-family: trebuchet ms;*/
+  }
+  .question .ql-container p {
+    margin-bottom: .75em;
+  }
+    .question .ql-container p:last-child {
+      margin-bottom: 0;
+    }
+  {% endif %}
+
+  label .onhover { display: none; }
+  label:hover .onhover { display: inline; }
+
+
+  #reference-text-wrapper *:first-child { margin-top: 0; }
+
+  /* Legacy background and focus area styling for question pages */
+  body { /*background-color: rgb(247,247,247);*/ }
+
+  #focus-area-wrapper {
+    border-radius: 3px;
+    border: 3px solid rgb(204, 204, 204);
+    padding: 2em 2em 3em 2em;
+    background-color: white;
+    /*background-color: rgba(253,253,253,1);*/
+    /* on mobile, space between columns */
+    margin-bottom: 30px;
+    font-size: 10pt;
+  }
+
+  .datagrid-text {
+    font-size: 0.8em;
+  }
+
+  .datagrid-text-select {
+    font-size: 1.0em;
+  }
+
+  textarea {
+    padding: 12px 12px 12px 12px;
+  }
+
+  input, textarea, select {
+    margin-bottom: 8px;
+
+  }
+
+  label {
+    margin-top: 8px;
+  }
+
+  /* styles for the table */
+  table.question_grid  {width:100%;}
+  .question_grid td { padding: 0 10px 0 0; }
+  .question_grid tr { border-bottom:1px solid #eee; padding: 5px; }
+  .question_grid th { font-size:.8em;}
+  .question_grid th.edit_col { width:10%; }
+  .question_grid th.order_col { width:5%; }
+  .question_grid th.key_col { width: 15%; }
+  .question_grid th.title_col { width:25%; }
+  .question_grid th.type_col { width: 20%; }
+  .question_grid th.prompt_col { width: 25%; }
+
+  .leftbox { display:block; font-size:.9em; padding:.5em; border:1px solid #E5E5E5; background:#F8F8F8; margin-bottom:.5em; color:#808080; }
+  .tot_q {  font-size:.8em; }
+
+  .leftbox:hover { background:#DCDCDC; color:#505050; }
+
+  .hidden-field { display: none; }
+
+  .current-module { background:#DCDCDC; color:#505050; font-weight: bold;}
+
+  .edit_col { min-width: 120px;}
+
+  .modal-body, .modal-header, .modal-header-authoring{ padding: 5px 25px 0 5px; }
+
+
+  .modal-header .form-group {margin-bottom:0;}
+  .modal-body { padding-top:25px;}
+
+  .edit_button { margin-top:1em; border-left:1px solid #DCDCDC; border-bottom:1px solid #DCDCDC; padding:.2em .6em;}
+  .edit_button:hover { background-color:#DCDCDC;}
+
+
+  h3.module-top-title { font-weight:normal; font-size:1.2em; padding:0; margin:0 0 .5em 0;}
+  .header-modules-head { font-size:.8em; color:#505050;}
+
+  .add_new_question { color:#505050; font-size: 0.75em; text-align: center; }
+
+  #artifact_template { max-height: 700px; }
+
+</style>
+{% endblock %}
+
+{% block contextbar %}
+  {# kill breadcrumbs but add some space below site header #}
+  <div id="contextbar">
+    &nbsp;
+  </div>
+{% endblock %}
+
+{% block body %}
+
+  <div id="" style="margin-top: 20px !important;">
+        <a href="/" class="glyphicon-home-icon">
+          <span class="glyphicon glyphicon-home"></span>
+        </a>
+        / <a href="{% url 'store' %}">Template Library</a>
+        / {{ module.app.catalog_metadata.title }}
+        / {{ module.title }}
+        / {{ artifact.title }}
+  </div>
+  <p>&nbsp;</p>
+
+{{block.super}}
+
+<div class="row" style="width: 100%;  margin: auto; ">
+  <div class="col-md-2">
+
+    <h2 style="font-weight:bold; padding-top:0; margin:0;">
+      {{ module.app.catalog_metadata.title }}&nbsp;&nbsp;<a onclick="show_edit_appversion_modal('{{ module.id }}', '{{ module.app.catalog_metadata.title }}', '{{ module.app.catalog_metadata.description.short }}', '{{ module.app.version_number }}'); return false;" style="cursor: pointer;"><span class="glyphicon glyphicon-pencil"></span></a>
+      {% if app.icon %}<img src="{{ app.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
+    </h2>
+    <div style="font-size:0.8em;">{{ module.app.catalog_metadata.description.short }}</div>
+    <div style="font-size:0.8em;">Version: {{ module.app.version_number }}</div> 
+
+    <br /><br />
+    <!-- Display app.yaml project module -->
+    {% with app=module.app %}
+      {% for m in app_modules  %}
+        {% if m.spec.type == 'project' %}
+        <a href="/tasks/module/{{m.id}}/questions" style="text-decoration:none;"><div class="leftbox {% if module.id == m.id %}current-module{% endif %}">
+          Main Project Template Module (app.yaml)<br /><span class="tot_q">{{ m.questions.all|length }} module{{ m.questions.all|pluralize }}</span>
+          {% if m.spec.output and m.spec.output|length > 0 %}&nbsp;<span class="tot_q">{{ m.spec.output|length }} artifact{{ m.spec.output|pluralize }}</span>{% endif %}
+            </div></a>
+        {% endif %}
+      {% endfor %}
+    {% endwith %}
+
+    <br />  <br /><span class="header-modules-head">Included modules</span>
+
+    {% with app=module.app %}
+      {% for m in app_modules  %}
+        {% if m.spec.type != 'project' %}
+        <a href="/tasks/module/{{m.id}}/questions" style="text-decoration:none;"><div class="leftbox {% if module.id == m.id %}current-module{% endif %}">
+          {{ m.title }}<br /><span class="tot_q">{{ m.questions.all|length }} question{{ m.questions.all|pluralize }}</span>
+          {% if m.spec.output and m.spec.output|length > 0 %}&nbsp;<span class="tot_q">{{ m.spec.output|length }} artifact{{ m.spec.output|pluralize }}</span>{% endif %}
+            </div></a>
+        {% endif %}
+      {% endfor %}
+    {% endwith %}
+    <br />
+  </div>
+  <div class="col-md-10" style="padding-left:2em;">
+    <div class="row" style="margin-bottom:1.5em;">
+      <div class="col-md-10">
+        <h3 class="module-top-title"><strong>"{{ module.title }}"</strong> module's output artifact <strong>"{{ artifact.title }}"</strong>
+        </h3>
+      </div>
+    </div>
+    <form class="form-horizontal" method="POST" action="{% url 'authoring_edit_artifact' %}">
+      {% csrf_token %}
+      <div class="modal-body">
+          <div class="form-group">
+            <label for="at_m_id" class="col-sm-1 control-label hidden">module_id</label>
+            <div class="col-sm-5">
+              <input id="at_m_id" name="module_id" type="hidden" class="form-control" value="{{ module.id }}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="artifact_id" class="col-sm-1 control-label">ID</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="artifact_id" pattern="[a-zA-Z_][a-zA-Z0-9_]*" name="newid" value="{{ artifact.id }}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="artifact_title" class="col-sm-1 control-label">Title</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="artifact_title" name="title" value="{{ artifact.title }}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="authoring_tool_type" class="col-sm-1 control-label">Format</label>
+            <div class="col-sm-5">
+              <select class="form-control" id="format" name="format">
+                  <option value="markdown" {% if artifact.format == "markdown" %}selected{% endif %}>markdown</option>
+                  <option value="html" {% if artifact.format == "html" %}selected{% endif %}>html</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="artifact_filename" class="col-sm-1 control-label">File name</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="artifact_filename" name="filename" value="{{ artifact.filename }}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="artifact_template" class="col-sm-1 control-label">Template</label>
+            <div class="col-sm-11">
+              <textarea class="form-control" id="artifact_template" name="template">{{ artifact.template }}</textarea>
+            </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <input type="submit" class="btn btn-danger btn pull-left" name="submit" value="Delete Artifact"></input>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <input type="submit" class="btn btn-success" value="Save Changes"></input>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+
+{% endblock %}

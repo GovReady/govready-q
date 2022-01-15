@@ -5,7 +5,7 @@
 # Common Python Packages
 python-dateutil # Simplified BSD License
 Pillow>=8.3.2 # MIT-like License
-Jinja2==2.11.3 # BSD License
+Jinja2==3.0.3 # BSD License
 
 # Less Common Python Packages
 html5lib # MIT License
@@ -23,13 +23,13 @@ termcolor # MIT License
 xxhash # BSD License
 importlib-resources<2,>=1.0 # Apache License
 pyinstrument==3.2.0 # BSD License
-compliance-trestle==0.20.0 # OSI Approved :: Apache Software License
+compliance-trestle==0.33.0 # OSI Approved :: Apache Software License
 
 jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages
 # Django==2.2.12 # BSD License
-Django==3.2.5 # BSD License
+Django==3.2.11 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # BSD 3-Clause License
@@ -53,6 +53,17 @@ drf-yasg==1.20.0 # BSD License
 djangorestframework-recursive==0.1.2 # ISC License
 drf-nested-routers==0.93.3 # Apache License 2.0
 mozilla-django-oidc==1.2.4 # Mozilla Public License Version 2.0
+
+# NLP
+dataset # MIT License
+click # BSD License (BSD-3-Clause)
+# more-itertools # MIT License
+simplejson # Academic Free License (AFL), MIT License
+pandas # BSD License (BSD-3-Clause)
+spacy # MIT License
+Unidecode # GNU General Public License
+wordcloud # MIT License
+numpy==1.22.0 # BSD 3-Clause "New" or "Revised" License
 
 # Python Packages Developed by GovReady and/or Josh
 rtyaml # CC0

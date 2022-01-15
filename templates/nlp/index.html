@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} NLP
+{% endblock %}
+
+{% block head %}
+  <style>
+
+    #above-tab-content, #tab-content {
+      max-width: 950px;
+      margin: auto;
+    }
+  </style>
+{% endblock %}
+
+Remove contextbar from top of page
+{% block contextbar %}{% endblock %}
+
+% block body-wide %
+{% block body %}
+
+<div style="margin-top: 30px">
+  <div class="container">
+
+    <div class="row" style="">
+      <div id="above-tab-content" class="row">
+        <!-- Page Title-->
+        <div style="float: left;">
+          <h2>NLP Test page</h2>
+        </div>
+        <!-- Control Lookup-->
+        <div style="float: right;">
+            <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
+              <input type="text" name="id" placeholder="Enter control id"  title="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
+                  <button type="submit" class="btn btn-success">Look up</button>
+                  <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  <a href="/">families</a> -->
+            </form>
+        </div>
+      </div>
+    </div><!--/row-->
+    <p>&nbsp;</p>
+
+    <div id="tab-content" class="row rows-header" style="">
+        <div id="tab-content" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">{{ catalog.catalog_key_display }}</div>
+    </div>
+
+
+  </div>
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Submits control id for Control look up box
+  function show_control_by_id() {
+    var control_id = $('#control-lookup').find('input[name="id"]').val();
+    var url = "/controls/catalogs/{{ catalog.catalog_key }}/control/"+control_id;
+    window.location.href = url;
+  }
+</script>
+{% endblock %}

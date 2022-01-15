@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from api.base.serializers.types import ReadOnlySerializer
-from api.guidedmodules.serializers.app import DetailedAppVersionSerializer, SimpleAppSourceSerializer
+from api.base.serializers.types import ReadOnlySerializer, WriteOnlySerializer
+from api.guidedmodules.serializers.app import DetailedAppVersionSerializer, SimpleAppSourceSerializer, SimpleAppVersionSourceSerializer
 from guidedmodules.models import Module, ModuleAsset, ModuleQuestion
 from rest_framework_recursive.fields import RecursiveField
 
@@ -15,7 +15,6 @@ class SimpleModuleSerializer(ReadOnlySerializer):
     class Meta:
         model = Module
         fields = ['module_name', 'spec']
-
 
 class DetailedModuleSerializer(SimpleModuleSerializer):
     source = SimpleAppSourceSerializer()
@@ -42,15 +41,45 @@ class DetailedModuleAssetSerializer(SimpleModuleAssetSerializer):
 
 
 class SimpleModuleQuestionSerializer(ReadOnlySerializer):
+    spec = serializers.JSONField()
+
     class Meta:
         model = ModuleQuestion
         fields = ['key', 'definition_order', 'spec']
 
 
 class DetailedModuleQuestionSerializer(SimpleModuleQuestionSerializer):
-    module = DetailedModuleSerializer()
+
+    class Meta:
+        model = ModuleQuestion
+        fields = SimpleModuleQuestionSerializer.Meta.fields
+
+
+class ModuleQuestionListSerializer(SimpleModuleQuestionSerializer):
     answer_type_module = DetailedModuleSerializer()
 
     class Meta:
         model = ModuleQuestion
-        fields = SimpleModuleQuestionSerializer.Meta.fields + ['module', 'answer_type_module']
+        fields = SimpleModuleQuestionSerializer.Meta.fields
+
+class ModuleReadSerializer(ReadOnlySerializer):
+    spec = serializers.JSONField()
+    app = SimpleAppVersionSourceSerializer()
+    questions = SimpleModuleQuestionSerializer(many=True)
+
+    class Meta:
+        model = Module
+        fields = ['module_name', 'spec', 'app', 'questions']
+
+class CreateModuleQuestionSerializer(WriteOnlySerializer):
+    spec = serializers.JSONField()
+    key = serializers.CharField()
+    definition_order = serializers.IntegerField()
+
+    # module_id = serializers.PrimaryKeyRelatedField(source='module', allow_null=False, queryset=Module.objects)
+
+    class Meta:
+        model = ModuleQuestion
+        fields = ['key', 'definition_order', 'spec'
+        ]
+

@@ -486,9 +486,6 @@ Next Question: {{q.spec.title}} | {{task.title}}
 
             {% if not is_answerable %}
               <p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
-              {% if authoring_tool_enabled %}
-                <p class="text-danger">You are seeing this question because the Authoring Tools are enabled. Ordinary users would not see this question displayed.</p>
-              {% endif %}
 
             {% elif write_priv %}
 
@@ -598,11 +595,10 @@ Next Question: {{q.spec.title}} | {{task.title}}
     &nbsp;
   </div>
 
-  <div id="progress-project-area-wrapper" class="col-xs-6 col-sm-4 col-md-1 col-lg-2 col-xl-2 question-progress-project">
+  <div id="progress-project-area-wrapper" class="col-xs-8 col-sm-6 col-md-3 col-lg-3 col-xl-2 question-progress-project">
     {% include "task-progress-project-list.html" with previous="question" %}
   </div>
 
-  </div>
 </div> <!-- /row -->
 
 {% include "task-question-debug-links.html" %}
@@ -1166,7 +1162,6 @@ $(function() {
   });
 });
 </script>
-
+-
 {% endif %}
-
 {% endblock %}

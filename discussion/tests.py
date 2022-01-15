@@ -1,6 +1,7 @@
 import os
 
 import requests
+import re
 from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.crypto import get_random_string
@@ -9,7 +10,7 @@ from selenium.common.exceptions import NoSuchElementException
 from discussion.validators import VALID_EXTS, validate_file_extension
 from guidedmodules.management.commands.load_modules import Command as load_modules
 from guidedmodules.models import AppSource
-from siteapp.models import User, Organization, Portfolio
+from siteapp.models import User, Organization, Portfolio, Project,ProjectMembership
 from siteapp.tests import SeleniumTest, var_sleep
 from siteapp.tests import wait_for_sleep_after
 
@@ -84,16 +85,33 @@ class DiscussionTests(SeleniumTest):
         self.click_element("form#login_form button[type=submit]")
         self.assertRegex(self.browser.title, "Your Compliance Projects")
 
+    # def _new_project(self):
+    #     self.browser.get(self.url("/projects"))
+    #     self.click_element("#new-project-link-from-projects")
+
+    #     # Start a project
+    #     wait_for_sleep_after(lambda: self.click_element(".app[data-app='project/simple_project'] .view-app"))
+    #     # var_sleep(10.5)
+    #     self.click_element("#start-project")
+    #     # wait_for_sleep_after(lambda: self.click_element("#start-project"))
+    #     wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "I want to answer some questions on Q."))
+
+
     def _new_project(self):
         self.browser.get(self.url("/projects"))
-        self.click_element("#new-project")
 
-        # Start a project
-        wait_for_sleep_after(lambda: self.click_element(".app[data-app='project/simple_project'] .view-app"))
-        # var_sleep(10.5)
-        self.click_element("#start-project")
-        # wait_for_sleep_after(lambda: self.click_element("#start-project"))
+        wait_for_sleep_after(lambda: self.click_element("#new-project-link-from-projects"))
+
+        var_sleep(1)
+        # Click Add Button
+        wait_for_sleep_after(lambda: self.click_element(".app-form[data-app='project/simple_project'] .start-app"))
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "I want to answer some questions on Q."))
+
+        m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
+        self.current_project = Project.objects.get(id=m.group(1))
+
+
+
 
     def _start_task(self):
         # Assumes _new_project() just finished.
@@ -218,7 +236,10 @@ class DiscussionTests(SeleniumTest):
         # Start a team conversation.
         wait_for_sleep_after(lambda: self.click_element("#start-a-discussion"))
         wait_for_sleep_after(lambda: self.fill_field("#discussion-your-comment", "Hello is anyone *here*?"))
+        var_sleep(.5)
         wait_for_sleep_after(lambda: self.click_element("#discussion .comment-input button.btn-primary"))
+        var_sleep(1.0)
+        self.assertInNodeText("Hello", '.comment[data-id="1"] .comment-text p')
 
         # Test Script injection
         script = "<script id='injectiontest2'>document.getElementsByTagName('body')[0]" \
@@ -237,8 +258,8 @@ class DiscussionTests(SeleniumTest):
         # Test some special characters
         wait_for_sleep_after(lambda: self.fill_field("#discussion-your-comment", "¥"))
         wait_for_sleep_after(lambda: self.click_element("#discussion .comment-input button.btn-primary"))
-
-        wait_for_sleep_after(lambda: self.assertInNodeText("¥", '.comment[data-id="3"] .comment-text p'))
+        var_sleep(0.5)
+        self.assertInNodeText("¥", '.comment[data-id="3"] .comment-text p')
 
         # Test file attachments upload successfully
 

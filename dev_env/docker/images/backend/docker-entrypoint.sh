@@ -21,6 +21,9 @@ ln -sf /usr/src/app/dev_env/docker/environment.json /usr/src/app/local/environme
 echo "[ + ] Running checks"
 pip3 install -r requirements.txt --ignore-installed
 
+echo "[ + ] Installing NLP tools"
+python3 -m spacy download en_core_web_sm
+
 echo "[ + ] Migrating Database"
 ./manage.py migrate
 

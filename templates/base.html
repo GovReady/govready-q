@@ -70,9 +70,9 @@
       {% for message in messages %}
         {# Django levels are: debug (map to Boostrap 'info'), info, success, warning, error (map to Boostrap 'danger') #}
         {% if message.level_tag != "success" %}{# Skip success messages #}
-        <div class="alert fade in alert-{% if message.level_tag == "error" %}danger{% elif message.level_tag == "debug" %}info{% else %}{{message.level_tag}}{% endif %}" style="border-radius: 0px;margin:0px;">
+        <div class="alert alert-{% if message.level_tag == 'error' %}danger{% elif message.level_tag == 'debug' %}info{% else %}{{message.level_tag}}{% endif %} fade in toast-msg">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ message }}&nbsp;&nbsp;
+            {{ message }}&nbsp;
         </div>
         {% endif %}
       {% endfor %}
@@ -80,7 +80,7 @@
     {% endif %}
 
     {% block body-wide %}
-    <div class="container-fluid project-base-container" style="min-height: 70vh;">
+    <div class="container-fluid project-base-container" style="min-height: 120vh; height: 300vh">
       {% block body %}
       {% endblock %}
       {% block content %}
@@ -132,7 +132,7 @@
                 </div>
                 <div id="invite-message-container">
                   <label for="invite-message">Include a message about why you are sending this invitation:</label>
-                  <textarea id="invite-message invite-message-size" class="form-control"></textarea>
+                  <textarea id="invite-message invite-message-size" aria-label="invite-message invite-message-size" name="invite-message"class="form-control"></textarea>
                 </div>
                 <div id="invite-addtoteam-container" style="display: none"">
                   <div class="checkbox form-checkbox">

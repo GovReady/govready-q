@@ -11,7 +11,6 @@ output:
 - id: system_info
   format: markdown
   title: System Information
-  placement: action-buttons
   template: |2
     <style>
       table {

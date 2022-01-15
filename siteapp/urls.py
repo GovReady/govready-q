@@ -31,6 +31,9 @@ urlpatterns = [
     # incoming email hook for responses to notifications
     url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook, name='notifications'),
 
+    # NLP
+    url(r"^nlp/", include("nlp.urls")),
+
     # Django rest framework
     # path('api/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
@@ -43,12 +46,15 @@ urlpatterns = [
     url(r"^discussion/", include("discussion.urls")),
 
     # Controls and Systems
+    url(r"^system/", include("controls.urls")),
     url(r"^systems/", include("controls.urls")),
     url(r"^api/v1/systems/", include("controls.urls_api")),
     url(r"^controls/", include("controls.urls")),
 
     # app store
     url(r'^store$', views.apps_catalog, name="store"),
+    url(r'^store/app/(?P<appversion_id>.*)/modules$', views.apps_catalog_item_modules, name='apps_catalog_item_modules'),
+    # url(r'^store/app/(?P<appversion_id>.*)/clone$', views.apps_catalog_item_clone, name='apps_catalog_item_clone'),
     url(r'^store/(?P<source_slug>.*)/(?P<app_name>.*)/zip$', views.apps_catalog_item_zip),
     url(r'^store/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
 

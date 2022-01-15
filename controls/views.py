@@ -409,9 +409,7 @@ def component_library(request):
     query = request.GET.get('search')
     if query:
         try:
-            element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)
-                                                  | Q(pk__in=set(Statement.objects.filter(body__search=query).values_list('producer_element', flat=True)))
-                                                 ).exclude(element_type='system').distinct()
+            element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
         except:
             logger.info(f"Ah, you are not using Postgres for your Database!")
             element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
@@ -1329,7 +1327,7 @@ def component_library_component(request, element_id):
     impl_smts = natsorted(impl_smts, key=lambda x: x.sid)
 
     # Pagination
-    obj_paginator = Paginator(impl_smts, 10)
+    obj_paginator = Paginator(impl_smts, 15)
     page_number = request.GET.get('page')
 
     try:
@@ -1469,6 +1467,8 @@ def restore_to_history(request, smt_id, history_id):
     # Get statement if exists else 404
     smt = get_object_or_404(Statement, id=smt_id)
 
+    print(1, "==== smt", smt)
+
     # Check permission
     raise_404_if_not_permitted_to_statement(request, smt, 'change_system')
 
@@ -1485,8 +1485,8 @@ def restore_to_history(request, smt_id, history_id):
         historical_smt.instance.save()
 
         # Update the reason for the new statement record
-        recent_smt     = smt.history.first()
-        update_change_reason(recent_smt.instance, change_reason)
+        recent_smt = smt.history.first()
+        # update_change_reason(recent_smt.instance, change_reason)
 
         logger.info( f"Change reason: {change_reason}")
 
@@ -1888,6 +1888,28 @@ def editor(request, system_id, catalog_key, cl_id):
         # oscalize key
         cl_id = oscalize_control_id(cl_id)
 
+        # Determine previous and next selected controls
+        selected_controls_info = list(system.root_element.controls.all().values('id','oscal_ctl_id','oscal_catalog_key'))
+        cur_selected_control_index = next((i for i, item in enumerate(selected_controls_info) if (item['oscal_ctl_id'] == cl_id and item['oscal_catalog_key'] == catalog_key)), None)
+        if cur_selected_control_index is not None and cur_selected_control_index < len(selected_controls_info)-1:
+            next_selected_cl_id = selected_controls_info[cur_selected_control_index + 1]['oscal_ctl_id']
+            next_selected_cl_catalog_key = selected_controls_info[cur_selected_control_index + 1]['oscal_catalog_key']
+        elif len(selected_controls_info) > 0:
+            next_selected_cl_id = selected_controls_info[0]['oscal_ctl_id']
+            next_selected_cl_catalog_key = selected_controls_info[0]['oscal_catalog_key']
+        else:
+            next_selected_cl_id = None
+            next_selected_cl_catalog_key = None
+        if cur_selected_control_index is not None and cur_selected_control_index > 0:
+            prev_selected_cl_id = selected_controls_info[cur_selected_control_index - 1]['oscal_ctl_id']
+            prev_selected_cl_catalog_key = selected_controls_info[cur_selected_control_index - 1]['oscal_catalog_key']
+        elif len(selected_controls_info) > 1:
+            prev_selected_cl_id = selected_controls_info[len(selected_controls_info)-1]['oscal_ctl_id']
+            prev_selected_cl_catalog_key = selected_controls_info[len(selected_controls_info)-1]['oscal_catalog_key']
+        else:
+            prev_selected_cl_id = None
+            prev_selected_cl_catalog_key = None
+
         # Build combined statement if it exists
         if cl_id in system.control_implementation_as_dict:
             combined_smt = system.control_implementation_as_dict[cl_id]['combined_smt']
@@ -1913,7 +1935,11 @@ def editor(request, system_id, catalog_key, cl_id):
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": "opencontrol_string",
             "elements": elements,
-            "display_urls": project_context(project)
+            "display_urls": project_context(project),
+            "prev_selected_cl_id": prev_selected_cl_id,
+            "prev_selected_cl_catalog_key": prev_selected_cl_catalog_key,
+            "next_selected_cl_id": next_selected_cl_id,
+            "next_selected_cl_catalog_key": next_selected_cl_catalog_key
         }
         return render(request, "controls/editor.html", context)
     else:
@@ -2016,7 +2042,6 @@ def save_smt(request):
         #     cleared = False
         #     skipped_reason = request.POST.get("skipped_reason") or None
         #     unsure = bool(request.POST.get("unsure"))
-
         # Track if we are creating a new statement
         new_statement = False
         form_dict = dict(request.POST)
@@ -2088,17 +2113,21 @@ def save_smt(request):
             producer_element_msg = "Producer Element save failed. Error reported {}".format(e)
             return JsonResponse({"status": producer_element_status, "message": producer_element_msg})
 
-        # Associate Statement and Producer Element if creating new statement
+        # Associate Statement, Producer Element, and optionally Consumer Element (system) if creating new statement
         if new_statement:
             try:
                 statement.producer_element = producer_element
+                if 'system_id' in form_values and len(form_values['system_id']) > 0:
+                    # Associate Consumer Element
+                    statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
+                    statement_msg = "Statement associated with System/Consumer Element."
                 statement.save()
                 statement_element_status = "ok"
                 statement_element_msg = "Statement associated with Producer Element."
                 messages.add_message(request, messages.INFO, f"{statement_element_msg} {producer_element.id}.")
             except Exception as e:
                 statement_element_status = "error"
-                statement_element_msg = "Failed to associate statement with Producer Element {}".format(e)
+                statement_element_msg = "Failed to associate statement with Producer Element. Error reported {}".format(e)
                 return JsonResponse(
                     {"status": statement_element_status, "message": statement_element_msg + " " + producer_element_msg + " " + statement_element_msg})
         # Create new Prototype Statement object on new statement creation (not statement edit)
@@ -2334,7 +2363,10 @@ def add_system_component(request, system_id):
         messages.add_message(request, messages.ERROR,
                             f'Component "{producer_element.name}" already exists in selected components.')
         # Redirect to selected element page
-        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+        if "redirect_url" in form_values:
+            return HttpResponseRedirect(form_values['redirect_url'])
+        else:
+            return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
     smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
@@ -2345,7 +2377,10 @@ def add_system_component(request, system_id):
         messages.add_message(request, messages.ERROR,
                             f'I couldn\'t add "{producer_element.name}" to the system because the component does not currently have any control implementation statements to add.')
         # Redirect to selected element page
-        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+        if "redirect_url" in form_values:
+            return HttpResponseRedirect(form_values['redirect_url'])
+        else:
+            return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
     # Loop through all element's prototype statements and add to control implementation statements.
     # System's selected controls will filter what controls and control statements to display.
@@ -2364,7 +2399,10 @@ def add_system_component(request, system_id):
                          f'Oops. I tried adding "{producer_element.name}" to the system, but the component added 0 controls.')
 
     # Redirect to selected element page
-    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+    if "redirect_url" in form_values:
+        return HttpResponseRedirect(form_values['redirect_url'])
+    else:
+        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
 @login_required
 def search_system_component(request):

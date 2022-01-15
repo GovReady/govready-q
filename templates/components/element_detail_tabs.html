@@ -11,7 +11,7 @@
 <style>
 
   h3 {
-    color: #888;
+    color: #555555;
     font-weight: bold;
     margin-top: 20px;
   }
@@ -44,7 +44,7 @@
     /*display: none;*/
   }
 
-  a { color: #666; }
+  a { color: #555555; }
 
   .panel-heading-smt, .panel-heading-smt-body {
     white-space: pre-line;
@@ -121,7 +121,7 @@
 
         <div class="row">
           <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8 description-text">
-            <h3>About {{ element.name }}</h3>
+            <h3>About</h3>
             {% if element.description %}
               {{ element.description }}
             {% else %}
@@ -140,7 +140,7 @@
                   <div class="form-inline pull-right create-nav">
                       <div class="form-group">
                           <div class="input-group">
-                              <input id="searchbox" name="search" value="{{ request.GET.search }}" type="text" placeholder="search control">
+                              <input id="searchbox" aria-label="search components" name="search" value="{{ request.GET.search }}" type="text" placeholder="search control">
                               <span id="searchicon" class="glyphicon glyphicon-search" href="{% url 'component_library' %}"></span>
                               {% if request.GET.search %}
                                 <a id="searchclear" class="glyphicon glyphicon-remove" href="{% url 'component_library_component' element_id=element.id %}"></a>
@@ -168,7 +168,7 @@
             </div>
           </div>
         </div>
-        <div class="row statement-column-headings" style="">
+        <div class="row statement-column-headings" style="font-weight:normal;">
           <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Control</div>
           <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">Statement</div>
             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span class="pull-right">Action</span></div>
@@ -292,7 +292,9 @@
               </div>
             </div>
             {% endfor %}
+
           </div><!--/smt-list-->
+          {% include 'components/paginate_comp.html' %}
       </div>
 
       <!-- Tab panel: systems -->
@@ -495,7 +497,7 @@
         }
 
         function edit_component() {
-          show_edit_component_modal("{{element.name}}","{{element.description}}",(newName, newDescription)=>{
+          show_edit_component_modal("{{element.name}}",`{{element.description}}`,(newName, newDescription)=>{
             ajax_with_indicator({
               url: '{% url "edit_element" element.id %}',
               method: "POST",

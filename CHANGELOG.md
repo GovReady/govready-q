@@ -1,12 +1,76 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.11.7-dev (October xx, 2021)
---------------------------------
+
+v0.9.11.11 (January 15, 2022)
+-----------------------------
+
+**Feature changes**
+
+* Ability to add modules in new authoring tool.
+* Allow deleting of questions, modules in new authoring tool by removing protection on foreign key references.
+* Superusers can see all projects.
+
+**UI changes**
+
+* Simplify task progress history. Only display questions of current module. Only colorize to glyphicons.
+* Enable adding component control statement from System selected component.
+* Enable adding component control statement from System selected controls.
+* Switch to "I want to..." language on landing page.
+* Align module text left and add numbers to project page.
+* Add big button back to project home page on module summary page.
+* Edit AppVersion title, version, and description in new authoring tool.
+* Reinstate Database Administration opening in new browser tab.
+* Display pagination control btm of component page.
+* Add 'Things to do' text to project.html.
+* Display links to previous and next selected control on System selected control editor page.
+
+**Bug fixes**
+
+* Stop scrubching of progress-project-area-wrapper on question page.
+* Always make sure output param exists in all modules that get edited.
+* Fix adding statements to components in library.
+* Correctly escape carriage returns in multi-line component descriptions in edit component modal.
+
+**Developer changes**
+
+* Superusers can see all projects.
+
+
+v0.9.11.10-dev (December 14, 2021)
+----------------------------------
+
+Introuduce new authoring tool. Remove authoring tool modal from task question page.
+
+**Feature changes**
+
+* Enabling batch viewing of questions for easier questionnaire authoring.
+* Enable editing of artifacts.
+* Enabling cloning entire templates in template library.
+
+**Developer changes**
+
+* Add Django `nlp` app to system to support Natural Language Processing of SSPs and statements.
+* Include spaCy libraries as part of build.
+* Include initial, simplified candidate entity recognition script.
+* Remove full text search of statements from component library search because it was slow and returned to many results.
+* Add serializers for Modules and ModuleQuestions.
+* Refactor siteapp.views.project and templates/project.html to remove vestigial column vs row layout code and previous authoring tools.
+* Remove authoring tool modal from task question page.
 
 **UI changes**
 
 * Use left side vertical React navigation menu for project.
+* Improve toast message appearance by limiting width.
+* Improve styling of project page rollovers make module actions clearer
+* Improve styling of template library. Use bootstrap panels for each item.
+* Remove authoring tool modal from task question page.
+
+**Bug fixes**
+
+* Fix permissions to allow non-administrator to clone project templates in project template.
+* Fix crash when restoring a previous version of a statement.
+* Fix setting control baseline by proper use of `update_or_create` in `System.set_security_impact_level`.
 
 
 v0.9.11.6 (October 13, 2021)

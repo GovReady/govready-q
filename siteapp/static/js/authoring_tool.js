@@ -1,7 +1,6 @@
 function init_authoring_tool(state) {
   // Save state. Should be:
   // {
-  //  task: task_id,
   //  module: { module spec data },
   //  questions: {
   //    question_key: {
@@ -28,12 +27,18 @@ function init_authoring_tool(state) {
   $('#authoring_tool_qmoduletype').append(optgroup_apps);
   optgroup_apps.append('<option value="/app/">Based on Protocol ID (Enter Next)</option>');
   if (state.answer_type_modules.length > 0) {
+    var module_question = Object.keys(state.questions)[0];
+    var module_question_module_id = state.questions[module_question].spec['module-id'];
     var optgroup_modules = $('<optgroup label="Modules in This App"></optgroup>');
     $('#authoring_tool_qmoduletype').append(optgroup_modules);
     state.answer_type_modules.forEach(function(item) {
       var opt = $("<option/>");
       opt.attr('value', item.id);
       opt.text(item.title);
+      // select current module
+      if (item.id == module_question_module_id) {
+        opt.attr('selected', 'selected');
+      }
       optgroup_modules.append(opt);
     });
   }
@@ -94,13 +99,15 @@ function init_authoring_tool_autocomplete(elem, expr_type) {
   });
 }
 
-function show_question_authoring_tool(question_key) {
+function show_question_authoring_tool(question_id, question_key) {
   // Initialize form state.
   window.q_authoring_tool_state.current_question = question_key;
   var qinfo = window.q_authoring_tool_state.questions[question_key];
   var spec = JSON.parse(JSON.stringify(qinfo.spec)); // clone since we delete properties
+
+  $('#at_q_id').val(question_id);
   $('#authoring_tool_qid').val(question_key); delete spec.id;
-  $('#authoring_tool_qtitle').val(spec.title); delete spec.title;
+  $('#authoring_tool_q_title').val(spec.title); delete spec.title;
   $('#authoring_tool_qprompt').val(spec.prompt); delete spec.prompt;
   $('#authoring_tool_type').val(spec.type)
     .change(); // trigger event that hides/shows the appropriate fields
@@ -136,7 +143,6 @@ function show_question_authoring_tool(question_key) {
   if (Object.keys(spec).length == 0) spec = "";
   else spec = jsyaml.safeDump(spec);
   $('#authoring_tool_qspec').val(spec);
-
   // Show modal.
   $('#question_authoring_tool').modal();
 }
@@ -170,9 +176,6 @@ function authoring_tool_add_impute_condition_fields() {
 }
 
 function authoring_tool_download_app() {
-  // console.log(q_authoring_tool_state.questions)
-  // console.log(q_authoring_tool_state.questions.spec)
-  // console.log(Object.getOwnPropertyNames(q_authoring_tool_state.questions)[0]);
   var data = [{ name: "task", value: q_authoring_tool_state.task }]
   data.push( { name: "question", value: Object.getOwnPropertyNames(q_authoring_tool_state.questions)[0] } );
   ajax_with_indicator({
@@ -190,11 +193,6 @@ function authoring_tool_download_app() {
 }
 
 function authoring_tool_download_app_project(task_id, is_project_page) {
-  console.log("calling authoring_tool_download_app_project");
-  console.log("task_id sent: "+task_id);
-  // alert("check console");
-  // console.log(q_authoring_tool_state.questions.spec)
-  // console.log(Object.getOwnPropertyNames(q_authoring_tool_state.questions)[0]);
   ajax_with_indicator({
       url: "/tasks/_authoring_tool/download-app-project",
       method: "POST",
@@ -215,10 +213,14 @@ function authoring_tool_download_app_project(task_id, is_project_page) {
 
 function authoring_tool_save_question() {
   var data = $('#question_authoring_tool form').serializeArray();
-  data.push( { name: "task", value: q_authoring_tool_state.task } );
+  if (q_authoring_tool_state.task) {
+    data.push( { name: "task", value: q_authoring_tool_state.task } );
+  }
   data.push( { name: "question", value: q_authoring_tool_state.current_question } );
+  console.log('authoring_tool_save_question')
+  console.log(data)
   ajax_with_indicator({
-      url: "/tasks/_authoring_tool/edit-question",
+      url: "/tasks/_authoring_tool/edit-question2",
       method: "POST",
       data: data,
       keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
@@ -232,15 +234,17 @@ function authoring_tool_save_question() {
 }
 
 function authoring_tool_delete_question() {
-  if (!confirm("Are you sure you want to delete this question?")) return;
+  if (!confirm("WARNING! CLICKING 'OK' WILL PERMANENTLY DELETE THIS QUESTION (AND ANSWERS) FROM ALL PROJECTS USING THIS TEMPLATE.")) return;
+  var data = $('#question_authoring_tool form').serializeArray();
+  if (q_authoring_tool_state.task) {
+    data.push( { name: "task", value: q_authoring_tool_state.task } );
+  }
+  data.push( { name: "question", value: q_authoring_tool_state.current_question } );
+  data.push( { name: "delete", value: 1 } );
   ajax_with_indicator({
-      url: "/tasks/_authoring_tool/edit-question",
+      url: "/tasks/_authoring_tool/edit-question2",
       method: "POST",
-      data: {
-        task: q_authoring_tool_state.task,
-        question: q_authoring_tool_state.current_question,
-        delete: 1
-      },
+      data: data,
       keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
       success: function(res) {
         // Modal can stay up until the redirect finishes.
@@ -263,6 +267,18 @@ function authoring_tool_new_question(task_id, question_id, is_project_page) {
           window.location.reload();
         else
           window.location = res.redirect;
+      }
+  })
+}
+
+function authoring_tool_new_question2(question_id) {
+  ajax_with_indicator({
+      url: "/tasks/_authoring_tool/new-question2",
+      method: "POST",
+      data: { "question_id": question_id },
+      keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      success: function(res) {
+        window.location = res.redirect;
       }
   })
 }
@@ -296,7 +312,28 @@ function authoring_tool_save_module() {
 }
 
 function authoring_tool_create_q_form(argument) {
+  console.log(argument);
   $('#create_q_authoring_tool').modal();
+  console.log(Object.keys(argument))
+  if (Object.keys(argument).includes('app_id')) {
+    $('#authoring_tool_app_id').val(argument['app_id']);
+  }
+  if (Object.keys(argument).includes('app_title')) {
+    console.log(argument);
+    $('#authoring_tool_q_2_title').val(argument['app_title']+" Copy");
+    var slug = $('#authoring_tool_q_2_title').val();
+    slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "_");
+    $('#authoring_tool_q_name').val(slug);
+  }
+  if (Object.keys(argument).includes('app_description')) {
+    $('#authoring_tool_q_description').val(argument['app_description'].replace('<p>','').replace('</p>',''));
+  }
+  if (Object.keys(argument).includes('app_category_title')) {
+    $('#authoring_tool_q_category').val(argument['app_category_title']);
+  }
+  if (Object.keys(argument).includes('modal_title')) {
+    $('#create_q_authoring_tool_title').html(argument['modal_title']);
+  }
 }
 
 function authoring_tool_create_q() {

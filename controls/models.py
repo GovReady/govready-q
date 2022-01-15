@@ -590,16 +590,25 @@ class System(auto_prefetch.Model, TagModelMixin):
     @transaction.atomic
     def set_security_sensitivity_level(self, security_sensitivity_level):
         """Assign Security Sensitivty level to system"""
-        # Get or create the security_sensitivity_level smt for system's root_element; should only have 1 statement
-        smt = Statement.objects.create(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element, body=security_sensitivity_level)
-        return security_sensitivity_level, smt
+        # Update or create the security_sensitivity_level smt for system's root_element; should only have 1 statement
+
+        # NOTE: Cannot us update or create because changing security_sensitivity_smt level will fail to find existing security_sensitivity_smt
+        if Statement.objects.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element,consumer_element=self.root_element).exists():
+            security_sensitivity_smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element,consumer_element=self.root_element)
+            security_sensitivity_smt.body = security_sensitivity_level
+            security_sensitivity_smt.save()
+        else:
+            # Set the security_sensitivity_level smt for element; should only have 1 statement
+            security_sensitivity_smt = Statement.objects.create(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element,consumer_element=self.root_element, body=security_sensitivity_level)
+
+        return security_sensitivity_level, security_sensitivity_smt
 
     @property
     def get_security_sensitivity_level(self):
-        """Assign Security Sensitivty level to system"""
+        """Get Security Sensitivty level to system"""
 
         # Get or create the security_sensitivity_level smt for system's root_element; should only have 1 statement
-        smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element)
+        smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element)
         security_sensitivity_level = smt.body
         return security_sensitivity_level
 
@@ -612,7 +621,7 @@ class System(auto_prefetch.Model, TagModelMixin):
             security_objective_smt.update(body=security_impact_level)
         else:
             # Set the security_impact_level smt for element; should only have 1 statement
-            security_objective_smt, created = Statement.objects.get_or_create(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name, producer_element=self.root_element,consumer_element=self.root_element, body=security_impact_level)
+            security_objective_smt, created = Statement.objects.create(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name, producer_element=self.root_element,consumer_element=self.root_element, body=security_impact_level)
         return security_impact_level, security_objective_smt
 
     @property

@@ -74,8 +74,9 @@ div.modal-content-authoring {
 /*Center*/
   .modal.center.fade .modal-dialog {
     /*right: -320px;*/
-    width: 620px;
-    top:22px;
+    width: 65%;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+    top:80px;
     -webkit-tranition: opacity 0.0s linear, right 0.0s ease-out;
        -moz-transition: opacity 0.0s linear, right 0.0s ease-out;
          -o-transition: opacity 0.0s linear, right 0.0s ease-out;
@@ -87,6 +88,7 @@ div.modal-content-authoring {
   .modal-content-authoring {
     border-radius: 0;
     border: none;
+
   }
 
   .modal-header-authoring {
@@ -100,10 +102,52 @@ div.modal-content-authoring {
   font-size: .9em;
 }
 
+
+
 label {
   text-align: right;
 }
+
+  .help-block {
+    font-size: 0.75em;
+  }
 </style>
+
+<div id="appversion_authoring_tool" class="modal" tabindex="-1" role="dialog" aria-labelledby="appversion_authoring_tool_title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="invitation_modal_title">Edit Template Info</h4>
+            </div>
+            <form action="{% url 'authoring_edit_appversion' %}" role="form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                  <div class="form-group hidden" data-children-count="1">
+                    <label class="control-label" for="module_id">module_id</label>
+                    <input class="form-control" id="module_id" type="hidden" name="module_id" size="50" required>
+                  </div>
+                  <div class="form-group" data-children-count="1">
+                    <label class="control-label" for="appversion_title">Title</label>
+                    <input class="form-control" id="appversion_title" type="text" name="appversion_title" size="50" required>
+                  </div>
+                  <div class="form-group" data-children-count="1">
+                    <label class="control-label" for="appversion_description">Description</label>
+                    <input class="form-control" id="appversion_description" type="text" name="appversion_description" size="50" required>
+                  </div>
+                  <div class="form-group" data-children-count="1">
+                    <label class="control-label" for="appversion_version">Version</label>
+                    <input class="form-control" id="appversion_version" type="text" name="appversion_version" maxlength="100" required>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                  <button id="edit_project_submit" class="btn btn-success btn-submit" type="submit">Save </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <div id="module_authoring_tool" class="modal right fade" tabindex="-1" role="dialog" aria-labelledby="module_authoring_tool_title" aria-hidden="true" data-keyboard="false" data-backdrop="false">
   <div class="modal-dialog modal-lg">
@@ -141,15 +185,23 @@ label {
   </div>
 </div>
 
-<div id="question_authoring_tool" class="modal right fade" tabindex="-1" role="dialog" aria-labelledby="question_authoring_tool_title" aria-hidden="true" data-keyboard="false" data-backdrop="false" style="right: -55%;">
+<div id="question_authoring_tool" class="modal center fade" tabindex="-1" role="dialog" aria-labelledby="question_authoring_tool_title" aria-hidden="true" data-keyboard="false" data-backdrop="false" style="">
   <div class="modal-dialog modal-md">
     <div class="modal-content modal-content-authoring">
       <form class="form-horizontal" onsubmit="return false;">
       <div class="modal-header modal-header-authoring">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="question_authoring_tool_title">
+        <h4 class="modal-title" style="margin:1em 0 1em .5em;" id="question_authoring_tool_title">
           Edit Question
         </h4>
+
+          <div class="form-group hidden">
+            <label for="at_q_id" class="col-sm-2 control-label">q_id</label>
+            <div class="col-sm-10">
+              <input id="at_q_id" name="q_id" type="text" class="form-control" value="">
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="authoring_tool_qid" class="col-sm-2 control-label">ID</label>
             <div class="col-sm-10">
@@ -158,9 +210,9 @@ label {
             </div>
           </div>
           <div class="form-group">
-            <label for="authoring_tool_qtitle" class="col-sm-2 control-label">Title</label>
+            <label for="authoring_tool_q_title" class="col-sm-2 control-label">Title</label>
             <div class="col-sm-10">
-              <input type="text" class="form-control" id="authoring_tool_qtitle" name="title">
+              <input type="text" class="form-control" id="authoring_tool_q_title" name="title">
               <span class="help-block">Title for question shown in progress list and elsewhere.</span>
             </div>
           </div>
@@ -311,7 +363,7 @@ label {
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger btn" onclick="authoring_tool_delete_question()">Delete Question</button>
+        <button type="button" class="btn btn-danger btn pull-left" onclick="authoring_tool_delete_question()">Delete Question</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-success" onclick="authoring_tool_save_question()">Save Changes</button>
       </div>
@@ -354,19 +406,26 @@ label {
     <div class="modal-content modal-content-authoring">
       <div class="modal-header modal-header-authoring">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="questionnaire_authoring_tool_title">
+        <h4 class="modal-title" id="create_q_authoring_tool_title">
           Create New Template
         </h4>
       </div>
       <div class="modal-body">
         <form class="form-horizontal" onsubmit="return false;">
+
+          <div class="form-group">
+            <div class="col-sm-9">
+              <input type="hidden" class="form-control" id="authoring_tool_app_id" name="app_id" value="">
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="authoring_tool_q_2_title" class="col-sm-2 control-label">Name</label>
             <div class="col-sm-9">
-              <input type="text" class="form-control" id="authoring_tool_q_2_title" name="title">
+              <input type="text" class="form-control" id="authoring_tool_q_2_title" name="title" value="">
             </div>
           </div>
-          <div class="form-group">
+          <div class="form-group" style="display:none;">
             <label for="authoring_tool_q_name" class="col-sm-2 control-label">Slug</label>
             <div class="col-sm-9">
               <input type="text" class="form-control" id="authoring_tool_q_name" pattern="[a-zA-Z0-9_-]*" name="q_slug">
@@ -383,7 +442,7 @@ label {
           <div class="form-group">
             <label for="authoring_tool_q_description" class="col-sm-2 control-label">Description</label>
             <div class="col-sm-9">
-              <input type="text" class="form-control" id="authoring_tool_q_description" name="short_description">
+              <input type="text" class="form-control" id="authoring_tool_q_description" name="short_description" value="">
               <span class="help-block small">Less than 100 characters</span>
             </div>
           </div>

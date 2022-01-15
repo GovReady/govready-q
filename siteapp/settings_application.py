@@ -15,6 +15,7 @@ INSTALLED_APPS += [
     'discussion',
     'controls',
     'system_settings',
+    'nlp',
 
     'loadtesting',
 ]

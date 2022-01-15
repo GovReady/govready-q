@@ -17,7 +17,8 @@ questions:
       text: Other
 
 output:
-- format: markdown
+- id: artifact_1
+  format: markdown
   title: What You Chose
   template: |
     {{q1}}

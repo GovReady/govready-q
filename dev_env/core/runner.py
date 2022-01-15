@@ -12,8 +12,15 @@ class DockerCompose(Runner):
     REQUIRED_PORTS = [8000, 5432]
     compose_files = ['docker-compose.yml']
 
+    def __init__(self, amd):
+        super().__init__()
+        self.amd = amd
+
     def build_docker_compose_command(self):
-        return f"docker-compose {' '.join([f'-f {x}' for x in self.compose_files])}"
+        command = f"docker-compose {' '.join([f'-f {x}' for x in self.compose_files])}"
+        if self.amd:
+            return f"DOCKER_DEFAULT_PLATFORM=linux/amd64 {command}"
+        return command
 
     def generate_config(self):
         config = {
@@ -73,7 +80,7 @@ class DockerCompose(Runner):
 
         if auto_admin:
             Prompt.warning(f"Administrator Account - "
-                           f"{Colors.CYAN}{auto_admin[0][0]} / {auto_admin[0][1]} - {Colors.FAIL}"
+                           f"{Colors.CYAN}{auto_admin[0][0]} / {auto_admin[0][1].replace('govready-q-dev', '')} - {Colors.FAIL}"
                            f" This is stored in local/admin.creds.json")
 
         Prompt.title_banner(f"Service - Frontend - Webpack")

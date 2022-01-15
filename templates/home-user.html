@@ -104,8 +104,8 @@ Your Compliance Projects
 
 <div class="container">
 
-<div class="project-main">
-  <a id="new-project" href="{% url 'store' %}" class=" btn btn-success">Start a project</a>
+<div class="project-main hidden">
+  <a id="new-project-button" href="{% url 'store' %}" class=" btn btn-success">Start a project</a>
 </div>
 
 <h2>Welcome to {% if sitename %}{{sitename}}{% else %}GovReady-Q{% endif %}</h2>
@@ -118,55 +118,57 @@ Your Compliance Projects
     <div class="col-sm-6">
       <div class="luna-box">
         <div class="col-md-3">
-          <div class="glyphicon glyphicon glyphicon-list-alt"></div>
-        </div>
-        <div class="col-md-9">
-
-          <h3><a id="new-project" href="/projects">You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}</a></h3>
-          <p>Projects are your organization's questionnaires, assessments and guides needed for authorizations.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon glyphicon-folder-open"></div>
-        </div>
-        <div class="col-md-9">
-          <h3><a href={% url 'list_portfolios' %}>You have access to {{ portfolios|length }} portfolio{{ portfolios|pluralize }}</a></h3>
-          <p>Portfolios are a way to organize and manage related projects.</p>
-          <p><a href={% url 'new_portfolio' %}>Create a Portfolio</a></p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon-heart-empty"></div>
-        </div>
-        <div class="col-md-9">
-          <h3><a href="love-assessments">Fall in love with assessments</a></h3>
-          <p>Assessing, learning, and improving is one of the most powerful things about being  human.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
           <div class="glyphicon glyphicon-duplicate"></div>
         </div>
         <div class="col-md-9">
-          <h3><a href="https://govready-q.readthedocs.org">Learn more about GovReady-Q</a></h3>
-          <p>Check out our documentation to learn how to take full advantage of GovReady-Q.
+            <h3><a id="new-project" href="{% url 'store' %}">I want to start a new System Security Plan using a template</a></h3>
+          <p>Pick a project template to start a new system in the ATO process.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon-list-alt"></div>
+        </div>
+        <div class="col-md-9">
+          {% if projects_access|length > 0 %}
+            <h3><a id="new-project-link" href="/projects">I want to view my existing System Security Plan{{ projects_access|pluralize }}</a></h3>
+          {% else %}
+            <h3><a id="new-project-link" href="/projects">You don't have any System Security Plans</a></h3>
+          {% endif %}
+          <p>List your IT systems getting or having ATOs. <span id="common-tab-count" style="padding-top:3px;">{{ projects_access|length }}</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon-lock"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a href="/controls/components">I want to browse security components</a></h3>
+          <p>Components are the building blocks of IT systems and provide security controls.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon-search"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a href="/controls/">I want to search security controls</a></h3>
+          <p>
+            View control catalogs.
           </p>
         </div>
       </div>
     </div>
+
 </div>
 
 {% endblock %}
