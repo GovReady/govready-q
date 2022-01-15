@@ -35,9 +35,9 @@ jobs:
           command: |
             pip install --user --upgrade pip setuptools wheel
             pip install --user -r requirements.txt
-            pip install --user -r requirements_mysql.txt
+            # pip install --user -r requirements_mysql.txt
             # pip install --user -r requirements_util.txt
-            ./fetch-vendor-resources.sh
+            # ./fetch-vendor-resources.sh
 
       - run: pip3 install --user -U pip-tools
       # Temporarily comment out below line - 08/06/2020
@@ -102,9 +102,9 @@ jobs:
         command: |
             pip install --user --upgrade pip
             pip install --user -r requirements.txt
-            pip install --user -r requirements_mysql.txt
+            # pip install --user -r requirements_mysql.txt
             # pip install --user -r requirements_util.txt
-            ./fetch-vendor-resources.sh
+            # ./fetch-vendor-resources.sh
 
     # This is adapted from https://github.com/circleci/circleci-images/blob/master/shared/images/Dockerfile-browsers.template
     # but it still says chromium crashes when launched from selenium tests. Maybe because chromium
@@ -122,6 +122,7 @@ jobs:
 
     # Install packages necessary for requirements_txt_checker.sh,
     # and then run it and store output as an artifact.
+    - run: pip3 install --user --upgrade pip
     - run: pip3 install --user -U pip-tools
     # Temporarily comment out below line - 08/06/2020
     # - run: ./requirements_txt_checker.sh > requirements.txt.status.txt
