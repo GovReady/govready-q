@@ -265,6 +265,105 @@ class GeneralTestsInvitations(OrganizationSiteFunctionalTests):
     # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
 
+class ProjectPageTests(OrganizationSiteFunctionalTests):
+    """ Tests for Project page """
+
+    def test_mini_dashboard(self):
+        """ Tests for project page mini compliance dashboard """
+
+        # Log in, create a new project.
+        self._login()
+        self._new_project()
+        # On project page?
+        # wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h2"))
+
+        # mini-dashboard content
+        self.assertInNodeText("controls", "#status-box-controls")
+        self.assertInNodeText("components", "#status-box-components")
+        # TODO: Restore tests if #status-box-poam is displayed
+        # self.assertInNodeText("POA&Ms", "#status-box-poams")
+        self.assertInNodeText("compliance", "#status-box-compliance-piechart")
+
+        # mini-dashbard links
+        self.click_element('#status-box-controls')
+        wait_for_sleep_after(lambda: self.assertInNodeText("Selected controls", ".systems-selected-items"))
+        # click project button
+        wait_for_sleep_after(lambda: self.click_element("#menu-btn-project-home"))
+        # wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h2"))
+        # test components
+        self.click_element('#status-box-components')
+        wait_for_sleep_after(lambda: self.assertInNodeText("Selected components", ".systems-selected-items"))
+        # click project button
+        wait_for_sleep_after(lambda: self.click_element("#menu-btn-project-home"))
+        # wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "h2"))
+        # test poams
+        # TODO: Restore tests if #status-box-poam is displayed
+        # self.click_element('#status-box-poams')
+        # wait_for_sleep_after(lambda: self.assertInNodeText("POA&Ms", ".systems-selected-items"))
+
+    @unittest.skip
+    def test_display_impact_level(self):
+        """ Tests for project page mini compliance dashboard """
+
+        # Log in, create a new project.
+        self._login()
+        self._new_project()
+        # On project page?
+        wait_for_sleep_after(lambda: self.assertInNodeText("I want to answer some questions", "#project-title"))
+
+        # Display imact level testing
+        # New project should not be categorized
+        self.assertInNodeText("Mission Impact: Not Categorized", "#systems-security-sensitivity-level")
+
+        # Update impact level
+        # Get project.system.root_element to attach statement holding fisma impact level
+        project = self.current_project
+        fil = "Low"
+        # Test change and test system security_sensitivity_level set/get methods
+        project.system.set_security_sensitivity_level(fil)
+        # Check value changed worked
+        self.assertEqual(project.system.get_security_sensitivity_level, fil)
+        # Refresh project page
+        self.click_element('#menu-btn-project-home')
+        # See if project page has changed
+        wait_for_sleep_after( lambda: self.assertInNodeText("low", "#systems-security-sensitivity-level") )
+        impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
+        self.assertEqual(impact_level_smts.count(), 1)
+
+    @unittest.skip
+    def test_security_objectives(self):
+        """
+        Test set/get of Security Objective levels
+        """
+        # Log in, create a new project.
+        self._login()
+        self._new_project()
+
+        project =  Project.objects.first()
+        element = Element()
+        element.name = project.title
+        element.element_type = "system"
+        element.save()
+        # Create system
+        system = System(root_element=element)
+        system.save()
+        # Link system to project
+        project.system = system
+
+        # security objectives
+        new_security_objectives = {"security_objective_confidentiality": "low",
+                                   "security_objective_integrity": "high",
+                                   "security_objective_availability": "moderate"}
+        # Setting security objectives for project's statement
+        security_objective_smt, smt = project.system.set_security_impact_level(new_security_objectives)
+
+        # Check value changed worked
+        self.assertEqual(project.system.get_security_impact_level, new_security_objectives)
+
+
 class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
     def _fill_in_signup_form(self, email, username=None):
