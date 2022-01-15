@@ -2,8 +2,8 @@ GovReady-Q Release Notes
 ========================
 
 
-v0.9.11.11-dev (January xx, 2022)
----------------------------------
+v0.9.11.11 (January 15, 2022)
+-----------------------------
 
 **Feature changes**
 
@@ -37,8 +37,8 @@ v0.9.11.11-dev (January xx, 2022)
 * Superusers can see all projects.
 
 
-v0.9.11.10-dev (December xx, 2021)
----------------------------------
+v0.9.11.10-dev (December 14, 2021)
+----------------------------------
 
 Introuduce new authoring tool. Remove authoring tool modal from task question page.
 
