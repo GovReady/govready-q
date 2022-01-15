@@ -5,7 +5,9 @@ GovReady-Q Release Notes
 v0.9.13-dev (January xx, 2022)
 ------------------------------
 
+**Bug fixes**
 
+* Properly close CSV export modal after exporting.
 
 v0.9.11.11 (January 15, 2022)
 -----------------------------
