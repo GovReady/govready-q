@@ -8,7 +8,6 @@
 import os, os.path, json
 from platform import uname, system
 from django.core.exceptions import ValidationError
-
 # What's the name of the app containing this file? That determines
 # the module for the main URLconf etc.
 from siteapp.settings_logging import LOGGING
@@ -166,7 +165,9 @@ MIDDLEWARE = [
 	'pyinstrument.middleware.ProfilerMiddleware',
 	#'django.middleware.cache.FetchFromCacheMiddleware',
 	'session_security.middleware.SessionSecurityMiddleware',
-]
+    "siteapp.middleware.banner.BannerMiddleware"
+]  
+
 # The cache connection to use for the cache middleware.
 # CACHE_MIDDLEWARE_ALIAS='default'
 # The default number of seconds to cache a page for the cache middleware.
