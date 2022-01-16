@@ -83,19 +83,9 @@ class DiscussionTests(SeleniumTest):
         self.fill_field("#id_login", self.user.username)
         self.fill_field("#id_password", self.user_pw)
         self.click_element("form#login_form button[type=submit]")
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
         self.assertRegex(self.browser.title, "Your Compliance Projects")
-
-    # def _new_project(self):
-    #     self.browser.get(self.url("/projects"))
-    #     self.click_element("#new-project-link-from-projects")
-
-    #     # Start a project
-    #     wait_for_sleep_after(lambda: self.click_element(".app[data-app='project/simple_project'] .view-app"))
-    #     # var_sleep(10.5)
-    #     self.click_element("#start-project")
-    #     # wait_for_sleep_after(lambda: self.click_element("#start-project"))
-    #     wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "I want to answer some questions on Q."))
-
 
     def _new_project(self):
         self.browser.get(self.url("/projects"))
@@ -109,9 +99,6 @@ class DiscussionTests(SeleniumTest):
 
         m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
         self.current_project = Project.objects.get(id=m.group(1))
-
-
-
 
     def _start_task(self):
         # Assumes _new_project() just finished.

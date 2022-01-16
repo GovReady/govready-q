@@ -64,6 +64,21 @@ logger = get_logger()
 LOGIN = "login"
 SIGNUP = "signup"
 
+def banner(request):
+    if request.method == "GET":
+        if "accounts/login/?next=" in request.META.get('HTTP_REFERER', ""):
+            request.session["_post_banner_url"] = request.META.get('HTTP_REFERER').split("next=")[-1]
+        elif request.path != "/warningmessage/":
+            request.session["_post_banner_url"] = request.path
+        else:
+            request.session = "/"
+        return render(request, "warning_message.html")
+    
+    request.session["_banner_checked"] = True
+    redirect_url = request.session.get("_post_banner_url", "/")
+    if "_post_banner_url" in request.session.keys():
+        del request.session["_post_banner_url"]
+    return HttpResponseRedirect(redirect_url)
 
 def home_user(request):
     # If the user is logged in, then redirect them to the projects page.
@@ -129,7 +144,7 @@ def homepage(request):
                         messages.error(request,
                                        "[ERROR] new_user '{}' did not authenticate during account creation. Account not created. Report error to System Administrator. {}".format(
                                            new_user.username, vars(new_user)))
-                        return HttpResponseRedirect("/")
+                        return HttpResponseRedirect("/warningmessage")
                 else:
                     user = request.user
                 # Create user's default portfolio

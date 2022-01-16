@@ -31,9 +31,6 @@ from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
 from django.utils.crypto import get_random_string
-# <<<<<<< HEAD
-# from selenium.webdriver import DesiredCapabilities
-# =======
 from django import db
 
 from controls.enums.statements import StatementTypeEnum
@@ -195,7 +192,6 @@ class SeleniumTest(StaticLiveServerTestCase):
             #     print(f"{catalog_key} record created into database")
             # else:
             #     print(f"{catalog_key} record found in database")
-
 
     def navigateToPage(self, path):
         self.browser.get(self.url(path))
@@ -443,7 +439,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
     def client_get(self, *args, **kwargs):
         resp = self.client.get(
-            *args,
+            *args, follow=True,
             **kwargs)
         self.assertEqual(resp.status_code, 200, msg=repr(resp))
         return resp  # .content.decode("utf8")
@@ -458,6 +454,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.fill_field("#id_login", username or self.user.username)
         self.fill_field("#id_password", password or self.user.clear_password)
         self.click_element("form#login_form button[type=submit]")
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
 
     def _new_project(self):
         self.browser.get(self.url("/projects"))
@@ -572,11 +570,10 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
     def test_session_timeout(self):
         self._login()
-        ping_url = self.url("/session_security/ping/?idleFor=0")
-        response = self.client_get(ping_url)
-
-        self.assertTrue(response.status_code==200)
-        self.assertTrue(response.content==b'0')
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
+        self.browser.get(self.url("/session_security/ping/?idleFor=0"))
+        self.assertInNodeText("0", "body")
 
     def test_simple_module(self):
         # Log in and create a new project and start its task.
@@ -1139,11 +1136,13 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # login as user without admin privileges and test settings page unreachable
         wait_for_sleep_after(lambda: self.browser.get(self.url("/accounts/logout/")))
         self._login(self.user2.username, self.user2.clear_password)
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
         self.browser.get(self.url("/projects"))
         var_sleep(1)
 
-        response = self.client.get('/settings')
-        self.assertEqual(response.status_code, 403)
+        self.browser.get(self.url("/settings"))
+        self.assertInNodeText("You do not have access to this page.", "body")
 
         # logout
         self.browser.get(self.url("/accounts/logout/"))
