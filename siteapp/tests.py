@@ -455,6 +455,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.fill_field("#id_login", username or self.user.username)
         self.fill_field("#id_password", password or self.user.clear_password)
         self.click_element("form#login_form button[type=submit]")
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
 
     def _new_project(self):
         self.browser.get(self.url("/projects"))
