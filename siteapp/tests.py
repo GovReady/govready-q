@@ -570,6 +570,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
     def test_session_timeout(self):
         self._login()
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
         ping_url = self.url("/session_security/ping/?idleFor=0")
         response = self.client_get(ping_url)
 
