@@ -439,7 +439,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
     def client_get(self, *args, **kwargs):
         resp = self.client.get(
-            *args,
+            *args, follow=True,
             **kwargs)
         self.assertEqual(resp.status_code, 200, msg=repr(resp))
         return resp  # .content.decode("utf8")
@@ -572,11 +572,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self._login()
         if "Warning Message" in self.browser.title:
             self.click_element("#btn-accept")
-        ping_url = self.url("/session_security/ping/?idleFor=0")
-        response = self.client_get(ping_url)
-
-        self.assertTrue(response.status_code==200)
-        self.assertTrue(response.content==b'0')
+        self.browser.get(self.url("/session_security/ping/?idleFor=0"))
+        self.assertInNodeText("0", "body")
 
     def test_simple_module(self):
         # Log in and create a new project and start its task.
