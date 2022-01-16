@@ -193,7 +193,6 @@ class SeleniumTest(StaticLiveServerTestCase):
             # else:
             #     print(f"{catalog_key} record found in database")
 
-
     def navigateToPage(self, path):
         self.browser.get(self.url(path))
 
@@ -461,7 +460,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
     def _new_project(self):
         self.browser.get(self.url("/projects"))
 
-        wait_for_sleep_after(lambda: self.click_element("#new-project-link-from-projects"))
+        wait_for_sleep_after(lambda: self.click_element("#new-project"))
 
         var_sleep(1)
         # Click Add Button
@@ -1138,11 +1137,13 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # login as user without admin privileges and test settings page unreachable
         wait_for_sleep_after(lambda: self.browser.get(self.url("/accounts/logout/")))
         self._login(self.user2.username, self.user2.clear_password)
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
         self.browser.get(self.url("/projects"))
         var_sleep(1)
 
-        response = self.client.get('/settings')
-        self.assertEqual(response.status_code, 403)
+        self.browser.get(self.url("/settings"))
+        self.assertInNodeText("You do not have access to this page.", "body")
 
         # logout
         self.browser.get(self.url("/accounts/logout/"))
