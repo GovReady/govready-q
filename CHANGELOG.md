@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.11.2.3 (January 17, 2022)
+------------------------------
+
+**Developer changes**
+
+* Update requirements.
+
+
 v0.9.11.2.2 (January 11, 2022)
 ------------------------------
 
