@@ -29,7 +29,7 @@ jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages
 # Django==2.2.12 # BSD License
-Django==3.2.10 # BSD License
+Django==3.2.11 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # BSD 3-Clause License
