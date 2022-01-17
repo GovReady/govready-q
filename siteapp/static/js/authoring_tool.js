@@ -1,5 +1,5 @@
 function init_authoring_tool(state) {
-  // Save state. Should be:
+  // Save state. The received `state` object has takes the below form:
   // {
   //  task: task_id,
   //  module: { module spec data },
