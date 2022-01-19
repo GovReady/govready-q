@@ -55,7 +55,7 @@ jobs:
           # B101: Test for use of assert
           # B110: try_except_pass
           # B603: subprocess_without_shell_equals_true
-      - run: bandit -s B101,B110,B603 -r discussion/ guidedmodules/ siteapp/
+      - run: bandit -s B101,B110,B603,B703,B308 -r discussion/ guidedmodules/ siteapp/
 
       # Snyk Scan
       # - run: pip install -r requirements_util.txt
