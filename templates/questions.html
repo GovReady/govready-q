@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% load q %}
+{% load question_tags %}
 
 {% block title %}
 Question editor
@@ -54,7 +55,8 @@ Question editor
     font-weight: bold;
   }
 
-  .question-row:hover {}
+  .question-row:hover { background-color: #efefef; }
+  .question-cell { vertical-align: top; white-space: pre-wrap; }
 
   {% if q.spec.type == "module" %}
   .question .radio label {
@@ -130,10 +132,11 @@ Question editor
   .question_grid th { font-size:.8em;}
   .question_grid th.edit_col { width:10%; }
   .question_grid th.order_col { width:5%; }
-  .question_grid th.key_col { width: 15%; }
-  .question_grid th.title_col { width:25%; }
-  .question_grid th.type_col { width: 20%; }
-  .question_grid th.prompt_col { width: 25%; }
+  .question_grid th.key_col { width: 25%; }
+  .question_grid th.title_col { width:15%; }
+  .question_grid th.type_col { width: 10%; }
+  .question_grid th.prompt_col { width: 40%; }
+  .question_grid td { padding: 6px 4px 8px 4px; }
 
   .leftbox { display:block; font-size:.9em; padding:.5em; border:1px solid #E5E5E5; background:#F8F8F8; margin-bottom:.5em; color:#808080; }
   .tot_q {  font-size:.8em; }
@@ -243,10 +246,14 @@ Question editor
     {% else %}
       <h3>Questions</h3>
     {% endif %}
-    <table class="question_grid"><tr><th class="edit_col">Edit</th><th class="order_col">Order</th><th class="key_col">Key</th><th class="title_col">Title</th><th class="type_col">Type</th><th class="prompt_col">Prompt</th></tr>
+    <table class="question_grid"><tr><th class="order_col">Order</th><th class="prompt_col">Prompt</th><th class="key_col">Key/Title</th><th class="type_col">Type</th><th class="edit_col">Edit</th></tr>
       {% for q in module_questions %}
         <tr class="question-row">
-          <td>
+          <td class="question-cell">{{q.definition_order}}</td>
+          <td title="{{q.spec.prompt}}" class="question-cell">{{q.spec.prompt|first_line_only|truncatechars:160}}</td>
+          <td class="question-cell">Key: {{q.key}} <br>Title: {{q.spec.title}}</td>
+          <td class="question-cell" width="20" style="width: 20px;">{{q.spec.type}}</td>
+          <td style='vertical-align: top;'>
             <form autocomplete="off" action="" method="post" class="question-form" onsubmit="return false;">
               <input type="hidden" name="method" value="save">
               <input type="hidden" name="q_id" value="{{q.id}}">
@@ -266,20 +273,23 @@ Question editor
               </div>
             </form>
           </td>
-          <td>{{q.definition_order}}</td>
-          <td>{{q.key}}</td>
-          <td>{{q.spec.title}}</td>
-          <td>{{q.spec.type}}</td>
-          <td title="{{q.spec.prompt}}">{{q.spec.prompt|truncatechars:50}}</td>
         </tr>
       {% endfor %}
     </table>
 
     <p>&nbsp;</p>
     <h3>Artifacts</h3>
-      <table class="question_grid"><tr><th class="edit_col">Edit</th><th class="key_col">ID</th><th class="title_col">Title</th><th class="type_col">Format</th><th class="prompt_col">Prompt</th></tr>
+      <table class="question_grid">
+        {% if module.spec.output|length  > 0 %}
+          <tr><th class="key_col">ID</th><th class="title_col">Title</th><th class="type_col">Format</th><th class="">Filename</th><th class="edit_col">Edit</th></tr>
+        {% endif %}
+
       {% for artifact in module.spec.output %}
          <tr class="question-row">
+          <td>{% if artifact.id %}{{artifact.id}}{% else %}<span class="text-danger">Artifact error. Please ask adimistrator "Fix missing artifact.id for module {{module.id}}."{% endif %}</span></td>
+          <td>{{artifact.title}}</td>
+          <td>{{artifact.format}}</td>
+          <td title="{{artifact.template|truncatechars:600}}">{{artifact.filename}}</td>
           <td>
             {% if artifact.id %}
             <form action="{% url 'show_module_artifact' module.id artifact.id %}" method="post" class="artifact-form">
@@ -294,10 +304,6 @@ Question editor
             <span class="text-danger">Artifact error.</span>
             {% endif %}
           </td>
-          <td>{% if artifact.id %}{{artifact.id}}{% else %}<span class="text-danger">Artifact error. Please ask adimistrator "Fix missing artifact.id for module {{module.id}}."{% endif %}</span></td>
-          <td>{{artifact.title}}</td>
-          <td>{{artifact.format}}</td>
-          <td title="{{artifact.template|truncatechars:600}}">{{artifact.filename}}</td>
         </tr>
       {% endfor %}
     </table>
