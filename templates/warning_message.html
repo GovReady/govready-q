@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load bootstrap3 %}
+
+{% load i18n %}
+{% block head_title %}{% trans "Warning Message" %}{% endblock %}
+
+{% block body-wide %}
+<style>
+    #warning-message { margin-top:5%; margin-left: 25%; width: 50%; }
+    .warning { background-color: #eee; border: #444; border-style: solid; border-radius: 5px; padding: 20px;}
+    #content-classification { text-align:end; padding-right: 1rem; font-style: italic; font-weight: bold; color: #444; }
+    #btn-agree { margin:1rem; }
+    h2 { text-align: center; }
+</style>
+
+<body>
+    {% block contextbar %}{% endblock %}
+    <div id="warning-message" style="">
+        <div class="warning pull-left">
+            <h2>Notice</h2>
+            <div class="message" style="padding: 1rem;">
+                <p>You are accessing a private information system, which includes (1) this computer, (2) this computer network, and (3) all devices and storage media attached to this network or to a computer on this network.<p>
+                <p>This information system is provided for authorized use only. Unauthorized or improper use of this system may result in civil and criminal penalties.</p>
+                <p>By using this system you agree to abide by the Terms of Service.</p>
+            </div>
+            <div class="text-center" style="display:flex;justify-content:center;">
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <div style="margin-right:1rem;" >
+                        <button 
+                            id="btn-accept"
+                            type="submit" 
+                            class="btn btn-success" 
+                            name="accept" 
+                            value="Accept"
+                        >
+                            Accept
+                        </button>
+                    </div>
+                </form>
+                <form action="/decline/" method="post">
+                    {% csrf_token %}
+                    <input
+                        id="btn-decline"
+                        class="btn btn-danger" 
+                        name="decline" 
+                        value="Decline" 
+                        type="submit"
+                    />
+                </form>
+            </div>
+        </div>
+        <div id="content-classification">Limited Official Use</div>
+    </div>
+    
+</body>
+{% endblock %}

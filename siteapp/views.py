@@ -64,6 +64,21 @@ logger = get_logger()
 LOGIN = "login"
 SIGNUP = "signup"
 
+def banner(request):
+    if request.method == "GET":
+        if "accounts/login/?next=" in request.META.get('HTTP_REFERER', ""):
+            request.session["_post_banner_url"] = request.META.get('HTTP_REFERER').split("next=")[-1]
+        elif request.path != "/warningmessage/":
+            request.session["_post_banner_url"] = request.path
+        else:
+            request.session = "/"
+        return render(request, "warning_message.html")
+    
+    request.session["_banner_checked"] = True
+    redirect_url = request.session.get("_post_banner_url", "/")
+    if "_post_banner_url" in request.session.keys():
+        del request.session["_post_banner_url"]
+    return HttpResponseRedirect(redirect_url)
 
 def home_user(request):
     # If the user is logged in, then redirect them to the projects page.
@@ -129,7 +144,7 @@ def homepage(request):
                         messages.error(request,
                                        "[ERROR] new_user '{}' did not authenticate during account creation. Account not created. Report error to System Administrator. {}".format(
                                            new_user.username, vars(new_user)))
-                        return HttpResponseRedirect("/")
+                        return HttpResponseRedirect("/warningmessage")
                 else:
                     user = request.user
                 # Create user's default portfolio
@@ -954,18 +969,7 @@ def project_read_required(f):
 
 @project_read_required
 def project(request, project):
-    # TODO: Lifecycles is part of the kanban style version of presenting projects that hasn't been optimized & fully implemented
-    # Get this project's lifecycle stage, which is shown below the project title.
-    # assign_project_lifecycle_stage([project])
-    # if project.lifecycle_stage[0]["id"] == "none":
-    #     # Kill it if it's the default lifecycle.
-    #     project.lifecycle_stage = None
-    # else:
-    #     # Mark the stages up to the active one as completed.
-    #     for stage in project.lifecycle_stage[0]["stages"]:
-    #         stage["complete"] = True
-    #         if stage == project.lifecycle_stage[1]:
-    #             break
+    """View Project home page"""
 
     # Pre-load the answers to project root task questions and impute answers so
     # that we know which questions are suppressed by imputed values.
@@ -983,25 +987,31 @@ def project(request, project):
     for m in modules:
         module_dict[m.id] = m
 
-    # Collect all of the questions and answers, i.e. the sub-tasks, that we'll display.
-    # Create a "question" record for each question that is displayed by the template.
-    # For module-set questions, create one record to start new entries and separate
-    # records for each answered module.
+    # Collect the Project's questions and answers.
+    # Create a "question" instance for each question displayed by the template.
+    # For module-set questions, create one instance to start new entries and separate
+    # instances for each answered module.
     from collections import OrderedDict
     questions = OrderedDict()
     can_start_any_apps = False
     for (mq, is_answered, answer_obj, answer_value) in (
-    root_task_answers.answertuples.values() if root_task_answers else []):
+        root_task_answers.answertuples.values() if root_task_answers else []):
         # Display module/module-set questions only. Other question types in a project
         # module are not valid.
+        # mq: ModuleQuestion (the question itself)
+        # is_answered: has the ModuleQuestion been answered?
+        # answer_obj: TaskAnswerHistory object that is the most recent
+        # answer_value: TaskAnswerHistory.stored_value
+
+        # Skip any question that is not of type module or module-set.
         if mq.spec.get("type") not in ("module", "module-set"):
             continue
 
-        # Skip questions that are imputed.
+        # Skip questions with imputed answers.
         if is_answered and not answer_obj:
             continue
 
-        # Create a "question" record for all Task answers to this question.
+        # Create a "question" instance for all Task answers to this question.
         if answer_value is None:
             # Question is unanswered - there are no sub-tasks.
             answer_value = []
@@ -1022,7 +1032,7 @@ def project(request, project):
         #     icon = None
 
         for i, module_answers in enumerate(answer_value):
-            # Create template context dict for this question.
+            # Create context dict for this question for display template.
             key = mq.id
             if mq.spec["type"] == "module-set":
                 key = (mq.id, i)
@@ -1036,8 +1046,8 @@ def project(request, project):
                 "module": module_dict[mq.spec['module-id']]
             }
 
-        # Create a "question" record for the question itself it is is unanswered or if
-        # this is a module-set question, and only if the user has permission to start tasks.
+        # If user has permission to start tasks then create a "question" instance
+        # for the question itself it is unanswered or if this is a module-set question
         if can_start_task and (len(answer_value) == 0 or mq.spec["type"] == "module-set"):
             questions[mq.id] = {
                 "question": mq,

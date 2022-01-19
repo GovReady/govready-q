@@ -24,7 +24,7 @@ function run_update() {
 	#
 	# Specify --upgrade to ignore the package versions already listed
 	# in requirements.txt and find the latest version of any packages
-	# that are not pinned in requirements.in or by any of our dependecies.
+	# that are not pinned in requirements.in or by any of our dependencies.
 	# (This is necessary for requirements_txt_checker.sh, which will
 	# generate a requirements.txt file from scratch, and any unpinned
 	# packages will be pinned to the latest upstream version, and if we

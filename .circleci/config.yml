@@ -35,9 +35,9 @@ jobs:
           command: |
             pip install --user --upgrade pip setuptools wheel
             pip install --user -r requirements.txt
-            pip install --user -r requirements_mysql.txt
+            # pip install --user -r requirements_mysql.txt
             # pip install --user -r requirements_util.txt
-            ./fetch-vendor-resources.sh
+            # ./fetch-vendor-resources.sh
 
       - run: pip3 install --user -U pip-tools
       # Temporarily comment out below line - 08/06/2020
@@ -58,16 +58,16 @@ jobs:
       - run: bandit -s B101,B110,B603 -r discussion/ guidedmodules/ siteapp/
 
       # Snyk Scan
-      - run: pip install -r requirements_util.txt
-      - snyk/scan:
-          token-variable: SNYK_API_TOKEN
-          project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
-          additional-arguments: "--file=requirements_mysql.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
+      # - run: pip install -r requirements_util.txt
+      # - snyk/scan:
+      #     token-variable: SNYK_API_TOKEN
+      #     project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
+      #     additional-arguments: "--file=requirements_mysql.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
 
-      - snyk/scan:
-          token-variable: SNYK_API_TOKEN
-          project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
-          additional-arguments: "--file=requirements_util.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
+      # - snyk/scan:
+      #     token-variable: SNYK_API_TOKEN
+      #     project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
+      #     additional-arguments: "--file=requirements_util.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
 
       - snyk/scan:
           token-variable: SNYK_API_TOKEN
@@ -77,7 +77,7 @@ jobs:
   tests:
     docker:
     - image: circleci/python:3.8.1-browsers # when upgrading, check that it works with selenium
-    parallelism: 4
+    parallelism: 1
     steps:
     # Add .local/bin to PATH for utilities install by `pip install --user`.
     - run: echo 'export PATH=~/.local/bin:$PATH' >> $BASH_ENV
@@ -102,9 +102,9 @@ jobs:
         command: |
             pip install --user --upgrade pip
             pip install --user -r requirements.txt
-            pip install --user -r requirements_mysql.txt
+            # pip install --user -r requirements_mysql.txt
             # pip install --user -r requirements_util.txt
-            ./fetch-vendor-resources.sh
+            # ./fetch-vendor-resources.sh
 
     # This is adapted from https://github.com/circleci/circleci-images/blob/master/shared/images/Dockerfile-browsers.template
     # but it still says chromium crashes when launched from selenium tests. Maybe because chromium
@@ -122,6 +122,7 @@ jobs:
 
     # Install packages necessary for requirements_txt_checker.sh,
     # and then run it and store output as an artifact.
+    - run: pip3 install --user --upgrade pip
     - run: pip3 install --user -U pip-tools
     # Temporarily comment out below line - 08/06/2020
     # - run: ./requirements_txt_checker.sh > requirements.txt.status.txt
@@ -130,17 +131,19 @@ jobs:
 
     # Run unit and functional tests with code coverage, and store code coverage
     # results. CircleCI commands can't go on forever, so we run the tests
-    - run:
-        name: All tests run in split
-        command: |
-          TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split --split-by=timings --timings-type=filename)
-          coverage run --source='.' --branch -p manage.py test  --verbosity=1 $TESTFILES -v 2
+    # - run:
+    #     name: All tests run in split
+    #     command: |
+    #       TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split --split-by=timings --timings-type=filename)
+    #       coverage run --source='.' --branch -p manage.py test  --verbosity=1 $TESTFILES -v 2
 
-    # - run: coverage run --source='.' --branch -p manage.py test discussion
-    # Commenting out tests until better solution for testing after page loaded
-    #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.LandingSiteFunctionalTests
-    # - run: coverage run --source='.' --branch -p manage.py test siteapp.tests.GeneralTests
-    #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.QuestionsTests
+
+    # - run: coverage run --source='.' --branch -p manage.py test siteapp
+    - run: coverage run --source='.' --branch -p manage.py test controls.tests
+    - run: coverage run --source='.' --branch -p manage.py test siteapp.tests
+    - run: coverage run --source='.' --branch -p manage.py test guidedmodules
+    - run: coverage run --source='.' --branch -p manage.py test discussion
+
     - run: coverage combine
     - run: coverage report # output to stdout.
     - run: coverage xml # generate report artifact coverage.xml.

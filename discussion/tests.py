@@ -83,19 +83,9 @@ class DiscussionTests(SeleniumTest):
         self.fill_field("#id_login", self.user.username)
         self.fill_field("#id_password", self.user_pw)
         self.click_element("form#login_form button[type=submit]")
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
         self.assertRegex(self.browser.title, "Your Compliance Projects")
-
-    # def _new_project(self):
-    #     self.browser.get(self.url("/projects"))
-    #     self.click_element("#new-project-link-from-projects")
-
-    #     # Start a project
-    #     wait_for_sleep_after(lambda: self.click_element(".app[data-app='project/simple_project'] .view-app"))
-    #     # var_sleep(10.5)
-    #     self.click_element("#start-project")
-    #     # wait_for_sleep_after(lambda: self.click_element("#start-project"))
-    #     wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "I want to answer some questions on Q."))
-
 
     def _new_project(self):
         self.browser.get(self.url("/projects"))
@@ -109,9 +99,6 @@ class DiscussionTests(SeleniumTest):
 
         m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
         self.current_project = Project.objects.get(id=m.group(1))
-
-
-
 
     def _start_task(self):
         # Assumes _new_project() just finished.
@@ -236,7 +223,10 @@ class DiscussionTests(SeleniumTest):
         # Start a team conversation.
         wait_for_sleep_after(lambda: self.click_element("#start-a-discussion"))
         wait_for_sleep_after(lambda: self.fill_field("#discussion-your-comment", "Hello is anyone *here*?"))
+        var_sleep(.5)
         wait_for_sleep_after(lambda: self.click_element("#discussion .comment-input button.btn-primary"))
+        var_sleep(1.0)
+        self.assertInNodeText("Hello", '.comment[data-id="1"] .comment-text p')
 
         # Test Script injection
         script = "<script id='injectiontest2'>document.getElementsByTagName('body')[0]" \
@@ -255,8 +245,8 @@ class DiscussionTests(SeleniumTest):
         # Test some special characters
         wait_for_sleep_after(lambda: self.fill_field("#discussion-your-comment", "¥"))
         wait_for_sleep_after(lambda: self.click_element("#discussion .comment-input button.btn-primary"))
-
-        wait_for_sleep_after(lambda: self.assertInNodeText("¥", '.comment[data-id="3"] .comment-text p'))
+        var_sleep(0.5)
+        self.assertInNodeText("¥", '.comment[data-id="3"] .comment-text p')
 
         # Test file attachments upload successfully
 
