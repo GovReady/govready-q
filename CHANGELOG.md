@@ -8,6 +8,8 @@ v0.9.13-dev (January xx, 2022)
 **UI changes**
 
 * Add sign-in warning message to which users need to agree.
+* Reduce number of Group Django messages from question actions into single message for adding actions.
+* Simplify new authoring tool. Move prompt from right to left. Only show first line of question prompt.
 
 **Bug fixes**
 
@@ -36,13 +38,11 @@ v0.9.11.11 (January 15, 2022)
 * Display pagination control btm of component page.
 * Add 'Things to do' text to project.html.
 * Display links to previous and next selected control on System selected control editor page.
-* Reduce number of Group Django messages from question actions into single message for adding actions.
-* Simplify new authoring tool. Move prompt from right to left. Only show first line of question prompt.
 * Fix sizing of catalog listing panel in app store to keep rows clean.
 
 **Bug fixes**
 
-* Stop scrubching of progress-project-area-wrapper on question page.
+* Stop scrunching of progress-project-area-wrapper on question page.
 * Always make sure output param exists in all modules that get edited.
 * Fix adding statements to components in library.
 * Correctly escape carriage returns in multi-line component descriptions in edit component modal.
