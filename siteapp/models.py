@@ -542,7 +542,9 @@ class Project(TagModelMixin, BaseModel):
         queryset2 = get_users_with_perms(self)
         # Project's Portfolio members from 0.9.0 Django guardian permission structure
         queryset3 = get_users_with_perms(self.portfolio)
-        users = list(chain(queryset1, queryset2, queryset3))
+        # Get all superusers
+        queryset4 = User.objects.filter(is_superuser=True)
+        users = list(chain(queryset1, queryset2, queryset3, queryset4))
         return users
 
     def get_admins(self):
@@ -550,7 +552,9 @@ class Project(TagModelMixin, BaseModel):
         queryset1 = User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
         # Project's Portfolio owner from 0.9.0 Django guardian permission structure have Project admin rights
         queryset2 = get_users_with_perms(self, only_with_perms_in=['can_grant_portfolio_owner_permission'])
-        users = list(chain(queryset1, queryset2))
+        # Get all superusers
+        queryset4 = User.objects.filter(is_superuser=True)
+        users = list(chain(queryset1, queryset2, queryset4))
         return users
 
     # faster than checking `get_admins()` on many projects
@@ -560,6 +564,7 @@ class Project(TagModelMixin, BaseModel):
         queryset1 = ProjectMembership.objects.filter(project__in=projects, is_admin=True, user=user)
         # Project's Portfolio owner from 0.9.0 Django guardian permission structure have Project admin rights
         queryset2 = get_objects_for_user(user, ['can_grant_portfolio_owner_permission'], klass=Project)
+        # TODO: Let superusers be admins for all projects
 
         # convert everything to a Project (queryset1 isn't), filter out irrelevant projects, and filter out duplicates
         has_admin_on = set(chain([x.project for x in queryset1], [proj for proj in queryset2 if proj in projects]))
