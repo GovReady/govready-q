@@ -1075,8 +1075,10 @@ def project(request, project):
     # Assign questions in main_area_questions to groups
     question_groups = OrderedDict()
     for q in main_area_questions:
-        mq = q["question"]
-        groupname = mq.spec.get("group")
+        # v0.9.13 organizes all questions into a single group
+        # mq = q["question"]
+        # groupname = mq.spec.get("group")
+        groupname = "Modules"
         group = question_groups.setdefault(groupname, {
             "title": groupname,
             "questions": [],

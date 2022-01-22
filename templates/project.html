@@ -39,7 +39,6 @@
     font-weight: bold;
     padding: 0 18px 14px 0;
     margin: 0;
-    width: 700px;
   }
 
   .question {
@@ -70,6 +69,7 @@
   .question .question-title {
     margin-top: .5em;
     color: #222;
+    padding-right:20px;
   }
 
   .question-title {
@@ -77,12 +77,17 @@
     margin: 0px 0px 0px 40px;
   }
 
-  .question-title:hover span {display:none}
-  .question-title:hover:before {content:"Click to edit this section...";
-                                font-weight: bold;
-                                font-style: italic;
-  }
+  /*.question:hover:after {
+      content:"  Click to edit...";
+      font-weight: bold;
+      font-style: italic;
+      margin-left: 40px;
+  }*/
 
+  .question:hover {
+      {#font-weight: bold;#}
+      background-color: #ececec;
+  }
   .question-status {
     margin: 12px auto 20px auto;
     font-size: 0.8;
@@ -197,8 +202,8 @@
         </div>
       </div>
     </div>
-    <!-- TODO: Make sure categorizations work and can be set
-    <div class="row" style="margin-top: 12px;">
+    <!-- TODO: Make sure categorizations work and can be set -->
+    <div class="row hidden" style="margin-top: 12px;">
       <div class="col-md-3">
         <div id="systems-security-confidentiality-level" class="status-box status-small" onclick="show_edit_security_objs_modal(); return false;" style="cursor: pointer;">
           confidentiality objective<br/>
@@ -224,35 +229,26 @@
         </div>
       </div>
     </div>
-    -->
-
-  <div class="col-md-12"><p>&nbsp;</p></div>
-    <div class="row">
-        {% if project.root_task.module.spec.introduction %}
-            {#<p class="project-text">#}
-              {#{{project.root_task.render_introduction|safe}}#}
-            {#</p>#}
-        {% endif %}
-
-        {% if project.root_task.module.spec.is_app_stub %}
-          {# This project is tied to an app that has not yet been imported. #}
-          <h2>Activate App</h2>
-          <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
-        {% endif %}
-    </div>
 
     <div class="row" style="max-width: 1200px;">
       <div class="col-md-12">
-        <h2>Things to do</h2>
         <div class="question-column">
+        <h3 class="question-group-title hr" style="margin-top: 20px;">
+                <span></span>
+                &nbsp;
+                Summary
+                &nbsp;
+                <span></span>
+              </h3>
+            <div>{{ project.root_task.module.spec.introduction.template }}</div>
             {% for group in question_groups.groups %}
             {% if group.title %}<div><a id="{{group.title}}"></a>&nbsp;</div>{% endif %}
             <div class="question-group">
               {% if group.title %}
-              <h3 class="question-group-title hr">
+              <h3 class="question-group-title hr" style="margin-bottom: 20px;">
                 <span></span>
                 &nbsp;
-                {{group.title}}
+                Modules<!-{{group.title}}-->
                 &nbsp;
                 <span></span>
               </h3>
@@ -262,7 +258,7 @@
                 <div id="question-{{q.question.key}}"
                   {% if q.task  %}data-task-id="{{q.task.id}}"{% endif %}
                   class="col-xs-12 question {% if q.task.is_finished %}question-finished{% endif %}"
-                  style="width:760px;"
+                  style=""
                 >
 
                     {# The user may not have permission to actually start a Task, however. If not, show the same UI but without the form element that actually makes the request to start the Task. #}
@@ -296,10 +292,13 @@
                     {% endif %}
 
                     <div class="question-title">
-                      <span style="font-weight:bold;">{{ forloop.counter }}. {{q.question.spec.title}}</span>
+                      <span style="font-weight:bold;"><!--{{ forloop.counter }}. -->{{q.question.spec.title}}</span>
                       {% if q.can_start_new_task and q.question.spec.type == "module-set" %}
                         <span class="glyphicon glyphicon-plus pull-right"></span>
                       {% endif %}
+                      <div class="pull-right">
+                          {{ q.module.questions.all|length }} question{{ q.module.questions.all|pluralize }}
+                      </div>
 
                       <div class="question-status">
                         {% with task=q.task %}
@@ -310,14 +309,11 @@
                           {% else %}
                             <div class="">status: Not started</div>
 
-                            <p><br>
-                              Answer {% if q.module.questions.all|length > 1 %}up to{% endif %} {{ q.module.questions.all|length }} question{{ q.module.questions.all|pluralize }}.
-                            </p>
                             {% if q.module.spec.output|length > 0 %}
                               <p>
                                 {# If task started we can link artifacts on task finished page, otherwise we can only know artifacts exist #}
 
-                                This module prepares {{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }}:
+                                {{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }}:
 
                                 {% for artif in q.module.spec.output %}
                                   {{ artif.title }}{% if not forloop.last %}, {% endif %}
@@ -343,7 +339,7 @@
                       {% if q.module.spec.output|length > 0 %}
                         {# If task started we can link artifacts on task finished page, otherwise we can only know artifacts exist #}
                         {% if q.task %}
-                          <a href="{{q.task.get_absolute_url}}/finished">This module has {{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }} available</a>:
+                          <a href="{{q.task.get_absolute_url}}/finished">{{ q.module.spec.output|length }} artifact{{ q.module.spec.output|pluralize }} available</a>:
                         {% else %}
                         {% endif %}
                         {% for artif in q.module.spec.output %}
