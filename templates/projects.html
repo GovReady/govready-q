@@ -110,6 +110,20 @@ Your Compliance Projects
 
 <h2 class="">Projects</h2>
 
+<form action="{% url 'projects' %}" method="GET" role="search">
+    <div class="form-inline pull-right create-nav">
+        <div class="form-group">
+            <div class="input-group" id="searchbox-input">
+                <input id="searchbox" name="search" value="{{ request.GET.search }}" type="text" placeholder="search projects" spellcheck="false" aria-labelledby="searchbox-input" />
+                <span id="searchicon" class="glyphicon glyphicon-search" href="{% url 'projects' %}"></span>
+                {% if request.GET.search %}
+                    <a id="searchclear" class="glyphicon glyphicon-remove" href="{% url 'projects' %}"></a>
+                {% endif %}
+             </div>
+        </div>
+    </div>
+</form>
+
 {% if projects_access|length < 1 %}
 <p>You do not currently have access to any projects.</p>
 {% else %}
@@ -123,8 +137,7 @@ Your Compliance Projects
   <div class="row">
     <div class="col-xs-10 col-md-5"><strong>Project</strong></div>
     <div class="col-xs-6 col-sm-1"><strong>ID</strong></div>
-    <div class="col-xs-6 col-sm-2"><strong>Portfolio</strong></div>
-    <div class="col-xs-6 col-sm-2"><strong>My Role</strong></div>
+    <div class="col-xs-6 col-sm-4"><strong>Portfolio</strong></div>
     <div class="col-xs-12 col-md-2"><strong>Updated</strong></div>
   </div>
 {% endif %}
@@ -140,25 +153,9 @@ Your Compliance Projects
     &nbsp;&nbsp;&nbsp;
     <a href="{{project.get_absolute_url}}" class="projects-link">{{project.title}}</a>
   </div>
-
   <div class="col-xs-6 col-sm-1">{{project.id}}</div>
-  <div class="col-xs-6 col-sm-2">{{project.portfolio.title}}</div>
-
-  {% get_obj_perms request.user for project as "perms" %}
-  {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
-  {% if "delete_project" in perms %}
-  <div class="col-xs-6 col-sm-2">Owner</div>
-  {% elif "change_project" in perms%}
-  <div class="col-xs-6 col-sm-2">Project Member</div>
-  {% elif "portfolio_perms"%}
-  <div class="col-xs-6 col-sm-2">Portfolio Member</div>
-  {% endif %}
-
-  <div class="col-xs-12 col-md-2 left-text">
-      <!-- App version: {{project.root_task.module.spec.catalog.version|force_escape}} -->
-      {{project.root_task.updated|naturaltime}}
-      <!-- Started: {{project.created|naturaltime}} -->
-  </div>
+  <div class="col-xs-6 col-sm-4">{{project.portfolio.title}}</div>
+  <div class="col-xs-12 col-md-2 left-text">{{project.root_task.updated|naturaltime}}</div>
 </div>
 
 {% endfor %}
