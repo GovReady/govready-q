@@ -10,10 +10,18 @@ v0.9.13-dev (January xx, 2022)
 * Add sign-in warning message to which users need to agree.
 * Reduce number of Group Django messages from question actions into single message for adding actions.
 * Simplify new authoring tool. Move prompt from right to left. Only show first line of question prompt.
+* Display all project modules in a single group on project.html.
+* Display project root_task's module summary on project page.
+* Add ability to search projects.
 
 **Bug fixes**
 
 * Properly close CSV export modal after exporting.
+
+**Developer changes**
+
+* Comment out deprecated queries in SiteApp.models.Project.get_projects_with_read_priv.
+* Require login to view projects list.
 
 
 v0.9.11.11 (January 15, 2022)
