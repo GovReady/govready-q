@@ -7,12 +7,14 @@ from zipfile import BadZipFile
 from django.shortcuts import render,  get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
 from controls.utilities import de_oscalize_control_id
+from django.utils.safestring import mark_safe
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 from django.urls import reverse
+
 
 import re
 
@@ -458,6 +460,7 @@ def save_answer(request, task, answered, context, __):
     # We assume user has sufficient permission because user is answering question.
     #
     if 'actions' in q.spec:
+        msg_list = []
         # Loop through list of actions
         for action in q.spec['actions']:
             # Perform action if question (task) `value` is same as defined action value
@@ -587,8 +590,9 @@ def save_answer(request, task, answered, context, __):
                             smts_added_count = len(smts_added)
                             # Prepare message
                             if smts_added_count > 0:
-                                messages.add_message(request, messages.INFO,
-                                                 f'I\'ve added "{producer_element.name}" and its {smts_added_count} control implementation statements to the system. You\'re welcome. :-)')
+                                msg_list.append(f'- I\'ve added "{producer_element.name}" and its {smts_added_count} control implementation statements to the system.')
+                                # messages.add_message(request, messages.INFO,
+                                #                  f'I\'ve added "{producer_element.name}" and its {smts_added_count} control implementation statements to the system. You\'re welcome. :-)')
                             else:
                                 messages.add_message(request, messages.WARNING,
                                                  f'Oops. I tried adding "{producer_element.name}" to the system, but no control implementation statements were found.')
@@ -600,8 +604,9 @@ def save_answer(request, task, answered, context, __):
                             smts_assigned_count = len(Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name))
                             if smts_assigned_count > 0:
                                 Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).delete()
-                                messages.add_message(request, messages.INFO,
-                                                     f'I\'ve deleted "{producer_element.name}" and its {smts_assigned_count} control implementation statements from the system.')
+                                msg_list.append(f'- I\'ve deleted "{producer_element.name}" and its {smts_assigned_count} control implementation statements from the system.')
+                                # messages.add_message(request, messages.INFO,
+                                #                      f'I\'ve deleted "{producer_element.name}" and its {smts_assigned_count} control implementation statements from the system.')
 
                 # Process project actions
                 # -----------------------------------
@@ -619,6 +624,10 @@ def save_answer(request, task, answered, context, __):
                             # Redirect to the new project's components.
                             response = JsonResponse({ "status": "ok", "redirect": f"/systems/{system_id}/components/selected" })
                             return response
+        # Assemble messages
+        if len(msg_list) > 0:
+            msg_body = f'<br>'.join(msg_list)
+            messages.add_message(request, messages.INFO, mark_safe(f'{msg_body} <br><br>You\'re welcome. :-)'))
 
     # Form a JSON response to the AJAX request and indicate the
     # URL to redirect to, to load the next question.
@@ -1261,7 +1270,7 @@ def task_finished(request, task, answered, context, *unused_args):
             if mq.spec.get("protocol"):
                 can_start_any_apps = True
 
-        if 'task' in questions[mq.id]:
+        if mq.id in questions and 'task' in questions[mq.id]:
             # print("\nquestions[mq.id]['task'].id", dir(questions[mq.id]['task']))
             task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
             task_id = questions[mq.id]['task'].id

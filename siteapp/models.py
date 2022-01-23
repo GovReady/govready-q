@@ -542,7 +542,9 @@ class Project(TagModelMixin, BaseModel):
         queryset2 = get_users_with_perms(self)
         # Project's Portfolio members from 0.9.0 Django guardian permission structure
         queryset3 = get_users_with_perms(self.portfolio)
-        users = list(chain(queryset1, queryset2, queryset3))
+        # Get all superusers
+        queryset4 = User.objects.filter(is_superuser=True)
+        users = list(chain(queryset1, queryset2, queryset3, queryset4))
         return users
 
     def get_admins(self):
@@ -550,7 +552,9 @@ class Project(TagModelMixin, BaseModel):
         queryset1 = User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
         # Project's Portfolio owner from 0.9.0 Django guardian permission structure have Project admin rights
         queryset2 = get_users_with_perms(self, only_with_perms_in=['can_grant_portfolio_owner_permission'])
-        users = list(chain(queryset1, queryset2))
+        # Get all superusers
+        queryset4 = User.objects.filter(is_superuser=True)
+        users = list(chain(queryset1, queryset2, queryset4))
         return users
 
     # faster than checking `get_admins()` on many projects
@@ -560,6 +564,7 @@ class Project(TagModelMixin, BaseModel):
         queryset1 = ProjectMembership.objects.filter(project__in=projects, is_admin=True, user=user)
         # Project's Portfolio owner from 0.9.0 Django guardian permission structure have Project admin rights
         queryset2 = get_objects_for_user(user, ['can_grant_portfolio_owner_permission'], klass=Project)
+        # TODO: Let superusers be admins for all projects
 
         # convert everything to a Project (queryset1 isn't), filter out irrelevant projects, and filter out duplicates
         has_admin_on = set(chain([x.project for x in queryset1], [proj for proj in queryset2 if proj in projects]))
@@ -674,69 +679,74 @@ class Project(TagModelMixin, BaseModel):
 
     @staticmethod
     def get_projects_with_read_priv(user, filters={}, excludes={}):
-        # Gets all projects a user has read priv to, excluding
-        # account and organization profile projects, and sorted
-        # in reverse chronological order by modified date.
-        # TODO: This could probably be optimized with prefetch related
+        """ Return all projects a user has read permissions sorted in reverse chronological order by modified date."""
+
         projects = set()
 
         if not user.is_authenticated:
             return projects
 
-        # Add all projects if user is admin
+        # Add all projects if user is admin.
+        projects_queryset = Project.objects.filter(**{"" + k: v for k, v in filters.items()}) \
+                                            .exclude(**{"" + k: v for k, v in excludes.items()}) \
+                                            .select_related('root_task__module', 'portfolio') \
+                                            .prefetch_related('root_task__module') \
+                                            .order_by('system__root_element__name')
         if user.is_superuser:
-            for project in Project.objects.all():
+            # Add all projects.
+            for project in projects_queryset:
                 projects.add(project)
         else:
-            # Add projects the user has permissions for
-            for project in Project.objects.all():
+            # Add projects the user has read/view permissions.
+            for project in projects_queryset:
                 user_permissions = get_user_perms(user, project)
                 if len(user_permissions):
                     projects.add(project)
 
-            # TODO: Remove all of these permissions by setting project permissions
+            # TODO: Remove all of these permissions by setting project permissions.
+            #       The below query is potentially redundant with user permissions.
             # Add all of the Projects the user is a member of.
-            for pm in ProjectMembership.objects \
-                    .filter(user=user) \
-                    .filter(**{"project__" + k: v for k, v in filters.items()}) \
-                    .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
-                    .select_related('project__root_task__module', 'project__portfolio') \
-                    .prefetch_related('project__root_task__module'):
+            project_membership_queryset = ProjectMembership.objects.filter(user=user) \
+                                                .filter(**{"project__" + k: v for k, v in filters.items()}) \
+                                                .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
+                                                .select_related('project__root_task__module', 'project__portfolio') \
+                                                .prefetch_related('project__root_task__module')
+            for pm in project_membership_queryset:
                 projects.add(pm.project)
+                # Annotate whether the user is a project admin.
                 if pm.is_admin:
-                    # Annotate with whether the user is an admin of the project.
                     pm.project.user_is_admin = True
 
-            # Add projects that the user is the editor of a task in, even if
-            # the user isn't a team member of that project.
-            from guidedmodules.models import Task
-            for task in Task.get_all_tasks_readable_by(user) \
-                    .filter(**{"project__" + k: v for k, v in filters.items()}) \
-                    .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
-                    .order_by('-created') \
-                    .select_related('project__root_task__module', 'project__portfolio') \
-                    .prefetch_related('project__root_task__module'):
-                projects.add(task.project)
+            # v0.9.13 - Removing inclusion of projects via participation in element of project
+            # Add projects the user is the editor of task in, even if user isn't a project team member.
+            # from guidedmodules.models import Task
+            # for task in Task.get_all_tasks_readable_by(user) \
+            #         .filter(**{"project__" + k: v for k, v in filters.items()}) \
+            #         .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
+            #         .order_by('-created') \
+            #         .select_related('project__root_task__module', 'project__portfolio') \
+            #         .prefetch_related('project__root_task__module'):
+            #     projects.add(task.project)
 
-            # Add projects that the user is participating in a Discussion in
-            # as a guest.
-            from discussion.models import Discussion
-            for d in Discussion.objects.filter(guests=user):
-                if d.attached_to is not None:  # because it is generic there is no cascaded delete and the Discussion can become dangling
-                    if not filters or d.attached_to.task.project in Project.objects.filter(**filters):
-                        if not excludes or d.attached_to.task.project not in Project.objects.exclude(**filters):
-                            projects.add(d.attached_to.task.project)
+            # Add projects the user is participating in a Discussion in as a guest.
+            # from discussion.models import Discussion
+            # for d in Discussion.objects.filter(guests=user):
+            #     if d.attached_to is not None:  # because it is generic there is no cascaded delete and the Discussion can become dangling
+            #         if not filters or d.attached_to.task.project in Project.objects.filter(**filters):
+            #             if not excludes or d.attached_to.task.project not in Project.objects.exclude(**filters):
+            #                 projects.add(d.attached_to.task.project)
 
-            # Add projects the user has permissions for through a portfolio
-            for portfolio in Portfolio.objects.prefetch_related('projects').all():
-                user_permissions = get_user_perms(user, portfolio)
-                if len(user_permissions):
-                    for project in portfolio.projects.all():
-                        projects.add(project)
+            # Add projects user has permissions for through a portfolio.
+            # for portfolio in Portfolio.objects.prefetch_related('projects').all():
+            #     user_permissions = get_user_perms(user, portfolio)
+            #     if len(user_permissions):
+            #         for project in portfolio.projects.all():
+            #             projects.add(project)
 
+        # v0.9.11 - System projects no longer exist
         # Remove system projects.
-        system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
-        projects -= system_projects
+        # system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
+        # projects -= system_projects
 
         # Sort.
         projects = sorted(projects, key=lambda x: x.updated, reverse=True)

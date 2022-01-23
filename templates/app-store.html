@@ -36,6 +36,7 @@ Compliance Apps
   .app-category-nav *[data-category].first { margin-left: 0; }
 
   .app {
+    height:210px;
     /*border: 1px solid #D9D9D9;
     border-radius: 2px;
     padding: 12px;
@@ -103,12 +104,11 @@ Compliance Apps
   .show-more-apps .if-has-more-apps .show-more { display: none; }
   .show-more-apps .if-has-more-apps .show-less { display: inline; }
 
-h2.app_store { font-size:1.1em; padding:0 0 .5em 0; margin:0; text-align:left; border:0; background:transparent;}
-h3.app_store { font-size:.9em; color:#555555; padding:0 0 0 0; margin:0; line-height:1.4em;}
+h2.app_store { font-size:1.1em; padding:0 0 .5em 0; margin:0; text-align:left; border:0; background:transparent; min-height: 3em;}
+h3.app_store { font-size:.9em; color:#555555; padding:0 0 0 0; margin:0; line-height:1.4em; min-height: 3em; }
 .app-version-info { font-size:.7em; color:#555555;}
 
 .panel:hover { background-color:#F8F8F8; border-color:#999999;}
-
 
 </style>
 {% endblock %}
@@ -175,23 +175,21 @@ h3.app_store { font-size:.9em; color:#555555; padding:0 0 0 0; margin:0; line-he
   <!-- inside the card -->
         <div class="panel panel-default">
           <div class="panel-heading hidden">{{ app.title }}</div>
-          <div class="panel-body app" style="min-height:210px;" data-app="{{app.key}}" data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}">
-            <h2 class="app_store">{{ app.title }}</h2>
-            <h3 class="app_store">{{app.description.short|safe|truncatewords_html:50}}</h3>
+          <div class="panel-body app" style="" data-app="{{app.key}}" data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}">
+            <h2 class="app_store">{{ app.title|truncatechars_html:50 }}</h2>
+            <h3 class="app_store">{{app.description.short|safe|truncatechars_html:60}}</h3>
             <div class="app-version-info">
               Version: {{ app.version }}<br />
-              AppSource: {{ app.source_slug }}<br />
-              Information Provider:  {% if app.vendor_url is not None %} <a href="{{ app.vendor_url }}">{{ app.vendor }}</a> {% else %} {{ app.vendor }} {% endif %}<br />
-              Startable: {% if app.authz == "none" %}Yes{% else %} Requires Admin{% endif %}
+              {# AppSource: {{ app.source_slug }}<br /> #}
+              {# Information Provider:  {% if app.vendor_url is not None %} <a href="{{ app.vendor_url }}">{{ app.vendor }}</a> {% else %} {{ app.vendor }} {% endif %}<br /> #}
+              {# Startable: {% if app.authz == "none" %}Yes{% else %} Requires Admin{% endif %} #}
             </div>
             <div class="box-of-links">
-              <a href="#" class="view-app"
-                 onclick="authoring_tool_create_q_form(argument={ 'modal_title': 'Clone Template', 'app_id': '{{ app.appversion_id }}', 'app_title': '{{ app.title }}', 'app_category_title':'{{ app_category.title }}', 'app_description': '{{ app.description.short }}' });
-                 return false;">
-              <span class="glyphicon glyphicon-flash" ></span> Clone</a>
-              <a href="/store/app/{{app.appversion_id}}/modules" class="view-app"> <span class="glyphicon glyphicon-pencil"></span> Edit</a>
-
-              <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="view-app"><span class="glyphicon glyphicon-info-sign"></span> More</a>
+              <a href="#" class="view-app" onclick="authoring_tool_create_q_form(argument={ 'modal_title': 'Clone Template', 'app_id': '{{ app.appversion_id }}',
+                  'app_title': '{{ app.title }}', 'app_category_title':'{{ app_category.title }}', 'app_description': '{{ app.description.short }}' });
+                  return false;"><span class="glyphicon glyphicon-flash" ></span> Clone</a>
+              <a href="/store/app/{{app.appversion_id}}/modules" class="view-app"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+              <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="view-app"><span class="glyphicon glyphicon-option-vertical"></span> Details</a>
             </div>
           </div>
             <div class="text-center" style="padding-bottom:1em;">

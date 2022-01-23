@@ -996,6 +996,8 @@ class StatementUITests(OrganizationSiteFunctionalTests):
        # Test ui
         # login as the first user and create a new project
         self._login()
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
         self._new_project()
 
         # systemid = System.objects.all().first()
@@ -1024,6 +1026,8 @@ class ProjectControlTests(OrganizationSiteFunctionalTests):
 
         # login as the first user and create a new project
         self._login()
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
         self._new_project()
 
         project = Project.objects.all().last()

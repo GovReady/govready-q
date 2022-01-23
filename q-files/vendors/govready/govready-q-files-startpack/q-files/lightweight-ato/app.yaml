@@ -1,11 +1,11 @@
 id: app
 title: General IT System ATO for 800-53 (low)
 type: project
-version: 1.2.0
+version: 1.2.1
 icon: app.png
 introduction:
   format: markdown
-  template: General IT System ATO Questionnaires for 800-53 (low
+  template: General IT System ATO Questionnaires for 800-53 (low)
 output:
 - id: fisma_ssp_template
   format: markdown
@@ -34,7 +34,7 @@ catalog:
   status: production
   vendor: GovReady®
   vendor_url: ~
-  version: 1.2.0
+  version: 1.2.1
   parameters:
     - id: catalog_key
       value: NIST_SP-800-53_rev4
