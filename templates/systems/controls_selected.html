@@ -29,7 +29,7 @@
             <div class="form-group">
                 <label for="control_id">Add control</label>&nbsp;&nbsp;
                 <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
-                <select class="producer_element_id" id="add-control_id-select" name="control_id" style="width:440px;">
+                <select id="add-control_id-select" name="control_id" class="producer_element_id" style="width:440px;">
                     <option value="None" selected disabled hidden>Select a Control</option>
                 </select>
             </div>
@@ -131,8 +131,6 @@
   }
 
   $(document).ready(function() {
-
-
     // Download button shows a modal to ask what file format to download in.
     function download_document(document_id, system_id) {
       var dom = $("<div><p>Select download format:</p>"
@@ -187,12 +185,13 @@
           minimumInputLength: 1
     }).on('select2:select', function (e) {
       // After change event for which e.params isn't defined
+      // Split the control string to get oscal_control_id and get catalog_key (e.g., catalog identifier)
       display_text = e.params.data.text;
       displaytext = display_text.split(' - ');
       var first = displaytext.shift(); //or arr[arr.length-1];
       var last = displaytext.pop(); //or arr[0];
       dtv = [first, displaytext.join(" - "), last]; // [control_id, title, catalog_key]
-      ck = dtv[2];
+      ck = dtv[1];
       // $('#add-catalog_key-input').val(e.params.data.catalog_key);
       $('#add-catalog_key-input').val(ck.replace(" ","_"));
       $('#add-control').submit();
