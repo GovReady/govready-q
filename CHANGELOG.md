@@ -5,6 +5,10 @@ GovReady-Q Release Notes
 v0.9.14-dev (January xx, 2022)
 --------------------------
 
+**UI changes**
+
+* Change label 'certified statement' to 'reference statement'.
+
 
 v0.9.13 (January 23, 2022)
 --------------------------
