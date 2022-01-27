@@ -155,7 +155,7 @@
                         <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 remark-text-block">{% spaceless %}
                             {% if smt.prototype_synched == 'not_synched' %}
                                 <span id="diff_alert_{{ forloop.counter }}_notice">
-                                    <span href="#diff_{{ forloop.counter }}" class="" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;cursor: pointer;" onclick="alert('Your statement and component\'s certified statement have diverged.\n\nEdit statement for details.');return false;"><span class="glyphicon glyphicon-alert"></span> Differs from certified</span>
+                                    <span href="#diff_{{ forloop.counter }}" class="" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;cursor: pointer;" onclick="alert('Your statement and component\'s reference statement have diverged.\n\nEdit statement for details.');return false;"><span class="glyphicon glyphicon-alert"></span> Differs from reference</span>
                                 </span>
                             {% elif smt.prototype_synched == 'orphaned' %}
                                 <span id="diff_alert_{{ forloop.counter }}">
@@ -200,21 +200,21 @@
                                       <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
                                       <label for="statement">
                                           {% if smt.prototype_synched == 'synched'%}
-                                              <span id="diff_alert_{{ forloop.counter }}" style="color: green;font-weight: normal;"><span class="glyphicon glyphicon-check"></span> Same as certified</span>
+                                              <span id="diff_alert_{{ forloop.counter }}" style="color: green;font-weight: normal;"><span class="glyphicon glyphicon-check"></span> Same as reference</span>
                                           {% elif smt.prototype_synched == 'not_synched' %}
-                                              <span id="diff_alert_{{ forloop.counter }}" style="color: firebrick;"> <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span class="glyphicon glyphicon-alert"></span> Click to see differences from certified statement</a></span></span>
+                                              <span id="diff_alert_{{ forloop.counter }}" style="color: firebrick;"> <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span class="glyphicon glyphicon-alert"></span> Click to see differences from reference statement</a></span></span>
                                           {% elif smt.prototype_synched == 'orphaned' %}
                                               <span id="diff_alert_{{ forloop.counter }}" style="color: firebrick;"><span class="glyphicon glyphicon-alert"></span> No related statement for component in library <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt;">view</a></span>
                                           {% endif %}
                                           <div id="diff_{{ forloop.counter }}" class="collapse smt_diff" style="font-size:10pt; font-weight: normal; margin-top: 12px;color: #666;">
                                               <div style="text-decoration: underline;font-weight: bold;">
-                                                  Certified statement for {{ smt.producer_element.name }} {{ control.id_display|upper }} is:
+                                                  Reference statement for {{ smt.producer_element.name }} {{ control.id_display|upper }} is:
                                               </div>
                                               <div id="prototype_body_display_{{ forloop.counter }}">{{ smt.prototype.body|linebreaks }}</div>
                                               <div id="prototype_body_{{ forloop.counter }}" style="display: none;">{{ smt.prototype.body }}</div>
                                               <br/>
                                               <div style="text-decoration: underline;font-weight: bold;">
-                                                  Comparison of current statement to certified statement:
+                                                  Comparison of current statement to reference statement:
                                               </div>
                                               <div id="diff_comparison_{{ forloop.counter }}">
                                                   {% if smt.prototype_synched == 'synched' %}
@@ -229,7 +229,7 @@
                                               </div>
                                               <div>
                                                   {% if smt.prototype_synched == 'not_synched' %}
-                                                      <button type="button" name="overwrite" value="overwrite" class="btn btn-xs btn-primary" onclick="copy_smt_prototype('{{ forloop.counter }}');return false;">Overwrite current statement</button>
+                                                      <button type="button" name="overwrite" value="overwrite" class="btn btn-xs btn-primary" onclick="copy_smt_prototype('{{ forloop.counter }}');return false;">Update current statement to reference statement</button>
                                                   {% endif %}
                                               </div>
                                           </div>
@@ -408,12 +408,12 @@
         }
 
         function copy_smt_prototype(smt_panel_num) {
-          // User wants to copy the certified statement locally
+          // User wants to copy the reference statement locally
           // Copy the statement's prototype body text into statement body textarea
           smt_prototype = $('#prototype_body_' + smt_panel_num).text();
           $('#body_' + smt_panel_num).val($('#prototype_body_' + smt_panel_num).text().trim());
           // Update comparison label
-          $('#diff_alert_' + smt_panel_num).html('<span id="diff_alert_' + smt_panel_num + '"><a href="#diff_' + smt_panel_num + '" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span class="glyphicon glyphicon-check"></span> Same as certified</a></span>');
+          $('#diff_alert_' + smt_panel_num).html('<span id="diff_alert_' + smt_panel_num + '"><a href="#diff_' + smt_panel_num + '" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span class="glyphicon glyphicon-check"></span> Same as reference</a></span>');
           // Update comparison
           $('#diff_comparison_' + smt_panel_num).text('Texts are identical.');
         }
