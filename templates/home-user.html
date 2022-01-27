@@ -77,6 +77,10 @@ Your Compliance Projects
     margin: 0px 0px 0px 0px;
   }
 
+  .luna-container {
+    background: rgb(255,255,255, 0.6);
+    border-radius: 4px;}
+
   .luna-box {
     border: 1px solid rgb(210, 210, 210);
     min-height: 160px;
@@ -84,6 +88,7 @@ Your Compliance Projects
     font-size: .8em;
     border-radius: 4px;
     padding: 20px 20px 0px 0px;
+    background: transparent;
   }
 
   .luna-box div.glyphicon {
@@ -116,6 +121,7 @@ Your Compliance Projects
   <div class="row">
 
     <div class="col-sm-6">
+        <div class="luna-container">
       <div class="luna-box">
         <div class="col-md-3">
           <div class="glyphicon glyphicon-duplicate"></div>
@@ -125,9 +131,11 @@ Your Compliance Projects
           <p>Pick a project template to start a new system in the ATO process.</p>
         </div>
       </div>
+      </div>
     </div>
 
     <div class="col-sm-6">
+      <div class="luna-container">
       <div class="luna-box">
         <div class="col-md-3">
           <div class="glyphicon glyphicon-list-alt"></div>
@@ -141,9 +149,11 @@ Your Compliance Projects
           <p>List your IT systems getting or having ATOs. <span id="common-tab-count" style="padding-top:3px;">{{ projects_access|length }}</span></p>
         </div>
       </div>
+      </div>
     </div>
 
     <div class="col-sm-6">
+        <div class="luna-container">
       <div class="luna-box">
         <div class="col-md-3">
           <div class="glyphicon glyphicon-lock"></div>
@@ -153,9 +163,11 @@ Your Compliance Projects
           <p>Components are the building blocks of IT systems and provide security controls.</p>
         </div>
       </div>
+      </div>
     </div>
 
     <div class="col-sm-6">
+        <div class="luna-container">
       <div class="luna-box">
         <div class="col-md-3">
           <div class="glyphicon glyphicon-search"></div>
@@ -166,6 +178,7 @@ Your Compliance Projects
             View control catalogs.
           </p>
         </div>
+      </div>
       </div>
     </div>
 

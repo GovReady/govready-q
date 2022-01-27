@@ -66,6 +66,8 @@
 /* style changes for the react sidebar to comply with 508 by showing outline for screen readers */
 
       .pro-sidebar .pro-menu .pro-menu-item > .pro-inner-item:focus-visible { outline: 2px dashed #60BF60;}
+      .pro-sidebar > .pro-sidebar-inner > .pro-sidebar-layout .pro-sidebar-header { border-bottom: 0;}
+      .pro-sidebar .pro-menu { padding-right:1em;}
 
     </style>
 {% endblock %}
@@ -118,15 +120,13 @@
             </div> <!-- /focus-area-wrapper -->
         </div> <!-- /col -->
 
+
         <div class="col-md-8 project-body-block" style="margin-top: 60px;">
             {% block body_content %}
             {% endblock %}
 
-        <footer>
-            <div class="row footer-row" style="margin-left: -20px;">
-                {% include "footer.html" %}
-            </div>
-        </footer>
+
+
 
         </div>
     </div> <!-- /row -->
