@@ -9,6 +9,9 @@ v0.9.14-dev (January xx, 2022)
 
 * Change label 'certified statement' to 'reference statement'.
 
+**Developer changes**
+
+* Add support for OIDC SSO configuration separate from OKTA SSO configuration.
 
 v0.9.13 (January 23, 2022)
 --------------------------
