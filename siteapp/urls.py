@@ -149,6 +149,13 @@ if settings.OKTA_CONFIG:
         re_path(r'^accounts/login/$', RedirectView.as_view(url='/oidc/authenticate', permanent=False), name='login2')
     ]
 
+if settings.OIDC_CONFIG:
+    urlpatterns += [
+        path('oidc/', include('mozilla_django_oidc.urls')),
+        url(r'^accounts/logout/$', views.logged_out, name="logged_out"),
+        re_path(r'^accounts/login/$', RedirectView.as_view(url='/oidc/authenticate', permanent=False), name='login2')
+    ]
+
 if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS:
     # If username/pwd logins are enabled, add the login pages.
     urlpatterns += [

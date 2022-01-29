@@ -86,6 +86,8 @@ def home_user(request):
     if not request.user.is_authenticated:
         if settings.OKTA_CONFIG:
             return HttpResponseRedirect("/oidc/authenticate")
+        if settings.OIDC_CONFIG:
+            return HttpResponseRedirect("/oidc/authenticate")
         return HttpResponseRedirect("/login")
 
     portfolio = request.user.portfolio_list().first()
