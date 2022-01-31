@@ -142,14 +142,7 @@ urlpatterns = [
 
 urlpatterns += [url(r'^api/v2/', include('api.urls'))]
 
-if settings.OKTA_CONFIG:
-    urlpatterns += [
-        path('oidc/', include('mozilla_django_oidc.urls')),
-        url(r'^accounts/logout/$', views.logged_out, name="logged_out"),
-        re_path(r'^accounts/login/$', RedirectView.as_view(url='/oidc/authenticate', permanent=False), name='login2')
-    ]
-
-if settings.OIDC_CONFIG:
+if settings.OKTA_CONFIG or settings.OIDC_CONFIG:
     urlpatterns += [
         path('oidc/', include('mozilla_django_oidc.urls')),
         url(r'^accounts/logout/$', views.logged_out, name="logged_out"),
