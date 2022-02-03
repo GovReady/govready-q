@@ -62,7 +62,7 @@ pandas # BSD License (BSD-3-Clause)
 spacy # MIT License
 Unidecode # GNU General Public License
 wordcloud # MIT License
-numpy==1.22.0 # BSD 3-Clause "New" or "Revised" License
+numpy==1.22.1 # BSD 3-Clause "New" or "Revised" License
 
 # Python Packages Developed by GovReady and/or Josh
 rtyaml # CC0
