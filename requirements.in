@@ -28,8 +28,7 @@ compliance-trestle==0.33.0 # OSI Approved :: Apache Software License
 jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages
-# Django==2.2.12 # BSD License
-Django==3.2.11 # BSD License
+Django==3.2.12 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # BSD 3-Clause License
