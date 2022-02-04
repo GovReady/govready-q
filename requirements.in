@@ -29,7 +29,6 @@ jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages
 Django==3.2.12 # BSD License
-django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # BSD 3-Clause License
 importlib-metadata>=1.7.0,<2,>=0.12 # Apache License 2.0
@@ -62,7 +61,7 @@ pandas # BSD License (BSD-3-Clause)
 spacy # MIT License
 Unidecode # GNU General Public License
 wordcloud # MIT License
-numpy==1.22.1 # BSD 3-Clause "New" or "Revised" License
+numpy==1.22.2 # BSD 3-Clause "New" or "Revised" License
 
 # Python Packages Developed by GovReady and/or Josh
 rtyaml # CC0
