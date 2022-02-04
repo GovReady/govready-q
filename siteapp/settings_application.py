@@ -3,7 +3,6 @@ import re
 import sys
 
 INSTALLED_APPS += [
-    'debug_toolbar',
     'django_extensions',
     'htmlemailer',
     'notifications',
@@ -123,7 +122,6 @@ else:
     print("INFO: GR_IMG_GENERATOR set to {}".format(GR_IMG_GENERATOR))
 
 MIDDLEWARE += [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'siteapp.middleware.misc.ContentSecurityPolicyMiddleware',
     'guidedmodules.middleware.InstrumentQuestionPageLoadTimes',
 ]
@@ -134,27 +132,15 @@ TEMPLATES[0]['OPTIONS']['context_processors'] += [
 
 AUTHENTICATION_BACKENDS += ['siteapp.models.DirectLoginBackend']
 
-INTERNAL_IPS = ['127.0.0.1'] # for django_debug_toolbar
-
 # Allow run-time disabling of the Django Debug Toolbar.
-DISABLE_DJANGO_DEBUG_TOOLBAR = False# Note profiling by pyinstrument will be replaced by django debug toolbar
 TESTING_MODE = 'test' in sys.argv # Are we running tests with test mode and debugging?
-if TESTING_MODE or ENABLE_TOOLBAR == False:
-    DISABLE_DJANGO_DEBUG_TOOLBAR = True
+if TESTING_MODE:
     # Prevent caching when we are testing
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         }
     }
-
-def DEBUG_TOOLBAR_SHOW_TOOLBAR_CALLBACK(r):
-    # return True # Force debug toolbar to be true regardless of INTERNAL_IPS settings
-    import debug_toolbar.middleware
-    return debug_toolbar.middleware.show_toolbar(r) and not DISABLE_DJANGO_DEBUG_TOOLBAR
-DEBUG_TOOLBAR_CONFIG = {
-    'SHOW_TOOLBAR_CALLBACK': DEBUG_TOOLBAR_SHOW_TOOLBAR_CALLBACK,
-}
 
 LOGIN_REDIRECT_URL = "/projects"
 

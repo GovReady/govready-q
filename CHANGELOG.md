@@ -13,6 +13,7 @@ v0.9.14-dev (January xx, 2022)
 
 * Add support for OIDC SSO configuration separate from OKTA SSO configuration.
 * Update Django, libraries.
+* Remove debug-toolbar.
 
 **Bug fixes**
 
