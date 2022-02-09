@@ -87,6 +87,10 @@ def home_user(request):
         if settings.OKTA_CONFIG or settings.OIDC_CONFIG:
             return HttpResponseRedirect("/oidc/authenticate")
         return HttpResponseRedirect("/login")
+    
+    isInternet = False
+    if('Trident' in request.META['HTTP_USER_AGENT']):
+        isInternet = True
 
     portfolio = request.user.portfolio_list().first()
     return render(request, "home-user.html", {
@@ -95,6 +99,7 @@ def home_user(request):
         "projects_access": Project.get_projects_with_read_priv(request.user, excludes={"contained_in_folders": None}),
         "import_project_form": ImportProjectForm(),
         "portfolios": request.user.portfolio_list(),
+        "isInternetExplorer": isInternet,
     })
 
 
@@ -111,6 +116,10 @@ def homepage(request):
 
     signup_form = SignupForm()
     login_form = LoginForm()
+
+    isInternet = False
+    if('Trident' in request.META['HTTP_USER_AGENT']):
+        isInternet = True
 
     # The allauth forms have 'autofocus' set on their widgets that draw the
     # focus in a way that doesn't make sense here.
@@ -184,6 +193,7 @@ def homepage(request):
         "signup_form": signup_form,
         "login_form": login_form,
         "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
+        "isInternetExplorer": isInternet,
     })
 
 

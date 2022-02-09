@@ -112,7 +112,11 @@ Your Compliance Projects
 <div class="project-main hidden">
   <a id="new-project-button" href="{% url 'store' %}" class=" btn btn-success">Start a project</a>
 </div>
-
+{% if isInternetExplorer %}
+  <div class="alert alert-warning" role="alert">
+    <strong>WARNING</strong>: Internet Explorer is not supported. Please use Microsoft Edge, Google Chrome, or Mozilla FireFox.
+  </div>
+{% endif %}
 <h2>Welcome to {% if sitename %}{{sitename}}{% else %}GovReady-Q{% endif %}</h2>
 
 <p>Assess, test, and authorize together</p>
