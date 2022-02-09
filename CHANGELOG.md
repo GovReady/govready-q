@@ -4,7 +4,7 @@ GovReady-Q Release Notes
 v0.9.14.1-dev (February 9, 2022)
 --------------------------------
 
-**Feature Changes**
+**UI Changes**
 
 * Warning Message appears at the top of home page and login page while using an Internet Explorer browser informing the user of Internet Explorer not being supported.
 
