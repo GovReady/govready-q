@@ -88,6 +88,7 @@
       <div class="col-sm-10 ">
         <h2 class="">
           {{ element.name }}
+          {% if element.private == True %}<span class="glyphicon glyphicon-lock small" style="color:gray;" title="Private"></span>{% endif %}
         </h2>
       </div>
       <div class="col-sm-2">
@@ -497,11 +498,11 @@
         }
 
         function edit_component() {
-          show_edit_component_modal("{{element.name}}",`{{element.description}}`,(newName, newDescription)=>{
+          show_edit_component_modal("{{element.name}}",`{{element.description}}`,"{{element.private}}",(newName, newDescription, newPrivate)=>{
             ajax_with_indicator({
               url: '{% url "edit_element" element.id %}',
               method: "POST",
-              data: {name: newName,description: newDescription},
+              data: {name: newName, description: newDescription, private: newPrivate},
               keep_indicator_forever: true,
               success: function(res) {
                 if(res["status"]=="ok"){

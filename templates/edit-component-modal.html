@@ -8,14 +8,19 @@
         <form role="form" method="POST">
            <div class="modal-body">
             <div class="form-group" data-children-count="1">
-                <label class="control-label" for="id_name">Name</label>
+                <label class="control-label" for="name-input">Name</label>
                 <input type="text" name="name" maxlength="250" class="form-control" placeholder="Name" title="Common name or acronym of the element" required="" id="name-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0">
                 <div class="help-block">Common name or acronym of the element</div>
             </div>
             <div class="form-group" data-children-count="1">
-                <label class="control-label" for="id_name">Description</label>
-                <textarea aria-label="Description of the Element" name="name" maxlength="250" class="form-control" placeholder="Description" title="Description of the Element" required="" id="description-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0"></textarea>
+                <label class="control-label" for="description-input">Description</label>
+                <textarea aria-label="Description of the Element" name="description" maxlength="250" class="form-control" placeholder="Description" title="Description of the Element" required="" id="description-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0"></textarea>
                 <div class="help-block">Description of the Element</div>
+            </div>
+            <div class="form-group" data-children-count="1">
+                <label class="control-label" for="private-input">Mark component private</label>
+                <input type=text aria-label="Private" name="private" maxlength="250" class="form-control" placeholder="" title="Mark component private" required="" id="private-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0"></textarea>
+                <div class="help-block">Private components require permission to view</div>
             </div>
             <div class="alert alert-danger" role="alert" id="error-alert">
             </div>
@@ -32,14 +37,15 @@
 
   {% block scripts %}
   <script>
-    function show_edit_component_modal(name,description,callback) {
+    function show_edit_component_modal(name,description,private,callback) {
       document.getElementById("name-input").value = name;
       document.getElementById("description-input").value = description;
+      document.getElementById("private-input").value = private;
       $('#error-alert').hide();
       $('#edit-component-modal').modal();
       $('#submit-btn').on('click', (e) =>{
         e.preventDefault();
-        callback(document.getElementById("name-input").value,document.getElementById("description-input").value);
+        callback(document.getElementById("name-input").value,document.getElementById("description-input").value,document.getElementById("private-input").value);
       });
     }
     function hide_edit_component_modal(){

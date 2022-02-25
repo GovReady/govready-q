@@ -419,8 +419,11 @@ def component_library(request):
     # Natural sorting on name
     element_list = natsorted(element_list, key=lambda x: x.name)
 
+    # Remove private elements for which user does not have permission
+    element_list_private_removed = [element for element in element_list if (element.private==False or 'view_element' in get_user_perms(request.user, element))]
+
     # Pagination
-    ele_paginator = Paginator(element_list, 15)
+    ele_paginator = Paginator(element_list_private_removed, 15)
     page_number = request.GET.get('page')
 
     try:
@@ -1279,6 +1282,11 @@ def component_library_component(request, element_id):
 
     # Retrieve element
     element = Element.objects.get(id=element_id)
+
+    # Check permissions
+    if element.private == True and 'view_element' not in get_user_perms(request.user, element):
+        raise Http404
+
     smt_query = request.GET.get('search')
 
     # Retrieve systems consuming element

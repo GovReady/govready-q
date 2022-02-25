@@ -6,6 +6,7 @@ apps/
 static_root/*
 !static_root/README.md
 branding/
+dev_env/docker/environment.json*
 
 # generated files
 .bash_history
