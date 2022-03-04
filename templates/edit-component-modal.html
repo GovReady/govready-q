@@ -9,18 +9,26 @@
            <div class="modal-body">
             <div class="form-group" data-children-count="1">
                 <label class="control-label" for="name-input">Name</label>
-                <input type="text" name="name" maxlength="250" class="form-control" placeholder="Name" title="Common name or acronym of the element" required="" id="name-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0">
+                <input type="text" name="name" maxlength="250" class="form-control" placeholder="Name" title="Common name or acronym of the element" required="" id="name-input" />
                 <div class="help-block">Common name or acronym of the element</div>
             </div>
             <div class="form-group" data-children-count="1">
                 <label class="control-label" for="description-input">Description</label>
-                <textarea aria-label="Description of the Element" name="description" maxlength="250" class="form-control" placeholder="Description" title="Description of the Element" required="" id="description-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0"></textarea>
+                <textarea aria-label="Description of the Element" name="description" maxlength="250" class="form-control" placeholder="Description" title="Description of the Element" required="" id="description-input"></textarea>
                 <div class="help-block">Description of the Element</div>
             </div>
             <div class="form-group" data-children-count="1">
                 <label class="control-label" for="private-input">Mark component private</label>
-                <input type=text aria-label="Private" name="private" maxlength="250" class="form-control" placeholder="" title="Mark component private" required="" id="private-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0"></textarea>
-                <div class="help-block">Private components require permission to view</div>
+                <input
+                  type="checkbox" 
+                  aria-label="Private" 
+                  name="private" 
+                  placeholder="" 
+                  title="Mark component private" 
+                  required="" 
+                  id="private-input" 
+                  checked
+                />
             </div>
             <div class="alert alert-danger" role="alert" id="error-alert">
             </div>
@@ -38,14 +46,21 @@
   {% block scripts %}
   <script>
     function show_edit_component_modal(name,description,private,callback) {
+      let privateValue = false;
+      if(private === "True"){
+        privateValue = true;
+      } else {
+        privateValue = false;
+      }
       document.getElementById("name-input").value = name;
       document.getElementById("description-input").value = description;
-      document.getElementById("private-input").value = private;
+      document.getElementById("private-input").checked = privateValue;
+      
       $('#error-alert').hide();
       $('#edit-component-modal').modal();
       $('#submit-btn').on('click', (e) =>{
         e.preventDefault();
-        callback(document.getElementById("name-input").value,document.getElementById("description-input").value,document.getElementById("private-input").value);
+        callback(document.getElementById("name-input").value,document.getElementById("description-input").value, document.getElementById("private-input").checked);
       });
     }
     function hide_edit_component_modal(){

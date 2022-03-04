@@ -263,7 +263,7 @@ class Element(auto_prefetch.Model, TagModelMixin):
                                       unique=False, blank=True, null=True, help_text="The Import Record which created this Element.")
     component_type = models.CharField(default="software", max_length=50, help_text="OSCAL Component Type.", unique=False, blank=True, null=True, choices=ComponentTypeEnum.choices())
     component_state = models.CharField(default="operational", max_length=50, help_text="OSCAL Component State.", unique=False, blank=True, null=True, choices=ComponentStateEnum.choices())
-    private = models.BooleanField(blank=True, null=True, default=False)
+    private = models.BooleanField(blank=False, null=False, default=True)
 
     # Notes
     # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)
