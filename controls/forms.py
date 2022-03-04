@@ -67,10 +67,11 @@ class ElementForm(ModelForm):
         super().__init__(*args, **kwargs)
         self.initial['element_type'] = 'system_element'
         self.fields['element_type'].widget = forms.HiddenInput()
+        self.initial['private'] = True
 
     class Meta:
         model = Element
-        fields = ['name', 'full_name', 'description', 'element_type', 'component_type', 'component_state']
+        fields = ['name', 'full_name', 'description', 'element_type', 'component_type', 'component_state', 'private']
 
     def clean(self):
         """Extend clean to validate element name is not reused."""

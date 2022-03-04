@@ -1263,6 +1263,7 @@ def new_element(request):
         if form.is_valid():
             form.save()
             element = form.instance
+            element.assign_owner_permissions(request.user)
             logger.info(
                 event="new_element",
                 object={"object": "element", "id": element.id, "name":element.name},

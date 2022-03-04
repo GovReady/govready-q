@@ -17,6 +17,7 @@ v0.9.14-dev (February xx, 2022)
 * Update Django, libraries.
 * Remove debug-toolbar.
 * Support for private components by adding 'private' boolean field to controls.models.Element.
+* Create new components as private and assign owner permissions to user who created the component.
 
 **Bug fixes**
 
