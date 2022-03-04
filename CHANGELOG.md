@@ -18,6 +18,7 @@ v0.9.14-dev (February xx, 2022)
 * Remove debug-toolbar.
 * Support for private components by adding 'private' boolean field to controls.models.Element.
 * Create new components as private and assign owner permissions to user who created the component.
+* Added tests for component creation form user interface.
 
 **Bug fixes**
 
