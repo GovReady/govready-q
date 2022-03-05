@@ -548,6 +548,24 @@ class ElementUnitTests(TestCase):
         self.assertTrue(e2.component_type == "hardware")
         self.assertTrue(e2.component_state == "disposition")
 
+class ElementUITests(OrganizationSiteFunctionalTests):
+
+    def test_element_create_form(self):
+        self.browser.get(self.url("/"))
+        self._login()
+        self.browser.get(self.url("/controls/components"))
+        self.click_element("#component-new")
+        wait_for_sleep_after(lambda: self.assertInNodeText("New Component", "h2"))
+        element_name = "Tanium"
+        self.clear_and_fill_field("#id_name", element_name)
+        self.clear_and_fill_field("#id_full_name", "Tanium Software")
+        self.clear_and_fill_field("#id_description", "Tanium")
+        # Submit form
+        self.click_element("#create-element-button")
+        # Check element/component page
+        wait_for_sleep_after(lambda: self.assertInNodeText(element_name, "#element-name"))
+
+
 class ElementControlUnitTests(SeleniumTest):
 
     def test_assign_baseline(self):
