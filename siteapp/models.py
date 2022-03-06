@@ -1014,7 +1014,7 @@ class Project(TagModelMixin):
         # Get the URL to the data API for this Project.
         import urllib.parse
         return urllib.parse.urljoin(settings.SITE_ROOT_URL,
-                                    "/api/v1//projects/{id}/answers".format(id=self.id))
+                                    "/api/v1/projects/{id}/answers".format(id=self.id))
 
     @property
     def available_root_task_versions_for_upgrade(self):
