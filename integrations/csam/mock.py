@@ -6,10 +6,19 @@
 # results
 #
 # Usage:
+#   
+#   # Start mock service
 #   python3 integrations/csam/mock.py
 #
 # Accessing:
-#   curl localhost:9002
+#   curl localhost:9002/endpoint
+#   curl localhost:9002/hello
+#   curl localhost:9002/system/111  # requires authentication
+#
+# Accessing with simple authentication:
+#   curl -X 'GET' 'http://localhost:9002/system/111' \
+#     -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' \
+#     -H 'Authorization: Bearer FAD619'
 #
 #######################################################
 
@@ -34,21 +43,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         }
         return csam_system_info_response
 
-    # def mk_sar(self):
-    #
-    #     sar = {
-    #         "id": f"{random.randint(20431, 34554)}",
-    #         "name": "oscap-scan",
-    #         "description": "SCAP scan Results",
-    #         "ip": f"10.10.0.{str(random.randint(2, 250))}",
-    #         "uuid": f"{str(uuid.uuid4())}",
-    #         "pass": random.randint(200, 300),
-    #         "fail": random.randint(0, 20),
-    #         "error": random.randint(0, 4)
-    #     }
-    #
-    #     return sar
-
     def do_GET(self, method=None):
 
         # Parse path
@@ -67,17 +61,19 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         # Route and handle request
         if parsed_path.path == "/hello":
-            """Reply with "hello"""""
+            """Reply with 'hello'"""
+
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-
             data = {"message":"hello"}
+
             # Send the JSON response
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
         elif parsed_path.path == "/systems":
             """Reply with sample CSAM API response for system information"""
+
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
@@ -113,13 +109,67 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Send the JSON response
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
-        elif parsed_path.path == "/system/111":
-            """Reply with system information"""
+        elif parsed_path.path == "/authenticate-test":
+            """Test authentication"""
+
+            # Test authentication by reading headers and looking for 'Authentication'
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
 
-            data = self.mk_csam_system_info_response()
+            # Read headers
+            header_type = type(self.headers)
+            header_dict = dict(self.headers)
+            # headers = "|||".join(self.headers.split("\n"))
+            print("headers ======\n", self.headers)
+            print("header_type ======\n", header_type)
+            print("header_dict ======\n", header_dict)
+            print("Authorization header:", self.headers['Authorization'])
+
+            data = {
+                "reply": "yes",
+                "Authorization": self.headers['Authorization'],
+                "pat": self.headers['Authorization'].split("Bearer ")[-1]
+            }
+            # Send the JSON response
+            self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
+
+        elif parsed_path.path == "/system/111":
+            """Reply with system information"""
+
+            # Usage:
+            #
+            # # authorized example
+            # curl -X 'GET' 'http://localhost:9002/system/111' \
+            # -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' \
+            # -H 'Authorization: Bearer FAD619'
+            #
+            # # unauthorized example:
+            #
+            # curl -X 'GET' 'http://localhost:9002/system/111' \
+            # -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' 
+            #
+
+            pat = None
+            if 'Authorization' in self.headers:
+                pat = self.headers['Authorization'].split("Bearer ")[-1]
+
+            if pat is None or pat != "FAD619":
+                # Reply with unauthorized
+                self.send_response(401)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                data = {
+                    "message": "Unauthorized request",
+                    "endpoint": parsed_path.path
+                }
+            else:
+                # Request is authenticated
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                data = self.mk_csam_system_info_response()
+
             # Send the JSON response
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 

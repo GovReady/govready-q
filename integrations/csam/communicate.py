@@ -30,7 +30,17 @@ class CSAMCommunication(Communication):
         pass
 
     def get_response(self, endpoint, headers=None, verify=False):
-        response = requests.get(f"{self.base_url}{endpoint}")
+        # set headers
+        self.PAT_TOKEN = "FAD619BF4A06903215E59A626XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        # accept_header = f'accept: application/json;odata.metadata=minimal;odata.streaming=true'
+        # auth_header = f'Authorization: Bearer {self.PAT_TOKEN}'
+        #-H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' 
+        #-H 'Authorization: Bearer FAD619BF4A06903215E59A626XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+        headers={"accept":"application/json;odata.metadata=minimal;odata.streaming=true",
+         "Authorization": f"Bearer {self.PAT_TOKEN}"
+        }
+        # get response
+        response = requests.get(f"{self.base_url}{endpoint}", headers=headers)
         self.status_code = response.status_code
         if self.status_code == 200:
             self.data = response.json()
