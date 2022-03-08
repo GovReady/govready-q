@@ -78,7 +78,7 @@
       <div id="above-tab-content" class="row">
         <!-- Page Title-->
         <div style="float: left;">
-            <h2 class="" style="">
+            <h2 class="component-library-title" style="">
               <a href="{% url 'component_library' %}">Component Library</a> {% if system.id %}&gt; <a href='{% url 'components_selected' system_id=system.id %}' style="color: black;">Component Detail</a>{% endif %}
             </h2>
         </div>
@@ -88,12 +88,12 @@
       <div class="col-sm-10 ">
         <h2 id="element-name" class="">
           {{ element.name }}
-          {% if element.private == True %}<span class="glyphicon glyphicon-lock small" style="color:gray;" title="Private"></span>{% endif %}
+          {% if element.private == True %}<span class="glyphicon glyphicon-lock small" style="color:gray;" title="Private" id="lock-glyph"></span>{% endif %}
         </h2>
       </div>
       <div class="col-sm-2">
         <div id="btn-edit-title" style="text-align: center;">
-          {% if is_admin %}
+          {% if can_edit %}
             <button class="btn btn-default btn-small" id="edit-button" onclick="return edit_component();">Edit</button>
           {% endif %}
         </div>

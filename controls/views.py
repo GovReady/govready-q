@@ -1288,6 +1288,8 @@ def component_library_component(request, element_id):
     if element.private == True and 'view_element' not in get_user_perms(request.user, element):
         raise Http404
 
+    hasPermissionToEdit = 'change_element' in get_user_perms(request.user, element)
+
     smt_query = request.GET.get('search')
 
     # Retrieve systems consuming element
@@ -1308,7 +1310,8 @@ def component_library_component(request, element_id):
             "element": element,
             "states": states,
             "impl_smts": impl_smts,
-            "is_admin": request.user.is_superuser,
+            # "is_admin": request.user.is_superuser,
+            "can_edit": hasPermissionToEdit,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }
