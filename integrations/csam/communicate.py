@@ -26,6 +26,7 @@ class CSAMCommunication(Communication):
         self.description = self.integration.description
         self.config = self.integration.config
         self.base_url = self.config['base_url']
+        self.ssl_verify = self.config.get('ssl_verify', False) 
         self.personal_access_token = self.config['personal_access_token']
         self.__is_authenticated = False
         self.error_msg = {}
@@ -47,7 +48,9 @@ class CSAMCommunication(Communication):
             "Authorization": f"Bearer {self.personal_access_token}"
         }
         # get response
-        response = requests.get(f"{self.base_url}{endpoint}", headers=headers)
+        if self.ssl_verify:
+            verify = self.ssl_verify
+        response = requests.get(f"{self.base_url}{endpoint}", headers=headers, verify=verify)
         self.status_code = response.status_code
         if self.status_code == 200:
             self.data = response.json()
