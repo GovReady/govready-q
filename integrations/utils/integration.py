@@ -33,17 +33,32 @@ class HelperMixin:
 class Communication(HelperMixin, ABC):
 
     DESCRIPTION = {
-    "name": "abstract class",
-    "version": "0.0"
+        "name": "abstract class",
+        "description": "Abstract integration class",
+        "version": "0.0",
+        "integration_db_record": False,
+        "mock": {
+            "base_url": "http:/localhost:9001",
+            "personal_access_token": None
+        }
     }
 
     def __init__(self, **kwargs):
-        assert self.DESCRIPTION, "Developer must assign a description dict"
+        self.integration_name = self.DESCRIPTION['name']
+
+        if self.DESCRIPTION['integration_db_record']:
+            self.integration = get_object_or_404(Integration, name=self.integration_name)
+            self.description = self.integration.description
+            self.config = self.integration.config
+            self.base_url = self.config['base_url']
+        else:
+            self.description = self.DESCRIPTION['description']
+            self.personal_access_token = self.config['personal_access_token']
         self.__is_authenticated = False
         self.error_msg = {}
         self.auth_dict = {}
+        self.version = self.DESCRIPTION['version']
         self.data = None
-        self.base_url = None
 
     def identify(self):
         """Identify which Communication subclass"""
@@ -53,6 +68,11 @@ class Communication(HelperMixin, ABC):
 
     def setup(self, **kwargs):
         raise NotImplementedError()
+
+    def msg_missing_configuration(self):
+        """Message that the integration is not properly configured"""
+
+        msg = f"The {self.integration_name} integration is not fully configured. The problem could be no database record or no integration subclass."
 
     def get_response(self, endpoint, headers=None, verify=False):
         response = requests.get(f"{self.base_url}{endpoint}")

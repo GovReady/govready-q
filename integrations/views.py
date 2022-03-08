@@ -46,6 +46,7 @@ def integration_identify(request, integration_name):
     """Integration returns an identification"""
 
     integration = get_object_or_404(Integration, name=integration_name)
+    communication = set_integration(integration_name)
     if communication is None: return HttpResponseNotFound('<h1>404 - Integration not found.</h1>')
     identified = communication.identify()
     return HttpResponse(f"Attempting to communicate with '{integration_name}' integration: {identified}")

@@ -11,7 +11,12 @@ class GithubCommunication(Communication):
     DESCRIPTION = {
         "name": "GitHub",
         "description": "GitHub API Service",
-        "version": "0.1"
+        "version": "0.1",
+        "integration_db_record": False,
+        "mock": {
+            "base_url": "http:/localhost:9003",
+            "personal_access_token": None
+        }
     }
 
     def __init__(self, **kwargs):
