@@ -1,8 +1,10 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.14-dev (February xx, 2022)
+v0.9.14-dev (March xx, 2022)
 ------------------------------
+
+Release adds support for private components and integrations with third party services.
 
 **UI changes**
 
@@ -19,6 +21,8 @@ v0.9.14-dev (February xx, 2022)
 * Support for private components by adding 'private' boolean field to controls.models.Element.
 * Create new components as private and assign owner permissions to user who created the component.
 * Added tests for component creation form user interface.
+* Added extensible Integrations Django appplication to support communication with third-party services via APIs, etc.
+* Added initial support for DoJ's CSAM integration.
 
 **Bug fixes**
 

@@ -3,6 +3,7 @@ import json
 from base64 import b64encode
 from urllib.parse import urlparse
 from integrations.utils.integration import Communication
+from integrations.models import Integration, Endpoint
 
 
 class GithubCommunication(Communication):

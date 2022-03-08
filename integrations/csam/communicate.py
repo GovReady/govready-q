@@ -2,25 +2,35 @@ import requests
 import json
 from base64 import b64encode
 from urllib.parse import urlparse
+from django.shortcuts import get_object_or_404
 from integrations.utils.integration import Communication
+from integrations.models import Integration, Endpoint
 
 
 class CSAMCommunication(Communication):
     
     DESCRIPTION = {
-        "name": "CSAM",
+        "name": "csam",
         "description": "CSAM API Service",
         "version": "0.1",
-        "base_url": "http://localhost:9002",
+        "integration_db_record": True,
+        "mock": {
+            "base_url": "http:/localhost:9002",
+            "personal_access_token": "FAD619"
+        }
     }
 
     def __init__(self, **kwargs):
-        assert self.DESCRIPTION, "Developer must assign a description dict"
+        self.integration_name = self.DESCRIPTION['name']
+        self.integration = get_object_or_404(Integration, name=self.integration_name)
+        self.description = self.integration.description
+        self.config = self.integration.config
+        self.base_url = self.config['base_url']
+        self.personal_access_token = self.config['personal_access_token']
         self.__is_authenticated = False
         self.error_msg = {}
         self.auth_dict = {}
         self.data = None
-        self.base_url = self.DESCRIPTION['base_url']
 
     # def identify(self):
     #     """Identify which Communication subclass"""
@@ -30,14 +40,11 @@ class CSAMCommunication(Communication):
         pass
 
     def get_response(self, endpoint, headers=None, verify=False):
-        # set headers
-        self.PAT_TOKEN = "FAD619BF4A06903215E59A626XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-        # accept_header = f'accept: application/json;odata.metadata=minimal;odata.streaming=true'
-        # auth_header = f'Authorization: Bearer {self.PAT_TOKEN}'
-        #-H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' 
-        #-H 'Authorization: Bearer FAD619BF4A06903215E59A626XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-        headers={"accept":"application/json;odata.metadata=minimal;odata.streaming=true",
-         "Authorization": f"Bearer {self.PAT_TOKEN}"
+        # PAT for mock service is 'FAD619'
+        # print("1 ===== endpoint",endpoint)
+        headers={
+            "accept":"application/json;odata.metadata=minimal;odata.streaming=true",
+            "Authorization": f"Bearer {self.personal_access_token}"
         }
         # get response
         response = requests.get(f"{self.base_url}{endpoint}", headers=headers)

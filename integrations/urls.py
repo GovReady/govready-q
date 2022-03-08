@@ -9,6 +9,6 @@ from . import views
 urlpatterns = [
     # url(r"^jsonplaceholder/users$", views.jsonplaceholders_users, name='jsonplaceholders_users'),
 
-    url(r"^(?P<integration>.*)/identify$", views.integration_identify, name='integration_identify'),
-    url(r"^(?P<integration>.*)/endpoint(?P<endpoint>.*)$", views.integration_endpoint, name='integration_endpoint'),
+    url(r"^(?P<integration_name>.*)/identify$", views.integration_identify, name='integration_identify'),
+    url(r"^(?P<integration_name>.*)/endpoint(?P<endpoint>.*)$", views.integration_endpoint, name='integration_endpoint'), # /integrations/csam/endpoint/system/111
 ]

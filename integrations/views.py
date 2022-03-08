@@ -1,14 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponse, HttpResponseNotFound
 import requests
 import argparse
 import os
 import importlib
 from .utils.integration import Communication
-# from .models import Endpoint
+from .models import Integration, Endpoint
 from .csam.communicate import CSAMCommunication
 from .github.communicate import GithubCommunication
 from .jsonplaceholder.communicate import JsonplaceholderCommunication
+
 
 def set_integration(integration):
     """Select correct integration"""
@@ -21,38 +22,6 @@ def set_integration(integration):
         return JsonplaceholderCommunication()
     else:
         return None
-
-
-# def jsonplaceholders_users(request):
-#     #pull data from third party rest api
-#     print(1,"========", "view_users")
-#     endpoint_name = 'Test API Jsonplaceholder'
-#     endpoint_url = 'https://jsonplaceholder.typicode.com/users'
-#     endpoint_description = 'Sample json results listing users'
-    
-#     from integrations.jsonplaceholder.communicate import JsonplaceholderCommunication
-#     comms = JsonplaceholderCommunication()
-#     users = comms.get_response(endpoint_url)
-
-#     # response = requests.get(endpoint_url)
-#     # convert reponse data into json
-#     # users = response.json()
-#     print(users)
-#     return HttpResponse(users)
-
-#     # add results into Endpoint model
-#     # ep, created = Endpoint.objects.update_or_create(
-#     #     name=endpoint_name, 
-#     #     url=endpoint_url,
-#     #     description=endpoint_description,
-#     #     api_data=users
-#     # )
-
-#     # return render(request, "api_client/users.html", {"users": users})
-#     pass
-
-def integration_identify(request, integration):
-    """Integration returns an identification"""
 
     # QUESTION: Is there a better way to make dynamic assignments?
     # CAN'T USE BELOW APPROACH BECAUSE IMPORT MODULES ONLY DONE ON FIRST INTERPRETATON
@@ -73,18 +42,31 @@ def integration_identify(request, integration):
     # import ipdb; ipdb.set_trace()
     # communication = communication_classes[0]()
 
-    communication = set_integration(integration)
+def integration_identify(request, integration_name):
+    """Integration returns an identification"""
+
+    integration = get_object_or_404(Integration, name=integration_name)
     if communication is None: return HttpResponseNotFound('<h1>404 - Integration not found.</h1>')
     identified = communication.identify()
-    return HttpResponse(f"Attempting to communicate with '{integration}' integration: {identified}")
+    return HttpResponse(f"Attempting to communicate with '{integration_name}' integration: {identified}")
 
-def integration_endpoint(request, integration, endpoint=None):
+def integration_endpoint(request, integration_name, endpoint=None):
     """Communicate with an integrated service"""
 
-    communication = set_integration(integration)
-    if communication is None: return HttpResponseNotFound('<h1>404 - Integration not found.</h1>')
+    integration = get_object_or_404(Integration, name=integration_name)
+    if integration is None: return HttpResponseNotFound(f'<h1>404 - Integration configuration not found.</h1>')
+    communication = set_integration(integration_name)
+    if communication is None: return HttpResponseNotFound(f'<h1>404 - Integration not found.</h1>')
     identified = communication.identify()
     data = communication.get_response(endpoint)
+
+    # add results into Endpoint model
+
+    ep, created = Endpoint.objects.update_or_create(
+        integration=integration,
+        endpoint_path=endpoint,
+        data=data
+    )
 
     return HttpResponse(f"Attempting to communicate with '{integration}' integration: {identified}. endpoint: {endpoint}. <br> Returned data: {data}")
 

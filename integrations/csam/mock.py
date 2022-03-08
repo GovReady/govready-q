@@ -52,6 +52,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # Parse query params
         # print("parsed_path.query",parsed_path.query)
         params = parse_qs(parsed_path.query)
+        print("parsed_path.path:", parsed_path.path)
         print("** params", params)
         # params are received as arrays, so get first element in array
         system_id = params.get('system_id', [0])[0]
@@ -118,12 +119,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
             # Read headers
-            header_type = type(self.headers)
-            header_dict = dict(self.headers)
-            # headers = "|||".join(self.headers.split("\n"))
-            print("headers ======\n", self.headers)
-            print("header_type ======\n", header_type)
-            print("header_dict ======\n", header_dict)
+            # header_type = type(self.headers)
+            # header_dict = dict(self.headers)
+            # print("headers ======\n", self.headers)
+            # print("header_type ======\n", header_type)
+            # print("header_dict ======\n", header_dict)
             print("Authorization header:", self.headers['Authorization'])
 
             data = {
