@@ -25,6 +25,7 @@ Release adds support for private components and integrations with third party se
 * Added initial support for DoJ's CSAM integration.
 
 **Bug fixes**
+* Resolve components not displaying the tag widget by properly setting existingTags default for new component.
 
 * Footer fixes.
 
