@@ -94,6 +94,10 @@ export const TagDropdown = ({ updateTagsURL, action, existingTags }) => {
     )
 };
 
+TagDropdown.defaultProps = {
+  existingTags: []
+};
+
 TagDropdown.propTypes = {
     updateTagsURL: PropTypes.string.isRequired,
     action: PropTypes.func.isRequired,
