@@ -1305,6 +1305,8 @@ def component_library_component(request, element_id):
     states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
     types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
 
+    import ipdb; ipdb.set_trace();
+    
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
     else:
@@ -1326,6 +1328,7 @@ def component_library_component(request, element_id):
             "form_source": "component_library"
         }
         return render(request, "components/element_detail_tabs.html", context)
+
 
     if len(impl_smts) == 0:
         # New component, no control statements assigned yet

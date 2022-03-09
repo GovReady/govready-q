@@ -107,6 +107,7 @@
       <li id="smt-tab" role="presentation" class="active"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Control Implementation Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
       <li id="systems-tab" role="presentation"><a href="#systems" aria-controls="systems" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> Systems  &nbsp;<div id="common-tab-count">{{ consuming_systems|length }}</div></a></li>
       <li id="oscal-tab" role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
+      <li id="permissions-tab" role="presentation"><a href="#permissions" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-gear"></span> Permissions </a></li>
       <li id="requests-tab" role="presentation"><a href="#requests" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-envelope"></span> Requests </a></li>
       {% if enable_experimental_opencontrol %}
       <li id="opencontrol-tab" role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
@@ -340,6 +341,30 @@
         <div style="font-family: monospace; font-size:12px; white-space: pre-wrap !important; padding: 0px 12px 8px 8px;">{{ oscal }}</div>
       </div>
 
+      <!-- Tab panel: Permissions -->
+      <div role="tabpanel" class="tab-pane" id="requests">
+        <div class="row">
+          <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
+            <h3>Requested Usage</h3>
+            {% comment %} <div><span>{{users_can_edit}}</span></div> {% endcomment %}
+
+            <h3>Approved Usage ({{users_with_permission | length}})</h3>
+            <div><span>{{users_with_permission}}</span></div>
+            <div class="container">
+              <div class="row">
+                <div class="col-md-4"><strong>Requested By</strong></div>
+              </div>
+
+              {% for user in users_with_permission %}
+                <div class="username">
+                  
+                </div>
+              {% endfor%}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Tab panel: Requests -->
       <div role="tabpanel" class="tab-pane" id="requests">
         <div class="row">
@@ -360,23 +385,6 @@
                 </div>
               {% endfor%}
             </div>
-            {% comment %} <div class="consuming-systems">
-              {% if consuming_systems|length > 0 %}
-                  {% for cs in consuming_systems %}
-                      <div class="consuming-system">
-                        <a class=""
-                           href={% url 'system_element' system_id=cs.id element_id=element.id %}>
-                           {% for p in cs.projects.all %}
-                            <img id="project-icon" src="{{ p.root_task.get_app_icon_url }}" alt="Project Icon" height="24">
-                           {% endfor %}
-                          {{ cs.root_element.name }}
-                          </a>
-                      </div>
-                  {% endfor %}
-              {% else %}
-                <div>There aren't any systems using the component.</div>
-              {% endif %}
-            </div> {% endcomment %}
           </div>
         </div>
       </div>
