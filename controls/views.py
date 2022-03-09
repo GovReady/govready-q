@@ -1292,6 +1292,11 @@ def component_library_component(request, element_id):
 
     smt_query = request.GET.get('search')
 
+    usersWithEditPermission = get_users_with_perms(element)
+
+    print("usersWithEditPermission")
+    # import ipdb; ipdb.set_trace()
+
     # Retrieve systems consuming element
     consuming_systems = element.consuming_systems()
     states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
@@ -1312,6 +1317,7 @@ def component_library_component(request, element_id):
             "impl_smts": impl_smts,
             # "is_admin": request.user.is_superuser,
             "can_edit": hasPermissionToEdit,
+            "users_can_edit": usersWithEditPermission,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }
