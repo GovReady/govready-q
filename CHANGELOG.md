@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.14-dev (February xx, 2022)
+v0.9.14-dev (March xx, 2022)
 ------------------------------
 
 **UI changes**
@@ -21,6 +21,7 @@ v0.9.14-dev (February xx, 2022)
 * Added tests for component creation form user interface.
 
 **Bug fixes**
+* Resolve components not displaying the tag widget by properly setting existingTags default for new component.
 
 * Footer fixes.
 
