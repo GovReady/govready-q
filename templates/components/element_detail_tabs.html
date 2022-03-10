@@ -344,7 +344,7 @@
 
       <!-- Tab panel: Permissions -->
       <div role="tabpanel" class="tab-pane" id="permissions">
-        <div class="permissions-table"></div>
+        <div id="perm-table"></div>
       </div>
 
       <!-- Tab panel: Requests -->
@@ -393,6 +393,7 @@
 
 {% block scripts %}
       <script>
+        window.permissionsTable();
         window.renderElementTags({{ element.id }}, {{ tags | safe }});
       </script>
       <script>
@@ -553,6 +554,7 @@
           debugger;
           console.log(user);
         }
+        
       </script>
 
 {% endblock %}
