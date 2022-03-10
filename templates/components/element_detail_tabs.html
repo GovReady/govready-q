@@ -96,6 +96,7 @@
           {% if can_edit %}
             <button class="btn btn-default btn-small" id="edit-button" onclick="return edit_component();">Edit</button>
           {% endif %}
+          <button class="btn btn-default btn-small" id="edit-button" onclick="return show_user({{users_with_permissions|length}});">Show User</button>
         </div>
       </div>
     </div>
@@ -342,27 +343,8 @@
       </div>
 
       <!-- Tab panel: Permissions -->
-      <div role="tabpanel" class="tab-pane" id="requests">
-        <div class="row">
-          <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-            <h3>Requested Usage</h3>
-            {% comment %} <div><span>{{users_can_edit}}</span></div> {% endcomment %}
-
-            <h3>Approved Usage ({{users_with_permission | length}})</h3>
-            <div><span>{{users_with_permission}}</span></div>
-            <div class="container">
-              <div class="row">
-                <div class="col-md-4"><strong>Requested By</strong></div>
-              </div>
-
-              {% for user in users_with_permission %}
-                <div class="username">
-                  
-                </div>
-              {% endfor%}
-            </div>
-          </div>
-        </div>
+      <div role="tabpanel" class="tab-pane" id="permissions">
+        <div class="permissions-table"></div>
       </div>
 
       <!-- Tab panel: Requests -->
@@ -381,7 +363,7 @@
 
               {% for user in users_with_permission %}
                 <div class="username">
-                  
+                  <h4>{{ user.username }}</h4>
                 </div>
               {% endfor%}
             </div>
@@ -565,6 +547,11 @@
               }
             });
           });
+        }
+
+        function show_user(user){
+          debugger;
+          console.log(user);
         }
       </script>
 

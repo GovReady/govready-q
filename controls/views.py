@@ -57,6 +57,7 @@ structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
 
+from django.template.defaulttags import register
 
 def index(request):
     """Index page for controls"""
@@ -1299,13 +1300,18 @@ def component_library_component(request, element_id):
     for user in usersWithPermission:
         listUsers.append(user.username)
     
-
+    @register.filter
+    def get_item(dictionary, key):
+        return dictionary.get(key)
+    
+    # import ipdb; ipdb.set_trace()
+    
     # Retrieve systems consuming element
     consuming_systems = element.consuming_systems()
     states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
     types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
 
-    import ipdb; ipdb.set_trace();
+    # import ipdb; ipdb.set_trace();
     
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
@@ -1321,9 +1327,9 @@ def component_library_component(request, element_id):
             "states": states,
             "impl_smts": impl_smts,
             # "is_admin": request.user.is_superuser,
-            "users_with_permission": listUsers,
+            "list_of_permissible_users": listUsers,
             "can_edit": hasPermissionToEdit,
-            "users_can_edit": usersWithPermission,
+            "users_with_permissions": usersWithPermission,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }
