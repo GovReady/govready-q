@@ -21,6 +21,7 @@ class CSAMCommunication(Communication):
     }
 
     def __init__(self, **kwargs):
+        self.status_code = None
         self.integration_name = self.DESCRIPTION['name']
         self.integration = get_object_or_404(Integration, name=self.integration_name)
         self.description = self.integration.description
@@ -40,9 +41,10 @@ class CSAMCommunication(Communication):
     def setup(self, **kwargs):
         pass
 
-    def get_response(self, endpoint, headers=None, verify=False):
+    def get_response(self, endpoint, headers=None, params=None, verify=False):
+        """Send request using GET"""
+
         # PAT for mock service is 'FAD619'
-        # print("1 ===== endpoint",endpoint)
         headers={
             "accept":"application/json;odata.metadata=minimal;odata.streaming=true",
             "Authorization": f"Bearer {self.personal_access_token}"
@@ -51,6 +53,26 @@ class CSAMCommunication(Communication):
         if self.ssl_verify:
             verify = self.ssl_verify
         response = requests.get(f"{self.base_url}{endpoint}", headers=headers, verify=verify)
+        self.status_code = response.status_code
+        if self.status_code == 200:
+            self.data = response.json()
+        elif self.status_code == 404:
+            print("404 - page not found")
+        else:
+            pass
+        return self.data
+
+    def post_response(self, endpoint, data=None, params=None, verify=False):
+        """Send request using POST"""
+
+        headers = {
+            "accept": "application/json;odata.metadata=minimal;odata.streaming=true",
+            "Authorization": f"Bearer {self.personal_access_token}"
+        }
+        # get response
+        if self.ssl_verify:
+            verify = self.ssl_verify
+        response = requests.post(f"{self.base_url}{endpoint}", headers=headers, data=data, verify=verify)
         self.status_code = response.status_code
         if self.status_code == 200:
             self.data = response.json()

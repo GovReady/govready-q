@@ -71,3 +71,22 @@ def integration_endpoint(request, integration_name, endpoint=None):
 
     return HttpResponse(f"Attempting to communicate with '{integration}' integration: {identified}. endpoint: {endpoint}. <br> Returned data: {data}")
 
+def integration_endpoint_post(request, integration_name, endpoint=None):
+    """Communicate with an integrated service using POST"""
+
+    integration = get_object_or_404(Integration, name=integration_name)
+    if integration is None: return HttpResponseNotFound(f'<h1>404 - Integration configuration not found.</h1>')
+    communication = set_integration(integration_name)
+    if communication is None: return HttpResponseNotFound(f'<h1>404 - Integration not found.</h1>')
+    identified = communication.identify()
+    data = communication.post_response(endpoint)
+
+    # add results into Endpoint model
+
+    ep, created = Endpoint.objects.update_or_create(
+        integration=integration,
+        endpoint_path=endpoint,
+        data=data
+    )
+
+    return HttpResponse(f"Attempting to communicate using POST with '{integration}' integration: {identified}. endpoint: {endpoint}. <br> Returned data: {data}")

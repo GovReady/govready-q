@@ -13,7 +13,14 @@ class JsonplaceholderCommunication(Communication):
         "description": "Test API Jsonplaceholder",
         "version": "0.1",
         "base_url": "https://jsonplaceholder.typicode.com",
+        "personal_access_token": None
     }
+
+    # integrations record config value:
+    # {
+    #     "base_url": "http://jsonplaceholder.typicode.com",
+    #     "personal_access_token": null
+    # }
 
     def __init__(self, **kwargs):
         assert self.DESCRIPTION, "Developer must assign a description dict"
