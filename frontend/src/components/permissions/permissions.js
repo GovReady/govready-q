@@ -181,7 +181,6 @@ export const Permissions = () => {
                                 delete: false,
                             };
                         });
-                        // debugger;
                         setPermissibleUsers((prev) => [...prev, newUser]);
                     }
                 }}
