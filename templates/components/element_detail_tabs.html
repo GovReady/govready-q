@@ -96,7 +96,7 @@
           {% if can_edit %}
             <button class="btn btn-default btn-small" id="edit-button" onclick="return edit_component();">Edit</button>
           {% endif %}
-          <button class="btn btn-default btn-small" id="edit-button" onclick="return show_user({{users_with_permissions|length}});">Show User</button>
+          {% comment %} <button class="btn btn-default btn-small" id="edit-button" onclick="return show_user({{users_with_permissions|length}});">Show User</button> {% endcomment %}
         </div>
       </div>
     </div>
@@ -109,6 +109,7 @@
       <li id="systems-tab" role="presentation"><a href="#systems" aria-controls="systems" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> Systems  &nbsp;<div id="common-tab-count">{{ consuming_systems|length }}</div></a></li>
       <li id="oscal-tab" role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
       <li id="permissions-tab" role="presentation"><a href="#permissions" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-gear"></span> Permissions </a></li>
+      <li id="requests-tab" role="presentation"><a href="#requests" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-envelope"></span> Procurement </a></li>
       <li id="requests-tab" role="presentation"><a href="#requests" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-envelope"></span> Requests </a></li>
       {% if enable_experimental_opencontrol %}
       <li id="opencontrol-tab" role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>

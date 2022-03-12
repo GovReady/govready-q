@@ -110,12 +110,12 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
       }
     );
   };
-
+  console.log('state: ', state);
   return (
     <AsyncTypeahead
       {...state}
       id="user-lookup-async-pagination"
-      labelKey="id"
+      labelKey="username"
       isLoading={state.isLoading}
       maxResults={PER_PAGE - 1}
       minLength={2}
@@ -128,7 +128,7 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
       promptText={""}
       filterBy={() => true}
       paginate
-      placeholder="Search for a Github user..."
+      placeholder="Search for a user..."
       renderInput={({ inputRef, referenceElementRef, ...inputProps }) => (
         <FormControl variant="standard" style={{ width: "100%" }}>
           <InputLabel htmlFor="input-with-icon-adornment">Search</InputLabel>
@@ -157,7 +157,7 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
           key={option.id}
           value={option.id}
         >
-          <span>{option.display_name}</span>
+          <span>{option.username}</span>
           <span className={classes.username}>({option.username})</span>
         </MenuItem>
       )}

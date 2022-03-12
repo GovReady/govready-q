@@ -1267,6 +1267,11 @@
   "resolved" "https://registry.npmjs.org/@types/scheduler/-/scheduler-0.16.1.tgz"
   "version" "0.16.1"
 
+"@types/uuid@8.3.1":
+  "integrity" "sha512-Y2mHTRAbqfFkpjldbkHGY8JIzRN6XqYRliG8/24FcHm2D2PwW24fl5xMRTVGdrb7iMrwCaIEbLWerGIkXuFWVg=="
+  "resolved" "https://registry.npmjs.org/@types/uuid/-/uuid-8.3.1.tgz"
+  "version" "8.3.1"
+
 "@types/warning@^3.0.0":
   "integrity" "sha1-DSUBJorY+ZYrdA04fEZU9fjiPlI="
   "resolved" "https://registry.npmjs.org/@types/warning/-/warning-3.0.0.tgz"
@@ -3357,6 +3362,24 @@
   "integrity" "sha1-RQ1Nyfpw3nMnYvvS1KKJgUGaDM8="
   "resolved" "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz"
   "version" "1.0.2"
+
+"uuid@^3.4.0":
+  "integrity" "sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A=="
+  "resolved" "https://registry.npmjs.org/uuid/-/uuid-3.4.0.tgz"
+  "version" "3.4.0"
+
+"uuid@8.3.2":
+  "integrity" "sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg=="
+  "resolved" "https://registry.npmjs.org/uuid/-/uuid-8.3.2.tgz"
+  "version" "8.3.2"
+
+"uuidv4@^6.2.11":
+  "integrity" "sha512-OTS4waH9KplrXNADKo+Q1kT9AHWr8DaC0S5F54RQzEwcUaEzBEWQQlJyDUw/u1bkRhJyqkqhLD4M4lbFbV+89g=="
+  "resolved" "https://registry.npmjs.org/uuidv4/-/uuidv4-6.2.11.tgz"
+  "version" "6.2.11"
+  dependencies:
+    "@types/uuid" "8.3.1"
+    "uuid" "8.3.2"
 
 "v8-compile-cache@^2.2.0":
   "integrity" "sha512-l8lCEmLcLYZh4nbunNZvQCJc5pv7+RCwa8q/LdUx8u7lsWvPDKmpodJAJNwkAhJC//dFY48KuIEmjtd4RViDrA=="
