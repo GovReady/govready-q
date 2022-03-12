@@ -33,12 +33,14 @@ PORT = 9002
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
+    SYSTEM = {
+        "system_id": 111,
+        "name": "My IT System",
+        "description":  "This is a simple test system"
+    }
+
     def mk_csam_system_info_response(self):
-        csam_system_info_response = {
-            "system_id": 111,
-            "name": "My IT System"
-        }
-        return csam_system_info_response
+        return self.SYSTEM
 
     def do_GET(self, method=None):
 
@@ -71,11 +73,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
             # Read headers
-            # header_type = type(self.headers)
-            # header_dict = dict(self.headers)
-            # print("headers ======\n", self.headers)
-            # print("header_type ======\n", header_type)
-            # print("header_dict ======\n", header_dict)
             print("Authorization header:", self.headers['Authorization'])
 
             data = {
@@ -97,7 +94,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # -H 'Authorization: Bearer FAD619'
             #
             # # unauthorized example:
-            #
             # curl -X 'GET' 'http://localhost:9002/system/111' \
             # -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' 
             #
@@ -153,6 +149,53 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             # Send the JSON response
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
+
+        if parsed_path.path == "/system/111":
+            """Update system information"""
+
+            # Usage:
+            #
+            # # authorized example
+            # curl -X 'POST' 'http://localhost:9002/system/111' \
+            # -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' \
+            # -H 'Authorization: Bearer FAD619'
+            #
+            # # unauthorized example:
+            # curl -X 'POST' 'http://localhost:9002/system/111' \
+            # -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true'
+            #
+
+            pat = None
+            if 'Authorization' in self.headers:
+                pat = self.headers['Authorization'].split("Bearer ")[-1]
+
+            if pat is None or pat != "FAD619":
+                # Reply with unauthorized
+                self.send_response(401)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                data = {
+                    "message": "Unauthorized request",
+                    "endpoint": parsed_path.path
+                }
+            else:
+                # Request is authenticated - read POST data and update system info
+                content_length = int(self.headers['Content-Length'])
+                self.post_data = self.rfile.read(content_length)
+                self.post_data_json = json.loads(self.post_data)
+                # post_data_decoded = post_data.decode('utf-8')
+                self.SYSTEM['name'] = self.post_data_json.get('name', self.SYSTEM['name'])
+                self.SYSTEM['description'] = self.post_data_json.get('description', self.SYSTEM['description'])
+
+                # Send response
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+
+                data = self.mk_csam_system_info_response()
+            # Send the JSON response
+            self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
+
 
         else:
             """Reply with Path not found"""
