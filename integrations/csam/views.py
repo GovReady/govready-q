@@ -64,3 +64,24 @@ def integration_endpoint_post(request, endpoint=None):
         f"<p>Returned data:</p>"
         f"<pre>{json.dumps(data,indent=4)}</pre>"
         f"</body></html>")
+
+def update_system_description(params={"src_obj_type": "system", "src_obj_id": 2}):
+    """Update System description in CSAM"""
+
+    result = dict()
+    from controls.models import System
+    system_id = params['src_obj_id']
+    system = System.objects.get(pk=system_id)
+    csam_system_id = system.info.get('csam_system_id', None)
+    print("10, ========== csam_system_id", csam_system_id)
+    if csam_system_id is not None:
+        new_description = "This is the new system description."
+        endpoint = f"/system/{csam_system_id}"
+        post_data = {
+            "description": new_description
+        }
+        communication = set_integration()
+        data = communication.post_response(endpoint, data=json.dumps(post_data))
+        result = data
+    return result
+

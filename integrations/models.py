@@ -15,8 +15,10 @@ from api.base.models import BaseModel
 
 
 class Integration(BaseModel):
-    name = models.CharField(max_length=250, help_text="Endpoint name in lowercase", unique=False, blank=False, null=False)
-    description = models.TextField(default="", help_text="Brief description of the Integration", unique=False, blank=True, null=True)
+    name = models.CharField(max_length=250, help_text="Endpoint name in lowercase", unique=False, blank=False,
+                            null=False)
+    description = models.TextField(default="", help_text="Brief description of the Integration", unique=False,
+                                   blank=True, null=True)
     config = JSONField(blank=True, null=True, default=dict, help_text="Integration configuration")
     config_schema = JSONField(blank=True, null=True, default=dict, help_text="Integration schema")
 
@@ -41,22 +43,38 @@ class Integration(BaseModel):
     #                     "system_id": 111
     #                 }
     #             }
-    #             "map_data": [
-    #                 {
-    #                     "local_value": "System.name",
-    #                     "integration_value": "system_info['name']"
-    #                 }
-    #             ]
-
     #         }
     #     ]
     # }
 
+
+# class ObjectMap(BaseModel):
+#     src_obj_type = models.CharField(max_length=100, unique=False, blank=False, null=False,
+#                                     help_text="GovReady object type")
+#     src_obj_id = models.IntegerField(max_length=100, unique=False, blank=False, null=False,
+#                                      help_text="GovReady object's ID/primary_key")
+#     integration = auto_prefetch.ForeignKey(Integration, related_name="object_maps", on_delete=models.CASCADE,
+#                                            unique=False, blank=False, null=False,
+#                                            help_text="The Integration")
+#     trg_obj_type = models.CharField(max_length=100, unique=False, blank=True, null=True,
+#                                     help_text="Integration object type")
+#     trg_obj_id = models.CharField(max_length=100, unique=False, blank=True, null=True,
+#                                   help_text="Integration object's ID/primary_key")
+#
+#     def __str__(self):
+#         return f"'{self.src_obj_type} {self.src_obj_id} to {self.integration} {self.trg_obj_type} id={self.id}'"
+#
+#     def __repr__(self):
+#         return f"'{self.src_obj_type} {self.src_obj_id} to {self.integration} {self.trg_obj_type} id={self.id}'"
+
+
 class Endpoint(auto_prefetch.Model, BaseModel):
     integration = auto_prefetch.ForeignKey(Integration, related_name="endpoints", on_delete=models.CASCADE,
-                                            help_text="Endpoint's Integration")
-    endpoint_path = models.CharField(max_length=250, help_text="Path to the Endpoint", unique=False, blank=True, null=True)
-    description = models.TextField(default="", help_text="Brief description of the endpoint", unique=False, blank=True, null=True)
+                                           help_text="Endpoint's Integration")
+    endpoint_path = models.CharField(max_length=250, help_text="Path to the Endpoint", unique=False, blank=True,
+                                     null=True)
+    description = models.TextField(default="", help_text="Brief description of the endpoint", unique=False, blank=True,
+                                   null=True)
     element_type = models.CharField(max_length=150, help_text="Component type", unique=False, blank=True, null=True)
     data = JSONField(blank=True, null=True, default=dict, help_text="JSON object representing the API results.")
     history = HistoricalRecords(cascade_delete_history=True)
