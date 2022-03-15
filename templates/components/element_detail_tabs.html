@@ -394,7 +394,7 @@
 
 {% block scripts %}
       <script>
-        window.permissionsTable();
+        window.permissionsTable( {{element.id}} );
         window.renderElementTags({{ element.id }}, {{ tags | safe }});
       </script>
       <script>

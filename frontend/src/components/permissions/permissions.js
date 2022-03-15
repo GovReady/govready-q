@@ -13,7 +13,7 @@ import {
 } from 'react-bootstrap';
 import { AsyncPagination } from "../shared/asyncTypeahead";
 
-export const Permissions = () => {
+export const Permissions = ({ elementId }) => {
     const [usersList, setUsersList] = useState([]);
     const [permList, setPermList] = useState([]);
     const [permissibleUsers, setPermissibleUsers] = useState([]);
@@ -22,7 +22,7 @@ export const Permissions = () => {
         axios(`/api/v2/users/`).then(response => {
             setUsersList(response.data.data);
         });
-        axios(`/api/v2/element_permissions/4/`).then(response => {
+        axios(`/api/v2/element_permissions/${elementId}/`).then(response => {
             setPermList(response.data);
         })
     }, [])
@@ -38,21 +38,38 @@ export const Permissions = () => {
     const [records, setRecords] = useState(0);
     const [sortby, setSortBy] = useState(["username", "asc"]);
 
+    const handleAddingNewUserPermissions = async (data) => {
+      const permissible = { users_with_permissions: data }
+      const response = await axios.put(`/api/v2/element_permissions/${elementId}/assign_role/`, permissible);
+      if(response.status === 200){    
+          window.location.reload();
+      } else{
+          console.error("Something went wrong")
+      }
+    };
+
     const [columns, setColumns] = useState([
-        // { field: 'id', headerName: 'ID', width: 90 },
+        { field: 'id', headerName: 'ID', width: 90 },
+        {
+          field: 'userId',
+          headerName: 'UserId',
+          width: 150,
+          editable: false,
+          valueGetter: (params) => params.row.user.id,
+      },
         {
             field: 'user',
             headerName: 'Username',
             width: 150,
             editable: false,
-            valueGetter: (params) => params.row.user.at(0).username,
+            valueGetter: (params) => params.row.user.username,
         },
         {
             field: 'email',
             headerName: 'Email',
             width: 150,
             editable: false,
-            valueGetter: (params) => params.row.user.at(0).email,
+            valueGetter: (params) => params.row.user.email,
         },
         {
           field: 'add',
@@ -138,29 +155,24 @@ export const Permissions = () => {
 
 
     const getPermissibleUsers = (data) => {
-        let list = [];
-
-        Object.entries(data.users_with_permissions).forEach(
-            ([key, value]) => {
-                console.log(key, value)
-                const getUser = usersList.filter((user) => user.id === parseInt(key));
-                console.log('getUser: ', getUser)
-                const newUser = {
-                    id: uuid_v4(),
-                    user: getUser,
-                    view: true,
-                    change: false,
-                    add: false,
-                    delete: false,
-                }
-                list.push(newUser);
-            }
-        );
-        return list;      
+      let list = [];
+      Object.entries(data.users_with_permissions).forEach(
+        ([key, value]) => {
+          const getUser = usersList.filter((user) => user.id === parseInt(key));
+          const newUser = {
+              id: uuid_v4(),
+              user: getUser[0],
+              view: value.includes('view_element'),
+              change: value.includes('change_element'),
+              add: value.includes('add_element'),
+              delete: value.includes('delete_element'),
+          }
+          list.push(newUser);
+        }
+      );
+      return list;      
     }
 
-
-    console.log('permissibleUsers1: ', permissibleUsers)
     return (
         <div>
             <br />
@@ -168,23 +180,22 @@ export const Permissions = () => {
                 endpoint={endpoint}
                 order={"username"}
                 onSelect={(selected) => {
-                    console.log('selected: ', selected)
                     if (selected.length > 0) {
-                        
                         const newUser = selected.map((user) => {
                             return {
                                 id: uuid_v4(),
                                 user: user,
                                 view: true,
-                                change: false,
+                                change: true,
                                 add: false,
                                 delete: false,
                             };
                         });
-                        setPermissibleUsers((prev) => [...prev, newUser]);
+                        setPermissibleUsers((prev) => [...prev, newUser[0]]);
+                        handleAddingNewUserPermissions(newUser[0]);
                     }
                 }}
-                excludeIds={permissibleUsers.map((du) => du.user.at(0).id)}
+                excludeIds={permissibleUsers.map((du) => du.user.id)}
             />
             <br />
             <div style={{ height: 400, width: '100%' }}>
@@ -200,38 +211,4 @@ export const Permissions = () => {
         </div>
     
     )
-    // return (
-    //     <div>
-    //         <Grid item style={{ width: "calc(100% - 1rem - 25px" }}>
-    //               <br />
-    //               <AsyncPagination
-    //                 endpoint={endpoint}
-    //                 order={"display_name"}
-    //                 onSelect={(selected) => {
-    //                     console.log('selected: ', selected)
-    //                 //   if (selected.length > 0) {
-    //                 //     const newUser = selected.map((user) => {
-    //                 //       return {
-    //                 //         id: uuid_v4(),
-    //                 //         user: user,
-    //                 //         role: {
-    //                 //           display: "Editor",
-    //                 //           value: "EDITOR",
-    //                 //         },
-    //                 //       };
-    //                 //     })[0];
-    //                 //     setDocumentUsers((prev) => [...prev, newUser]);
-    //                 //   }
-    //                 }}
-    //                 excludeIds={99}
-    //               />
-    //               {/* <TextField
-    //                 variant="standard"
-    //                 label="Add User"
-    //                 fullWidth={true}
-    //               // onChange={(e) => doSearch(e.target.value)}
-    //               /> */}
-    //         </Grid>
-    //     </div>
-    // )
 }

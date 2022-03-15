@@ -1162,7 +1162,7 @@ def system_element_control(request, system_id, element_id, catalog_key, control_
         catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
         # Retrieve control
         control = next((ctl for ctl in catalog_controls if ctl['id'] == oscalize_control_id(control_id)), None)
-
+        
         # Build OSCAL and OpenControl
         oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
         opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
@@ -1299,7 +1299,7 @@ def component_library_component(request, element_id):
 
     for user in usersWithPermission:
         listUsers.append(user.username)
-    
+
     @register.filter
     def get_item(dictionary, key):
         return dictionary.get(key)
@@ -1322,7 +1322,6 @@ def component_library_component(request, element_id):
 
     if len(impl_smts) < 1:
         context = {
-            "element": element,
             "element": element,
             "states": states,
             "impl_smts": impl_smts,

@@ -303,6 +303,18 @@ class Element(auto_prefetch.Model, TagModelMixin):
         except:
             return False
 
+    def assign_user_permissions(self, user, permissions):
+        try:
+            for perm in permissions:
+                assign_perm(perm, user, self)
+            return True
+        except:
+            return False
+
+    def get_permissible_users(self):
+        #To view permissible users from a different app
+        return get_users_with_perms(self, attach_perms=True)
+
     @transaction.atomic
     def remove_element_control(self, oscal_ctl_id, oscal_catalog_key):
         """Remove a selected control from a system.root_element"""

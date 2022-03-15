@@ -2,12 +2,12 @@ import React, {useState} from 'react';
 import ReactDOM from 'react-dom';
 import { Permissions } from './permissions';
 
-window.permissionsTable = () => {
+window.permissionsTable = ( elementId ) => {
   
     $(window).on('load', function () {
         $("#content").show();
         ReactDOM.render(
-            <Permissions />,
+            <Permissions elementId={elementId} />,
             document.getElementById('perm-table')
         );
     });
