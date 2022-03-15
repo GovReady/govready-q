@@ -62,7 +62,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             data = {"message":"hello"}
 
             # Send the JSON response
-            self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
+            self.wfile.write(json.dumps(data, indent=4))
 
         elif parsed_path.path == "/authenticate-test":
             """Test authentication"""
