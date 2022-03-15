@@ -57,6 +57,7 @@ structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
 
+from django.template.defaulttags import register
 
 def index(request):
     """Index page for controls"""
@@ -1161,7 +1162,7 @@ def system_element_control(request, system_id, element_id, catalog_key, control_
         catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
         # Retrieve control
         control = next((ctl for ctl in catalog_controls if ctl['id'] == oscalize_control_id(control_id)), None)
-
+        
         # Build OSCAL and OpenControl
         oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
         opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
@@ -1288,13 +1289,30 @@ def component_library_component(request, element_id):
     if element.private == True and 'view_element' not in get_user_perms(request.user, element):
         raise Http404
 
+    hasPermissionToEdit = 'change_element' in get_user_perms(request.user, element)
+
     smt_query = request.GET.get('search')
 
+    usersWithPermission = get_users_with_perms(element, attach_perms=True)
+
+    listUsers = []
+
+    for user in usersWithPermission:
+        listUsers.append(user.username)
+
+    @register.filter
+    def get_item(dictionary, key):
+        return dictionary.get(key)
+    
+    # import ipdb; ipdb.set_trace()
+    
     # Retrieve systems consuming element
     consuming_systems = element.consuming_systems()
     states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
     types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
 
+    # import ipdb; ipdb.set_trace();
+    
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
     else:
@@ -1305,14 +1323,17 @@ def component_library_component(request, element_id):
     if len(impl_smts) < 1:
         context = {
             "element": element,
-            "element": element,
             "states": states,
             "impl_smts": impl_smts,
-            "is_admin": request.user.is_superuser,
+            # "is_admin": request.user.is_superuser,
+            "list_of_permissible_users": listUsers,
+            "can_edit": hasPermissionToEdit,
+            "users_with_permissions": usersWithPermission,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }
         return render(request, "components/element_detail_tabs.html", context)
+
 
     if len(impl_smts) == 0:
         # New component, no control statements assigned yet
