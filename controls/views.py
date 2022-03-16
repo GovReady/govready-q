@@ -57,6 +57,7 @@ structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
 
+from django.template.defaulttags import register
 
 def index(request):
     """Index page for controls"""
@@ -419,8 +420,11 @@ def component_library(request):
     # Natural sorting on name
     element_list = natsorted(element_list, key=lambda x: x.name)
 
+    # Remove private elements for which user does not have permission
+    element_list_private_removed = [element for element in element_list if (element.private==False or 'view_element' in get_user_perms(request.user, element))]
+
     # Pagination
-    ele_paginator = Paginator(element_list, 15)
+    ele_paginator = Paginator(element_list_private_removed, 15)
     page_number = request.GET.get('page')
 
     try:
@@ -1260,8 +1264,9 @@ def new_element(request):
         if form.is_valid():
             form.save()
             element = form.instance
+            element.assign_owner_permissions(request.user)
             logger.info(
-                event="new_element",
+                event="new_element with user as owner",
                 object={"object": "element", "id": element.id, "name":element.name},
                 user={"id": request.user.id, "username": request.user.username}
             )
@@ -1275,12 +1280,33 @@ def new_element(request):
 
 @login_required
 def component_library_component(request, element_id):
-    """Display certified component's element detail view"""
+    """Display library component's element detail view"""
 
     # Retrieve element
     element = Element.objects.get(id=element_id)
-    smt_query = request.GET.get('search')
 
+    # Check permissions
+    if element.private == True and 'view_element' not in get_user_perms(request.user, element):
+        logger.warning(
+            event="view_element_private permission_denied",
+            comment=f"User {request.user.username} does not have permission to view this element {element.name}",
+            object={"object": "element", "id": element.id},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        raise Http404
+    hasPermissionToEdit = 'change_element' in get_user_perms(request.user, element)
+    smt_query = request.GET.get('search')
+    usersWithPermission = get_users_with_perms(element, attach_perms=True)
+    listUsers = []
+    for user in usersWithPermission:
+        listUsers.append(user.username)
+
+    @register.filter
+    def get_item(dictionary, key):
+        return dictionary.get(key)
+    
+    is_owner = element.is_owner(request.user)
+    
     # Retrieve systems consuming element
     consuming_systems = element.consuming_systems()
     states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
@@ -1296,10 +1322,13 @@ def component_library_component(request, element_id):
     if len(impl_smts) < 1:
         context = {
             "element": element,
-            "element": element,
             "states": states,
             "impl_smts": impl_smts,
             "is_admin": request.user.is_superuser,
+            "list_of_permissible_users": listUsers,
+            "is_owner": is_owner,
+            "can_edit": hasPermissionToEdit,
+            "users_with_permissions": usersWithPermission,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }
@@ -1349,6 +1378,10 @@ def component_library_component(request, element_id):
         "catalog_key": catalog_key,
         "oscal": oscal_string,
         "is_admin": request.user.is_superuser,
+        "list_of_permissible_users": listUsers,
+        "is_owner": is_owner,
+        "can_edit": hasPermissionToEdit,
+        "users_with_permissions": usersWithPermission,
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,

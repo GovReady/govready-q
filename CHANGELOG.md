@@ -1,22 +1,30 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.14-dev (January xx, 2022)
+v0.9.14-dev (March xx, 2022)
 ------------------------------
 
 **UI changes**
 
 * Change label 'certified statement' to 'reference statement'.
 * Warning Message appears at the top of home page and login page while using an Internet Explorer browser informing the user of Internet Explorer not being supported.
+* Indicate private components with lock icon.
+* Edit model for component in library supports marking component private.
+* Add React component UI widget for setting permissions on component editing.
+* Added tabs for coponent requests.
 
 **Developer changes**
 
 * Add support for OIDC SSO configuration separate from OKTA SSO configuration.
 * Update Django, libraries.
 * Remove debug-toolbar.
+* Support for private components by adding 'private' boolean field to controls.models.Element.
+* Create new components as private and assign owner permissions to user who created the component.
+* Added tests for component creation form user interface.
+* Added ElementPermissionSerializer for component (element) permissions.
 
 **Bug fixes**
-
+* Resolve components not displaying the tag widget by properly setting existingTags default for new component.
 * Footer fixes.
 
 v0.9.13 (January 23, 2022)
