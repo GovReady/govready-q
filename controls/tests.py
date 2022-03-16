@@ -569,7 +569,7 @@ class ElementUITests(OrganizationSiteFunctionalTests):
         lockIsPresent =  wait_for_sleep_after(lambda: self.browser.find_element_by_id('lock-glyph'))
         self.assertTrue(lockIsPresent)
         var_sleep(1)
-    
+
     def test_edit_element_private_to_public(self):
         self.browser.get(self.url("/"))
         self._login()
@@ -586,26 +586,25 @@ class ElementUITests(OrganizationSiteFunctionalTests):
         # Check element/component page
         wait_for_sleep_after(lambda: self.assertInNodeText(element_name, "#element-name"))
         var_sleep(1)
-        
-        #Check if lock glyphicon is present on the document to signify the Element is private
+
+        # Check if lock glyphicon is present on the document to signify the Element is private
         lockIsPresent =  wait_for_sleep_after(lambda: self.browser.find_element_by_id('lock-glyph'))
         self.assertTrue(lockIsPresent)
-        
-        
+
         # Edit component    
         self.click_element("#edit-button")
-        #Check if at Edit Component modal
+        # Check if at Edit Component modal
         wait_for_sleep_after(lambda: self.assertInNodeText("Edit Component", "#invitation_modal_title"))
         var_sleep(1)
         
-        #Click on checkbox and save
+        # Click on checkbox and save
         self.click_element("#private-input")
         var_sleep(1)
 
-        #Click Submit button
+        # Click Submit button
         self.click_element("#submit-btn")
 
-        #Check if lock glyph is displayed 
+        # Check if lock glyph is displayed 
         notThere = False
         # Expecting an exception to be thrown due to the element not being on the page
         try:
@@ -619,26 +618,26 @@ class ElementUITests(OrganizationSiteFunctionalTests):
         self.assertTrue(notThere)
         var_sleep(3)
 
-         # Changing state of Element back to private
+        # Changing state of Element back to private
         self.click_element("#edit-button")
-        #Check if at Edit Component modal
+        # Check if at Edit Component modal
         wait_for_sleep_after(lambda: self.assertInNodeText("Edit Component", "#invitation_modal_title"))
         var_sleep(1)
-        
-        #Click on checkbox and save
+
+        # Click on checkbox and save
         self.click_element("#private-input")
         var_sleep(1)
 
-        #Click submit
+        # Click submit
         self.click_element("#submit-btn")
         var_sleep(3)
 
-        #Check if lock glyph is displayed 
+        # Check if lock glyph is displayed 
         glyphPresent = wait_for_sleep_after(lambda: self.browser.find_element_by_id('lock-glyph'))
         
         self.assertTrue(glyphPresent)
         var_sleep(1)
-    
+
     def test_if_viewer_can_edit_element(self):
         self.browser.get(self.url("/"))
         self._login()
@@ -663,16 +662,14 @@ class ElementUITests(OrganizationSiteFunctionalTests):
         currentElement = Element.objects.get(name=element_name)
         # currentElement.assign_owner_permissions(self.user)
         assign_perm('view_element', self.user2, currentElement)
-        # import ipdb; ipdb.set_trace();
-
         print('ASSIGNED USER2\n')
 
-        #Sign out -> Login with another user -> Check if we can edit
-        #Log out
+        # Sign out -> Login with another user -> Check if we can edit
+        # Log out
         self.browser.get(self.url("/accounts/logout/"))
         var_sleep(1)
-        
-        #Sign in as User2
+
+        # Sign in as User2
         self._login(self.user2.username, self.user2.clear_password)
         var_sleep(2)
 
@@ -682,13 +679,13 @@ class ElementUITests(OrganizationSiteFunctionalTests):
         # Grab Tanium link element
         wait_for_sleep_after(lambda: self.browser.find_element_by_link_text("Tanium").click())
         var_sleep(1)
-        
+
         # Check element/component page
         wait_for_sleep_after(lambda: self.assertInNodeText(element_name, "#element-name"))
         var_sleep(1)
 
         print('Checking if edit button is visible')
-        #Edit button should not be visible
+        # Edit button should not be visible
         notThere = False
         try:
             wait_for_sleep_after(lambda: self.browser.find_element_by_id('edit-button'))
@@ -698,6 +695,7 @@ class ElementUITests(OrganizationSiteFunctionalTests):
             pass
         self.assertTrue(notThere)
         var_sleep(3)
+
 class ElementControlUnitTests(SeleniumTest):
 
     def test_assign_baseline(self):
