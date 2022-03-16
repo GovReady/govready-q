@@ -43,8 +43,8 @@ export const Permissions = ({ elementId }) => {
       const permissible = { users_with_permissions: data }
       const response = await axios.put(`/api/v2/element_permissions/${elementId}/assign_role/`, permissible);
       if(response.status === 200){    
-          window.location.reload();
-      } else{
+          // window.location.reload();
+      } else {
           console.error("Something went wrong")
       }
     };

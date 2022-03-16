@@ -130,8 +130,7 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
       paginate
       placeholder="Search for a user..."
       renderInput={({ inputRef, referenceElementRef, ...inputProps }) => (
-        <FormControl variant="standard" style={{ width: "100%" }}>
-          <InputLabel htmlFor="input-with-icon-adornment" sx={{ fontSize: '14px' }}>Search</InputLabel>
+        <FormControl variant="standard" style={{ width: "50%" }}>
           <Input
             {...inputProps}
             ref={(input) => {
@@ -158,7 +157,7 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
           key={option.id}
           value={option.id}
         >
-          <span>{option.username}</span>
+          <span className={classes.username}>{option.username}</span>
           <span className={classes.username}>({option.username})</span>
         </MenuItem>
       )}
