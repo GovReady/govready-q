@@ -1304,14 +1304,14 @@ def component_library_component(request, element_id):
     def get_item(dictionary, key):
         return dictionary.get(key)
     
+    
+    is_owner = element.is_owner(request.user)
     # import ipdb; ipdb.set_trace()
     
     # Retrieve systems consuming element
     consuming_systems = element.consuming_systems()
     states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
     types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
-
-    # import ipdb; ipdb.set_trace();
     
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
@@ -1327,6 +1327,7 @@ def component_library_component(request, element_id):
             "impl_smts": impl_smts,
             # "is_admin": request.user.is_superuser,
             "list_of_permissible_users": listUsers,
+            "is_owner": is_owner,
             "can_edit": hasPermissionToEdit,
             "users_with_permissions": usersWithPermission,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,

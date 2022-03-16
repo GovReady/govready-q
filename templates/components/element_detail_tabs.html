@@ -108,8 +108,8 @@
       <li id="smt-tab" role="presentation" class="active"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Control Implementation Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
       <li id="systems-tab" role="presentation"><a href="#systems" aria-controls="systems" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> Systems  &nbsp;<div id="common-tab-count">{{ consuming_systems|length }}</div></a></li>
       <li id="oscal-tab" role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
-      <li id="permissions-tab" role="presentation"><a href="#permissions" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-gear"></span> Permissions </a></li>
-      <li id="requests-tab" role="presentation"><a href="#requests" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-envelope"></span> Procurement </a></li>
+      <li id="permissions-tab" role="presentation"><a href="#permissions" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> Permissions </a></li>
+      <li id="access-management-tab" role="presentation"><a href="#access_management" aria-controls="access-management" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-user"></span> Access Management </a></li>
       <li id="requests-tab" role="presentation"><a href="#requests" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-envelope"></span> Requests </a></li>
       {% if enable_experimental_opencontrol %}
       <li id="opencontrol-tab" role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
@@ -345,7 +345,12 @@
 
       <!-- Tab panel: Permissions -->
       <div role="tabpanel" class="tab-pane" id="permissions">
-        <div id="perm-table"></div>
+        <div id="perm-table" style="height: 100%; width: 100%;"></div>
+      </div>
+
+      <!-- Tab panel: Access Management -->
+      <div role="tabpanel" class="tab-pane" id="access_management">
+        <h3>Access Management</h3>
       </div>
 
       <!-- Tab panel: Requests -->
@@ -532,11 +537,13 @@
         }
 
         function edit_component() {
-          show_edit_component_modal("{{element.name}}",`{{element.description}}`,"{{element.private}}",(newName, newDescription, newPrivate)=>{
+          console.log("edit_component!")
+          console.log(`{{is_owner}}`)
+          show_edit_component_modal("{{element.name}}",`{{element.description}}`,"{{element.private}}", "{{is_owner}}",(newName, newDescription, newPrivate, newIsOwner)=>{
             ajax_with_indicator({
               url: '{% url "edit_element" element.id %}',
               method: "POST",
-              data: {name: newName, description: newDescription, private: newPrivate},
+              data: {name: newName, description: newDescription, private: newPrivate, is_owner: newIsOwner},
               keep_indicator_forever: true,
               success: function(res) {
                 if(res["status"]=="ok"){

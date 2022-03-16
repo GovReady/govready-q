@@ -315,6 +315,37 @@ class Element(auto_prefetch.Model, TagModelMixin):
         #To view permissible users from a different app
         return get_users_with_perms(self, attach_perms=True)
 
+    def is_owner(self, user):
+        print('Am i the owner of this component?', self)
+        user_perms = get_user_perms(user, self)
+        # user_perms.filter(codename='add_element').exists()
+        view_perm = False
+        add_perm = False
+        change_perm = False
+        delete_perm = False
+
+
+        for perm in user_perms:
+            if perm == 'add_element':
+                add_perm = True
+            elif perm == 'change_element':
+                change_perm = True
+            elif (perm == 'delete_element'):
+                delete_perm = True
+            elif (perm == 'view_element'):
+                view_perm = True
+            else:
+                print('WHAT?')
+
+        
+        # Check if user's permissions include ['view_element', 'change_element', 'add_element', 'delete_element']
+        # if yes -> True
+        #  else -> False
+        has_all_perms = view_perm and add_perm and change_perm and delete_perm
+
+        # import ipdb; ipdb.set_trace()
+        return has_all_perms
+
     @transaction.atomic
     def remove_element_control(self, oscal_ctl_id, oscal_catalog_key):
         """Remove a selected control from a system.root_element"""

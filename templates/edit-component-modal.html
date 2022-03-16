@@ -17,19 +17,21 @@
                 <textarea aria-label="Description of the Element" name="description" maxlength="250" class="form-control" placeholder="Description" title="Description of the Element" required="" id="description-input"></textarea>
                 <div class="help-block">Description of the Element</div>
             </div>
-            <div class="form-group" data-children-count="1">
-                <label class="control-label" for="private-input">Private</label>
-                <input
-                  type="checkbox" 
-                  aria-label="Private" 
-                  name="private" 
-                  placeholder="" 
-                  title="Mark component private" 
-                  required="" 
-                  id="private-input" 
-                  checked
-                />
-            </div>
+            {% if is_owner %}
+              <div class="form-group" data-children-count="1">
+                  <label class="control-label" for="private-input">Private</label>
+                  <input
+                    type="checkbox" 
+                    aria-label="Private" 
+                    name="private" 
+                    placeholder="" 
+                    title="Mark component private" 
+                    required="" 
+                    id="private-input" 
+                    checked
+                  />
+              </div>
+            {% endif %}
             <div class="alert alert-danger" role="alert" id="error-alert">
             </div>
            </div>
@@ -45,22 +47,30 @@
 
   {% block scripts %}
   <script>
-    function show_edit_component_modal(name,description,private,callback) {
+    function show_edit_component_modal(name,description,private,is_owner, callback) {
       let privateValue = false;
       if(private === "True"){
         privateValue = true;
       } else {
         privateValue = false;
       }
+      
       document.getElementById("name-input").value = name;
       document.getElementById("description-input").value = description;
-      document.getElementById("private-input").checked = privateValue;
+      if(is_owner === "True"){
+        document.getElementById("private-input").checked = privateValue;
+      }
+      
       
       $('#error-alert').hide();
       $('#edit-component-modal').modal();
       $('#submit-btn').on('click', (e) =>{
         e.preventDefault();
-        callback(document.getElementById("name-input").value,document.getElementById("description-input").value, document.getElementById("private-input").checked);
+        if(is_owner === "True"){
+          callback(document.getElementById("name-input").value,document.getElementById("description-input").value, document.getElementById("private-input").checked);
+        } else {
+          callback(document.getElementById("name-input").value,document.getElementById("description-input").value, privateValue);
+        }
       });
     }
     function hide_edit_component_modal(){
