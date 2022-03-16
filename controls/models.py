@@ -24,6 +24,13 @@ import tools.diff_match_patch.python3 as dmp_module
 from copy import deepcopy
 from django.db import transaction
 
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+
 BASELINE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'baselines')
 EXTERNAL_BASELINE_PATH = os.path.join(f"{os.getcwd()}", 'local', 'controls', 'data', 'baselines')
 ORGPARAM_PATH = os.path.join(os.path.dirname(__file__), 'data', 'org_defined_parameters')
@@ -290,8 +297,18 @@ class Element(auto_prefetch.Model, TagModelMixin):
             permissions = get_perms_for_model(Element)
             for perm in permissions:
                 assign_perm(perm.codename, user, self)
+            logger.info(
+                event=f"Assigning {user.username} as an owner of component {self.name}",
+                object={"object": self, "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
             return True
         except:
+            logger.warning(
+                event=f"Could not assign {user.username} as an owner of component {self.name}",
+                object={"object": self, "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
             return False
 
     def assign_edit_permissions(self, user):
@@ -299,21 +316,74 @@ class Element(auto_prefetch.Model, TagModelMixin):
             permissions = ['view_element', 'change_element', 'add_element']
             for perm in permissions:
                 assign_perm(perm, user, self)
+            logger.info(
+                event=f"Assigning {user.username} as an editor of component {self.name}",
+                object={"object": self, "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
             return True
         except:
+            logger.warning(
+                event=f"Could not assign {user.username} as an editor of element {self.name}",
+                object={"object": self, "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
             return False
 
     def assign_user_permissions(self, user, permissions):
         try:
             for perm in permissions:
                 assign_perm(perm, user, self)
+            logger.info(
+                event=f"Assigning {user.username} these permissions {permissions} to element: {self.name}",
+                object={"object": self, "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
             return True
         except:
+            logger.warning(
+                event=f"Could not assign {user.username} these permissions {permissions} to element: {self.name}",
+                object={"object": self, "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
             return False
 
     def get_permissible_users(self):
-        #To view permissible users from a different app
         return get_users_with_perms(self, attach_perms=True)
+
+    def is_owner(self, user):
+        logger.info(
+            event=f"Ascertaining if {user.username} is an owner of element: {self.name}",
+            object={"object": self, "id": self.id},
+            user={"id": user.id, "username": user.username}
+        )
+        user_perms = get_user_perms(user, self)
+
+        view_perm = False
+        add_perm = False
+        change_perm = False
+        delete_perm = False
+
+
+        for perm in user_perms:
+            if perm == 'add_element':
+                add_perm = True
+            elif perm == 'change_element':
+                change_perm = True
+            elif (perm == 'delete_element'):
+                delete_perm = True
+            elif (perm == 'view_element'):
+                view_perm = True
+            else:
+                logger.warning(
+                event=f"Invalid permission assigned to element {self.name}",
+                object={"object": self, "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
+
+        has_all_perms = view_perm and add_perm and change_perm and delete_perm
+
+        return has_all_perms
 
     @transaction.atomic
     def remove_element_control(self, oscal_ctl_id, oscal_catalog_key):

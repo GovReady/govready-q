@@ -49,14 +49,6 @@ export const Permissions = ({ elementId }) => {
     };
 
     const [columns, setColumns] = useState([
-        { field: 'id', headerName: 'ID', width: 90 },
-        {
-          field: 'userId',
-          headerName: 'UserId',
-          width: 150,
-          editable: false,
-          valueGetter: (params) => params.row.user.id,
-      },
         {
             field: 'user',
             headerName: 'Username',
@@ -174,7 +166,14 @@ export const Permissions = ({ elementId }) => {
     }
 
     return (
-        <div>
+      <div style={{ maxHeight: '1000px', width: '100%' }}>
+      <Grid
+        container
+        spacing={1}
+        alignItems="flex-end"
+        style={{ width: "100%" }}
+      >
+        <Grid item style={{ width: "calc(100% - 1rem - 25px" }}>
             <br />
             <AsyncPagination
                 endpoint={endpoint}
@@ -197,18 +196,26 @@ export const Permissions = ({ elementId }) => {
                 }}
                 excludeIds={permissibleUsers.map((du) => du.user.id)}
             />
-            <br />
-            <div style={{ height: 400, width: '100%' }}>
-            <DataGrid
-                rows={permissibleUsers}
-                columns={columns}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                checkboxSelection
-                disableSelectionOnClick
-            />
-            </div>
+          </Grid>
+      </Grid>
+      <br />
+      <Grid sx={{ minHeight: '400px' }}>
+        <div style={{width: "calc(100% - 1rem - 25px", marginTop: "1rem" }}>
+          <DataGrid
+            autoHeight={true}
+            density="compact"
+            rows={permissibleUsers}
+            columns={columns}
+            pageSize={25}
+            rowsPerPageOptions={[25]}
+            checkboxSelection
+            // onSelectionModelChange={(selectionModel, details) => {
+            //   console.log(selectionModel, details);
+            // }}
+            // disableSelectionOnClick
+          />
         </div>
-    
+      </Grid>
+      </div>
     )
 }

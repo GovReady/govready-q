@@ -1266,7 +1266,7 @@ def new_element(request):
             element = form.instance
             element.assign_owner_permissions(request.user)
             logger.info(
-                event="new_element",
+                event="new_element with user as owner",
                 object={"object": "element", "id": element.id, "name":element.name},
                 user={"id": request.user.id, "username": request.user.username}
             )
@@ -1287,6 +1287,7 @@ def component_library_component(request, element_id):
 
     # Check permissions
     if element.private == True and 'view_element' not in get_user_perms(request.user, element):
+        logger.warning(f"User {request.user.username} does not have permission to view this element {element.name}")
         raise Http404
     hasPermissionToEdit = 'change_element' in get_user_perms(request.user, element)
     smt_query = request.GET.get('search')
@@ -1298,6 +1299,8 @@ def component_library_component(request, element_id):
     @register.filter
     def get_item(dictionary, key):
         return dictionary.get(key)
+    
+    is_owner = element.is_owner(request.user)
     
     # Retrieve systems consuming element
     consuming_systems = element.consuming_systems()
@@ -1316,8 +1319,9 @@ def component_library_component(request, element_id):
             "element": element,
             "states": states,
             "impl_smts": impl_smts,
-            # "is_admin": request.user.is_superuser,
+            "is_admin": request.user.is_superuser,
             "list_of_permissible_users": listUsers,
+            "is_owner": is_owner,
             "can_edit": hasPermissionToEdit,
             "users_with_permissions": usersWithPermission,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
@@ -1369,6 +1373,10 @@ def component_library_component(request, element_id):
         "catalog_key": catalog_key,
         "oscal": oscal_string,
         "is_admin": request.user.is_superuser,
+        "list_of_permissible_users": listUsers,
+        "is_owner": is_owner,
+        "can_edit": hasPermissionToEdit,
+        "users_with_permissions": usersWithPermission,
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
