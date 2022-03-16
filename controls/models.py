@@ -298,15 +298,17 @@ class Element(auto_prefetch.Model, TagModelMixin):
             for perm in permissions:
                 assign_perm(perm.codename, user, self)
             logger.info(
-                event=f"Assigning {user.username} as an owner of component {self.name}",
-                object={"object": self, "id": self.id},
+                event="update_element_permission assign_owner",
+                comment=f"Assigning {user.username} as an owner of component {self.name}",
+                object={"object": "element", "id": self.id},
                 user={"id": user.id, "username": user.username}
             )
             return True
         except:
             logger.warning(
-                event=f"Could not assign {user.username} as an owner of component {self.name}",
-                object={"object": self, "id": self.id},
+                event="update_element_permission update_failed",
+                comment=f"Could not assign {user.username} as an owner of component {self.name}",
+                object={"object": "element", "id": self.id},
                 user={"id": user.id, "username": user.username}
             )
             return False
@@ -317,15 +319,17 @@ class Element(auto_prefetch.Model, TagModelMixin):
             for perm in permissions:
                 assign_perm(perm, user, self)
             logger.info(
-                event=f"Assigning {user.username} as an editor of component {self.name}",
-                object={"object": self, "id": self.id},
+                event="update_element_permission assign_edit_permissions",
+                comment=f"Assigning {user.username} as an editor of component {self.name}",
+                object={"object": "element", "id": self.id},
                 user={"id": user.id, "username": user.username}
             )
             return True
         except:
             logger.warning(
-                event=f"Could not assign {user.username} as an editor of element {self.name}",
-                object={"object": self, "id": self.id},
+                event="update_element_permission update_failed",
+                comment=f"Could not assign {user.username} as an editor of element {self.name}",
+                object={"object": "element", "id": self.id},
                 user={"id": user.id, "username": user.username}
             )
             return False
@@ -335,14 +339,16 @@ class Element(auto_prefetch.Model, TagModelMixin):
             for perm in permissions:
                 assign_perm(perm, user, self)
             logger.info(
-                event=f"Assigning {user.username} these permissions {permissions} to element: {self.name}",
+                event="update_element_permission assign_permissions",
+                comment=f"Assigning {user.username} these permissions {permissions} to element: {self.name}",
                 object={"object": self, "id": self.id},
                 user={"id": user.id, "username": user.username}
             )
             return True
         except:
             logger.warning(
-                event=f"Could not assign {user.username} these permissions {permissions} to element: {self.name}",
+                event="update_element_permission update_failed",
+                comment=f"Could not assign {user.username} these permissions {permissions} to element: {self.name}",
                 object={"object": self, "id": self.id},
                 user={"id": user.id, "username": user.username}
             )
@@ -352,11 +358,6 @@ class Element(auto_prefetch.Model, TagModelMixin):
         return get_users_with_perms(self, attach_perms=True)
 
     def is_owner(self, user):
-        logger.info(
-            event=f"Ascertaining if {user.username} is an owner of element: {self.name}",
-            object={"object": self, "id": self.id},
-            user={"id": user.id, "username": user.username}
-        )
         user_perms = get_user_perms(user, self)
 
         view_perm = False
@@ -376,10 +377,11 @@ class Element(auto_prefetch.Model, TagModelMixin):
                 view_perm = True
             else:
                 logger.warning(
-                event=f"Invalid permission assigned to element {self.name}",
-                object={"object": self, "id": self.id},
-                user={"id": user.id, "username": user.username}
-            )
+                    event="update_element_permission update_failed",
+                    comment=f"Invalid permission assigned to element {self.name}",
+                    object={"object": "element", "id": self.id},
+                    user={"id": user.id, "username": user.username}
+                )
 
         has_all_perms = view_perm and add_perm and change_perm and delete_perm
 

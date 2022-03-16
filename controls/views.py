@@ -1287,7 +1287,12 @@ def component_library_component(request, element_id):
 
     # Check permissions
     if element.private == True and 'view_element' not in get_user_perms(request.user, element):
-        logger.warning(f"User {request.user.username} does not have permission to view this element {element.name}")
+        logger.warning(
+            event="view_element_private permission_denied",
+            comment=f"User {request.user.username} does not have permission to view this element {element.name}",
+            object={"object": "element", "id": element.id},
+            user={"id": request.user.id, "username": request.user.username}
+        )
         raise Http404
     hasPermissionToEdit = 'change_element' in get_user_perms(request.user, element)
     smt_query = request.GET.get('search')
