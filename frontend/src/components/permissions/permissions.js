@@ -49,14 +49,6 @@ export const Permissions = ({ elementId }) => {
     };
 
     const [columns, setColumns] = useState([
-        { field: 'id', headerName: 'ID', width: 90 },
-        {
-          field: 'userId',
-          headerName: 'UserId',
-          width: 150,
-          editable: false,
-          valueGetter: (params) => params.row.user.id,
-      },
         {
             field: 'user',
             headerName: 'Username',
