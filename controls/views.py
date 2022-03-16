@@ -1162,7 +1162,7 @@ def system_element_control(request, system_id, element_id, catalog_key, control_
         catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
         # Retrieve control
         control = next((ctl for ctl in catalog_controls if ctl['id'] == oscalize_control_id(control_id)), None)
-        
+
         # Build OSCAL and OpenControl
         oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
         opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
@@ -1280,7 +1280,7 @@ def new_element(request):
 
 @login_required
 def component_library_component(request, element_id):
-    """Display certified component's element detail view"""
+    """Display library component's element detail view"""
 
     # Retrieve element
     element = Element.objects.get(id=element_id)
@@ -1288,15 +1288,10 @@ def component_library_component(request, element_id):
     # Check permissions
     if element.private == True and 'view_element' not in get_user_perms(request.user, element):
         raise Http404
-
     hasPermissionToEdit = 'change_element' in get_user_perms(request.user, element)
-
     smt_query = request.GET.get('search')
-
     usersWithPermission = get_users_with_perms(element, attach_perms=True)
-
     listUsers = []
-
     for user in usersWithPermission:
         listUsers.append(user.username)
 
@@ -1304,14 +1299,10 @@ def component_library_component(request, element_id):
     def get_item(dictionary, key):
         return dictionary.get(key)
     
-    # import ipdb; ipdb.set_trace()
-    
     # Retrieve systems consuming element
     consuming_systems = element.consuming_systems()
     states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
     types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
-
-    # import ipdb; ipdb.set_trace();
     
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
@@ -1333,7 +1324,6 @@ def component_library_component(request, element_id):
             "form_source": "component_library"
         }
         return render(request, "components/element_detail_tabs.html", context)
-
 
     if len(impl_smts) == 0:
         # New component, no control statements assigned yet
