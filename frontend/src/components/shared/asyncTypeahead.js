@@ -131,7 +131,7 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
       placeholder="Search for a user..."
       renderInput={({ inputRef, referenceElementRef, ...inputProps }) => (
         <FormControl variant="standard" style={{ width: "100%" }}>
-          <InputLabel htmlFor="input-with-icon-adornment">Search</InputLabel>
+          <InputLabel htmlFor="input-with-icon-adornment" sx={{ fontSize: '14px' }}>Search</InputLabel>
           <Input
             {...inputProps}
             ref={(input) => {
@@ -145,9 +145,10 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
             fullWidth={true}
             startAdornment={
               <InputAdornment position="start">
-                <GroupAddIcon />
+                <GroupAddIcon sx={{ fontSize: 20 }} />
               </InputAdornment>
             }
+            sx={{ fontSize: '14px' }}
           />
         </FormControl>
       )}

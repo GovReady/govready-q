@@ -12,6 +12,7 @@ import {
     OverlayTrigger,
 } from 'react-bootstrap';
 import { AsyncPagination } from "../shared/asyncTypeahead";
+import { red, green } from '@mui/material/colors';
 
 export const Permissions = ({ elementId }) => {
     const [usersList, setUsersList] = useState([]);
@@ -51,23 +52,23 @@ export const Permissions = ({ elementId }) => {
     const [columns, setColumns] = useState([
         {
             field: 'user',
-            headerName: 'Username',
+            headerName: <span style={{ fontWeight: 'bold' }}>Username</span>,
             width: 150,
             editable: false,
             valueGetter: (params) => params.row.user.username,
         },
         {
             field: 'email',
-            headerName: 'Email',
-            width: 150,
+            headerName: <span style={{ fontWeight: 'bold' }}>Email</span>,
+            width: 300,
             editable: false,
             valueGetter: (params) => params.row.user.email,
         },
         {
           field: 'add',
-          headerName: 'Add',
-          width: 150,
+          headerName: <span style={{ fontWeight: 'bold' }}>Add</span>,
           editable: false,
+          width: 100,
           renderCell: (params) => {
             return (
               <div
@@ -77,15 +78,15 @@ export const Permissions = ({ elementId }) => {
                   e.preventDefault();
                 }}
               >
-                {params.row.add ? <Glyphicon glyph="ok" style={{ color: '#3d3d3d' }} /> : <Glyphicon glyph="remove" style={{ color: '#3d3d3d' }} />}
+                {params.row.add ? <Glyphicon glyph="ok" style={{ color: green[700] }} /> : <Glyphicon glyph="remove" style={{ color: 'rgb(245,48,48,1)' }} />}
               </div>
             );
           },
         },
         {
             field: 'change',
-            headerName: 'Change',
-            width: 150,
+            headerName: <span style={{ fontWeight: 'bold' }}>Change</span>,
+            width: 100,
             editable: false,
             renderCell: (params) => {
                 return (
@@ -96,15 +97,15 @@ export const Permissions = ({ elementId }) => {
                       e.preventDefault();
                     }}
                   >
-                    {params.row.change ? <Glyphicon glyph="ok" style={{ color: '#3d3d3d' }} /> : <Glyphicon glyph="remove" style={{ color: '#3d3d3d' }} />}
+                    {params.row.change ? <Glyphicon glyph="ok" style={{ color: green[700] }} /> : <Glyphicon glyph="remove" style={{ color: 'rgb(245,48,48,1)' }} />}
                   </div>
                 );
               },
         },
         {
             field: 'delete',
-            headerName: 'Delete',
-            width: 150,
+            headerName: <span style={{ fontWeight: 'bold' }}>Delete</span>,
+            width: 100,
             editable: false,
             renderCell: (params) => {
                 return (
@@ -115,15 +116,15 @@ export const Permissions = ({ elementId }) => {
                       e.preventDefault();
                     }}
                   >
-                    {params.row.delete ? <Glyphicon glyph="ok" style={{ color: '#3d3d3d' }} /> : <Glyphicon glyph="remove" style={{ color: '#3d3d3d' }} />}
+                    {params.row.delete ? <Glyphicon glyph="ok" style={{ color: green[700] }} /> : <Glyphicon glyph="remove" style={{ color: 'rgb(245,48,48,1)' }} />}
                   </div>
                 );
               },
         },
         {
             field: 'view',
-            headerName: 'View',
-            width: 150,
+            headerName: <span style={{ fontWeight: 'bold' }}>View</span>,
+            width: 100,
             editable: false,
             renderCell: (params) => {
                 return (
@@ -134,7 +135,7 @@ export const Permissions = ({ elementId }) => {
                       e.preventDefault();
                     }}
                   >
-                    {params.row.view ? <Glyphicon glyph="ok" style={{ color: '#3d3d3d' }} /> : <Glyphicon glyph="remove" style={{ color: '#3d3d3d' }} />}
+                    {params.row.view ? <Glyphicon glyph="ok" style={{ color: green[700] }} /> : <Glyphicon glyph="remove" style={{ color: 'rgb(245,48,48,1)' }} />}
                   </div>
                 );
               },
@@ -213,6 +214,7 @@ export const Permissions = ({ elementId }) => {
             //   console.log(selectionModel, details);
             // }}
             // disableSelectionOnClick
+            sx={{ fontSize: '14px'}}
           />
         </div>
       </Grid>
