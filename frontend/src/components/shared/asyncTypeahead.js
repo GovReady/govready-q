@@ -20,11 +20,13 @@ const useStyles = makeStyles((theme) => ({
     "&:hover": {
       color: "#fff",
       background: "grey",
+      fontSize: "12px"
     },
   },
   username: {
     fontSize: "small",
     marginLeft: "1rem",
+    fontSize: "12px"
   },
 }));
 

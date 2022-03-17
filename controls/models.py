@@ -336,14 +336,33 @@ class Element(auto_prefetch.Model, TagModelMixin):
 
     def assign_user_permissions(self, user, permissions):
         try:
-            for perm in permissions:
-                assign_perm(perm, user, self)
+            list_of_permissions = ['view_element', 'change_element', 'add_element', 'delete_element']
+            current_permissions = get_user_perms(user, self)
+            users_list_of_perms = []
+            for currentPerm in current_permissions:
+                users_list_of_perms.append(currentPerm)
+            
+            for perm in list_of_permissions:
+                # user already has permission and is requesting to get permission again
+                if(perm in current_permissions and perm in permissions):
+                    print('Already has this permission: ', perm)
+                    assign_perm(perm, user, self)
+                # user doesnt already have permission and is requesting this permission
+                if(perm not in current_permissions and perm in permissions):
+                    print('User has new permission: ', perm)
+                    assign_perm(perm, user, self)
+                 # user already has this permission and is not requesting this permission anymore
+                if(perm in current_permissions and perm not in permissions):
+                    print('Delete permissions: ', perm)
+                    remove_perm(perm, user, self)
+                
             logger.info(
                 event="update_element_permission assign_permissions",
                 comment=f"Assigning {user.username} these permissions {permissions} to element: {self.name}",
                 object={"object": self, "id": self.id},
                 user={"id": user.id, "username": user.username}
             )
+
             return True
         except:
             logger.warning(
@@ -353,7 +372,29 @@ class Element(auto_prefetch.Model, TagModelMixin):
                 user={"id": user.id, "username": user.username}
             )
             return False
-
+    def remove_all_permissions_from_user(self, user):
+        try:
+            current_permissions = get_user_perms(user, self)
+            users_list_of_perms = []
+            for currentPerm in current_permissions:
+                users_list_of_perms.append(currentPerm)
+            for perm in users_list_of_perms:
+                remove_perm(perm, user, self)
+            logger.info(
+                event="update_element_permission remove_user_permissions",
+                comment=f"Removing permissions of {user.username} for component {self.name}",
+                object={"object": "element", "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
+            return True
+        except:
+            logger.warning(
+                event="update_element_permission remove_user_failed",
+                comment=f"Could not remove {user.username} permissions to element: {self.name}",
+                object={"object": self, "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
+            return False
     def get_permissible_users(self):
         return get_users_with_perms(self, attach_perms=True)
 
@@ -364,7 +405,6 @@ class Element(auto_prefetch.Model, TagModelMixin):
         add_perm = False
         change_perm = False
         delete_perm = False
-
 
         for perm in user_perms:
             if perm == 'add_element':
