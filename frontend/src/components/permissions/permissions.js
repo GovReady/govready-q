@@ -7,7 +7,6 @@ import { DataGrid } from '@mui/x-data-grid';
 import { v4 as uuid_v4 } from "uuid";
 import { 
   Grid,
-  // Checkbox,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -15,19 +14,12 @@ import {
   Button,
   Glyphicon,
   OverlayTrigger,
-  ButtonToolbar,
-  DropdownButton,
   Col, 
   ControlLabel,
-  // Grid, 
   Form,
   Checkbox,
-  FormControl, 
   FormGroup, 
-  HelpBlock,
-  MenuItem,
   Row,
-  SplitButton,
   Modal
 } from 'react-bootstrap';
 import { AsyncPagination } from "../shared/asyncTypeahead";
@@ -35,23 +27,21 @@ import { red, green } from '@mui/material/colors';
 import { ReactModal } from '../shared/modal';
 import { hide, show } from '../shared/modalSlice';
 
-// const useStyles = makeStyles((theme) => {
-//   console.table(theme);
-//   return {
-//     table: {
-//       minWidth: 650,
-//       "& .MuiTableCell-head": {
-//         fontWeight: 900
-//       }
-//     }
-//   };
-// });
-
 const useStyles = makeStyles({
   root: {
     backgroundColor: 'orange',
     fontweight: 900,
   },
+  table: {
+    '& .datagrid-permission-header':{
+      backgroundColor: 'blue',
+    }
+  },
+  header: {
+    '& .MuiDataGrid-columnHeaderTitleContainer':{
+      flexFlow: 'row-reverse',
+    },
+  }
 });
 
 export const Permissions = ({ elementId }) => {
@@ -152,15 +142,21 @@ export const Permissions = ({ elementId }) => {
     setCurrentUser(updatedCurrentUser);
   }
 
-  // const handleDelete = (event) => {
-  //   console.log('REMOVE PERMISSIONS')
-  // }
+  const handleRemoveUser = async (event) => {
+    const remove_user = { user_to_remove: currentUser.user }
+    const response = await axios.put(`/api/v2/element_permissions/${elementId}/remove_user/`, remove_user);
+    if(response.status === 200){    
+      window.location.reload();
+      handleClose();
+    } else {
+      console.error("Something went wrong")
+    }
+  }
 
   const [columns, setColumns] = useState([
     {
       field: 'user',
       headerName: 'Username',
-      className: 'datagrid-permission-header',
       width: 150,
       editable: false,
       valueGetter: (params) => params.row.user.username,
@@ -168,7 +164,6 @@ export const Permissions = ({ elementId }) => {
     {
       field: 'email',
       headerName: 'Email',
-      className: 'datagrid-permission-header',
       width: 300,
       editable: false,
       valueGetter: (params) => params.row.user.email,
@@ -176,7 +171,6 @@ export const Permissions = ({ elementId }) => {
     {
       field: 'view',
       headerName: 'View',
-      className: 'datagrid-permission-header',
       width: 100,
       editable: false,
       renderCell: (params) => {
@@ -253,6 +247,7 @@ export const Permissions = ({ elementId }) => {
     {
       field: 'edit',
       headerName: 'Edit',
+      headerAlign: 'right',
       width: 150,
       editable: false,
       renderCell: (params) => {
@@ -330,12 +325,12 @@ export const Permissions = ({ elementId }) => {
             // disableSelectionOnClick
             sx={{ 
               fontSize: '14px',
+              '& .datagrid-permission-header': {
+                backgroundColor: 'green',
+              },
               '& .MuiDataGrid-columnHeaderTitle':{
                 fontWeight: 600,
               },
-              '& .MuiDataGrid-columnHeaderTitleContainer':{
-                flexFlow: 'row-reverse',
-              }
             }}
           />
         </div>
@@ -396,7 +391,7 @@ export const Permissions = ({ elementId }) => {
                 </Row>
               </FormGroup>
               <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
-                  {/* <Button type="button" bsStyle="danger" onClick={handleDelete} style={{float: 'left'}}>Delete Question</Button> */}
+                  <Button type="button" bsStyle="danger" onClick={handleRemoveUser} style={{float: 'left'}}>Remove User</Button>
                   <Button variant="secondary" onClick={handleClose} style={{marginRight: '2rem'}}>Close</Button>
                   <Button type="submit" bsStyle="success">Save Changes</Button>
               </Modal.Footer>
