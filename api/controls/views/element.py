@@ -40,7 +40,7 @@ class ElementWithPermissionsViewSet(ReadWriteViewSet):
     @action(detail=True, url_path="assign_role", methods=["PUT"])
     def assign_role(self, request, **kwargs):
         element, validated_data = self.validate_serializer_and_get_object(request)
-        
+
         # assign permissions to user on element
         user_permissions = []
         perm_user = {}
@@ -59,7 +59,7 @@ class ElementWithPermissionsViewSet(ReadWriteViewSet):
         user = User.objects.get(id=perm_user['id'])
         element.assign_user_permissions(user, user_permissions)
         element.save()
-        
+
         serializer_class = self.get_serializer_class('retrieve')
         serializer = self.get_serializer(serializer_class, element)
         return Response(serializer.data)
