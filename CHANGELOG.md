@@ -12,6 +12,8 @@ Release adds support for private components and integrations with third party se
 * Warning Message appears at the top of home page and login page while using an Internet Explorer browser informing the user of Internet Explorer not being supported.
 * Indicate private components with lock icon.
 * Edit model for component in library supports marking component private.
+* Add React component UI widget for setting permissions on component editing.
+* Added tabs for coponent requests.
 
 **Developer changes**
 
@@ -23,10 +25,10 @@ Release adds support for private components and integrations with third party se
 * Added tests for component creation form user interface.
 * Added extensible Integrations Django appplication to support communication with third-party services via APIs, etc.
 * Added initial support for DoJ's CSAM integration.
+* Added ElementPermissionSerializer for component (element) permissions.
 
 **Bug fixes**
 * Resolve components not displaying the tag widget by properly setting existingTags default for new component.
-
 * Footer fixes.
 
 v0.9.13 (January 23, 2022)

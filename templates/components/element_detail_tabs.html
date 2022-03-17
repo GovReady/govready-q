@@ -78,7 +78,7 @@
       <div id="above-tab-content" class="row">
         <!-- Page Title-->
         <div style="float: left;">
-            <h2 class="" style="">
+            <h2 class="component-library-title" style="">
               <a href="{% url 'component_library' %}">Component Library</a> {% if system.id %}&gt; <a href='{% url 'components_selected' system_id=system.id %}' style="color: black;">Component Detail</a>{% endif %}
             </h2>
         </div>
@@ -88,14 +88,15 @@
       <div class="col-sm-10 ">
         <h2 id="element-name" class="">
           {{ element.name }}
-          {% if element.private == True %}<span class="glyphicon glyphicon-lock small" style="color:gray;" title="Private"></span>{% endif %}
+          {% if element.private == True %}<span class="glyphicon glyphicon-lock small" style="color:gray;" title="Private" id="lock-glyph"></span>{% endif %}
         </h2>
       </div>
       <div class="col-sm-2">
         <div id="btn-edit-title" style="text-align: center;">
-          {% if is_admin %}
+          {% if can_edit %}
             <button class="btn btn-default btn-small" id="edit-button" onclick="return edit_component();">Edit</button>
           {% endif %}
+          {% comment %} <button class="btn btn-default btn-small" id="edit-button" onclick="return show_user({{users_with_permissions|length}});">Show User</button> {% endcomment %}
         </div>
       </div>
     </div>
@@ -110,6 +111,9 @@
       {% if enable_experimental_opencontrol %}
       <li id="opencontrol-tab" role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
       {% endif %}
+      <li id="permissions-tab" role="presentation"><a href="#permissions" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> Permissions </a></li>
+      <!-- <li id="access-management-tab" role="presentation"><a href="#access_management" aria-controls="access-management" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-user"></span> Access Management </a></li> -->
+      <!-- <li id="requests-tab" role="presentation"><a href="#requests" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-envelope"></span> Requests </a></li> -->
       <div style="margin: 0px 12px 0px 0px;">
         <a id="copy_component" class="btn btn btn-default pull-right" href={% url 'component_library_component_copy' element_id=element.id %} role="button" style="color: black;">Clone component</a>
       </div>
@@ -325,7 +329,7 @@
         </div>
       </div>
 
-      <!-- Tab panel: combined -->
+      <!-- Tab panel: oscal -->
       <div role="tabpanel" class="tab-pane" id="oscal">
         <p id="oscal_download" class="pull-right" style="margin: 12px 12px 0px 0px;">
           <a id="oscal_download_json_link"
@@ -347,6 +351,49 @@
       </div>
       {% endif %}
 
+      <!-- Tab panel: Requests1 -->
+      <div role="tabpanel" class="tab-pane" id="permissions">
+        <div id="perm-table" style="height: 100%; width: 100%;"></div>
+      </div>
+
+      <!-- Tab panel: Access Management -->
+      <div role="tabpanel" class="tab-pane" id="access_management">
+        <h3>Access Management</h3>
+      </div>
+
+      <!-- Tab panel: Requests -->
+<!--       <div role="tabpanel" class="tab-pane" id="procurement">
+        <div class="row">
+          <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
+            <h3>TBD</h3>
+          </div>
+        </div>
+      </div> -->
+
+      <!-- Tab panel: Requests -->
+<!--       <div role="tabpanel" class="tab-pane" id="requests">
+        <div class="row">
+          <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
+            <h3>Requested Usage</h3>
+            {% comment %} <div><span>{{users_can_edit}}</span></div> {% endcomment %}
+
+            <h3>Approved Usage ({{users_with_permission | length}})</h3>
+            <div><span>{{users_with_permission}}</span></div>
+            <div class="container">
+              <div class="row">
+                <div class="col-md-4"><strong>Requested By</strong></div>
+              </div>
+
+              {% for user in users_with_permission %}
+                <div class="username">
+                  <h4>{{ user.username }}</h4>
+                </div>
+              {% endfor%}
+            </div>
+          </div>
+        </div>
+      </div> -->
+
     </div>
   </div>
 
@@ -361,6 +408,7 @@
 
 {% block scripts %}
       <script>
+        window.permissionsTable( {{element.id}} );
         window.renderElementTags({{ element.id }}, {{ tags | safe }});
       </script>
       <script>
@@ -498,11 +546,13 @@
         }
 
         function edit_component() {
-          show_edit_component_modal("{{element.name}}",`{{element.description}}`,"{{element.private}}",(newName, newDescription, newPrivate)=>{
+          console.log("edit_component!")
+          console.log(`{{is_owner}}`)
+          show_edit_component_modal("{{element.name}}",`{{element.description}}`,"{{element.private}}", "{{is_owner}}",(newName, newDescription, newPrivate, newIsOwner)=>{
             ajax_with_indicator({
               url: '{% url "edit_element" element.id %}',
               method: "POST",
-              data: {name: newName, description: newDescription, private: newPrivate},
+              data: {name: newName, description: newDescription, private: newPrivate, is_owner: newIsOwner},
               keep_indicator_forever: true,
               success: function(res) {
                 if(res["status"]=="ok"){
@@ -516,6 +566,12 @@
             });
           });
         }
+
+        function show_user(user){
+          debugger;
+          console.log(user);
+        }
+        
       </script>
 
 {% endblock %}
