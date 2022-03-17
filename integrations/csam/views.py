@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponse, HttpResponseNotFound
 from integrations.models import Integration, Endpoint
 from .communicate import CSAMCommunication
+from controls.models import System
 
 INTEGRATION_NAME = 'csam'
 try:
@@ -65,15 +66,25 @@ def integration_endpoint_post(request, endpoint=None):
         f"<pre>{json.dumps(data,indent=4)}</pre>"
         f"</body></html>")
 
-def update_system_description(params={"src_obj_type": "system", "src_obj_id": 2}):
+def update_system_description_test(request, system_id=2):
+    """Test updating system description in CSAM"""
+
+    params={"src_obj_type": "system", "src_obj_id": system_id}
+    data = update_system_description(params)
+    return HttpResponse(
+        f"<html><body><p>Attempting to update CSAM description of System id {system_id}...' "
+        f"<p>Returned data:</p>"
+        f"<pre>{json.dumps(data,indent=4)}</pre>"
+        f"</body></html>")
+
+def update_system_description(request, params={"src_obj_type": "system", "src_obj_id": 2}):
     """Update System description in CSAM"""
 
-    result = dict()
-    from controls.models import System
     system_id = params['src_obj_id']
     system = System.objects.get(pk=system_id)
+    # TODO: Check user permission to update
     csam_system_id = system.info.get('csam_system_id', None)
-    print("10, ========== csam_system_id", csam_system_id)
+    # print("10, ========== csam_system_id", csam_system_id)
     if csam_system_id is not None:
         new_description = "This is the new system description."
         endpoint = f"/system/{csam_system_id}"
