@@ -10,7 +10,7 @@ v0.9.14-dev (March xx, 2022)
 * Warning Message appears at the top of home page and login page while using an Internet Explorer browser informing the user of Internet Explorer not being supported.
 * Indicate private components with lock icon.
 * Edit model for component in library supports marking component private.
-* Add React component UI widget for setting and editting permissions on component editing.
+* Add React component UI widget for setting and editing permissions on component editing.
 * Add ability to change privacy of a component is given only to the owner of the component
 * Added tabs for coponent requests.
 
