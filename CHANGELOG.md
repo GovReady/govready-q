@@ -2,7 +2,7 @@ GovReady-Q Release Notes
 ========================
 
 v0.9.14-dev (March xx, 2022)
-------------------------------
+----------------------------
 
 **UI changes**
 
@@ -10,7 +10,8 @@ v0.9.14-dev (March xx, 2022)
 * Warning Message appears at the top of home page and login page while using an Internet Explorer browser informing the user of Internet Explorer not being supported.
 * Indicate private components with lock icon.
 * Edit model for component in library supports marking component private.
-* Add React component UI widget for setting permissions on component editing.
+* Add React component UI widget for setting and editing permissions on component editing.
+* Add ability to change privacy of a component is given only to the owner of the component
 * Added tabs for coponent requests.
 
 **Developer changes**
@@ -21,9 +22,12 @@ v0.9.14-dev (March xx, 2022)
 * Support for private components by adding 'private' boolean field to controls.models.Element.
 * Create new components as private and assign owner permissions to user who created the component.
 * Added tests for component creation form user interface.
-* Added ElementPermissionSerializer for component (element) permissions.
+* Added ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer for component (element) permissions.
+* Added ElementWithPermissionsViewSet for component (element) permissions.
+* Added more permission functions to element model: assigning a user specific permissions, removing all permissions from a user, and checking if a user is an owner of the element
 
 **Bug fixes**
+
 * Resolve components not displaying the tag widget by properly setting existingTags default for new component.
 * Footer fixes.
 

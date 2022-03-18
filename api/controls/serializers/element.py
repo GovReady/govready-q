@@ -47,12 +47,15 @@ class ElementPermissionSerializer(SimpleElementSerializer):
         fields = ['users_with_permissions']
 
 class UpdateElementPermissionSerializer(WriteOnlySerializer):
-    #  TODO: Update user permissions with new list of users with their corresponding persmissions
     users_with_permissions = serializers.JSONField()
     class Meta:
         model = Element
         fields = ['users_with_permissions']
-
+class RemoveUserPermissionFromElementSerializer(WriteOnlySerializer):
+    user_to_remove = serializers.JSONField()
+    class Meta:
+        model = Element
+        fields = ['user_to_remove']
 class SimpleElementControlSerializer(ReadOnlySerializer):
     class Meta:
         model = ElementControl

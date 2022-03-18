@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from api.base.views.base import SerializerClasses
 from api.base.views.viewsets import ReadOnlyViewSet, ReadWriteViewSet
 from api.controls.serializers.element import DetailedElementSerializer, SimpleElementSerializer, \
-    WriteElementTagsSerializer, ElementPermissionSerializer, UpdateElementPermissionSerializer
+    WriteElementTagsSerializer, ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer
 from controls.models import Element
 from siteapp.models import User
 
@@ -34,15 +34,14 @@ class ElementWithPermissionsViewSet(ReadWriteViewSet):
                                            create=UpdateElementPermissionSerializer,
                                            update=UpdateElementPermissionSerializer,
                                            destroy=UpdateElementPermissionSerializer,
-                                           assign_role=UpdateElementPermissionSerializer)
+                                           assign_role=UpdateElementPermissionSerializer,
+                                           remove_user=RemoveUserPermissionFromElementSerializer)
 
     @action(detail=True, url_path="assign_role", methods=["PUT"])
     def assign_role(self, request, **kwargs):
         element, validated_data = self.validate_serializer_and_get_object(request)
 
         # assign permissions to user on element
-        #calling function of that element
-
         user_permissions = []
         perm_user = {}
 
@@ -59,8 +58,21 @@ class ElementWithPermissionsViewSet(ReadWriteViewSet):
 
         user = User.objects.get(id=perm_user['id'])
         element.assign_user_permissions(user, user_permissions)
-
         element.save()
+
+        serializer_class = self.get_serializer_class('retrieve')
+        serializer = self.get_serializer(serializer_class, element)
+        return Response(serializer.data)
+
+    @action(detail=True, url_path="remove_user", methods=["PUT"])
+    def remove_user(self, request, **kwargs):
+        element, validated_data = self.validate_serializer_and_get_object(request)
+        userId = None
+        for key, value in validated_data.items():
+            userId = value['id']
+
+        user = User.objects.get(id=userId)
+        element.remove_all_permissions_from_user(user)
 
         serializer_class = self.get_serializer_class('retrieve')
         serializer = self.get_serializer(serializer_class, element)

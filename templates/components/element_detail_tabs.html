@@ -546,8 +546,6 @@
         }
 
         function edit_component() {
-          console.log("edit_component!")
-          console.log(`{{is_owner}}`)
           show_edit_component_modal("{{element.name}}",`{{element.description}}`,"{{element.private}}", "{{is_owner}}",(newName, newDescription, newPrivate, newIsOwner)=>{
             ajax_with_indicator({
               url: '{% url "edit_element" element.id %}',
