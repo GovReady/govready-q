@@ -28,6 +28,7 @@ v0.9.14-dev (March xx, 2022)
 
 **Bug fixes**
 
+* Fix permissions for non-admin members of projects to edit control implementation statements.
 * Resolve components not displaying the tag widget by properly setting existingTags default for new component.
 * Footer fixes.
 

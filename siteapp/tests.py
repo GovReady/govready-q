@@ -613,7 +613,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 class AccountSettingsTests(OrganizationSiteFunctionalTests):
 
     def fill_in_account_settings(self, email, title, name):
-        # import ipdb;  ipdb.set_trace()
 
         self.clear_and_fill_field("#id_name", name)
         self.clear_and_fill_field("#id_email", email)

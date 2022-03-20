@@ -2089,8 +2089,8 @@ def save_smt(request):
             # Check if statement has the same sid class as the statement object
             if statement.sid_class == form_values['sid_class']:
                 # Check user permissions
-                system = statement.consumer_element
-                if not request.user.has_perm('change_system', system):
+                system_element = statement.consumer_element
+                if not request.user.has_perm("change_element", system_element):
                     # User does not have write permissions
                     # Log permission to save answer denied
                     logger.info(
@@ -2098,9 +2098,9 @@ def save_smt(request):
                         object={"object": "statement", "id": statement.id},
                         user={"id": request.user.id, "username": request.user.username}
                     )
-                    return HttpResponseForbidden(
-                        "Permission denied. {} does not have change privileges to system and/or project.".format(
-                            request.user.username))
+                    statement_status = "error"
+                    statement_msg = f"Permission denied. {request.user.username} does not have change privileges to system and/or project."
+                    return JsonResponse({"status": statement_status, "message": statement_msg})
 
                 if statement is None:
                     # Statement from received has an id no longer in the database.
