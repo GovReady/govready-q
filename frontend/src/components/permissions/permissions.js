@@ -58,7 +58,6 @@ export const Permissions = ({ elementId, isOwner }) => {
   const editToolTip = (<Tooltip placement="top" id='tooltip-edit'> Edit User Permissions
   </Tooltip>)
 
-  console.log('permissions: ', isOwner)
   const endpoint = (querystrings) => {
     return axios.get(`/api/v2/users/`, { params: querystrings });
   };

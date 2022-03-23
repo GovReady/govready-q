@@ -108,7 +108,6 @@ class BaseViewSet(GenericViewSet):
         exclude_ids = self.request.query_params.get("exclude")
         if exclude_ids:
             queryset = queryset.filter(~Q(id__in=exclude_ids.split(',')))
-            print('exclude queryset: ', queryset)
         if not serializer_class:
             try:
                 serializer_class = self.get_serializer_class('list')
@@ -116,9 +115,6 @@ class BaseViewSet(GenericViewSet):
                 if not serializer_class:
                     raise NotImplementedError(
                         "Developer Action - Make sure you set `serializer_classes` values.")
-
-        print('queryset: ', queryset)
-        
         queryset = serializer_class.prefetch_queryset(queryset)
 
         if self.NESTED_ROUTER_PKS:
@@ -136,7 +132,6 @@ class BaseViewSet(GenericViewSet):
                             # Occurs on One to One relationship.  Can ignore for now - todo later
                             pass
             return queryset
-        print('queryset2: ', queryset)
         return queryset.distinct()
 
     def get_object(self, serializer_class=None):
