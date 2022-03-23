@@ -44,7 +44,7 @@ const useStyles = makeStyles({
   }
 });
 
-export const Permissions = ({ elementId }) => {
+export const Permissions = ({ elementId, isOwner }) => {
   const dispatch = useDispatch();
 
   const classes = useStyles();
@@ -58,6 +58,7 @@ export const Permissions = ({ elementId }) => {
   const editToolTip = (<Tooltip placement="top" id='tooltip-edit'> Edit User Permissions
   </Tooltip>)
 
+  console.log('permissions: ', isOwner)
   const endpoint = (querystrings) => {
     return axios.get(`/api/v2/users/`, { params: querystrings });
   };
@@ -244,6 +245,99 @@ export const Permissions = ({ elementId }) => {
           );
         },
     },
+  ]);
+
+  const [columnsForEditor, setColumnsForEditor] = useState([
+    {
+      field: 'user',
+      headerName: 'Username',
+      width: 150,
+      editable: false,
+      valueGetter: (params) => params.row.user.username,
+    },
+    {
+      field: 'email',
+      headerName: 'Email',
+      width: 300,
+      editable: false,
+      valueGetter: (params) => params.row.user.email,
+    },
+    {
+      field: 'view',
+      headerName: 'View',
+      width: 100,
+      editable: false,
+      renderCell: (params) => {
+          return (
+            <div
+              style={{ width: "100%" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+              }}
+            >
+              {params.row.view ? <Glyphicon glyph="ok" style={{ color: green[700] }} /> : <Glyphicon glyph="remove" style={{ color: 'rgb(245,48,48,1)' }} />}
+            </div>
+          );
+        },
+    },
+    {
+      field: 'change',
+      headerName: 'Change',
+      width: 100,
+      editable: false,
+      renderCell: (params) => {
+          return (
+            <div
+              style={{ width: "100%" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+              }}
+            >
+              {params.row.change ? <Glyphicon glyph="ok" style={{ color: green[700] }} /> : <Glyphicon glyph="remove" style={{ color: 'rgb(245,48,48,1)' }} />}
+            </div>
+          );
+        },
+    },
+    {
+      field: 'add',
+      headerName: 'Add',
+      editable: false,
+      width: 100,
+      renderCell: (params) => {
+        return (
+          <div
+            style={{ width: "100%" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+          >
+            {params.row.add ? <Glyphicon glyph="ok" style={{ color: green[700] }} /> : <Glyphicon glyph="remove" style={{ color: 'rgb(245,48,48,1)' }} />}
+          </div>
+        );
+      },
+    },
+    {
+      field: 'delete',
+      headerName: 'Delete',
+      width: 100,
+      editable: false,
+      renderCell: (params) => {
+          return (
+            <div
+              style={{ width: "100%" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+              }}
+            >
+              {params.row.delete ? <Glyphicon glyph="ok" style={{ color: green[700] }} /> : <Glyphicon glyph="remove" style={{ color: 'rgb(245,48,48,1)' }} />}
+            </div>
+          );
+        },
+    },
     {
       field: 'edit',
       headerName: 'Edit',
@@ -282,7 +376,7 @@ export const Permissions = ({ elementId }) => {
         alignItems="flex-end"
         style={{ width: "100%" }}
       >
-        <Grid className="search-for-a-user1" item style={{ width: "calc(100% - 1rem - 25px" }}>
+        <Grid className="search-for-a-user-toolbar" item style={{ width: "calc(100% - 1rem - 25px" }}>
             <br />
             <AsyncPagination
                 endpoint={endpoint}
@@ -308,14 +402,14 @@ export const Permissions = ({ elementId }) => {
           </Grid>
       </Grid>
       <br />
-      <Grid sx={{ minHeight: '400px' }}>
+      <Grid className="permissible-users-data-grid" sx={{ minHeight: '400px' }}>
         <div style={{width: "calc(100% - 1rem - 25px", marginTop: "1rem" }}>
           <DataGrid
             className={classes.table}
             autoHeight={true}
             density="compact"
             rows={permissibleUsers}
-            columns={columns}
+            columns={isOwner ? columnsForEditor : columns}
             pageSize={25}
             rowsPerPageOptions={[25]}
             checkboxSelection
@@ -325,9 +419,6 @@ export const Permissions = ({ elementId }) => {
             // disableSelectionOnClick
             sx={{ 
               fontSize: '14px',
-              '& .datagrid-permission-header': {
-                backgroundColor: 'green',
-              },
               '& .MuiDataGrid-columnHeaderTitle':{
                 fontWeight: 600,
               },

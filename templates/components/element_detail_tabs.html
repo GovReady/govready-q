@@ -408,7 +408,7 @@
 
 {% block scripts %}
       <script>
-        window.permissionsTable( {{element.id}} );
+        window.permissionsTable( {{ element.id }}, "{{is_owner}}" === 'True' ? true : false );
         window.renderElementTags({{ element.id }}, {{ tags | safe }});
       </script>
       <script>
