@@ -7,7 +7,6 @@ import store from "../../store";
 window.permissionsTable = ( elementId, is_owner ) => {
   
     $(window).on('load', function () {
-        console.log('isowner: ',  is_owner)
         $("#content").show();
         ReactDOM.render(
             <Provider store={store}>
