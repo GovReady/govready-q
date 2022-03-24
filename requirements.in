@@ -6,6 +6,7 @@
 python-dateutil # Simplified BSD License
 Pillow>=8.3.2 # MIT-like License
 Jinja2==3.0.3 # BSD License
+setuptools==61.0.0 # MIT License
 
 # Less Common Python Packages
 html5lib # MIT License
