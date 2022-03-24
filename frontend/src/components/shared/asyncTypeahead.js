@@ -112,7 +112,7 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
       }
     );
   };
-  
+
   return (
     <AsyncTypeahead
       {...state}
