@@ -13,6 +13,7 @@ v0.9.14-dev (March xx, 2022)
 * Add React component UI widget for setting and editing permissions on component editing.
 * Add ability to change privacy of a component is given only to the owner of the component
 * Added tabs for coponent requests.
+* Only Component owner can edit user permissions
 
 **Developer changes**
 
@@ -25,10 +26,12 @@ v0.9.14-dev (March xx, 2022)
 * Added ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer for component (element) permissions.
 * Added ElementWithPermissionsViewSet for component (element) permissions.
 * Added more permission functions to element model: assigning a user specific permissions, removing all permissions from a user, and checking if a user is an owner of the element
+* Updated User model to include search by 'username' and exclusion functionality to queryset
 
 **Bug fixes**
 
 * Fix permissions for non-admin members of projects to edit control implementation statements.
+* Fix User lookup to properly query search results and exclude specific users
 * Resolve components not displaying the tag widget by properly setting existingTags default for new component.
 * Footer fixes.
 
