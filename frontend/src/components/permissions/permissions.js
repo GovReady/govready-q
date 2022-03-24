@@ -375,9 +375,10 @@ export const Permissions = ({ elementId, isOwner }) => {
         alignItems="flex-end"
         style={{ width: "100%" }}
       >
-        <Grid className="search-for-a-user-toolbar" item style={{ width: "calc(100% - 1rem - 25px" }}>
+        {isOwner && 
+          <Grid className="search-for-a-user-toolbar" item style={{ width: "calc(100% - 1rem - 25px" }}>
             <br />
-            <AsyncPagination
+             <AsyncPagination
                 endpoint={endpoint}
                 order={"username"}
                 onSelect={(selected) => {
@@ -399,6 +400,7 @@ export const Permissions = ({ elementId, isOwner }) => {
                 excludeIds={permissibleUsers.map((du) => du.user.id)}
             />
           </Grid>
+        }
       </Grid>
       <br />
       <Grid className="permissible-users-data-grid" sx={{ minHeight: '400px' }}>
