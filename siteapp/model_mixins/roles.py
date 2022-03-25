@@ -2,7 +2,7 @@ from django.db import models
 from django.http import JsonResponse
 
 class RoleModelMixin(models.Model):
-    responsible_role = models.ManyToManyField("siteapp.Role", related_name="%(class)s")
+    responsible_roles = models.ManyToManyField("siteapp.Role", related_name="%(class)s")
     responsible_parties = models.ManyToManyField("siteapp.Party", related_name="%(class)s")
 
     # TODO: add_party, remove_party, many2many to parties
@@ -14,7 +14,7 @@ class RoleModelMixin(models.Model):
         elif isinstance(roles, str):
             roles = [roles]
         assert isinstance(roles, list)
-        self.roles.add(*roles)
+        self.responsible_roles.add(*roles)
 
     def remove_roles(self, roles=None):
         if roles is None:
@@ -22,7 +22,7 @@ class RoleModelMixin(models.Model):
         elif isinstance(roles, str):
             roles = [roles]
         assert isinstance(roles, list)
-        self.roles.remove(*roles)
+        self.responsible_roles.remove(*roles)
 
     def add_parties(self, parties=None):
         if parties is None:
@@ -30,7 +30,7 @@ class RoleModelMixin(models.Model):
         elif isinstance(parties, str):
             parties = [parties]
         assert isinstance(parties, list)
-        self.parties.add(*parties)
+        self.responsible_parties.add(*parties)
 
     def remove_parties(self, parties=None):
         if parties is None:
@@ -38,7 +38,7 @@ class RoleModelMixin(models.Model):
         elif isinstance(parties, str):
             parties = [parties]
         assert isinstance(parties, list)
-        self.parties.add(*parties)
+        self.responsible_parties.add(*parties)
 
     class Meta:
         abstract = True

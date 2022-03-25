@@ -24,22 +24,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='element',
-            name='responsible_role',
+            name='responsible_roles',
             field=models.ManyToManyField(related_name='element', to='siteapp.Role'),
-        ),
-        migrations.CreateModel(
-            name='ElementPointOfContacts',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated', models.DateTimeField(auto_now=True, db_index=True, null=True)),
-                ('name', models.CharField(help_text='Common name or acronym of the element', max_length=250, unique=True)),
-                ('email', models.EmailField(max_length=255, unique=True, validators=[django.core.validators.EmailValidator()])),
-                ('phone', models.CharField(blank=True, max_length=16, null=True, validators=[django.core.validators.RegexValidator(regex='^\\+?1?\\d{8,15}$')])),
-                ('elements', models.ManyToManyField(to='controls.Element')),
-            ],
-            options={
-                'abstract': False,
-            },
         ),
     ]
