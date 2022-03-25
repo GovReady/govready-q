@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import json
+from unicodedata import name
 import auto_prefetch
 from django.db import models
 from django.db.models import Count
@@ -15,6 +16,7 @@ from natsort import natsorted
 from api.base.models import BaseModel
 from controls.enums.components import ComponentTypeEnum, ComponentStateEnum
 from siteapp.model_mixins.tags import TagModelMixin
+from siteapp.model_mixins.roles import RoleModelMixin
 from controls.enums.statements import StatementTypeEnum
 from controls.enums.remotes import RemoteTypeEnum
 from controls.oscal import Catalogs, Catalog, CatalogData
@@ -23,6 +25,8 @@ import uuid
 import tools.diff_match_patch.python3 as dmp_module
 from copy import deepcopy
 from django.db import transaction
+from django.core.validators import RegexValidator
+from django.core.validators import validate_email
 
 import structlog
 from structlog import get_logger
@@ -35,6 +39,7 @@ BASELINE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'baselines')
 EXTERNAL_BASELINE_PATH = os.path.join(f"{os.getcwd()}", 'local', 'controls', 'data', 'baselines')
 ORGPARAM_PATH = os.path.join(os.path.dirname(__file__), 'data', 'org_defined_parameters')
 
+PHONE_NUMBER_REGEX = RegexValidator(regex=r"^\+?1?\d{8,15}$")
 
 class ImportRecord(BaseModel):
     name = models.CharField(max_length=100, help_text="File name of the import", unique=False, blank=True, null=True)
@@ -256,7 +261,7 @@ class StatementRemote(auto_prefetch.Model):
                                              unique=False, blank=True, null=True, help_text="The Import Record which created this record.")
 
 
-class Element(auto_prefetch.Model, TagModelMixin):
+class Element(auto_prefetch.Model, TagModelMixin, RoleModelMixin):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
     description = models.TextField(default="Description needed", help_text="Description of the Element", unique=False, blank=False, null=False)
@@ -271,6 +276,8 @@ class Element(auto_prefetch.Model, TagModelMixin):
     component_type = models.CharField(default="software", max_length=50, help_text="OSCAL Component Type.", unique=False, blank=True, null=True, choices=ComponentTypeEnum.choices())
     component_state = models.CharField(default="operational", max_length=50, help_text="OSCAL Component State.", unique=False, blank=True, null=True, choices=ComponentStateEnum.choices())
     private = models.BooleanField(blank=False, null=False, default=True)
+    requestRequired = models.BooleanField(blank=True, null=True, default=False)
+    
 
     # Notes
     # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)

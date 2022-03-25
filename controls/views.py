@@ -1312,6 +1312,8 @@ def component_library_component(request, element_id):
     states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
     types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
 
+    import ipdb; ipdb.set_trace()
+
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
     else:
@@ -1329,6 +1331,7 @@ def component_library_component(request, element_id):
             "is_owner": is_owner,
             "can_edit": hasPermissionToEdit,
             "users_with_permissions": usersWithPermission,
+            "requiredRequest": True,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }

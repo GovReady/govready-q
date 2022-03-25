@@ -193,6 +193,16 @@ class TagAdmin(admin.ModelAdmin):
     fields = ('id', 'label', 'system_created')
     readonly_fields = ('id',)
 
+class RoleAdmin(admin.ModelAdmin):
+    list_display = ('role_id', 'short_name')
+    fields = ('uuid', 'title', 'short_name', 'description')
+    readonly_fields = ('uuid',)
+
+class PartyAdmin(admin.ModelAdmin):
+    list_display = ('uuid', 'name')
+    fields = ('uuid', 'party_type', 'name', 'short_name')
+    readonly_fields = ('uuid',)
+
 class ProjectAssetAdmin(admin.ModelAdmin):
     list_display = (
     'uuid', 'asset_type', 'description', 'project', 'default', 'title', 'filename', 'created', 'updated')

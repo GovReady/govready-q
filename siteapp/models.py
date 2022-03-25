@@ -33,6 +33,8 @@ structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
 
+# must start with letter or _ and can only contain letters, digits, underscore, hyphens, and periods
+TOKEN_REGEX = RegexValidator(regex=r"^[a-zA-Z_][a-zA-Z0-9_\-.]*$") 
 
 class User(AbstractUser, BaseModel):
     # Additional user profile data.
@@ -1406,6 +1408,37 @@ class Tag(BaseModel):
 
     def serialize(self):
         return {"label": self.label, "system_created": self.system_created, "id": self.id}
+
+class Party(BaseModel):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this party.")
+    party_type = models.CharField(max_length=100, unique=False, help_text="type for party")
+    name = models.CharField(max_length=250, unique=False, help_text="Name of this party")
+    short_name = models.CharField(max_length=100, unique=False, help_text="Short name of this party")
+
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+    def serialize(self):
+        return {"name": self.name, "id": self.id}
+
+class Role(BaseModel):
+    role_id = models.CharField(validators=[TOKEN_REGEX], max_length=16, null=True, blank=True)
+    title = models.CharField(max_length=250, unique=False, blank=False, null=False, help_text="Title of role")
+    short_name = models.CharField(max_length=100, unique=False, blank=True, null=True, help_text="Short name of this role")
+    description = models.TextField(blank=True, null=True, help_text="Description of this role")
+
+    def __repr__(self):
+        return self.title
+
+    def __str__(self):
+        return self.title
+
+    def serialize(self):
+        return {"title": self.title, "id": self.id}
+
 
 
 class Asset(BaseModel):

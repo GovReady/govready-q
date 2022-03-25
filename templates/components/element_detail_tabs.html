@@ -112,8 +112,8 @@
       <li id="opencontrol-tab" role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
       {% endif %}
       <li id="permissions-tab" role="presentation"><a href="#permissions" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> Permissions </a></li>
-      <!-- <li id="access-management-tab" role="presentation"><a href="#access_management" aria-controls="access-management" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-user"></span> Access Management </a></li> -->
-      <!-- <li id="requests-tab" role="presentation"><a href="#requests" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-envelope"></span> Requests </a></li> -->
+      <li id="access-management-tab" role="presentation"><a href="#access_management" aria-controls="access-management" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-user"></span> Access Management </a></li>
+      <li id="requests-tab" role="presentation"><a href="#requests" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-envelope"></span> Requests </a></li>
       <div style="margin: 0px 12px 0px 0px;">
         <a id="copy_component" class="btn btn btn-default pull-right" href={% url 'component_library_component_copy' element_id=element.id %} role="button" style="color: black;">Clone component</a>
       </div>
@@ -359,10 +359,36 @@
       <!-- Tab panel: Access Management -->
       <div role="tabpanel" class="tab-pane" id="access_management">
         <h3>Access Management</h3>
+        <div class="requirement-statement">
+          <span>{{ element.name }} common control set </span>
+            {% if requiredRequest %}
+              <strong>requires</strong>
+            {% else %}
+              <strong>does not require</strong>
+            {% endif %}
+            <span>approval/whitelisting of inheriting systems.</span>
+        </div>
+
+        <div class="component-approval-state">
+          <h4>Set component approval state:</h4>
+          <span>Require Approval/Whitelist</span>
+        </div>
+        <div class="component-poc">
+          <h4>Component Point of Contact Information:</h4>
+          <span>Name: </span>
+          <span>Email: </span>
+          <span>Phone: </span>
+        </div>
+        <br/>
+        <div class="component-approval-state">
+          <h4>Component approval/whitelist prerequisite:</h4><span>(this text will be displayed when a user considers the component for their system)</span>
+          <span>Textbox</span>
+        </div>
+        <button>SAVE</button>
       </div>
 
       <!-- Tab panel: Requests -->
-<!--       <div role="tabpanel" class="tab-pane" id="procurement">
+        <!--<div role="tabpanel" class="tab-pane" id="procurement">
         <div class="row">
           <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
             <h3>TBD</h3>
@@ -371,7 +397,7 @@
       </div> -->
 
       <!-- Tab panel: Requests -->
-<!--       <div role="tabpanel" class="tab-pane" id="requests">
+      <div role="tabpanel" class="tab-pane" id="requests">
         <div class="row">
           <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
             <h3>Requested Usage</h3>
@@ -391,12 +417,9 @@
               {% endfor%}
             </div>
           </div>
-        </div>
-      </div> -->
-
+      </div> 
+      
     </div>
-  </div>
-
   </div>
 </div>
 
