@@ -28,7 +28,6 @@ class ForeignKeyJoin(object):
                             else:
                                 fks.append("{}__{}".format(formatted, fk.column))
                         except:
-                            import ipdb; ipdb.set_trace()
                             pass
                     for prefetch in child_prefetches:
                         try:

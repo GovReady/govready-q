@@ -3,10 +3,9 @@ from django.http import JsonResponse
 
 class RoleModelMixin(models.Model):
     responsible_roles = models.ManyToManyField("siteapp.Role", related_name="%(class)s")
-    responsible_parties = models.ManyToManyField("siteapp.Party", related_name="%(class)s")
 
-    # TODO: add_party, remove_party, many2many to parties
-
+    class Meta:
+        abstract = True
 
     def add_roles(self, roles=None):
         if roles is None:
@@ -24,24 +23,6 @@ class RoleModelMixin(models.Model):
         assert isinstance(roles, list)
         self.responsible_roles.remove(*roles)
 
-    def add_parties(self, parties=None):
-        if parties is None:
-            parties = []
-        elif isinstance(parties, str):
-            parties = [parties]
-        assert isinstance(parties, list)
-        self.responsible_parties.add(*parties)
-
-    def remove_parties(self, parties=None):
-        if parties is None:
-            parties = []
-        elif isinstance(parties, str):
-            parties = [parties]
-        assert isinstance(parties, list)
-        self.responsible_parties.add(*parties)
-
-    class Meta:
-        abstract = True
 
 class RoleView:
 

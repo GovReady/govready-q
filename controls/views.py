@@ -1312,8 +1312,6 @@ def component_library_component(request, element_id):
     states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
     types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
 
-    import ipdb; ipdb.set_trace()
-
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
     else:

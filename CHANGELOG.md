@@ -4,6 +4,11 @@ GovReady-Q Release Notes
 v0.9.14-dev (March xx, 2022)
 ----------------------------
 
+**Feature changes**
+
+* Support private components (elements).
+* Assign responsible roles to components (elements) and appointing parties to roles. 
+
 **UI changes**
 
 * Change label 'certified statement' to 'reference statement'.
@@ -12,7 +17,7 @@ v0.9.14-dev (March xx, 2022)
 * Edit model for component in library supports marking component private.
 * Add React component UI widget for setting and editing permissions on component editing.
 * Add ability to change privacy of a component is given only to the owner of the component
-* Added tabs for coponent requests.
+* Add tabs for coponent requests.
 * Only Component owner can edit user permissions
 
 **Developer changes**
@@ -21,12 +26,15 @@ v0.9.14-dev (March xx, 2022)
 * Update Django, libraries.
 * Remove debug-toolbar.
 * Support for private components by adding 'private' boolean field to controls.models.Element.
+* Support for hidden components by adding 'hidden' boolean field to controls.models.Element.
+* Support for requiring approval components by adding 'require_approval' boolean field to controls.models.Element.
 * Create new components as private and assign owner permissions to user who created the component.
-* Added tests for component creation form user interface.
-* Added ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer for component (element) permissions.
-* Added ElementWithPermissionsViewSet for component (element) permissions.
-* Added more permission functions to element model: assigning a user specific permissions, removing all permissions from a user, and checking if a user is an owner of the element
+* Add tests for component creation form user interface.
+* Add ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer for component (element) permissions.
+* Add ElementWithPermissionsViewSet for component (element) permissions.
+* Add more permission functions to element model: assigning a user specific permissions, removing all permissions from a user, and checking if a user is an owner of the element
 * Updated User model to include search by 'username' and exclusion functionality to queryset
+* Add model Roles, Party, and Appointments to siteapp to support identifying roles on Components (Element)
 
 **Bug fixes**
 

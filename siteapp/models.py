@@ -1409,6 +1409,7 @@ class Tag(BaseModel):
     def serialize(self):
         return {"label": self.label, "system_created": self.system_created, "id": self.id}
 
+
 class Party(BaseModel):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this party.")
     party_type = models.CharField(max_length=100, unique=False, help_text="type for party")
@@ -1424,11 +1425,13 @@ class Party(BaseModel):
     def serialize(self):
         return {"name": self.name, "id": self.id}
 
+
 class Role(BaseModel):
     role_id = models.CharField(validators=[TOKEN_REGEX], max_length=16, null=True, blank=True)
     title = models.CharField(max_length=250, unique=False, blank=False, null=False, help_text="Title of role")
     short_name = models.CharField(max_length=100, unique=False, blank=True, null=True, help_text="Short name of this role")
     description = models.TextField(blank=True, null=True, help_text="Description of this role")
+    parties = models.ManyToManyField(Party, through='Appointment', related_name="%(class)s")
 
     def __repr__(self):
         return self.title
@@ -1439,6 +1442,34 @@ class Role(BaseModel):
     def serialize(self):
         return {"title": self.title, "id": self.id}
 
+    def add_parties(self, parties=None):
+        if parties is None:
+            parties = []
+        elif isinstance(parties, str):
+            parties = [parties]
+        assert isinstance(parties, list)
+        self.party.add(*parties)
+
+    def remove_parties(self, parties=None):
+        if parties is None:
+            parties = []
+        elif isinstance(parties, str):
+            parties = [parties]
+        assert isinstance(parties, list)
+        self.party.add(*parties)
+
+
+class Appointment(BaseModel):
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, help_text="The Role")
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, help_text="The Party having the Role")
+    comment = models.CharField(max_length=200, help_text="Notes on this Appointment")
+    # date_expiration = models.DateField()
+
+    def __repr__(self):
+        return self.role
+
+    def __str__(self):
+        return self.role
 
 
 class Asset(BaseModel):
