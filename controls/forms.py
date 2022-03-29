@@ -88,7 +88,7 @@ class ElementEditForm(ModelForm):
 
     class Meta:
         model = Element
-        fields = ['id', 'name', 'description', 'private']
+        fields = ['id', 'name', 'description', 'private', 'require_approval']
 
 class ImportOSCALComponentForm(forms.Form):
 

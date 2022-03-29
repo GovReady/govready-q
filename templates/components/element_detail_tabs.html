@@ -569,11 +569,11 @@
         }
 
         function edit_component() {
-          show_edit_component_modal("{{element.name}}",`{{element.description}}`,"{{element.private}}", "{{is_owner}}",(newName, newDescription, newPrivate, newIsOwner)=>{
+          show_edit_component_modal("{{element.name}}",`{{element.description}}`,"{{element.private}}", `{{element.require_approval}}`, "{{is_owner}}",(newName, newDescription, newPrivate, newRequire_Approval, newIsOwner)=>{
             ajax_with_indicator({
               url: '{% url "edit_element" element.id %}',
               method: "POST",
-              data: {name: newName, description: newDescription, private: newPrivate, is_owner: newIsOwner},
+              data: {name: newName, description: newDescription, private: newPrivate, require_approval: newRequire_Approval, is_owner: newIsOwner},
               keep_indicator_forever: true,
               success: function(res) {
                 if(res["status"]=="ok"){

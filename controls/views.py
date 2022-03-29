@@ -48,6 +48,7 @@ from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
 from .models import *
 from .utilities import *
 from siteapp.utils.views_helper import project_context
+from siteapp.models import Role, Party, Appointment
 
 logging.basicConfig()
 import structlog
@@ -1284,7 +1285,7 @@ def component_library_component(request, element_id):
 
     # Retrieve element
     element = Element.objects.get(id=element_id)
-    
+    poc_role = Role(role_id="poc", title="Point of Contact", short_name="PoC", description="Contact for request assistance" )
     # Check permissions
     if element.private == True and 'view_element' not in get_user_perms(request.user, element):
         logger.warning(
