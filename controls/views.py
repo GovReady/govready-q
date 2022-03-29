@@ -1284,7 +1284,7 @@ def component_library_component(request, element_id):
 
     # Retrieve element
     element = Element.objects.get(id=element_id)
-
+    
     # Check permissions
     if element.private == True and 'view_element' not in get_user_perms(request.user, element):
         logger.warning(
@@ -1329,7 +1329,6 @@ def component_library_component(request, element_id):
             "is_owner": is_owner,
             "can_edit": hasPermissionToEdit,
             "users_with_permissions": usersWithPermission,
-            "requiredRequest": True,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }

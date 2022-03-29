@@ -69,8 +69,7 @@ class ElementForm(ModelForm):
         self.initial['element_type'] = 'system_element'
         self.fields['element_type'].widget = forms.HiddenInput()
         self.initial['private'] = True
-        r = Role(role_id="poc", title="Point of Contact")
-        self.initial.add_roles([r.id])
+        self.initial['require_approval'] = False
         
 
     class Meta:

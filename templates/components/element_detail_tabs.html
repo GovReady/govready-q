@@ -361,7 +361,7 @@
         <h3>Access Management</h3>
         <div class="requirement-statement">
           <span>{{ element.name }} common control set </span>
-            {% if requiredRequest %}
+            {% if element.require_approval %}
               <strong>requires</strong>
             {% else %}
               <strong>does not require</strong>
