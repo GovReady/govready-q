@@ -16,7 +16,7 @@ from natsort import natsorted
 from api.base.models import BaseModel
 from controls.enums.components import ComponentTypeEnum, ComponentStateEnum
 from siteapp.model_mixins.tags import TagModelMixin
-from siteapp.model_mixins.roles import RoleModelMixin
+from siteapp.model_mixins.appointments import AppointmentModelMixin
 from controls.enums.statements import StatementTypeEnum
 from controls.enums.remotes import RemoteTypeEnum
 from controls.oscal import Catalogs, Catalog, CatalogData
@@ -261,7 +261,7 @@ class StatementRemote(auto_prefetch.Model):
                                              unique=False, blank=True, null=True, help_text="The Import Record which created this record.")
 
 
-class Element(auto_prefetch.Model, TagModelMixin, RoleModelMixin):
+class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
     description = models.TextField(default="Description needed", help_text="Description of the Element", unique=False, blank=False, null=False)
@@ -276,7 +276,6 @@ class Element(auto_prefetch.Model, TagModelMixin, RoleModelMixin):
     component_type = models.CharField(default="software", max_length=50, help_text="OSCAL Component Type.", unique=False, blank=True, null=True, choices=ComponentTypeEnum.choices())
     component_state = models.CharField(default="operational", max_length=50, help_text="OSCAL Component State.", unique=False, blank=True, null=True, choices=ComponentStateEnum.choices())
     private = models.BooleanField(blank=False, null=False, default=True, help_text="Component is private.")
-    hidden = models.BooleanField(blank=False, null=False, default=True, help_text="Component is hidden.")
     require_approval = models.BooleanField(blank=True, null=True, default=False, help_text="Component requires approval to use.")
     
 

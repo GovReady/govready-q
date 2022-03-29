@@ -1411,10 +1411,12 @@ class Tag(BaseModel):
 
 
 class Party(BaseModel):
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this party.")
-    party_type = models.CharField(max_length=100, unique=False, help_text="type for party")
-    name = models.CharField(max_length=250, unique=False, help_text="Name of this party")
-    short_name = models.CharField(max_length=100, unique=False, help_text="Short name of this party")
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Party.")
+    party_type = models.CharField(max_length=100, unique=False, help_text="type for Party.")
+    name = models.CharField(max_length=250, unique=True, help_text="Name of this Party.")
+    short_name = models.CharField(max_length=100, unique=False, help_text="Short name of this Party.")
+    user = models.ForeignKey(User, blank=True, null=True, related_name="party", on_delete=models.SET_NULL,
+                                   help_text="User associated with the Party.")
 
     def __repr__(self):
         return self.name
@@ -1428,10 +1430,9 @@ class Party(BaseModel):
 
 class Role(BaseModel):
     role_id = models.CharField(validators=[TOKEN_REGEX], max_length=16, null=True, blank=True)
-    title = models.CharField(max_length=250, unique=False, blank=False, null=False, help_text="Title of role")
-    short_name = models.CharField(max_length=100, unique=False, blank=True, null=True, help_text="Short name of this role")
-    description = models.TextField(blank=True, null=True, help_text="Description of this role")
-    parties = models.ManyToManyField(Party, through='Appointment', related_name="%(class)s")
+    title = models.CharField(max_length=250, unique=False, blank=False, null=False, help_text="Title of Role.")
+    short_name = models.CharField(max_length=100, unique=False, blank=True, null=True, help_text="Short name of this Role.")
+    description = models.TextField(blank=True, null=True, help_text="Description of this Role.")
 
     def __repr__(self):
         return self.title
@@ -1442,34 +1443,19 @@ class Role(BaseModel):
     def serialize(self):
         return {"title": self.title, "id": self.id}
 
-    def add_parties(self, parties=None):
-        if parties is None:
-            parties = []
-        elif isinstance(parties, str):
-            parties = [parties]
-        assert isinstance(parties, list)
-        self.party.add(*parties)
-
-    def remove_parties(self, parties=None):
-        if parties is None:
-            parties = []
-        elif isinstance(parties, str):
-            parties = [parties]
-        assert isinstance(parties, list)
-        self.party.add(*parties)
-
 
 class Appointment(BaseModel):
-    role = models.ForeignKey(Role, on_delete=models.CASCADE, help_text="The Role")
-    party = models.ForeignKey(Party, on_delete=models.CASCADE, help_text="The Party having the Role")
-    comment = models.CharField(max_length=200, help_text="Notes on this Appointment")
-    # date_expiration = models.DateField()
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, help_text="The Role being appointed.")
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, help_text="The Party appointed to the Role.")
+    model_name = models.CharField(max_length=100, unique=False, help_text="The Model name to which the Role and Party are appointed.")
+    comment = models.CharField(max_length=200, help_text="Notes on this Appointment.")
+    # enddate = models.DateField(unique=False, blank=True, null=True, help_text="Date Appointment concludes")
 
     def __repr__(self):
-        return self.role
+        return f"{self.model_name} {self.role.title} - {self.party.name}"
 
     def __str__(self):
-        return self.role
+        return f"{self.model_name} {self.role.title} - {self.party.name}"
 
 
 class Asset(BaseModel):
