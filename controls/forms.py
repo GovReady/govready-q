@@ -7,6 +7,7 @@ import json
 
 from guidedmodules.models import AppSource, AppVersion
 from .models import Statement, Poam, Element, Deployment, SystemAssessmentResult
+from siteapp.models import Role
 # from jsonfield import JSONField
 
 
@@ -68,10 +69,13 @@ class ElementForm(ModelForm):
         self.initial['element_type'] = 'system_element'
         self.fields['element_type'].widget = forms.HiddenInput()
         self.initial['private'] = True
+        r = Role(role_id="poc", title="Point of Contact")
+        self.add_roles([r.id])
+        
 
     class Meta:
         model = Element
-        fields = ['name', 'full_name', 'description', 'element_type', 'component_type', 'component_state', 'private']
+        fields = ['name', 'full_name', 'description', 'element_type', 'component_type', 'component_state', 'private', 'require_approval']
 
     def clean(self):
         """Extend clean to validate element name is not reused."""
