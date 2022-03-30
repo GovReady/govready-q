@@ -70,7 +70,7 @@ class ElementForm(ModelForm):
         self.fields['element_type'].widget = forms.HiddenInput()
         self.initial['private'] = True
         self.initial['require_approval'] = False
-        
+
 
     class Meta:
         model = Element
