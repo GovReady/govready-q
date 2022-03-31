@@ -12,7 +12,7 @@
 #
 # Accessing:
 #   curl localhost:9002/endpoint
-#   curl localhost:9002/hello
+#   curl -X 'GET' 'http://127.0.0.1:9002/system/111'
 #   curl localhost:9002/system/111  # requires authentication
 #
 # Accessing with simple authentication:
@@ -33,92 +33,88 @@ PORT = 9002
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
-    SYSTEM = {
-        "system_id": 111,
-        "name": "My IT System",
-        "description":  "This is a simple test system"
-    }
+    # Mock data
+    SYSTEMS = {"111": {"system_id": 111,
+                       "name": "SystemA",
+                       "description":  "This is a simple test system"
+                       },
+                "222": {"system_id": 222,
+                        "name": "SystemB",
+                        "description":  "This is another simple test system"
+                        }
+                }
 
-    def mk_csam_system_info_response(self):
-        return self.SYSTEM
+    def mk_csam_system_info_response(self, system_id):
+        return self.SYSTEMS[system_id]
 
     def do_GET(self, method=None):
-
+        """Parse and route GET request"""
         # Parse path
-        parsed_path = urlparse(self.path)
-        params = parse_qs(parsed_path.query)
-        print("parsed_path.path:", parsed_path.path)
-        print("** params", params)
+        request = urlparse(self.path)
+        params = parse_qs(request.query)
+        print(f"request.path: {request.path}, params: {params}")
         # params are received as arrays, so get first element in array
-        system_id = params.get('system_id', [0])[0]
+        # system_id = params.get('system_id', [0])[0]
 
-        # Route and handle request
-        if parsed_path.path == "/hello":
+        # Route GET request
+        if request.path == "/test/hello":
             """Reply with 'hello'"""
-
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             data = {"message":"hello"}
+            self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
-            # Send the JSON response
-            self.wfile.write(json.dumps(data, indent=4))
-
-        elif parsed_path.path == "/authenticate-test":
+        elif request.path == "/test/authenticate-test":
             """Test authentication"""
-
             # Test authentication by reading headers and looking for 'Authentication'
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-
             # Read headers
-            print("Authorization header:", self.headers['Authorization'])
-
-            data = {
-                "reply": "yes",
-                "Authorization": self.headers['Authorization'],
-                "pat": self.headers['Authorization'].split("Bearer ")[-1]
-            }
-            # Send the JSON response
+            if 'Authorization' in self.headers:
+                print("Authorization header:", self.headers['Authorization'])
+                data = {"reply": "Success",
+                        "Authorization": self.headers['Authorization'],
+                        "pat": self.headers['Authorization'].split("Bearer ")[-1]
+                        }
+            else:
+                data = {"reply": "Fail",
+                        "Authorization": None,
+                        "pat": None
+                        }
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
-        elif parsed_path.path == "/system/111":
+        elif request.path == "/v1/system/111" or request.path == "/v1/system/222":
             """Reply with system information"""
-
-            # Usage:
-            #
             # # authorized example
-            # curl -X 'GET' 'http://localhost:9002/system/111' \
+            # curl -X 'GET' 'http://localhost:9002/v1/system/111' \
             # -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' \
             # -H 'Authorization: Bearer FAD619'
             #
             # # unauthorized example:
-            # curl -X 'GET' 'http://localhost:9002/system/111' \
+            # curl -X 'GET' 'http://localhost:9002/v1/system/111' \
             # -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' 
-            #
-
             pat = None
             if 'Authorization' in self.headers:
                 pat = self.headers['Authorization'].split("Bearer ")[-1]
-
             if pat is None or pat != "FAD619":
-                # Reply with unauthorized
+                # Authentication fails
                 self.send_response(401)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                data = {
-                    "message": "Unauthorized request",
-                    "endpoint": parsed_path.path
-                }
+                data = {"message": "Unauthorized request",
+                        "endpoint": request.path
+                        }
             else:
-                # Request is authenticated
+                # Authentication succeeds
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                data = self.mk_csam_system_info_response()
-
-            # Send the JSON response
+                if '111' in request.path:
+                    data = self.mk_csam_system_info_response('111')
+                elif '222' in request.path:
+                    data = self.mk_csam_system_info_response('222')
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
         else:
@@ -126,35 +122,28 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.send_response(404)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-
             data = {"message":"Path not found"}
             # Send the JSON response
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
     def do_POST(self):
-
-        parsed_path = urlparse(self.path)
-        params = parse_qs(parsed_path.query)
-        print("parsed_path.path:", parsed_path.path)
+        """Parse and route POST request"""
+        request = urlparse(self.path)
+        params = parse_qs(request.query)
+        print("request.path:", request.path)
         print("** params", params)
 
-        # Route and handle request
-        if parsed_path.path == "/hello":
+        # Route POST request
+        if request.path == "/test/hello":
             """Reply with 'hello'"""
-
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             data = {"message": "hello, POST"}
-
-            # Send the JSON response
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
-        if parsed_path.path == "/system/111":
+        if request.path == "/v1/system/111" or request.path == "/v1/system/222":
             """Update system information"""
-
-            # Usage:
-            #
             # # authorized example
             # curl -X 'POST' 'http://localhost:9002/system/111' \
             # -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' \
@@ -163,46 +152,40 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # # unauthorized example:
             # curl -X 'POST' 'http://localhost:9002/system/111' \
             # -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true'
-            #
-
             pat = None
             if 'Authorization' in self.headers:
                 pat = self.headers['Authorization'].split("Bearer ")[-1]
-
             if pat is None or pat != "FAD619":
-                # Reply with unauthorized
+                # Authorization failed
                 self.send_response(401)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                data = {
-                    "message": "Unauthorized request",
-                    "endpoint": parsed_path.path
-                }
+                data = {"message": "Unauthorized request",
+                        "endpoint": request.path
+                        }
             else:
-                # Request is authenticated - read POST data and update system info
+                # Authorization succeeded - read POST data and update system info
                 content_length = int(self.headers['Content-Length'])
                 self.post_data = self.rfile.read(content_length)
                 self.post_data_json = json.loads(self.post_data)
-                # post_data_decoded = post_data.decode('utf-8')
-                self.SYSTEM['name'] = self.post_data_json.get('name', self.SYSTEM['name'])
-                self.SYSTEM['description'] = self.post_data_json.get('description', self.SYSTEM['description'])
-
+                if '111' in request.path:
+                    system_id = '111'
+                elif '222' in request.path:
+                    system_id = '222'
+                self.SYSTEMS[system_id]['name'] = self.post_data_json.get('name', self.SYSTEM['name'])
+                self.SYSTEM[system_id]['description'] = self.post_data_json.get('description', self.SYSTEM['description'])
                 # Send response
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-
-                data = self.mk_csam_system_info_response()
-            # Send the JSON response
+                data = self.mk_csam_system_info_response(system_id)
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
-
         else:
-            """Reply with Path not found"""
+            # Path not found
             self.send_response(404)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-
             data = {"message":"Path not found"}
             # Send the JSON response
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))

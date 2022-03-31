@@ -8,8 +8,12 @@ urlpatterns = [
     url(r"^post_endpoint(?P<endpoint>.*)$", views.integration_endpoint_post,
         name='integration_endpoint'),
 
+    url(r"^get_system_info_test/(?P<system_id>.*)$", views.get_system_info, name='get_system_info_test'),
     url(r"^update_system_description_test/(?P<system_id>.*)$", views.update_system_description_test,
-        name='integration_endpoint'),
+        name='update_system_description_test'),
     url(r"^update_system_description$", views.update_system_description,
-        name='integration_endpoint'),
+        name='update_system_description'),
+
+    url(r"^get_multiple_system_info$", views.get_multiple_system_info, name='get_multiple_system_info'),
+    
 ]
