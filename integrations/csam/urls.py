@@ -14,6 +14,6 @@ urlpatterns = [
     url(r"^update_system_description$", views.update_system_description,
         name='update_system_description'),
 
-    url(r"^get_multiple_system_info$", views.get_multiple_system_info, name='get_multiple_system_info'),
+    url(r"^get_multiple_system_info/(?P<system_id_list>.*)$", views.get_multiple_system_info, name='get_multiple_system_info'),
     
 ]

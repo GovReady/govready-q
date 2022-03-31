@@ -1,5 +1,6 @@
 import json
 import time
+from datetime import datetime
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponse, HttpResponseNotFound
 from integrations.models import Integration, Endpoint
@@ -37,6 +38,7 @@ def integration_endpoint(request, endpoint=None):
     return HttpResponse(
         f"<html><body><p>Attempting to communicate with '{INTEGRATION_NAME}' "
         f"integration: {communication.identify()}</p>"
+        f"<p>now: {datetime.now()}</p>"
         f"<p>endpoint: {endpoint}</p>"
         f"<p>Returned data:</p>"
         f"<pre>{json.dumps(data,indent=4)}</pre>"
@@ -62,6 +64,7 @@ def integration_endpoint_post(request, endpoint=None):
     return HttpResponse(
         f"<html><body><p>Attempting to communicate using POST with '{INTEGRATION_NAME}' "
         f"integration: {communication.identify()}</p>"
+        f"<p>now: {datetime.now()}</p>"
         f"<p>endpoint: {endpoint}.</p>"
         f"<p>Returned data:</p>"
         f"<pre>{json.dumps(data,indent=4)}</pre>"
@@ -77,6 +80,7 @@ def get_system_info(request, system_id=2):
         return HttpResponse(
         f"<html><body><p>Attempting to communicate with '{INTEGRATION_NAME}' "
         f"integration: {communication.identify()}</p>"
+        f"<p>now: {datetime.now()}</p>"
         f"<p>System '{system_id}' does not have an associated 'csam_system_id'.</p>"
         f"</body></html>")
 
@@ -94,15 +98,16 @@ def get_system_info(request, system_id=2):
     return HttpResponse(
         f"<html><body><p>Attempting to communicate with '{INTEGRATION_NAME}' "
         f"integration: {communication.identify()}</p>"
+        f"<p>now: {datetime.now()}</p>"
         f"<p>endpoint: {endpoint}</p>"
         f"<p>Returned data:</p>"
         f"<pre>{json.dumps(data,indent=4)}</pre>"
         f"</body></html>")
 
-def get_multiple_system_info(request, system_id_list=[1,2]):
+def get_multiple_system_info(request, system_id_list="1,2"):
     """Get and cach system info for multiple systems"""
-    systems_updated =[]
-    systems = System.objects.filter(pk__in=system_id_list)
+    systems_updated = []
+    systems = System.objects.filter(pk__in=system_id_list.split(","))
     for s in systems:
         csam_system_id = s.info.get("csam_system_id", None)
         if csam_system_id is None:
@@ -126,6 +131,7 @@ def get_multiple_system_info(request, system_id_list=[1,2]):
     return HttpResponse(
         f"<html><body><p>Attempting to communicate with '{INTEGRATION_NAME}' "
         f"get_multiple_system_info for system ids {system_id_list}</p>"
+        f"<p>now: {datetime.now()}</p>"
         f"<p>Result:</p>"
         f"<pre>{systems_updated}</pre>"
         f"</body></html>")
@@ -137,6 +143,7 @@ def update_system_description_test(request, system_id=2):
     data = update_system_description(params)
     return HttpResponse(
         f"<html><body><p>Attempting to update CSAM description of System id {system_id}...' "
+        f"<p>now: {datetime.now()}</p>"
         f"<p>Returned data:</p>"
         f"<pre>{json.dumps(data,indent=4)}</pre>"
         f"</body></html>")
