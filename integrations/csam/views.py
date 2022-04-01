@@ -104,6 +104,50 @@ def get_system_info(request, system_id=2):
         f"<pre>{json.dumps(data,indent=4)}</pre>"
         f"</body></html>")
 
+def system_info(request, system_id=2):
+    """Retrieve the system information from CSAM"""
+
+    system = System.objects.get(pk=system_id)
+    # TODO: Check user permission to view
+    csam_system_id = system.info.get('csam_system_id', None)
+    if csam_system_id is None:
+        return HttpResponse(
+        f"<html><body><p>Attempting to communicate with '{INTEGRATION_NAME}' "
+        f"integration: {communication.identify()}</p>"
+        f"<p>now: {datetime.now()}</p>"
+        f"<p>System '{system_id}' does not have an associated 'csam_system_id'.</p>"
+        f"</body></html>")
+
+    communication = set_integration()
+    endpoint = f'/v1/system/{csam_system_id}'
+
+    # is there local information?
+    ep, created = Endpoint.objects.get_or_create(
+        integration=INTEGRATION,
+        endpoint_path=endpoint
+    )
+    if created:
+        # Cache not available
+        data = communication.get_response(endpoint)
+        # Cache remote data locally in database
+        ep.data = data
+        ep.save()
+    else:
+        # Cache available
+        cached = True
+        pass
+
+    context = {
+        "system": system,
+        "cached": True,
+        "communication": communication,
+        "ep": ep
+    }
+    from siteapp import settings
+    # settings.TEMPLATES[0]['DIRS'].append('/Users/gregelinadmin/Documents/workspace/govready-q-private/integrations/csam/templates/')
+    # print(2,"========= TEMPLATES", settings.TEMPLATES[0]['DIRS'])
+    return render(request, "csam/system.html", context)
+
 def get_multiple_system_info(request, system_id_list="1,2"):
     """Get and cach system info for multiple systems"""
     systems_updated = []
@@ -166,4 +210,5 @@ def update_system_description(request, params={"src_obj_type": "system", "src_ob
         data = communication.post_response(endpoint, data=json.dumps(post_data))
         result = data
     return result
+
 

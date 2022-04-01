@@ -12,7 +12,7 @@ class CSAMCommunication(Communication):
     DESCRIPTION = {
         "name": "csam",
         "description": "CSAM API Service",
-        "version": "0.1",
+        "version": "0.3",
         "integration_db_record": True,
         "mock": {
             "base_url": "http:/localhost:9002",

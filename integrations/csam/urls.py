@@ -15,5 +15,7 @@ urlpatterns = [
         name='update_system_description'),
 
     url(r"^get_multiple_system_info/(?P<system_id_list>.*)$", views.get_multiple_system_info, name='get_multiple_system_info'),
+
+    url(r"^system/(?P<system_id>.*)$", views.system_info, name='csam_system_info'),
     
 ]

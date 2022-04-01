@@ -34,14 +34,56 @@ PORT = 9002
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     # Mock data
-    SYSTEMS = {"111": {"system_id": 111,
-                       "name": "SystemA",
-                       "description":  "This is a simple test system"
+    SYSTEMS = { "111": {"id": 111,
+                       "externalId": "string",
+                       "name": "System A string",
+                       "acronym": "string",
+                       "organization": "string",
+                       "subOrganization": "string",
+                       "operationalStatus": "string",
+                       "systemType": "string",
+                       "financialSystem": "string",
+                       "classification": "string",
+                       "contractorSystem": True,
+                       "fismaReportable": True,
+                       "criticalInfrastructure": True,
+                       "missionCritical": True,
+                       "purpose": "string",
+                       "ombExhibit": "string",
+                       "uiiCode": "string",
+                       "investmentName": "string",
+                       "portfolio": "string",
+                       "priorFyFunding": 0,
+                       "currentFyFunding": 0,
+                       "nextFyFunding": 0,
+                       "categorization": "string",
+                       "fundingImportStatus": "string"
                        },
-                "222": {"system_id": 222,
-                        "name": "SystemB",
-                        "description":  "This is another simple test system"
-                        }
+                "222": {"id": 222,
+                       "name": "System B string",
+                       "description": "This is another simple test system",
+                       "acronym": "string",
+                       "organization": "string",
+                       "subOrganization": "string",
+                       "operationalStatus": "string",
+                       "systemType": "string",
+                       "financialSystem": "string",
+                       "classification": "string",
+                       "contractorSystem": True,
+                       "fismaReportable": True,
+                       "criticalInfrastructure": True,
+                       "missionCritical": True,
+                       "purpose": "string",
+                       "ombExhibit": "string",
+                       "uiiCode": "string",
+                       "investmentName": "string",
+                       "portfolio": "string",
+                       "priorFyFunding": 0,
+                       "currentFyFunding": 0,
+                       "nextFyFunding": 0,
+                       "categorization": "string",
+                       "fundingImportStatus": "string"
+                       }
                 }
 
     def mk_csam_system_info_response(self, system_id):
