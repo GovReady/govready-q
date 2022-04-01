@@ -36,7 +36,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     # Mock data
     SYSTEMS = { "111": {"id": 111,
                        "externalId": "string",
-                       "name": "System A string",
+                       "name": "System A",
+                       "description": "This is a simple test system",
                        "acronym": "string",
                        "organization": "string",
                        "subOrganization": "string",
@@ -60,7 +61,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                        "fundingImportStatus": "string"
                        },
                 "222": {"id": 222,
-                       "name": "System B string",
+                       "externalId": "string",
+                       "name": "System B",
                        "description": "This is another simple test system",
                        "acronym": "string",
                        "organization": "string",
