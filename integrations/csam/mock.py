@@ -129,15 +129,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         }
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
-        elif request.path == "/v1/system/111" or request.path == "/v1/system/222":
+        elif request.path == "/v1/systems/111" or request.path == "/v1/systems/222":
             """Reply with system information"""
             # # authorized example
-            # curl -X 'GET' 'http://localhost:9002/v1/system/111' \
+            # curl -X 'GET' 'http://localhost:9002/v1/systems/111' \
             # -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' \
             # -H 'Authorization: Bearer FAD619'
             #
             # # unauthorized example:
-            # curl -X 'GET' 'http://localhost:9002/v1/system/111' \
+            # curl -X 'GET' 'http://localhost:9002/v1/systems/111' \
             # -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' 
             pat = None
             if 'Authorization' in self.headers:
@@ -186,7 +186,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             data = {"message": "hello, POST"}
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
-        if request.path == "/v1/system/111" or request.path == "/v1/system/222":
+        if request.path == "/v1/systems/111" or request.path == "/v1/systems/222":
             """Update system information"""
             # # authorized example
             # curl -X 'POST' 'http://localhost:9002/system/111' \
