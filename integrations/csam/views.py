@@ -109,6 +109,9 @@ def system_info(request, system_id=2):
 
     system = System.objects.get(pk=system_id)
     # TODO: Check user permission to view
+
+    communication = set_integration()
+    endpoint = f'/v1/system/{csam_system_id}'
     csam_system_id = system.info.get('csam_system_id', None)
     if csam_system_id is None:
         return HttpResponse(
@@ -117,9 +120,6 @@ def system_info(request, system_id=2):
         f"<p>now: {datetime.now()}</p>"
         f"<p>System '{system_id}' does not have an associated 'csam_system_id'.</p>"
         f"</body></html>")
-
-    communication = set_integration()
-    endpoint = f'/v1/system/{csam_system_id}'
 
     # is there local information?
     ep, created = Endpoint.objects.get_or_create(
