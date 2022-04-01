@@ -35,6 +35,7 @@ logger = get_logger()
 
 # must start with letter or _ and can only contain letters, digits, underscore, hyphens, and periods
 TOKEN_REGEX = RegexValidator(regex=r"^[a-zA-Z_][a-zA-Z0-9_\-.]*$") 
+PHONE_NUMBER_REGEX = RegexValidator(regex=r"^\+?1?\d{8,15}$")
 
 class User(AbstractUser, BaseModel):
     # Additional user profile data.
@@ -57,7 +58,7 @@ class User(AbstractUser, BaseModel):
                                   help_text="The user's API key with write-only permission.")
     default_portfolio = models.ForeignKey('Portfolio', blank=True, null=True, related_name="default_for", on_delete=models.RESTRICT,
                                   help_text="Default Portfolio of the User.")
-
+    phone_number = models.CharField(validators=[PHONE_NUMBER_REGEX], max_length=16, null=True, blank=True)
 
     # Methods
     def __init__(self, *args, **kwargs):
@@ -1415,6 +1416,9 @@ class Party(BaseModel):
     party_type = models.CharField(max_length=100, unique=False, help_text="type for Party.")
     name = models.CharField(max_length=250, unique=True, help_text="Name of this Party.")
     short_name = models.CharField(max_length=100, unique=False, help_text="Short name of this Party.")
+    email = models.EmailField(blank=True)
+    phone_number = models.CharField(validators=[PHONE_NUMBER_REGEX], max_length=16, null=True, blank=True)
+    mobile_phone = models.CharField(validators=[PHONE_NUMBER_REGEX], max_length=16, null=True, blank=True)
     user = models.ForeignKey(User, blank=True, null=True, related_name="party", on_delete=models.SET_NULL,
                                    help_text="User associated with the Party.")
 

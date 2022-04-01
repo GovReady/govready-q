@@ -29,7 +29,7 @@ class DetailedElementSerializer(SimpleElementSerializer):
 
     class Meta:
         model = Element
-        fields = SimpleElementSerializer.Meta.fields + ['roles', 'import_record', 'tags']
+        fields = SimpleElementSerializer.Meta.fields + ['roles', 'import_record', 'tags', 'appointments']
 
 class ElementPermissionSerializer(SimpleElementSerializer):
     users_with_permissions = serializers.SerializerMethodField('get_list_of_users')

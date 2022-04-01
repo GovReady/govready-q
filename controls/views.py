@@ -17,6 +17,7 @@ import trestle.oscal.ssp as trestlessp
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
@@ -1266,11 +1267,62 @@ def new_element(request):
             form.save()
             element = form.instance
             element.assign_owner_permissions(request.user)
+
+            getRolePOC = Role.objects.get(role_id='poc')
+            print('Create a new party!')
+            poc_party = Party.objects.create(
+                uuid = uuid.uuid4(),
+                party_type = 'POC',
+                name = request.user.name,
+                short_name = request.user.username,
+                email = request.user.email,
+                phone_number = '555-555-5555',
+                user = request.user,
+            )
+            # poc_party = Party.objects.first()
+            poc_party_example1 = Party.objects.create(
+                uuid = uuid.uuid4(),
+                party_type = 'POC',
+                name = 'example',
+                short_name = 'exa',
+                email = 'example@email.com',
+                phone_number = '111-111-1111',
+            )
+            poc_party_example2 = Party.objects.create(
+                uuid = uuid.uuid4(),
+                party_type = 'POC',
+                name = 'doggo',
+                short_name = 'dog',
+                email = 'doggo@dog.com',
+                phone_number = '999-999-9999',
+            )
+            getAppointment = Appointment.objects.create(
+                role=getRolePOC, 
+                party=poc_party, 
+                model_name='element',
+                comment='Appointing creator of this component as Point of Contact'
+            )
+            getAppointment1 = Appointment.objects.create(
+                role=getRolePOC, 
+                party=poc_party_example1, 
+                model_name='element',
+                comment='Appointing creator of this component as Point of Contact'
+            )
+            getAppointment2 = Appointment.objects.create(
+                role=getRolePOC, 
+                party=poc_party_example2, 
+                model_name='element',
+                comment='Appointing creator of this component as Point of Contact'
+            )
+            element.add_appointments([getAppointment.id, getAppointment1.id, getAppointment2.id])
+            # Appointment(role=poc_role, party=poc_party, model_name='element', comment='Appointing creator of this component as Point of Contact')
+            # import ipdb; ipdb.set_trace()
             logger.info(
                 event="new_element with user as owner",
                 object={"object": "element", "id": element.id, "name":element.name},
                 user={"id": request.user.id, "username": request.user.username}
             )
+            
             return redirect('component_library_component', element_id=element.id)
     else:
         form = ElementForm()
@@ -1280,12 +1332,47 @@ def new_element(request):
     })
 
 @login_required
+def edit_access_management(request):
+    """Form to edit a system element (aka component)'s access management"""
+    if request.method == 'PUT':
+        form = ElementForm(request.PUT)
+        if form.is_valid():
+            form.save()
+            element = form.instance
+            # element.assign_owner_permissions(request.user)
+
+            
+            print('EDITTING ACCESS MANAGEMENT!\n')
+            # poc_role = Role(role_id="poc", title="Point of Contact", short_name="PoC", description="Contact for request assistance")
+            # poc_party = Party(uuid=str(uuid4()), party_type='poc', name='Point of Contact', short_name='poc', user=request.user)
+            # poc_appointment = Appointment(role=poc_role, party=poc_party, model_name='element', comment='Appointing creator of this component as Point of Contact')
+            # poc_role.save()
+            # poc_party.save()
+            # poc_appointment.save()
+            # import ipdb; ipdb.set_trace()
+            
+            # print('poc id: ', poc_role.id)
+            # logger.info(
+            #     event="new_element with user as owner",
+            #     object={"object": "element", "id": element.id, "name":element.name},
+            #     user={"id": request.user.id, "username": request.user.username}
+            # )
+            
+            return redirect('component_library_component', element_id=element.id)
+    else:
+        form = ElementForm()
+
+    return render(request, 'components/component_library_component.html', {
+        'form': form,
+    })
+
+@login_required
 def component_library_component(request, element_id):
     """Display library component's element detail view"""
 
     # Retrieve element
     element = Element.objects.get(id=element_id)
-    poc_role = Role(role_id="poc", title="Point of Contact", short_name="PoC", description="Contact for request assistance" )
+    # poc_role = Role(role_id="poc", title="Point of Contact", short_name="PoC", description="Contact for request assistance" )
     # Check permissions
     if element.private == True and 'view_element' not in get_user_perms(request.user, element):
         logger.warning(
@@ -1299,13 +1386,69 @@ def component_library_component(request, element_id):
     smt_query = request.GET.get('search')
     usersWithPermission = get_users_with_perms(element, attach_perms=True)
     listUsers = []
+    
+    
     for user in usersWithPermission:
         listUsers.append(user.username)
+
+    listOfContacts = []
+    poc_users = element.appointments.filter(role__role_id='poc', party__party_type='POC')
+
+
+    for poc in poc_users:
+        print(type(poc.party))
+        print('Recreating poc objects')
+        user = {
+            "uuid":poc.party.uuid,
+            "party_type":poc.party.party_type,
+            "name":poc.party.name,
+            "short_name":poc.party.short_name,
+            "email":poc.party.email,
+            "phone_number":poc.party.phone_number,
+        }
+        listOfContacts.append(user)
+
+    get_all_parties = element.appointments.all()
+
+
+    # import ipdb; ipdb.set_trace()
+
+    contacts = []
+    for poc in get_all_parties:
+        contacts.append(poc.party)
+
+    # contacts = list(poc_users)
+    # import ipdb; ipdb.set_trace()
+    con = list(contacts)
+
+    
+    
 
     @register.filter
     def get_item(dictionary, key):
         return dictionary.get(key)
     
+    # getPartyPOC = Party.objects.get(name='Point of Contact')
+    # getRolePOC = Role.objects.get(role_id='poc')
+    # getAppointment = Appointment.objects.get(party=getPartyPOC, role=getRolePOC)
+    # getAppointment.user = request.user
+    # getAppointment.save()
+    # element.add_appointments([getAppointment.id])
+
+    
+    # Appointment.objects.filter(party__name='greg')
+
+    # poc_user = element.appointments.get(id=getAppointment.id).party.user
+    Statement.objects.create(
+        sid = "sf-2",
+        sid_class = "PREQ",
+        body = "This is a test statement.2",
+        statement_type = "component_approval_requirement",
+        producer_element = element
+    )
+    # import ipdb; ipdb.set_trace()
+    # a = Appointment(role=poc_role, party=poc_party, model_name='element', comment='Appointing creator of this component as Point of Contact')
+    prerequisitesText = element.statements_produced.filter(statement_type="component_approval_requirement")
     is_owner = element.is_owner(request.user)
     
     # Retrieve systems consuming element
@@ -1330,6 +1473,8 @@ def component_library_component(request, element_id):
             "is_owner": is_owner,
             "can_edit": hasPermissionToEdit,
             "users_with_permissions": usersWithPermission,
+            "prereq": prerequisitesText.first().body,
+            "contacts": serializers.serialize('json', contacts),
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }

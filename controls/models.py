@@ -277,7 +277,7 @@ class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin):
     component_state = models.CharField(default="operational", max_length=50, help_text="OSCAL Component State.", unique=False, blank=True, null=True, choices=ComponentStateEnum.choices())
     private = models.BooleanField(blank=False, null=False, default=True, help_text="Component is private.")
     require_approval = models.BooleanField(blank=False, null=False, default=False, help_text="Component requires approval to use.")
-    
+    # prequisites = models.TextField(unique=False, blank=True, null=True, help_text="Prequisites for the Element.")
 
     # Notes
     # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)
