@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from api.base.views.base import SerializerClasses
 from api.base.views.viewsets import ReadOnlyViewSet, ReadWriteViewSet
 from api.controls.serializers.element import DetailedElementSerializer, SimpleElementSerializer, \
-    WriteElementTagsSerializer, ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer
+    WriteElementTagsSerializer, ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer, WriteElementAppointPartySerializer, ElementPartySerializer
 from controls.models import Element
 from siteapp.models import User
 
@@ -12,13 +12,39 @@ class ElementViewSet(ReadOnlyViewSet):
     queryset = Element.objects.all()
     serializer_classes = SerializerClasses(retrieve=DetailedElementSerializer,
                                            list=SimpleElementSerializer,
-                                           tags=WriteElementTagsSerializer)
+                                           tags=WriteElementTagsSerializer,
+                                           retrieveParties=ElementPartySerializer,
+                                           appointments=WriteElementAppointPartySerializer,
+                                           )
 
     @action(detail=True, url_path="tags", methods=["PUT"])
     def tags(self, request, **kwargs):
         element, validated_data = self.validate_serializer_and_get_object(request)
         element.tags.clear()
         element.tags.add(*validated_data['tags'])
+        element.save()
+
+        serializer_class = self.get_serializer_class('retrieve')
+        serializer = self.get_serializer(serializer_class, element)
+        return Response(serializer.data)
+
+    @action(detail=True, url_path="retrieveParties", methods=["GET"])
+    def retrieveParties(self, request, **kwargs):
+        element, validated_data = self.validate_serializer_and_get_object(request)
+        element.save()
+        
+        # import ipdb; ipdb.set_trace()
+        serializer_class = self.get_serializer_class('retrieve')
+        serializer = self.get_serializer(serializer_class, element)
+        return Response(serializer.data)
+    
+    @action(detail=True, url_path="appointments", methods=["PUT"])
+    def appointments(self, request, **kwargs):
+        element, validated_data = self.validate_serializer_and_get_object(request)
+
+        for key, value in validated_data.items():
+            element.add_appointments(value)
+
         element.save()
 
         serializer_class = self.get_serializer_class('retrieve')

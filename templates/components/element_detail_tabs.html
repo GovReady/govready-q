@@ -372,24 +372,8 @@
             <span>approval/whitelisting of inheriting systems.</span>
         </div>
 
-        {% comment %} <div class="component-approval-state">
-          <h3>Set component approval state:</h3>
-          <span>&emsp;Require Approval/Whitelist</span>
-        </div>
-        <div class="component-poc">
-          <h3>Component Point of Contact Information:</h3>
-          <span>Name: </span>
-          <span>Email: </span>
-          <span>Phone: </span>
-        </div>
-        <br/>
-        <div class="component-approval-state">
-          
-          <span>Textbox</span>
-        </div>
-        <button>SAVE</button> {% endcomment %}
-        <form role="form" method="PUT">
-          <div class="required-approval">
+        <form role="form" method="POST">
+          <div class="div-require-approval">
             <label for="required-approval-checkbox">Require approval/whitelist</label>
             <input type="checkbox" id="required_approval_checkbox" checked><br>
           </div>
@@ -400,7 +384,7 @@
             <label for="component_approval_prerequisite">Approval/Whitelist prerequisite</label>
             <textarea class="form-control" id="component_approval_prerequisite" rows="3"></textarea>
           </div>
-          <button type="submit" class="btn btn-default">Submit</button>  
+          <button type="submit" id="access-submit-btn" class="btn btn-default">Submit</button>  
         </form>
       </div>
 
@@ -607,13 +591,39 @@
         }
 
         function edit_access_management(){
-          console.log('Access Management!!@!@ SERGIO FALCON')
-          console.log('contacts: ', {{contacts | safe }})
-          document.getElementById("required_approval_checkbox").checked = false;
-          //document.getElementById("component_poc_name").value = "{{poc_users.party.name}}";
-          //document.getElementById("component_poc_email").value = "{{poc_users.party.email}}";
-          //document.getElementById("component_poc_phone").value = "{{poc_users.party.phone}}";
+          console.log('new javascript script')
+          let require_approvalValue = false;
+          if(`{{element.require_approval}}` === "False"){
+            require_approvalValue = false;
+          } else {
+            require_approvalValue = true;
+          }
+
+          document.getElementById("required_approval_checkbox").checked = require_approvalValue;
           document.getElementById("component_approval_prerequisite").value = "{{prereq}}";
+
+          $('#access-submit-btn').on('click', (e) => {
+            e.preventDefault();        
+            ajax_with_indicator({
+              url: '{% url "edit_element_access_management" element.id %}',
+              method: "POST",
+              data: {
+                require_approval: document.getElementById("required_approval_checkbox").checked, 
+                prereq: document.getElementById("component_approval_prerequisite").value
+              },
+              keep_indicator_forever: true,
+              success: function(res) {
+                if(res["status"]=="ok"){
+                  //hide_edit_component_modal();
+                  window.location.reload();
+                }
+                if(res["status"]=="err"){
+                  //show_edit_component_modal_error(res["message"])
+                  console.log('FAILED FAILED!!')
+                }
+              }
+            });
+          });
         }
 
         function show_user(user){

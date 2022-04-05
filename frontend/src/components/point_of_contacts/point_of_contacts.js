@@ -57,21 +57,23 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
   const [currentParty, setCurrentParty] = useState({});
   const editToolTip = (<Tooltip placement="top" id='tooltip-edit'> Edit POC</Tooltip>)
 
-    //   const endpoint = (querystrings) => {
-    //     return axios.get(`/api/v2/users/`, { params: querystrings });
-    //   };
+  const [example, setExample] = useState([]);
+    const endpoint = (querystrings) => {
+      return axios.get(`/api/v2/users/`, { params: querystrings });
+    };
 
     useEffect(() => {
         console.log('SETTING INITIAL PARTIES')
-        setParties(getParties(poc_users));
+        // setParties(getParties(poc_users));
         // axios(`/api/v2/users/`).then(response => {
         //     setUsersList(response.data.data);
         // });
-        // axios(`/api/v2/element_permissions/${elementId}/`).then(response => {
-        //     setPermList(response.data);
-        // });
+        axios(`/api/v2/elements/${elementId}/`).then(response => {
+          setParties(response.data.parties);
+        });
     }, [])
 
+    console.log('example: ', example);
     //   useEffect(() => {
     //     if(usersList.length > 0){
     //         setParties(getParties(permList));
@@ -217,6 +219,32 @@ const [columns, setColumns] = useState([
         editable: false,
         valueGetter: (params) => params.row.phone_number,
     },
+    // {
+    //   field: 'role',
+    //   headerName: 'Point of Contact',
+    //   width: 300,
+    //   editable: false,
+    //   valueGetter: (params) => params.row.phone_number,
+    // },
+    {
+      field: 'role_id',
+      headerName: 'Point of Contact',
+      width: 100,
+      editable: false,
+      renderCell: (params) => {
+          return (
+            <div
+              style={{ width: "100%" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+              }}
+            >
+              {params.row.role_id === 'poc' ? <Glyphicon glyph="ok" style={{ color: green[700] }} /> : <Glyphicon glyph="remove" style={{ color: 'rgb(245,48,48,1)' }} />}
+            </div>
+          );
+        },
+    },
     {
       field: 'edit',
       headerName: 'Edit',
@@ -247,7 +275,7 @@ const [columns, setColumns] = useState([
     },
   ]);
   
-  // console.log('parties: ', parties)
+  console.log('parties: ', parties)
   return (
     <div style={{ maxHeight: '1000px', width: '100%' }}>
       <Grid className="poc-data-grid" sx={{ minHeight: '400px' }}>

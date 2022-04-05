@@ -90,6 +90,11 @@ class ElementEditForm(ModelForm):
         model = Element
         fields = ['id', 'name', 'description', 'private', 'require_approval']
 
+class ElementEditAccessManagementForm(ModelForm):
+
+    class Meta:
+        model = Element
+        fields = ['id', 'require_approval']
 class ImportOSCALComponentForm(forms.Form):
 
     file = forms.FileField(label="Select OSCAL file (.json)",

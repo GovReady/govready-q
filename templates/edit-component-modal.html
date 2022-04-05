@@ -5,7 +5,7 @@
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h4 class="modal-title" id="invitation_modal_title">Edit Component</h4>
         </div>
-        <form role="form" method="POST">
+        <form role="form" method="POST">{% csrf_token %}
            <div class="modal-body">
             <div class="form-group" data-children-count="1">
                 <label class="control-label" for="name-input">Name</label>
@@ -36,14 +36,14 @@
                 <input
                   type="checkbox" 
                   aria-label="require_approval" 
-                  name="require_approval" 
-                  placeholder="" 
+                  name="require_approval"
+                  placeholder=""
                   title="Mark require approval" 
-                  required="" 
+                  required=""
                   id="require-approval-input" 
                   checked
                 />
-            </div>
+              </div>
             {% endif %}
             <div class="alert alert-danger" role="alert" id="error-alert">
             </div>

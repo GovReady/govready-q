@@ -4,8 +4,9 @@ from rest_framework.relations import PrimaryKeyRelatedField
 from api.base.serializers.types import ReadOnlySerializer, WriteOnlySerializer
 from api.controls.serializers.import_record import SimpleImportRecordSerializer
 from api.siteapp.serializers.tags import SimpleTagSerializer
+from api.siteapp.serializers.appointment import SimpleAppointmentSerializer
 from controls.models import Element, ElementRole, ElementControl
-from siteapp.models import Tag
+from siteapp.models import Appointment, Role, Party, Tag
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
@@ -26,10 +27,32 @@ class DetailedElementSerializer(SimpleElementSerializer):
     import_record = SimpleImportRecordSerializer()
     roles = SimpleElementRoleSerializer(many=True)
     tags = SimpleTagSerializer(many=True)
+    appointments = SimpleAppointmentSerializer(many=True)
+    # parties = serializers.SerializerMethodField()
+    parties = serializers.SerializerMethodField('get_list_of_users')
 
+    def get_list_of_users(self, element):
+        list_of_parties = []
+        for appointment in element.appointments.all():
+            # import ipdb; ipdb.set_trace()
+            party = {
+                "appointment_id": appointment.id,
+                "id": appointment.party.id,
+                "uuid":appointment.party.uuid,
+                "party_type":appointment.party.party_type,
+                "name":appointment.party.name,
+                "short_name":appointment.party.short_name,
+                "email":appointment.party.email,
+                "phone_number":appointment.party.phone_number,
+                "role_id": appointment.role.role_id,
+                "role_title": appointment.role.title,
+                "role_name": appointment.role.short_name,
+            }
+            list_of_parties.append(party)
+        return list_of_parties
     class Meta:
         model = Element
-        fields = SimpleElementSerializer.Meta.fields + ['roles', 'import_record', 'tags', 'appointments']
+        fields = SimpleElementSerializer.Meta.fields + ['roles', 'import_record', 'tags', 'appointments', 'parties']
 
 class ElementPermissionSerializer(SimpleElementSerializer):
     users_with_permissions = serializers.SerializerMethodField('get_list_of_users')
@@ -75,3 +98,41 @@ class WriteElementTagsSerializer(WriteOnlySerializer):
     class Meta:
         model = Element
         fields = ['tag_ids']
+
+class WriteElementAppointPartySerializer(WriteOnlySerializer):
+    appointment_ids = PrimaryKeyRelatedField(source='appointment', many=True, queryset=Appointment.objects)
+    # appointment_id = serializers.IntegerField(read_only=True)
+    # id = serializers.IntegerField(read_only=True)
+    class Meta:
+        model = Element
+        fields = ['appointment_ids']
+
+class ElementPartySerializer(ReadOnlySerializer):
+    # tag_ids = PrimaryKeyRelatedField(source='tags', many=True, queryset=Tag.objects)
+    parties = serializers.SerializerMethodField('get_list_of_users')
+
+    def get_list_of_users(self, element):
+        list_of_parties = []
+        for appointment in element.appointments.all():
+            # import ipdb; ipdb.set_trace()
+            party = {
+                "id": appointment.party.id,
+                "uuid":appointment.party.uuid,
+                "party_type":appointment.party.party_type,
+                "name":appointment.party.name,
+                "short_name":appointment.party.short_name,
+                "email":appointment.party.email,
+                "phone_number":appointment.party.phone_number,
+                "role_id": appointment.role.role_id,
+                "role_title": appointment.role.title,
+                "role_name": appointment.role.short_name,
+            }
+            list_of_parties.append(party)
+        return list_of_parties
+    class Meta:
+        model = Element
+        fields = ['parties']
+
+# class ElementAppointNewPartySerializer(WriteOnlySerializer):
+
+    # element.add_appointments([getAppointment.id, getAppointment1.id, getAppointment2.id])
