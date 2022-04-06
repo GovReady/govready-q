@@ -31,25 +31,52 @@ class DetailedElementSerializer(SimpleElementSerializer):
     # parties = serializers.SerializerMethodField()
     parties = serializers.SerializerMethodField('get_list_of_users')
 
+    
+
     def get_list_of_users(self, element):
-        list_of_parties = []
+        parties = []
+        counter = 1;
+        def partyInList(parties_list, party_id):
+            for party in parties_list:
+                if ('party_id', party_id) in party.items():
+                    return True
+            return False
+
+        def getParty(parties_list, party_id):
+            for party in parties_list:
+                if ('party_id', party_id) in party.items():
+                    return parties_list.index(party)
+            
         for appointment in element.appointments.all():
-            # import ipdb; ipdb.set_trace()
-            party = {
-                "appointment_id": appointment.id,
-                "id": appointment.party.id,
-                "uuid":appointment.party.uuid,
-                "party_type":appointment.party.party_type,
-                "name":appointment.party.name,
-                "short_name":appointment.party.short_name,
-                "email":appointment.party.email,
-                "phone_number":appointment.party.phone_number,
-                "role_id": appointment.role.role_id,
-                "role_title": appointment.role.title,
-                "role_name": appointment.role.short_name,
-            }
-            list_of_parties.append(party)
-        return list_of_parties
+            if(partyInList(parties, appointment.party.id)):
+                par = getParty(parties, appointment.party.id)
+                newRole = {
+                    "appointment_id": appointment.id,
+                    "role_id": appointment.role.role_id,
+                    "role_title": appointment.role.title,
+                    "role_name": appointment.role.short_name,
+                }
+                parties[par]['roles'].append(newRole)
+            else:
+                party = {
+                    "id": counter,
+                    "party_id": appointment.party.id,
+                    "uuid":appointment.party.uuid,
+                    "party_type":appointment.party.party_type,
+                    "name":appointment.party.name,
+                    "short_name":appointment.party.short_name,
+                    "email":appointment.party.email,
+                    "phone_number":appointment.party.phone_number,
+                    "roles": [{
+                        "appointment_id": appointment.id,
+                        "role_id": appointment.role.role_id,
+                        "role_title": appointment.role.title,
+                        "role_name": appointment.role.short_name,
+                    }]
+                }
+                counter += 1
+                parties.append(party)
+        return parties
     class Meta:
         model = Element
         fields = SimpleElementSerializer.Meta.fields + ['roles', 'import_record', 'tags', 'appointments', 'parties']
@@ -101,11 +128,15 @@ class WriteElementTagsSerializer(WriteOnlySerializer):
 
 class WriteElementAppointPartySerializer(WriteOnlySerializer):
     appointment_ids = PrimaryKeyRelatedField(source='appointment', many=True, queryset=Appointment.objects)
-    # appointment_id = serializers.IntegerField(read_only=True)
-    # id = serializers.IntegerField(read_only=True)
     class Meta:
         model = Element
         fields = ['appointment_ids']
+
+class DeletePartyAppointmentsFromElementSerializer(WriteOnlySerializer):
+    party_id_to_remove = serializers.IntegerField(max_value=None, min_value=None)
+    class Meta:
+        model = Element
+        fields = ['party_id_to_remove']
 
 class ElementPartySerializer(ReadOnlySerializer):
     # tag_ids = PrimaryKeyRelatedField(source='tags', many=True, queryset=Tag.objects)
@@ -116,7 +147,8 @@ class ElementPartySerializer(ReadOnlySerializer):
         for appointment in element.appointments.all():
             # import ipdb; ipdb.set_trace()
             party = {
-                "id": appointment.party.id,
+                "id": appointment.id,
+                "party_id": appointment.party.id,
                 "uuid":appointment.party.uuid,
                 "party_type":appointment.party.party_type,
                 "name":appointment.party.name,

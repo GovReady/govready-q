@@ -6,7 +6,9 @@ import moment from 'moment';
 import { DataGrid } from '@mui/x-data-grid';
 import { v4 as uuid_v4 } from "uuid";
 import { 
+  Chip,
   Grid,
+  Stack,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -51,10 +53,12 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
   const [usersList, setUsersList] = useState([]);
   const [permList, setPermList] = useState([]);
   const [parties, setParties] = useState([]);
-  const [open, setOpen] = useState(false);
+  const [openPartyModal, setOpenPartyModal] = useState(false);
+  const [openRoleModal, setOpenRoleModal] = useState(false);
   const [records, setRecords] = useState(0);
   const [sortby, setSortBy] = useState(["name", "asc"]);
   const [currentParty, setCurrentParty] = useState({});
+  const [removeAppointments, setRemovedAppointments] = useState([]);
   const editToolTip = (<Tooltip placement="top" id='tooltip-edit'> Edit POC</Tooltip>)
 
   const [example, setExample] = useState([]);
@@ -63,47 +67,17 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
     };
 
     useEffect(() => {
-        console.log('SETTING INITIAL PARTIES')
-        // setParties(getParties(poc_users));
-        // axios(`/api/v2/users/`).then(response => {
-        //     setUsersList(response.data.data);
-        // });
         axios(`/api/v2/elements/${elementId}/`).then(response => {
+          console.log('response.data: ', response.data );
           setParties(response.data.parties);
         });
     }, [])
-
-    console.log('example: ', example);
-    //   useEffect(() => {
-    //     if(usersList.length > 0){
-    //         setParties(getParties(permList));
-    //     }
-    //   }, [permList])
 
       const isObjectEmpty = (obj) => {
         return Object.keys(obj).length === 0;
       }
 
-    const getParties = (data) => {
-        let list = [];
-        /* Iterating through the poc_users object and creating a new object with all fields of party */
-        data.map((party) => {
-            const newParty = {
-                id: party.fields.uuid,
-                created: party.fields.created,
-                email: party.fields.email,
-                mobile_phone: party.fields.mobile_phone,
-                name: party.fields.name,
-                party_type: party.fields.party_type,
-                phone_number: party.fields.phone_number,
-                short_name: party.fields.short_name,
-                updated: party.fields.updated,
-                user: party.fields.user,
-            }
-            list.push(newParty);
-        });
-        return list;      
-    }
+
 //   const handleAddingNewUserPermissions = async (data) => {
 //     const permissible = { users_with_permissions: data }
 //     const response = await axios.put(`/api/v2/element_permissions/${elementId}/assign_role/`, permissible);
@@ -116,51 +90,88 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
 
   const handleClickOpen = (row) => {
     setCurrentParty(row);
-    dispatch(show());
+    // dispatch(show());
+    setOpenPartyModal(true);
   }
-  
+  const handleClickOpenRoles = (row) => {
+    setCurrentParty(row);
+    // dispatch(show());
+    setOpenRoleModal(true);
+  }
   const handleClose = () => {
-    dispatch(hide());
+    // dispatch(hide());
+    setOpenPartyModal(false);
+    setOpenRoleModal(false);
   }
   
   const handleSubmit = async (event) => {
-    // const updatedUser = {
-    //   id: currentUser.user.id,
-    //   user: currentUser.user,
-    //   view: currentUser.view,
-    //   change: currentUser.change,
-    //   add: currentUser.add,
-    //   delete: currentUser.delete,
-    // }
+    const updatedParty = {
+      party_type: currentParty.party_type,
+      name: currentParty.name,
+      short_name: currentParty.short_name,
+      email: currentParty.email,
+      phone_number: currentParty.phone_number,
+      mobile_phone: currentParty.mobile_phone
+    }
     // const permissible = { users_with_permissions: updatedUser }
-    // const response = await axios.put(`/api/v2/element_permissions/${elementId}/assign_role/`, permissible);
-    // if(response.status === 200){    
-    //   // window.location.reload();
-    // } else {
-    //   console.error("Something went wrong")
-    // }
-    console.log('HANDLE SUBMIT!')
+    const response = await axios.put(`/api/v2/parties/${currentParty.party_id}/`, updatedParty);
+    if(response.status === 200){    
+      // window.location.reload();
+      console.log('UPDATED CORRECTLY!')
+    } else {
+      console.error("Something went wrong")
+    }
   }
 
-  const handleSave = (key, event) => {
-    console.log('handleSave!')
-    // const updatedCurrentUser = {...currentUser};
-    // updatedCurrentUser[key] = !currentUser[key];
-    // setCurrentUser(updatedCurrentUser);
+  const handleSave = (key, value) => {
+    console.log('handleSave: ', key, value)
+    const updatedCurrentParty = {...currentParty};
+    updatedCurrentParty[key] = value;
+    console.log('updatedCurrentParty: ', updatedCurrentParty);
+    setCurrentParty(updatedCurrentParty);
+  }
+
+  const removeRoleFromCurrentParty = (index) => {
+    const updatedCurrentParty = {...currentParty};
+    const removedApt = updatedCurrentParty.roles.splice(index, 1);
+    setRemovedAppointments([...removeAppointments, removedApt]);
+    setCurrentParty(updatedCurrentParty);
+  }
+
+  
+  const handleRoleSubmit = async (event) => {
+    // event.preventDefault();
+    const appointmentsList = [];
+    removeAppointments.forEach(role => {
+      appointmentsList.push(role[0].appointment_id);
+    });
+
+    const appointments = {
+      "appointment_ids": appointmentsList
+    };
+
+    const response = await axios.put(`/api/v2/elements/${elementId}/removeAppointments/`, appointments);
+    if(response.status === 200){    
+      window.location.reload();
+      handleClose();
+    } else {
+      console.error("Something went wrong")
+    }
   }
 
   const handleRemoveParty = async (event) => {
     console.log('handleRemoveParty!')
-    // const remove_user = { user_to_remove: currentUser.user }
-    // const response = await axios.put(`/api/v2/element_permissions/${elementId}/remove_user/`, remove_user);
-    // if(response.status === 200){    
-    //   window.location.reload();
-    //   handleClose();
-    // } else {
-    //   console.error("Something went wrong")
-    // }
+    const remove_party = { 
+      "party_id_to_remove": currentParty.party_id 
+    }
+    const response = await axios.put(`/api/v2/elements/${elementId}/removeAppointmentsByParty/`, remove_party);
+    if(response.status === 200){    
+      window.location.reload();
+      handleClose();
+    } else {
+      console.error("Something went wrong")
+    }
   }
-
 const [columns, setColumns] = useState([
     {
         field: 'name',
@@ -197,6 +208,7 @@ const [columns, setColumns] = useState([
       },
   ]);
 
+  
   const [columnsForEditor, setColumnsForEditor] = useState([
     {
       field: 'name',
@@ -219,35 +231,9 @@ const [columns, setColumns] = useState([
         editable: false,
         valueGetter: (params) => params.row.phone_number,
     },
-    // {
-    //   field: 'role',
-    //   headerName: 'Point of Contact',
-    //   width: 300,
-    //   editable: false,
-    //   valueGetter: (params) => params.row.phone_number,
-    // },
     {
-      field: 'role_id',
-      headerName: 'Point of Contact',
-      width: 100,
-      editable: false,
-      renderCell: (params) => {
-          return (
-            <div
-              style={{ width: "100%" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-              }}
-            >
-              {params.row.role_id === 'poc' ? <Glyphicon glyph="ok" style={{ color: green[700] }} /> : <Glyphicon glyph="remove" style={{ color: 'rgb(245,48,48,1)' }} />}
-            </div>
-          );
-        },
-    },
-    {
-      field: 'edit',
-      headerName: 'Edit',
+      field: 'edit_party',
+      headerName: 'Edit Party',
       headerAlign: 'right',
       width: 150,
       editable: false,
@@ -273,9 +259,54 @@ const [columns, setColumns] = useState([
         );
       },
     },
+    {
+      field: 'roles',
+      headerName: 'Roles',
+      width: 200,
+      editable: false,
+      renderCell: (params) => (
+        <div style={{ width: "100%" }}>
+          {params.row.roles.map((role, index) => (
+            <div key={index}>
+              <span>{role.role_title}</span>
+              <br/>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      field: 'edit_roles',
+      headerName: 'Edit Roles',
+      headerAlign: 'right',
+      width: 150,
+      editable: false,
+      renderCell: (params) => {
+        return (
+          <div
+            style={{ width: "100%", textAlign: 'end' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+          >
+            <div onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              handleClickOpenRoles(params.row)
+            }}>
+              <OverlayTrigger placement="right" overlay={editToolTip}>
+                <Glyphicon glyph="pencil" style={{ color: '#3d3d3d' }} />
+              </OverlayTrigger>
+            </div>
+          </div>
+        );
+      },
+    },
   ]);
   
   console.log('parties: ', parties)
+  console.log('currentParty: ', currentParty)
   return (
     <div style={{ maxHeight: '1000px', width: '100%' }}>
       <Grid className="poc-data-grid" sx={{ minHeight: '400px' }}>
@@ -305,6 +336,8 @@ const [columns, setColumns] = useState([
       </Grid>
       {!isObjectEmpty(currentParty) && <ReactModal
           title={`User Permissions`}
+          show={openPartyModal}
+          hide={() => setOpenPartyModal(false)}
           header={
             <Form horizontal>
               <>
@@ -329,7 +362,7 @@ const [columns, setColumns] = useState([
                         type="text"
                         placeholder={'Enter text'} 
                         value={currentParty.name} 
-                        onChange={(event) => console.log(event.target.value)}
+                        onChange={(event) => handleSave('name', event.target.value)}
                     />
                     </Col>
                     <Col componentClass={ControlLabel} sm={2}>
@@ -340,7 +373,7 @@ const [columns, setColumns] = useState([
                         type="text"
                         placeholder={'Enter text'} 
                         value={currentParty.email} 
-                        onChange={(event) => console.log(event.target.value)}
+                        onChange={(event) => handleSave('email', event.target.value)}
                     />
                     </Col>
                     <Col componentClass={ControlLabel} sm={2}>
@@ -351,10 +384,66 @@ const [columns, setColumns] = useState([
                         type="text"
                         placeholder={'Enter text'} 
                         value={currentParty.phone_number} 
-                        onChange={(event) => console.log(event.target.value)}
+                        onChange={(event) => handleSave('phone_number', event.target.value)}
                     />
                     </Col>
                 </Row>
+              </FormGroup>
+              <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
+                  <Button type="button" bsStyle="danger" onClick={handleRemoveParty} style={{float: 'left'}}>Remove Party</Button>
+                  <Button variant="secondary" onClick={handleClose} style={{marginRight: '2rem'}}>Close</Button>
+                  <Button type="submit" bsStyle="success">Save Changes</Button>
+              </Modal.Footer>
+              </Form>
+          }
+        />
+      }
+      {!isObjectEmpty(currentParty) && <ReactModal
+          title={`Edit Party Roles`}
+          show={openRoleModal}
+          hide={() => setOpenRoleModal(false)}
+          header={
+            <Form horizontal>
+              <>
+                <FormGroup controlId={`form-title`}>
+                  <Col sm={12}>
+                    <h3>Edit {currentParty.name} roles</h3>
+                  </Col>
+                </FormGroup>
+              </>
+            </Form>
+          }
+          body={
+            <Form horizontal onSubmit={handleRoleSubmit}>
+              <FormGroup>
+                {currentParty.roles.map((role, index) => (
+                  <Row key={index}>
+                    <Col componentClass={ControlLabel} sm={2}>
+                      {role.role_title}
+                    </Col>
+                    <Col sm={10}>
+                      {/* <FormControl
+                        type="text"
+                        placeholder={'Enter text'}
+                        value={role.role_title}
+                        onChange={(event) => handleSaveRole(index, 'role_title', event.target.value)}
+                      /> */}
+                      
+                      {/** Delete button to remove role by index */}
+                      <div onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        // handleClickOpenRoles(params.row)
+                        removeRoleFromCurrentParty(index)
+                      }}>
+                        <OverlayTrigger placement="right" overlay={editToolTip}>
+                          <Glyphicon glyph="pencil" style={{ color: '#3d3d3d' }} />
+                        </OverlayTrigger>
+                      </div>
+                    </Col>
+                  </Row>
+                ))
+                }
               </FormGroup>
               <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
                   <Button type="button" bsStyle="danger" onClick={handleRemoveParty} style={{float: 'left'}}>Remove Party</Button>

@@ -1459,6 +1459,8 @@ def component_library_component(request, element_id):
         "is_owner": is_owner,
         "can_edit": hasPermissionToEdit,
         "users_with_permissions": usersWithPermission,
+        "prereq": prerequisitesText.first().body,
+        "contacts": serializers.serialize('json', contacts),
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,

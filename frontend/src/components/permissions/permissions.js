@@ -57,6 +57,7 @@ export const Permissions = ({ elementId, isOwner }) => {
   const [currentUser, setCurrentUser] = useState({});
   const editToolTip = (<Tooltip placement="top" id='tooltip-edit'> Edit User Permissions
   </Tooltip>)
+  const showModal = useSelector(state => state.modal.value);
 
   const endpoint = (querystrings) => {
     return axios.get(`/api/v2/users/`, { params: querystrings });
@@ -339,7 +340,7 @@ export const Permissions = ({ elementId, isOwner }) => {
     },
     {
       field: 'edit',
-      headerName: 'Edit',
+      headerName: 'Edit Party',
       headerAlign: 'right',
       width: 150,
       editable: false,
@@ -429,6 +430,8 @@ export const Permissions = ({ elementId, isOwner }) => {
       </Grid>
       {!isObjectEmpty(currentUser) && <ReactModal
           title={`User Permissions`}
+          show={showModal}
+          hide={() => dispatch(hide())}
           header={
             <Form horizontal>
               <>
