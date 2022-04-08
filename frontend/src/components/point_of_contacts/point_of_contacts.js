@@ -24,7 +24,7 @@ import {
   Row,
   Modal
 } from 'react-bootstrap';
-import { AsyncPagination } from "../shared/asyncTypeahead";
+import { AsyncPagination } from "../shared/asyncTypeaheadTwo";
 import { red, green } from '@mui/material/colors';
 import { ReactModal } from '../shared/modal';
 import { hide, show } from '../shared/modalSlice';
@@ -52,41 +52,30 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
   const classes = useStyles();
   const [usersList, setUsersList] = useState([]);
   const [permList, setPermList] = useState([]);
-  const [parties, setParties] = useState([]);
+  const [data, setData] = useState([]);
   const [openPartyModal, setOpenPartyModal] = useState(false);
   const [openRoleModal, setOpenRoleModal] = useState(false);
-  const [records, setRecords] = useState(0);
   const [sortby, setSortBy] = useState(["name", "asc"]);
   const [currentParty, setCurrentParty] = useState({});
+  const [currentOldParty, setCurrentOldParty] = useState({});
   const [removeAppointments, setRemovedAppointments] = useState([]);
+  const [tempRoleToAdd, setTempRoleToAdd] = useState([]);
   const editToolTip = (<Tooltip placement="top" id='tooltip-edit'> Edit POC</Tooltip>)
+  const [newAppointments, setNewAppointments] = useState([]);
+  const endpoint = (querystrings) => {
+    return axios.get(`/api/v2/roles/`, { params: querystrings });
+  };
 
-  const [example, setExample] = useState([]);
-    const endpoint = (querystrings) => {
-      return axios.get(`/api/v2/users/`, { params: querystrings });
-    };
+  useEffect(() => {
+      axios(`/api/v2/elements/${elementId}/`).then(response => {
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@response.data@@@@@@@@@@@@@@@@@@: ', response.data );
+        setData(response.data.parties);
+      });
+  }, [])
 
-    useEffect(() => {
-        axios(`/api/v2/elements/${elementId}/`).then(response => {
-          console.log('response.data: ', response.data );
-          setParties(response.data.parties);
-        });
-    }, [])
-
-      const isObjectEmpty = (obj) => {
-        return Object.keys(obj).length === 0;
-      }
-
-
-//   const handleAddingNewUserPermissions = async (data) => {
-//     const permissible = { users_with_permissions: data }
-//     const response = await axios.put(`/api/v2/element_permissions/${elementId}/assign_role/`, permissible);
-//     if(response.status === 200){    
-//       // window.location.reload();
-//     } else {
-//       console.error("Something went wrong")
-//     }
-//   };
+  const isObjectEmpty = (obj) => {
+    return Object.keys(obj).length === 0;
+  }
 
   const handleClickOpen = (row) => {
     setCurrentParty(row);
@@ -95,6 +84,7 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
   }
   const handleClickOpenRoles = (row) => {
     setCurrentParty(row);
+    setCurrentOldParty(row)
     // dispatch(show());
     setOpenRoleModal(true);
   }
@@ -113,7 +103,7 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
       phone_number: currentParty.phone_number,
       mobile_phone: currentParty.mobile_phone
     }
-    // const permissible = { users_with_permissions: updatedUser }
+    
     const response = await axios.put(`/api/v2/parties/${currentParty.party_id}/`, updatedParty);
     if(response.status === 200){    
       // window.location.reload();
@@ -138,25 +128,166 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
     setCurrentParty(updatedCurrentParty);
   }
 
-  
-  const handleRoleSubmit = async (event) => {
-    // event.preventDefault();
-    const appointmentsList = [];
-    removeAppointments.forEach(role => {
-      appointmentsList.push(role[0].appointment_id);
-    });
+  const addRoleOntoCurrentParty = (selected) => {
+    // TODO: HERE!!
+    /**
+     * 1. Add temporary role to currentParty instance
+     * 2. onSubmit: check all roles, 
+     *    if currentParty has new roles comparatively to oldParty instance, then add those new roles
+     *    else if currentParty doesnt have old roles, then remove those old roles
+     */
 
-    const appointments = {
-      "appointment_ids": appointmentsList
-    };
+    // TODO: FIX WHY ROLE_NAME IS UNDEFINED
+    console.log('selected: ', selected);
+    
+    const translatedRole = {
+      "id": selected[0].id,
+      "role_id": selected[0].role_id,
+      "role_name": selected[0].short_name,
+      "role_title": selected[0].title,
+    }
+    const updatedCurrentParty = {...currentParty};
+    const addRoleId = updatedCurrentParty.roles.push(translatedRole);
+    setTempRoleToAdd([...tempRoleToAdd, addRoleId]);
+    setCurrentParty(updatedCurrentParty);
+  }
 
-    const response = await axios.put(`/api/v2/elements/${elementId}/removeAppointments/`, appointments);
-    if(response.status === 200){    
-      window.location.reload();
-      handleClose();
+  const creatingNewAppointment = async (newAppointment) => {
+    const response = await axios.post(`/api/v2/appointments/`, newAppointment);
+    if(response.status === 201){    
+      console.log('SUCCESSFULLY POSTED NEW APPOINTMENT')
+
+      const oldAppointments = newAppointments.push(response.data.id)
+      setNewAppointments([...newAppointments, oldAppointments]);
+
     } else {
       console.error("Something went wrong")
     }
+  }
+  const handleRoleSubmit = async (event) => {
+    event.preventDefault();
+
+    const addedAppointmentsList = [];
+    const removedAppointmentsList = [];
+    
+    const allCurrentPartyRoleIds = currentParty.roles.map(role => role.id);
+    // const allCurrentPartyAppointments = currentParty.roles.map(role => role.appointment_id);
+    
+    const rolesToAddAndAppoint = currentParty.roles.filter(role => role.appointment_id === undefined);
+
+    removeAppointments.forEach(role => {
+      if(!allCurrentPartyRoleIds.includes(role[0].appointment_id) && role[0].appointment_id !== undefined){
+        removedAppointmentsList.push(role[0].appointment_id);
+      }
+    });
+    console.log('\ttempRoleToAdd: ', tempRoleToAdd)
+    rolesToAddAndAppoint.forEach(role => {
+      addedAppointmentsList.push(role.id);
+    });
+
+    const appointmentsToBeAdded = {
+      "role_ids": {
+        "party_id": currentParty.party_id,
+        "roles": addedAppointmentsList
+      }
+    }
+    const appointmentsToBeRemoved = {
+      "appointment_ids": removedAppointmentsList
+    };
+
+    console.log('\tappointmentsToBeAdded: ', appointmentsToBeAdded)
+    console.log('\tappointmentsToBeRemoved: ', appointmentsToBeRemoved)
+    console.log('\tcurrentParty: ', currentParty)
+    console.log('\tdata: ', data[0])
+
+    const removeResponse = await axios.put(`/api/v2/elements/${elementId}/removeAppointments/`, appointmentsToBeRemoved);
+    if(removeResponse.status === 200){    
+      console.log('APPOINTMENTS FOR REMOVED ROLES ARE REMOVED FROM ELEMENT')
+      // window.location.reload();
+      // handleClose();
+      if(addedAppointmentsList.length > 0){
+        const addResponse = await axios.post(`/api/v2/elements/${elementId}/CreateAndSet/`, appointmentsToBeAdded);
+        if(addResponse.status === 200){
+          console.log("APPOINTED NEW APPOINTMENTS TO ELEMENT!")
+          // debugger;
+          window.location.reload();
+          handleClose();
+        } else {
+          console.error("Something went wrong in creating and appointing new appointments")
+        }
+      } else {
+        window.location.reload();
+        handleClose();
+      }
+    } else {
+      console.error("Something went wrong in removing appointment roles")
+    }
+
+    
+
+    //if role_id is in tempRoleToAdd bbut not in currentParty roles, then add those
+    //if appointment_id for appointments_to_be_removed is not in currentParty roles, then remove those
+
+    // const undefinedCounter = currentParty.roles.filter(role => role.appointment_id === undefined).length;
+    // // debugger;
+    // const creatingAppointments = new Promise((resolve, reject) => {
+    //   currentParty.roles.map((role) => {
+    //     console.log('@@role: ', role);
+    //     if(role.appointment_id === undefined){
+    //       console.log('\t@@role with undefined: ', role);
+    //       const newAppointment = {
+    //         "role": role.id,
+    //         "party": currentParty.party_id,
+    //         "model_name": "element",
+    //         "comment": "assigning role to party",
+    //       }
+    //       // debugger;
+    //       console.log("promise newAppointment: ", newAppointments, undefinedCounter);
+    //       creatingNewAppointment(newAppointment);
+    //       if(newAppointments.length === undefinedCounter){
+    //         console.log('RESOLVED!!!!!!')
+    //         resolve('created');
+    //       }
+    //     }
+    //   });
+    // });
+    // console.log("promise newAppointments: ", newAppointments)
+    // debugger;
+    // let newThen = creatingAppointments.then(
+    //   (value) => {
+    //     console.log(value);
+    //   }, reason => {
+    //     console.log(reason)
+    //   }
+    // );
+    
+    // console.log('newThen: ', newThen);
+
+    
+
+
+    // creatingAppointments.then((value) => {
+      // console.log(value);
+      // expected output: "Success!"
+    // });
+    
+
+    // 
+    // const removeResponse = await axios.put(`/api/v2/elements/${elementId}/removeAppointments/`, appointmentsToBeRemoved);
+    // if(removeResponse.status === 200){    
+    //   window.location.reload();
+    //   handleClose();
+    // } else {
+    //   console.error("Something went wrong")
+    // }
+    // const addResponse = await axios.put(`/api/v2/elements/${elementId}/appointments/`, appointmentsToBeAdded);
+    // if(addResponse.status === 200){    
+    //   // window.location.reload();
+      
+    //   handleClose();
+    // } else {
+    //   console.error("Something went wrong")
+    // }
   }
 
   const handleRemoveParty = async (event) => {
@@ -172,7 +303,7 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
       console.error("Something went wrong")
     }
   }
-const [columns, setColumns] = useState([
+  const [columns, setColumns] = useState([
     {
         field: 'name',
         headerName: 'Name',
@@ -227,7 +358,7 @@ const [columns, setColumns] = useState([
     {
         field: 'phone_number',
         headerName: 'Phone #',
-        width: 300,
+        width: 150,
         editable: false,
         valueGetter: (params) => params.row.phone_number,
     },
@@ -235,7 +366,7 @@ const [columns, setColumns] = useState([
       field: 'edit_party',
       headerName: 'Edit Party',
       headerAlign: 'right',
-      width: 150,
+      width: 50,
       editable: false,
       renderCell: (params) => {
         return (
@@ -279,7 +410,7 @@ const [columns, setColumns] = useState([
       field: 'edit_roles',
       headerName: 'Edit Roles',
       headerAlign: 'right',
-      width: 150,
+      width: 50,
       editable: false,
       renderCell: (params) => {
         return (
@@ -305,8 +436,11 @@ const [columns, setColumns] = useState([
     },
   ]);
   
-  console.log('parties: ', parties)
-  console.log('currentParty: ', currentParty)
+  console.log('data: ', data)
+  // console.log('currentParty: ', currentParty)
+  // console.log('removeAppointments: ', removeAppointments)
+  // console.log('addedAppointments: ', addedAppointments)
+
   return (
     <div style={{ maxHeight: '1000px', width: '100%' }}>
       <Grid className="poc-data-grid" sx={{ minHeight: '400px' }}>
@@ -316,7 +450,7 @@ const [columns, setColumns] = useState([
             className={classes.table}
             autoHeight={true}
             density="compact"
-            rows={parties}
+            rows={data}
             columns={isOwner ? columnsForEditor : columns}
             pageSize={25}
             rowsPerPageOptions={[25]}
@@ -416,6 +550,34 @@ const [columns, setColumns] = useState([
           body={
             <Form horizontal onSubmit={handleRoleSubmit}>
               <FormGroup>
+              <AsyncPagination
+                endpoint={endpoint}
+                order={"title"}
+                onSelect={(selected) => {
+                  console.log("selected: ", selected);
+                  if (selected.length > 0) {
+                    console.log("selected@@@@@")
+                    /* 
+                      Step 1: Create new appointment with chosen role
+                      Step 2: Add appointment to parties instance
+                      Step 3: Post new appointment to backend
+                      Step 4: attach appointment to element component
+                    */
+                    // const newAppointment = {
+                    //   "role": selected[0].id,
+                    //   "party": currentParty.party_id,
+                    //   "model_name": "element",
+                    //   "comment": `Assigning role ${selected[0].title} to ${currentParty.name}`, 
+                    // }
+
+                    addRoleOntoCurrentParty(selected);
+                    // addingNewAppointment(selected, newAppointment);
+                    
+                  }
+                }}
+                excludeIds={currentParty.roles.map((du) => du.id)}
+                defaultSelected 
+            />
                 {currentParty.roles.map((role, index) => (
                   <Row key={index}>
                     <Col componentClass={ControlLabel} sm={2}>
@@ -431,13 +593,13 @@ const [columns, setColumns] = useState([
                       
                       {/** Delete button to remove role by index */}
                       <div onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
+                        // e.stopPropagation();
+                        // e.preventDefault();
                         // handleClickOpenRoles(params.row)
                         removeRoleFromCurrentParty(index)
                       }}>
                         <OverlayTrigger placement="right" overlay={editToolTip}>
-                          <Glyphicon glyph="pencil" style={{ color: '#3d3d3d' }} />
+                          <Glyphicon glyph="trash" style={{ color: '#3d3d3d' }} />
                         </OverlayTrigger>
                       </div>
                     </Col>

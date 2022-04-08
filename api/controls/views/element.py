@@ -4,8 +4,9 @@ from rest_framework.response import Response
 from api.base.views.base import SerializerClasses
 from api.base.views.viewsets import ReadOnlyViewSet, ReadWriteViewSet
 from api.controls.serializers.element import DetailedElementSerializer, SimpleElementSerializer, \
-    WriteElementTagsSerializer, ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer, WriteElementAppointPartySerializer, ElementPartySerializer, DeletePartyAppointmentsFromElementSerializer
+    WriteElementTagsSerializer, ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer, WriteElementAppointPartySerializer, ElementPartySerializer, DeletePartyAppointmentsFromElementSerializer, CreateMultipleAppointmentsFromRoleIds
 from controls.models import Element
+from siteapp.models import Appointment, Party, Role
 from siteapp.models import User
 
 class ElementViewSet(ReadOnlyViewSet):
@@ -17,6 +18,7 @@ class ElementViewSet(ReadOnlyViewSet):
                                            appointments=WriteElementAppointPartySerializer,
                                            removeAppointments=WriteElementAppointPartySerializer,
                                            removeAppointmentsByParty=DeletePartyAppointmentsFromElementSerializer,
+                                           CreateAndSet=CreateMultipleAppointmentsFromRoleIds
                                            )
 
     @action(detail=True, url_path="tags", methods=["PUT"])
@@ -71,6 +73,39 @@ class ElementViewSet(ReadOnlyViewSet):
         for key, value in validated_data.items():
             for party in element.appointments.filter(party_id=value):
                 element.remove_appointments([party.id])
+        element.save()
+
+        serializer_class = self.get_serializer_class('retrieve')
+        serializer = self.get_serializer(serializer_class, element)
+        return Response(serializer.data)
+
+    @action(detail=True, url_path="CreateAndSet", methods=["POST"])
+    def CreateAndSet(self, request, **kwargs):
+        element, validated_data = self.validate_serializer_and_get_object(request)
+        createdAppointments = []
+
+        # expects this object type:
+        # {
+        #   "role_ids": {
+        #    "party_id": 3,
+        #    "roles": [1,2]
+        #    }
+        # }
+        
+        for key, value in validated_data.items():
+            # value = list of role ids to create appoints for
+            
+            for val in value['roles']: 
+                
+                createExample = Appointment.objects.create(
+                    party=Party.objects.get(id=value['party_id']), 
+                    role=Role.objects.get(id=val), 
+                    model_name="element", 
+                    comment="Assigning new role")
+                createExample.save()
+                createdAppointments.append(createExample.id)
+            
+        element.add_appointments(createdAppointments)
         element.save()
 
         serializer_class = self.get_serializer_class('retrieve')

@@ -51,6 +51,7 @@ class DetailedElementSerializer(SimpleElementSerializer):
             if(partyInList(parties, appointment.party.id)):
                 par = getParty(parties, appointment.party.id)
                 newRole = {
+                    "id": appointment.role.id,
                     "appointment_id": appointment.id,
                     "role_id": appointment.role.role_id,
                     "role_title": appointment.role.title,
@@ -68,6 +69,7 @@ class DetailedElementSerializer(SimpleElementSerializer):
                     "email":appointment.party.email,
                     "phone_number":appointment.party.phone_number,
                     "roles": [{
+                        "id": appointment.role.id,
                         "appointment_id": appointment.id,
                         "role_id": appointment.role.role_id,
                         "role_title": appointment.role.title,
@@ -165,6 +167,8 @@ class ElementPartySerializer(ReadOnlySerializer):
         model = Element
         fields = ['parties']
 
-# class ElementAppointNewPartySerializer(WriteOnlySerializer):
-
-    # element.add_appointments([getAppointment.id, getAppointment1.id, getAppointment2.id])
+class CreateMultipleAppointmentsFromRoleIds(WriteOnlySerializer):
+    role_ids = serializers.JSONField()
+    class Meta:
+        model = Element
+        fields = ['role_ids']

@@ -367,7 +367,7 @@ export const Permissions = ({ elementId, isOwner }) => {
       },
     },
   ]);
-
+  console.log("permissibleUsers: ", permissibleUsers)
   return (
     <div style={{ maxHeight: '1000px', width: '100%' }}>
       <Grid

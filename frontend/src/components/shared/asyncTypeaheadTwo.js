@@ -112,12 +112,12 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
       }
     );
   };
-  console.log("permission state: ", state);
+  console.log("state: ", state);
   return (
     <AsyncTypeahead
       {...state}
       id="user-lookup-async-pagination"
-      labelKey="username"
+      labelKey="title"
       isLoading={state.isLoading}
       maxResults={PER_PAGE - 1}
       minLength={2}
@@ -130,7 +130,7 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
       promptText={""}
       filterBy={() => true}
       paginate
-      placeholder="Search for a user..."
+      placeholder="Search for a role..."
       renderInput={({ inputRef, referenceElementRef, ...inputProps }) => (
         <FormControl variant="standard" style={{ width: "50%" }}>
           <Input
@@ -159,8 +159,8 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
           key={option.id}
           value={option.id}
         >
-          <span className={classes.username}>{option.username}</span>
-          <span className={classes.username}>({option.username})</span>
+          <span className={classes.username}>{option.title}</span>
+          <span className={classes.username}>({option.title})</span>
         </MenuItem>
       )}
       useCache={false}
