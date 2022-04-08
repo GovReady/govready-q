@@ -68,7 +68,6 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
 
   useEffect(() => {
       axios(`/api/v2/elements/${elementId}/`).then(response => {
-        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@response.data@@@@@@@@@@@@@@@@@@: ', response.data );
         setData(response.data.parties);
       });
   }, [])
@@ -107,17 +106,14 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
     const response = await axios.put(`/api/v2/parties/${currentParty.party_id}/`, updatedParty);
     if(response.status === 200){    
       // window.location.reload();
-      console.log('UPDATED CORRECTLY!')
     } else {
       console.error("Something went wrong")
     }
   }
 
   const handleSave = (key, value) => {
-    console.log('handleSave: ', key, value)
     const updatedCurrentParty = {...currentParty};
     updatedCurrentParty[key] = value;
-    console.log('updatedCurrentParty: ', updatedCurrentParty);
     setCurrentParty(updatedCurrentParty);
   }
 
@@ -129,7 +125,6 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
   }
 
   const addRoleOntoCurrentParty = (selected) => {
-    // TODO: HERE!!
     /**
      * 1. Add temporary role to currentParty instance
      * 2. onSubmit: check all roles, 
@@ -137,8 +132,6 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
      *    else if currentParty doesnt have old roles, then remove those old roles
      */
 
-    // TODO: FIX WHY ROLE_NAME IS UNDEFINED
-    console.log('selected: ', selected);
     
     const translatedRole = {
       "id": selected[0].id,
@@ -152,18 +145,6 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
     setCurrentParty(updatedCurrentParty);
   }
 
-  const creatingNewAppointment = async (newAppointment) => {
-    const response = await axios.post(`/api/v2/appointments/`, newAppointment);
-    if(response.status === 201){    
-      console.log('SUCCESSFULLY POSTED NEW APPOINTMENT')
-
-      const oldAppointments = newAppointments.push(response.data.id)
-      setNewAppointments([...newAppointments, oldAppointments]);
-
-    } else {
-      console.error("Something went wrong")
-    }
-  }
   const handleRoleSubmit = async (event) => {
     event.preventDefault();
 
@@ -171,8 +152,6 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
     const removedAppointmentsList = [];
     
     const allCurrentPartyRoleIds = currentParty.roles.map(role => role.id);
-    // const allCurrentPartyAppointments = currentParty.roles.map(role => role.appointment_id);
-    
     const rolesToAddAndAppoint = currentParty.roles.filter(role => role.appointment_id === undefined);
 
     removeAppointments.forEach(role => {
@@ -195,21 +174,11 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
       "appointment_ids": removedAppointmentsList
     };
 
-    console.log('\tappointmentsToBeAdded: ', appointmentsToBeAdded)
-    console.log('\tappointmentsToBeRemoved: ', appointmentsToBeRemoved)
-    console.log('\tcurrentParty: ', currentParty)
-    console.log('\tdata: ', data[0])
-
     const removeResponse = await axios.put(`/api/v2/elements/${elementId}/removeAppointments/`, appointmentsToBeRemoved);
     if(removeResponse.status === 200){    
-      console.log('APPOINTMENTS FOR REMOVED ROLES ARE REMOVED FROM ELEMENT')
-      // window.location.reload();
-      // handleClose();
       if(addedAppointmentsList.length > 0){
         const addResponse = await axios.post(`/api/v2/elements/${elementId}/CreateAndSet/`, appointmentsToBeAdded);
         if(addResponse.status === 200){
-          console.log("APPOINTED NEW APPOINTMENTS TO ELEMENT!")
-          // debugger;
           window.location.reload();
           handleClose();
         } else {
@@ -222,76 +191,9 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
     } else {
       console.error("Something went wrong in removing appointment roles")
     }
-
-    
-
-    //if role_id is in tempRoleToAdd bbut not in currentParty roles, then add those
-    //if appointment_id for appointments_to_be_removed is not in currentParty roles, then remove those
-
-    // const undefinedCounter = currentParty.roles.filter(role => role.appointment_id === undefined).length;
-    // // debugger;
-    // const creatingAppointments = new Promise((resolve, reject) => {
-    //   currentParty.roles.map((role) => {
-    //     console.log('@@role: ', role);
-    //     if(role.appointment_id === undefined){
-    //       console.log('\t@@role with undefined: ', role);
-    //       const newAppointment = {
-    //         "role": role.id,
-    //         "party": currentParty.party_id,
-    //         "model_name": "element",
-    //         "comment": "assigning role to party",
-    //       }
-    //       // debugger;
-    //       console.log("promise newAppointment: ", newAppointments, undefinedCounter);
-    //       creatingNewAppointment(newAppointment);
-    //       if(newAppointments.length === undefinedCounter){
-    //         console.log('RESOLVED!!!!!!')
-    //         resolve('created');
-    //       }
-    //     }
-    //   });
-    // });
-    // console.log("promise newAppointments: ", newAppointments)
-    // debugger;
-    // let newThen = creatingAppointments.then(
-    //   (value) => {
-    //     console.log(value);
-    //   }, reason => {
-    //     console.log(reason)
-    //   }
-    // );
-    
-    // console.log('newThen: ', newThen);
-
-    
-
-
-    // creatingAppointments.then((value) => {
-      // console.log(value);
-      // expected output: "Success!"
-    // });
-    
-
-    // 
-    // const removeResponse = await axios.put(`/api/v2/elements/${elementId}/removeAppointments/`, appointmentsToBeRemoved);
-    // if(removeResponse.status === 200){    
-    //   window.location.reload();
-    //   handleClose();
-    // } else {
-    //   console.error("Something went wrong")
-    // }
-    // const addResponse = await axios.put(`/api/v2/elements/${elementId}/appointments/`, appointmentsToBeAdded);
-    // if(addResponse.status === 200){    
-    //   // window.location.reload();
-      
-    //   handleClose();
-    // } else {
-    //   console.error("Something went wrong")
-    // }
   }
 
   const handleRemoveParty = async (event) => {
-    console.log('handleRemoveParty!')
     const remove_party = { 
       "party_id_to_remove": currentParty.party_id 
     }
@@ -436,11 +338,6 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
     },
   ]);
   
-  console.log('data: ', data)
-  // console.log('currentParty: ', currentParty)
-  // console.log('removeAppointments: ', removeAppointments)
-  // console.log('addedAppointments: ', addedAppointments)
-
   return (
     <div style={{ maxHeight: '1000px', width: '100%' }}>
       <Grid className="poc-data-grid" sx={{ minHeight: '400px' }}>
@@ -554,25 +451,14 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
                 endpoint={endpoint}
                 order={"title"}
                 onSelect={(selected) => {
-                  console.log("selected: ", selected);
                   if (selected.length > 0) {
-                    console.log("selected@@@@@")
                     /* 
                       Step 1: Create new appointment with chosen role
                       Step 2: Add appointment to parties instance
                       Step 3: Post new appointment to backend
                       Step 4: attach appointment to element component
                     */
-                    // const newAppointment = {
-                    //   "role": selected[0].id,
-                    //   "party": currentParty.party_id,
-                    //   "model_name": "element",
-                    //   "comment": `Assigning role ${selected[0].title} to ${currentParty.name}`, 
-                    // }
-
                     addRoleOntoCurrentParty(selected);
-                    // addingNewAppointment(selected, newAppointment);
-                    
                   }
                 }}
                 excludeIds={currentParty.roles.map((du) => du.id)}
@@ -584,18 +470,8 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
                       {role.role_title}
                     </Col>
                     <Col sm={10}>
-                      {/* <FormControl
-                        type="text"
-                        placeholder={'Enter text'}
-                        value={role.role_title}
-                        onChange={(event) => handleSaveRole(index, 'role_title', event.target.value)}
-                      /> */}
-                      
                       {/** Delete button to remove role by index */}
                       <div onClick={(e) => {
-                        // e.stopPropagation();
-                        // e.preventDefault();
-                        // handleClickOpenRoles(params.row)
                         removeRoleFromCurrentParty(index)
                       }}>
                         <OverlayTrigger placement="right" overlay={editToolTip}>

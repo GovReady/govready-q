@@ -141,13 +141,11 @@ class DeletePartyAppointmentsFromElementSerializer(WriteOnlySerializer):
         fields = ['party_id_to_remove']
 
 class ElementPartySerializer(ReadOnlySerializer):
-    # tag_ids = PrimaryKeyRelatedField(source='tags', many=True, queryset=Tag.objects)
     parties = serializers.SerializerMethodField('get_list_of_users')
 
     def get_list_of_users(self, element):
         list_of_parties = []
         for appointment in element.appointments.all():
-            # import ipdb; ipdb.set_trace()
             party = {
                 "id": appointment.id,
                 "party_id": appointment.party.id,

@@ -93,10 +93,7 @@ class ElementViewSet(ReadOnlyViewSet):
         # }
         
         for key, value in validated_data.items():
-            # value = list of role ids to create appoints for
-            
             for val in value['roles']: 
-                
                 createExample = Appointment.objects.create(
                     party=Party.objects.get(id=value['party_id']), 
                     role=Role.objects.get(id=val), 

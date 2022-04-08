@@ -112,7 +112,7 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
       }
     );
   };
-  console.log("permission state: ", state);
+  
   return (
     <AsyncTypeahead
       {...state}
