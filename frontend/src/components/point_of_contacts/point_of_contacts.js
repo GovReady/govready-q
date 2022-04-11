@@ -24,20 +24,31 @@ import {
   Row,
   Modal
 } from 'react-bootstrap';
-import { AsyncPagination } from "../shared/asyncTypeaheadTwo";
+import { AsyncPagination } from "../shared/asyncTypeahead";
 import { red, green } from '@mui/material/colors';
 import { ReactModal } from '../shared/modal';
 import { hide, show } from '../shared/modalSlice';
 
+const datagridStyles = makeStyles({
+  root: {
+    "& .MuiDataGrid-renderingZone": {
+      maxHeight: "none !important"
+    },
+    "& .MuiDataGrid-cell": {
+      lineHeight: "unset !important",
+      maxHeight: "none !important",
+      whiteSpace: "normal"
+    },
+    "& .MuiDataGrid-row": {
+      maxHeight: "none !important"
+    }
+  }
+});
+
+
 const useStyles = makeStyles({
   root: {
-    backgroundColor: 'orange',
     fontweight: 900,
-  },
-  table: {
-    '& .datagrid-permission-header':{
-      backgroundColor: 'blue',
-    }
   },
   header: {
     '& .MuiDataGrid-columnHeaderTitleContainer':{
@@ -50,18 +61,17 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
   const dispatch = useDispatch();
 
   const classes = useStyles();
-  const [usersList, setUsersList] = useState([]);
-  const [permList, setPermList] = useState([]);
+  const dgClasses = datagridStyles();
   const [data, setData] = useState([]);
   const [openPartyModal, setOpenPartyModal] = useState(false);
   const [openRoleModal, setOpenRoleModal] = useState(false);
   const [sortby, setSortBy] = useState(["name", "asc"]);
   const [currentParty, setCurrentParty] = useState({});
-  const [currentOldParty, setCurrentOldParty] = useState({});
   const [removeAppointments, setRemovedAppointments] = useState([]);
   const [tempRoleToAdd, setTempRoleToAdd] = useState([]);
-  const editToolTip = (<Tooltip placement="top" id='tooltip-edit'> Edit POC</Tooltip>)
-  const [newAppointments, setNewAppointments] = useState([]);
+  const editToolTip = (<Tooltip placement="top" id='tooltip-edit'> Edit role</Tooltip>)
+  const deleteToolTip = (<Tooltip placement="top" id='tooltip-edit'> Delete role</Tooltip>)
+
   const endpoint = (querystrings) => {
     return axios.get(`/api/v2/roles/`, { params: querystrings });
   };
@@ -78,17 +88,13 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
 
   const handleClickOpen = (row) => {
     setCurrentParty(row);
-    // dispatch(show());
     setOpenPartyModal(true);
   }
   const handleClickOpenRoles = (row) => {
     setCurrentParty(row);
-    setCurrentOldParty(row)
-    // dispatch(show());
     setOpenRoleModal(true);
   }
   const handleClose = () => {
-    // dispatch(hide());
     setOpenPartyModal(false);
     setOpenRoleModal(false);
   }
@@ -159,7 +165,6 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
         removedAppointmentsList.push(role[0].appointment_id);
       }
     });
-    console.log('\ttempRoleToAdd: ', tempRoleToAdd)
     rolesToAddAndAppoint.forEach(role => {
       addedAppointmentsList.push(role.id);
     });
@@ -208,7 +213,7 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
   const [columns, setColumns] = useState([
     {
         field: 'name',
-        headerName: 'Name',
+        headerName: 'Party Name',
         width: 150,
         editable: false,
         valueGetter: (params) => params.row.user.username,
@@ -239,13 +244,35 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
             );
           },
       },
+      {
+        field: 'roles',
+        headerName: 'Roles',
+        width: 200,
+        editable: false,
+        renderCell: (params) => (
+          <div style={{ width: "100%", marginTop: "0.5rem", marginBottom: "0.5rem"}}>
+            <Stack direction="column" spacing={1}>
+            {params.row.roles.map((role, index) => (
+              <div key={index}>
+                <Chip 
+                  variant="outlined" 
+                  size="small"
+                  label={role.role_title} 
+                />
+                <br/>
+              </div>
+            ))}
+            </Stack>
+          </div>
+        ),
+      },
   ]);
 
   
   const [columnsForEditor, setColumnsForEditor] = useState([
     {
       field: 'name',
-      headerName: 'Name',
+      headerName: 'Party Name',
       width: 150,
       editable: false,
       valueGetter: (params) => params.row.name,
@@ -268,7 +295,7 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
       field: 'edit_party',
       headerName: 'Edit Party',
       headerAlign: 'right',
-      width: 50,
+      width: 100,
       editable: false,
       renderCell: (params) => {
         return (
@@ -298,13 +325,19 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
       width: 200,
       editable: false,
       renderCell: (params) => (
-        <div style={{ width: "100%" }}>
+        <div style={{ width: "100%", marginTop: "0.5rem", marginBottom: "0.5rem"}}>
+          <Stack direction="column" spacing={1}>
           {params.row.roles.map((role, index) => (
             <div key={index}>
-              <span>{role.role_title}</span>
+              <Chip 
+                variant="outlined" 
+                size="small"
+                label={role.role_title} 
+              />
               <br/>
             </div>
           ))}
+          </Stack>
         </div>
       ),
     },
@@ -312,7 +345,7 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
       field: 'edit_roles',
       headerName: 'Edit Roles',
       headerAlign: 'right',
-      width: 50,
+      width: 100,
       editable: false,
       renderCell: (params) => {
         return (
@@ -340,17 +373,18 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
   
   return (
     <div style={{ maxHeight: '1000px', width: '100%' }}>
-      <Grid className="poc-data-grid" sx={{ minHeight: '400px' }}>
-        <div style={{width: "calc(100% - 1rem - 25px", marginTop: "1rem" }}>
-            <h1>Parties</h1>
+      <Grid className="poc-data-grid" sx={{ minHeight: '300px' }}>
+        <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
+          <h1>Parties</h1>
           <DataGrid
-            className={classes.table}
+            className={dgClasses.root}
             autoHeight={true}
             density="compact"
             rows={data}
             columns={isOwner ? columnsForEditor : columns}
             pageSize={25}
             rowsPerPageOptions={[25]}
+            rowHeight={50}
             checkboxSelection
             // onSelectionModelChange={(selectionModel, details) => {
             //   console.log(selectionModel, details);
@@ -383,10 +417,10 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
           body={
             <Form horizontal onSubmit={handleSubmit}>
               <FormGroup>
-                <Row>
+                <Row style={{ marginBottom: '1rem'}}>
                     
                     <Col componentClass={ControlLabel} sm={2}>
-                        {'Name'}
+                      {'Name'}
                     </Col>
                     <Col sm={10}>
                     <FormControl 
@@ -394,30 +428,38 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
                         placeholder={'Enter text'} 
                         value={currentParty.name} 
                         onChange={(event) => handleSave('name', event.target.value)}
+                        style={{ width: '80%'}}
                     />
                     </Col>
-                    <Col componentClass={ControlLabel} sm={2}>
-                        {'Email'}
-                    </Col>
-                    <Col sm={10}>
-                    <FormControl 
-                        type="text"
-                        placeholder={'Enter text'} 
-                        value={currentParty.email} 
-                        onChange={(event) => handleSave('email', event.target.value)}
-                    />
-                    </Col>
-                    <Col componentClass={ControlLabel} sm={2}>
-                        {'Phone Number'}
-                    </Col>
-                    <Col sm={10}>
-                    <FormControl 
-                        type="text"
-                        placeholder={'Enter text'} 
-                        value={currentParty.phone_number} 
-                        onChange={(event) => handleSave('phone_number', event.target.value)}
-                    />
-                    </Col>
+                </Row>
+                <Row style={{ marginBottom: '1rem'}}>
+                  <Col componentClass={ControlLabel} sm={2}>
+                    {'Email'}
+                  </Col>
+                  <Col sm={10}>
+                  <FormControl 
+                      type="text"
+                      placeholder={'Enter text'} 
+                      value={currentParty.email} 
+                      onChange={(event) => handleSave('email', event.target.value)}
+                      style={{ width: '80%'}}
+                  />
+                  </Col>
+                  
+                </Row>
+                <Row style={{ marginBottom: '1rem'}}>
+                  <Col componentClass={ControlLabel} sm={2}>
+                    {'Phone Number'}
+                  </Col>
+                  <Col sm={10}>
+                  <FormControl 
+                      type="text"
+                      placeholder={'Enter text'} 
+                      value={currentParty.phone_number} 
+                      onChange={(event) => handleSave('phone_number', event.target.value)}
+                      style={{ width: '80%'}}
+                  />
+                  </Col>
                 </Row>
               </FormGroup>
               <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
@@ -447,34 +489,52 @@ export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
           body={
             <Form horizontal onSubmit={handleRoleSubmit}>
               <FormGroup>
-              <AsyncPagination
-                endpoint={endpoint}
-                order={"title"}
-                onSelect={(selected) => {
-                  if (selected.length > 0) {
-                    /* 
-                      Step 1: Create new appointment with chosen role
-                      Step 2: Add appointment to parties instance
-                      Step 3: Post new appointment to backend
-                      Step 4: attach appointment to element component
-                    */
-                    addRoleOntoCurrentParty(selected);
-                  }
-                }}
-                excludeIds={currentParty.roles.map((du) => du.id)}
-                defaultSelected 
-            />
+                <div 
+                  style={{ 
+                    marginLeft: '6rem', 
+                    marginBottom: '2rem', 
+                    width: '80%', 
+                  }}
+                >
+                  <AsyncPagination
+                    endpoint={endpoint}
+                    order={"title"}
+                    primaryKey={'title'}
+                    secondarykey={'title'}
+                    onSelect={(selected) => {
+                      if (selected.length > 0) {
+                        /* 
+                          Step 1: Create new appointment with chosen role
+                          Step 2: Add appointment to parties instance
+                          Step 3: Post new appointment to backend
+                          Step 4: attach appointment to element component
+                        */
+                        addRoleOntoCurrentParty(selected);
+                      }
+                    }}
+                    excludeIds={currentParty.roles.map((du) => du.id)}
+                    defaultSelected 
+                    searchBarLength={"100%"}
+                    placeholder={"Search for a role..."}
+                  />
+                </div>
                 {currentParty.roles.map((role, index) => (
                   <Row key={index}>
-                    <Col componentClass={ControlLabel} sm={2}>
+                    <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
                       {role.role_title}
                     </Col>
-                    <Col sm={10}>
+                    <Col sm={8}>
                       {/** Delete button to remove role by index */}
-                      <div onClick={(e) => {
-                        removeRoleFromCurrentParty(index)
-                      }}>
-                        <OverlayTrigger placement="right" overlay={editToolTip}>
+                      <div 
+                        onClick={(e) => {
+                          removeRoleFromCurrentParty(index)
+                        }}
+                        style={{
+                          height: '20px',
+                          width: '20px',
+                        }}
+                      >
+                        <OverlayTrigger placement="right" overlay={deleteToolTip}>
                           <Glyphicon glyph="trash" style={{ color: '#3d3d3d' }} />
                         </OverlayTrigger>
                       </div>

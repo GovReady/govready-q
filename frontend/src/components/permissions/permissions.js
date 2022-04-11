@@ -377,11 +377,13 @@ export const Permissions = ({ elementId, isOwner }) => {
         style={{ width: "100%" }}
       >
         {isOwner && 
-          <Grid className="search-for-a-user-toolbar" item style={{ width: "calc(100% - 1rem - 25px" }}>
+          <Grid className="search-for-a-user-toolbar" item style={{ width: "calc(100% - 1rem - 25px)" }}>
             <br />
              <AsyncPagination
                 endpoint={endpoint}
                 order={"username"}
+                primaryKey={'username'}
+                secondarykey={'username'}
                 onSelect={(selected) => {
                   if (selected.length > 0) {
                     const newUser = selected.map((user) => {
@@ -399,13 +401,16 @@ export const Permissions = ({ elementId, isOwner }) => {
                   }
                 }}
                 excludeIds={permissibleUsers.map((du) => du.user.id)}
+                defaultSelected 
+                searchBarLength={"100%"}
+                placeholder={"Search for a user..."}
             />
           </Grid>
         }
       </Grid>
       <br />
-      <Grid className="permissible-users-data-grid" sx={{ minHeight: '400px' }}>
-        <div style={{width: "calc(100% - 1rem - 25px", marginTop: "1rem" }}>
+      <Grid className="permissible-users-data-grid" sx={{ minHeight: '300px' }}>
+        <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
           <DataGrid
             className={classes.table}
             autoHeight={true}
