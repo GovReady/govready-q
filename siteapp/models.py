@@ -1,6 +1,7 @@
 from collections import ChainMap
 from itertools import chain
 import logging
+from platform import system
 import structlog
 import uuid as uuid
 import auto_prefetch
@@ -25,7 +26,7 @@ from siteapp.enums.access_level import AccessLevelEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from siteapp.enums.assets import AssetTypeEnum
 from siteapp.utils.uploads import hash_file
-from controls.models import ImportRecord
+from controls.models import ImportRecord, System, Element
 from controls.utilities import *
 
 logging.basicConfig()
@@ -1461,7 +1462,14 @@ class Appointment(BaseModel):
     def __str__(self):
         return f"{self.model_name} {self.role.title} - {self.party.name}"
 
-
+class Request(BaseModel):
+    user = models.ForeignKey(User, blank=True, null=True, related_name="request", on_delete=models.SET_NULL,
+                                   help_text="User creating the request.")
+    system = models.ForeignKey(System, blank=True, null=True, related_name="request", on_delete=models.SET_NULL,)
+    element = models.ForeignKey(Element, blank=True, null=True, related_name="request", on_delete=models.SET_NULL,)
+    req_comment = models.TextField(blank=True, null=True, help_text="Comments on this request.")
+    req_reject_comment = models.TextField(blank=True, null=True, help_text="Comment on request rejection.")
+    status = models.TextField(blank=True, null=True, help_text="Status of the request.")
 class Asset(BaseModel):
     UPLOAD_TO = None  # Should be overriden when iheritted
     title = models.CharField(max_length=255, help_text="The title of this asset.")

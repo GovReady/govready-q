@@ -37,6 +37,7 @@ Create System Element (a.k.a. Component)
         var slug = $(this).val();
         slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "-").replace(/^-+/, "").replace(/-+$/, "");
         $('#id_slug').val(slug);
+        debugger;
     })
 
     {% if request.method == "POST" %}
