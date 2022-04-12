@@ -90,6 +90,11 @@ class ElementEditForm(ModelForm):
         model = Element
         fields = ['id', 'name', 'description', 'private', 'require_approval']
 
+class StatementEditForm(ModelForm):
+    class Meta:
+        model = Statement
+        fields = ['id', 'body']
+
 class ElementEditAccessManagementForm(ModelForm):
 
     class Meta:

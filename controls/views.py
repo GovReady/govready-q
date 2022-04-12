@@ -45,7 +45,7 @@ from siteapp.utils.views_helper import project_context
 from system_settings.models import SystemSettings
 from .forms import ElementEditForm, ElementEditAccessManagementForm
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
-from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
+from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm, StatementEditForm
 from .models import *
 from .utilities import *
 from siteapp.utils.views_helper import project_context
@@ -1265,6 +1265,7 @@ def new_element(request):
         form = ElementForm(request.POST)
         if form.is_valid():
             form.save()
+            
             element = form.instance
             element.assign_owner_permissions(request.user)
 
@@ -1294,20 +1295,22 @@ def new_element(request):
 def edit_element_access_management(request, element_id):
     """Form to edit system element access management"""
 
-    # The original element(component)
+    # The original element(component) 
     element = get_object_or_404(Element, id=element_id)
-
+    # statement related to element
+    statement = element.statements_produced.filter(statement_type="component_approval_requirement").first()
     if request.method == 'POST':
         form = ElementEditAccessManagementForm(request.POST or None, instance=element)
-        
-        if form.is_valid():
+        statementForm = StatementEditForm(request.POST, instance=statement)
+        if form.is_valid() and statementForm.is_valid():
             logger.info(
                 event="edit_element_access_management",
                 object={"object": "element", "id": form.instance.id, "name": form.instance.name},
                 user={"id": request.user.id, "username": request.user.username}
             )
 
-            form.save() 
+            form.save()
+            statementForm.save()
             return JsonResponse({"status": "ok"})
         else:
             errors = form.errors.get_json_data(escape_html=False)

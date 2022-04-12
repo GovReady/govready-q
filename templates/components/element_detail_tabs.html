@@ -609,7 +609,7 @@
               method: "POST",
               data: {
                 require_approval: document.getElementById("required_approval_checkbox").checked, 
-                prereq: document.getElementById("component_approval_prerequisite").value
+                body: document.getElementById("component_approval_prerequisite").value
               },
               keep_indicator_forever: true,
               success: function(res) {
