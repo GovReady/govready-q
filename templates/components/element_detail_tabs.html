@@ -371,17 +371,15 @@
             {% endif %}
             <span>approval/whitelisting of inheriting systems.</span>
         </div>
-
+        <p>&nbsp;</p>
         <form role="form" method="POST">
           <div class="div-require-approval">
             <label for="required-approval-checkbox">Require approval/whitelist</label>
             <input type="checkbox" id="required_approval_checkbox" checked><br>
           </div>
-          
+          <p>&nbsp;</p>
           <div class="form-group">
-            <h3>Component approval/whitelist prerequisite:</h3><span>(this text will be displayed when a user considers the component for their system)</span>
-            <span>{{ prereq }}</span>
-            <label for="component_approval_prerequisite">Approval/Whitelist prerequisite</label>
+            <label for="component_approval_prerequisite">Component approval/whitelist prerequisite <small>(this text will be displayed when a user considers the component for their system)</small></label>
             <textarea class="form-control" id="component_approval_prerequisite" rows="3"></textarea>
           </div>
           <button type="submit" id="access-submit-btn" class="btn btn-default">Submit</button>  
@@ -600,7 +598,7 @@
           }
 
           document.getElementById("required_approval_checkbox").checked = require_approvalValue;
-          document.getElementById("component_approval_prerequisite").value = "{{prereq}}";
+          document.getElementById("component_approval_prerequisite").value = `{{prereq}}`;
 
           $('#access-submit-btn').on('click', (e) => {
             e.preventDefault();        

@@ -1270,10 +1270,10 @@ def new_element(request):
             element.assign_owner_permissions(request.user)
 
             Statement.objects.create(
-                sid = "sf-2",
-                sid_class = "PREQ",
-                body = "This is a test statement.2",
-                statement_type = "component_approval_requirement",
+                sid = None,
+                sid_class = None,
+                body = "",
+                statement_type = StatementTypeEnum.COMPONENT_APPROVAL_REQUIREMENT.name,
                 producer_element = element
             )
             
@@ -1298,7 +1298,7 @@ def edit_element_access_management(request, element_id):
     # The original element(component) 
     element = get_object_or_404(Element, id=element_id)
     # statement related to element
-    statement = element.statements_produced.filter(statement_type="component_approval_requirement").first()
+    statement = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_REQUIREMENT.name).first()
     if request.method == 'POST':
         form = ElementEditAccessManagementForm(request.POST or None, instance=element)
         statementForm = StatementEditForm(request.POST, instance=statement)
@@ -1339,7 +1339,6 @@ def component_library_component(request, element_id):
     usersWithPermission = get_users_with_perms(element, attach_perms=True)
     listUsers = []
     
-    # import ipdb; ipdb.set_trace()
     for user in usersWithPermission:
         listUsers.append(user.username)
 
@@ -1348,8 +1347,6 @@ def component_library_component(request, element_id):
 
 
     for poc in poc_users:
-        print(type(poc.party))
-        print('Recreating poc objects')
         user = {
             "uuid":poc.party.uuid,
             "party_type":poc.party.party_type,
@@ -1364,24 +1361,20 @@ def component_library_component(request, element_id):
 
     get_all_parties = element.appointments.all()
 
-
-    # import ipdb; ipdb.set_trace()
-
     contacts = []
     for poc in get_all_parties:
         contacts.append(poc.party)
 
-    # contacts = list(poc_users)
-    # import ipdb; ipdb.set_trace()
-
-    
-    
 
     @register.filter
     def get_item(dictionary, key):
         return dictionary.get(key)
     
-    prerequisitesText = element.statements_produced.filter(statement_type="component_approval_requirement")
+    prerequisites_results = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_REQUIREMENT.name)
+    if len(prerequisites_results) > 0:
+        prerequisites_text = prerequisites_results.first().body
+    else:
+        prerequisites_text = ""
     is_owner = element.is_owner(request.user)
     
     # Retrieve systems consuming element
@@ -1392,7 +1385,6 @@ def component_library_component(request, element_id):
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
     else:
-        # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
         impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
@@ -1406,7 +1398,7 @@ def component_library_component(request, element_id):
             "is_owner": is_owner,
             "can_edit": hasPermissionToEdit,
             "users_with_permissions": usersWithPermission,
-            "prereq": prerequisitesText.first().body,
+            "prereq": prerequisites_text,
             "listOfContacts": listOfContacts,
             "contacts": serializers.serialize('json', contacts),
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
