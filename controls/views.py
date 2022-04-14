@@ -1360,6 +1360,9 @@ def component_library_component(request, element_id):
         listOfContacts.append(user)
 
     get_all_parties = element.appointments.all()
+    # import ipdb; ipdb.set_trace()
+    #TODO: Count element's requests - element.requests.count()
+    total_number_of_requests = 3
 
     contacts = []
     for poc in get_all_parties:
@@ -1401,6 +1404,7 @@ def component_library_component(request, element_id):
             "criteria": criteria_text,
             "listOfContacts": listOfContacts,
             "contacts": serializers.serialize('json', contacts),
+            "requestsTotal": total_number_of_requests,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }

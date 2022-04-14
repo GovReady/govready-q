@@ -1466,9 +1466,9 @@ class Request(BaseModel):
     user = models.ForeignKey(User, blank=True, null=True, related_name="request", on_delete=models.SET_NULL,
                                    help_text="User creating the request.")
     system = models.ForeignKey(System, blank=True, null=True, related_name="request", on_delete=models.SET_NULL,)
-    element = models.ForeignKey(Element, blank=True, null=True, related_name="request", on_delete=models.SET_NULL,)
-    req_comment = models.TextField(blank=True, null=True, help_text="Comments on this request.")
-    req_reject_comment = models.TextField(blank=True, null=True, help_text="Comment on request rejection.")
+    requested_element = models.ForeignKey(Element, blank=True, null=True, related_name="request", on_delete=models.SET_NULL,)
+    criteria_comment = models.TextField(blank=True, null=True, help_text="Comments on this request.")
+    criteria_reject_comment = models.TextField(blank=True, null=True, help_text="Comment on request rejection.")
     status = models.TextField(blank=True, null=True, help_text="Status of the request.")
 class Asset(BaseModel):
     UPLOAD_TO = None  # Should be overriden when iheritted

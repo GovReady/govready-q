@@ -399,22 +399,9 @@
       <div role="tabpanel" class="tab-pane" id="requests">
         <div class="row">
           <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-            <h3>Requested Usage</h3>
-            {% comment %} <div><span>{{users_can_edit}}</span></div> {% endcomment %}
+            <h3>Requested Usage({{requestsTotal}})</h3>
 
-            <h3>Approved Usage ({{users_with_permission | length}})</h3>
-            <div><span>{{users_with_permission}}</span></div>
-            <div class="container">
-              <div class="row">
-                <div class="col-md-4"><strong>Requested By</strong></div>
-              </div>
-
-              {% for user in users_with_permission %}
-                <div class="username">
-                  <h4>{{ user.username }}</h4>
-                </div>
-              {% endfor%}
-            </div>
+            <div id="request-table" style="height: 100%; width: 100%;"></div>
           </div>
       </div> 
       
