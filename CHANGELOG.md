@@ -16,9 +16,11 @@ v0.9.14-dev (March xx, 2022)
 * Indicate private components with lock icon.
 * Edit model for component in library supports marking component private.
 * Add React component UI widget for setting and editing permissions on component editing.
-* Add ability to change privacy of a component is given only to the owner of the component
-* Add tabs for coponent requests.
-* Only Component owner can edit user permissions
+* Add ability to change privacy of a component is given only to the owner of the component.
+* Added tabs for coponent requests.
+* Only Component owner can edit user permissions.
+* Display the control framework along side of controls in component control listing page.
+
 
 **Developer changes**
 
