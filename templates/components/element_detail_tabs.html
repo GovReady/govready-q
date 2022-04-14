@@ -379,8 +379,8 @@
           </div>
           <p>&nbsp;</p>
           <div class="form-group">
-            <label for="component_approval_prerequisite">Component approval/whitelist prerequisite <small>(this text will be displayed when a user considers the component for their system)</small></label>
-            <textarea class="form-control" id="component_approval_prerequisite" rows="3"></textarea>
+            <label for="component_approval_criteria">Component approval/whitelist criteria <small>(this text will be displayed when a user considers the component for their system)</small></label>
+            <textarea class="form-control" id="component_approval_criteria" rows="3"></textarea>
           </div>
           <button type="submit" id="access-submit-btn" class="btn btn-default">Submit</button>  
         </form>
@@ -589,7 +589,6 @@
         }
 
         function edit_access_management(){
-          console.log('new javascript script')
           let require_approvalValue = false;
           if(`{{element.require_approval}}` === "False"){
             require_approvalValue = false;
@@ -598,7 +597,7 @@
           }
 
           document.getElementById("required_approval_checkbox").checked = require_approvalValue;
-          document.getElementById("component_approval_prerequisite").value = `{{prereq}}`;
+          document.getElementById("component_approval_criteria").value = `{{criteria}}`;
 
           $('#access-submit-btn').on('click', (e) => {
             e.preventDefault();        
@@ -607,7 +606,7 @@
               method: "POST",
               data: {
                 require_approval: document.getElementById("required_approval_checkbox").checked, 
-                body: document.getElementById("component_approval_prerequisite").value
+                body: document.getElementById("component_approval_criteria").value
               },
               keep_indicator_forever: true,
               success: function(res) {

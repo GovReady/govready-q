@@ -1273,7 +1273,7 @@ def new_element(request):
                 sid = None,
                 sid_class = None,
                 body = "",
-                statement_type = StatementTypeEnum.COMPONENT_APPROVAL_REQUIREMENT.name,
+                statement_type = StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name,
                 producer_element = element
             )
             
@@ -1298,7 +1298,7 @@ def edit_element_access_management(request, element_id):
     # The original element(component) 
     element = get_object_or_404(Element, id=element_id)
     # statement related to element
-    statement = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_REQUIREMENT.name).first()
+    statement = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name).first()
     if request.method == 'POST':
         form = ElementEditAccessManagementForm(request.POST or None, instance=element)
         statementForm = StatementEditForm(request.POST, instance=statement)
@@ -1370,11 +1370,11 @@ def component_library_component(request, element_id):
     def get_item(dictionary, key):
         return dictionary.get(key)
     
-    prerequisites_results = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_REQUIREMENT.name)
-    if len(prerequisites_results) > 0:
-        prerequisites_text = prerequisites_results.first().body
+    criteria_results = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name)
+    if len(criteria_results) > 0:
+        criteria_text = criteria_results.first().body
     else:
-        prerequisites_text = ""
+        criteria_text = ""
     is_owner = element.is_owner(request.user)
     
     # Retrieve systems consuming element
@@ -1398,7 +1398,7 @@ def component_library_component(request, element_id):
             "is_owner": is_owner,
             "can_edit": hasPermissionToEdit,
             "users_with_permissions": usersWithPermission,
-            "prereq": prerequisites_text,
+            "criteria": criteria_text,
             "listOfContacts": listOfContacts,
             "contacts": serializers.serialize('json', contacts),
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
@@ -1454,7 +1454,7 @@ def component_library_component(request, element_id):
         "is_owner": is_owner,
         "can_edit": hasPermissionToEdit,
         "users_with_permissions": usersWithPermission,
-        "prereq": prerequisitesText.first().body,
+        "criteria_text": criteria_text.first().body,
         "contacts": serializers.serialize('json', contacts),
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
