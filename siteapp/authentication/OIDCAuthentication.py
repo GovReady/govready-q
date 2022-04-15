@@ -19,7 +19,7 @@ class OIDCAuth(OIDCAuthenticationBackend):
     def get_userinfo(self, access_token, id_token, payload):
         """Return user details dictionary. The id_token and payload are not used in
         the default implementation, but may be used when overriding this method"""
-
+        import requests
         user_response = requests.get(
             self.OIDC_OP_USER_ENDPOINT,
             headers={
