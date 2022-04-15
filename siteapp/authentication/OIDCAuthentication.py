@@ -59,11 +59,17 @@ class OIDCAuth(OIDCAuthenticationBackend):
         return False
 
     def create_user(self, claims):
-        data = {'email': claims[settings.OIDC_CLAIMS_MAP['email']],
-                'first_name': claims[settings.OIDC_CLAIMS_MAP['first_name']],
-                'last_name': claims[settings.OIDC_CLAIMS_MAP['last_name']],
-                'username': claims[settings.OIDC_CLAIMS_MAP['username']],
-                'is_staff': self.is_admin(claims[settings.OIDC_CLAIMS_MAP['groups']])}
+        # data = {'email': claims[settings.OIDC_CLAIMS_MAP['email']],
+        #         'first_name': claims[settings.OIDC_CLAIMS_MAP['first_name']],
+        #         'last_name': claims[settings.OIDC_CLAIMS_MAP['last_name']],
+        #         'username': claims[settings.OIDC_CLAIMS_MAP['username']],
+        #         'is_staff': self.is_admin(claims[settings.OIDC_CLAIMS_MAP['groups']])}
+
+        data = {'email': claims.get(settings.OIDC_CLAIMS_MAP['email'], None),
+                'first_name': claims.get(settings.OIDC_CLAIMS_MAP['first_name'], None),
+                'last_name': claims.get(settings.OIDC_CLAIMS_MAP['last_name'], None),
+                'username': claims.get(settings.OIDC_CLAIMS_MAP['username'], None),
+                'is_staff': self.is_admin(claims.get(settings.OIDC_CLAIMS_MAP['groups'], None))}
 
         user = self.UserModel.objects.create_user(**data)
         portfolio = Portfolio.objects.create(title=user.email.split('@')[0], description="Personal Portfolio")
