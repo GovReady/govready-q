@@ -42,7 +42,7 @@ class OIDCAuth(OIDCAuthenticationBackend):
         #return user_response.json()
         return payload
 
-    def parse_b64url(content):
+    def parse_b64url(self, content):
         """Return decoded base64url content"""
 
         try:
