@@ -65,10 +65,11 @@ class OIDCAuth(OIDCAuthenticationBackend):
         #         'username': claims[settings.OIDC_CLAIMS_MAP['username']],
         #         'is_staff': self.is_admin(claims[settings.OIDC_CLAIMS_MAP['groups']])}
 
-        data = {'email': claims.get(settings.OIDC_CLAIMS_MAP['email'], None),
-                'first_name': claims.get(settings.OIDC_CLAIMS_MAP['first_name'], None),
-                'last_name': claims.get(settings.OIDC_CLAIMS_MAP['last_name'], None),
-                'username': claims.get(settings.OIDC_CLAIMS_MAP['username'], None),
+        data = {'email': claims.get(settings.OIDC_CLAIMS_MAP['email'], "email@example.com"),
+                'first_name': claims.get(settings.OIDC_CLAIMS_MAP['name'], "first_name"),
+                'last_name': claims.get(settings.OIDC_CLAIMS_MAP['last_name'], "last_name"),
+                # 'username': claims.get(settings.OIDC_CLAIMS_MAP['username'], None),
+                'username': claims.get(settings.OIDC_CLAIMS_MAP['name'], "name"),
                 'is_staff': False}
 
         user = self.UserModel.objects.create_user(**data)
