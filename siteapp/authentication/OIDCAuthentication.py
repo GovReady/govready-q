@@ -34,9 +34,9 @@ class OIDCAuth(OIDCAuthenticationBackend):
         user_response.raise_for_status()
         LOGGER.warning(f"user info, {type(user_response.text)}, {user_response.text}")
         # split on ".": Header.Payload.Signature
-        header, payload, signature = [parse_b64url(content) for content in user_response.text.split(".")]
+        header, payload, signature = [self.parse_b64url(content) for content in user_response.text.split(".")]
         header = json.loads(header.decode('UTF-8'))
-        payload = parse_b64url(payload)[:-1] if b'\x1b' in parse_b64url(payload) else parse_b64url(payload)
+        payload = payload[:-1] if b'\x1b' in payload else payload
         payload = json.loads(payload.decode('UTF-8)'))
         LOGGER.warning(f"header: {header}, \npayload: {payload}, \nsignature: {signature}")
         #return user_response.json()
