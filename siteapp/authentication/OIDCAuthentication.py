@@ -1,5 +1,6 @@
 import time
 from urllib.parse import urlencode
+import json
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
@@ -9,8 +10,10 @@ from django.utils.crypto import get_random_string
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend, LOGGER
 from mozilla_django_oidc.middleware import SessionRefresh
 from mozilla_django_oidc.utils import absolutify, add_state_and_nonce_to_session
+from base64 import urlsafe_b64encode, urlsafe_b64decode
 
 from siteapp.models import Portfolio
+
 
 
 class OIDCAuth(OIDCAuthenticationBackend):
@@ -30,7 +33,25 @@ class OIDCAuth(OIDCAuthenticationBackend):
             proxies=self.get_settings('OIDC_PROXY', None))
         user_response.raise_for_status()
         LOGGER.warning(f"user info, {type(user_response.text)}, {user_response.text}")
-        return user_response.json()
+        # split on ".": Header.Payload.Signature
+        header, payload, signature = [parse_b64url(content) for content in user_response.text.split(".")]
+        header = json.loads(header.decode('UTF-8'))
+        payload = parse_b64url(payload)[:-1] if b'\x1b' in parse_b64url(payload) else parse_b64url(payload)
+        payload = json.loads(payload.decode('UTF-8)'))
+        LOGGER.warning(f"header: {header}, \npayload: {payload}, \nsignature: {signature}")
+        #return user_response.json()
+        return payload
+
+    def parse_b64url(content):
+        """Return decoded base64url content"""
+
+        try:
+            decoded = urlsafe_b64decode(content+str(b'======='))
+        except:
+            decoded = urlsafe_b64decode(content)
+        return decoded
+
+
 
     def is_admin(self, groups):
         if settings.OIDC_ROLES_MAP["admin"] in groups:
