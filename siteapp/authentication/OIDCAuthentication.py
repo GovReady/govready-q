@@ -15,6 +15,23 @@ from siteapp.models import Portfolio
 
 class OIDCAuth(OIDCAuthenticationBackend):
 
+    # override get_user method to debug token
+    def get_userinfo(self, access_token, id_token, payload):
+        """Return user details dictionary. The id_token and payload are not used in
+        the default implementation, but may be used when overriding this method"""
+
+        user_response = requests.get(
+            self.OIDC_OP_USER_ENDPOINT,
+            headers={
+                'Authorization': 'Bearer {0}'.format(access_token)
+            },
+            verify=self.get_settings('OIDC_VERIFY_SSL', True),
+            timeout=self.get_settings('OIDC_TIMEOUT', None),
+            proxies=self.get_settings('OIDC_PROXY', None))
+        user_response.raise_for_status()
+        LOGGER.warning(f"user info, {type(user_response.text)}, {user_response.text}")
+        return user_response.json()
+
     def is_admin(self, groups):
         if settings.OIDC_ROLES_MAP["admin"] in groups:
             return True
