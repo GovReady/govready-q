@@ -106,7 +106,7 @@
   <div id="tab-content" class="row">
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
-      <li id="smt-tab" role="presentation" class="active"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Control Implementation Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
+      <li id="smt-tab" role="presentation" class="active"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Control Implementation Statements &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
       <li id="systems-tab" role="presentation"><a href="#systems" aria-controls="systems" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> Systems  &nbsp;<div id="common-tab-count">{{ consuming_systems|length }}</div></a></li>
       <li id="oscal-tab" role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
       {% if enable_experimental_opencontrol %}
@@ -416,6 +416,11 @@
         window.renderElementTags({{ element.id }}, {{ tags | safe }});
       </script>
       <script>
+        // Navigate to tab identifed after URL #
+        if(window.location.hash) {
+          $('a[href="' + window.location.hash + '"]').click();
+        }
+
         // Adds statement form to page
         function add_smt(smt_count) {
           var panel_num = smt_count + 1
