@@ -39,7 +39,7 @@ from guidedmodules.models import Task, Module, AppVersion, AppSource
 from siteapp.model_mixins.tags import TagView
 from simple_history.utils import update_change_reason
 
-from siteapp.models import Project, Organization, Tag
+from siteapp.models import Project, Organization, Tag, User
 from siteapp.settings import GOVREADY_URL
 from siteapp.utils.views_helper import project_context
 from system_settings.models import SystemSettings
@@ -956,7 +956,11 @@ class ComponentImporter(object):
             [print(issue) for issue in issues]
 
         # Returns list of created components
-        created_components = self.create_components(oscal_json)
+        if request is not None:
+            user_owner = request.user
+        else:
+            user_owner = User.objects.filter(is_superuser=True)[0]
+        created_components = self.create_components(oscal_json, user_owner)
         new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
         return new_import_record
 
@@ -986,22 +990,23 @@ class ComponentImporter(object):
 
         return import_record
 
-    def create_components(self, oscal_json):
+    def create_components(self, oscal_json, user_owner=None):
         """Creates Elements (Components) from valid OSCAL JSON"""
         components_created = []
         components = oscal_json['component-definition']['components']
         for component in components:
-            new_component = self.create_component(component)
+            new_component = self.create_component(component, user_owner)
             if new_component is not None:
                 components_created.append(new_component)
 
         return components_created
 
-    def create_component(self, component_json):
+    def create_component(self, component_json, user_owner=None, private=False):
         """Creates a component from a JSON dict
 
         @type component_json: dict
         @param component_json: Component attributes from JSON object
+        @param user_owner: Django user
         @rtype: Element
         @returns: Element object if created, None otherwise
         """
@@ -1016,10 +1021,18 @@ class ComponentImporter(object):
             # Components uploaded to the Component Library are all system_element types
             element_type="system_element",
             uuid=component_json['uuid'] if 'uuid' in component_json else uuid.uuid4(),
-            component_type=component_json['type'] if 'type' in component_json else "software"
+            component_type=component_json['type'] if 'type' in component_json else "software",
+            private=private
         )
 
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
+        if user_owner:
+            new_component.assign_owner_permissions(user_owner)
+            logger.info(
+                event="new_element with user as owner",
+                object={"object": "element", "id": new_component.id, "name":new_component.name},
+                user={"id": user_owner.id, "username": user_owner.username}
+            )
 
         component_props = component_json.get('props', None)
         if component_props is not None:
