@@ -1,17 +1,17 @@
 import React, {useState} from 'react';
 import ReactDOM from 'react-dom';
-import { RequestsTable } from './requests';
+import { RequireApprovalModal } from './requireApprovalModal';
 import { Provider } from "react-redux";
 import store from "../../store";
 
-window.requestsTable = ( elementId, is_owner ) => {
+window.requireApprovalModal = ( systemId, is_owner ) => {
     $(window).on('load', function () {
         $("#content").show();
         ReactDOM.render(
             <Provider store={store}>
-                <RequestsTable elementId={elementId} isOwner={is_owner}/>
+                <RequireApprovalModal systemId={systemId} isOwner={is_owner}/>
             </Provider>,
-            document.getElementById('requests-table')
+            document.getElementById('private-component-modal')
         );
     });
 };

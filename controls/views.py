@@ -49,7 +49,7 @@ from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm, Sta
 from .models import *
 from .utilities import *
 from siteapp.utils.views_helper import project_context
-from siteapp.models import Role, Party, Appointment
+from siteapp.models import Role, Party, Appointment, Request
 
 logging.basicConfig()
 import structlog
@@ -1324,7 +1324,7 @@ def component_library_component(request, element_id):
     
     # Retrieve element
     element = Element.objects.get(id=element_id)
-    
+    govSystem = System.objects.filter(root_element__name="GovReady-Q Sample System")
    # Check permissions
     if element.private == True and 'view_element' not in get_user_perms(request.user, element):
         logger.warning(
@@ -1363,7 +1363,12 @@ def component_library_component(request, element_id):
     # import ipdb; ipdb.set_trace()
     #TODO: Count element's requests - element.requests.count()
     total_number_of_requests = 3
+    # status=RequestStatusEnum.PENDING.name
+    # req_instance = Request.objects.create(user=user, element=element, status="pending")
+    # req_instance.system.set(system)
+    # req_instance.save()
 
+    # import ipdb; ipdb.set_trace()
     contacts = []
     for poc in get_all_parties:
         contacts.append(poc.party)
@@ -1458,7 +1463,7 @@ def component_library_component(request, element_id):
         "is_owner": is_owner,
         "can_edit": hasPermissionToEdit,
         "users_with_permissions": usersWithPermission,
-        "criteria_text": criteria_text.first().body,
+        "criteria": criteria_text,
         "contacts": serializers.serialize('json', contacts),
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
@@ -2461,9 +2466,52 @@ def add_system_component(request, system_id):
     elements_selected = system.producer_elements
     elements_selected_ids = [e.id for e in elements_selected]
 
+
+    # Serg TODO: CHECK IF ELEMENT WE ARE ABOUT TO ADD REQUIRES A REQUEST
+    # 1. IF REQUEST IS REQUIERED -> FIRE OFF A MODAL
+   
+
+    element = Element.objects.get(pk=form_values['producer_element_id'])
+    
+    if element.require_approval == True:
+        # 1.a Return Element's criteria and Point of Contact information
+        # 1.b Create Request object, attach to both System and Element component
+        
+        # import ipdb; ipdb.set_trace()
+        criteria_results = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name)
+        if len(criteria_results) > 0:
+            criteria_text = criteria_results.first().body
+        else:
+            criteria_text = ""
+        
+        newRequest = Request.objects.create(
+            user=request.user,
+            system=system,
+            requested_element=element,
+            criteria_comment=criteria_text,
+            criteria_reject_comment="",
+            status="PENDING",
+        )
+        newRequest.save()
+        element.add_requests([newRequest.id])
+        element.save()
+        # system.add_requests([newRequest])
+        # import ipdb; ipdb.set_trace();
+        context = {
+            "requested_elementId": element.id,
+            "requested_element_name": element.name,
+            "requested_element_require_approval": element.require_approval,
+            "criteria_text": criteria_text,
+        }
+        return render(request, "systems/components_selected.html", context)
+    # 2. IF REQUEST IS NOT REQUIERED -> ADD ELEMENT AND STATEMENTS TO SYSTEM
+
     # Add element to system's selected components
     # Look up the element rto add
+    
     producer_element = Element.objects.get(pk=form_values['producer_element_id'])
+
+    
 
     # TODO: various use cases
         # - component previously added but element has statements not yet added to system
@@ -2515,6 +2563,7 @@ def add_system_component(request, system_id):
     else:
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
+    
 @login_required
 def search_system_component(request):
     """Add an existing element and its statements to a system"""

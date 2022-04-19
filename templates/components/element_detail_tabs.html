@@ -405,7 +405,7 @@
           <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
             <h3>Requested Usage({{requestsTotal}})</h3>
 
-            <div id="request-table" style="height: 100%; width: 100%;"></div>
+            <div id="requests-table" style="height: 100%; width: 100%;"></div>
           </div>
       </div> 
       
@@ -424,6 +424,7 @@
         window.pocTable( {{ element.id }}, {{ contacts | safe }}, "{{is_owner}}" === 'True' ? true : false );
         window.permissionsTable( {{ element.id }}, "{{is_owner}}" === 'True' ? true : false );
         window.renderElementTags({{ element.id }}, {{ tags | safe }});
+        window.requestsTable( {{ element.id }}, "{{is_owner}}" === 'True' ? true : false );
       </script>
       <script>
         // Adds statement form to page
@@ -615,7 +616,6 @@
         }
 
         function show_user(user){
-          debugger;
           console.log(user);
         }
         

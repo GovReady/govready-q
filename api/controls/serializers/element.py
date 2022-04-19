@@ -6,7 +6,7 @@ from api.controls.serializers.import_record import SimpleImportRecordSerializer
 from api.siteapp.serializers.tags import SimpleTagSerializer
 from api.siteapp.serializers.appointment import SimpleAppointmentSerializer
 from controls.models import Element, ElementRole, ElementControl
-from siteapp.models import Appointment, Role, Party, Tag
+from siteapp.models import Appointment, Party, Request, Role, Tag
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
@@ -170,3 +170,58 @@ class CreateMultipleAppointmentsFromRoleIds(WriteOnlySerializer):
     class Meta:
         model = Element
         fields = ['role_ids']
+
+class ElementRequestsSerializer(ReadOnlySerializer):
+    requested = serializers.SerializerMethodField('get_list_of_requested')
+
+    def get_list_of_requested(self, element):
+        list_of_requests = []
+        for request in element.requests.all():
+            
+            list_of_system_PointOfContacts = []
+            for user in request.system.root_element.appointments.filter(role__title="Point of Contact"):
+                list_of_system_PointOfContacts.append(user.party.name)
+
+            list_of_requestedElements_PointOfContacts = []
+            for user in request.requested_element.appointments.filter(role__title="Point of Contact"):
+                list_of_requestedElements_PointOfContacts.append(user.party.name)
+
+            req = {
+                "id": request.id,
+                "user_name": request.user.name,
+                "user_email": request.user.email,
+                "user_phone_number": request.user.phone_number,
+                "system": {
+                    "id": request.system.id,
+                    "name": request.system.root_element.name,
+                    "full_name": request.system.root_element.full_name,
+                    "name": request.system.root_element.name,
+                    "description": request.system.root_element.description,
+                    "point_of_contact": list_of_system_PointOfContacts,
+                },
+                "requested_element: ": {
+                    "id": request.requested_element.id,
+                    "name": request.requested_element.name,
+                    "full_name": request.requested_element.full_name,
+                    "name": request.requested_element.name,
+                    "description": request.requested_element.description,
+                    "private": request.requested_element.private,
+                    "require_approval": request.requested_element.require_approval,
+                    "point_of_contact": list_of_requestedElements_PointOfContacts,
+                },
+                "criteria_comment": request.criteria_comment,
+                "criteria_reject_comment": request.criteria_reject_comment,
+                "status": request.status,
+            }
+            # import ipdb; ipdb.set_trace()
+            list_of_requests.append(req)
+        return list_of_requests
+    class Meta:
+        model = Element
+        fields = ['requested']
+
+class ElementSetRequestsSerializer(WriteOnlySerializer):
+    requests_ids = PrimaryKeyRelatedField(source='request', many=True, queryset=Request.objects)
+    class Meta:
+        model = Element
+        fields = ['requests_ids']

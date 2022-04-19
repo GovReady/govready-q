@@ -25,11 +25,11 @@
                         <div class="form-group">
                             <label for="component">Add component</label>&nbsp;&nbsp;
                             <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
-                            <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onchange="$(form).submit();" style="width:340px;">
+                            <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onchange="handleComponentSelection($(form));" style="width:340px;">
                                 <option value="None" selected disabled hidden>Select a Component</option>
                                 {% for component in elements %}
                                     {% if component not in system.producer_elements %}
-                                        <option value="{{ component.id }}">{{ component.name }}</option>
+                                        <option value="{{ component.id }}">{{ component.name }}{%if component.require_approval %}*{% endif%}</option>
                                     {% endif %}
                                 {% endfor %}
                             </select>
@@ -37,7 +37,7 @@
                     </form>
                 </div>
             </div>
-
+            <div id="private-component-modal"></div>
             {% for component in system_elements %}
                 {# Each "component" is a Element model object. #}
                     <div id="tab-content" class="row row-control">
@@ -78,11 +78,25 @@
 {% block scripts %}
 {{ block.super }}
 <script>
+ {% comment %} console.log('elementId: ', `{{requested_elementId}}`);
+  console.log("criteria: ", criteria);
+    function require_approval_modal(){
+        console.log('require_approval_modal');
+    }
+    const criteria = `{{criteria_text}}`;
+ {% endcomment %}
+
+    function handleComponentSelection(form) {
+        console.log('handleComponentSelection!')
+        /* Check if component selected requires approval or has criteria, if it does, pop up modal, else work as previously */
+        console.log('form: ', form)
+    }
   // Convert select field for Add Component to jQuery Select2 box
   $(document).ready(function() {
     $('#producer_element_id').select2();
   });
 
+ 
   // Confirm deletion of component
   function confirm_cmpt_rm(cmpt_rm_url) {
     var result = confirm('Remove component and related controls from system?\nAny customizations to component\'s statements will be lost.');

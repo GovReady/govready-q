@@ -1463,13 +1463,26 @@ class Appointment(BaseModel):
         return f"{self.model_name} {self.role.title} - {self.party.name}"
 
 class Request(BaseModel):
-    user = models.ForeignKey(User, blank=True, null=True, related_name="request", on_delete=models.SET_NULL,
-                                   help_text="User creating the request.")
-    system = models.ForeignKey(System, blank=True, null=True, related_name="request", on_delete=models.SET_NULL,)
-    requested_element = models.ForeignKey(Element, blank=True, null=True, related_name="request", on_delete=models.SET_NULL,)
+    user = models.ForeignKey(User, blank=True, null=True, related_name="request", on_delete=models.CASCADE, help_text="User creating the request.")
+    system = models.ForeignKey(System, blank=True, null=True, related_name="request", on_delete=models.CASCADE, help_text="System making the request.")
+    requested_element = models.ForeignKey(Element, blank=True, null=True, related_name="request", on_delete=models.CASCADE, help_text="Element being requested.")
     criteria_comment = models.TextField(blank=True, null=True, help_text="Comments on this request.")
     criteria_reject_comment = models.TextField(blank=True, null=True, help_text="Comment on request rejection.")
     status = models.TextField(blank=True, null=True, help_text="Status of the request.")
+
+    # user = models.ForeignKey(User, on_delete=models.CASCADE, help_text="User creating the request.")
+    # system = models.ForeignKey(System, on_delete=models.CASCADE, help_text="System making the request.")
+    # requested_element = models.ForeignKey(Element, on_delete=models.CASCADE, help_text="Element being requested.")
+
+    def __repr__(self):
+        return f"{self.system} -> {self.requested_element} - {self.status}"
+
+    def __str__(self):
+        return f"{self.system} -> {self.requested_element} - {self.status}"
+
+    def serialize(self):
+        return {"system": self.system, "requested_element": self.requested_element, "id": self.id}
+
 class Asset(BaseModel):
     UPLOAD_TO = None  # Should be overriden when iheritted
     title = models.CharField(max_length=255, help_text="The title of this asset.")
