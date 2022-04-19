@@ -420,6 +420,7 @@
         if(window.location.hash) {
           $('a[href="' + window.location.hash + '"]').click();
         }
+        window.scroll({ top: 0, behavior: 'smooth' });
 
         // Adds statement form to page
         function add_smt(smt_count) {
