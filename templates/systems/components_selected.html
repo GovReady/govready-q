@@ -25,11 +25,11 @@
                         <div class="form-group">
                             <label for="component">Add component</label>&nbsp;&nbsp;
                             <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
-                            <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onchange="handleComponentSelection($(form));" style="width:340px;">
+                            <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onChange="handleComponentSelection();" style="width:340px;">
                                 <option value="None" selected disabled hidden>Select a Component</option>
                                 {% for component in elements %}
                                     {% if component not in system.producer_elements %}
-                                        <option value="{{ component.id }}">{{ component.name }}{%if component.require_approval %}*{% endif%}</option>
+                                        <option value="{{ component.id }},{{component.require_approval}}">{{ component.name }}{%if component.require_approval %}*{% endif%}</option>
                                     {% endif %}
                                 {% endfor %}
                             </select>
@@ -85,25 +85,41 @@
     }
     const criteria = `{{criteria_text}}`;
  {% endcomment %}
+ 
+    function reactModal(systemId, elementId, req_approval){
+        console.log('reactModal: ', systemId, elementId, req_approval);
+    }
 
-    function handleComponentSelection(form) {
+    function handleComponentSelection() {
+        
         console.log('handleComponentSelection!')
         /* Check if component selected requires approval or has criteria, if it does, pop up modal, else work as previously */
-        console.log('form: ', form)
+        
+        const value = document.getElementById('producer_element_id').value;
+        //console.log('producer_element: ', value)
+        const [component_id, require_approval] = value.split(',');
+        const systemId = {{system.id}};
+        console.log('systemId: ', systemId);
+        console.log('component_id: ', component_id);
+        console.log('require_approval: ', require_approval);
+        //require_approval === 'True' ? window.requireApprovalModal(systemId, component_id, true) : window.requireApprovalModal(systemId, component_id, true)
+        window.requireApprovalModal(systemId, component_id, true)
+        //$(form).submit();
     }
-  // Convert select field for Add Component to jQuery Select2 box
-  $(document).ready(function() {
-    $('#producer_element_id').select2();
-  });
+
+    // Convert select field for Add Component to jQuery Select2 box
+    $(document).ready(function() {
+        $('#producer_element_id').select2();
+    });
 
  
   // Confirm deletion of component
-  function confirm_cmpt_rm(cmpt_rm_url) {
-    var result = confirm('Remove component and related controls from system?\nAny customizations to component\'s statements will be lost.');
-      if (result) {
-        // Pass - allow click to propegate and follow to href target
-        window.location.href = cmpt_rm_url;
-      }
+    function confirm_cmpt_rm(cmpt_rm_url) {
+        var result = confirm('Remove component and related controls from system?\nAny customizations to component\'s statements will be lost.');
+        if (result) {
+            // Pass - allow click to propegate and follow to href target
+            window.location.href = cmpt_rm_url;
+        }
     }
 </script>
 

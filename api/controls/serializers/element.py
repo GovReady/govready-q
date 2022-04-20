@@ -1,11 +1,13 @@
 from rest_framework import serializers
 from rest_framework.relations import PrimaryKeyRelatedField
 
+
 from api.base.serializers.types import ReadOnlySerializer, WriteOnlySerializer
 from api.controls.serializers.import_record import SimpleImportRecordSerializer
 from api.siteapp.serializers.tags import SimpleTagSerializer
 from api.siteapp.serializers.appointment import SimpleAppointmentSerializer
 from controls.models import Element, ElementRole, ElementControl
+from controls.enums.statements import StatementTypeEnum
 from siteapp.models import Appointment, Party, Request, Role, Tag
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
@@ -30,7 +32,7 @@ class DetailedElementSerializer(SimpleElementSerializer):
     appointments = SimpleAppointmentSerializer(many=True)
     # parties = serializers.SerializerMethodField()
     parties = serializers.SerializerMethodField('get_list_of_users')
-
+    criteria = serializers.SerializerMethodField('get_criteria')
     
 
     def get_list_of_users(self, element):
@@ -79,9 +81,16 @@ class DetailedElementSerializer(SimpleElementSerializer):
                 counter += 1
                 parties.append(party)
         return parties
+    def get_criteria(self, element):
+        criteria_results = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name)
+        if len(criteria_results) > 0:
+            criteria_text = criteria_results.first().body
+        else:
+            criteria_text = ""
+        return criteria_text
     class Meta:
         model = Element
-        fields = SimpleElementSerializer.Meta.fields + ['roles', 'import_record', 'tags', 'appointments', 'parties']
+        fields = SimpleElementSerializer.Meta.fields + ['roles', 'import_record', 'tags', 'appointments', 'parties', 'criteria']
 
 class ElementPermissionSerializer(SimpleElementSerializer):
     users_with_permissions = serializers.SerializerMethodField('get_list_of_users')

@@ -2446,6 +2446,9 @@ def add_system_component(request, system_id):
     for key in form_dict.keys():
         form_values[key] = form_dict[key][0]
 
+    #extract producer_elmentid and require_approval boolean val
+    form_values['producer_element_id'], check_req_approval = form_values['producer_element_id'].split(',')
+    
     # Does user have permission to add element?
     # Check user permissions
     system = System.objects.get(pk=system_id)

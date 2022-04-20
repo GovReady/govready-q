@@ -64,32 +64,39 @@ const useStyles = makeStyles({
   }
 });
 
-export const RequireApprovalModal = ({ systemId, isOwner }) => {
-  const dispatch = useDispatch();
-
+export const RequireApprovalModal = ({ systemId, elementId, require_approval, uuid }) => {
   const classes = useStyles();
   const dgClasses = datagridStyles();
   const [data, setData] = useState([]);
-  const [openRequireApprovalModal, setOpenRequireApprovalModal] = useState(false);
-  
-  const endpoint = (querystrings) => {
-    return axios.get(`/api/v2/roles/`, { params: querystrings });
-  };
+  const [openRequireApprovalModal, setOpenRequireApprovalModal] = useState(require_approval);
+
+//   const endpoint = (querystrings) => {
+//     return axios.get(`/api/v2/roles/`, { params: querystrings });
+//   };
 
 
   useEffect(() => {
       axios(`/api/v2/elements/${elementId}/`).then(response => {
-        setData(response.data.parties);
+        setData(response.data);
       });
-  }, [])
+  }, [elementId])
 
+  const clearModal = async (event) => {
+    console.log('clearModal!')
+  }
   const handleSubmit = async (event) => {
     console.log('handleSubmit!')
+    /* Create a request and assign it to element and system */
+  }
+  const handleClose = async (event) => {
+    console.log('handleClose!')
+    setOpenRequireApprovalModal(false);
   }
 
+  console.log('data: ', data, require_approval, uuid, openRequireApprovalModal);
   return (
     <div style={{ maxHeight: '2000px', width: '100%' }}>
-      <ReactModal
+      {data.criteria !== "" && <ReactModal
           title={`Create New Party with appointed roles`}
           show={openRequireApprovalModal}
           hide={() => setOpenRequireApprovalModal(false)}
@@ -98,7 +105,7 @@ export const RequireApprovalModal = ({ systemId, isOwner }) => {
               <>
                 <FormGroup controlId={`form-title`}>
                   <Col sm={12}>
-                    <h3>You have selected a "protected" common control component.</h3>
+                    <h2>You have selected a "protected" common control component.</h2>
                   </Col>
                 </FormGroup>
               </>
@@ -114,18 +121,18 @@ export const RequireApprovalModal = ({ systemId, isOwner }) => {
                     width: '80%', 
                   }}
                 >
-                    <p>The {element.full_name} common control set required approval/whitelist.</p>
-                    
+                    <p>The {data.full_name} common control set required approval/whitelist.</p>
+                    <span>{data.criteria}</span>
                 </div>
               </FormGroup>
               <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
-                  <Button type="button" onClick={clearModal} style={{float: 'left'}}>Clear</Button>
-                  <Button variant="secondary" onClick={handleClose} style={{marginRight: '2rem'}}>Close</Button>
+                  <Button type="button" onClick={handleClose} style={{float: 'left'}}>Cancel</Button>
                   <Button type="submit" bsStyle="success">Save Changes</Button>
               </Modal.Footer>
               </Form>
           }
         />
+      }
     </div>
   )
 }
