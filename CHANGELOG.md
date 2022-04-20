@@ -29,6 +29,7 @@ v0.9.14-dev (April xx, 2022)
 * Added more permission functions to element model: assigning a user specific permissions, removing all permissions from a user, and checking if a user is an owner of the element
 * Updated User model to include search by 'username' and exclusion functionality to queryset.
 * Assign owners to components imported via OSCAL. If no user is identified during component (element creation) assign first Superuser (administrator) as component owner.
+* Support navigating to specific tab on component library component page using URL hash (#) reference.
 
 **Bug fixes**
 
