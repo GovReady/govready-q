@@ -1402,10 +1402,16 @@ def component_library_component(request, element_id):
         impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     if len(impl_smts) < 1:
+        # New component, no control statements assigned yet
+        catalog_key = "catalog_key_missing"
+        catalog_controls = None
+        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+        opencontrol_string = None
         context = {
             "element": element,
             "states": states,
             "impl_smts": impl_smts,
+            "oscal": oscal_string,
             "is_admin": request.user.is_superuser,
             "list_of_permissible_users": listUsers,
             "is_owner": is_owner,
@@ -1418,13 +1424,6 @@ def component_library_component(request, element_id):
             "form_source": "component_library"
         }
         return render(request, "components/element_detail_tabs.html", context)
-
-    if len(impl_smts) == 0:
-        # New component, no control statements assigned yet
-        catalog_key = "catalog_key_missing"
-        catalog_controls = None
-        oscal_string = None
-        opencontrol_string = None
     elif len(impl_smts) > 0:
         # TODO: We may have multiple catalogs in this case in the future
         # Retrieve used catalog_key
@@ -1467,7 +1466,7 @@ def component_library_component(request, element_id):
         "is_owner": is_owner,
         "can_edit": hasPermissionToEdit,
         "users_with_permissions": usersWithPermission,
-        "criteria_text": criteria_text.first().body,
+        "criteria_text": criteria_text,
         "contacts": serializers.serialize('json', contacts),
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
