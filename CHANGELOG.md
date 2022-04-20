@@ -37,6 +37,7 @@ v0.9.14-dev (April xx, 2022)
 * Updated User model to include search by 'username' and exclusion functionality to queryset.
 * Add model Roles, Party, and Appointments to siteapp to support identifying roles on Components (Element).
 * Assign owners to components imported via OSCAL. If no user is identified during component (element creation) assign first Superuser (administrator) as component owner.
+* Support navigating to specific tab on component library component page using URL hash (#) reference.
 
 **Bug fixes**
 
