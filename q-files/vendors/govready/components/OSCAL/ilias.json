@@ -25,6 +25,16 @@
                   "name": "tag",
                   "ns": "https://govready.com/ns/oscal",
                   "value": "sample"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "training"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "ILIAS"
                 }
               ],
         "responsible-roles": [
