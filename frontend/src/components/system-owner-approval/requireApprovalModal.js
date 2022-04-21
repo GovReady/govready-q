@@ -77,20 +77,14 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
         setOpenRequireApprovalModal(true);
       }
       if(!require_approval && response.data.criteria === ""){
-        debugger;
-        console.log('No approval requirement and no criteria set')
         /* add_component form can be found in systems/component_selected.html */
         document.add_component.submit(); 
       }
-
     });
   }, [elementId, uuid])
 
-  const clearModal = async (event) => {
-    console.log('clearModal!')
-  }
   const handleSubmit = async (event) => {
-    console.log('handleSubmit!')
+    event.preventDefault();
     
     const newReq = {
       userId: userId,
@@ -99,24 +93,39 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
       criteria_reject_comment: "",
       status: "pending"
     }
-    /* Create a request and assign it to element and system */
-    const newRequestResponse = await axios.post(`/api/v2/elements/${elementId}/CreateAndSetRequest/`, newReq);
-    if(newRequestResponse.status === 200){
-      handleClose();
+    const checkElement = await axios.get(`/api/v2/elements/${elementId}/retrieveRequests/`);
+
+    if(checkElement.status === 200){
+      let alreadyRequested = false;
+      checkElement.data.requested.map((req) => {
+        if((req.userId === userId) && (req.requested_element.id === parseInt(elementId)) && (req.system.id === newReq.systemId)){
+          alreadyRequested = true;
+        }
+      });
+      if(!alreadyRequested){
+        /* Create a request and assign it to element and system */
+        const newRequestResponse = await axios.post(`/api/v2/elements/${elementId}/CreateAndSetRequest/`, newReq);
+        if(newRequestResponse.status === 200){
+          handleClose();
+        } else {
+          console.error("Something went wrong in creating and setting new request to element");
+        }
+      } else {
+        handleClose();
+        alert('ALREADY REQUESTED!');
+      }
     } else {
-      console.error("Something went wrong in creating and setting new request to element")
+      console.error("Something went wrong with checking element");
     }
   }
   const handleClose = async (event) => {
-    console.log('handleClose!')
     setOpenRequireApprovalModal(false);
   }
-
-  console.log('data: ', data, require_approval, uuid, openRequireApprovalModal);
+  
   return (
     <div style={{ maxHeight: '2000px', width: '100%' }}>
       <ReactModal
-        title={`Create New Party with appointed roles`}
+        title={`System Owner Requesting Element Modal`}
         show={openRequireApprovalModal}
         hide={() => setOpenRequireApprovalModal(false)}
         header={

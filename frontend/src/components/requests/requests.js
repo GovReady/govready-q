@@ -170,34 +170,31 @@ export const RequestsTable = ({ elementId, isOwner }) => {
     },
   ]);
 
-  
-
-  
   return (
       <div style={{ maxHeight: '2000px', width: '100%' }}>
           <Grid className="poc-data-grid" sx={{ minHeight: '500px' }}>
               <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
                   <div style={{ width: "100%", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
                       <DataGrid
-                          className={dgClasses.root}
-                          autoHeight={true}
-                          density="compact"
-                          rows={data}
-                          columns={isOwner ? columnsForEditor : columns}
-                          pageSize={25}
-                          rowsPerPageOptions={[25]}
-                          rowHeight={50}
-                          checkboxSelection
-                          // onSelectionModelChange={(selectionModel, details) => {
-                          //   console.log(selectionModel, details);
-                          // }}
-                          // disableSelectionOnClick
-                          sx={{ 
+                        className={dgClasses.root}
+                        autoHeight={true}
+                        density="compact"
+                        rows={data}
+                        columns={isOwner ? columnsForEditor : columns}
+                        pageSize={25}
+                        rowsPerPageOptions={[25]}
+                        rowHeight={50}
+                        checkboxSelection
+                        // onSelectionModelChange={(selectionModel, details) => {
+                        //   console.log(selectionModel, details);
+                        // }}
+                        // disableSelectionOnClick
+                        sx={{ 
                           fontSize: '14px',
                           '& .MuiDataGrid-columnHeaderTitle':{
                               fontWeight: 600,
                           },
-                          }}
+                        }}
                       />
                   </div>
               </div>

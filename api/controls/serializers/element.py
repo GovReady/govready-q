@@ -197,6 +197,7 @@ class ElementRequestsSerializer(ReadOnlySerializer):
 
             req = {
                 "id": request.id,
+                "userId": request.user.id,
                 "user_name": request.user.name,
                 "user_email": request.user.email,
                 "user_phone_number": request.user.phone_number,
@@ -208,7 +209,7 @@ class ElementRequestsSerializer(ReadOnlySerializer):
                     "description": request.system.root_element.description,
                     "point_of_contact": list_of_system_PointOfContacts,
                 },
-                "requested_element: ": {
+                "requested_element": {
                     "id": request.requested_element.id,
                     "name": request.requested_element.name,
                     "full_name": request.requested_element.full_name,
