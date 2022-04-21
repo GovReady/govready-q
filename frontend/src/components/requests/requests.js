@@ -71,15 +71,10 @@ export const RequestsTable = ({ elementId, isOwner }) => {
   const [data, setData] = useState([]);
   const [sortby, setSortBy] = useState(["name", "asc"]);
 
-  const endpoint = (querystrings) => {
-      return axios.get(`/api/v2/requests/`, { params: querystrings });
-  };
-
   useEffect(() => {
-      axios(`/api/v2/elements/${elementId}/retrieveRequests/`).then(response => {
-          // debugger;
-          setData(response.data.requested);
-      });
+    axios(`/api/v2/elements/${elementId}/retrieveRequests/`).then(response => {
+      setData(response.data.requested);
+    });
   }, [])
 
   const [columnsForEditor, setColumnsForEditor] = useState([

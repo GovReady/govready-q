@@ -20,7 +20,7 @@
                 <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span class="systems-selected-items">Selected components</span></div>
                 <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
                 <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 pull-right">
-                    <form id="add_component" class="form-inline" method="post" action="{%  url 'add_system_component' system_id=system.id %}">
+                    <form id="add_component" name="add_component" class="form-inline" method="post" action="{%  url 'add_system_component' system_id=system.id %}">
                         {% csrf_token %}
                         <div class="form-group">
                             <label for="component">Add component</label>&nbsp;&nbsp;
@@ -78,33 +78,13 @@
 {% block scripts %}
 {{ block.super }}
 <script>
- {% comment %} console.log('elementId: ', `{{requested_elementId}}`);
-  console.log("criteria: ", criteria);
-    function require_approval_modal(){
-        console.log('require_approval_modal');
-    }
-    const criteria = `{{criteria_text}}`;
- {% endcomment %}
- 
-    function reactModal(systemId, elementId, req_approval){
-        console.log('reactModal: ', systemId, elementId, req_approval);
-    }
-
     function handleComponentSelection() {
-        
-        console.log('handleComponentSelection!')
         /* Check if component selected requires approval or has criteria, if it does, pop up modal, else work as previously */
-        
         const value = document.getElementById('producer_element_id').value;
-        //console.log('producer_element: ', value)
         const [component_id, require_approval] = value.split(',');
+        const userId = {{request.user.id}};
         const systemId = {{system.id}};
-        console.log('systemId: ', systemId);
-        console.log('component_id: ', component_id);
-        console.log('require_approval: ', require_approval);
-        //require_approval === 'True' ? window.requireApprovalModal(systemId, component_id, true) : window.requireApprovalModal(systemId, component_id, true)
-        window.requireApprovalModal(systemId, component_id, true)
-        //$(form).submit();
+        window.requireApprovalModal(userId, systemId, component_id, require_approval === 'True' ? true : false);
     }
 
     // Convert select field for Add Component to jQuery Select2 box

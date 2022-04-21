@@ -64,29 +64,48 @@ const useStyles = makeStyles({
   }
 });
 
-export const RequireApprovalModal = ({ systemId, elementId, require_approval, uuid }) => {
+export const RequireApprovalModal = ({ userId, systemId, elementId, require_approval, uuid }) => {
   const classes = useStyles();
   const dgClasses = datagridStyles();
   const [data, setData] = useState([]);
-  const [openRequireApprovalModal, setOpenRequireApprovalModal] = useState(require_approval);
-
-//   const endpoint = (querystrings) => {
-//     return axios.get(`/api/v2/roles/`, { params: querystrings });
-//   };
-
+  const [openRequireApprovalModal, setOpenRequireApprovalModal] = useState(false);
 
   useEffect(() => {
-      axios(`/api/v2/elements/${elementId}/`).then(response => {
-        setData(response.data);
-      });
-  }, [elementId])
+    axios(`/api/v2/elements/${elementId}/`).then(response => {
+      setData(response.data);
+      if(require_approval || response.data.criteria.length > 0){
+        setOpenRequireApprovalModal(true);
+      }
+      if(!require_approval && response.data.criteria === ""){
+        debugger;
+        console.log('No approval requirement and no criteria set')
+        /* add_component form can be found in systems/component_selected.html */
+        document.add_component.submit(); 
+      }
+
+    });
+  }, [elementId, uuid])
 
   const clearModal = async (event) => {
     console.log('clearModal!')
   }
   const handleSubmit = async (event) => {
     console.log('handleSubmit!')
+    
+    const newReq = {
+      userId: userId,
+      systemId: systemId,
+      criteria_comment: data.criteria,
+      criteria_reject_comment: "",
+      status: "pending"
+    }
     /* Create a request and assign it to element and system */
+    const newRequestResponse = await axios.post(`/api/v2/elements/${elementId}/CreateAndSetRequest/`, newReq);
+    if(newRequestResponse.status === 200){
+      handleClose();
+    } else {
+      console.error("Something went wrong in creating and setting new request to element")
+    }
   }
   const handleClose = async (event) => {
     console.log('handleClose!')
@@ -96,43 +115,42 @@ export const RequireApprovalModal = ({ systemId, elementId, require_approval, uu
   console.log('data: ', data, require_approval, uuid, openRequireApprovalModal);
   return (
     <div style={{ maxHeight: '2000px', width: '100%' }}>
-      {data.criteria !== "" && <ReactModal
-          title={`Create New Party with appointed roles`}
-          show={openRequireApprovalModal}
-          hide={() => setOpenRequireApprovalModal(false)}
-          header={
-            <Form horizontal>
-              <>
-                <FormGroup controlId={`form-title`}>
-                  <Col sm={12}>
-                    <h2>You have selected a "protected" common control component.</h2>
-                  </Col>
-                </FormGroup>
-              </>
-            </Form>
-          }
-          body={
-            <Form horizontal onSubmit={handleSubmit}>
-              <FormGroup>
-                <div 
-                  style={{ 
-                    marginLeft: '6rem', 
-                    marginBottom: '2rem', 
-                    width: '80%', 
-                  }}
-                >
-                    <p>The {data.full_name} common control set required approval/whitelist.</p>
-                    <span>{data.criteria}</span>
-                </div>
+      <ReactModal
+        title={`Create New Party with appointed roles`}
+        show={openRequireApprovalModal}
+        hide={() => setOpenRequireApprovalModal(false)}
+        header={
+          <Form horizontal>
+            <>
+              <FormGroup controlId={`form-title`}>
+                <Col sm={12}>
+                  <h2>You have selected a "protected" common control component.</h2>
+                </Col>
               </FormGroup>
-              <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
-                  <Button type="button" onClick={handleClose} style={{float: 'left'}}>Cancel</Button>
-                  <Button type="submit" bsStyle="success">Save Changes</Button>
-              </Modal.Footer>
-              </Form>
-          }
-        />
-      }
+            </>
+          </Form>
+        }
+        body={
+          <Form horizontal onSubmit={handleSubmit}>
+            <FormGroup>
+              <div 
+                style={{ 
+                  marginLeft: '6rem', 
+                  marginBottom: '2rem', 
+                  width: '80%', 
+                }}
+              >
+                {require_approval ? <p>The {data.full_name} common control has set an approval/whitelist requirement.</p> : <p>The {data.full_name} common control has not set required approval/whitelist, but has criteria that must be met.</p>}
+                {data.criteria ? <span>{data.criteria}</span> : <span>No criteria set</span>}
+              </div>
+            </FormGroup>
+            <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
+                <Button type="button" onClick={handleClose} style={{float: 'left'}}>Cancel</Button>
+                <Button type="submit" bsStyle="success">Submit Request</Button>
+            </Modal.Footer>
+          </Form>
+        }
+      />
     </div>
   )
 }

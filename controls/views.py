@@ -2469,46 +2469,6 @@ def add_system_component(request, system_id):
     elements_selected = system.producer_elements
     elements_selected_ids = [e.id for e in elements_selected]
 
-
-    # Serg TODO: CHECK IF ELEMENT WE ARE ABOUT TO ADD REQUIRES A REQUEST
-    # 1. IF REQUEST IS REQUIERED -> FIRE OFF A MODAL
-   
-
-    element = Element.objects.get(pk=form_values['producer_element_id'])
-    
-    if element.require_approval == True:
-        # 1.a Return Element's criteria and Point of Contact information
-        # 1.b Create Request object, attach to both System and Element component
-        
-        # import ipdb; ipdb.set_trace()
-        criteria_results = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name)
-        if len(criteria_results) > 0:
-            criteria_text = criteria_results.first().body
-        else:
-            criteria_text = ""
-        
-        newRequest = Request.objects.create(
-            user=request.user,
-            system=system,
-            requested_element=element,
-            criteria_comment=criteria_text,
-            criteria_reject_comment="",
-            status="PENDING",
-        )
-        newRequest.save()
-        element.add_requests([newRequest.id])
-        element.save()
-        # system.add_requests([newRequest])
-        # import ipdb; ipdb.set_trace();
-        context = {
-            "requested_elementId": element.id,
-            "requested_element_name": element.name,
-            "requested_element_require_approval": element.require_approval,
-            "criteria_text": criteria_text,
-        }
-        return render(request, "systems/components_selected.html", context)
-    # 2. IF REQUEST IS NOT REQUIERED -> ADD ELEMENT AND STATEMENTS TO SYSTEM
-
     # Add element to system's selected components
     # Look up the element rto add
     
@@ -2521,6 +2481,7 @@ def add_system_component(request, system_id):
         #   this issue may be best addressed elsewhere.
 
     # Component already added to system. Do not add the component (element) to the system again.
+    
     if producer_element.id in elements_selected_ids:
         messages.add_message(request, messages.ERROR,
                             f'Component "{producer_element.name}" already exists in selected components.')
@@ -2529,7 +2490,7 @@ def add_system_component(request, system_id):
             return HttpResponseRedirect(form_values['redirect_url'])
         else:
             return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
-
+            
     smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     # Component does not have any statements of type control_implementation_prototype to

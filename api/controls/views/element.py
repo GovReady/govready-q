@@ -1,13 +1,13 @@
+import collections
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from api.base.views.base import SerializerClasses
 from api.base.views.viewsets import ReadOnlyViewSet, ReadWriteViewSet
 from api.controls.serializers.element import DetailedElementSerializer, SimpleElementSerializer, \
-    WriteElementTagsSerializer, ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer, WriteElementAppointPartySerializer, ElementPartySerializer, DeletePartyAppointmentsFromElementSerializer, CreateMultipleAppointmentsFromRoleIds, ElementRequestsSerializer, ElementSetRequestsSerializer
-from controls.models import Element
-from siteapp.models import Appointment, Party, Role
-from siteapp.models import User
+    WriteElementTagsSerializer, ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer, WriteElementAppointPartySerializer, ElementPartySerializer, DeletePartyAppointmentsFromElementSerializer, CreateMultipleAppointmentsFromRoleIds, ElementRequestsSerializer, ElementSetRequestsSerializer, ElementCreateAndSetRequestSerializer
+from controls.models import Element, System
+from siteapp.models import Appointment, Party, Role, Request, User
 
 class ElementViewSet(ReadOnlyViewSet):
     queryset = Element.objects.all()
@@ -21,7 +21,7 @@ class ElementViewSet(ReadOnlyViewSet):
                                            CreateAndSet=CreateMultipleAppointmentsFromRoleIds,
                                            retrieveRequests=ElementRequestsSerializer,
                                            setRequest=ElementSetRequestsSerializer,
-
+                                           CreateAndSetRequest=ElementCreateAndSetRequestSerializer,
                                            )
 
     @action(detail=True, url_path="tags", methods=["PUT"])
@@ -133,6 +133,24 @@ class ElementViewSet(ReadOnlyViewSet):
         serializer = self.get_serializer(serializer_class, element)
         return Response(serializer.data)
 
+    @action(detail=True, url_path="CreateAndSetRequest", methods=["POST"])
+    def CreateAndSetRequest(self, request, **kwargs):
+        element, validated_data = self.validate_serializer_and_get_object(request)
+        newRequest = Request.objects.create(
+            user=User.objects.get(id=validated_data['userId']),
+            system=System.objects.get(id=validated_data['systemId']),
+            requested_element=element,
+            criteria_comment=validated_data['criteria_comment'],
+            criteria_reject_comment=validated_data['criteria_reject_comment'],
+            status=validated_data['status'],
+        )
+        newRequest.save()
+        element.add_requests([newRequest.id])
+        element.save()
+
+        serializer_class = self.get_serializer_class('retrieve')
+        serializer = self.get_serializer(serializer_class, element)
+        return Response(serializer.data)
 
 
 class ElementWithPermissionsViewSet(ReadWriteViewSet):
