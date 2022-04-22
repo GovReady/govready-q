@@ -20,7 +20,7 @@ Deployments List
 {% block body_content %}
 <div class="systems-top">
     <h1>System Summary 1</h1>
-    
+    <div id="system-summary-poam-datagrid"></div>
 </div>
 
 {% endblock %}
@@ -28,6 +28,7 @@ Deployments List
 {% block scripts %}
     {{ block.super }}
 <script>
+    window.system_summary();
 </script>
 
 {% endblock %}
