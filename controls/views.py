@@ -3382,6 +3382,38 @@ def system_profile_oscal_json(request, system_id):
     response['Content-Disposition'] = f'attachment; filename="oscal-profile.json"'
     return response
 
+# System Summaries
+
+@login_required
+def system_summary_1(request, system_id):
+    """System Summary page experiment 1"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve list of deployments for the system
+        # deployments = system.deployments.all().order_by(Lower('name'))
+        # controls = system.root_element.controls.all()
+        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+        # Return the controls
+        context = {
+            "system": system,
+            "project": project,
+            # "deployments": deployments,
+            "display_urls": project_context(project)
+        }
+        return render(request, "systems/system_summary_1.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+
 # System Deployments
 @login_required
 def system_deployments(request, system_id):

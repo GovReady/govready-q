@@ -1,0 +1,33 @@
+{% extends "project-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+{% load system_tags %}
+
+{% block title %}
+Deployments List
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+<!-- action buttons included from project-base.html -->
+<!-- authoring_tool_enabled included from project-base.html -->
+
+{% block body_content %}
+<div class="systems-top">
+    <h1>System Summary 1</h1>
+    
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+<script>
+</script>
+
+{% endblock %}
