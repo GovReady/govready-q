@@ -18,10 +18,122 @@ Deployments List
 <!-- authoring_tool_enabled included from project-base.html -->
 
 {% block body_content %}
-<div class="systems-top">
-    <h1>System Summary 1</h1>
-    
+
+<style>
+td.sys-detail-table-left { width:50%;}
+.sys-detail-table-right { font-weight:bold;}
+
+.sys-detail-table { font-size:.8em;}
+.status-box { width:10px; height:10px; }
+.status-red { background: #ff0000;}
+.status-yellow {background: #FFFF00;}
+.status-green { background: #00FF00;}
+
+.system-classification { font-size:1.2em; padding:0; margin:0;}
+.system-name { font-size:2em; padding:0; margin:0;}
+.system-aka { font-size:1.2em; padding:0; margin:0;}
+
+.system-heading { font-size:.8em; font-weight:bold; }
+
+</style>
+
+<div class="row">
+    <div class="col-md-8" style="border:1px solid;">
+      <h3 class="system-classification">Moderate Impact</h3>
+      <h2 class="system-name">Dairy Billing Inspection Grading System</h2>
+      <h3 class="system-aka">AKA "DBIGS"</h3>
+    </div>
+
+    <div class="col-md-4" style="border:1px solid;">Systems-wide Initiative Status
+<div style="border:1 px solid;">
+  <table>
+    <tr><td style="width:15px;"><div class="status-box status-red">&nbsp;</div></td><td>800-53 rev5 migration</td></tr>
+    <tr><td><div class="status-box status-yellow">&nbsp;</div></td><td>Log4J remediation solution (updated 4/21/22)</td></tr>
+    <tr><td><div class="status-box status-green">&nbsp;</div></td><td>Q3 Audit</td></tr>
+  </table>
 </div>
+
+
+
+    </div>
+</div>
+
+<div class="row">
+<div class="col-md-12"><h3>Overview</h3></div>
+
+<div class="col-md-7" style="border:1px solid;">
+<h3 class="system-heading">System Details</h3>
+<div class="col-md-6" style="border:1px solid;">
+<table class="sys-detail-table">
+  <tr><td class="sys-detail-table-left">System ID</td><td class="sys-detail-table-right"> 23756263482-23</td></tr>
+  <tr><td class="sys-detail-table-left">Operational Status</td><td> Operational</td></tr>
+  <tr><td class="sys-detail-table-left">System Type</td><td> General Support System</td></tr>
+  <tr><td class="sys-detail-table-left">System Created</td><td> 743 days ago</td></tr>
+  <tr><td class="sys-detail-table-left">Hosting Facility</td><td> DISC</td></tr>
+</table>
+
+</div>
+<div class="col-md-6" style="border:1px solid;">
+<table class="sys-detail-table">
+    <tr><td class="sys-detail-table-left">Next Scheduled Audit</td><td> June 21, 2022 (59 days)</td></tr>
+    <tr><td>Next Scheduled Scan</td><td> 05/01/22</td></tr>
+    <tr><td>Security Scan</td><td> Last known scan - 04/20/22 @ 1:23pm</td></tr>
+    <tr><td>Penetration Test</td><td> Scheduled for 05/05/22</td></tr>
+    <tr><td>Auto-Config Scan</td><td> Last known scan - 01/17/20 @ 4:32pm</td></tr>
+  </table>
+
+</div>
+
+
+<div>
+  <h3 class="system-heading">Recent System Related Events</h3>
+<div class="col-md-3" style="border:1px solid;">TEST</div>
+<div class="col-md-9" style="border:1px solid;">Penetration test scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do...</div>
+
+<div class="col-md-3" style="border:1px solid;">SCAN</div>
+<div class="col-md-9" style="border:1px solid;">Security scan scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do...</div>
+
+<div class="col-md-3" style="border:1px solid;">SYSTEM</div>
+<div class="col-md-9" style="border:1px solid;">Isso appointed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...</div>
+
+
+  </div>
+
+
+</div>
+
+
+<div class="col-md-5" style="border:1px solid;">
+<h3 class="system-heading">System Summary</h3>
+<div class="col-md-12" style="border:1px solid;"><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+<p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+<div class="col-md-12" style="border:1px solid;">
+<h4>Ownership</h4></div>
+<div class="col-md-12" style="border:1px solid;">
+<h5>organization:</h5>
+<p>Forest Service</p>
+<div class="col-md-6" style="border:1px solid;">System Owner
+<p>Lorem ipsum</p>
+<p>555-888-1212</p>
+<p>contact@dfafsdf.com</p>
+
+
+</div>
+<div class="col-md-6" style="border:1px solid;">Technical Contact
+<p>  Department of Forgotten Systems</p>
+<p>  252-314-1414</p>
+<p>  admin@sdfsdqfqfqf.com</p>
+
+</div>
+</div>
+
+</div>
+
+
+</div>
+
+
 
 {% endblock %}
 
