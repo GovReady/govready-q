@@ -21,92 +21,104 @@ Deployments List
 
 <style>
 
-.sys-summary-header { font-size:1.5em; font-weight:bold; color:#000; border-bottom:1px solid; padding:0; margin:0;}
+.sys-summary-header { font-size:1.5em; font-weight:bold; color:#1A1A1A; border-bottom:1px solid; padding:0 0 .3em 0; margin:0;}
 
 
-td.sys-detail-table-left { width:50%;}
-.sys-detail-table-right { font-weight:bold;}
+
+.sys-detail-response { font-weight:bold; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif;}
 
 .sys-detail-table { font-size:.8em;}
+.sys-detail-table td { padding-bottom:.5em;}
+
 .status-box { width:10px; height:10px; }
 .status-red { background: #ff0000;}
 .status-yellow {background: #FFFF00;}
 .status-green { background: #00FF00;}
 
-.system-classification { font-size:1em; padding:0; margin:0; color:#000; font-weight:bold;}
-.system-name { font-size:2em; padding:0; margin:0 0 .2em 0;}
+.system-classification { font-size:1em; padding:0; margin:0; color:#1A1A1A; font-weight:bold;}
+.system-name { font-size:2em; padding:0; margin:0 0 .2em 0; color:#1A1A1A;}
 .system-aka { font-size:1.2em; padding:0; margin:0;}
 
-.system-heading { font-size:.8em; font-weight:bold; }
+.system-heading { font-size:.7em; font-weight:bold; color:#4D4D4D; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif;}
 
-.sys-summary-content { font-size:.9em;}
-.sys-ownership-details { font-size:.8em; }
+.sys-summary-content { font-size:.9em; padding-bottom:1em; line-height:1.2em;}
+.sys-ownership-details { font-size:.8em; padding:0;}
 .sys-wide-status { font-size:.7em;}
 #sys-wide-status td { padding-bottom:4px; }
-.sys-wide-status-header { font-weight:bold; padding:0; margin:0 0 .5em 0;}
+.sys-wide-status-header { font-weight:bold; padding:0; margin:0 0 .5em 0; color:#4D4D4D;}
+
+.sys-recent { font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; font-size:.9em;}
+.sys-recent tr { border-bottom:1px solid #ccc;  }
+.sys-recent-left { padding:10px 15px 10px 0;}
+.sys-recent-tag { background-color:#F2F2F2; padding:3px 8px; border-radius: 7px; border:1px solid #ccc; font-size:.7em; }
+
+
+.ownership-tab { border-bottom:1px solid #ccc; padding:0 0 .2em 0;}
+.header { font-weight:bold; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; font-size:.8em;}
 </style>
 
 <div class="row">
-    <div class="col-md-8" style="">
+      <div class="col-md-8" style="">
       <h3 class="system-classification">Moderate Impact</h3>
       <h2 class="system-name">Dairy Billing Inspection Grading System</h2>
       <h3 class="system-aka"><span style="font-size:.8em;">A.K.A.</span> "DBIGS"</h3>
-    </div>
+      </div>
 
     <div class="col-md-4"><h5 class="sys-wide-status-header">Systems-wide Initiative Status</h5>
-<div style="border:1px solid #CCCCCC; padding:8px;">
-  <table id="sys-wide-status">
+    <div style="border:1px solid #CCCCCC; padding:8px;">
+    <table id="sys-wide-status">
     <tr><td style="width:15px;"><div class="status-box status-red">&nbsp;</div></td><td class="sys-wide-status">800-53 rev5 migration</td></tr>
     <tr><td><div class="status-box status-yellow">&nbsp;</div></td><td class="sys-wide-status">Log4J remediation solution (updated 4/21/22)</td></tr>
     <tr><td><div class="status-box status-green">&nbsp;</div></td><td class="sys-wide-status">Q3 Audit</td></tr>
-  </table>
-</div>
-
-
-
+    </table>
+    </div>
     </div>
 </div>
 
 <div class="row">
-<div class="col-md-12"><h3 class="sys-summary-header">Overview</h3></div>
+  <div class="col-md-12"><h3 class="sys-summary-header">Overview</h3></div>
 
-<div class="col-md-7" style="">
-<h3 class="system-heading">System Details</h3>
-<div class="col-md-12" style="border:1px solid #8C8C8C; background:#f8f8f8; margin-bottom:3em; padding:10px;">
-<div class="col-md-6">
-<table class="sys-detail-table">
-  <tr><td class="sys-detail-table-left">System ID</td><td class="sys-detail-table-right"> 23756263482-23</td></tr>
-  <tr><td class="sys-detail-table-left">Operational Status</td><td> Operational</td></tr>
-  <tr><td class="sys-detail-table-left">System Type</td><td> General Support System</td></tr>
-  <tr><td class="sys-detail-table-left">System Created</td><td> 743 days ago</td></tr>
-  <tr><td class="sys-detail-table-left">Hosting Facility</td><td> DISC</td></tr>
-</table>
-
-</div>
-
-<div class="col-md-6">
-<table class="sys-detail-table">
-    <tr><td class="sys-detail-table-left">Next Scheduled Audit</td><td> June 21, 2022 (59 days)</td></tr>
-    <tr><td>Next Scheduled Scan</td><td> 05/01/22</td></tr>
-    <tr><td>Security Scan</td><td> Last known scan - 04/20/22 @ 1:23pm</td></tr>
-    <tr><td>Penetration Test</td><td> Scheduled for 05/05/22</td></tr>
-    <tr><td>Auto-Config Scan</td><td> Last known scan - 01/17/20 @ 4:32pm</td></tr>
-  </table>
-
-</div>
-</div>
-
-
+  <div class="col-md-8">
+    <h3 class="system-heading">System Details</h3>
+    <div class="col-md-12" style="border:1px solid #8C8C8C; background:#f8f8f8; margin-bottom:3em; padding:10px;">
+      <div class="col-md-6">
+        <table class="sys-detail-table">
+          <tr><td class="sys-detail-table-left">System ID: <span class="sys-detail-response">23756263482-23</span></td></tr>
+          <tr><td class="sys-detail-table-left">Status: <span class="sys-detail-response">Operational</span></td></tr>
+          <tr><td class="sys-detail-table-left">System Type: <span class="sys-detail-response">General Support System</span></td></tr>
+          <tr><td class="sys-detail-table-left">System Created: <span class="sys-detail-response">743 days ago</span></td></tr>
+          <tr><td class="sys-detail-table-left">Hosting Facility: <span class="sys-detail-response">DISC</span></td></tr>
+        </table>
+      </div>
+      <div class="col-md-6">
+        <table class="sys-detail-table">
+          <tr><td class="sys-detail-table-left">Next Audit: <span class="sys-detail-response">June 21, 2022 (59 days)</span></td></tr>
+          <tr><td class="sys-detail-table-left">Next Scan: <span class="sys-detail-response">05/01/22</span></td></tr>
+          <tr><td class="sys-detail-table-left">Security Scan: <span class="sys-detail-response">Last known-04/20/22 @ 1:23pm</span></td></tr>
+          <tr><td class="sys-detail-table-left">Penetration Test: <span class="sys-detail-response">Scheduled for 05/05/22</span></td></tr>
+          <tr><td class="sys-detail-table-left">Auto-Config Scan: <span class="sys-detail-response">Last known-01/17/20 @ 4:32pm</span></td></tr>
+        </table>
+      </div>
+    </div>
 <div>
-  <h3 class="system-heading">Recent System Related Events</h3>
-<div class="col-md-3" style="border:1px solid;">TEST</div>
-<div class="col-md-9" style="border:1px solid;">Penetration test scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do...</div>
 
-<div class="col-md-3" style="border:1px solid;">SCAN</div>
-<div class="col-md-9" style="border:1px solid;">Security scan scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do...</div>
 
-<div class="col-md-3" style="border:1px solid;">SYSTEM</div>
-<div class="col-md-9" style="border:1px solid;">Isso appointed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...</div>
+<h3 class="system-heading">Recent System Related Events</h3>
+<table class="sys-recent">
+  <tr>
+    <td class="sys-recent-left"><div class="sys-recent-tag">TEST</div></td><td>Penetration test scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do...</td>
+  </tr>
+
+  <tr>
+    <td class="sys-recent-left"><div class="sys-recent-tag">SCAN</div></td><td>Security scan scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do...</td>
+  </tr>
+
+  <tr>
+    <td class="sys-recent-left"><div class="sys-recent-tag">SYS</div></td><td>Isso appointed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...</td>
+  </tr>
+
+
+</table>
 
 
   </div>
@@ -115,41 +127,39 @@ td.sys-detail-table-left { width:50%;}
 </div>
 
 
-<div class="col-md-5" style="">
+<div class="col-md-4">
 <h3 class="system-heading">System Summary</h3>
 <div class="col-md-12" ><p class="sys-summary-content">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
 <p class="sys-summary-content">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+</div>
 
+<h4 class="system-heading ownership-tab">Ownership</h4>
 <div class="col-md-12">
-<h4 class="system-heading">Ownership</h4></div>
-<div class="col-md-12" style="border:1px solid;">
-<h5 class="system-heading">Organization</h5>
+<h5 class="system-heading" style="padding:0; margin:0;">Organization</h5>
 <p class="sys-summary-content">Forest Service, Office of CIO (Customer Experience Center)</p>
-<div class="col-md-6 sys-ownership-details" style="border:1px solid;">System Owner
-<p>Lorem ipsum</p>
-<p>555-888-1212</p>
-<p>contact@dfafsdf.com</p>
 
-
-</div>
-<div class="col-md-6 sys-ownership-details" style="border:1px solid;">Technical Contact
-<p>  Department of Forgotten Systems</p>
-<p>  252-314-1414</p>
-<p>  admin@sdfsdqfqfqf.com</p>
-
-</div>
+<div class="col-md-6 sys-ownership-details"><span class="header">System Owner</span>
+<p>Lorem ipsum</br>
+555-888-1212</br>
+contact@dfafsdf.com</p>
 </div>
 
+<div class="col-md-6 sys-ownership-details"><span class="header">Technical Contact</span>
+<p> Department of Forgotten Systems</br>
+252-314-1414</br>
+admin@sdfsdqfqfqf.com</p>
+</div>
+</div>
+</div>
 </div>
 
-
-</div>
 
 
 <div class="row">
 <div class="col-md-12"><h3 class="sys-summary-header">Risk Assessment</h3></div>
 
 </div>
+
 
 {% endblock %}
 
