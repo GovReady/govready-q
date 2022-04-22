@@ -3,11 +3,13 @@ import { useSelector, useDispatch } from 'react-redux';
 import { DataTable } from '../shared/table';
 import axios from 'axios';
 import moment from 'moment';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, useGridApiContext } from '@mui/x-data-grid';
 import { v4 as uuid_v4 } from "uuid";
+import PropTypes from 'prop-types';
 import { 
   Chip,
   Grid,
+  Select,
   Stack,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -77,6 +79,52 @@ export const RequestsTable = ({ elementId, isOwner }) => {
     });
   }, [])
 
+  function SelectEditInputCell(props) {
+    const { id, value, field } = props;
+    const apiRef = useGridApiContext();
+  
+    const handleChange = async (event) => {
+      debugger;
+      await apiRef.current.setEditCellValue({ id, field: 'status', value: event.target.value });
+      apiRef.current.stopCellEditMode({ id, field: 'status' });
+      apiRef.current.stopCellEditMode({ id, field });
+    };
+  
+    return (
+      <Select
+        value={value}
+        onChange={handleChange}
+        size="small"
+        sx={{ height: 1 }}
+        native
+        autoFocus
+      >
+        <option>Started</option>
+        <option>Pending</option>
+        <option>In Progress</option>
+        <option>Complete</option>
+      </Select>
+    );
+  }
+  
+  SelectEditInputCell.propTypes = {
+    /**
+     * The column field of the cell that triggered the event.
+     */
+    field: PropTypes.string.isRequired,
+    /**
+     * The grid row id.
+     */
+    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+    /**
+     * The cell value, but if the column has valueGetter, use getValue.
+     */
+    value: PropTypes.any,
+  };
+  
+  const renderSelectEditInputCell = (params) => {
+    return <SelectEditInputCell {...params} />;
+  };
   const statuses = ["pending", "incomplete", "complete", "Approval to Proceed", "Enabled", "Implemented", "Rejected"]
   const [columnsForEditor, setColumnsForEditor] = useState([
     {
@@ -130,12 +178,13 @@ export const RequestsTable = ({ elementId, isOwner }) => {
       field: 'action',
       headerName: 'Action',
       width: 300,
-      editable: false,
-      renderCell: (params) => (
-        <div>
-          Action bar and submit button
-        </div>
-      ),
+      editable: true,
+      renderEditCell: renderSelectEditInputCell,
+      // renderCell: (params) => (
+      //   <div>
+      //     Action bar and submit button
+      //   </div>
+      // ),
     },
   ]);
 
@@ -184,6 +233,7 @@ export const RequestsTable = ({ elementId, isOwner }) => {
                         pageSize={25}
                         rowsPerPageOptions={[25]}
                         rowHeight={50}
+                        experimentalFeatures={{ newEditingApi: true}}
                         checkboxSelection
                         // onSelectionModelChange={(selectionModel, details) => {
                         //   console.log(selectionModel, details);
