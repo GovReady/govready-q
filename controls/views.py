@@ -2933,6 +2933,7 @@ def poams_list(request, system_id):
         controls = system.root_element.controls.all()
         poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
 
+        
         # impl_smts_count = {}
         # ikeys = system.smts_control_implementation_as_dict.keys()
         # for c in controls:
@@ -2941,6 +2942,7 @@ def poams_list(request, system_id):
         #         impl_smts_count[c.oscal_ctl_id] = len(system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
 
         # Return the controls
+        import ipdb;ipdb.set_trace()
         context = {
             "system": system,
             "project": project,
@@ -3402,6 +3404,7 @@ def system_summary_1(request, system_id):
         # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
 
         # Return the controls
+        # import ipdb; ipdb.set_trace()
         context = {
             "system": system,
             "project": project,

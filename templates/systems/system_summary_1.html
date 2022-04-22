@@ -28,7 +28,7 @@ Deployments List
 {% block scripts %}
     {{ block.super }}
 <script>
-    window.system_summary();
+    window.system_summary({{system.id}}, {{project.id}});
 </script>
 
 {% endblock %}
