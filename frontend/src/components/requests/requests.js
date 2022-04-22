@@ -77,6 +77,7 @@ export const RequestsTable = ({ elementId, isOwner }) => {
     });
   }, [])
 
+  const statuses = ["pending", "incomplete", "complete", "Approval to Proceed", "Enabled", "Implemented", "Rejected"]
   const [columnsForEditor, setColumnsForEditor] = useState([
     {
       field: 'user',
@@ -136,7 +137,6 @@ export const RequestsTable = ({ elementId, isOwner }) => {
         </div>
       ),
     },
-
   ]);
 
   const [columns, setColumns] = useState([
