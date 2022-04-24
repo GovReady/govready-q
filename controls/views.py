@@ -2942,7 +2942,6 @@ def poams_list(request, system_id):
         #         impl_smts_count[c.oscal_ctl_id] = len(system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
 
         # Return the controls
-        import ipdb;ipdb.set_trace()
         context = {
             "system": system,
             "project": project,
