@@ -23,8 +23,6 @@ Deployments List
 
 .sys-summary-header { font-size:1.5em; font-weight:bold; color:#1A1A1A; border-bottom:1px solid; padding:0 0 .3em 0; margin:0 0 1em 0;}
 
-
-
 .sys-detail-response { font-weight:bold; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif;}
 
 .sys-detail-table { font-size:.8em;}
@@ -59,23 +57,23 @@ Deployments List
 
 <div class="row">
       <div class="col-md-8" style="">
-      <h3 class="system-classification">Moderate Impact</h3>
-      <h2 class="system-name">Dairy Billing Inspection Grading System</h2>
-      <h3 class="system-aka"><span style="font-size:.8em;">A.K.A.</span> "DBIGS"</h3>
+          <h3 class="system-classification">{{ system.impact }}</h3>
+          <h2 class="system-name">{{ system.name }}</h2>
+          <h3 class="system-aka"><span style="font-size:.8em;">A.K.A.</span> {% for aka in system.aka %}"{{ aka }}"{% if not forloop.last %}, {% endif %}{% endfor %}</h3>
       </div>
 
     <div class="col-md-4"><h5 class="sys-wide-status-header">Systems-wide Initiative Status</h5>
-    <div style="border:1px solid #CCCCCC; padding:8px;">
-    <table id="sys-wide-status">
-    <tr><td style="width:15px;"><div class="status-box status-red">&nbsp;</div></td><td class="sys-wide-status">800-53 rev5 migration</td></tr>
-    <tr><td><div class="status-box status-yellow">&nbsp;</div></td><td class="sys-wide-status">Log4J remediation solution (updated 4/21/22)</td></tr>
-    <tr><td><div class="status-box status-green">&nbsp;</div></td><td class="sys-wide-status">Q3 Audit</td></tr>
-    </table>
-    </div>
+        <div style="border:1px solid #CCCCCC; padding:8px;">
+            <table id="sys-wide-status">
+                <tr><td style="width:15px;"><div class="status-box status-red">&nbsp;</div></td><td class="sys-wide-status">800-53 rev5 migration</td></tr>
+                <tr><td><div class="status-box status-yellow">&nbsp;</div></td><td class="sys-wide-status">Log4J remediation solution (updated 4/21/22)</td></tr>
+                <tr><td><div class="status-box status-green">&nbsp;</div></td><td class="sys-wide-status">Q3 Audit</td></tr>
+            </table>
+        </div>
     </div>
 </div>
 
-<div class="row">
+<div class="row" style="margin-top: 20px;">
   <div class="col-md-12"><h3 class="sys-summary-header">Overview</h3></div>
 
   <div class="col-md-8">
@@ -83,43 +81,33 @@ Deployments List
     <div class="col-md-12" style="border:1px solid #8C8C8C; background:#f8f8f8; margin-bottom:3em; padding:10px;">
       <div class="col-md-6">
         <table class="sys-detail-table">
-          <tr><td class="sys-detail-table-left">System ID: <span class="sys-detail-response">23756263482-23</span></td></tr>
-          <tr><td class="sys-detail-table-left">Status: <span class="sys-detail-response">Operational</span></td></tr>
-          <tr><td class="sys-detail-table-left">System Type: <span class="sys-detail-response">General Support System</span></td></tr>
-          <tr><td class="sys-detail-table-left">System Created: <span class="sys-detail-response">743 days ago</span></td></tr>
-          <tr><td class="sys-detail-table-left">Hosting Facility: <span class="sys-detail-response">DISC</span></td></tr>
+            <tr><td class="sys-detail-table-left">System ID: <span class="sys-detail-response">{{ system.other_id }}</span></td></tr>
+            <tr><td class="sys-detail-table-left">Status: <span class="sys-detail-response">{{ system.status }}</span></td></tr>
+            <tr><td class="sys-detail-table-left">System Type: <span class="sys-detail-response">{{ system.type }}</span></td></tr>
+            <tr><td class="sys-detail-table-left">System Created: <span class="sys-detail-response">{{ system.created|naturaltime }}</span></td></tr>
+            <tr><td class="sys-detail-table-left">Hosting Facility: <span class="sys-detail-response">{{ system.hosting_facility }}</span></td></tr>
         </table>
       </div>
       <div class="col-md-6">
         <table class="sys-detail-table">
-          <tr><td class="sys-detail-table-left">Next Audit: <span class="sys-detail-response">June 21, 2022 (59 days)</span></td></tr>
-          <tr><td class="sys-detail-table-left">Next Scan: <span class="sys-detail-response">05/01/22</span></td></tr>
-          <tr><td class="sys-detail-table-left">Security Scan: <span class="sys-detail-response">Last known-04/20/22 @ 1:23pm</span></td></tr>
-          <tr><td class="sys-detail-table-left">Penetration Test: <span class="sys-detail-response">Scheduled for 05/05/22</span></td></tr>
-          <tr><td class="sys-detail-table-left">Auto-Config Scan: <span class="sys-detail-response">Last known-01/17/20 @ 4:32pm</span></td></tr>
+            <tr><td class="sys-detail-table-left">Next Audit: <span class="sys-detail-response">{{ system.next_audit }}</span></td></tr>
+            <tr><td class="sys-detail-table-left">Next Scan: <span class="sys-detail-response">{{ system.next_scan|naturaltime }} </span></td></tr>
+            <tr><td class="sys-detail-table-left">Security Scan: <span class="sys-detail-response">{{ system.security_scan }} d</span></td></tr>
+            <tr><td class="sys-detail-table-left">Penetration Test: <span class="sys-detail-response">{{ system.pen_test|naturaltime }}</span></td></tr>
+            <tr><td class="sys-detail-table-left">Auto-Config Scan: <span class="sys-detail-response">{{ system.config_scan }}</span></td></tr>
         </table>
       </div>
     </div>
 <div>
 
-
 <h3 class="system-heading">Recent System Related Events</h3>
 <table class="sys-recent">
-  <tr>
-    <td class="sys-recent-left"><div class="sys-recent-tag">TEST</div></td><td>Penetration test scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do...</td>
-  </tr>
-
-  <tr>
-    <td class="sys-recent-left"><div class="sys-recent-tag">SCAN</div></td><td>Security scan scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do...</td>
-  </tr>
-
-  <tr>
-    <td class="sys-recent-left"><div class="sys-recent-tag">SYS</div></td><td>Isso appointed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...</td>
-  </tr>
-
-
+    {% for se in system_events %}
+      <tr>
+        <td class="sys-recent-left"><div class="sys-recent-tag">{{ se.event_tag }}</div></td><td>{{ se.event_summary }}</td>
+      </tr>
+    {% endfor %}
 </table>
-
 
   </div>
 
@@ -129,8 +117,7 @@ Deployments List
 
 <div class="col-md-4">
 <h3 class="system-heading">System Summary</h3>
-<div class="col-md-12" ><p class="sys-summary-content">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-<p class="sys-summary-content">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+<div class="col-md-12" ><p class="sys-summary-content">{{ system.purpose }}</p>
 <br />
 </div>
 
