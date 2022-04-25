@@ -310,7 +310,6 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
       } else {
         console.error("Something went wrong in removing appointment roles")
       }
-
     } else {
       //Already known party
       const appointmentsToBeAdded = {
@@ -326,9 +325,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
       } else {
         console.error("Something went wrong in creating and appointing new appointments")
       }
-
     }
-     
   }
 
   const handleNewPartySave = (key, value) => {
@@ -357,19 +354,17 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
         headerName: 'Phone #',
         width: 100,
         editable: false,
-        renderCell: (params) => {
-            return (
-              <div
-                style={{ width: "100%" }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                }}
-              >
-                {params.row.view ? <Glyphicon glyph="ok" style={{ color: green[700] }} /> : <Glyphicon glyph="remove" style={{ color: 'rgb(245,48,48,1)' }} />}
-              </div>
-            );
-          },
+        renderCell: (params) => (
+          <div
+            style={{ width: "100%" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+          >
+            {params.row.view ? <Glyphicon glyph="ok" style={{ color: green[700] }} /> : <Glyphicon glyph="remove" style={{ color: 'rgb(245,48,48,1)' }} />}
+          </div>
+        ),
       },
       {
         field: 'roles',
@@ -421,13 +416,13 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
     {
       field: 'edit_party',
       headerName: 'Edit Party',
-      headerAlign: 'right',
+      headerAlign: 'center',
       width: 100,
       editable: false,
       renderCell: (params) => {
         return (
           <div
-            style={{ width: "100%", textAlign: 'end' }}
+            style={{ width: "100%", textAlign: 'center' }}
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -447,37 +442,35 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
       },
     },
     {
-      field: 'roles',
+      field: 'displayRoles',
       headerName: 'Roles',
-      width: 200,
+      headerAlign: 'center',
+      width: 300,
       editable: false,
       renderCell: (params) => (
-        <div style={{ width: "100%", marginTop: "0.5rem", marginBottom: "0.5rem"}}>
-          <Stack direction="column" spacing={1}>
+        <Grid container rowSpacing={1} columnSpacing={1} sx={{width: "100%", marginTop: "0.25rem", marginBottom: "1rem"}}>
           {params.row.roles.map((role, index) => (
-            <div key={index}>
-              <Chip 
-                variant="outlined" 
+            <Grid item key={index}>
+              <Chip
+                variant="outlined"
                 size="small"
-                label={role.role_title} 
+                label={role.role_title}
               />
-              <br/>
-            </div>
+              </Grid>
           ))}
-          </Stack>
-        </div>
+        </Grid>
       ),
     },
     {
       field: 'edit_roles',
       headerName: 'Edit Roles',
-      headerAlign: 'right',
-      width: 100,
+      headerAlign: 'center',
+      width: 150,
       editable: false,
       renderCell: (params) => {
         return (
           <div
-            style={{ width: "100%", textAlign: 'end' }}
+            style={{ width: "100%", textAlign: 'center' }}
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
