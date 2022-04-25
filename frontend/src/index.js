@@ -7,4 +7,4 @@ import './components/permissions/component';
 import './components/permissions/permissions';
 
 import './components/point_of_contacts/component';
-import './components/point_of_contacts/point_of_contacts';
+import './components/point_of_contacts/cmpt_parties';

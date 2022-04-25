@@ -1,17 +1,17 @@
 import React, {useState} from 'react';
 import ReactDOM from 'react-dom';
-import { PointOfContacts } from './point_of_contacts';
+import { ComponentParties } from './cmpt_parties';
 import { Provider } from "react-redux";
 import store from "../../store";
 
-window.pocTable = ( elementId, poc_users, is_owner ) => {
+window.cmptPartiesTable = ( elementId, poc_users, is_owner ) => {
     $(window).on('load', function () {
         $("#content").show();
         ReactDOM.render(
             <Provider store={store}>
-                <PointOfContacts elementId={elementId} poc_users={poc_users} isOwner={is_owner}/>
+                <ComponentParties elementId={elementId} poc_users={poc_users} isOwner={is_owner}/>
             </Provider>,
-            document.getElementById('poc-table')
+            document.getElementById('cmpt-parties-table')
         );
     });
 };

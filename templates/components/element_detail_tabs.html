@@ -361,7 +361,7 @@
           <div id="perm-table" style="height: 100%; width: 100%;"></div>
         </div>
         <div>
-          <div id="poc-table" style="height: 100%; width: 100%;"></div>
+          <div id="cmpt-parties-table" style="height: 100%; width: 100%;"></div>
         </div>
       </div>
 
@@ -436,7 +436,7 @@
 
 {% block scripts %}
       <script>
-        window.pocTable( {{ element.id }}, {{ contacts | safe }}, "{{is_owner}}" === 'True' ? true : false );
+        window.cmptPartiesTable( {{ element.id }}, {{ contacts | safe }}, "{{is_owner}}" === 'True' ? true : false );
         window.permissionsTable( {{ element.id }}, "{{is_owner}}" === 'True' ? true : false );
         window.renderElementTags({{ element.id }}, {{ tags | safe }});
       </script>

@@ -63,7 +63,7 @@ const useStyles = makeStyles({
   }
 });
 
-export const PointOfContacts = ({ elementId, poc_users, isOwner }) => {
+export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
   const dispatch = useDispatch();
 
   const classes = useStyles();
