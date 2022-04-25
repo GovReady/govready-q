@@ -159,12 +159,12 @@ export const SystemSummary = ({ systemId, projectId }) => {
   }
   const requestSearch = (searchValue) => {
     setSearchText(searchValue);
-    const searchRegex = new RegExp(escapeRegex(searchValue));
+    const searchRegex = new RegExp(escapeRegex(searchValue.toLowerCase()));
     
     const filteredRows = data.filter((row) => {
       return Object.keys(row).some((field) => {
         if(row[field] !== null){
-          return searchRegex.test(row[field].toString());
+          return searchRegex.test(row[field].toString().toLowerCase());
         }
       });
     });
@@ -232,8 +232,6 @@ export const SystemSummary = ({ systemId, projectId }) => {
     //       valueGetter: (params) => params.row.status,
     //   },
   ]);
-  console.log('data: ', data);
-  console.log('rows: ', rows);
   return (
       <div style={{ maxHeight: '2000px', width: '100%' }}>  
           <Grid className="poc-data-grid" sx={{ minHeight: '500px' }}>
