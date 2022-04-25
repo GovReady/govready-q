@@ -8,3 +8,6 @@ import './components/permissions/permissions';
 
 import './components/point_of_contacts/component';
 import './components/point_of_contacts/point_of_contacts';
+
+import './components/system-summary/component';
+import './components/system-summary/system_summary';

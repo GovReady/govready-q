@@ -143,9 +143,10 @@ admin@sdfsdqfqfqf.com</p>
 
 
 
-<div class="row" style="margin-top:4em;">
+<div class="row" style="margin-top:3em;">
 <div class="col-md-12">
-  <h3 class="sys-summary-header">Risk Assessment</h3>
+    <h3 class="sys-summary-header">Risk Assessment</h3>
+    <div id="system-summary-poam-datagrid"></div>
 </div>
 
 </div>
@@ -156,6 +157,7 @@ admin@sdfsdqfqfqf.com</p>
 {% block scripts %}
     {{ block.super }}
 <script>
+    window.system_summary({{system.id}}, {{project.id}});
 </script>
 
 {% endblock %}

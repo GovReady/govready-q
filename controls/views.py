@@ -2933,6 +2933,7 @@ def poams_list(request, system_id):
         controls = system.root_element.controls.all()
         poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
 
+        
         # impl_smts_count = {}
         # ikeys = system.smts_control_implementation_as_dict.keys()
         # for c in controls:
@@ -3479,6 +3480,7 @@ def system_summary_1(request, system_id):
         project.system.root_element.name = system['name']
         project.root_task.title_override = system['name']
         # Return the controls
+        
         context = {
             "system": system,
             #"project": project,
