@@ -3403,7 +3403,7 @@ def system_summary_1(request, system_id):
         # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
 
         # Return the controls
-        # import ipdb; ipdb.set_trace()
+        
         context = {
             "system": system,
             "project": project,
