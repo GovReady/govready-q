@@ -1,7 +1,7 @@
 import sys
 import os.path
 import json
-
+from uuid import uuid4
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
@@ -14,6 +14,7 @@ from siteapp.models import User, Organization, Portfolio
 from controls.models import Element
 from controls.oscal import CatalogData
 from django.contrib.auth.management.commands import createsuperuser
+from siteapp.models import Role, Party, Appointment
 
 import fs, fs.errors
 
@@ -187,5 +188,10 @@ class Command(BaseCommand):
                             oscal_component_json = f.read()
                             result = ComponentImporter().import_components_as_json(import_name, oscal_component_json)
 
-        # Provide feedback to user
+        Role.objects.create(
+            role_id="poc", 
+            title="Point of Contact", 
+            short_name="PoC", 
+            description="Contact for request assistance"
+        )
         print("GovReady-Q configuration complete.")

@@ -13,8 +13,8 @@ export const ReactModal = (props) => {
     return (
         <>
             <Modal
-                show={modalStatus}
-                onHide={() => dispatch(hide())}
+                show={props.show}
+                onHide={props.hide}
                 aria-labelledby="react-modal"
                 dialogClassName="react-modal"
             >

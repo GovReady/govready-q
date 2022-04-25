@@ -4,6 +4,11 @@ GovReady-Q Release Notes
 v0.9.14-dev (April xx, 2022)
 ----------------------------
 
+**Feature changes**
+
+* Support private components (elements).
+* Assign responsible roles to components (elements) and appointing parties to roles. 
+
 **UI changes**
 
 * Change label 'certified statement' to 'reference statement'.
@@ -22,12 +27,15 @@ v0.9.14-dev (April xx, 2022)
 * Update Django, libraries.
 * Remove debug-toolbar.
 * Support for private components by adding 'private' boolean field to controls.models.Element.
+* Support for hidden components by adding 'hidden' boolean field to controls.models.Element.
+* Support for requiring approval components by adding 'require_approval' boolean field to controls.models.Element.
 * Create new components as private and assign owner permissions to user who created the component.
-* Added tests for component creation form user interface.
-* Added ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer for component (element) permissions.
-* Added ElementWithPermissionsViewSet for component (element) permissions.
-* Added more permission functions to element model: assigning a user specific permissions, removing all permissions from a user, and checking if a user is an owner of the element
+* Add tests for component creation form user interface.
+* Add ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer for component (element) permissions.
+* Add ElementWithPermissionsViewSet for component (element) permissions.
+* Add more permission functions to element model: assigning a user specific permissions, removing all permissions from a user, and checking if a user is an owner of the element.
 * Updated User model to include search by 'username' and exclusion functionality to queryset.
+* Add model Roles, Party, and Appointments to siteapp to support identifying roles on Components (Element).
 * Assign owners to components imported via OSCAL. If no user is identified during component (element creation) assign first Superuser (administrator) as component owner.
 * Support navigating to specific tab on component library component page using URL hash (#) reference.
 

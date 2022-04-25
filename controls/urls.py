@@ -87,6 +87,7 @@ urlpatterns = [
 
     # Elements
     url(r'^elements/(\d+)/__edit$', views.edit_element, name="edit_element"),
+    url(r'^elements/(\d+)/__edit_access$', views.edit_element_access_management, name="edit_element_access_management"),
     *build_tag_urls(r"^elements/(\d+)/", model=Element),  # Tag Urls
 
     # Controls

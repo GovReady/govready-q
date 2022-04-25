@@ -43,7 +43,7 @@ function makeAndHandleRequest(endpoint, order, query, excludeIds, page = 1) {
   });
 }
 
-export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
+export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds, searchBarLength, placeholder, primaryKey, secondarykey }) => {
   const [state, setState] = useState({
     isLoading: false,
     options: [],
@@ -117,7 +117,7 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
     <AsyncTypeahead
       {...state}
       id="user-lookup-async-pagination"
-      labelKey="username"
+      labelKey={primaryKey}
       isLoading={state.isLoading}
       maxResults={PER_PAGE - 1}
       minLength={2}
@@ -130,9 +130,9 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
       promptText={""}
       filterBy={() => true}
       paginate
-      placeholder="Search for a user..."
+      placeholder={placeholder}
       renderInput={({ inputRef, referenceElementRef, ...inputProps }) => (
-        <FormControl variant="standard" style={{ width: "50%" }}>
+        <FormControl variant="standard" style={{ width: searchBarLength }}>
           <Input
             {...inputProps}
             ref={(input) => {
@@ -159,8 +159,9 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds }) => {
           key={option.id}
           value={option.id}
         >
-          <span className={classes.username}>{option.username}</span>
-          <span className={classes.username}>({option.username})</span>
+          
+          <span className={classes.username}>{option[primaryKey]}</span>
+          <span className={classes.username}>({option[secondarykey]})</span>
         </MenuItem>
       )}
       useCache={false}

@@ -17,6 +17,7 @@ import trestle.oscal.ssp as trestlessp
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
@@ -42,12 +43,13 @@ from siteapp.models import Project, Organization, Tag, User
 from siteapp.settings import GOVREADY_URL
 from siteapp.utils.views_helper import project_context
 from system_settings.models import SystemSettings
-from .forms import ElementEditForm
+from .forms import ElementEditForm, ElementEditAccessManagementForm
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
-from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
+from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm, StatementEditForm
 from .models import *
 from .utilities import *
 from siteapp.utils.views_helper import project_context
+from siteapp.models import Role, Party, Appointment
 
 logging.basicConfig()
 import structlog
@@ -1276,13 +1278,24 @@ def new_element(request):
         form = ElementForm(request.POST)
         if form.is_valid():
             form.save()
+            
             element = form.instance
             element.assign_owner_permissions(request.user)
+
+            Statement.objects.create(
+                sid = None,
+                sid_class = None,
+                body = "",
+                statement_type = StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name,
+                producer_element = element
+            )
+            
             logger.info(
                 event="new_element with user as owner",
                 object={"object": "element", "id": element.id, "name":element.name},
                 user={"id": request.user.id, "username": request.user.username}
             )
+            
             return redirect('component_library_component', element_id=element.id)
     else:
         form = ElementForm()
@@ -1292,13 +1305,40 @@ def new_element(request):
     })
 
 @login_required
+def edit_element_access_management(request, element_id):
+    """Form to edit system element access management"""
+
+    # The original element(component) 
+    element = get_object_or_404(Element, id=element_id)
+    # statement related to element
+    statement = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name).first()
+    if request.method == 'POST':
+        form = ElementEditAccessManagementForm(request.POST or None, instance=element)
+        statementForm = StatementEditForm(request.POST, instance=statement)
+        if form.is_valid() and statementForm.is_valid():
+            logger.info(
+                event="edit_element_access_management",
+                object={"object": "element", "id": form.instance.id, "name": form.instance.name},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+
+            form.save()
+            statementForm.save()
+            return JsonResponse({"status": "ok"})
+        else:
+            errors = form.errors.get_json_data(escape_html=False)
+            msg_list = [f"{e.title()} - {errors[e][0]['message']}" for e in errors.keys()]
+            return JsonResponse({"status": "err", "message": "Please fix the following problems:<br>"+"<br>".join(msg_list)})
+
+
+@login_required
 def component_library_component(request, element_id):
     """Display library component's element detail view"""
-
+    
     # Retrieve element
     element = Element.objects.get(id=element_id)
-
-    # Check permissions
+    
+   # Check permissions
     if element.private == True and 'view_element' not in get_user_perms(request.user, element):
         logger.warning(
             event="view_element_private permission_denied",
@@ -1311,13 +1351,43 @@ def component_library_component(request, element_id):
     smt_query = request.GET.get('search')
     usersWithPermission = get_users_with_perms(element, attach_perms=True)
     listUsers = []
+    
     for user in usersWithPermission:
         listUsers.append(user.username)
+
+    listOfContacts = []
+    poc_users = element.appointments.filter(role__role_id='poc', party__party_type='POC')
+
+
+    for poc in poc_users:
+        user = {
+            "uuid":poc.party.uuid,
+            "party_type":poc.party.party_type,
+            "name":poc.party.name,
+            "short_name":poc.party.short_name,
+            "email":poc.party.email,
+            "phone_number":poc.party.phone_number,
+            "role_title":poc.role.title,
+            "role_name":poc.role.short_name,
+        }
+        listOfContacts.append(user)
+
+    get_all_parties = element.appointments.all()
+
+    contacts = []
+    for poc in get_all_parties:
+        contacts.append(poc.party)
+
 
     @register.filter
     def get_item(dictionary, key):
         return dictionary.get(key)
     
+    criteria_results = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name)
+    if len(criteria_results) > 0:
+        criteria_text = criteria_results.first().body
+    else:
+        criteria_text = ""
     is_owner = element.is_owner(request.user)
     
     # Retrieve systems consuming element
@@ -1328,31 +1398,32 @@ def component_library_component(request, element_id):
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
     else:
-        # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
         impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     if len(impl_smts) < 1:
+        # New component, no control statements assigned yet
+        catalog_key = "catalog_key_missing"
+        catalog_controls = None
+        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+        opencontrol_string = None
         context = {
             "element": element,
             "states": states,
             "impl_smts": impl_smts,
+            "oscal": oscal_string,
             "is_admin": request.user.is_superuser,
             "list_of_permissible_users": listUsers,
             "is_owner": is_owner,
             "can_edit": hasPermissionToEdit,
             "users_with_permissions": usersWithPermission,
+            "criteria": criteria_text,
+            "listOfContacts": listOfContacts,
+            "contacts": serializers.serialize('json', contacts),
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }
         return render(request, "components/element_detail_tabs.html", context)
-
-    if len(impl_smts) == 0:
-        # New component, no control statements assigned yet
-        catalog_key = "catalog_key_missing"
-        catalog_controls = None
-        oscal_string = None
-        opencontrol_string = None
     elif len(impl_smts) > 0:
         # TODO: We may have multiple catalogs in this case in the future
         # Retrieve used catalog_key
@@ -1395,6 +1466,8 @@ def component_library_component(request, element_id):
         "is_owner": is_owner,
         "can_edit": hasPermissionToEdit,
         "users_with_permissions": usersWithPermission,
+        "criteria_text": criteria_text,
+        "contacts": serializers.serialize('json', contacts),
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,

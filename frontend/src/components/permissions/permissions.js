@@ -57,6 +57,7 @@ export const Permissions = ({ elementId, isOwner }) => {
   const [currentUser, setCurrentUser] = useState({});
   const editToolTip = (<Tooltip placement="top" id='tooltip-edit'> Edit User Permissions
   </Tooltip>)
+  const showModal = useSelector(state => state.modal.value);
 
   const endpoint = (querystrings) => {
     return axios.get(`/api/v2/users/`, { params: querystrings });
@@ -339,7 +340,7 @@ export const Permissions = ({ elementId, isOwner }) => {
     },
     {
       field: 'edit',
-      headerName: 'Edit',
+      headerName: 'Edit Party',
       headerAlign: 'right',
       width: 150,
       editable: false,
@@ -366,7 +367,7 @@ export const Permissions = ({ elementId, isOwner }) => {
       },
     },
   ]);
-
+  
   return (
     <div style={{ maxHeight: '1000px', width: '100%' }}>
       <Grid
@@ -375,12 +376,19 @@ export const Permissions = ({ elementId, isOwner }) => {
         alignItems="flex-end"
         style={{ width: "100%" }}
       >
+        <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
+          <div style={{ width: "100%", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
+            <h2>Permissions</h2>
+            </div>
+        </div>
         {isOwner && 
-          <Grid className="search-for-a-user-toolbar" item style={{ width: "calc(100% - 1rem - 25px" }}>
+          <Grid className="search-for-a-user-toolbar" item style={{ width: "calc(100% - 1rem - 25px)" }}>
             <br />
              <AsyncPagination
                 endpoint={endpoint}
                 order={"username"}
+                primaryKey={'username'}
+                secondarykey={'username'}
                 onSelect={(selected) => {
                   if (selected.length > 0) {
                     const newUser = selected.map((user) => {
@@ -398,13 +406,16 @@ export const Permissions = ({ elementId, isOwner }) => {
                   }
                 }}
                 excludeIds={permissibleUsers.map((du) => du.user.id)}
+                defaultSelected 
+                searchBarLength={"100%"}
+                placeholder={"Search for a user..."}
             />
           </Grid>
         }
       </Grid>
       <br />
-      <Grid className="permissible-users-data-grid" sx={{ minHeight: '400px' }}>
-        <div style={{width: "calc(100% - 1rem - 25px", marginTop: "1rem" }}>
+      <Grid className="permissible-users-data-grid" sx={{ minHeight: '200px' }}>
+        <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
           <DataGrid
             className={classes.table}
             autoHeight={true}
@@ -429,6 +440,8 @@ export const Permissions = ({ elementId, isOwner }) => {
       </Grid>
       {!isObjectEmpty(currentUser) && <ReactModal
           title={`User Permissions`}
+          show={showModal}
+          hide={() => dispatch(hide())}
           header={
             <Form horizontal>
               <>
