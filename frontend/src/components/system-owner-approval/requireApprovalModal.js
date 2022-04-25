@@ -83,6 +83,11 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
     });
   }, [elementId, uuid])
 
+  const handleAddComponent = () => {
+    handleClose();
+    document.add_component.submit();
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     
@@ -124,7 +129,7 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
   
   return (
     <div style={{ maxHeight: '2000px', width: '100%' }}>
-      <ReactModal
+      {data !== null && <ReactModal
         title={`System Owner Requesting Element Modal`}
         show={openRequireApprovalModal}
         hide={() => setOpenRequireApprovalModal(false)}
@@ -133,7 +138,7 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
             <>
               <FormGroup controlId={`form-title`}>
                 <Col sm={12}>
-                  <h2>You have selected a "protected" common control component.</h2>
+                  <h2>You have selected {data.name} {require_approval ? <span>a "protected"</span> : null} common control component.</h2>
                 </Col>
               </FormGroup>
             </>
@@ -150,16 +155,21 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
                 }}
               >
                 {require_approval ? <p>The {data.full_name} common control has set an approval/whitelist requirement.</p> : <p>The {data.full_name} common control has not set required approval/whitelist, but has criteria that must be met.</p>}
-                {data.criteria ? <span>{data.criteria}</span> : <span>No criteria set</span>}
+                {data.criteria ? <span>{data.criteria}</span> : <span>No criteria has been set</span>}
               </div>
             </FormGroup>
             <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
                 <Button type="button" onClick={handleClose} style={{float: 'left'}}>Cancel</Button>
-                <Button type="submit" bsStyle="success">Submit Request</Button>
+                {
+                  !require_approval && data.criteria ? 
+                  <Button type="button" bsStyle="success" onClick={handleAddComponent} style={{float: 'right'}}>Add Component</Button> :
+                  <Button type="submit" bsStyle="success">Submit Request</Button> 
+                }
             </Modal.Footer>
           </Form>
         }
       />
+    }
     </div>
   )
 }
