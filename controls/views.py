@@ -1389,6 +1389,7 @@ def component_library_component(request, element_id):
     else:
         criteria_text = ""
     is_owner = element.is_owner(request.user)
+    import ipdb; ipdb.set_trace()
     
     # Retrieve systems consuming element
     consuming_systems = element.consuming_systems()
@@ -1466,7 +1467,7 @@ def component_library_component(request, element_id):
         "is_owner": is_owner,
         "can_edit": hasPermissionToEdit,
         "users_with_permissions": usersWithPermission,
-        "criteria_text": criteria_text,
+        "criteria": criteria_text,
         "contacts": serializers.serialize('json', contacts),
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
