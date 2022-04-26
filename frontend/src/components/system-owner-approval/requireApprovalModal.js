@@ -144,6 +144,9 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
             </>
           </Form>
         }
+        headerStyle={{
+          backgroundColor: '#fefef7',
+        }}
         body={
           <Form horizontal onSubmit={handleSubmit}>
             <FormGroup>
@@ -168,6 +171,9 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
             </Modal.Footer>
           </Form>
         }
+        bodyStyle={{
+          backgroundColor: '#fefef7',
+        }}
       />
     }
     </div>

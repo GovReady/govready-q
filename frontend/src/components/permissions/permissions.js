@@ -376,6 +376,11 @@ export const Permissions = ({ elementId, isOwner }) => {
         alignItems="flex-end"
         style={{ width: "100%" }}
       >
+        <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
+          <div style={{ width: "100%", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
+            <h2>Permissions</h2>
+            </div>
+        </div>
         {isOwner && 
           <Grid className="search-for-a-user-toolbar" item style={{ width: "calc(100% - 1rem - 25px)" }}>
             <br />
@@ -409,7 +414,7 @@ export const Permissions = ({ elementId, isOwner }) => {
         }
       </Grid>
       <br />
-      <Grid className="permissible-users-data-grid" sx={{ minHeight: '300px' }}>
+      <Grid className="permissible-users-data-grid" sx={{ minHeight: '200px' }}>
         <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
           <DataGrid
             className={classes.table}

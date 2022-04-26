@@ -40,7 +40,6 @@ class ElementViewSet(ReadOnlyViewSet):
         element, validated_data = self.validate_serializer_and_get_object(request)
         element.save()
         
-        
         serializer_class = self.get_serializer_class('retrieve')
         serializer = self.get_serializer(serializer_class, element)
         return Response(serializer.data)

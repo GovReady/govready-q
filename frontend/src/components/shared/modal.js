@@ -17,13 +17,17 @@ export const ReactModal = (props) => {
                 onHide={props.hide}
                 aria-labelledby="react-modal"
                 dialogClassName="react-modal"
+                
             >
-                <Modal.Header closeButton style={{backgroundColor: "#e5e5e5"}}>
+                <Modal.Header closeButton style={props.headerStyle ? props.headerStyle : {backgroundColor: "#e5e5e5"}}
+                >
                     <Modal.Title id="modal-title">
                         {props.header}
                     </Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
+                <Modal.Body
+                    style={props.bodyStyle  ? props.bodyStyle : {}}
+                >
                     {props.body}
                 </Modal.Body>
                 

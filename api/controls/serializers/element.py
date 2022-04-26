@@ -30,12 +30,10 @@ class DetailedElementSerializer(SimpleElementSerializer):
     roles = SimpleElementRoleSerializer(many=True)
     tags = SimpleTagSerializer(many=True)
     appointments = SimpleAppointmentSerializer(many=True)
-    # parties = serializers.SerializerMethodField()
-    parties = serializers.SerializerMethodField('get_list_of_users')
+    parties = serializers.SerializerMethodField('get_parties')
     criteria = serializers.SerializerMethodField('get_criteria')
-    
 
-    def get_list_of_users(self, element):
+    def get_parties(self, element):
         parties = []
         counter = 1;
         def partyInList(parties_list, party_id):
