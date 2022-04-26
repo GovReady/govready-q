@@ -13,23 +13,6 @@ import {
   Stack,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import {
-  Tooltip,
-  Button,
-  Glyphicon,
-  OverlayTrigger,
-  Col, 
-  ControlLabel,
-  Form,
-  FormControl,
-  FormGroup, 
-  Row,
-  Modal
-} from 'react-bootstrap';
-import { AsyncPagination } from "../shared/asyncTypeahead";
-import { red, green } from '@mui/material/colors';
-import { ReactModal } from '../shared/modal';
-import { hide, show } from '../shared/modalSlice';
 
 const datagridStyles = makeStyles({
   root: {
@@ -79,165 +62,8 @@ export const RequestsTable = ({ elementId, isOwner }) => {
     });
   }, [])
 
-  const renderSelectInput = (props) => {
-    const { id, value, field } = props;
-    const apiRef = useGridApiContext();
-    const currentRequest = apiRef.current.getRow(id);
-    const handleChange = (event) => {
-      console.log('data: ', data)
-      debugger;
-      setData((prev) => ({
-        ...prev,
-        [id]: {
-          [field]: event.target.value,
-        }
-      }))
-      // await apiRef.current.setEditCellValue({ id, field: 'status', value: event.target.value });
-      // await apiRef.current.stopCellEditMode({ id, field: 'status' });
-      // apiRef.current.stopCellEditMode({ id, field });
-    };
-    const handleSubmit = async () => {
-      console.log('handleSubmit');
-      console.log(currentRequest);
-      // debugger;
-      // {
-      //   "user": 0,
-      //   "system": 0,
-      //   "requested_element": 0,
-      //   "criteria_comment": "string",
-      //   "criteria_reject_comment": "string",
-      //   "status": "string"
-      // }
-      const updatedRequest = {
-        user: currentRequest.userId,
-        system: currentRequest.system.id,
-        requested_element: currentRequest.element.id,
-        criteria_comment: currentRequest.criteria_comment,
-        criteria_reject_comment: currentRequest.criteria_reject_comment,
-        status: currentRequest.status,
-      }
-      const editRequestResponse = await axios.put(`/api/v2/elements/${elementId}/CreateAndSetRequest/`, updatedRequest);
-      if(editRequestResponse.status === 200){
-        handleClose();
-      } else {
-        console.error("Something went wrong in creating and setting new request to element");
-      }
-    }
-    
-    return (
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-        <Grid item xs={6}>
-          <Select
-            value={value}
-            onChange={handleChange}
-            size="small"
-            sx={{ height: 1 }}
-            native
-            autoFocus
-          >
-            <option>Started</option>
-            <option>Pending</option>
-            <option>In Progress</option>
-            <option>Complete</option>
-          </Select>
-        </Grid>
-        <Grid item xs={6}>
-          <Button variant="primary" onClick={handleSubmit}>Submit</Button>
-        </Grid>
-      </Grid>
-    );
-  }
-  renderSelectInput.propTypes = {
-    /**
-     * The column field of the cell that triggered the event.
-     */
-    field: PropTypes.string.isRequired,
-    /**
-     * The grid row id.
-     */
-    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-    /**
-     * The cell value, but if the column has valueGetter, use getValue.
-     */
-    value: PropTypes.any,
-  };
-  function SelectEditInputCell(props) {
-    const { id, value, field } = props;
-    const apiRef = useGridApiContext();
-    debugger;
-    const handleChange = async (event) => {
-      await apiRef.current.setEditCellValue({ id, field: 'status', value: event.target.value });
-      apiRef.current.stopCellEditMode({ id, field: 'status' });
-      apiRef.current.stopCellEditMode({ id, field });
-    };
-    const handleSubmit = async (event) => {
-
-    }
-  
-    return (
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-        <Grid item xs={6}>
-          <Select
-            value={value}
-            onChange={handleChange}
-            size="small"
-            sx={{ height: 1 }}
-            native
-            autoFocus
-          >
-            <option>Started</option>
-            <option>Pending</option>
-            <option>In Progress</option>
-            <option>Complete</option>
-          </Select>
-        </Grid>
-        <Grid item xs={6}>
-          <Button variant="primary" onClick={handleSubmit}>Submit</Button>
-        </Grid>
-      </Grid>
-    );
-  }
-  
-  SelectEditInputCell.propTypes = {
-    /**
-     * The column field of the cell that triggered the event.
-     */
-    field: PropTypes.string.isRequired,
-    /**
-     * The grid row id.
-     */
-    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-    /**
-     * The cell value, but if the column has valueGetter, use getValue.
-     */
-    value: PropTypes.any,
-  };
-  
-  const renderSelectEditInputCell = (params) => {
-    return <SelectEditInputCell {...params} />;
-  };
-  const statuses = ["pending", "incomplete", "complete", "Approval to Proceed", "Enabled", "Implemented", "Rejected"]
-  const handleChange = (params, value) => {
-    console.log('data: ', data)
-    console.log('params: ', params)
-    debugger;
-    if(data !== null){
-      setData((prev) => ({
-        ...prev,
-        [params.id]: {
-          ['status']: value,
-        }
-      }))
-    }
-    
-    // await apiRef.current.setEditCellValue({ id, field: 'status', value: event.target.value });
-    // await apiRef.current.stopCellEditMode({ id, field: 'status' });
-    // apiRef.current.stopCellEditMode({ id, field });
-  };
   const handleSubmit = (params) => {
     console.log('handleSubmit');
-    console.log('params: ', params)
-    // debugger;
     // {
     //   "user": 0,
     //   "system": 0,
@@ -263,13 +89,6 @@ export const RequestsTable = ({ elementId, isOwner }) => {
   }
 
   const [columnsForEditor, setColumnsForEditor] = useState([
-    {
-      field: 'user',
-      headerName: 'User',
-      width: 150,
-      editable: false,
-      valueGetter: (params) => console.log(params),
-    },
     {
       field: 'system',
       headerName: 'Requested by',
@@ -299,7 +118,6 @@ export const RequestsTable = ({ elementId, isOwner }) => {
     //   field: 'req_poc',
     //   headerName: 'RequestedPoint of Contact',
     //   width: 300,
-    
     //   editable: false,
     //   valueGetter: (params) => params.row.requested_element.point_of_contact[0],
     // },
@@ -310,37 +128,35 @@ export const RequestsTable = ({ elementId, isOwner }) => {
       editable: false,
       valueGetter: (params) => params.row.status,
     },
-    {
-      field: 'action',
-      headerName: 'Action',
-      width: 300,
-      editable: true,
-      // renderCell: renderSelectInput,
-      // renderEditCell: renderSelectEditInputCell,
-      type: 'text',
-      renderCell: (params) => (
-        <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-        <Grid item xs={6}>
-          <Select
-            value={params.row.status}
-            onChange={() => handleChange(params, event.target.value)}
-            size="small"
-            sx={{ height: 1 }}
-            native
-            autoFocus
-          >
-            <option>Started</option>
-            <option>Pending</option>
-            <option>In Progress</option>
-            <option>Complete</option>
-          </Select>
-        </Grid>
-        <Grid item xs={6}>
-          <Button variant="primary" onClick={handleSubmit(params)}>Submit</Button>
-        </Grid>
-      </Grid>
-      ),
-    },
+    // {
+    //   field: 'action',
+    //   headerName: 'Action',
+    //   width: 300,
+    //   editable: true,
+    //   type: 'text',
+    //   renderCell: (params) => (
+    //     <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+    //     <Grid item xs={6}>
+    //       <Select
+    //         value={params.row.status}
+    //         onChange={() => handleChange(params, event.target.value)}
+    //         size="small"
+    //         sx={{ height: 1 }}
+    //         native
+    //         autoFocus
+    //       >
+    //         <option>Started</option>
+    //         <option>Pending</option>
+    //         <option>In Progress</option>
+    //         <option>Complete</option>
+    //       </Select>
+    //     </Grid>
+    //     <Grid item xs={6}>
+    //       <Button variant="primary" onClick={handleSubmit(params)}>Submit</Button>
+    //     </Grid>
+    //   </Grid>
+    //   ),
+    // },
   ]);
 
   const [columns, setColumns] = useState([
@@ -358,13 +174,6 @@ export const RequestsTable = ({ elementId, isOwner }) => {
       editable: false,
       valueGetter: (params) => params.row.system.root_element.full_name,
     },
-    // {
-    //   field: 'email',
-    //   headerName: 'Point of Contact',
-    //   width: 300,
-    //   editable: false,
-    //   valueGetter: (params) => params.row.email,
-    // },
     {
         field: 'status',
         headerName: 'Status',
@@ -373,7 +182,7 @@ export const RequestsTable = ({ elementId, isOwner }) => {
         valueGetter: (params) => params.row.status,
     },
   ]);
-  console.log('gdata: ', data)
+
   return (
       <div style={{ maxHeight: '2000px', width: '100%' }}>
           <Grid className="poc-data-grid" sx={{ minHeight: '500px' }}>

@@ -223,7 +223,7 @@ class ElementRequestsSerializer(ReadOnlySerializer):
                 "criteria_reject_comment": request.criteria_reject_comment,
                 "status": request.status,
             }
-            # import ipdb; ipdb.set_trace()
+            
             list_of_requests.append(req)
         return list_of_requests
     class Meta:
