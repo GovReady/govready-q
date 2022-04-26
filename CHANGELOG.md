@@ -47,6 +47,7 @@ v0.9.14-dev (April xx, 2022)
 * Resolve components not displaying the tag widget by properly setting existingTags default for new component.
 * Footer fixes.
 * Assign owners to default components (elements) created during install first_run script.
+* Correctly display POA&M forms with left-side menu.
 
 v0.9.13 (January 23, 2022)
 --------------------------
