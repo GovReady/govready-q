@@ -39,7 +39,7 @@ Deployments List
 
 .system-heading { font-size:.7em; font-weight:bold; color:#4D4D4D; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif;}
 
-.sys-summary-content { font-size:.9em; padding-bottom:1em; line-height:1.2em;}
+.sys-summary-content { font-size:1em; padding-bottom:1em; line-height:1.4em; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; color:#333333;}
 .sys-ownership-details { font-size:.8em; padding:0;}
 .sys-wide-status { font-size:.7em;}
 #sys-wide-status td { padding-bottom:4px; }
@@ -53,6 +53,15 @@ Deployments List
 
 .ownership-tab { border-bottom:1px solid #ccc; padding:0 0 .2em 0;}
 .header { font-weight:bold; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; font-size:.8em;}
+
+
+.vuln-header { font-weight:bold; font-size: 1.2em; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif;}
+
+#sys-vuln-table {width:100%;}
+.vuln-scores { border:1px solid #ccc; margin-right:3px; padding:1em; border-radius: 5px; height:8em;}
+
+.vuln-scores-cat-tot { font-weight: bold; display: block; padding-bottom:2em; font-size:1.2em; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; color:#666666;}
+.vuln-scores-cat-title { font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; font-size:.9em; color:#666666;}
 </style>
 
 <div class="row">
@@ -144,8 +153,45 @@ admin@sdfsdqfqfqf.com</p>
 
 
 <div class="row" style="margin-top:3em;">
-<div class="col-md-12">
+  <div class="col-md-12">
     <h3 class="sys-summary-header">Risk Assessment</h3>
+
+    <span class="vuln-header">Vulnerabilities</span><span style="font-size:.9em; color:#ccc;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(as of 4:24pm, 04/26/22)</span>
+
+    <div style="border:1px solid #ccc; display:block; margin-top:2em; margin-bottom:2em; border-radius: 7px;">
+<table id="sys-vuln-table">
+  <tr>
+    <td style="border-right:1px solid #ccc; padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">12</h2><span style="color:#808080;"><strong>New</strong> in last 30 days</span></div></td>
+    <td style="border-right:1px solid #ccc; padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">12</h2><span style="color:#808080;"><strong>Resolved</strong> in last 30 days</span></div></td>
+    <td style="padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">12</h2><span style="color:#808080;"><strong>Ongoing</strong> (90+ days)</span></div></td>
+  </tr>
+</table>
+</div>
+</div>
+
+<div class="col-md-12">
+<h3 class="system-heading">Vulnerability Overview</h3>
+<div style="max-width:75%;"><p class="sys-summary-content">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Consequat interdum varius sit amet. Auctor elit sed vulputate mi sit amet mauris commodo quis. Vestibulum sed arcu non odio euismod. Adipiscing at in tellus integer feugiat scelerisque varius.</p>
+<br />
+</div>
+</div>
+
+
+<div class="col-md-2"><div class="vuln-scores"><h2 style="font-size:2em;">8.7</h2><span style="font-weight:bold; font-size:.9em;">Risk Score</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">9.9</span><span class="vuln-scores-cat-title">Lorem</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">9.2</span><span class="vuln-scores-cat-title">Ipsum</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">8.4</span><span class="vuln-scores-cat-title">Consectetur</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">8.8</span><span class="vuln-scores-cat-title">Adipiscing</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">7.2</span><span class="vuln-scores-cat-title">Aliqua</span></div></div>
+
+
+</div>
+
+
+<div class="row" style="margin-top:3em;">
+  <div class="col-md-12">
+  <span class="vuln-header">Plan of Actions & Milestones</span><span style="font-size:1.2em; color:#ccc;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( 16 open / 72 resolved )</span>
+
     <div id="system-summary-poam-datagrid"></div>
 </div>
 
