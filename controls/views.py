@@ -1389,7 +1389,6 @@ def component_library_component(request, element_id):
     else:
         criteria_text = ""
     is_owner = element.is_owner(request.user)
-    import ipdb; ipdb.set_trace()
     
     # Retrieve systems consuming element
     consuming_systems = element.consuming_systems()
