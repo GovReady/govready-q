@@ -133,23 +133,18 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
         title={`System Owner Requesting Element Modal`}
         show={openRequireApprovalModal}
         hide={() => setOpenRequireApprovalModal(false)}
+        dialogClassName={"sys-owner-request-modal"}
         header={
-          <Form horizontal>
-            <>
-              <FormGroup controlId={`form-title`}>
-                <Col sm={12}>
-                  <h2>You have selected {data.name} {require_approval ? <span>a "protected"</span> : null} common control component.</h2>
-                </Col>
-              </FormGroup>
-            </>
+          <Form horizontal style={{ paddingLeft: '4rem', paddingRight: '4rem' }}>
+            <h2>You have selected {require_approval ? <span>a "protected"</span> : <span>a</span>} common control component.</h2>
           </Form>
         }
         headerStyle={{
-          backgroundColor: '#fefef7',
+          backgroundColor: '#FFFFF7',
+          border: 'none',
         }}
         body={
           <Form horizontal onSubmit={handleSubmit}>
-            <FormGroup>
               <div 
                 style={{ 
                   marginLeft: '6rem', 
@@ -158,10 +153,9 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
                 }}
               >
                 {require_approval ? <p>The {data.full_name} common control has set an approval/whitelist requirement.</p> : <p>The {data.full_name} common control has not set required approval/whitelist, but has criteria that must be met.</p>}
-                {data.criteria ? <span>{data.criteria}</span> : <span>No criteria has been set</span>}
+                {data.criteria ? <span style={{ whiteSpace: 'break-spaces' }}>{data.criteria}</span> : <span>No criteria has been set</span>}
               </div>
-            </FormGroup>
-            <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
+            <Modal.Footer style={{ border: 'none' }}>
                 <Button type="button" onClick={handleClose} style={{float: 'left'}}>Cancel</Button>
                 {
                   !require_approval && data.criteria ? 
@@ -172,7 +166,8 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
           </Form>
         }
         bodyStyle={{
-          backgroundColor: '#fefef7',
+          backgroundColor: '#FFFFF7',
+          border: 'none',
         }}
       />
     }
