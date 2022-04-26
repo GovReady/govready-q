@@ -189,9 +189,25 @@ class Command(BaseCommand):
                             result = ComponentImporter().import_components_as_json(import_name, oscal_component_json)
 
         Role.objects.create(
-            role_id="poc", 
-            title="Point of Contact", 
-            short_name="PoC", 
-            description="Contact for request assistance"
+            role_id="ao", title="Authorizing Official", short_name="AO", 
+            description="Senior federal official or executive with the authority to formally assume responsibility for operating an information system at an acceptable level of risk to organizational operations, other organizations, and the Nation."
+        )
+        Role.objects.create(
+            role_id="co", title="Component Owner", short_name="CO", description="Business Owner of a Component"
+        )
+        Role.objects.create(
+            role_id="ccp", title="Common Control Provider", short_name="CCP", description="Business owner of a Common Control"
+        )
+        Role.objects.create(
+            role_id="iso", title="Information System Owner", short_name="ISO", description="Business Owner of a System"
+        )
+        Role.objects.create(
+            role_id="isso", title="Information System Security Officer", short_name="ISSO", description="Leads effort to secure a System"
+        )
+        Role.objects.create(
+            role_id="isse", title="Information System Security Engineer", short_name="ISSE", description="Supports technical engineering to secure a System"
+        )
+        Role.objects.create(
+            role_id="poc", title="Point of Contact", short_name="PoC", description="Contact for request assistance"
         )
         print("GovReady-Q configuration complete.")
