@@ -28,7 +28,6 @@ import { AsyncPagination } from "../shared/asyncTypeahead";
 import { red, green } from '@mui/material/colors';
 import { ReactModal } from '../shared/modal';
 import { hide, show } from '../shared/modalSlice';
-import { element } from 'prop-types';
 
 const datagridStyles = makeStyles({
   root: {
@@ -64,7 +63,7 @@ const useStyles = makeStyles({
   }
 });
 
-export const RequireApprovalModal = ({ userId, systemId, elementId, require_approval, uuid }) => {
+export const RequireApprovalModal = ({ userId, systemId, systemName, elementId, require_approval, uuid }) => {
   const classes = useStyles();
   const dgClasses = datagridStyles();
   const [data, setData] = useState([]);
@@ -82,6 +81,20 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
       }
     });
   }, [elementId, uuid])
+
+  const successful_request_message = () => {
+    const message = `System ${systemName} has requested ${data.name}`;
+    document.getElementById("req_message_type").value = "INFO";
+    document.getElementById("req_message").value = message;
+    document.send_request_message.submit()
+  }
+
+  const send_alreadyRequested_message = () => {
+    const message = `System ${systemName} has already requested ${data.name}.`;
+    document.getElementById("req_message_type").value = "WARNING";
+    document.getElementById("req_message").value = message;
+    document.send_request_message.submit()
+  }
 
   const handleAddComponent = () => {
     handleClose();
@@ -112,12 +125,13 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
         const newRequestResponse = await axios.post(`/api/v2/elements/${elementId}/CreateAndSetRequest/`, newReq);
         if(newRequestResponse.status === 200){
           handleClose();
+          successful_request_message();
         } else {
           console.error("Something went wrong in creating and setting new request to element");
         }
       } else {
         handleClose();
-        alert('ALREADY REQUESTED!');
+        send_alreadyRequested_message();
       }
     } else {
       console.error("Something went wrong with checking element");
@@ -126,7 +140,7 @@ export const RequireApprovalModal = ({ userId, systemId, elementId, require_appr
   const handleClose = async (event) => {
     setOpenRequireApprovalModal(false);
   }
-  
+  console.log('data: ', data);
   return (
     <div style={{ maxHeight: '2000px', width: '100%' }}>
       {data !== null && <ReactModal

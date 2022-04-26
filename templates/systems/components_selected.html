@@ -37,6 +37,11 @@
                     </form>
                 </div>
             </div>
+            <form  style="display:none;" id="send_request_message" name="send_request_message" method="post" action="{% url 'request_message' system_id=system.id %}">
+                {% csrf_token %}
+                <input type="hidden" id="req_message_type" name="req_message_type" value="" />
+                <input type="hidden" id="req_message" name="req_message" value="" />
+            </form>
             <div id="private-component-modal"></div>
             {% for component in system_elements %}
                 {# Each "component" is a Element model object. #}
@@ -84,7 +89,8 @@
         const [component_id, require_approval] = value.split(',');
         const userId = {{request.user.id}};
         const systemId = {{system.id}};
-        window.requireApprovalModal(userId, systemId, component_id, require_approval === 'True' ? true : false);
+        const systemName = `{{system.root_element.name}}`;
+        window.requireApprovalModal(userId, systemId, systemName, component_id, require_approval === 'True' ? true : false);
     }
 
     // Convert select field for Add Component to jQuery Select2 box

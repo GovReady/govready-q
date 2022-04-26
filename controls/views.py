@@ -2446,6 +2446,27 @@ def delete_smt(request):
 
 # Components
 
+def request_message(request, system_id):
+    """ Send a global message to indicate a request has been successful """ 
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    form_dict = dict(request.POST)
+    form_values = {}
+    for key in form_dict.keys():
+        form_values[key] = form_dict[key][0]
+    messageType = form_values['req_message_type']
+    message = form_values['req_message']
+    
+    if(messageType == "INFO"):
+        messages.add_message(request, messages.INFO, f'{message}')
+    elif(messageType == "WARNING"):
+        messages.add_message(request, messages.WARNING, f'{message}')
+    else:
+        messages.add_message(request, messages.ERROR, f'{message}')
+
+    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+
 @login_required
 def add_system_component(request, system_id):
     """Add an existing element and its statements to a system"""
@@ -2463,6 +2484,7 @@ def add_system_component(request, system_id):
     
     # Does user have permission to add element?
     # Check user permissions
+    # import ipdb; ipdb.set_trace()
     system = System.objects.get(pk=system_id)
     if not request.user.has_perm('change_system', system):
         # User does not have write permissions
