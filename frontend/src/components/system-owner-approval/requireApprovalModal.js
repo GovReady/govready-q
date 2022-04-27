@@ -109,7 +109,7 @@ export const RequireApprovalModal = ({ userId, systemId, systemName, elementId, 
       systemId: systemId,
       criteria_comment: data.criteria,
       criteria_reject_comment: "",
-      status: "pending"
+      status: "Pending"
     }
     const checkElement = await axios.get(`/api/v2/elements/${elementId}/retrieveRequests/`);
 

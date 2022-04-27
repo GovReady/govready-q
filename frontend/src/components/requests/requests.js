@@ -1,18 +1,144 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { DataTable } from '../shared/table';
+import { useDispatch } from 'react-redux';
 import axios from 'axios';
-import moment from 'moment';
-import { DataGrid, useGridApiContext } from '@mui/x-data-grid';
-import { v4 as uuid_v4 } from "uuid";
-import PropTypes from 'prop-types';
-import { 
-  Chip,
+import { DataGrid } from '@mui/x-data-grid';
+import {
+  Button,
   Grid,
-  Select,
-  Stack,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import SelectUnstyled, { selectUnstyledClasses } from '@mui/base/SelectUnstyled';
+import OptionUnstyled, { optionUnstyledClasses } from '@mui/base/OptionUnstyled';
+import PopperUnstyled from '@mui/base/PopperUnstyled';
+import { styled } from '@mui/system';
+
+const blue = {
+  100: '#DAECFF',
+  200: '#99CCF3',
+  400: '#3399FF',
+  500: '#007FFF',
+  600: '#0072E5',
+  900: '#003A75',
+};
+
+const grey = {
+  100: '#E7EBF0',
+  200: '#E0E3E7',
+  300: '#CDD2D7',
+  400: '#B2BAC2',
+  500: '#A0AAB4',
+  600: '#6F7E8C',
+  700: '#3E5060',
+  800: '#2D3843',
+  900: '#1A2027',
+};
+
+const StyledButton = styled('button')(
+  ({ theme }) => `
+  font-family: IBM Plex Sans, sans-serif;
+  font-size: 0.875rem;
+  box-sizing: border-box;
+  min-height: calc(1.5em + 22px);
+  min-width: 130px;
+  background: ${theme.palette.mode === 'dark' ? grey[900] : '#fff'};
+  border: 1px solid ${theme.palette.mode === 'dark' ? grey[800] : grey[300]};
+  border-radius: 0.75em;
+  margin: 0.5em;
+  padding: 10px;
+  text-align: left;
+  line-height: 1.5;
+  color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
+
+  &:hover {
+    background: ${theme.palette.mode === 'dark' ? '' : grey[100]};
+    border-color: ${theme.palette.mode === 'dark' ? grey[700] : grey[400]};
+  }
+
+  &.${selectUnstyledClasses.focusVisible} {
+    outline: 3px solid ${theme.palette.mode === 'dark' ? blue[600] : blue[100]};
+  }
+
+  &.${selectUnstyledClasses.expanded} {
+    &::after {
+      content: '▴';
+    }
+  }
+
+  &::after {
+    content: '▾';
+    float: right;
+  }
+  `,
+);
+
+const StyledListbox = styled('ul')(
+  ({ theme }) => `
+  font-family: IBM Plex Sans, sans-serif;
+  font-size: 0.875rem;
+  box-sizing: border-box;
+  padding: 5px;
+  margin: 10px 0;
+  min-width: 320px;
+  background: ${theme.palette.mode === 'dark' ? grey[900] : '#fff'};
+  border: 1px solid ${theme.palette.mode === 'dark' ? grey[800] : grey[300]};
+  border-radius: 0.75em;
+  color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
+  overflow: auto;
+  outline: 0px;
+  `,
+);
+
+const StyledOption = styled(OptionUnstyled)(
+  ({ theme }) => `
+  list-style: none;
+  padding: 8px;
+  border-radius: 0.45em;
+  cursor: default;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  &.${optionUnstyledClasses.selected} {
+    background-color: ${theme.palette.mode === 'dark' ? blue[900] : blue[100]};
+    color: ${theme.palette.mode === 'dark' ? blue[100] : blue[900]};
+  }
+
+  &.${optionUnstyledClasses.highlighted} {
+    background-color: ${theme.palette.mode === 'dark' ? grey[800] : grey[100]};
+    color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
+  }
+
+  &.${optionUnstyledClasses.highlighted}.${optionUnstyledClasses.selected} {
+    background-color: ${theme.palette.mode === 'dark' ? blue[900] : blue[100]};
+    color: ${theme.palette.mode === 'dark' ? blue[100] : blue[900]};
+  }
+
+  &.${optionUnstyledClasses.disabled} {
+    color: ${theme.palette.mode === 'dark' ? grey[700] : grey[400]};
+  }
+
+  &:hover:not(.${optionUnstyledClasses.disabled}) {
+    background-color: ${theme.palette.mode === 'dark' ? grey[800] : grey[100]};
+    color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
+  }
+  `,
+);
+
+const StyledPopper = styled(PopperUnstyled)`
+  z-index: 1;
+`;
+
+const CustomSelect = React.forwardRef(function CustomSelect(props, ref) {
+  const components = {
+    Root: StyledButton,
+    Listbox: StyledListbox,
+    Popper: StyledPopper,
+    ...props.components,
+  };
+
+  return <SelectUnstyled {...props} ref={ref} components={components} />;
+});
 
 const datagridStyles = makeStyles({
   root: {
@@ -49,116 +175,10 @@ const useStyles = makeStyles({
 });
 
 export const RequestsTable = ({ elementId, isOwner }) => {
-  const dispatch = useDispatch();
-
-  const classes = useStyles();
   const dgClasses = datagridStyles();
   const [data, setData] = useState([]);
   const [sortby, setSortBy] = useState(["name", "asc"]);
-
-  useEffect(() => {
-    axios(`/api/v2/elements/${elementId}/retrieveRequests/`).then(response => {
-      setData(response.data.requested);
-    });
-  }, [])
-
-  const handleSubmit = (params) => {
-    console.log('handleSubmit');
-    // {
-    //   "user": 0,
-    //   "system": 0,
-    //   "requested_element": 0,
-    //   "criteria_comment": "string",
-    //   "criteria_reject_comment": "string",
-    //   "status": "string"
-    // }
-    // const updatedRequest = {
-    //   user: currentRequest.userId,
-    //   system: currentRequest.system.id,
-    //   requested_element: currentRequest.element.id,
-    //   criteria_comment: currentRequest.criteria_comment,
-    //   criteria_reject_comment: currentRequest.criteria_reject_comment,
-    //   status: currentRequest.status,
-    // }
-    // const editRequestResponse = await axios.put(`/api/v2/elements/${elementId}/CreateAndSetRequest/`, updatedRequest);
-    // if(editRequestResponse.status === 200){
-    //   handleClose();
-    // } else {
-    //   console.error("Something went wrong in creating and setting new request to element");
-    // }
-  }
-
-  const [columnsForEditor, setColumnsForEditor] = useState([
-    {
-      field: 'system',
-      headerName: 'Requested by',
-      width: 150,
-      editable: false,
-      valueGetter: (params) => params.row.system.name,
-    },
-    {
-      field: 'point_of_contact',
-      headerName: 'Point of Contact',
-      width: 300,
-      editable: false,
-      renderCell: (params) => (
-        <div>
-          {params.row.user_name} {(params.row.user_phone_number) ? `(${params.row.user_phone_number})` : ''}
-        </div>
-      ),
-    },
-    // {
-    //   field: 'point_of_contact',
-    //   headerName: 'Point of Contact',
-    //   width: 300,
-    //   editable: false,
-    //   valueGetter: (params) => params.row.system.point_of_contact,
-    // },
-    // {
-    //   field: 'req_poc',
-    //   headerName: 'RequestedPoint of Contact',
-    //   width: 300,
-    //   editable: false,
-    //   valueGetter: (params) => params.row.requested_element.point_of_contact[0],
-    // },
-    {
-      field: 'status',
-      headerName: 'Status',
-      width: 150,
-      editable: false,
-      valueGetter: (params) => params.row.status,
-    },
-    // {
-    //   field: 'action',
-    //   headerName: 'Action',
-    //   width: 300,
-    //   editable: true,
-    //   type: 'text',
-    //   renderCell: (params) => (
-    //     <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-    //     <Grid item xs={6}>
-    //       <Select
-    //         value={params.row.status}
-    //         onChange={() => handleChange(params, event.target.value)}
-    //         size="small"
-    //         sx={{ height: 1 }}
-    //         native
-    //         autoFocus
-    //       >
-    //         <option>Started</option>
-    //         <option>Pending</option>
-    //         <option>In Progress</option>
-    //         <option>Complete</option>
-    //       </Select>
-    //     </Grid>
-    //     <Grid item xs={6}>
-    //       <Button variant="primary" onClick={handleSubmit(params)}>Submit</Button>
-    //     </Grid>
-    //   </Grid>
-    //   ),
-    // },
-  ]);
-
+  const [columnsForEditor, setColumnsForEditor] = useState([]);
   const [columns, setColumns] = useState([
     {
         field: 'user',
@@ -182,10 +202,89 @@ export const RequestsTable = ({ elementId, isOwner }) => {
         valueGetter: (params) => params.row.status,
     },
   ]);
+  const handleChange = (event, params, data) => {
+    const updatedData = [...data];
+    updatedData[params.row.id-1].status = event;
+    setData(updatedData);
+  }
+  const handleSubmit = async (params) => {
+    const updatedRequest = {
+      user: params.row.userId,
+      system: params.row.system.id,
+      requested_element: params.row.requested_element.id,
+      criteria_comment: params.row.criteria_comment,
+      criteria_reject_comment: params.row.criteria_reject_comment,
+      status: params.row.status,
+    }
+    const updateRequestResponse = await axios.put(`/api/v2/requests/${params.row.requestId}/`, updatedRequest);
+    if(updateRequestResponse.status === 200){
+      
+    } else {
+      console.error("Something went wrong in creating and setting new request to element");
+    }
+  }
+  useEffect(() => {
+    axios(`/api/v2/elements/${elementId}/retrieveRequests/`).then(response => {
+      setData(response.data.requested);
+    });
+  }, []);
+
+  useEffect(() => {
+    setColumnsForEditor([
+      {
+        field: 'system',
+        headerName: 'Requested by',
+        width: 150,
+        editable: false,
+        valueGetter: (params) => params.row.system.name,
+      },
+      {
+        field: 'point_of_contact',
+        headerName: 'Point of Contact',
+        width: 300,
+        editable: false,
+        renderCell: (params) => (
+          <div>
+            {params.row.user_name} {(params.row.user_phone_number) ? `(${params.row.user_phone_number})` : ''}
+          </div>
+        ),
+      },
+      {
+        field: 'status',
+        headerName: 'Status',
+        width: 150,
+        editable: false,
+        valueGetter: (params) => params.row.status,
+      },
+      {
+        field: 'action',
+        headerName: 'Action',
+        width: 300,
+        editable: true,
+        type: 'text',
+        renderCell: (params) => (
+          <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+            {data.length !== 0 && <Grid item xs={6}>
+                <CustomSelect value={params.row.status} onChange={(event) => handleChange(event, params, data)}>
+                  <StyledOption value={"Started"}>Started</StyledOption>
+                  <StyledOption value={"Pending"}>Pending</StyledOption>
+                  <StyledOption value={"In Progress"}>In Progress</StyledOption>
+                  <StyledOption value={"Complete"}>Complete</StyledOption>
+                </CustomSelect>
+            </Grid>}
+            <Grid item xs={6}>
+              <Button variant="primary" onClick={() => handleSubmit(params)}>Submit</Button>
+            </Grid>
+            
+          </Grid>
+        ),
+      },
+    ]);
+  }, [data])
 
   return (
       <div style={{ maxHeight: '2000px', width: '100%' }}>
-          <Grid className="poc-data-grid" sx={{ minHeight: '500px' }}>
+          {data !== null && columnsForEditor.length !== 0 && <Grid className="poc-data-grid" sx={{ minHeight: '500px' }}>
               <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
                   <div style={{ width: "100%", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
                       <DataGrid
@@ -213,6 +312,7 @@ export const RequestsTable = ({ elementId, isOwner }) => {
                   </div>
               </div>
           </Grid>
+          }
       </div>
   )
 }

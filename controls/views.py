@@ -1373,9 +1373,7 @@ def component_library_component(request, element_id):
         listOfContacts.append(user)
 
     get_all_parties = element.appointments.all()
-    # import ipdb; ipdb.set_trace()
-    #TODO: Count element's requests - element.requests.count()
-    total_number_of_requests = 3
+    total_number_of_requests = element.requests.count()
     # status=RequestStatusEnum.PENDING.name
     # req_instance = Request.objects.create(user=user, element=element, status="pending")
     # req_instance.system.set(system)

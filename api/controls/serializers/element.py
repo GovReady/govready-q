@@ -183,6 +183,7 @@ class ElementRequestsSerializer(ReadOnlySerializer):
 
     def get_list_of_requested(self, element):
         list_of_requests = []
+        counter = 1
         for request in element.requests.all():
             
             list_of_system_PointOfContacts = []
@@ -194,7 +195,8 @@ class ElementRequestsSerializer(ReadOnlySerializer):
                 list_of_requestedElements_PointOfContacts.append(user.party.name)
 
             req = {
-                "id": request.id,
+                "id": counter,
+                "requestId": request.id,
                 "userId": request.user.id,
                 "user_name": request.user.name,
                 "user_email": request.user.email,
@@ -221,7 +223,7 @@ class ElementRequestsSerializer(ReadOnlySerializer):
                 "criteria_reject_comment": request.criteria_reject_comment,
                 "status": request.status,
             }
-            
+            counter += 1
             list_of_requests.append(req)
         return list_of_requests
     class Meta:
