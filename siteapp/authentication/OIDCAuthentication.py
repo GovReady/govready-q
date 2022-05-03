@@ -127,11 +127,11 @@ class OIDCAuth(OIDCAuthenticationBackend):
     def update_user(self, user, claims):
         original_values = [getattr(user, x.name) for x in user._meta.get_fields() if hasattr(user, x.name)]
 
-        user.email = claims[settings.OIDC_CLAIMS_MAP['email']]
-        user.first_name = claims[settings.OIDC_CLAIMS_MAP['first_name']]
-        user.last_name = claims[settings.OIDC_CLAIMS_MAP['last_name']]
-        user.username = claims[settings.OIDC_CLAIMS_MAP['username']]
-        groups = claims[settings.OIDC_CLAIMS_MAP['groups']]
+        user.email = claims.get(settings.OIDC_CLAIMS_MAP['email'], None)
+        user.first_name = claims.get(settings.OIDC_CLAIMS_MAP['first_name'], None)
+        user.last_name = claims.get(settings.OIDC_CLAIMS_MAP['last_name'], None)
+        user.username = claims.get(settings.OIDC_CLAIMS_MAP['username'], None)
+        groups = claims.get(settings.OIDC_CLAIMS_MAP['groups'], None)
         user.is_staff = self.is_admin(groups)
         user.is_superuser = user.is_staff
 
