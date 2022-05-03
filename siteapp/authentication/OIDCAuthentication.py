@@ -56,6 +56,23 @@ class OIDCAuth(OIDCAuthenticationBackend):
             return True
         return False
 
+    # override verify_claims to address custom OIDC_RP_SCOPES defined
+    def verify_claims(self, claims):
+        """Verify the provided claims to decide if authentication should be allowed."""
+
+        # Verify claims required by default configuration
+        scopes = self.get_settings('OIDC_RP_SCOPES', 'openid email')
+        if 'email' in scopes.split():
+            return 'email' in claims
+
+        LOGGER.warning('Custom OIDC_RP_SCOPES defined. '
+                       'You need to override `verify_claims` for custom claims verification.')
+
+        # Custom examination of OIDC_RP_SCOPES
+        LOGGER.warning(f"\n DEBUG custom OIDC_RP_SCOPES (1):", OIDC_RP_SCOPES)
+
+        return True
+
     # override get_or_create_user method
     def get_or_create_user(self, access_token, id_token, payload):
         """Returns a User instance if 1 user is found. Creates a user if not found
