@@ -51,8 +51,6 @@ class OIDCAuth(OIDCAuthenticationBackend):
             decoded = urlsafe_b64decode(content)
         return decoded
 
-
-
     def is_admin(self, groups):
         if settings.OIDC_ROLES_MAP["admin"] in groups:
             return True
@@ -73,8 +71,24 @@ class OIDCAuth(OIDCAuthenticationBackend):
                 'is_staff': False}
 
         user = self.UserModel.objects.create_user(**data)
-        portfolio = Portfolio.objects.create(title=user.email.split('@')[0], description="Personal Portfolio")
-        portfolio.assign_owner_permissions(user)
+        if user.default_portfolio is None:
+            # portfolio = Portfolio.objects.create(title=user.email.split('@')[0], description="Personal Portfolio")
+            portfolio = user.create_default_portfolio_if_missing()
+            # portfolio.assign_owner_permissions(user)
+            # if portfolio:
+            #     # Send a message to site administrators.
+            #         from django.core.mail import mail_admins
+            #         def subvars(s):
+            #             return s.format(
+            #                 portfolio=portfolio.title,
+            #                 username=user.username,
+            #                 email=user.email,
+            #             )
+
+            #         mail_admins(
+            #             subvars("New portfolio: {portfolio} (created by {email})"),
+            #             subvars(
+            #                 "A new portfolio has been registered!\n\nPortfolio\n------------\nName: {portfolio}\nRegistering User\n----------------\nUsername: {username}\nEmail: {email}"))
         return user
 
     def update_user(self, user, claims):
