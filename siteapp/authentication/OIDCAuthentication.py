@@ -69,7 +69,7 @@ class OIDCAuth(OIDCAuthenticationBackend):
                        'You need to override `verify_claims` for custom claims verification.')
 
         # Custom examination of OIDC_RP_SCOPES
-        LOGGER.warning(f"\n DEBUG custom OIDC_RP_SCOPES (1):", OIDC_RP_SCOPES)
+        # LOGGER.warning(f"\n DEBUG custom OIDC_RP_SCOPES (1):", OIDC_RP_SCOPES)
 
         return True
 
