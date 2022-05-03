@@ -12,7 +12,7 @@ from mozilla_django_oidc.middleware import SessionRefresh
 from mozilla_django_oidc.utils import absolutify, add_state_and_nonce_to_session
 from base64 import urlsafe_b64encode, urlsafe_b64decode
 
-from siteapp.models import Portfolio
+from siteapp.models import Portfolio, User
 
 
 
