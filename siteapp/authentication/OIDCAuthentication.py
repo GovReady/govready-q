@@ -56,6 +56,39 @@ class OIDCAuth(OIDCAuthenticationBackend):
             return True
         return False
 
+    # override get_or_create_user method
+    def get_or_create_user(self, access_token, id_token, payload):
+        """Returns a User instance if 1 user is found. Creates a user if not found
+        and configured to do so. Returns nothing if multiple users are matched."""
+
+        user_info = self.get_userinfo(access_token, id_token, payload)
+        LOGGER.warning("\n DEBUG user_info:", user_info)
+
+        claims_verified = self.verify_claims(user_info)
+        if not claims_verified:
+            msg = 'Claims verification failed'
+            raise SuspiciousOperation(msg)
+
+        # email based filtering
+        #users = self.filter_users_by_claims(user_info)
+        users = User.objects.filter(username=user_info.get('preferred_username', None))
+
+        if len(users) == 1:
+            return self.update_user(users[0], user_info)
+        elif len(users) > 1:
+            # In the rare case that two user accounts have the same email address,
+            # bail. Randomly selecting one seems really wrong.
+            msg = 'Multiple users returned'
+            raise SuspiciousOperation(msg)
+        elif self.get_settings('OIDC_CREATE_USER', True):
+            user = self.create_user(user_info)
+            return user
+        else:
+            LOGGER.debug('Login failed: No user with %s found, and '
+                         'OIDC_CREATE_USER is False',
+                         self.describe_user_by_claims(user_info))
+            return None
+
     def create_user(self, claims):
         # data = {'email': claims[settings.OIDC_CLAIMS_MAP['email']],
         #         'first_name': claims[settings.OIDC_CLAIMS_MAP['first_name']],
