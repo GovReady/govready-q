@@ -40,6 +40,8 @@ urlpatterns = [
     url(r'^restore_to/(?P<smt_id>.*)/(?P<history_id>.*)/$', views.restore_to_history, name="restore_to"),
 
     url(r'^(?P<system_id>.*)/aspen/summary$', views.system_summary_1, name="system_summary_1"),
+    url(r'^(?P<system_id>.*)/aspen/summary/poams$', views.system_summary_2, name="system_summary_2"),
+    url(r'^import-poams$', views.import_poams_xlsx, name="import_poams_xlsx"),
 
 
     # Systems Assessment Results
@@ -74,7 +76,6 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
 
     # Component Library
-
     url(r'^components$', views.component_library, name="component_library"),
     url(r'^components/compare$', views.compare_components, name="compare_components"),
     url(r'^components/new$', views.new_element, name="new_element"),

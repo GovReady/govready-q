@@ -3384,7 +3384,6 @@ def system_profile_oscal_json(request, system_id):
     return response
 
 # System Summaries
-
 @login_required
 def system_summary_1(request, system_id):
     """System Summary page experiment 1"""
@@ -3515,6 +3514,196 @@ def system_summary_1(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
+def system_summary_2(request, system_id):
+    """System Summary page experiment 2"""
+
+    # Retrieve identified System
+    # system = System.objects.get(id=system_id)
+    system = System.objects.get(id=1)
+    # Retrieve related selected controls if user has permission on system
+    # if request.user.has_perm('view_system', system):
+    if True:
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve list of deployments for the system
+        # deployments = system.deployments.all().order_by(Lower('name'))
+        # controls = system.root_element.controls.all()
+        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+        # Sample systems from DHS SORNs
+        dhs_sorns = [
+            { "name": "DHS/ALL-037 E-Authentication Records System of Records", "purpose": """This system collects information in order to authenticate an individual's identity for the purpose of obtaining a credential to electronically access a DHS program or application. This system includes DHS programs or applications that use a third-party identity service provider to provide any of the following credential services: Registration, including identity proofing, issuance, authentication, authorization, and maintenance. This system collects information that allows DHS to track the use of programs and applications for system maintenance and troubleshooting. The system also enables DHS to allow an individual to reuse a credential received when applicable and available."""},
+            { "name": "DHS/ALL-032 Official Passport Application and Maintenance Records", "purpose": """The purpose of this system is to collect and maintain a copy of an official passport application or maintenance record on DHS employees and former employees, including political appointees, civilian, and military personnel (and dependents and family members that accompany military members assigned outside the continental United States) assigned or detailed to the Department, individuals who are formally or informally associated with the Department, including advisory committee members, employees of other agencies and departments in the federal government, and other individuals in the private and public sector who are on official business with the Department, who in their official capacity, are applying for an official passport or updating their official passport records where a copy is maintained by the Department."""},
+            { "name": "DHS/ALL-034 Emergency Care Medical Records", "purpose": """The purpose of this system is to support MQM oversight to ensure consistent quality medical care and standardize the documentation of care rendered by DHS EMS medical care providers in diverse environments.""" },
+            { "name": "DHS/ALL-035 Common Entity Index Prototype (CEI Prototype)", "purpose": """The purpose of this prototype is to determine the feasibility of establishing a centralized index of select biographic information that will allow DHS to provide a consolidated and correlated identity, thereby facilitating and improving DHS's ability to carry out its national security, homeland security, law enforcement, and benefits missions.""" },
+            { "name": "DHS/ALL-042 Personnel Networking and Collaboration System of Records.", "purpose": """The purpose of this system is to permit DHS's collection of biographical and professional information of current DHS employees, contractors, and grantees to facilitate connections and collaboration among individuals supporting the Department's mission; aid in the identification of individuals within an organization; and to ensure efficient collaboration within the Department.""" },
+            { "name": "DHS/ALL-044 eRulemaking", "purpose": """The purpose of this system is to permit members of the public to review and comment on DHS rulemakings and notices. DHS will use any submitted contact information to seek clarification of a comment, respond to a comment when warranted, and for such other needs as may be associated with the rule making or notice process.""" },
+            { "name": "DHS/FEMA-006 Citizen Corps Program", "url": "http://www.gpo.gov/fdsys/pkg/FR-2013-07-22/html/2013-17456.htm", "purpose": "The purpose of this system is to allow state, local, tribal, and territorial communities to setup and register Citizen Corps Councils and CERT programs. Also, this system provides a way for individuals to locate and contact Councils, CERTs, and other Citizen Corps partners for more information regarding volunteer programs and opportunities nation-wide. Additionally, this system uses surveys to assess and enhance communities' preparedness and to improve the effectiveness of the Citizen Corps Program."}
+            # { "name": "", "purpose": """ """ },
+        ]
+
+        import random
+        from django.utils import timezone
+
+        random.seed(system_id)
+        other_id = random.randint(1,2000)
+        impact = random.choice(["Low Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "High Impact"])
+        status = random.choice(["Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Under Development", "Planned"])
+        system_from_sorn = random.choice(dhs_sorns)
+
+        # Fix purpose
+        if "purpose" not in system_from_sorn:
+            system_from_sorn['purpose'] = "Missing"
+        elif len(system_from_sorn['purpose']) > 750:
+            system_from_sorn['purpose'] = system_from_sorn['purpose'][0:500]
+        # System name
+        system_name = system_from_sorn['name'].strip(" ").strip(",")
+        if re.search(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", system_name):
+            system_name = re.sub(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", '', system_name)
+
+        # Organization
+        if re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")):
+            organization_name = "DHS " + re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")).group(1).strip()
+        else:
+            organization_name = "DHS"
+
+        # Acronym
+        if "(" in system_name:
+            acronym = re.search(r"\((.*)\)", system_name).group(1).strip()
+            system_name = re.sub(r" \(.*\)", '', system_name)
+        else:
+            acronym = "".join([word[0].upper() for word in system_name.replace("(","").replace(")","").split(" ")])
+            if len(acronym) > 5:
+                acronym = acronym[0:3]
+            if len(acronym) == 1:
+                acronym = system_name
+        aka = [acronym]
+        if len(system_name.split(" ")) > 7:
+            short_name = " ".join([word for word in system_name.split(" ")[0:2]]) + " System"
+            aka.append(short_name)
+
+        system_type = random.choice(["General Support System", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Minor Application", ])
+        hosting_facility = random.choice(["DISC", "AWS", "AWS","AWS", "AWS", "DC-1", "AWS", "AWS", "Azure", "AWS", "AWS", "AWS", "DC-1",  ])
+        # Dates        
+        from datetime import datetime, date, timedelta, timezone
+        date1, date2 = datetime(2014, 6, 3, tzinfo=timezone.utc), datetime(2022, 2, 1, tzinfo=timezone.utc)
+        dates_between = date2 - date1
+        total_days = dates_between.days
+        created = date1 + timedelta(days=random.randrange(total_days))
+        next_audit = datetime.now().date() + timedelta(random.randint(40,600))
+        next_scan = datetime.combine(datetime.now().date() + timedelta(random.randint(2,12)), datetime.min.time()).replace(tzinfo=timezone.utc)
+
+        # datetime.combine(date.today(), datetime.min.time())
+        # next_scan = next_scan.replace(tzinfo=timezone.utc)
+        dates_between_created = created - date1
+        pen_test = created + timedelta(days=random.randrange(dates_between_created.days))
+
+        # Fake data for System
+        system = {
+            "id": system_id,
+            "other_id": other_id,
+            "name": system_name,
+            "organization_name": organization_name,
+            "aka": aka,
+            "impact": impact,
+            "status": status,
+            "type": system_type,
+            "created": created,
+            "hosting_facility": hosting_facility,
+            "next_audit": next_audit,
+            "next_scan": next_scan, #"05/01/22",
+            "security_scan": "Last known-04/20/22 @ 1:23pm",
+            "pen_test": pen_test, #"Scheduled for 05/05/22",
+            "config_scan": "Last known-01/17/20 @ 4:32pm",
+            "purpose": system_from_sorn['purpose']
+        }
+
+        system_events = [
+            { "event_tag": "TEST", "event_summary": "Penetration test scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do..."},
+            { "event_tag": "SCAN", "event_summary": "Security scan scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do..."},
+            { "event_tag": "SYS", "event_summary": "Isso appointed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod..."}
+        ]
+
+        # Fix menu data
+        project.system.root_element.name = system['name']
+        project.root_task.title_override = system['name']
+        # Return the controls
+
+
+        # Example reading POA&Ms from xlsx file using Pandas
+        import pandas
+        fn = "local/poams_list.xlsx"
+        df_dict = pandas.read_excel(fn, header=1)
+        poams_list = []
+        for index, row in df_dict.iterrows():
+            # print("\n", index, ":\n", row['Org'])
+            poam_dict = {
+                "id": row['CSAM ID'],
+                "CSAM_ID": row['CSAM ID'],
+                "Org": row['Org'],
+                "Sub_Org": row['Sub Org'],
+                "System_Name": row['System Name'],
+                "POAM_ID": row['POAM ID'],
+                "POAM_Title": row['POAM Title'],
+                "System_Type": row['System Type'],
+                "Detailed_Weakness_Description": row['Detailed Weakness Description'],
+                "Status": row['Status']
+            }
+            poams_list.append(poam_dict)
+
+        context = {
+            "system": system,
+            #"project": project,
+            "system_events": system_events,
+            # "deployments": deployments,
+            "poams_list": poams_list,
+            "display_urls": project_context(project)
+        }
+        return render(request, "systems/system_summary_2.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+@login_required
+@transaction.atomic
+def import_poams_xlsx(request):
+    # from collections import OrderedDict
+
+    poams_xlsx_file = request.FILES.get("file")
+    # print(3,"========= systems poams_xlsx_file:", os.path.splitext(poams_xlsx_file.name)[0])
+
+    if poams_xlsx_file:
+        try:
+            poams_xlsx_filename = os.path.splitext(poams_xlsx_file.name)
+            poams_xlsx_filename = "poams_list.xlsx"
+            # Save file
+            with open(os.path.join("local", poams_xlsx_filename), 'wb+') as destination:
+                for chunk in poams_xlsx_file.chunks():
+                    destination.write(chunk)
+            # TODO:
+            # Check if file format is .xlsx
+            # Create a new AppSource.
+            # appsrc = AppSource.objects.create(
+            #     slug=poams_xlsx_filename,
+            #     spec={ "type": "local", "path": f"local/{poams_xlsx_filename}/apps" }
+            # )
+            # Log uploaded app source
+            # logger.info(
+            #     event=f"govready appsource_added {appsrc.slug}",
+            #     object={"object": "appsource", "id": appsrc.id, "slug": appsrc.slug},
+            #     user={"id": request.user.id, "username": request.user.username}
+            # )
+            messages.add_message(request, messages.INFO, f"File saved: {poams_xlsx_filename}")
+            return JsonResponse({ "status": "ok", "redirect": "/systems/9/aspen/summary/poams" })
+        except ValueError:
+            messages.add_message(request, messages.ERROR, f"Failure processing: {ValueError}")
+            return JsonResponse({ "status": "ok", "redirect": "/systems/9/aspen/summary/poams" })
+    else:
+        messages.add_message(request, messages.ERROR, f"POA&Ms spreadsheet file required.")
+        return JsonResponse({ "status": "ok", "redirect": "/systems/9/aspen/summary/poams" })
 
 # System Deployments
 @login_required
