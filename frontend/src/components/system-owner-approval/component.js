@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import ReactDOM from 'react-dom';
 import {v4 as uuid_v4} from "uuid";
 import { RequireApprovalModal } from './requireApprovalModal';
+import { ProposalSteps } from './proposal-steps';
 import { Provider } from "react-redux";
 import store from "../../store";
 
@@ -12,5 +13,14 @@ window.requireApprovalModal = ( userId, systemId, systemName, elementId, require
             <RequireApprovalModal userId={userId} systemId={systemId} systemName={systemName} elementId={elementId} require_approval={require_approval} uuid={uuid} />
         </Provider>,
         document.getElementById('private-component-modal')
+    );
+};
+
+window.proposalSteps = ( userId, systemId, elementId, systemName, elementName, proposalStatus, proposalCriteria, hasSentRequest ) => {
+    ReactDOM.render(
+        <Provider store={store}>
+            <ProposalSteps userId={userId} systemId={systemId} elementId={elementId} systemName={systemName} elementName={elementName} proposalStatus={proposalStatus} proposalCriteria={proposalCriteria} hasSentRequest={hasSentRequest} />
+        </Provider>,
+        document.getElementById('system-owner-proposal-steps')
     );
 };

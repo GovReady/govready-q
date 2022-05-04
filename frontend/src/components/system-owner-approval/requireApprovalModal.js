@@ -1,15 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { DataTable } from '../shared/table';
 import axios from 'axios';
-import moment from 'moment';
-import { DataGrid } from '@mui/x-data-grid';
-import { v4 as uuid_v4 } from "uuid";
-import { 
-  Chip,
-  Grid,
-  Stack,
-} from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
   Tooltip,
@@ -24,10 +14,7 @@ import {
   Row,
   Modal
 } from 'react-bootstrap';
-import { AsyncPagination } from "../shared/asyncTypeahead";
-import { red, green } from '@mui/material/colors';
 import { ReactModal } from '../shared/modal';
-import { hide, show } from '../shared/modalSlice';
 
 const datagridStyles = makeStyles({
   root: {
@@ -82,15 +69,15 @@ export const RequireApprovalModal = ({ userId, systemId, systemName, elementId, 
     });
   }, [elementId, uuid])
 
-  const successful_request_message = () => {
-    const message = `System ${systemName} has requested ${data.name}`;
+  const successful_proposal_message = () => {
+    const message = `System ${systemName} has proposed ${data.name}`;
     document.getElementById("req_message_type").value = "INFO";
     document.getElementById("req_message").value = message;
     document.send_request_message.submit()
   }
 
-  const send_alreadyRequested_message = () => {
-    const message = `System ${systemName} has already requested ${data.name}.`;
+  const send_alreadyProposed_message = () => {
+    const message = `System ${systemName} has already proposed ${data.name}.`;
     document.getElementById("req_message_type").value = "WARNING";
     document.getElementById("req_message").value = message;
     document.send_request_message.submit()
@@ -103,35 +90,34 @@ export const RequireApprovalModal = ({ userId, systemId, systemName, elementId, 
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    
-    const newReq = {
+        
+    const newProposal = {
       userId: userId,
-      systemId: systemId,
+      elementId: elementId,
       criteria_comment: data.criteria,
-      criteria_reject_comment: "",
-      status: "Pending"
+      status: "Open"
     }
-    const checkElement = await axios.get(`/api/v2/elements/${elementId}/retrieveRequests/`);
 
-    if(checkElement.status === 200){
-      let alreadyRequested = false;
-      checkElement.data.requested.map((req) => {
-        if((req.userId === userId) && (req.requested_element.id === parseInt(elementId)) && (req.system.id === newReq.systemId)){
-          alreadyRequested = true;
+    const checkSystem = await axios.get(`/api/v2/systems/${systemId}/retrieveProposals/`);
+    if(checkSystem.status === 200){
+      let alreadyProposed = false;
+      checkSystem.data.proposals.map((req) => {
+        if(req.elementId === parseInt(elementId)){
+          alreadyProposed = true;
         }
       });
-      if(!alreadyRequested){
+      if(!alreadyProposed){
         /* Create a request and assign it to element and system */
-        const newRequestResponse = await axios.post(`/api/v2/elements/${elementId}/CreateAndSetRequest/`, newReq);
+        const newRequestResponse = await axios.post(`/api/v2/systems/${systemId}/CreateAndSetProposal/`, newProposal);
         if(newRequestResponse.status === 200){
           handleClose();
-          successful_request_message();
+          successful_proposal_message();
         } else {
-          console.error("Something went wrong in creating and setting new request to element");
+          console.error("Something went wrong in creating and setting new proposal to element");
         }
       } else {
         handleClose();
-        send_alreadyRequested_message();
+        send_alreadyProposed_message();
       }
     } else {
       console.error("Something went wrong with checking element");
@@ -140,7 +126,7 @@ export const RequireApprovalModal = ({ userId, systemId, systemName, elementId, 
   const handleClose = async (event) => {
     setOpenRequireApprovalModal(false);
   }
-  console.log('data: ', data);
+  
   return (
     <div style={{ maxHeight: '2000px', width: '100%' }}>
       {data !== null && <ReactModal
@@ -174,7 +160,7 @@ export const RequireApprovalModal = ({ userId, systemId, systemName, elementId, 
                 {
                   !require_approval && data.criteria ? 
                   <Button type="button" bsStyle="success" onClick={handleAddComponent} style={{float: 'right'}}>Add Component</Button> :
-                  <Button type="submit" bsStyle="success">Submit Request</Button> 
+                  <Button type="submit" bsStyle="success">Create proposed component</Button> 
                 }
             </Modal.Footer>
           </Form>

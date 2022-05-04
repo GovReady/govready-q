@@ -18,6 +18,7 @@ from controls.enums.components import ComponentTypeEnum, ComponentStateEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from siteapp.model_mixins.appointments import AppointmentModelMixin
 from siteapp.model_mixins.requests import RequestsModelMixin
+from siteapp.model_mixins.proposals import ProposalModelMixin
 from controls.enums.statements import StatementTypeEnum
 from controls.enums.remotes import RemoteTypeEnum
 from controls.oscal import Catalogs, Catalog, CatalogData
@@ -649,7 +650,7 @@ class ElementRole(auto_prefetch.Model, BaseModel):
         return "'%s id=%d'" % (self.role, self.id)
 
 
-class System(auto_prefetch.Model, TagModelMixin):
+class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
     root_element = auto_prefetch.ForeignKey(Element, related_name="system", on_delete=models.CASCADE,
                                             help_text="The Element that is this System. Element must be type [Application, General Support System]")
     fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=True,

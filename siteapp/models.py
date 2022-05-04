@@ -1470,18 +1470,29 @@ class Request(BaseModel):
     criteria_reject_comment = models.TextField(blank=True, null=True, help_text="Comment on request rejection.")
     status = models.TextField(blank=True, null=True, help_text="Status of the request.")
 
-    # user = models.ForeignKey(User, on_delete=models.CASCADE, help_text="User creating the request.")
-    # system = models.ForeignKey(System, on_delete=models.CASCADE, help_text="System making the request.")
-    # requested_element = models.ForeignKey(Element, on_delete=models.CASCADE, help_text="Element being requested.")
-
     def __repr__(self):
-        return f"{self.system} -> {self.requested_element} - {self.status}"
+        return f"{self.system} requesting -> {self.requested_element} - {self.status}"
 
     def __str__(self):
-        return f"{self.system} -> {self.requested_element} - {self.status}"
+        return f"{self.system} requesting -> {self.requested_element} - {self.status}"
 
     def serialize(self):
         return {"system": self.system, "requested_element": self.requested_element, "id": self.id}
+
+class Proposal(BaseModel):
+    user = models.ForeignKey(User, blank=True, null=True, related_name="propose", on_delete=models.CASCADE, help_text="User creating the request proposal.")
+    requested_element = models.ForeignKey(Element, blank=True, null=True, related_name="propose", on_delete=models.CASCADE, help_text="Element being proposed for request.")
+    criteria_comment = models.TextField(blank=True, null=True, help_text="Comments on this proposal.")
+    status = models.TextField(blank=True, null=True, help_text="Status of the proposal.")
+
+    def __repr__(self):
+        return f"Proposing request -> {self.requested_element} - {self.status}"
+
+    def __str__(self):
+        return f"Proposing request -> {self.requested_element} - {self.status}"
+
+    def serialize(self):
+        return {"requested_element": self.requested_element, "id": self.id}
 
 class Asset(BaseModel):
     UPLOAD_TO = None  # Should be overriden when iheritted
