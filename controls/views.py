@@ -2933,14 +2933,6 @@ def poams_list(request, system_id):
         controls = system.root_element.controls.all()
         poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
 
-        
-        # impl_smts_count = {}
-        # ikeys = system.smts_control_implementation_as_dict.keys()
-        # for c in controls:
-        #     impl_smts_count[c.oscal_ctl_id] = 0
-        #     if c.oscal_ctl_id in ikeys:
-        #         impl_smts_count[c.oscal_ctl_id] = len(system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
-
         # Return the controls
         context = {
             "system": system,
@@ -3515,8 +3507,8 @@ def system_summary_1(request, system_id):
         raise Http404
 
 @login_required
-def system_summary_2(request, system_id):
-    """System Summary page experiment 2"""
+def system_summary_poams(request, system_id):
+    """System Summary page experiment POA&Ms"""
 
     # Retrieve identified System
     # system = System.objects.get(id=system_id)
@@ -3632,27 +3624,33 @@ def system_summary_2(request, system_id):
         project.root_task.title_override = system['name']
         # Return the controls
 
-
         # Example reading POA&Ms from xlsx file using Pandas
+        # This is to just demonstrate reading POA&Ms from imported spreadsheet
+        # TODO: Move to a serializer and filter for one sysyem only
         import pandas
-        fn = "local/poams_list.xlsx"
-        df_dict = pandas.read_excel(fn, header=1)
         poams_list = []
-        for index, row in df_dict.iterrows():
-            # print("\n", index, ":\n", row['Org'])
-            poam_dict = {
-                "id": row['CSAM ID'],
-                "CSAM_ID": row['CSAM ID'],
-                "Org": row['Org'],
-                "Sub_Org": row['Sub Org'],
-                "System_Name": row['System Name'],
-                "POAM_ID": row['POAM ID'],
-                "POAM_Title": row['POAM Title'],
-                "System_Type": row['System Type'],
-                "Detailed_Weakness_Description": row['Detailed Weakness Description'],
-                "Status": row['Status']
-            }
-            poams_list.append(poam_dict)
+        fn = "local/poams_list.xlsx"
+        if pathlib.Path(fn).is_file():
+            try:
+                df_dict = pandas.read_excel(fn, header=1)
+                for index, row in df_dict.iterrows():
+                    poam_dict = {
+                        "id": row.get('CSAM ID', ""),
+                        "CSAM_ID": row.get('CSAM ID', ""   ),
+                        "Org": row.get('Org', ""   ),
+                        "Sub_Org": row.get('Sub Org', ""   ),
+                        "System_Name": row.get('System Name', ""   ),
+                        "POAM_ID": row.get('POAM ID', ""   ),
+                        "POAM_Title": row.get('POAM Title', "" ),
+                        "System_Type": row.get('System Type', ""   ),
+                        "Detailed_Weakness_Description": row.get('Detailed Weakness Description', ""   ),
+                        "Status": row.get('Status', "" )
+                    }
+                    poams_list.append(poam_dict)
+            except FileNotFoundError as e:
+                logger.error(f"Error reading file {fn}: {e}")
+            except Exception as e:
+                logger.error(f"Other Error reading file {fn}: {e}")
 
         context = {
             "system": system,
@@ -3670,40 +3668,51 @@ def system_summary_2(request, system_id):
 @login_required
 @transaction.atomic
 def import_poams_xlsx(request):
-    # from collections import OrderedDict
 
     poams_xlsx_file = request.FILES.get("file")
-    # print(3,"========= systems poams_xlsx_file:", os.path.splitext(poams_xlsx_file.name)[0])
-
+    http_referer = request.META.get('HTTP_REFERER')
+    redirect_url = http_referer
     if poams_xlsx_file:
         try:
             poams_xlsx_filename = os.path.splitext(poams_xlsx_file.name)
             poams_xlsx_filename = "poams_list.xlsx"
             # Save file
-            with open(os.path.join("local", poams_xlsx_filename), 'wb+') as destination:
+            with open(os.path.join("local", poams_xlsx_filename), 'wb') as destination:
                 for chunk in poams_xlsx_file.chunks():
                     destination.write(chunk)
-            # TODO:
-            # Check if file format is .xlsx
-            # Create a new AppSource.
-            # appsrc = AppSource.objects.create(
-            #     slug=poams_xlsx_filename,
-            #     spec={ "type": "local", "path": f"local/{poams_xlsx_filename}/apps" }
-            # )
-            # Log uploaded app source
-            # logger.info(
-            #     event=f"govready appsource_added {appsrc.slug}",
-            #     object={"object": "appsource", "id": appsrc.id, "slug": appsrc.slug},
-            #     user={"id": request.user.id, "username": request.user.username}
-            # )
-            messages.add_message(request, messages.INFO, f"File saved: {poams_xlsx_filename}")
-            return JsonResponse({ "status": "ok", "redirect": "/systems/9/aspen/summary/poams" })
+            # Check if file format is .xlsx or .csv
+            filetype = None
+            import pandas
+            try:
+                df = pandas.read_excel(os.path.join("local", poams_xlsx_filename))
+                filetype = 'EXCEL'
+            except Exception:
+                try:
+                    df = pandas.read_csv(os.path.join("local", poams_xlsx_filename))
+                    filetype = 'CSV'
+                except Exception:
+                    pass
+            if filetype == 'EXCEL' or filetype == 'CSV':
+                logger.info(
+                    event=f"poa&ms import file added {poams_xlsx_file.name}",
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                messages.add_message(request, messages.INFO, f"File saved: {poams_xlsx_filename}")
+                return JsonResponse({ "status": "ok", "redirect": redirect_url })
+            else:
+                logger.info(
+                    event=f"failed poa&ms import file added {poams_xlsx_file.name}",
+                    error=f"file type is not .xlsx or .csv",
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                messages.add_message(request, messages.ERROR, f"POA&Ms file is not .xlsx or .csv.")
+                return JsonResponse({ "status": "ok", "redirect": redirect_url })
         except ValueError:
             messages.add_message(request, messages.ERROR, f"Failure processing: {ValueError}")
-            return JsonResponse({ "status": "ok", "redirect": "/systems/9/aspen/summary/poams" })
+            return JsonResponse({ "status": "ok", "redirect": redirect_url })
     else:
         messages.add_message(request, messages.ERROR, f"POA&Ms spreadsheet file required.")
-        return JsonResponse({ "status": "ok", "redirect": "/systems/9/aspen/summary/poams" })
+        return JsonResponse({ "status": "ok", "redirect": redirect_url })
 
 # System Deployments
 @login_required
