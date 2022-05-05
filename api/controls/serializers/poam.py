@@ -1,9 +1,16 @@
+import pathlib
+import pandas
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
 from rest_framework import serializers
+
 from api.base.serializers.types import ReadOnlySerializer
 from api.controls.serializers.statements import DetailedStatementSerializer
-from controls.models import Poam
+from controls.models import Poam, System
 
-
+structlog.configure(logger_factory=LoggerFactory())
+logger = get_logger()
 class SimplePoamSerializer(ReadOnlySerializer):
     statement = serializers.SerializerMethodField('get_statement')
 
@@ -37,6 +44,38 @@ class SimplePoamSerializer(ReadOnlySerializer):
                   'remediation_plan', 'scheduled_completion_date', 'milestones','milestone_changes',
                   'risk_rating_original', 'risk_rating_adjusted', 'poam_group', 'statement']
 
+class SimpleSpreadsheetPoamSerializer(SimplePoamSerializer):
+    spreadsheet_poams = serializers.SerializerMethodField('get_spreadsheet_poams')
+        
+    def get_spreadsheet_poams(self, system):
+        poams_list = []
+        fn = "local/poams_list.xlsx"
+        if pathlib.Path(fn).is_file():
+            try:
+                df_dict = pandas.read_excel(fn, header=1)
+                for index, row in df_dict.iterrows():
+                    # if system.id == 2: then we build this
+                    poam_dict = {
+                        "id": row.get('CSAM ID', ""),
+                        "csam_id": row.get('CSAM ID', ""   ),
+                        "org": row.get('Org', ""   ),
+                        "sub_org": row.get('Sub Org', ""   ),
+                        "system_name": row.get('System Name', ""   ),
+                        "poam_id": row.get('POAM ID', ""   ),
+                        "poam_title": row.get('POAM Title', "" ),
+                        "system_type": row.get('System Type', ""   ),
+                        "detailed_weakness_description": row.get('Detailed Weakness Description', ""   ),
+                        "status": row.get('Status', "" )
+                    }
+                    poams_list.append(poam_dict)
+            except FileNotFoundError as e:
+                logger.error(f"Error reading file {fn}: {e}")
+            except Exception as e:
+                logger.error(f"Other Error reading file {fn}: {e}")
+        return poams_list
+    class Meta:
+        model = System
+        fields = ['spreadsheet_poams']
 
 class DetailedPoamSerializer(SimplePoamSerializer):
     statement = DetailedStatementSerializer()
