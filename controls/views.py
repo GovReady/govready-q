@@ -1131,7 +1131,6 @@ def system_element(request, system_id, element_id):
         # import ipdb; ipdb.set_trace()
         
         impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
-        # import ipdb; ipdb.set_trace()
         
         if(impl_smts.exists()):
             # Retrieve used catalog_key
@@ -1163,6 +1162,7 @@ def system_element(request, system_id, element_id):
             }
             return render(request, "systems/element_detail_tabs.html", context)
         else:
+            # import ipdb; ipdb.set_trace()
             proposal = system.proposals.get(requested_element__id=element_id)
             # TODO:FALCON
             #get all statements that are not component_approval_criteria
@@ -1183,7 +1183,6 @@ def system_element(request, system_id, element_id):
             
             requests = Request.objects.filter(system=system, requested_element=element)
             hasSentRequest = requests.exists()
-            # import ipdb; ipdb.set_trace()
             context = {
                 "states": states,
                 "types": types,
@@ -2495,7 +2494,28 @@ def delete_smt(request):
 
 # Components
 
-def request_message(request, system_id):
+def proposal_message(request, system_id):
+    """ Send a global message to indicate a request has been successful """ 
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    form_dict = dict(request.POST)
+    form_values = {}
+    for key in form_dict.keys():
+        form_values[key] = form_dict[key][0]
+    messageType = form_values['proposal_message_type']
+    message = form_values['proposal_message']
+    
+    if(messageType == "INFO"):
+        messages.add_message(request, messages.INFO, f'{message}')
+    elif(messageType == "WARNING"):
+        messages.add_message(request, messages.WARNING, f'{message}')
+    else:
+        messages.add_message(request, messages.ERROR, f'{message}')
+
+    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+
+def request_message(request, system_id, element_id):
     """ Send a global message to indicate a request has been successful """ 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -2514,7 +2534,8 @@ def request_message(request, system_id):
     else:
         messages.add_message(request, messages.ERROR, f'{message}')
 
-    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+    return HttpResponseRedirect("/controls/{}/component/{}".format(system_id, element_id))
+
 
 @login_required
 def add_system_component(request, system_id):

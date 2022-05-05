@@ -16,10 +16,10 @@ window.requireApprovalModal = ( userId, systemId, systemName, elementId, require
     );
 };
 
-window.proposalSteps = ( userId, systemId, elementId, systemName, elementName, proposalStatus, proposalCriteria, hasSentRequest ) => {
+window.proposalSteps = ( userId, system, element, proposal, hasSentRequest ) => {
     ReactDOM.render(
         <Provider store={store}>
-            <ProposalSteps userId={userId} systemId={systemId} elementId={elementId} systemName={systemName} elementName={elementName} proposalStatus={proposalStatus} proposalCriteria={proposalCriteria} hasSentRequest={hasSentRequest} />
+            <ProposalSteps userId={userId} system={system} element={element} proposal={proposal} hasSentRequest={hasSentRequest} />
         </Provider>,
         document.getElementById('system-owner-proposal-steps')
     );

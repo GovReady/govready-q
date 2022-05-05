@@ -34,7 +34,7 @@ urlpatterns = [
     url(r'^editor_autocomplete/', views.EditorAutocomplete.as_view(), name="search_system_component"),
     url(r'^related_system_components/', views.RelatedComponentStatements.as_view(), name="related_system_components"),
     url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),
-    url(r'^(?P<system_id>.*)/components/request_message$', views.request_message, name="request_message"),
+    url(r'^(?P<system_id>.*)/components/proposal_message$', views.proposal_message, name="proposal_message"),
     url(r'^(?P<system_id>.*)/components/editor_autocomplete$',  views.EditorAutocomplete.as_view(), name="editor_autocomplete"),
     url(r'^(?P<system_id>.)/profile/oscal/json', views.system_profile_oscal_json, name="profile_oscal_json"),
     url(r'^statement_history/(?P<smt_id>.*)/$', views.statement_history, name="statement_history"),
@@ -71,6 +71,7 @@ urlpatterns = [
         name="system_element_download_oscal_json"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/_remove$', views.system_element_remove, name="system_element_remove"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/(?P<catalog_key>.*)/(?P<control_id>.*)$', views.system_element_control, name="system_element_control"),
+    url(r'^(?P<system_id>.*)/components/(?P<element_id>.*)/proposal_message$', views.proposal_message, name="proposal_message"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
     url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
 

@@ -37,10 +37,10 @@
                     </form>
                 </div>
             </div>
-            <form  style="display:none;" id="send_request_message" name="send_request_message" method="post" action="{% url 'request_message' system_id=system.id %}">
+            <form  style="display:none;" id="send_proposal_message" name="send_proposal_message" method="post" action="{% url 'proposal_message' system_id=system.id %}">
                 {% csrf_token %}
-                <input type="hidden" id="req_message_type" name="req_message_type" value="" />
-                <input type="hidden" id="req_message" name="req_message" value="" />
+                <input type="hidden" id="proposal_message_type" name="proposal_message_type" value="" />
+                <input type="hidden" id="proposal_message" name="proposal_message" value="" />
             </form>
             
             <div id="private-component-modal"></div>

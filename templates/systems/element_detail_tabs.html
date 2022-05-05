@@ -320,7 +320,31 @@
 {% block scripts %}
       {{block.super}}
       <script>
-        window.proposalSteps({{request.user.id}}, {{system.id}}, {{element.id}}, `{{system.root_element.name}}`, `{{element.name}}`, `{{proposal.status}}`, `{{proposal.criteria_comment}}`, `{{hasSentRequest}}` === 'True' ? true : false);
+        const current_system = {
+          id: {{ system.id }},
+          name: `{{ system.root_element.name }}`,
+        }
+        const req_ele = {
+          id: {{ element.id }},
+          name: `{{ element.name }}`,
+          
+        }
+        const proposal = {
+          id: {{ proposal.id }},
+          userId: {{ proposal.user.id }},
+          userName: '{{ proposal.user.name }}',
+          requested_element_id: {{ proposal.requested_element.id  }},
+          requested_element_name: `{{ proposal.requested_element.name }}`,
+          criteria_comment: `{{ proposal.criteria_comment }}`,
+          status: '{{ proposal.status }}',
+        }
+        {% comment %} const request = {
+          id: '{{ request.id }}',
+          systemId: '{{ request.system.id }}',
+
+        } {% endcomment %}
+        console.log(current_system, req_ele, proposal);
+        window.proposalSteps({{request.user.id}}, current_system, req_ele, proposal, `{{hasSentRequest}}` === 'True' ? true : false);
         // Adds statement form to page
         function add_smt() {
           var panel_num = $('.panel-smt').length + 1

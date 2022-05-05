@@ -71,16 +71,16 @@ export const RequireApprovalModal = ({ userId, systemId, systemName, elementId, 
 
   const successful_proposal_message = () => {
     const message = `System ${systemName} has proposed ${data.name}`;
-    document.getElementById("req_message_type").value = "INFO";
-    document.getElementById("req_message").value = message;
-    document.send_request_message.submit()
+    document.getElementById("proposal_message_type").value = "INFO";
+    document.getElementById("proposal_message").value = message;
+    document.send_proposal_message.submit()
   }
 
   const send_alreadyProposed_message = () => {
     const message = `System ${systemName} has already proposed ${data.name}.`;
-    document.getElementById("req_message_type").value = "WARNING";
-    document.getElementById("req_message").value = message;
-    document.send_request_message.submit()
+    document.getElementById("proposal_message_type").value = "WARNING";
+    document.getElementById("proposal_message").value = message;
+    document.send_proposal_message.submit()
   }
 
   const handleAddComponent = () => {
@@ -95,7 +95,7 @@ export const RequireApprovalModal = ({ userId, systemId, systemName, elementId, 
       userId: userId,
       elementId: elementId,
       criteria_comment: data.criteria,
-      status: "Open"
+      status: "Planning"
     }
 
     const checkSystem = await axios.get(`/api/v2/systems/${systemId}/retrieveProposals/`);
@@ -123,6 +123,7 @@ export const RequireApprovalModal = ({ userId, systemId, systemName, elementId, 
       console.error("Something went wrong with checking element");
     }
   }
+  
   const handleClose = async (event) => {
     setOpenRequireApprovalModal(false);
   }
