@@ -3,9 +3,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import moment from 'moment';
-import { 
-  DataGrid, 
-  GridToolbar, 
+import {
+  DataGrid,
+  GridToolbar,
   useGridApiContext,
 } from '@mui/x-data-grid';
 // import {
@@ -15,7 +15,7 @@ import {
 //   GridToolbarFilterButton,
 // } from '@material-ui/data-grid';
 import { v4 as uuid_v4 } from "uuid";
-import { 
+import {
   Chip,
   Grid,
   IconButton,
@@ -32,11 +32,11 @@ import {
   Button,
   Glyphicon,
   OverlayTrigger,
-  Col, 
+  Col,
   ControlLabel,
   Form,
   FormControl,
-  FormGroup, 
+  FormGroup,
   Row,
   Modal
 } from 'react-bootstrap';
@@ -93,11 +93,11 @@ function QuickSearchToolbar(props) {
             </IconButton>
           ),
         }}
-        sx={{ 
-          marginBottom: '1rem', 
-          input: { 
+        sx={{
+          marginBottom: '1rem',
+          input: {
             fontSize: '18px',
-          } 
+          }
         }}
       />
     </div>
@@ -160,7 +160,7 @@ export const SystemSummarySpreadsheet = ({ systemId, projectId }) => {
   const requestSearch = (searchValue) => {
     setSearchText(searchValue);
     const searchRegex = new RegExp(escapeRegex(searchValue.toLowerCase()));
-    
+
     const filteredRows = data.filter((row) => {
       return Object.keys(row).some((field) => {
         if(row[field] !== null){
@@ -248,7 +248,7 @@ export const SystemSummarySpreadsheet = ({ systemId, projectId }) => {
   ]);
 
   return (
-      <div style={{ maxHeight: '2000px', width: '100%' }}>  
+      <div style={{ maxHeight: '2000px', width: '100%' }}>
           <Grid className="poc-data-grid" sx={{ minHeight: '500px' }}>
               <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
                 <QuickSearchToolbar value={searchText} onChange={(event) => requestSearch(event.target.value)} clearSearch={() => requestSearch('')}/>
@@ -278,7 +278,7 @@ export const SystemSummarySpreadsheet = ({ systemId, projectId }) => {
                         //   console.log(selectionModel, details);
                         // }}
                         // disableSelectionOnClick
-                        sx={{ 
+                        sx={{
                           fontSize: '14px',
                           '& .MuiDataGrid-columnHeaderTitle':{
                               fontWeight: 600,

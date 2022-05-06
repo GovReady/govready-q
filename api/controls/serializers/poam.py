@@ -44,10 +44,11 @@ class SimplePoamSerializer(ReadOnlySerializer):
                   'remediation_plan', 'scheduled_completion_date', 'milestones','milestone_changes',
                   'risk_rating_original', 'risk_rating_adjusted', 'poam_group', 'statement']
 
-class SimpleSpreadsheetPoamSerializer(SimplePoamSerializer):
+class SimpleSpreadsheetPoamSerializer(ReadOnlySerializer):
     spreadsheet_poams = serializers.SerializerMethodField('get_spreadsheet_poams')
-        
+
     def get_spreadsheet_poams(self, system):
+        print(2, "======== system.id, system", system.id, system)
         poams_list = []
         fn = "local/poams_list.xlsx"
         if pathlib.Path(fn).is_file():

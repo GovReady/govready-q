@@ -3627,37 +3627,37 @@ def system_summary_poams(request, system_id):
         # Example reading POA&Ms from xlsx file using Pandas
         # This is to just demonstrate reading POA&Ms from imported spreadsheet
         # TODO: Move to a serializer and filter for one sysyem only
-        import pandas
-        poams_list = []
-        fn = "local/poams_list.xlsx"
-        if pathlib.Path(fn).is_file():
-            try:
-                df_dict = pandas.read_excel(fn, header=1)
-                for index, row in df_dict.iterrows():
-                    poam_dict = {
-                        "id": row.get('CSAM ID', ""),
-                        "CSAM_ID": row.get('CSAM ID', ""   ),
-                        "Org": row.get('Org', ""   ),
-                        "Sub_Org": row.get('Sub Org', ""   ),
-                        "System_Name": row.get('System Name', ""   ),
-                        "POAM_ID": row.get('POAM ID', ""   ),
-                        "POAM_Title": row.get('POAM Title', "" ),
-                        "System_Type": row.get('System Type', ""   ),
-                        "Detailed_Weakness_Description": row.get('Detailed Weakness Description', ""   ),
-                        "Status": row.get('Status', "" )
-                    }
-                    poams_list.append(poam_dict)
-            except FileNotFoundError as e:
-                logger.error(f"Error reading file {fn}: {e}")
-            except Exception as e:
-                logger.error(f"Other Error reading file {fn}: {e}")
+        # import pandas
+        # poams_list = []
+        # fn = "local/poams_list.xlsx"
+        # if pathlib.Path(fn).is_file():
+        #     try:
+        #         df_dict = pandas.read_excel(fn, header=1)
+        #         for index, row in df_dict.iterrows():
+        #             poam_dict = {
+        #                 "id": row.get('CSAM ID', ""),
+        #                 "CSAM_ID": row.get('CSAM ID', ""   ),
+        #                 "Org": row.get('Org', ""   ),
+        #                 "Sub_Org": row.get('Sub Org', ""   ),
+        #                 "System_Name": row.get('System Name', ""   ),
+        #                 "POAM_ID": row.get('POAM ID', ""   ),
+        #                 "POAM_Title": row.get('POAM Title', "" ),
+        #                 "System_Type": row.get('System Type', ""   ),
+        #                 "Detailed_Weakness_Description": row.get('Detailed Weakness Description', ""   ),
+        #                 "Status": row.get('Status', "" )
+        #             }
+        #             poams_list.append(poam_dict)
+        #     except FileNotFoundError as e:
+        #         logger.error(f"Error reading file {fn}: {e}")
+        #     except Exception as e:
+        #         logger.error(f"Other Error reading file {fn}: {e}")
 
         context = {
             "system": system,
             #"project": project,
             "system_events": system_events,
             # "deployments": deployments,
-            "poams_list": poams_list,
+            # "poams_list": poams_list,
             "display_urls": project_context(project)
         }
         return render(request, "systems/system_summary_2.html", context)

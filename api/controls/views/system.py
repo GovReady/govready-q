@@ -55,6 +55,7 @@ class SystemPoamViewSet(ReadOnlyViewSet):
 
 class SystemPoamSpreadsheetViewSet(ReadOnlyViewSet):
     queryset = System.objects.all()
+    # queryset = System.objects.filter(pk=9)
     serializer_classes = SerializerClasses(
         retrieve=SimpleSpreadsheetPoamSerializer,
         list=SimpleSpreadsheetPoamSerializer)
