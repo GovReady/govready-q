@@ -339,15 +339,26 @@
           criteria_comment: `{{ proposal.criteria_comment }}`,
           status: '{{ proposal.status }}',
         }
-        request = {
-          id: '{{ request.id }}',
-          systemId: '{{ request.system.id }}',
-          requested_element: '{{ request.requested_element.id }}',
-          criteria_comment: `{{ request.criteria_comment }}`,
-          criteria_reject_comment: `{{ request.criteria_reject_comment }}`,
-          status: '{{ request.status }}',
+        if(`{{hasSentRequest}}` === 'True') {
+          req = {
+            id: '{{ component_request.id }}',
+            systemId: '{{ component_request.system.id }}',
+            requested_element: '{{ component_request.requested_element.id }}',
+            criteria_comment: `{{ component_request.criteria_comment }}`,
+            criteria_reject_comment: `{{ component_request.criteria_reject_comment }}`,
+            status: '{{ component_request.status }}',
+          }
+        } else {
+          req = {
+            id: '',
+            systemId: '',
+            requested_element: '',
+            criteria_comment: '',
+            criteria_reject_comment: '',
+            status: '',
+          }
         }
-        window.proposalSteps({{request.user.id}}, current_system, req_ele, proposal, request, `{{hasSentRequest}}` === 'True' ? true : false);
+        window.proposalSteps({{request.user.id}}, current_system, req_ele, proposal, req, `{{hasSentRequest}}` === 'True' ? true : false);
         
         // Adds statement form to page
         function add_smt() {

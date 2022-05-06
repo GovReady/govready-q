@@ -1179,8 +1179,11 @@ def system_element(request, system_id, element_id):
             # Return the system's element information
             
             requests = Request.objects.filter(system=system, requested_element=element)
-            component_request = requests[0]
-            hasSentRequest = requests.exists()
+            component_request = None
+            hasSentRequest = False
+            if requests.exists():
+                hasSentRequest = requests.exists()
+                component_request = requests[0]
 
             context = {
                 "states": states,
@@ -1189,7 +1192,7 @@ def system_element(request, system_id, element_id):
                 "project": project,
                 "element": element,
                 "proposal": proposal,
-                "request": component_request,
+                "component_request": component_request,
                 "hasSentRequest": hasSentRequest,
                 "impl_smts": impl_smts,
                 "catalog_controls": catalog_controls,

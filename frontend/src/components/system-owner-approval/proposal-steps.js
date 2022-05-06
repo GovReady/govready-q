@@ -52,36 +52,46 @@ const useStyles = makeStyles({
 export const ProposalSteps = ({ userId, system, element, proposal, request, hasSentRequest }) => {
     const classes = useStyles(proposal.status);
 
+    // console.log(proposal, request, hasSentRequest);
+    console.log('proposal: ', proposal);
+    console.log('request: ', request);
+    console.log('hasSentRequest: ', hasSentRequest);
+    
     useEffect(() => {
         if(hasSentRequest && request){
             if(proposal.status.toLowerCase() !== 'approval' && request.status.toLowerCase() === 'approve'){
+                console.log('IF proposal status: ' + proposal.status + '\n request status: ' + request.status);
                 const updatedProposal = {
                     "user": userId,
-                    "requested_element": element.id,
-                    "criteria_common": proposal.criteria_common,
+                    "requested_element": parseInt(element.id),
+                    "criteria_comment": proposal.criteria_comment,
                     "status": "Approval",
                 }
-                const updateProposalApproval = axios.put(`/api/v2/proposals/${proposal.id}/`, updatedProposal);
+                console.log('updatedProp: ', updatedProposal);
+                const updateProposalApproval = axios.put(`/api/v2/proposals/${parseInt(proposal.id)}/`, updatedProposal);
                 if(updateProposalApproval.status === 200){
                     window.location.reload();
                 } else {
                     console.error("Something went wrong in updating proposal1");
                 }
             } else if(proposal.status.toLowerCase() === 'approval' && request.status.toLowerCase() !== 'approve'){
-                const updatedProposal = {
+                console.log('ELSEIF proposal status: ' + proposal.status + '\n request status: ' + request.status);
+                const updatedProposalToRequest = {
                     "user": userId,
-                    "requested_element": element.id,
-                    "criteria_common": proposal.criteria_common,
+                    "requested_element": parseInt(element.id),
+                    "criteria_comment": proposal.criteria_comment,
                     "status": "Request",
                 }
-                const updateProposalToNewStatus = axios.put(`/api/v2/proposals/${proposal.id}/`, updatedProposal);
+                console.log('updatedProposalToRequest: ', updatedProposalToRequest);
+                const updateProposalToNewStatus = axios.put(`/api/v2/proposals/${parseInt(proposal.id)}/`, updatedProposalToRequest);
                 if(updateProposalToNewStatus.status === 200){
                     window.location.reload();
                 } else {
                     console.error("Something went wrong in updating proposal2");
                 }
             } else {
-                
+                console.log('everything else');
+                console.log('proposal status: ' + proposal.status + '\n request status: ' + request.status);
             }
         }
     }, []);
@@ -176,9 +186,9 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                         </Grid>
                         <Grid item xs={9}>
                             <div><h2>Planning</h2></div>
-                            <div><h4>List</h4></div>
+                            <div><h4>List of criteria:</h4></div>
                             <div>
-                                <div>
+                                <div style={{ whiteSpace: 'break-spaces' }}>
                                     {proposal.criteria_comment === '' ? "Criteria has not been set" : proposal.criteria_comment}
                                 </div>
                                 <div style={{float: 'right'}}>
