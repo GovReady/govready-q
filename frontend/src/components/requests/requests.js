@@ -269,7 +269,8 @@ export const RequestsTable = ({ elementId, isOwner }) => {
                   <StyledOption value={"Started"}>Started</StyledOption>
                   <StyledOption value={"Pending"}>Pending</StyledOption>
                   <StyledOption value={"In Progress"}>In Progress</StyledOption>
-                  <StyledOption value={"Complete"}>Complete</StyledOption>
+                  <StyledOption value={"Approve"}>Approve</StyledOption>
+                  <StyledOption value={"Reject"}>Reject</StyledOption>
                 </CustomSelect>
             </Grid>}
             <Grid item xs={6}>

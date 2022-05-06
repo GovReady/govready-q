@@ -1162,12 +1162,9 @@ def system_element(request, system_id, element_id):
             }
             return render(request, "systems/element_detail_tabs.html", context)
         else:
-            # import ipdb; ipdb.set_trace()
             proposal = system.proposals.get(requested_element__id=element_id)
-            # TODO:FALCON
             #get all statements that are not component_approval_criteria
             impl_smts = element.statements_produced.filter(~Q(statement_type='COMPONENT_APPROVAL_CRITERIA'))
-            # import ipdb; ipdb.set_trace()
             # Retrieve used catalog_key
             catalog_key = impl_smts[0].sid_class
             
@@ -1182,7 +1179,9 @@ def system_element(request, system_id, element_id):
             # Return the system's element information
             
             requests = Request.objects.filter(system=system, requested_element=element)
+            component_request = requests[0]
             hasSentRequest = requests.exists()
+
             context = {
                 "states": states,
                 "types": types,
@@ -1190,6 +1189,7 @@ def system_element(request, system_id, element_id):
                 "project": project,
                 "element": element,
                 "proposal": proposal,
+                "request": component_request,
                 "hasSentRequest": hasSentRequest,
                 "impl_smts": impl_smts,
                 "catalog_controls": catalog_controls,

@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { DataTable } from '../shared/table';
 import axios from 'axios';
-import moment from 'moment';
-import { DataGrid } from '@mui/x-data-grid';
-import { v4 as uuid_v4 } from "uuid";
 import { 
     Button,
-    Chip,
     Grid,
-    Stack,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { ListGroup, ListGroupItem } from 'react-bootstrap';
@@ -56,74 +49,55 @@ const useStyles = makeStyles({
     },
 });
 
-export const ProposalSteps = ({ userId, system, element, proposal, hasSentRequest }) => {
-    
-    // const [status, setStatus] = useState({
-    //     open: proposalStatus.toLowerCase() === 'open' ? true : false,
-    //     planning: proposalStatus.toLowerCase() === 'planning' ? true : false,
-    //     request: proposalStatus.toLowerCase() === 'request' ? true : false,
-    //     approval: proposalStatus.toLowerCase() === 'approval' ? true : false,
-    //     additionalSteps: proposalStatus.toLowerCase() === 'additionalSteps' ? true : false,
-    // });
+export const ProposalSteps = ({ userId, system, element, proposal, request, hasSentRequest }) => {
     const classes = useStyles(proposal.status);
 
-    // useEffect(() => {
-    //     switch(proposalStatus) {
-    //         case 'open':
-    //             setStatus((prev) => ({
-    //                 ...prev,
-    //                 open: true,
-    //             }));
-    //             break;
-    //         case 'planning':
-    //             setStatus((prev) => ({
-    //                 ...prev,
-    //                 planning: true,
-    //             }));
-    //             break;
-    //         case 'request':
-    //             setStatus((prev) => ({
-    //                 ...prev,
-    //                 request: true,
-    //             }));
-    //             break;
-    //         case 'approval':
-    //             setStatus((prev) => ({
-    //                 ...prev,
-    //                 approval: true,
-    //             }));
-    //             break;
-    //         case 'additionalSteps':
-    //             setStatus((prev) => ({
-    //                 ...prev,
-    //                 additionalSteps: true,
-    //             }));
-    //             break;
-    //         default:
-    //             setStatus((prev) => ({
-    //                 ...prev,
-    //                 planning: false,
-    //                 request: false,
-    //                 approval: false,
-    //                 additionalSteps: false,
-    //             }));
-    //     }
-    // }, [proposalStatus]);
+    useEffect(() => {
+        if(hasSentRequest && request){
+            if(proposal.status.toLowerCase() !== 'approval' && request.status.toLowerCase() === 'approve'){
+                const updatedProposal = {
+                    "user": userId,
+                    "requested_element": element.id,
+                    "criteria_common": proposal.criteria_common,
+                    "status": "Approval",
+                }
+                const updateProposalApproval = axios.put(`/api/v2/proposals/${proposal.id}/`, updatedProposal);
+                if(updateProposalApproval.status === 200){
+                    window.location.reload();
+                } else {
+                    console.error("Something went wrong in updating proposal1");
+                }
+            } else if(proposal.status.toLowerCase() === 'approval' && request.status.toLowerCase() !== 'approve'){
+                const updatedProposal = {
+                    "user": userId,
+                    "requested_element": element.id,
+                    "criteria_common": proposal.criteria_common,
+                    "status": "Request",
+                }
+                const updateProposalToNewStatus = axios.put(`/api/v2/proposals/${proposal.id}/`, updatedProposal);
+                if(updateProposalToNewStatus.status === 200){
+                    window.location.reload();
+                } else {
+                    console.error("Something went wrong in updating proposal2");
+                }
+            } else {
+                
+            }
+        }
+    }, []);
     
     const getStatusLevel = (status) => {
         switch (status.toLowerCase()) {
-            case 'open':
-                return 1;
             case 'planning':
-                return 2;
+                return 1;
             case 'request':
-                return 3;
+                return 2;
             case 'approval':
-                return 4;
+                return 3;
             case 'additionalSteps':
-                return 5;
+                return 4;
             case 'closed':
-                return 6;
+                return 5;
             default:
                 return 0;
         }
@@ -144,7 +118,6 @@ export const ProposalSteps = ({ userId, system, element, proposal, hasSentReques
       }
 
     const submitRequest = async () => {
-        console.log('submitRequest!');
         const newReq = {
           userId: userId,
           systemId: system.id,
@@ -178,7 +151,6 @@ export const ProposalSteps = ({ userId, system, element, proposal, hasSentReques
     }
 
     const completePlanningPhase = async () => {
-        console.log('completePlanning!');
         const updatedProposal = {
             "user": userId,
             "requested_element": element.id,
@@ -188,20 +160,16 @@ export const ProposalSteps = ({ userId, system, element, proposal, hasSentReques
 
         const updateProposalCall = await axios.put(`/api/v2/proposals/${proposal.id}/`, updatedProposal);
         if(updateProposalCall.status === 200){
-            console.log("Proposal updated!");
+            window.location.reload();
         } else {
             console.error("Something went wrong in updating proposal");
         }
     }
 
-    console.log('system: ', system);
-    console.log('element: ', element);
-    console.log('proposal: ', proposal);
-    console.log('hasSentRequest: ', hasSentRequest);
     return (
         <div>
-            <ListGroup>
-                <ListGroupItem className={getStatusLevel(proposal.status) === 2 ? classes.current : getStatusLevel(proposal.status) > 2 ? classes.completed : classes.notStarted}>
+            {proposal.id !== '' && <ListGroup>
+                <ListGroupItem className={getStatusLevel(proposal.status) === 1 ? classes.current : getStatusLevel(proposal.status) > 1 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={3}>
                             <span className="dot"></span>
@@ -213,30 +181,29 @@ export const ProposalSteps = ({ userId, system, element, proposal, hasSentReques
                                 <div>
                                     {proposal.criteria_comment === '' ? "Criteria has not been set" : proposal.criteria_comment}
                                 </div>
-                                <div>
-                                    {getStatusLevel(proposal.status) === 3 && <Button variant="contained" onClick={completePlanning}>Completed Planning</Button>}
+                                <div style={{float: 'right'}}>
+                                    {getStatusLevel(proposal.status) === 1 && <Button variant="contained" onClick={completePlanningPhase}>Completed Planning</Button>}
                                 </div>
                             </div>
-                            
                         </Grid>
                     </Grid>
                 </ListGroupItem>
-                <ListGroupItem className={getStatusLevel(proposal.status) === 3 ? classes.current : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
+                <ListGroupItem className={getStatusLevel(proposal.status) === 2 ? classes.current : getStatusLevel(proposal.status) > 2 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={3}>
                             <span className="dot"></span>
                         </Grid>
                         <Grid item xs={9}>
                             <div><h2>Request</h2></div>
-                            <div>You have requested access to the {element.name} and its related controls.</div>
+                            {hasSentRequest ? <div>You have already requested access to the {element.name} and its related controls.</div> : <div>Please submit a request.</div>}
                             <div style={{float: 'right'}}>
-                                
-                                {getStatusLevel(proposal.status) === 3 && hasSentRequest !== true && <Button variant="contained" onClick={submitRequest}>Submit Request</Button>}
+                                {getStatusLevel(proposal.status) === 2 && hasSentRequest !== true && <Button variant="contained" onClick={submitRequest}>Submit Request</Button>}
                             </div>
+                            {hasSentRequest ? <div>Status of request: <b>{request.status}</b></div> : null}
                         </Grid>
                     </Grid>
                 </ListGroupItem>
-                <ListGroupItem className={getStatusLevel(proposal.status) === 4 ? classes.current : getStatusLevel(proposal.status) > 4 ? classes.completed : classes.notStarted}>
+                <ListGroupItem className={getStatusLevel(proposal.status) === 3 ? classes.completed : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={3}>
                             <span className="dot"></span>
@@ -247,7 +214,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, hasSentReques
                         </Grid>
                     </Grid>
                 </ListGroupItem>
-                <ListGroupItem className={getStatusLevel(proposal.status) === 5 ? classes.current : getStatusLevel(proposal.status) > 5 ? classes.completed : classes.notStarted}>
+                <ListGroupItem className={getStatusLevel(proposal.status) === 3 ? classes.current : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={3}>
                             <span className="dot"></span>
@@ -258,7 +225,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, hasSentReques
                         </Grid>
                     </Grid>
                 </ListGroupItem>
-            </ListGroup>
+            </ListGroup>}
         </div>
     );
 };

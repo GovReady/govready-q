@@ -87,9 +87,11 @@
 {% block body_content %}
   <div class="systems-top">
     <div id="above-tab-content" class="row">
-      <div class="row" style="margin-left: 1rem;border: 2px solid #ffb523;background-color: #ffffe2;text-align:center;vertical-align:middle;">
-        <b style="vertical-align:middle;">Access Required</b> <span style="color:grey;font-size:14px;vertical-align:middle;">({{proposal.created}})</span> | Current status: {{proposal.status}} stage
-      </div>
+      {% if proposal %}
+        <div class="row" style="margin-left: 1rem;border: 2px solid #ffb523;background-color: #ffffe2;text-align:center;vertical-align:middle;">
+            <b style="vertical-align:middle;">Access Required</b> <span style="color:grey;font-size:14px;vertical-align:middle;">({{proposal.created}})</span> | Current status: {{proposal.status}} stage
+        </div>
+      {% endif %}
       <div class="col-sm-10 ">
         <h2>
             {{ element.name }} System Component
@@ -320,31 +322,33 @@
 {% block scripts %}
       {{block.super}}
       <script>
-        const current_system = {
-          id: {{ system.id }},
+        current_system = {
+          id: '{{ system.id }}',
           name: `{{ system.root_element.name }}`,
         }
-        const req_ele = {
-          id: {{ element.id }},
+        req_ele = {
+          id: '{{ element.id }}',
           name: `{{ element.name }}`,
-          
         }
-        const proposal = {
-          id: {{ proposal.id }},
-          userId: {{ proposal.user.id }},
+        proposal = {
+          id: '{{ proposal.id }}',
+          userId: '{{ proposal.user.id }}',
           userName: '{{ proposal.user.name }}',
-          requested_element_id: {{ proposal.requested_element.id  }},
+          requested_element_id: '{{ proposal.requested_element.id  }}',
           requested_element_name: `{{ proposal.requested_element.name }}`,
           criteria_comment: `{{ proposal.criteria_comment }}`,
           status: '{{ proposal.status }}',
         }
-        {% comment %} const request = {
+        request = {
           id: '{{ request.id }}',
           systemId: '{{ request.system.id }}',
-
-        } {% endcomment %}
-        console.log(current_system, req_ele, proposal);
-        window.proposalSteps({{request.user.id}}, current_system, req_ele, proposal, `{{hasSentRequest}}` === 'True' ? true : false);
+          requested_element: '{{ request.requested_element.id }}',
+          criteria_comment: `{{ request.criteria_comment }}`,
+          criteria_reject_comment: `{{ request.criteria_reject_comment }}`,
+          status: '{{ request.status }}',
+        }
+        window.proposalSteps({{request.user.id}}, current_system, req_ele, proposal, request, `{{hasSentRequest}}` === 'True' ? true : false);
+        
         // Adds statement form to page
         function add_smt() {
           var panel_num = $('.panel-smt').length + 1
