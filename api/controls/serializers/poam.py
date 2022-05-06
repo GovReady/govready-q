@@ -50,6 +50,7 @@ class SimpleSpreadsheetPoamSerializer(ReadOnlySerializer):
     def get_spreadsheet_poams(self, system):
         print(2, "======== system.id, system", system.id, system)
         poams_list = []
+        counter = 1;
         fn = "local/poams_list.xlsx"
         if pathlib.Path(fn).is_file():
             try:
@@ -57,7 +58,7 @@ class SimpleSpreadsheetPoamSerializer(ReadOnlySerializer):
                 for index, row in df_dict.iterrows():
                     # if system.id == 2: then we build this
                     poam_dict = {
-                        "id": row.get('CSAM ID', ""),
+                        "id": counter,
                         "csam_id": row.get('CSAM ID', ""   ),
                         "org": row.get('Org', ""   ),
                         "sub_org": row.get('Sub Org', ""   ),
@@ -68,6 +69,7 @@ class SimpleSpreadsheetPoamSerializer(ReadOnlySerializer):
                         "detailed_weakness_description": row.get('Detailed Weakness Description', ""   ),
                         "status": row.get('Status', "" )
                     }
+                    counter += 1
                     poams_list.append(poam_dict)
             except FileNotFoundError as e:
                 logger.error(f"Error reading file {fn}: {e}")
