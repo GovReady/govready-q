@@ -176,8 +176,8 @@ export const SystemSummarySpreadsheet = ({ systemId, projectId }) => {
   }, [data]);
 
   useEffect(() => {
-    axios(`/api/v2/systems/${systemId}/spreadsheet-poams/`).then(response => {
-      setData(response.data.data);
+    axios(`/api/v2/systems/${systemId}/spreadsheet-poams/${systemId}/`).then(response => {
+      setData(response.data.spreadsheet_poams);
     });
   }, [])
 
@@ -187,63 +187,63 @@ export const SystemSummarySpreadsheet = ({ systemId, projectId }) => {
       headerName: 'CSAM_ID',
       width: 150,
       editable: false,
-      valueGetter: (params) => params.row.spreadsheet_poams[0].csam_id,
+      valueGetter: (params) => params.row.csam_id,
     },
     {
       field: 'org',
       headerName: 'Org',
       width: 150,
       editable: false,
-      valueGetter: (params) => params.row.spreadsheet_poams[0].org,
+      valueGetter: (params) => params.row.org,
     },
     {
       field: 'sub_org',
       headerName: 'sub_org',
       width: 150,
       editable: false,
-      valueGetter: (params) => params.row.spreadsheet_poams[0].sub_org,
+      valueGetter: (params) => params.row.sub_org,
     },
     {
       field: 'system_name',
       headerName: 'system_name',
       width: 150,
       editable: false,
-      valueGetter: (params) => params.row.spreadsheet_poams[0].system_name,
+      valueGetter: (params) => params.row.system_name,
     },
     {
       field: 'poam_id',
       headerName: 'poam_id',
       width: 150,
       editable: false,
-      valueGetter: (params) => params.row.spreadsheet_poams[0].poam_id,
+      valueGetter: (params) => params.row.poam_id,
     },
     {
       field: 'poam_title',
       headerName: 'poam_title',
       width: 150,
       editable: false,
-      valueGetter: (params) => params.row.spreadsheet_poams[0].poam_title,
+      valueGetter: (params) => params.row.poam_title,
     },
     {
       field: 'system_type',
       headerName: 'system_type',
       width: 150,
       editable: false,
-      valueGetter: (params) => params.row.spreadsheet_poams[0].system_type,
+      valueGetter: (params) => params.row.system_type,
     },
     {
       field: 'detailed_weakness_description',
       headerName: 'detailed_weakness_description',
       width: 150,
       editable: false,
-      valueGetter: (params) => params.row.spreadsheet_poams[0].detailed_weakness_description,
+      valueGetter: (params) => params.row.detailed_weakness_description,
     },
     {
       field: 'status',
       headerName: 'status',
       width: 150,
       editable: false,
-      valueGetter: (params) => params.row.spreadsheet_poams[0].status,
+      valueGetter: (params) => params.row.status,
     },
   ]);
 
