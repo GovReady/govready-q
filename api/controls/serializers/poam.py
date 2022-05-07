@@ -56,21 +56,21 @@ class SimpleSpreadsheetPoamSerializer(ReadOnlySerializer):
             try:
                 df_dict = pandas.read_excel(fn, header=1)
                 for index, row in df_dict.iterrows():
-                    # if system.id == 2: then we build this
-                    poam_dict = {
-                        "id": counter,
-                        "csam_id": row.get('CSAM ID', ""   ),
-                        "org": row.get('Org', ""   ),
-                        "sub_org": row.get('Sub Org', ""   ),
-                        "system_name": row.get('System Name', ""   ),
-                        "poam_id": row.get('POAM ID', ""   ),
-                        "poam_title": row.get('POAM Title', "" ),
-                        "system_type": row.get('System Type', ""   ),
-                        "detailed_weakness_description": row.get('Detailed Weakness Description', ""   ),
-                        "status": row.get('Status', "" )
-                    }
-                    counter += 1
-                    poams_list.append(poam_dict)
+                    if system.id == row.get('CSAM ID', ""   ):
+                        poam_dict = {
+                            "id": counter,
+                            "csam_id": row.get('CSAM ID', ""   ),
+                            "org": row.get('Org', ""   ),
+                            "sub_org": row.get('Sub Org', ""   ),
+                            "system_name": row.get('System Name', ""   ),
+                            "poam_id": row.get('POAM ID', ""   ),
+                            "poam_title": row.get('POAM Title', "" ),
+                            "system_type": row.get('System Type', ""   ),
+                            "detailed_weakness_description": row.get('Detailed Weakness Description', ""   ),
+                            "status": row.get('Status', "" )
+                        }
+                        counter += 1
+                        poams_list.append(poam_dict)
             except FileNotFoundError as e:
                 logger.error(f"Error reading file {fn}: {e}")
             except Exception as e:
