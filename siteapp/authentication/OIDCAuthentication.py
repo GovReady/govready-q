@@ -32,13 +32,13 @@ class OIDCAuth(OIDCAuthenticationBackend):
             timeout=self.get_settings('OIDC_TIMEOUT', None),
             proxies=self.get_settings('OIDC_PROXY', None))
         user_response.raise_for_status()
-        LOGGER.warning(f"user info, {type(user_response.text)}, {user_response.text}")
+        # LOGGER.warning(f"user info, {type(user_response.text)}, {user_response.text}")
         # split on ".": Header.Payload.Signature
         header, payload, signature = [self.parse_b64url(content) for content in user_response.text.split(".")]
         header = json.loads(header.decode('UTF-8'))
         payload = payload[:-1] if b'\x1b' in payload else payload
         payload = json.loads(payload.decode('UTF-8)'))
-        LOGGER.warning(f"header: {header}, \npayload: {payload}, \nsignature: {signature}")
+        # LOGGER.warning(f"header: {header}, \npayload: {payload}, \nsignature: {signature}")
         #return user_response.json()
         return payload
 
@@ -79,20 +79,20 @@ class OIDCAuth(OIDCAuthenticationBackend):
         and configured to do so. Returns nothing if multiple users are matched."""
 
         user_info = self.get_userinfo(access_token, id_token, payload)
-        LOGGER.warning("\n DEBUG user_info (1):", user_info)
+        # LOGGER.warning("\n DEBUG user_info (1):", user_info)
 
         claims_verified = self.verify_claims(user_info)
         if not claims_verified:
             msg = 'Claims verification failed'
             raise SuspiciousOperation(msg)
 
-        LOGGER.warning("\n DEBUG user_info (2):", user_info)
+        # LOGGER.warning("\n DEBUG user_info (2):", user_info)
 
         # email based filtering
         #users = self.filter_users_by_claims(user_info)
         users = User.objects.filter(username=user_info.get('preferred_username', None))
 
-        LOGGER.warning("\n DEBUG user (3):", users)
+        # LOGGER.warning("\n DEBUG user (3):", users)
 
         if len(users) == 1:
             return self.update_user(users[0], user_info)
