@@ -111,38 +111,18 @@ class OIDCAuth(OIDCAuthenticationBackend):
             return None
 
     def create_user(self, claims):
-        # data = {'email': claims[settings.OIDC_CLAIMS_MAP['email']],
-        #         'first_name': claims[settings.OIDC_CLAIMS_MAP['first_name']],
-        #         'last_name': claims[settings.OIDC_CLAIMS_MAP['last_name']],
-        #         'username': claims[settings.OIDC_CLAIMS_MAP['username']],
-        #         'is_staff': self.is_admin(claims[settings.OIDC_CLAIMS_MAP['groups']])}
 
+        # TODO: Better handling if no 'username' set. Current approach will cause duplicate record error
+        # TODO: Is the below sufficiently generic for different customizations for a customer?
         data = {'email': claims.get(settings.OIDC_CLAIMS_MAP['email'], "email@example.com"),
                 'first_name': claims.get(settings.OIDC_CLAIMS_MAP['first_name'], "first_name"),
                 'last_name': claims.get(settings.OIDC_CLAIMS_MAP['last_name'], "last_name"),
-                # 'username': claims.get(settings.OIDC_CLAIMS_MAP['username'], None),
                 'username': claims.get(settings.OIDC_CLAIMS_MAP['username'], "username01"),
                 'is_staff': False}
 
         user = self.UserModel.objects.create_user(**data)
         if user.default_portfolio is None:
-            # portfolio = Portfolio.objects.create(title=user.email.split('@')[0], description="Personal Portfolio")
             portfolio = user.create_default_portfolio_if_missing()
-            # portfolio.assign_owner_permissions(user)
-            # if portfolio:
-            #     # Send a message to site administrators.
-            #         from django.core.mail import mail_admins
-            #         def subvars(s):
-            #             return s.format(
-            #                 portfolio=portfolio.title,
-            #                 username=user.username,
-            #                 email=user.email,
-            #             )
-
-            #         mail_admins(
-            #             subvars("New portfolio: {portfolio} (created by {email})"),
-            #             subvars(
-            #                 "A new portfolio has been registered!\n\nPortfolio\n------------\nName: {portfolio}\nRegistering User\n----------------\nUsername: {username}\nEmail: {email}"))
         return user
 
     def update_user(self, user, claims):
@@ -210,14 +190,14 @@ class OIDCAuth(OIDCAuthenticationBackend):
 class OIDCSessionRefresh(SessionRefresh):
     def process_request(self, request):
         if not self.is_refreshable_url(request):
-            LOGGER.debug('request is not refreshable')
+            # LOGGER.debug('request is not refreshable')
             return
 
         expiration = request.session.get('oidc_id_token_expiration', 0)
         now = time.time()
         if expiration > now:
             # The id_token is still valid, so we don't have to do anything.
-            LOGGER.debug('id token is still valid (%s > %s)', expiration, now)
+            # LOGGER.debug('id token is still valid (%s > %s)', expiration, now)
             return
 
         LOGGER.debug('id token has expired')
