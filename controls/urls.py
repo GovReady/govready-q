@@ -39,6 +39,9 @@ urlpatterns = [
     url(r'^statement_history/(?P<smt_id>.*)/$', views.statement_history, name="statement_history"),
     url(r'^restore_to/(?P<smt_id>.*)/(?P<history_id>.*)/$', views.restore_to_history, name="restore_to"),
 
+    url(r'^(?P<system_id>.*)/aspen/summary$', views.system_summary_1, name="system_summary_1"),
+
+
     # Systems Assessment Results
     url(r'^(?P<system_id>.*)/assessments$', views.system_assessment_results_list, name="system_assessment_results_list"),
     url(r'^(?P<system_id>.*)/assessments/new/wazuh$', views.new_system_assessment_result_wazuh, name="new_system_assessment_result_wazuh"),
@@ -87,6 +90,7 @@ urlpatterns = [
 
     # Elements
     url(r'^elements/(\d+)/__edit$', views.edit_element, name="edit_element"),
+    url(r'^elements/(\d+)/__edit_access$', views.edit_element_access_management, name="edit_element_access_management"),
     *build_tag_urls(r"^elements/(\d+)/", model=Element),  # Tag Urls
 
     # Controls

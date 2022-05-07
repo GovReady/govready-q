@@ -17,6 +17,7 @@ import trestle.oscal.ssp as trestlessp
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
@@ -38,16 +39,17 @@ from guidedmodules.models import Task, Module, AppVersion, AppSource
 from siteapp.model_mixins.tags import TagView
 from simple_history.utils import update_change_reason
 
-from siteapp.models import Project, Organization, Tag
+from siteapp.models import Project, Organization, Tag, User
 from siteapp.settings import GOVREADY_URL
 from siteapp.utils.views_helper import project_context
 from system_settings.models import SystemSettings
-from .forms import ElementEditForm
+from .forms import ElementEditForm, ElementEditAccessManagementForm
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
-from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
+from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm, StatementEditForm
 from .models import *
 from .utilities import *
 from siteapp.utils.views_helper import project_context
+from siteapp.models import Role, Party, Appointment
 
 logging.basicConfig()
 import structlog
@@ -954,7 +956,11 @@ class ComponentImporter(object):
             [print(issue) for issue in issues]
 
         # Returns list of created components
-        created_components = self.create_components(oscal_json)
+        if request is not None:
+            user_owner = request.user
+        else:
+            user_owner = User.objects.filter(is_superuser=True)[0]
+        created_components = self.create_components(oscal_json, user_owner)
         new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
         return new_import_record
 
@@ -984,22 +990,23 @@ class ComponentImporter(object):
 
         return import_record
 
-    def create_components(self, oscal_json):
+    def create_components(self, oscal_json, user_owner=None):
         """Creates Elements (Components) from valid OSCAL JSON"""
         components_created = []
         components = oscal_json['component-definition']['components']
         for component in components:
-            new_component = self.create_component(component)
+            new_component = self.create_component(component, user_owner)
             if new_component is not None:
                 components_created.append(new_component)
 
         return components_created
 
-    def create_component(self, component_json):
+    def create_component(self, component_json, user_owner=None, private=False):
         """Creates a component from a JSON dict
 
         @type component_json: dict
         @param component_json: Component attributes from JSON object
+        @param user_owner: Django user
         @rtype: Element
         @returns: Element object if created, None otherwise
         """
@@ -1014,10 +1021,18 @@ class ComponentImporter(object):
             # Components uploaded to the Component Library are all system_element types
             element_type="system_element",
             uuid=component_json['uuid'] if 'uuid' in component_json else uuid.uuid4(),
-            component_type=component_json['type'] if 'type' in component_json else "software"
+            component_type=component_json['type'] if 'type' in component_json else "software",
+            private=private
         )
 
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
+        if user_owner:
+            new_component.assign_owner_permissions(user_owner)
+            logger.info(
+                event="new_element with user as owner",
+                object={"object": "element", "id": new_component.id, "name":new_component.name},
+                user={"id": user_owner.id, "username": user_owner.username}
+            )
 
         component_props = component_json.get('props', None)
         if component_props is not None:
@@ -1263,13 +1278,24 @@ def new_element(request):
         form = ElementForm(request.POST)
         if form.is_valid():
             form.save()
+            
             element = form.instance
             element.assign_owner_permissions(request.user)
+
+            Statement.objects.create(
+                sid = None,
+                sid_class = None,
+                body = "",
+                statement_type = StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name,
+                producer_element = element
+            )
+            
             logger.info(
                 event="new_element with user as owner",
                 object={"object": "element", "id": element.id, "name":element.name},
                 user={"id": request.user.id, "username": request.user.username}
             )
+            
             return redirect('component_library_component', element_id=element.id)
     else:
         form = ElementForm()
@@ -1279,13 +1305,40 @@ def new_element(request):
     })
 
 @login_required
+def edit_element_access_management(request, element_id):
+    """Form to edit system element access management"""
+
+    # The original element(component) 
+    element = get_object_or_404(Element, id=element_id)
+    # statement related to element
+    statement = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name).first()
+    if request.method == 'POST':
+        form = ElementEditAccessManagementForm(request.POST or None, instance=element)
+        statementForm = StatementEditForm(request.POST, instance=statement)
+        if form.is_valid() and statementForm.is_valid():
+            logger.info(
+                event="edit_element_access_management",
+                object={"object": "element", "id": form.instance.id, "name": form.instance.name},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+
+            form.save()
+            statementForm.save()
+            return JsonResponse({"status": "ok"})
+        else:
+            errors = form.errors.get_json_data(escape_html=False)
+            msg_list = [f"{e.title()} - {errors[e][0]['message']}" for e in errors.keys()]
+            return JsonResponse({"status": "err", "message": "Please fix the following problems:<br>"+"<br>".join(msg_list)})
+
+
+@login_required
 def component_library_component(request, element_id):
     """Display library component's element detail view"""
-
+    
     # Retrieve element
     element = Element.objects.get(id=element_id)
-
-    # Check permissions
+    
+   # Check permissions
     if element.private == True and 'view_element' not in get_user_perms(request.user, element):
         logger.warning(
             event="view_element_private permission_denied",
@@ -1298,13 +1351,43 @@ def component_library_component(request, element_id):
     smt_query = request.GET.get('search')
     usersWithPermission = get_users_with_perms(element, attach_perms=True)
     listUsers = []
+    
     for user in usersWithPermission:
         listUsers.append(user.username)
+
+    listOfContacts = []
+    poc_users = element.appointments.filter(role__role_id='poc', party__party_type='POC')
+
+
+    for poc in poc_users:
+        user = {
+            "uuid":poc.party.uuid,
+            "party_type":poc.party.party_type,
+            "name":poc.party.name,
+            "short_name":poc.party.short_name,
+            "email":poc.party.email,
+            "phone_number":poc.party.phone_number,
+            "role_title":poc.role.title,
+            "role_name":poc.role.short_name,
+        }
+        listOfContacts.append(user)
+
+    get_all_parties = element.appointments.all()
+
+    contacts = []
+    for poc in get_all_parties:
+        contacts.append(poc.party)
+
 
     @register.filter
     def get_item(dictionary, key):
         return dictionary.get(key)
     
+    criteria_results = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name)
+    if len(criteria_results) > 0:
+        criteria_text = criteria_results.first().body
+    else:
+        criteria_text = ""
     is_owner = element.is_owner(request.user)
     
     # Retrieve systems consuming element
@@ -1315,31 +1398,32 @@ def component_library_component(request, element_id):
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
     else:
-        # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
         impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     if len(impl_smts) < 1:
+        # New component, no control statements assigned yet
+        catalog_key = "catalog_key_missing"
+        catalog_controls = None
+        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+        opencontrol_string = None
         context = {
             "element": element,
             "states": states,
             "impl_smts": impl_smts,
+            "oscal": oscal_string,
             "is_admin": request.user.is_superuser,
             "list_of_permissible_users": listUsers,
             "is_owner": is_owner,
             "can_edit": hasPermissionToEdit,
             "users_with_permissions": usersWithPermission,
+            "criteria": criteria_text,
+            "listOfContacts": listOfContacts,
+            "contacts": serializers.serialize('json', contacts),
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }
         return render(request, "components/element_detail_tabs.html", context)
-
-    if len(impl_smts) == 0:
-        # New component, no control statements assigned yet
-        catalog_key = "catalog_key_missing"
-        catalog_controls = None
-        oscal_string = None
-        opencontrol_string = None
     elif len(impl_smts) > 0:
         # TODO: We may have multiple catalogs in this case in the future
         # Retrieve used catalog_key
@@ -1382,6 +1466,8 @@ def component_library_component(request, element_id):
         "is_owner": is_owner,
         "can_edit": hasPermissionToEdit,
         "users_with_permissions": usersWithPermission,
+        "criteria": criteria_text,
+        "contacts": serializers.serialize('json', contacts),
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
@@ -2847,6 +2933,7 @@ def poams_list(request, system_id):
         controls = system.root_element.controls.all()
         poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
 
+        
         # impl_smts_count = {}
         # ikeys = system.smts_control_implementation_as_dict.keys()
         # for c in controls:
@@ -3295,6 +3382,139 @@ def system_profile_oscal_json(request, system_id):
     return JsonResponse(data)
     response['Content-Disposition'] = f'attachment; filename="oscal-profile.json"'
     return response
+
+# System Summaries
+
+@login_required
+def system_summary_1(request, system_id):
+    """System Summary page experiment 1"""
+
+    # Retrieve identified System
+    # system = System.objects.get(id=system_id)
+    system = System.objects.get(id=1)
+    # Retrieve related selected controls if user has permission on system
+    # if request.user.has_perm('view_system', system):
+    if True:
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve list of deployments for the system
+        # deployments = system.deployments.all().order_by(Lower('name'))
+        # controls = system.root_element.controls.all()
+        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+        # Sample systems from DHS SORNs
+        dhs_sorns = [
+            { "name": "DHS/ALL-037 E-Authentication Records System of Records", "purpose": """This system collects information in order to authenticate an individual's identity for the purpose of obtaining a credential to electronically access a DHS program or application. This system includes DHS programs or applications that use a third-party identity service provider to provide any of the following credential services: Registration, including identity proofing, issuance, authentication, authorization, and maintenance. This system collects information that allows DHS to track the use of programs and applications for system maintenance and troubleshooting. The system also enables DHS to allow an individual to reuse a credential received when applicable and available."""},
+            { "name": "DHS/ALL-032 Official Passport Application and Maintenance Records", "purpose": """The purpose of this system is to collect and maintain a copy of an official passport application or maintenance record on DHS employees and former employees, including political appointees, civilian, and military personnel (and dependents and family members that accompany military members assigned outside the continental United States) assigned or detailed to the Department, individuals who are formally or informally associated with the Department, including advisory committee members, employees of other agencies and departments in the federal government, and other individuals in the private and public sector who are on official business with the Department, who in their official capacity, are applying for an official passport or updating their official passport records where a copy is maintained by the Department."""},
+            { "name": "DHS/ALL-034 Emergency Care Medical Records", "purpose": """The purpose of this system is to support MQM oversight to ensure consistent quality medical care and standardize the documentation of care rendered by DHS EMS medical care providers in diverse environments.""" },
+            { "name": "DHS/ALL-035 Common Entity Index Prototype (CEI Prototype)", "purpose": """The purpose of this prototype is to determine the feasibility of establishing a centralized index of select biographic information that will allow DHS to provide a consolidated and correlated identity, thereby facilitating and improving DHS's ability to carry out its national security, homeland security, law enforcement, and benefits missions.""" },
+            { "name": "DHS/ALL-042 Personnel Networking and Collaboration System of Records.", "purpose": """The purpose of this system is to permit DHS's collection of biographical and professional information of current DHS employees, contractors, and grantees to facilitate connections and collaboration among individuals supporting the Department's mission; aid in the identification of individuals within an organization; and to ensure efficient collaboration within the Department.""" },
+            { "name": "DHS/ALL-044 eRulemaking", "purpose": """The purpose of this system is to permit members of the public to review and comment on DHS rulemakings and notices. DHS will use any submitted contact information to seek clarification of a comment, respond to a comment when warranted, and for such other needs as may be associated with the rule making or notice process.""" },
+            { "name": "DHS/FEMA-006 Citizen Corps Program", "url": "http://www.gpo.gov/fdsys/pkg/FR-2013-07-22/html/2013-17456.htm", "purpose": "The purpose of this system is to allow state, local, tribal, and territorial communities to setup and register Citizen Corps Councils and CERT programs. Also, this system provides a way for individuals to locate and contact Councils, CERTs, and other Citizen Corps partners for more information regarding volunteer programs and opportunities nation-wide. Additionally, this system uses surveys to assess and enhance communities' preparedness and to improve the effectiveness of the Citizen Corps Program."}
+            # { "name": "", "purpose": """ """ },
+        ]
+
+        import random
+        from django.utils import timezone
+
+        random.seed(system_id)
+        other_id = random.randint(1,2000)
+        impact = random.choice(["Low Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "High Impact"])
+        status = random.choice(["Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Under Development", "Planned"])
+        system_from_sorn = random.choice(dhs_sorns)
+
+        # Fix purpose
+        if "purpose" not in system_from_sorn:
+            system_from_sorn['purpose'] = "Missing"
+        elif len(system_from_sorn['purpose']) > 750:
+            system_from_sorn['purpose'] = system_from_sorn['purpose'][0:500]
+        # System name
+        system_name = system_from_sorn['name'].strip(" ").strip(",")
+        if re.search(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", system_name):
+            system_name = re.sub(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", '', system_name)
+
+        # Organization
+        if re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")):
+            organization_name = "DHS " + re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")).group(1).strip()
+        else:
+            organization_name = "DHS"
+
+        # Acronym
+        if "(" in system_name:
+            acronym = re.search(r"\((.*)\)", system_name).group(1).strip()
+            system_name = re.sub(r" \(.*\)", '', system_name)
+        else:
+            acronym = "".join([word[0].upper() for word in system_name.replace("(","").replace(")","").split(" ")])
+            if len(acronym) > 5:
+                acronym = acronym[0:3]
+            if len(acronym) == 1:
+                acronym = system_name
+        aka = [acronym]
+        if len(system_name.split(" ")) > 7:
+            short_name = " ".join([word for word in system_name.split(" ")[0:2]]) + " System"
+            aka.append(short_name)
+
+        system_type = random.choice(["General Support System", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Minor Application", ])
+        hosting_facility = random.choice(["DISC", "AWS", "AWS","AWS", "AWS", "DC-1", "AWS", "AWS", "Azure", "AWS", "AWS", "AWS", "DC-1",  ])
+        # Dates        
+        from datetime import datetime, date, timedelta, timezone
+        date1, date2 = datetime(2014, 6, 3, tzinfo=timezone.utc), datetime(2022, 2, 1, tzinfo=timezone.utc)
+        dates_between = date2 - date1
+        total_days = dates_between.days
+        created = date1 + timedelta(days=random.randrange(total_days))
+        next_audit = datetime.now().date() + timedelta(random.randint(40,600))
+        next_scan = datetime.combine(datetime.now().date() + timedelta(random.randint(2,12)), datetime.min.time()).replace(tzinfo=timezone.utc)
+
+        # datetime.combine(date.today(), datetime.min.time())
+        # next_scan = next_scan.replace(tzinfo=timezone.utc)
+        dates_between_created = created - date1
+        pen_test = created + timedelta(days=random.randrange(dates_between_created.days))
+
+        # Fake data for System
+        system = {
+            "id": system_id,
+            "other_id": other_id,
+            "name": system_name,
+            "organization_name": organization_name,
+            "aka": aka,
+            "impact": impact,
+            "status": status,
+            "type": system_type,
+            "created": created,
+            "hosting_facility": hosting_facility,
+            "next_audit": next_audit,
+            "next_scan": next_scan, #"05/01/22",
+            "security_scan": "Last known-04/20/22 @ 1:23pm",
+            "pen_test": pen_test, #"Scheduled for 05/05/22",
+            "config_scan": "Last known-01/17/20 @ 4:32pm",
+            "purpose": system_from_sorn['purpose']
+        }
+
+        system_events = [
+            { "event_tag": "TEST", "event_summary": "Penetration test scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do..."},
+            { "event_tag": "SCAN", "event_summary": "Security scan scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do..."},
+            { "event_tag": "SYS", "event_summary": "Isso appointed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod..."}
+        ]
+
+        # Fix menu data
+        project.system.root_element.name = system['name']
+        project.root_task.title_override = system['name']
+        # Return the controls
+        
+        context = {
+            "system": system,
+            #"project": project,
+            "system_events": system_events,
+            # "deployments": deployments,
+            "display_urls": project_context(project)
+        }
+        return render(request, "systems/system_summary_1.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
 
 # System Deployments
 @login_required
