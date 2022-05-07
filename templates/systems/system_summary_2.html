@@ -158,10 +158,6 @@ admin@sdfsdqfqfqf.com</p>
   <div class="col-md-12">
     <h3 class="sys-summary-header">Risk Assessment</h3>
 
-    <span class="create-new-project2 pull-right">
-      <a id="import-poam" href="#" class="btn btn-success" onclick="import_poam_xlsx_form('argument'); return false;">Import POA&Ms</a>
-    </span>
-
     <span class="vuln-header">Vulnerabilities</span><span style="font-size:.9em; color:#808080;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(as of 4:24pm, 04/26/22)</span>
 
     <div style="border:1px solid #ccc; display:block; margin-top:2em; margin-bottom:2em; border-radius: 7px;">
@@ -210,65 +206,12 @@ admin@sdfsdqfqfqf.com</p>
 <div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">8.8</span><span class="vuln-scores-cat-title">Adipiscing</span></div></div>
 <div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">7.2</span><span class="vuln-scores-cat-title">Aliqua</span></div></div>
 
-
-
-<div id="import_poam_authoring_tool" class="modal center fade" tabindex="-1" role="dialog" aria-labelledby="import_poam_authoring_tool" aria-hidden="true" data-keyboard="false" data-backdrop="false">
-  <div class="modal-dialog modal-md">
-    <div class="modal-content modal-content-authoring">
-      <div class="modal-header modal-header-authoring">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="questionnaire_authoring_tool_title">
-          Import POA&MS
-        </h4>
-      </div>
-      <div class="modal-body">
-        <form class="form-horizontal" onsubmit="return false;">
-          <div class="form-group">
-            <label for="authoring_tool_q_zipfile" class="col-sm-2 control-label">File</label>
-            <div class="col-sm-9">
-              <input type="file" class="form-control" id="authoring_tool_q_zipfile" name="file" />
-              <span class="help-block small">Upload the .xlsx file of the POA&Ms</span>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-success" onclick="import_poam_xlsx()">Import</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
 {% endblock %}
 
 {% block scripts %}
     {{ block.super }}
 <script>
     window.system_summary_spreadsheet({{system.id}}, {{project.id}});
-
-    function import_poam_xlsx_form(argument) {
-      $('#import_poam_authoring_tool').modal();
-    }
-
-    function import_poam_xlsx() {
-      // Use FormData to serialize form object including uploaded file
-      var data = new FormData($('#import_poam_authoring_tool form')[0]);
-      console.log("data is: "+JSON.stringify(data));
-      ajax_with_indicator({
-          url: "/systems/import-poams",
-          method: "POST",
-          data: data,
-          keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
-          success: function(res) {
-            // Modal can stay up until the redirect finishes.
-            window.location = res.redirect;
-            if (window.location.hash.length > 1)
-              window.location.reload(); // if there is a # in the URL, the browser won't actually reload
-          }
-      });
-    }
 </script>
 
 {% endblock %}
