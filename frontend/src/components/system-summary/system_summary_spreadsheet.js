@@ -190,6 +190,13 @@ export const SystemSummarySpreadsheet = ({ systemId, projectId }) => {
       valueGetter: (params) => params.row.csam_id,
     },
     {
+      field: 'inherited',
+      headerName: 'Inherited',
+      width: 150,
+      editable: false,
+      valueGetter: (params) => params.row.inherited,
+    },
+    {
       field: 'org',
       headerName: 'Org',
       width: 150,
@@ -242,7 +249,7 @@ export const SystemSummarySpreadsheet = ({ systemId, projectId }) => {
       field: 'status',
       headerName: 'status',
       width: 150,
-      editable: false,
+      editable: true,
       valueGetter: (params) => params.row.status,
     },
   ]);

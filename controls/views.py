@@ -3381,8 +3381,8 @@ def system_summary_1(request, system_id):
     """System Summary page experiment 1"""
 
     # Retrieve identified System
-    # system = System.objects.get(id=system_id)
-    system = System.objects.get(id=1)
+    system = System.objects.get(id=system_id)
+    # system = System.objects.get(id=1)
     # Retrieve related selected controls if user has permission on system
     # if request.user.has_perm('view_system', system):
     if True:
@@ -3511,8 +3511,8 @@ def system_summary_poams(request, system_id):
     """System Summary page experiment POA&Ms"""
 
     # Retrieve identified System
-    # system = System.objects.get(id=system_id)
-    system = System.objects.get(id=1)
+    system = System.objects.get(id=system_id)
+    # system = System.objects.get(id=1)
     # Retrieve related selected controls if user has permission on system
     # if request.user.has_perm('view_system', system):
     if True:
@@ -3697,7 +3697,7 @@ def import_poams_xlsx(request):
                     event=f"poa&ms import file added {poams_xlsx_file.name}",
                     user={"id": request.user.id, "username": request.user.username}
                 )
-                messages.add_message(request, messages.INFO, f"File saved: {poams_xlsx_filename}")
+                messages.add_message(request, messages.INFO, f"Successfully imported {len(df.index)} POA&Ms.")
                 return JsonResponse({ "status": "ok", "redirect": redirect_url })
             else:
                 logger.info(
