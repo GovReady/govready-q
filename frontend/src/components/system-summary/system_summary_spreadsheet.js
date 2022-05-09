@@ -173,9 +173,9 @@ function SelectEditInputCell(props) {
       autoFocus
     >
       <option>Open</option>
+      <option>In Progress</option>
       <option>Completed</option>
-      <option>Yes</option>
-      <option>No</option>
+      <option>Not Applicable</option>
     </Select>
   );
 }
