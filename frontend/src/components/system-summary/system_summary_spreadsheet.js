@@ -70,8 +70,6 @@ import { hide, show } from '../shared/modalSlice';
 // );
 
 function QuickSearchToolbar(props) {
-  // const classes = searchStyles();
-
   return (
     <div style={{ float: 'right' }}>
       <TextField
@@ -143,9 +141,78 @@ const useStyles = makeStyles({
     },
   }
 });
+function SelectEditInputCell(props) {
+  const { id, value, field, systemId } = props;
+  const apiRef = useGridApiContext();
+
+  const handleChange = async (event) => {
+    await apiRef.current.setEditCellValue({ id, field, value: event.target.value });
+    // apiRef.current.stopCellEditMode({ id, field });
+    const updatedCell = {
+      row: id+1,
+      column: field,
+      value: event.target.value,
+    }
+
+    //Send call to the backend to update local spreadsheet
+    const updateLocalSpreadsheet = await axios.put(`/api/v2/systems/${systemId}/spreadsheet-poams/${systemId}/updateSpreadsheet/`, updatedCell);
+    if(updateLocalSpreadsheet.status === 200){
+      window.location.reload();
+    } else {
+      console.error("Something went wrong in creating and appointing new appointments")
+    }
+  };
+
+  return (
+    <Select
+      value={value}
+      onChange={handleChange}
+      sx={{ height: 1, }}
+      inputProps={{style: {fontSize: "16px"}}}
+      native
+      autoFocus
+    >
+      <option>Open</option>
+      <option>Completed</option>
+      <option>Yes</option>
+      <option>No</option>
+    </Select>
+  );
+}
+
+SelectEditInputCell.propTypes = {
+  /**
+   * The column field of the cell that triggered the event.
+   */
+  field: PropTypes.string.isRequired,
+  /**
+   * The grid row id.
+   */
+  id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  /**
+   * The cell value, but if the column has valueGetter, use getValue.
+   */
+  value: PropTypes.any,
+  systemId: PropTypes.any,
+};
+
+const renderSelectEditInputCell = (params, systemId) => {
+  return <SelectEditInputCell {...params} systemId={systemId} />;
+};
+
+export default function AutoStopEditComponent() {
+  return (
+    <div style={{ height: 300, width: '100%' }}>
+      <DataGrid
+        rows={rows}
+        columns={columns}
+        experimentalFeatures={{ newEditingApi: true }}
+      />
+    </div>
+  );
+}
 
 export const SystemSummarySpreadsheet = ({ systemId, projectId }) => {
-  const dispatch = useDispatch();
 
   const classes = useStyles();
   const dgClasses = datagridStyles();
@@ -249,6 +316,7 @@ export const SystemSummarySpreadsheet = ({ systemId, projectId }) => {
       field: 'status',
       headerName: 'status',
       width: 150,
+      renderEditCell: (params) => renderSelectEditInputCell(params, systemId),
       editable: true,
       valueGetter: (params) => params.row.status,
     },
@@ -261,6 +329,7 @@ export const SystemSummarySpreadsheet = ({ systemId, projectId }) => {
                 <QuickSearchToolbar value={searchText} onChange={(event) => requestSearch(event.target.value)} clearSearch={() => requestSearch('')}/>
                   <div style={{ width: "100%", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
                       <DataGrid
+                        experimentalFeatures={{ newEditingApi: true }}
                         className={dgClasses.root}
                         autoHeight={true}
                         density="compact"

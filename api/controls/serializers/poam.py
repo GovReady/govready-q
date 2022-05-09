@@ -5,7 +5,7 @@ from structlog import get_logger
 from structlog.stdlib import LoggerFactory
 from rest_framework import serializers
 
-from api.base.serializers.types import ReadOnlySerializer
+from api.base.serializers.types import ReadOnlySerializer, WriteOnlySerializer
 from api.controls.serializers.statements import DetailedStatementSerializer
 from controls.models import Poam, System
 
@@ -56,9 +56,10 @@ class SimpleSpreadsheetPoamSerializer(ReadOnlySerializer):
             try:
                 df_dict = pandas.read_excel(fn, header=1)
                 for index, row in df_dict.iterrows():
+                    # import ipdb; ipdb.set_trace()
                     if system.id == row.get('CSAM ID', ""):
                         poam_dict = {
-                            "id": counter,
+                            "id": index,
                             "csam_id": row.get('CSAM ID', ""),
                             "inherited": "No",
                             "org": row.get('Org', ""),
@@ -87,6 +88,14 @@ class SimpleSpreadsheetPoamSerializer(ReadOnlySerializer):
         model = System
         fields = ['spreadsheet_poams']
 
+class SimpleUpdatePoamSpreadsheetSerializer(WriteOnlySerializer):
+    row = serializers.IntegerField(max_value=None, min_value=None)
+    column = serializers.CharField(min_length=None, max_length=None, allow_blank=True, trim_whitespace=True)
+    value = serializers.CharField(min_length=None, max_length=None, allow_blank=True, trim_whitespace=True)
+    
+    class Meta:
+        model = System
+        fields = ['row', 'column', 'value']
 class DetailedPoamSerializer(SimplePoamSerializer):
     statement = DetailedStatementSerializer()
 
