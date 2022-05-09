@@ -3723,6 +3723,19 @@ def import_poams_xlsx(request):
         messages.add_message(request, messages.ERROR, f"POA&Ms spreadsheet file required.")
         return JsonResponse({ "status": "ok", "redirect": redirect_url })
 
+@login_required
+@transaction.atomic
+def export_poams_xlsx(request):
+
+    from django.utils.encoding import smart_str
+
+    poams_xlsx_filepath = "local/poams_list.xlsx"
+    file_name = f"poams_list_{datetime.now().strftime('%Y-%m-%d-%H-%M')}.xlsx"
+    path = open(poams_xlsx_filepath, 'rb')
+    response = HttpResponse(path, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') # mimetype is replaced by content_type for django 1.7
+    response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(file_name)
+    return response
+
 # System Deployments
 @login_required
 def system_deployments(request, system_id):

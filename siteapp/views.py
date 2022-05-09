@@ -2453,6 +2453,17 @@ def organization_settings(request):
         users = list(users)
         return users
 
+    # Download POAM spreadsheet
+    import pathlib
+    # import pandas
+    poam_spreadsheet = {}
+    poam_spreadsheet['file_path'] = "local/poams_list.xlsx"
+    poam_spreadsheet['exists'] = False
+    poam_spreadsheet['poam_count'] = 10
+    fn = "local/poams_list.xlsx"
+    if pathlib.Path(fn).is_file():
+        poam_spreadsheet['exists'] = True
+
     return render(request, "settings.html", {
         "can_edit_org_settings": can_edit_org_settings,
         "is_django_staff": is_django_staff,
@@ -2469,6 +2480,7 @@ def organization_settings(request):
         "project_permissions": get_perms_for_model(Project),
         "portfolio_permissions": get_perms_for_model(Portfolio),
         "db_type": db_type,
+        "poam_spreadsheet": poam_spreadsheet,
     })
 
 
