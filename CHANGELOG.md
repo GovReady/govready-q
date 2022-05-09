@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.14-dev (April xx, 2022)
+v0.9.14-dev (May xx, 2022)
 ----------------------------
 
 **Feature changes**
@@ -20,6 +20,7 @@ v0.9.14-dev (April xx, 2022)
 * Added tabs for coponent requests.
 * Only Component owner can edit user permissions.
 * Display the control framework along side of controls in component control listing page.
+* Change 'Template Library' to 'Questionnaires'.
 
 **Developer changes**
 
