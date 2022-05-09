@@ -103,7 +103,7 @@ Aspen - Summary
         <table class="sys-detail-table">
             <tr><td class="sys-detail-table-left">Next Audit: <span class="sys-detail-response">{{ system.next_audit }}</span></td></tr>
             <tr><td class="sys-detail-table-left">Next Scan: <span class="sys-detail-response">{{ system.next_scan|naturaltime }} </span></td></tr>
-            <tr><td class="sys-detail-table-left">Security Scan: <span class="sys-detail-response">{{ system.security_scan }} d</span></td></tr>
+            <tr><td class="sys-detail-table-left">Security Scan: <span class="sys-detail-response">{{ system.security_scan }}</span></td></tr>
             <tr><td class="sys-detail-table-left">Penetration Test: <span class="sys-detail-response">{{ system.pen_test|naturaltime }}</span></td></tr>
             <tr><td class="sys-detail-table-left">Auto-Config Scan: <span class="sys-detail-response">{{ system.config_scan }}</span></td></tr>
         </table>
@@ -163,9 +163,9 @@ admin@sdfsdqfqfqf.com</p>
     <div style="border:1px solid #ccc; display:block; margin-top:2em; margin-bottom:2em; border-radius: 7px;">
 <table id="sys-vuln-table">
   <tr>
-    <td style="border-right:1px solid #ccc; padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">12</h2><span style="color:#808080;"><strong>New</strong> in last 30 days</span></div></td>
-    <td style="border-right:1px solid #ccc; padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">12</h2><span style="color:#808080;"><strong>Resolved</strong> in last 30 days</span></div></td>
-    <td style="padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">12</h2><span style="color:#808080;"><strong>Ongoing</strong> (90+ days)</span></div></td>
+    <td style="border-right:1px solid #ccc; padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">{{ system.vuln_new_30days }}</h2><span style="color:#808080;"><strong>New</strong> in last 30 days</span></div></td>
+    <td style="border-right:1px solid #ccc; padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">{{ system.vuln_new_rslvd_30days }}</h2><span style="color:#808080;"><strong>Resolved</strong> in last 30 days</span></div></td>
+    <td style="padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">{{ system.vuln_90days }}</h2><span style="color:#808080;"><strong>Ongoing</strong> (90+ days)</span></div></td>
   </tr>
 </table>
 </div>
@@ -179,12 +179,12 @@ admin@sdfsdqfqfqf.com</p>
 </div>
 
 
-<div class="col-md-2"><div class="vuln-scores greybg"><h2 style="font-size:2em;">8.7</h2><span style="font-weight:bold; font-size:.9em;">Risk Score</span></div></div>
-<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">9.9</span><span class="vuln-scores-cat-title">Lorem</span></div></div>
-<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">9.2</span><span class="vuln-scores-cat-title">Ipsum</span></div></div>
-<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">8.4</span><span class="vuln-scores-cat-title">Consectetur</span></div></div>
-<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">8.8</span><span class="vuln-scores-cat-title">Adipiscing</span></div></div>
-<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">7.2</span><span class="vuln-scores-cat-title">Aliqua</span></div></div>
+<div class="col-md-2"><div class="vuln-scores greybg"><h2 style="font-size:2em;">{{ system.risk_score }}</h2><span style="font-weight:bold; font-size:.9em;">Risk Score</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">{{ system.score_1 }}</span><span class="vuln-scores-cat-title">Lorem</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">{{ system.score_2 }}</span><span class="vuln-scores-cat-title">Ipsum</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">{{ system.score_3 }}</span><span class="vuln-scores-cat-title">Consectetur</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">{{ system.score_4 }}</span><span class="vuln-scores-cat-title">Adipiscing</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">{{ system.score_5 }}</span><span class="vuln-scores-cat-title">Aliqua</span></div></div>
 
 
 </div>

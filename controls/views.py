@@ -3480,7 +3480,16 @@ def system_summary_1(request, system_id):
             "security_scan": "Last known-04/20/22 @ 1:23pm",
             "pen_test": pen_test, #"Scheduled for 05/05/22",
             "config_scan": "Last known-01/17/20 @ 4:32pm",
-            "purpose": system_from_sorn['purpose']
+            "purpose": system_from_sorn['purpose'],
+            "vuln_new_30days": random.randint(0,12),
+            "vuln_new_rslvd_30days": random.randint(0,20),
+            "vuln_90days": random.randint(0,15),
+            "risk_score": random.randint(6,10) + round(random.random(), 1),
+            "score_1": random.randint(6,10) + round(random.random(), 1),
+            "score_2": random.randint(6,10) + round(random.random(), 1),
+            "score_3": random.randint(6,10) + round(random.random(), 1),
+            "score_4": random.randint(6,10) + round(random.random(), 1),
+            "score_5": random.randint(6,10) + round(random.random(), 1),
         }
 
         system_events = [
