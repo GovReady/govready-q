@@ -42,6 +42,7 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/aspen/summary$', views.system_summary_1, name="system_summary_1"),
     url(r'^(?P<system_id>.*)/aspen/summary/poams$', views.system_summary_poams, name="system_summary_poams"),
     url(r'^import-poams$', views.import_poams_xlsx, name="import_poams_xlsx"),
+    url(r'^export-poams-xlsx$', views.export_poams_xlsx, name="export_poams_xlsx"),
 
     # Systems Assessment Results
     url(r'^(?P<system_id>.*)/assessments$', views.system_assessment_results_list, name="system_assessment_results_list"),
