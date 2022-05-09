@@ -145,12 +145,12 @@ Your Compliance Projects
 {% for project in projects %}
 <div class="row projects-row">
   <div class="col-xs-10 col-md-5">
-    <span class="project-image">
+    <!-- <span class="project-image">
       {% if project.root_task.get_app_icon_url %}
         <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive" alt="App Icon">
       {% endif %}
     </span>
-    &nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp; -->
     <a href="{{project.get_absolute_url}}" class="projects-link">{{project.title}}</a>
   </div>
   <div class="col-xs-6 col-sm-1">{{project.id}}</div>
