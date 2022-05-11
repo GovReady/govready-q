@@ -258,6 +258,9 @@ export const RequestsTable = ({ elementId, isOwner }) => {
     const filteredRows = data.filter((row) => {
       return Object.keys(row).some((field) => {
         if(row[field] !== null){
+          if(field === 'system'){
+            return searchRegex.test(row[field].name.toString().toLowerCase());
+          }
           return searchRegex.test(row[field].toString().toLowerCase());
         }
       });
@@ -353,14 +356,14 @@ export const RequestsTable = ({ elementId, isOwner }) => {
   return (
       <div style={{ maxHeight: '2000px', width: '100%' }}>
           {data !== null && columnsForEditor.length !== 0 && <Grid className="poc-data-grid" sx={{ minHeight: '500px' }}>
-          {/* <QuickSearchToolbar value={searchText} onChange={(event) => requestSearch(event.target.value)} clearSearch={() => requestSearch('')}/> */}
+          <QuickSearchToolbar value={searchText} onChange={(event) => requestSearch(event.target.value)} clearSearch={() => requestSearch('')}/>
               <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
                   <div style={{ width: "100%", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
                       <DataGrid
                         className={dgClasses.root}
                         autoHeight={true}
                         density="compact"
-                        rows={data}
+                        rows={rows}
                         columns={isOwner ? columnsForEditor : columns}
                         pageSize={25}
                         rowsPerPageOptions={[25]}
