@@ -29,12 +29,15 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/controls/selected$', views.controls_selected, name="controls_selected"),
     url(r'^(?P<system_id>.*)/controls/add$', views.system_controls_add, name="system_controls_add"),
     url(r'^(?P<system_id>.*)/controls/remove/(?P<element_control_id>.*)$',  views.system_control_remove, name="system_control_remove"),
+    
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/compare$', views.editor_compare, name="control_compare"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),
     url(r'^editor_autocomplete/', views.EditorAutocomplete.as_view(), name="search_system_component"),
     url(r'^related_system_components/', views.RelatedComponentStatements.as_view(), name="related_system_components"),
     url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),
     url(r'^(?P<system_id>.*)/components/proposal_message$', views.proposal_message, name="proposal_message"),
+    url(r'^(?P<system_id>.*)/components/remove_proposal/(?P<proposal_id>.*)$', views.system_proposal_remove, name="system_proposal_remove"),
+
     url(r'^(?P<system_id>.*)/components/editor_autocomplete$',  views.EditorAutocomplete.as_view(), name="editor_autocomplete"),
     url(r'^(?P<system_id>.)/profile/oscal/json', views.system_profile_oscal_json, name="profile_oscal_json"),
     url(r'^statement_history/(?P<smt_id>.*)/$', views.statement_history, name="statement_history"),

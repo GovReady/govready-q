@@ -52,37 +52,30 @@ const useStyles = makeStyles({
 export const ProposalSteps = ({ userId, system, element, proposal, request, hasSentRequest }) => {
     const classes = useStyles(proposal.status);
 
-    // console.log(proposal, request, hasSentRequest);
-    console.log('proposal: ', proposal);
-    console.log('request: ', request);
-    console.log('hasSentRequest: ', hasSentRequest);
-    
     useEffect(() => {
         if(hasSentRequest && request){
+            
             if(proposal.status.toLowerCase() !== 'approval' && request.status.toLowerCase() === 'approve'){
-                console.log('IF proposal status: ' + proposal.status + '\n request status: ' + request.status);
                 const updatedProposal = {
                     "user": userId,
                     "requested_element": parseInt(element.id),
                     "criteria_comment": proposal.criteria_comment,
                     "status": "Approval",
                 }
-                console.log('updatedProp: ', updatedProposal);
                 const updateProposalApproval = axios.put(`/api/v2/proposals/${parseInt(proposal.id)}/`, updatedProposal);
                 if(updateProposalApproval.status === 200){
-                    window.location.reload();
+                    addComponentStatements();
+                    // window.location.reload();
                 } else {
                     console.error("Something went wrong in updating proposal1");
                 }
             } else if(proposal.status.toLowerCase() === 'approval' && request.status.toLowerCase() !== 'approve'){
-                console.log('ELSEIF proposal status: ' + proposal.status + '\n request status: ' + request.status);
                 const updatedProposalToRequest = {
                     "user": userId,
                     "requested_element": parseInt(element.id),
                     "criteria_comment": proposal.criteria_comment,
                     "status": "Request",
                 }
-                console.log('updatedProposalToRequest: ', updatedProposalToRequest);
                 const updateProposalToNewStatus = axios.put(`/api/v2/proposals/${parseInt(proposal.id)}/`, updatedProposalToRequest);
                 if(updateProposalToNewStatus.status === 200){
                     window.location.reload();
@@ -91,7 +84,6 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                 }
             } else {
                 console.log('everything else');
-                console.log('proposal status: ' + proposal.status + '\n request status: ' + request.status);
             }
         }
     }, []);
@@ -176,9 +168,39 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
         }
     }
 
+    const addComponentStatements = async () => {
+        debugger;
+        ajax_with_indicator({
+            url: `/systems/${parseInt(system.id)}/components/add_system_component`,
+            method: "POST",
+            data: {
+                producer_element_id: `${parseInt(element.id)},False`,
+                redirect_url: `/systems/${parseInt(system.id)}/components/selected`,
+            },
+            // system_id: system.id,
+            success: function(res) {
+                ajax_with_indicator({
+                    url: `/systems/${parseInt(system.id)}/components/remove_proposal/${parseInt(proposal.id)}`,
+                    method: "POST",
+                    data: {
+                        system_id: system.id,
+                        proposal_id: proposal.id,
+                        element_id: element.id,
+                    },
+                    // system_id: system.id,
+                    success: function(res) {
+                        // redirect to main project page after successful upgrade
+                        window.location = `/systems/${parseInt(system.id)}/components/selected`
+                    }
+                });
+                
+            }
+        });
+    }
+
     return (
         <div>
-            {proposal.id !== '' && <ListGroup>
+            {element.require_approval && <ListGroup>
                 <ListGroupItem className={getStatusLevel(proposal.status) === 1 ? classes.current : getStatusLevel(proposal.status) > 1 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={3}>
@@ -221,6 +243,9 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                         <Grid item xs={9}>
                             <div><h2>Approval</h2></div>
                             <div>The confirmation fo system using {element.name} from component owner. System can proceed to use the component.</div>
+                            <div style={{float: 'right'}}>
+                                <Button variant="contained" onClick={addComponentStatements}>Add Selected Componenet</Button>
+                            </div>
                         </Grid>
                     </Grid>
                 </ListGroupItem>

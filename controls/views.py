@@ -298,6 +298,39 @@ def system_control_remove(request, system_id, element_control_id):
     response = redirect(reverse('controls_selected', args=[system_id]))
     return response
 
+@login_required
+def system_proposal_remove(request, system_id, proposal_id):
+    """Remove a proposal from a system"""
+    
+        # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    proposal = Proposal.objects.get(id=proposal_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+        system.remove_proposals([proposal.id])
+        # import ipdb; ipdb.set_trace()
+        messages.add_message(request, messages.INFO, f"Removed proposal '{proposal.requested_element.name}' from system.")
+
+        # Log result
+        logger.info(
+                event="change_system remove_selected_proposal",
+                object={"object": "proposal", "id": proposal_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+    else:
+        # User does not have permission
+        # Log result
+        logger.info(
+                event="change_system remove_selected_proposal permission_denied",
+                object={"object": "proposal", "id": proposal_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
+    response = redirect(reverse('components_selected', args=[system_id]))
+    return response
+
 @functools.lru_cache()
 def controls_updated(request, system_id):
     """Display System's statements by updated date in reverse chronological order"""
@@ -393,8 +426,10 @@ class SelectedComponentsList(ListView):
         system = System.objects.get(id=self.kwargs['system_id'])
 
         system_proposals = []
+        system_proposal_elements = []
         for proposal in system.proposals.all():
             system_proposals.append(proposal)
+            system_proposal_elements.append(proposal.requested_element)
         # Retrieve related selected controls if user has permission on system
         if self.request.user.has_perm('view_system', system):
             # Retrieve primary system Project
@@ -403,6 +438,7 @@ class SelectedComponentsList(ListView):
             context['project'] = project
             context['system'] = system
             context['system_proposals'] = system_proposals
+            context['system_proposal_elements'] =  system_proposal_elements
             context['elements'] = Element.objects.all().exclude(element_type='system')
             context["display_urls"] = project_context(project)
             return context
@@ -1184,7 +1220,7 @@ def system_element(request, system_id, element_id):
             if requests.exists():
                 hasSentRequest = requests.exists()
                 component_request = requests[0]
-
+            # TODO FALCON
             context = {
                 "states": states,
                 "types": types,
@@ -2496,12 +2532,13 @@ def delete_smt(request):
 
 
 # Components
-
 def proposal_message(request, system_id):
     """ Send a global message to indicate a request has been successful """ 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
+
+    
     form_dict = dict(request.POST)
     form_values = {}
     for key in form_dict.keys():
@@ -2509,6 +2546,10 @@ def proposal_message(request, system_id):
     messageType = form_values['proposal_message_type']
     message = form_values['proposal_message']
     
+    # import ipdb; ipdb.set_trace()
+    # messageType = request.POST.get("proposal_message_type")
+    # message = request.POST.get("proposal_message")
+
     if(messageType == "INFO"):
         messages.add_message(request, messages.INFO, f'{message}')
     elif(messageType == "WARNING"):
@@ -2536,13 +2577,12 @@ def request_message(request, system_id, element_id):
         messages.add_message(request, messages.WARNING, f'{message}')
     else:
         messages.add_message(request, messages.ERROR, f'{message}')
-
     return HttpResponseRedirect("/controls/{}/component/{}".format(system_id, element_id))
-
 
 @login_required
 def add_system_component(request, system_id):
     """Add an existing element and its statements to a system"""
+# Setting a breakpoint in the code.
 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -2552,6 +2592,7 @@ def add_system_component(request, system_id):
     for key in form_dict.keys():
         form_values[key] = form_dict[key][0]
 
+    
     #extract producer_elmentid and require_approval boolean val
     form_values['producer_element_id'], check_req_approval = form_values['producer_element_id'].split(',')
     
@@ -2578,7 +2619,7 @@ def add_system_component(request, system_id):
 
     # Add element to system's selected components
     # Look up the element rto add
-    
+    # import ipdb; ipdb.set_trace()
     producer_element = Element.objects.get(pk=form_values['producer_element_id'])
 
     
@@ -2588,6 +2629,7 @@ def add_system_component(request, system_id):
         #   this issue may be best addressed elsewhere.
 
     # Component already added to system. Do not add the component (element) to the system again.
+    
     
     if producer_element.id in elements_selected_ids:
         messages.add_message(request, messages.ERROR,

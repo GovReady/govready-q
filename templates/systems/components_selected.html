@@ -28,7 +28,7 @@
                             <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onChange="handleComponentSelection();" style="width:340px;">
                                 <option value="None" selected disabled hidden>Select a Component</option>
                                 {% for component in elements %}
-                                    {% if component not in system.producer_elements %}
+                                    {% if component not in system.producer_elements and component not in system_proposal_elements%}
                                         <option value="{{ component.id }},{{component.require_approval}}">{{ component.name }}{%if component.require_approval %}*{% endif%}</option>
                                     {% endif %}
                                 {% endfor %}
@@ -109,7 +109,7 @@
                             {% get_obj_perms request.user for system as "system_perms" %}
                             {% if "change_system" in system_perms %}
                                 <div id="delete-selected-component" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 pull-right">
-                                    <a href="{% url 'system_element_remove' system_id=system.id element_id=proposal.requested_element.id %}" aria-label="Delete component">
+                                    <a href="{% url 'system_proposal_remove' system_id=system.id proposal_id=proposal.id %}" aria-label="Delete proposal">
                                     <small>
                                         <span class="glyphicon glyphicon-trash pull-right" title="remove component"></span>
                                     </small>
