@@ -329,6 +329,7 @@
         req_ele = {
           id: '{{ element.id }}',
           name: `{{ element.name }}`,
+          require_approval: `{{ element.require_approval }}` === 'True' ? true : false,
         }
         proposal = {
           id: '{{ proposal.id }}',

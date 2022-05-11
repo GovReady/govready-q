@@ -70,10 +70,24 @@ export const RequireApprovalModal = ({ userId, systemId, systemName, elementId, 
   }, [elementId, uuid])
 
   const successful_proposal_message = () => {
+    /* A template literal. It is a string that allows embedded expressions. */
     const message = `System ${systemName} has proposed ${data.name}`;
     document.getElementById("proposal_message_type").value = "INFO";
     document.getElementById("proposal_message").value = message;
     document.send_proposal_message.submit()
+    // ajax_with_indicator({
+    //     url: `/systems/${parseInt(systemId)}/components/proposal_message`,
+    //     method: "POST",
+    //     data: {
+    //       proposal_message_type: "INFO",
+    //       proposal_message: message,
+    //     },
+    //     // system_id: system.id,
+    //     success: function(res) {
+    //         console.log("successful_proposal_message SUCCESSFUL!!@!#!")
+    //         window.location.reload();
+    //     }
+    // });
   }
 
   const send_alreadyProposed_message = () => {
