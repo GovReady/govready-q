@@ -1526,7 +1526,7 @@ def component_library_component(request, element_id):
             "criteria": criteria_text,
             "listOfContacts": listOfContacts,
             "contacts": serializers.serialize('json', contacts),
-            "requestsTotal": total_number_of_requests,
+            "totalRequests": total_number_of_requests,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }
@@ -1575,6 +1575,7 @@ def component_library_component(request, element_id):
         "users_with_permissions": usersWithPermission,
         "criteria": criteria_text,
         "contacts": serializers.serialize('json', contacts),
+        "totalRequests": total_number_of_requests,
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
