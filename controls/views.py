@@ -308,9 +308,8 @@ def system_proposal_remove(request, system_id, proposal_id):
     # Retrieve related selected controls if user has permission on system
     if request.user.has_perm('change_system', system):
         system.remove_proposals([proposal.id])
-        # import ipdb; ipdb.set_trace()
+        Proposal.objects.filter(id=proposal_id).delete()
         messages.add_message(request, messages.INFO, f"Removed proposal '{proposal.requested_element.name}' from system.")
-
         # Log result
         logger.info(
                 event="change_system remove_selected_proposal",
@@ -1164,7 +1163,6 @@ def system_element(request, system_id, element_id):
         # Get the impl_smts contributed by this component to system
         # if this is a proposal then we wont have any impl_smts, so we need to check if there is a proposal
         # and if impl_smts is empty
-        # import ipdb; ipdb.set_trace()
         
         impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
         
@@ -1181,7 +1179,7 @@ def system_element(request, system_id, element_id):
             states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
             types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
             # Return the system's element information
-            
+
             context = {
                 "states": states,
                 "types": types,
@@ -1195,6 +1193,21 @@ def system_element(request, system_id, element_id):
                 "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
                 "opencontrol": opencontrol_string,
                 "display_urls": project_context(project)
+                # "states": states,
+                # "types": types,
+                # "system": system,
+                # "project": project,
+                # "element": element,
+                # "proposal": proposal,
+                # "component_request": component_request,
+                # "hasSentRequest": hasSentRequest,
+                # "impl_smts": impl_smts,
+                # "catalog_controls": catalog_controls,
+                # "catalog_key": catalog_key,
+                # "oscal": oscal_string,
+                # "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+                # "opencontrol": opencontrol_string,
+                # "display_urls": project_context(project)
             }
             return render(request, "systems/element_detail_tabs.html", context)
         else:
@@ -1206,7 +1219,6 @@ def system_element(request, system_id, element_id):
             
             # Retrieve control ids
             catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
-            # import ipdb; ipdb.set_trace()
             # Build OSCAL and OpenControl
             oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
             opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
@@ -1468,7 +1480,6 @@ def component_library_component(request, element_id):
     # req_instance.system.set(system)
     # req_instance.save()
 
-    # import ipdb; ipdb.set_trace()
     contacts = []
     for poc in get_all_parties:
         contacts.append(poc.party)
@@ -2546,7 +2557,6 @@ def proposal_message(request, system_id):
     messageType = form_values['proposal_message_type']
     message = form_values['proposal_message']
     
-    # import ipdb; ipdb.set_trace()
     # messageType = request.POST.get("proposal_message_type")
     # message = request.POST.get("proposal_message")
 
@@ -2619,7 +2629,6 @@ def add_system_component(request, system_id):
 
     # Add element to system's selected components
     # Look up the element rto add
-    # import ipdb; ipdb.set_trace()
     producer_element = Element.objects.get(pk=form_values['producer_element_id'])
 
     
