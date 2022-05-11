@@ -169,7 +169,6 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
     }
 
     const addComponentStatements = async () => {
-        debugger;
         ajax_with_indicator({
             url: `/systems/${parseInt(system.id)}/components/add_system_component`,
             method: "POST",
@@ -244,7 +243,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                             <div><h2>Approval</h2></div>
                             <div>The confirmation fo system using {element.name} from component owner. System can proceed to use the component.</div>
                             <div style={{float: 'right'}}>
-                                <Button variant="contained" onClick={addComponentStatements}>Add Selected Componenet</Button>
+                            {getStatusLevel(proposal.status) === 3 && hasSentRequest === true &&<Button variant="contained" onClick={addComponentStatements}>Add Selected Componenet</Button>}
                             </div>
                         </Grid>
                     </Grid>
