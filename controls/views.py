@@ -49,7 +49,7 @@ from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm, Sta
 from .models import *
 from .utilities import *
 from siteapp.utils.views_helper import project_context
-from siteapp.models import Role, Party, Appointment
+from siteapp.models import Role, Party, Appointment, Request, Proposal
 
 logging.basicConfig()
 import structlog
@@ -389,8 +389,12 @@ class SelectedComponentsList(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Retrieve identified System
+        
         system = System.objects.get(id=self.kwargs['system_id'])
 
+        system_proposals = []
+        for proposal in system.proposals.all():
+            system_proposals.append(proposal)
         # Retrieve related selected controls if user has permission on system
         if self.request.user.has_perm('view_system', system):
             # Retrieve primary system Project
@@ -398,6 +402,7 @@ class SelectedComponentsList(ListView):
             project = system.projects.first()
             context['project'] = project
             context['system'] = system
+            context['system_proposals'] = system_proposals
             context['elements'] = Element.objects.all().exclude(element_type='system')
             context["display_urls"] = project_context(project)
             return context
@@ -1121,35 +1126,83 @@ def system_element(request, system_id, element_id):
 
         # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
+        # if this is a proposal then we wont have any impl_smts, so we need to check if there is a proposal
+        # and if impl_smts is empty
+        # import ipdb; ipdb.set_trace()
+        
         impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+        
+        if(impl_smts.exists()):
+            # Retrieve used catalog_key
+            catalog_key = impl_smts[0].sid_class
+            
+            # Retrieve control ids
+            catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
 
-        # Retrieve used catalog_key
-        catalog_key = impl_smts[0].sid_class
+            # Build OSCAL and OpenControl
+            oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+            opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+            states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
+            types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
+            # Return the system's element information
+            
+            context = {
+                "states": states,
+                "types": types,
+                "system": system,
+                "project": project,
+                "element": element,
+                "impl_smts": impl_smts,
+                "catalog_controls": catalog_controls,
+                "catalog_key": catalog_key,
+                "oscal": oscal_string,
+                "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+                "opencontrol": opencontrol_string,
+                "display_urls": project_context(project)
+            }
+            return render(request, "systems/element_detail_tabs.html", context)
+        else:
+            proposal = system.proposals.get(requested_element__id=element_id)
+            #get all statements that are not component_approval_criteria
+            impl_smts = element.statements_produced.filter(~Q(statement_type='COMPONENT_APPROVAL_CRITERIA'))
+            # Retrieve used catalog_key
+            catalog_key = impl_smts[0].sid_class
+            
+            # Retrieve control ids
+            catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+            # import ipdb; ipdb.set_trace()
+            # Build OSCAL and OpenControl
+            oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+            opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+            states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
+            types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
+            # Return the system's element information
+            
+            requests = Request.objects.filter(system=system, requested_element=element)
+            component_request = None
+            hasSentRequest = False
+            if requests.exists():
+                hasSentRequest = requests.exists()
+                component_request = requests[0]
 
-        # Retrieve control ids
-        catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
-
-        # Build OSCAL and OpenControl
-        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
-        opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
-        states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
-        types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
-        # Return the system's element information
-        context = {
-            "states": states,
-            "types": types,
-            "system": system,
-            "project": project,
-            "element": element,
-            "impl_smts": impl_smts,
-            "catalog_controls": catalog_controls,
-            "catalog_key": catalog_key,
-            "oscal": oscal_string,
-            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "opencontrol": opencontrol_string,
-            "display_urls": project_context(project)
-        }
-        return render(request, "systems/element_detail_tabs.html", context)
+            context = {
+                "states": states,
+                "types": types,
+                "system": system,
+                "project": project,
+                "element": element,
+                "proposal": proposal,
+                "component_request": component_request,
+                "hasSentRequest": hasSentRequest,
+                "impl_smts": impl_smts,
+                "catalog_controls": catalog_controls,
+                "catalog_key": catalog_key,
+                "oscal": oscal_string,
+                "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+                "opencontrol": opencontrol_string,
+                "display_urls": project_context(project)
+            }
+            return render(request, "systems/element_detail_tabs.html", context)
 
 @login_required
 def system_element_control(request, system_id, element_id, catalog_key, control_id):
@@ -1337,7 +1390,7 @@ def component_library_component(request, element_id):
     
     # Retrieve element
     element = Element.objects.get(id=element_id)
-    
+    govSystem = System.objects.filter(root_element__name="GovReady-Q Sample System")
    # Check permissions
     if element.private == True and 'view_element' not in get_user_perms(request.user, element):
         logger.warning(
@@ -1373,7 +1426,13 @@ def component_library_component(request, element_id):
         listOfContacts.append(user)
 
     get_all_parties = element.appointments.all()
+    total_number_of_requests = element.requests.count()
+    # status=RequestStatusEnum.PENDING.name
+    # req_instance = Request.objects.create(user=user, element=element, status="pending")
+    # req_instance.system.set(system)
+    # req_instance.save()
 
+    # import ipdb; ipdb.set_trace()
     contacts = []
     for poc in get_all_parties:
         contacts.append(poc.party)
@@ -1420,6 +1479,7 @@ def component_library_component(request, element_id):
             "criteria": criteria_text,
             "listOfContacts": listOfContacts,
             "contacts": serializers.serialize('json', contacts),
+            "requestsTotal": total_number_of_requests,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }
@@ -2437,6 +2497,49 @@ def delete_smt(request):
 
 # Components
 
+def proposal_message(request, system_id):
+    """ Send a global message to indicate a request has been successful """ 
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    form_dict = dict(request.POST)
+    form_values = {}
+    for key in form_dict.keys():
+        form_values[key] = form_dict[key][0]
+    messageType = form_values['proposal_message_type']
+    message = form_values['proposal_message']
+    
+    if(messageType == "INFO"):
+        messages.add_message(request, messages.INFO, f'{message}')
+    elif(messageType == "WARNING"):
+        messages.add_message(request, messages.WARNING, f'{message}')
+    else:
+        messages.add_message(request, messages.ERROR, f'{message}')
+
+    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+
+def request_message(request, system_id, element_id):
+    """ Send a global message to indicate a request has been successful """ 
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    form_dict = dict(request.POST)
+    form_values = {}
+    for key in form_dict.keys():
+        form_values[key] = form_dict[key][0]
+    messageType = form_values['req_message_type']
+    message = form_values['req_message']
+    
+    if(messageType == "INFO"):
+        messages.add_message(request, messages.INFO, f'{message}')
+    elif(messageType == "WARNING"):
+        messages.add_message(request, messages.WARNING, f'{message}')
+    else:
+        messages.add_message(request, messages.ERROR, f'{message}')
+
+    return HttpResponseRedirect("/controls/{}/component/{}".format(system_id, element_id))
+
+
 @login_required
 def add_system_component(request, system_id):
     """Add an existing element and its statements to a system"""
@@ -2449,9 +2552,13 @@ def add_system_component(request, system_id):
     for key in form_dict.keys():
         form_values[key] = form_dict[key][0]
 
+    #extract producer_elmentid and require_approval boolean val
+    form_values['producer_element_id'], check_req_approval = form_values['producer_element_id'].split(',')
+    
     # Does user have permission to add element?
     # Check user permissions
     system = System.objects.get(pk=system_id)
+    
     if not request.user.has_perm('change_system', system):
         # User does not have write permissions
         # Log permission to save answer denied
@@ -2471,13 +2578,17 @@ def add_system_component(request, system_id):
 
     # Add element to system's selected components
     # Look up the element rto add
+    
     producer_element = Element.objects.get(pk=form_values['producer_element_id'])
+
+    
 
     # TODO: various use cases
         # - component previously added but element has statements not yet added to system
         #   this issue may be best addressed elsewhere.
 
     # Component already added to system. Do not add the component (element) to the system again.
+    
     if producer_element.id in elements_selected_ids:
         messages.add_message(request, messages.ERROR,
                             f'Component "{producer_element.name}" already exists in selected components.')
@@ -2486,7 +2597,7 @@ def add_system_component(request, system_id):
             return HttpResponseRedirect(form_values['redirect_url'])
         else:
             return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
-
+            
     smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     # Component does not have any statements of type control_implementation_prototype to
@@ -2523,6 +2634,7 @@ def add_system_component(request, system_id):
     else:
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
+    
 @login_required
 def search_system_component(request):
     """Add an existing element and its statements to a system"""

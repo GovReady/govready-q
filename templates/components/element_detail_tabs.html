@@ -393,35 +393,10 @@
       </div>
 
       <!-- Tab panel: Requests -->
-        <!--<div role="tabpanel" class="tab-pane" id="procurement">
-        <div class="row">
-          <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-            <h3>TBD</h3>
-          </div>
-        </div>
-      </div> -->
-
-      <!-- Tab panel: Requests -->
       <div role="tabpanel" class="tab-pane" id="requests">
-        <div class="row">
-          <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-            <h3>Requested Usage</h3>
-            {% comment %} <div><span>{{users_can_edit}}</span></div> {% endcomment %}
-
-            <h3>Approved Usage ({{users_with_permission | length}})</h3>
-            <div><span>{{users_with_permission}}</span></div>
-            <div class="container">
-              <div class="row">
-                <div class="col-md-4"><strong>Requested By</strong></div>
-              </div>
-
-              {% for user in users_with_permission %}
-                <div class="username">
-                  <h4>{{ user.username }}</h4>
-                </div>
-              {% endfor%}
-            </div>
-          </div>
+        <h3>Requested Usage({{requestsTotal}})</h3>
+        <div id="requests-table" style="height: 100%; width: 100%;"></div>
+          
       </div> 
       
     </div>
@@ -439,6 +414,7 @@
         window.cmptPartiesTable( {{ element.id }}, {{ contacts | safe }}, "{{is_owner}}" === 'True' ? true : false );
         window.permissionsTable( {{ element.id }}, "{{is_owner}}" === 'True' ? true : false );
         window.renderElementTags({{ element.id }}, {{ tags | safe }});
+        window.requestsTable( {{ element.id }}, "{{is_owner}}" === 'True' ? true : false );
       </script>
       <script>
         // Navigate to tab identifed after URL #
