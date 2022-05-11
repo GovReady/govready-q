@@ -69,6 +69,12 @@ export const RequireApprovalModal = ({ userId, systemId, systemName, elementId, 
     });
   }, [elementId, uuid])
 
+  const error_no_controls = () => {
+    const message = `I couldn\'t add "${data.name}" to the system because the component does not currently have any control implementation statements to add.`
+    document.getElementById("proposal_message_type").value = "ERROR";
+    document.getElementById("proposal_message").value = message;
+    document.send_proposal_message.submit()
+  }
   const successful_proposal_message = () => {
     /* A template literal. It is a string that allows embedded expressions. */
     const message = `System ${systemName} has proposed ${data.name}`;
@@ -104,37 +110,42 @@ export const RequireApprovalModal = ({ userId, systemId, systemName, elementId, 
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-        
-    const newProposal = {
-      userId: userId,
-      elementId: elementId,
-      criteria_comment: data.criteria,
-      status: "Planning"
-    }
 
-    const checkSystem = await axios.get(`/api/v2/systems/${systemId}/retrieveProposals/`);
-    if(checkSystem.status === 200){
-      let alreadyProposed = false;
-      checkSystem.data.proposals.map((req) => {
-        if(req.elementId === parseInt(elementId)){
-          alreadyProposed = true;
-        }
-      });
-      if(!alreadyProposed){
-        /* Create a request and assign it to element and system */
-        const newRequestResponse = await axios.post(`/api/v2/systems/${systemId}/CreateAndSetProposal/`, newProposal);
-        if(newRequestResponse.status === 200){
-          handleClose();
-          successful_proposal_message();
+    if(data.numOfStmts === 0){
+      handleClose();
+      error_no_controls();
+    } else {
+      const newProposal = {
+        userId: userId,
+        elementId: elementId,
+        criteria_comment: data.criteria,
+        status: "Planning"
+      }
+
+      const checkSystem = await axios.get(`/api/v2/systems/${systemId}/retrieveProposals/`);
+      if(checkSystem.status === 200){
+        let alreadyProposed = false;
+        checkSystem.data.proposals.map((req) => {
+          if(req.elementId === parseInt(elementId)){
+            alreadyProposed = true;
+          }
+        });
+        if(!alreadyProposed){
+          /* Create a request and assign it to element and system */
+          const newRequestResponse = await axios.post(`/api/v2/systems/${systemId}/CreateAndSetProposal/`, newProposal);
+          if(newRequestResponse.status === 200){
+            handleClose();
+            successful_proposal_message();
+          } else {
+            console.error("Something went wrong in creating and setting new proposal to element");
+          }
         } else {
-          console.error("Something went wrong in creating and setting new proposal to element");
+          handleClose();
+          send_alreadyProposed_message();
         }
       } else {
-        handleClose();
-        send_alreadyProposed_message();
+        console.error("Something went wrong with checking element");
       }
-    } else {
-      console.error("Something went wrong with checking element");
     }
   }
   

@@ -6,7 +6,7 @@ from api.base.serializers.types import ReadOnlySerializer, WriteOnlySerializer
 from api.controls.serializers.import_record import SimpleImportRecordSerializer
 from api.siteapp.serializers.tags import SimpleTagSerializer
 from api.siteapp.serializers.appointment import SimpleAppointmentSerializer
-from controls.models import Element, ElementRole, ElementControl
+from controls.models import Element, ElementRole, ElementControl, Statement
 from controls.enums.statements import StatementTypeEnum
 from siteapp.models import Appointment, Party, Request, Role, Tag
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
@@ -32,7 +32,12 @@ class DetailedElementSerializer(SimpleElementSerializer):
     appointments = SimpleAppointmentSerializer(many=True)
     parties = serializers.SerializerMethodField('get_parties')
     criteria = serializers.SerializerMethodField('get_criteria')
+    numOfStmts = serializers.SerializerMethodField('get_numOfStmts')
 
+    def get_numOfStmts(self, element):
+        stmts = Statement.objects.filter(producer_element_id = element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
+        return len(stmts)
+        
     def get_parties(self, element):
         parties = []
         counter = 1;
@@ -88,7 +93,7 @@ class DetailedElementSerializer(SimpleElementSerializer):
         return criteria_text
     class Meta:
         model = Element
-        fields = SimpleElementSerializer.Meta.fields + ['roles', 'import_record', 'tags', 'appointments', 'parties', 'criteria']
+        fields = SimpleElementSerializer.Meta.fields + ['roles', 'import_record', 'tags', 'appointments', 'parties', 'criteria', 'numOfStmts']
 
 class ElementPermissionSerializer(SimpleElementSerializer):
     users_with_permissions = serializers.SerializerMethodField('get_list_of_users')
