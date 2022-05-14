@@ -5,7 +5,7 @@ from django_json_widget.widgets import JSONEditorWidget
 import django.contrib.auth.admin as contribauthadmin
 from jsonfield import JSONField
 from .models import User, Organization, OrganizationalSetting, Folder, Invitation, Project, ProjectMembership, Portfolio, Support, \
-    Tag, Asset, ProjectAsset
+    Tag, Role, Party, Asset, ProjectAsset
 from notifications.models import Notification
 
 
@@ -193,6 +193,16 @@ class TagAdmin(admin.ModelAdmin):
     fields = ('id', 'label', 'system_created')
     readonly_fields = ('id',)
 
+class RoleAdmin(admin.ModelAdmin):
+    list_display = ('id', 'role_id', 'short_name')
+    fields = ('role_id', 'short_name', 'description')
+    readonly_fields = ('id',)
+
+class PartyAdmin(admin.ModelAdmin):
+    list_display = ('uuid', 'name')
+    fields = ('uuid', 'party_type', 'name', 'short_name', 'email', 'phone_number', 'mobile_phone', 'user')
+    readonly_fields = ('uuid',)
+
 class ProjectAssetAdmin(admin.ModelAdmin):
     list_display = (
     'uuid', 'asset_type', 'description', 'project', 'default', 'title', 'filename', 'created', 'updated')
@@ -217,4 +227,6 @@ admin.site.unregister(Notification)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(Support, SupportAdmin)
 admin.site.register(Tag, TagAdmin)
+admin.site.register(Role, RoleAdmin)
+admin.site.register(Party, PartyAdmin)
 admin.site.register(ProjectAsset, ProjectAssetAdmin)

@@ -1,5 +1,6 @@
 {% extends "project-base.html" %}
 {% load humanize %}
+{% load system_tags %}
 {% load static %}
 
 {% block title %}
@@ -86,6 +87,11 @@
 {% block body_content %}
   <div class="systems-top">
     <div id="above-tab-content" class="row">
+      {% if proposal %}
+        <div class="row" style="margin-left: 1rem;border: 2px solid #ffb523;background-color: #ffffe2;text-align:center;vertical-align:middle;">
+            <b style="vertical-align:middle;">Access Required</b> <span style="color:grey;font-size:14px;vertical-align:middle;">({{proposal.created}})</span> | Current status: {{proposal.status}} stage
+        </div>
+      {% endif %}
       <div class="col-sm-10 ">
         <h2>
             {{ element.name }} System Component
@@ -126,6 +132,14 @@
               <a href="{% url 'component_library_component' element.id %}" target="_blank">Read more about {{ element.name }} in component library <span class="glyphicon glyphicon-new-window" style="color: #aaa;"></span></a>
             </div>
           </div>
+
+          <div id="system-owner-proposal-steps"></div>
+          <form  style="display:none;" id="send_request_message" name="send_request_message" method="post" action="{% url 'system_element' system_id=system.id element_id=element.id %}">
+            {% csrf_token %}
+            <input type="hidden" id="req_message_type" name="req_message_type" value="" />
+            <input type="hidden" id="req_message" name="req_message" value="" />
+          </form>
+
           <div id="control-description" class="">
             <h3>{{ element.name }} contributes {{ impl_smts|length }} statements to controls</h3>
           </div>
@@ -147,6 +161,7 @@
                                   <span id="producer_element-{{ forloop.counter }}-control" class="control-id-text">
                                       {{ smt.sid|upper }} {% if smt.pid %}{{ smt.pid }}.{% endif %} - {{ smt.control_title }}
                                   </span>
+                                  <br /><span class="systems-control-catalog">{{smt.sid_class}}</span>
                               </summary>
                               <div class="component-control-description">{{ smt.catalog_control_as_dict.description }}</div>
                           </details>
@@ -190,6 +205,7 @@
                                           <span id="producer_element-{{ forloop.counter }}-control-edit" class="control-id-text">
                                           {{ smt.sid|upper }} {% if smt.pid not in smt.sid %}{{ smt.pid }}.{% endif %} - {{ smt.control_title }}
                                           </span>
+                                          <br /><span class="systems-control-catalog">{{smt.sid_class}}</span>
                                       </summary>
                                       <div class="component-control-description">{{ smt.catalog_control_as_dict.description }}</div>
                                   </details>
@@ -306,7 +322,45 @@
 {% block scripts %}
       {{block.super}}
       <script>
-
+        current_system = {
+          id: '{{ system.id }}',
+          name: `{{ system.root_element.name }}`,
+        }
+        req_ele = {
+          id: '{{ element.id }}',
+          name: `{{ element.name }}`,
+          require_approval: `{{ element.require_approval }}` === 'True' ? true : false,
+        }
+        proposal = {
+          id: '{{ proposal.id }}',
+          userId: '{{ proposal.user.id }}',
+          userName: '{{ proposal.user.name }}',
+          requested_element_id: '{{ proposal.requested_element.id  }}',
+          requested_element_name: `{{ proposal.requested_element.name }}`,
+          criteria_comment: `{{ proposal.criteria_comment }}`,
+          status: '{{ proposal.status }}',
+        }
+        if(`{{hasSentRequest}}` === 'True') {
+          req = {
+            id: '{{ component_request.id }}',
+            systemId: '{{ component_request.system.id }}',
+            requested_element: '{{ component_request.requested_element.id }}',
+            criteria_comment: `{{ component_request.criteria_comment }}`,
+            criteria_reject_comment: `{{ component_request.criteria_reject_comment }}`,
+            status: '{{ component_request.status }}',
+          }
+        } else {
+          req = {
+            id: '',
+            systemId: '',
+            requested_element: '',
+            criteria_comment: '',
+            criteria_reject_comment: '',
+            status: '',
+          }
+        }
+        window.proposalSteps({{request.user.id}}, current_system, req_ele, proposal, req, `{{hasSentRequest}}` === 'True' ? true : false);
+        
         // Adds statement form to page
         function add_smt() {
           var panel_num = $('.panel-smt').length + 1

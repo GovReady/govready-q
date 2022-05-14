@@ -9,3 +9,4 @@ class StatementTypeEnum(BaseEnum):
     POAM = "POAM"
     SECURITY_SENSITIVITY_LEVEL = "security_sensitivity_level"
     SECURITY_IMPACT_LEVEL = "security_impact_level"
+    COMPONENT_APPROVAL_CRITERIA = "component_approval_criteria"

@@ -1,6 +1,7 @@
 from collections import ChainMap
 from itertools import chain
 import logging
+from platform import system
 import structlog
 import uuid as uuid
 import auto_prefetch
@@ -25,7 +26,7 @@ from siteapp.enums.access_level import AccessLevelEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from siteapp.enums.assets import AssetTypeEnum
 from siteapp.utils.uploads import hash_file
-from controls.models import ImportRecord
+from controls.models import ImportRecord, System, Element
 from controls.utilities import *
 
 logging.basicConfig()
@@ -33,6 +34,9 @@ structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
 
+# must start with letter or _ and can only contain letters, digits, underscore, hyphens, and periods
+TOKEN_REGEX = RegexValidator(regex=r"^[a-zA-Z_][a-zA-Z0-9_\-.]*$") 
+PHONE_NUMBER_REGEX = RegexValidator(regex=r"^\+?1?\d{8,15}$")
 
 class User(AbstractUser, BaseModel):
     # Additional user profile data.
@@ -55,7 +59,7 @@ class User(AbstractUser, BaseModel):
                                   help_text="The user's API key with write-only permission.")
     default_portfolio = models.ForeignKey('Portfolio', blank=True, null=True, related_name="default_for", on_delete=models.RESTRICT,
                                   help_text="Default Portfolio of the User.")
-
+    phone_number = models.CharField(validators=[PHONE_NUMBER_REGEX], max_length=16, null=True, blank=True)
 
     # Methods
     def __init__(self, *args, **kwargs):
@@ -1407,6 +1411,88 @@ class Tag(BaseModel):
     def serialize(self):
         return {"label": self.label, "system_created": self.system_created, "id": self.id}
 
+
+class Party(BaseModel):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Party.")
+    party_type = models.CharField(max_length=100, unique=False, help_text="type for Party.")
+    name = models.CharField(max_length=250, unique=True, help_text="Name of this Party.")
+    short_name = models.CharField(max_length=100, unique=False, help_text="Short name of this Party.")
+    email = models.EmailField(blank=True)
+    phone_number = models.CharField(validators=[PHONE_NUMBER_REGEX], max_length=16, null=True, blank=True)
+    mobile_phone = models.CharField(validators=[PHONE_NUMBER_REGEX], max_length=16, null=True, blank=True)
+    user = models.ForeignKey(User, blank=True, null=True, related_name="party", on_delete=models.SET_NULL,
+                                   help_text="User associated with the Party.")
+
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+    def serialize(self):
+        return {"name": self.name, "id": self.id}
+
+
+class Role(BaseModel):
+    role_id = models.CharField(validators=[TOKEN_REGEX], max_length=16, null=True, blank=True)
+    title = models.CharField(max_length=250, unique=False, blank=False, null=False, help_text="Title of Role.")
+    short_name = models.CharField(max_length=100, unique=False, blank=True, null=True, help_text="Short name of this Role.")
+    description = models.TextField(blank=True, null=True, help_text="Description of this Role.")
+
+    def __repr__(self):
+        return self.title
+
+    def __str__(self):
+        return self.title
+
+    def serialize(self):
+        return {"title": self.title, "id": self.id}
+
+
+class Appointment(BaseModel):
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, help_text="The Role being appointed.")
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, help_text="The Party appointed to the Role.")
+    model_name = models.CharField(max_length=100, unique=False, help_text="The Model name to which the Role and Party are appointed.")
+    comment = models.CharField(max_length=200, help_text="Notes on this Appointment.")
+    # enddate = models.DateField(unique=False, blank=True, null=True, help_text="Date Appointment concludes")
+
+    def __repr__(self):
+        return f"{self.model_name} {self.role.title} - {self.party.name}"
+
+    def __str__(self):
+        return f"{self.model_name} {self.role.title} - {self.party.name}"
+
+class Request(BaseModel):
+    user = models.ForeignKey(User, blank=True, null=True, related_name="request", on_delete=models.CASCADE, help_text="User creating the request.")
+    system = models.ForeignKey(System, blank=True, null=True, related_name="request", on_delete=models.CASCADE, help_text="System making the request.")
+    requested_element = models.ForeignKey(Element, blank=True, null=True, related_name="request", on_delete=models.CASCADE, help_text="Element being requested.")
+    criteria_comment = models.TextField(blank=True, null=True, help_text="Comments on this request.")
+    criteria_reject_comment = models.TextField(blank=True, null=True, help_text="Comment on request rejection.")
+    status = models.TextField(blank=True, null=True, help_text="Status of the request.")
+
+    def __repr__(self):
+        return f"{self.system} requesting -> {self.requested_element} - {self.status}"
+
+    def __str__(self):
+        return f"{self.system} requesting -> {self.requested_element} - {self.status}"
+
+    def serialize(self):
+        return {"system": self.system, "requested_element": self.requested_element, "id": self.id}
+
+class Proposal(BaseModel):
+    user = models.ForeignKey(User, blank=True, null=True, related_name="propose", on_delete=models.CASCADE, help_text="User creating the request proposal.")
+    requested_element = models.ForeignKey(Element, blank=True, null=True, related_name="propose", on_delete=models.CASCADE, help_text="Element being proposed for request.")
+    criteria_comment = models.TextField(blank=True, null=True, help_text="Comments on this proposal.")
+    status = models.TextField(blank=True, null=True, help_text="Status of the proposal.")
+
+    def __repr__(self):
+        return f"Proposing request -> {self.requested_element} - {self.status}"
+
+    def __str__(self):
+        return f"Proposing request -> {self.requested_element} - {self.status}"
+
+    def serialize(self):
+        return {"requested_element": self.requested_element, "id": self.id}
 
 class Asset(BaseModel):
     UPLOAD_TO = None  # Should be overriden when iheritted

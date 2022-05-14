@@ -29,15 +29,23 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/controls/selected$', views.controls_selected, name="controls_selected"),
     url(r'^(?P<system_id>.*)/controls/add$', views.system_controls_add, name="system_controls_add"),
     url(r'^(?P<system_id>.*)/controls/remove/(?P<element_control_id>.*)$',  views.system_control_remove, name="system_control_remove"),
+    
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/compare$', views.editor_compare, name="control_compare"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),
     url(r'^editor_autocomplete/', views.EditorAutocomplete.as_view(), name="search_system_component"),
     url(r'^related_system_components/', views.RelatedComponentStatements.as_view(), name="related_system_components"),
     url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),
+    url(r'^(?P<system_id>.*)/components/proposal_message$', views.proposal_message, name="proposal_message"),
+    url(r'^(?P<system_id>.*)/components/remove_proposal/(?P<proposal_id>.*)$', views.system_proposal_remove, name="system_proposal_remove"),
+
     url(r'^(?P<system_id>.*)/components/editor_autocomplete$',  views.EditorAutocomplete.as_view(), name="editor_autocomplete"),
     url(r'^(?P<system_id>.)/profile/oscal/json', views.system_profile_oscal_json, name="profile_oscal_json"),
     url(r'^statement_history/(?P<smt_id>.*)/$', views.statement_history, name="statement_history"),
     url(r'^restore_to/(?P<smt_id>.*)/(?P<history_id>.*)/$', views.restore_to_history, name="restore_to"),
+
+    url(r'^(?P<system_id>.*)/aspen/summary$', views.system_summary_1, name="system_summary_1"),
+    url(r'^(?P<system_id>.*)/aspen/summary/poams$', views.system_summary_poams, name="system_summary_poams"),
+    url(r'^import-poams$', views.import_poams_xlsx, name="import_poams_xlsx"),
 
     # Systems Assessment Results
     url(r'^(?P<system_id>.*)/assessments$', views.system_assessment_results_list, name="system_assessment_results_list"),
@@ -67,6 +75,7 @@ urlpatterns = [
         name="system_element_download_oscal_json"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/_remove$', views.system_element_remove, name="system_element_remove"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/(?P<catalog_key>.*)/(?P<control_id>.*)$', views.system_element_control, name="system_element_control"),
+    url(r'^(?P<system_id>.*)/components/(?P<element_id>.*)/proposal_message$', views.proposal_message, name="proposal_message"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
     url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
 
@@ -87,6 +96,7 @@ urlpatterns = [
 
     # Elements
     url(r'^elements/(\d+)/__edit$', views.edit_element, name="edit_element"),
+    url(r'^elements/(\d+)/__edit_access$', views.edit_element_access_management, name="edit_element_access_management"),
     *build_tag_urls(r"^elements/(\d+)/", model=Element),  # Tag Urls
 
     # Controls

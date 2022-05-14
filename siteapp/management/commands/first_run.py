@@ -1,7 +1,7 @@
 import sys
 import os.path
 import json
-
+from uuid import uuid4
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
@@ -14,6 +14,7 @@ from siteapp.models import User, Organization, Portfolio
 from controls.models import Element
 from controls.oscal import CatalogData
 from django.contrib.auth.management.commands import createsuperuser
+from siteapp.models import Role, Party, Appointment
 
 import fs, fs.errors
 
@@ -187,5 +188,29 @@ class Command(BaseCommand):
                             oscal_component_json = f.read()
                             result = ComponentImporter().import_components_as_json(import_name, oscal_component_json)
 
-        # Provide feedback to user
+        # Create initial roles only once
+        # TODO: Probably need a field to indicate if first_run has been run to avoid recreating roles that
+        #       installation intentionally deleted.
+        roles_desired = [
+            {"role_id": "ao", "title": "Authorizing Official", "short_name": "AO", "description": "Senior federal official or executive with the authority to formally assume responsibility for operating an information system at an acceptable level of risk to organizational operations, other organizations, and the Nation."},
+            {"role_id":"co", "title": "Component Owner", "short_name": "CO", "description": "Business Owner of a Component"},
+            {"role_id": "ccp", "title": "Common Control Provider", "short_name": "CCP", "description": "Business owner of a Common Control"},
+            {"role_id": "iso", "title": "Information System Owner", "short_name": "ISO", "description": "Business Owner of a System"},
+            {"role_id": "isso", "title": "Information System Security Officer", "short_name": "ISSO", "description": "Leads effort to secure a System"},
+            {"role_id": "isse", "title": "Information System Security Engineer", "short_name": "ISSE", "description": "Supports technical engineering to secure a System"},
+            {"role_id": "poc", "title": "Point of Contact", "short_name": "PoC", "description": "Contact for request assistance"}
+        ]
+        roles_to_create = []
+        for r in roles_desired:
+            if not Role.objects.filter(title=r['title']).exists():
+                new_role = Role(
+                    role_id=r['role_id'],
+                    title=r['title'],
+                    short_name=r['short_name'],
+                    description=r['description']
+                )
+                roles_to_create.append(new_role)
+        if len(roles_to_create) > 0:
+            roles_created = Role.objects.bulk_create(roles_to_create)
+
         print("GovReady-Q configuration complete.")

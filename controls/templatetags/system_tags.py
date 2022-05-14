@@ -25,6 +25,10 @@ def get_item(dictionary, key):
     return dictionary.get(key, None)
 
 @register.filter
+def replace_underscore_with_space(string):
+    return string.replace("_", " ")
+
+@register.filter
 def divide(value, arg):
     if value is None:
         value = 0

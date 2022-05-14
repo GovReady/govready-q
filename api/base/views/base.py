@@ -5,6 +5,7 @@ from django.db.models.fields.related_descriptors import ManyToManyDescriptor
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
+from django.core.exceptions import FieldError
 
 from api.base.serializers.base import BaseSerializer
 from api.base.serializers.types import WriteOnlySerializer, ReadOnlySerializer
@@ -102,14 +103,18 @@ class BaseViewSet(GenericViewSet):
         return serializer(*args, **kwargs)
 
     def get_queryset(self, queryset=None, serializer_class=None):
-        if not queryset:
+        if queryset is None:
             queryset = self.queryset
+        exclude_ids = self.request.query_params.get("exclude")
+        if exclude_ids:
+            queryset = queryset.filter(~Q(id__in=exclude_ids.split(',')))
         if not serializer_class:
             try:
                 serializer_class = self.get_serializer_class('list')
             finally:
                 if not serializer_class:
-                    raise NotImplementedError("Developer Action - Make sure you set `serializer_classes` values.")
+                    raise NotImplementedError(
+                        "Developer Action - Make sure you set `serializer_classes` values.")
         queryset = serializer_class.prefetch_queryset(queryset)
 
         if self.NESTED_ROUTER_PKS:
@@ -118,9 +123,14 @@ class BaseViewSet(GenericViewSet):
                     if '.' in item['model_field'] or \
                             isinstance(getattr(queryset.model, item['model_field']), ManyToManyDescriptor):
                         queryset = queryset.filter(Q(**{"{}".format(item['model_field'].replace('.', '__')):
-                                                            self.kwargs[item['pk']]}))
+                                                        self.kwargs[item['pk']]}))
                     else:
-                        queryset = queryset.filter(Q(**{"{}_id".format(item['model_field']): self.kwargs[item['pk']]}))
+                        try:
+                            queryset = queryset.filter(
+                                Q(**{"{}_id".format(item['model_field']): self.kwargs[item['pk']]}))
+                        except FieldError:
+                            # Occurs on One to One relationship.  Can ignore for now - todo later
+                            pass
             return queryset
         return queryset.distinct()
 

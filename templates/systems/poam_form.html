@@ -11,30 +11,18 @@
 {% endblock %}
 
 {% block head %}
+{{block.super}}
 {% include "controls/_style-controls.html" %}
 {% endblock %}
 
 {% block contextbar %}{% endblock %}
 
-{% block body %}
-
+{% block body_content %}
 <div class="systems-top">
   <div class="container">
 
-  <div class="row">
-    <div id="above-tab-content" class="row">
-      <!-- Page Title-->
-      <div class="systems-title">
-          <h2 class="control-heading">
-            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> > New POA&M
-          </h2>
-      </div>
-    </div>
-  </div><!--/row-->
-    <p>&nbsp;</p>
-
     <div id="tab-content" class="row rows-header">
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">Create POA&M</div>
+        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2"><b>Create POA&M</b></div>
         <div id="" class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9">&nbsp;</div>
         <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
           <!--a href="selected/export/xacta/xlsx">export</a-->
