@@ -2,11 +2,6 @@
 
 from django.db import migrations, models
 
-def system_info_schema(apps, schema_editor):
-    SystemSettings = apps.get_model('system_settings', 'SystemSettings')
-    system_info_schema = SystemSettings.objects.create(setting='system_info_schema')
-    system_info_schema.details = dict()
-    system_info_schema.save()
 
 class Migration(migrations.Migration):
 
@@ -47,5 +42,4 @@ class Migration(migrations.Migration):
             name='history_date',
             field=models.DateTimeField(db_index=True),
         ),
-        migrations.RunPython(system_info_schema, migrations.RunPython.noop)
     ]
