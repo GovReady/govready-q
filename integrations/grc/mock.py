@@ -1,32 +1,32 @@
 #!/usr/bin/env python3
 
-##############################################################
+#############################################################
 #
-# A simple Python webserver to generate mock CSAM API results
-#
+# A simple Python webserver to generate mock GRC API results
+# 
 # Requirements:
-#
+# 
 #   pip install click
 #
 # Usage:
 #   
 #   # Start mock service
-#   python3 integrations/csam/mock.py
+#   python3 integrations/grc/mock.py
 #
 # Accessing:
 #
-#   curl localhost:9002/endpoint
-#   curl -X 'GET' 'http://127.0.0.1:9002/v1/system/111'
-#   curl localhost:9002/v1/system/111  # requires authentication
+#   curl localhost:9022/endpoint
+#   curl -X 'GET' 'http://127.0.0.1:9022/v1/systems/111'
+#   curl localhost:9022/v1/system/111  # requires authentication
 #
 # Accessing with simple authentication:
 #
 #   curl -X 'GET' \
 #     -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' \
-#     -H 'Authorization: Bearer FAD619'
-#     'http://localhost:9002/system/111' \
+#     -H 'Authorization: Bearer FAD619' \
+#     'http://localhost:9022/v1/systems/111'
 #
-#    curl -X 'GET' -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' -H 'Authorization: Bearer FAD619' 'http://localhost:9002/v1/systems/111'
+#    curl -X 'GET' -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' -H 'Authorization: Bearer FAD619' 'http://localhost:9022/v1/systems/111'
 #
 ##############################################################
 
@@ -42,8 +42,8 @@ from django.utils import timezone
 from time import time
 
 
-PORT = 9002
-MOCK_SRVC = "CSAM"
+PORT = 9022
+MOCK_SRVC = "GRC"
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
@@ -131,7 +131,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             # Read headers
             if 'Authorization' in self.headers:
-                print("Authorization header:", self.headers['Authorization'])
+                # print("Authorization header:", self.headers['Authorization'])
                 data = {"reply": "Success",
                         "Authorization": self.headers['Authorization'],
                         "pat": self.headers['Authorization'].split("Bearer ")[-1]
@@ -184,7 +184,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         request = urlparse(self.path)
         params = parse_qs(request.query)
         print("request.path:", request.path)
-        print("** params", params)
+        # print("** params", params)
 
         # Route POST request
         if request.path == "/v1/test/hello":
@@ -231,7 +231,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                data = self.mk_csam_system_info_response(system_id)
+                data = self.mk_grc_system_info_response(system_id)
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
         else:
@@ -244,8 +244,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
 def main():
+    """Main loop"""
+
+    print(f"\nStarting service '{MOCK_SRVC}' running on port {PORT}...")
+    print(f"Information on {len(dhs_sorns)} systems available\n")
     httpd = HTTPServer(('localhost', PORT), SimpleHTTPRequestHandler)
     httpd.serve_forever()
+
 
 if __name__ == "__main__":
     main()
