@@ -49,7 +49,7 @@ from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm, Sta
 from .models import *
 from .utilities import *
 from siteapp.utils.views_helper import project_context
-from siteapp.models import Role, Party, Appointment
+from siteapp.models import Role, Party, Appointment, Request, Proposal
 
 logging.basicConfig()
 import structlog
@@ -298,6 +298,41 @@ def system_control_remove(request, system_id, element_control_id):
     response = redirect(reverse('controls_selected', args=[system_id]))
     return response
 
+@login_required
+def system_proposal_remove(request, system_id, proposal_id):
+    """Remove a proposal from a system"""
+    
+        # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    proposal = Proposal.objects.get(id=proposal_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+        system.remove_proposals([proposal.id])
+        if proposal.req != None:
+            proposal.req.status = 'Closed'
+            proposal.req.save()
+        Proposal.objects.filter(id=proposal_id).delete()
+        messages.add_message(request, messages.INFO, f"Removed proposal '{proposal.requested_element.name}' from system.")
+        # Log result
+        logger.info(
+                event="change_system remove_selected_proposal",
+                object={"object": "proposal", "id": proposal_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+    else:
+        # User does not have permission
+        # Log result
+        logger.info(
+                event="change_system remove_selected_proposal permission_denied",
+                object={"object": "proposal", "id": proposal_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
+    response = redirect(reverse('components_selected', args=[system_id]))
+    return response
+
 @functools.lru_cache()
 def controls_updated(request, system_id):
     """Display System's statements by updated date in reverse chronological order"""
@@ -389,8 +424,14 @@ class SelectedComponentsList(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Retrieve identified System
+        
         system = System.objects.get(id=self.kwargs['system_id'])
 
+        system_proposals = []
+        system_proposal_elements = []
+        for proposal in system.proposals.all():
+            system_proposals.append(proposal)
+            system_proposal_elements.append(proposal.requested_element)
         # Retrieve related selected controls if user has permission on system
         if self.request.user.has_perm('view_system', system):
             # Retrieve primary system Project
@@ -398,6 +439,8 @@ class SelectedComponentsList(ListView):
             project = system.projects.first()
             context['project'] = project
             context['system'] = system
+            context['system_proposals'] = system_proposals
+            context['system_proposal_elements'] =  system_proposal_elements
             context['elements'] = Element.objects.all().exclude(element_type='system')
             context["display_urls"] = project_context(project)
             return context
@@ -1118,38 +1161,105 @@ def system_element(request, system_id, element_id):
 
         # Retrieve element
         element = Element.objects.get(id=element_id)
-
         # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
+        # if this is a proposal then we wont have any impl_smts, so we need to check if there is a proposal
+        # and if impl_smts is empty
+        
         impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+        
+        if(impl_smts.exists()):
+            # Retrieve used catalog_key
+            catalog_key = impl_smts[0].sid_class     
+            component_request = None
+            hasSentRequest = False
+            # Retrieve related Proposal and request
+            try:
+                proposals = Proposal.objects.filter(requested_element=element.id, req__system=system, req__status="Approve")
+                proposal = proposals.first()
+                if proposal != None:
+                    component_request = proposal.req
+                    hasSentRequest = True
+            except Proposal.DoesNotExist:
+                proposal = None
+            
+                
 
-        # Retrieve used catalog_key
-        catalog_key = impl_smts[0].sid_class
+            # Retrieve control ids
+            catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
 
-        # Retrieve control ids
-        catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+            # Build OSCAL and OpenControl
+            oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+            opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+            states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
+            types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
+            # Return the system's element information
 
-        # Build OSCAL and OpenControl
-        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
-        opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
-        states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
-        types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
-        # Return the system's element information
-        context = {
-            "states": states,
-            "types": types,
-            "system": system,
-            "project": project,
-            "element": element,
-            "impl_smts": impl_smts,
-            "catalog_controls": catalog_controls,
-            "catalog_key": catalog_key,
-            "oscal": oscal_string,
-            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "opencontrol": opencontrol_string,
-            "display_urls": project_context(project)
-        }
-        return render(request, "systems/element_detail_tabs.html", context)
+            context = {
+                "states": states,
+                "types": types,
+                "system": system,
+                "project": project,
+                "element": element,
+                "impl_smts": impl_smts,
+                "catalog_controls": catalog_controls,
+                "catalog_key": catalog_key,
+                "oscal": oscal_string,
+                "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+                "opencontrol": opencontrol_string,
+                "display_urls": project_context(project),
+                "proposal": proposal,
+                "hasSentRequest": hasSentRequest,
+                "component_request": component_request,
+            }
+            return render(request, "systems/element_detail_tabs.html", context)
+        else:
+            try:
+                proposal = system.proposals.get(requested_element__id=element_id)
+            except Proposal.DoesNotExist: 
+                proposal = None
+                return HttpResponseRedirect("/controls/{}/components/selected".format(system_id))
+
+            #get all statements that are not component_approval_criteria
+            impl_smts = element.statements_produced.filter(~Q(statement_type='COMPONENT_APPROVAL_CRITERIA'))
+            # Retrieve used catalog_key
+            catalog_key = impl_smts[0].sid_class
+            
+            # Retrieve control ids
+            catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+            # Build OSCAL and OpenControl
+            oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+            opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+            states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
+            types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
+            # Return the system's element information
+            
+            requests = Request.objects.filter(system=system, requested_element=element)
+            component_request = None
+            hasSentRequest = False
+            
+            if proposal.req != None:
+                hasSentRequest = True
+                component_request = proposal.req
+
+            context = {
+                "states": states,
+                "types": types,
+                "system": system,
+                "project": project,
+                "element": element,
+                "proposal": proposal,
+                "component_request": component_request,
+                "hasSentRequest": hasSentRequest,
+                "impl_smts": impl_smts,
+                "catalog_controls": catalog_controls,
+                "catalog_key": catalog_key,
+                "oscal": oscal_string,
+                "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+                "opencontrol": opencontrol_string,
+                "display_urls": project_context(project)
+            }
+            return render(request, "systems/element_detail_tabs.html", context)
 
 @login_required
 def system_element_control(request, system_id, element_id, catalog_key, control_id):
@@ -1241,7 +1351,13 @@ def system_element_remove(request, system_id, element_id):
 
         # Retrieve element
         element = Element.objects.get(id=element_id)
-
+        try:
+            req = Request.objects.get(system=system, requested_element=element, status="Approve")
+            req.status = "Closed"
+            req.save()
+        except Request.DoesNotExist:
+            pass
+        
         # Delete the control implementation statements associated with this component
         result = element.statements_produced.filter(consumer_element=system.root_element).delete()
 
@@ -1337,7 +1453,7 @@ def component_library_component(request, element_id):
     
     # Retrieve element
     element = Element.objects.get(id=element_id)
-    
+    govSystem = System.objects.filter(root_element__name="GovReady-Q Sample System")
    # Check permissions
     if element.private == True and 'view_element' not in get_user_perms(request.user, element):
         logger.warning(
@@ -1373,6 +1489,11 @@ def component_library_component(request, element_id):
         listOfContacts.append(user)
 
     get_all_parties = element.appointments.all()
+    total_number_of_requests = element.requests.count()
+    # status=RequestStatusEnum.PENDING.name
+    # req_instance = Request.objects.create(user=user, element=element, status="pending")
+    # req_instance.system.set(system)
+    # req_instance.save()
 
     contacts = []
     for poc in get_all_parties:
@@ -1420,6 +1541,7 @@ def component_library_component(request, element_id):
             "criteria": criteria_text,
             "listOfContacts": listOfContacts,
             "contacts": serializers.serialize('json', contacts),
+            "totalRequests": total_number_of_requests,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }
@@ -1468,6 +1590,7 @@ def component_library_component(request, element_id):
         "users_with_permissions": usersWithPermission,
         "criteria": criteria_text,
         "contacts": serializers.serialize('json', contacts),
+        "totalRequests": total_number_of_requests,
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
@@ -2436,10 +2559,56 @@ def delete_smt(request):
 
 
 # Components
+def proposal_message(request, system_id):
+    """ Send a global message to indicate a request has been successful """ 
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+
+    
+    form_dict = dict(request.POST)
+    form_values = {}
+    for key in form_dict.keys():
+        form_values[key] = form_dict[key][0]
+    messageType = form_values['proposal_message_type']
+    message = form_values['proposal_message']
+    
+    # messageType = request.POST.get("proposal_message_type")
+    # message = request.POST.get("proposal_message")
+
+    if(messageType == "INFO"):
+        messages.add_message(request, messages.INFO, f'{message}')
+    elif(messageType == "WARNING"):
+        messages.add_message(request, messages.WARNING, f'{message}')
+    else:
+        messages.add_message(request, messages.ERROR, f'{message}')
+
+    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+
+def request_message(request, system_id, element_id):
+    """ Send a global message to indicate a request has been successful """ 
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    form_dict = dict(request.POST)
+    form_values = {}
+    for key in form_dict.keys():
+        form_values[key] = form_dict[key][0]
+    messageType = form_values['req_message_type']
+    message = form_values['req_message']
+    
+    if(messageType == "INFO"):
+        messages.add_message(request, messages.INFO, f'{message}')
+    elif(messageType == "WARNING"):
+        messages.add_message(request, messages.WARNING, f'{message}')
+    else:
+        messages.add_message(request, messages.ERROR, f'{message}')
+    return HttpResponseRedirect("/controls/{}/component/{}".format(system_id, element_id))
 
 @login_required
 def add_system_component(request, system_id):
     """Add an existing element and its statements to a system"""
+# Setting a breakpoint in the code.
 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -2449,9 +2618,14 @@ def add_system_component(request, system_id):
     for key in form_dict.keys():
         form_values[key] = form_dict[key][0]
 
+    
+    #extract producer_elmentid and require_approval boolean val
+    form_values['producer_element_id'], check_req_approval = form_values['producer_element_id'].split(',')
+    
     # Does user have permission to add element?
     # Check user permissions
     system = System.objects.get(pk=system_id)
+    
     if not request.user.has_perm('change_system', system):
         # User does not have write permissions
         # Log permission to save answer denied
@@ -2473,11 +2647,15 @@ def add_system_component(request, system_id):
     # Look up the element rto add
     producer_element = Element.objects.get(pk=form_values['producer_element_id'])
 
+    
+
     # TODO: various use cases
         # - component previously added but element has statements not yet added to system
         #   this issue may be best addressed elsewhere.
 
     # Component already added to system. Do not add the component (element) to the system again.
+    
+    
     if producer_element.id in elements_selected_ids:
         messages.add_message(request, messages.ERROR,
                             f'Component "{producer_element.name}" already exists in selected components.')
@@ -2486,7 +2664,7 @@ def add_system_component(request, system_id):
             return HttpResponseRedirect(form_values['redirect_url'])
         else:
             return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
-
+            
     smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     # Component does not have any statements of type control_implementation_prototype to
@@ -2523,6 +2701,7 @@ def add_system_component(request, system_id):
     else:
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
+    
 @login_required
 def search_system_component(request):
     """Add an existing element and its statements to a system"""
@@ -3489,7 +3668,16 @@ def system_summary_1(request, system_id):
             "security_scan": "Last known-04/20/22 @ 1:23pm",
             "pen_test": pen_test, #"Scheduled for 05/05/22",
             "config_scan": "Last known-01/17/20 @ 4:32pm",
-            "purpose": system_from_sorn['purpose']
+            "purpose": system_from_sorn['purpose'],
+            "vuln_new_30days": random.randint(0,12),
+            "vuln_new_rslvd_30days": random.randint(0,20),
+            "vuln_90days": random.randint(0,15),
+            "risk_score": random.randint(6,10) + round(random.random(), 1),
+            "score_1": random.randint(6,10) + round(random.random(), 1),
+            "score_2": random.randint(6,10) + round(random.random(), 1),
+            "score_3": random.randint(6,10) + round(random.random(), 1),
+            "score_4": random.randint(6,10) + round(random.random(), 1),
+            "score_5": random.randint(6,10) + round(random.random(), 1),
         }
 
         system_events = [
@@ -3515,6 +3703,213 @@ def system_summary_1(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+@login_required
+def system_summary_poams(request, system_id):
+    """System Summary page experiment POA&Ms"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # system = System.objects.get(id=1)
+    # Retrieve related selected controls if user has permission on system
+    # if request.user.has_perm('view_system', system):
+    if True:
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve list of deployments for the system
+        # deployments = system.deployments.all().order_by(Lower('name'))
+        # controls = system.root_element.controls.all()
+        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+        # Sample systems from DHS SORNs
+        dhs_sorns = [
+            { "name": "DHS/ALL-037 E-Authentication Records System of Records", "purpose": """This system collects information in order to authenticate an individual's identity for the purpose of obtaining a credential to electronically access a DHS program or application. This system includes DHS programs or applications that use a third-party identity service provider to provide any of the following credential services: Registration, including identity proofing, issuance, authentication, authorization, and maintenance. This system collects information that allows DHS to track the use of programs and applications for system maintenance and troubleshooting. The system also enables DHS to allow an individual to reuse a credential received when applicable and available."""},
+            { "name": "DHS/ALL-032 Official Passport Application and Maintenance Records", "purpose": """The purpose of this system is to collect and maintain a copy of an official passport application or maintenance record on DHS employees and former employees, including political appointees, civilian, and military personnel (and dependents and family members that accompany military members assigned outside the continental United States) assigned or detailed to the Department, individuals who are formally or informally associated with the Department, including advisory committee members, employees of other agencies and departments in the federal government, and other individuals in the private and public sector who are on official business with the Department, who in their official capacity, are applying for an official passport or updating their official passport records where a copy is maintained by the Department."""},
+            { "name": "DHS/ALL-034 Emergency Care Medical Records", "purpose": """The purpose of this system is to support MQM oversight to ensure consistent quality medical care and standardize the documentation of care rendered by DHS EMS medical care providers in diverse environments.""" },
+            { "name": "DHS/ALL-035 Common Entity Index Prototype (CEI Prototype)", "purpose": """The purpose of this prototype is to determine the feasibility of establishing a centralized index of select biographic information that will allow DHS to provide a consolidated and correlated identity, thereby facilitating and improving DHS's ability to carry out its national security, homeland security, law enforcement, and benefits missions.""" },
+            { "name": "DHS/ALL-042 Personnel Networking and Collaboration System of Records.", "purpose": """The purpose of this system is to permit DHS's collection of biographical and professional information of current DHS employees, contractors, and grantees to facilitate connections and collaboration among individuals supporting the Department's mission; aid in the identification of individuals within an organization; and to ensure efficient collaboration within the Department.""" },
+            { "name": "DHS/ALL-044 eRulemaking", "purpose": """The purpose of this system is to permit members of the public to review and comment on DHS rulemakings and notices. DHS will use any submitted contact information to seek clarification of a comment, respond to a comment when warranted, and for such other needs as may be associated with the rule making or notice process.""" },
+            { "name": "DHS/FEMA-006 Citizen Corps Program", "url": "http://www.gpo.gov/fdsys/pkg/FR-2013-07-22/html/2013-17456.htm", "purpose": "The purpose of this system is to allow state, local, tribal, and territorial communities to setup and register Citizen Corps Councils and CERT programs. Also, this system provides a way for individuals to locate and contact Councils, CERTs, and other Citizen Corps partners for more information regarding volunteer programs and opportunities nation-wide. Additionally, this system uses surveys to assess and enhance communities' preparedness and to improve the effectiveness of the Citizen Corps Program."}
+            # { "name": "", "purpose": """ """ },
+        ]
+
+        import random
+        from django.utils import timezone
+
+        random.seed(system_id)
+        other_id = random.randint(1,2000)
+        impact = random.choice(["Low Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "High Impact"])
+        status = random.choice(["Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Under Development", "Planned"])
+        system_from_sorn = random.choice(dhs_sorns)
+
+        # Fix purpose
+        if "purpose" not in system_from_sorn:
+            system_from_sorn['purpose'] = "Missing"
+        elif len(system_from_sorn['purpose']) > 750:
+            system_from_sorn['purpose'] = system_from_sorn['purpose'][0:500]
+        # System name
+        system_name = system_from_sorn['name'].strip(" ").strip(",")
+        if re.search(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", system_name):
+            system_name = re.sub(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", '', system_name)
+
+        # Organization
+        if re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")):
+            organization_name = "DHS " + re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")).group(1).strip()
+        else:
+            organization_name = "DHS"
+
+        # Acronym
+        if "(" in system_name:
+            acronym = re.search(r"\((.*)\)", system_name).group(1).strip()
+            system_name = re.sub(r" \(.*\)", '', system_name)
+        else:
+            acronym = "".join([word[0].upper() for word in system_name.replace("(","").replace(")","").split(" ")])
+            if len(acronym) > 5:
+                acronym = acronym[0:3]
+            if len(acronym) == 1:
+                acronym = system_name
+        aka = [acronym]
+        if len(system_name.split(" ")) > 7:
+            short_name = " ".join([word for word in system_name.split(" ")[0:2]]) + " System"
+            aka.append(short_name)
+
+        system_type = random.choice(["General Support System", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Minor Application", ])
+        hosting_facility = random.choice(["DISC", "AWS", "AWS","AWS", "AWS", "DC-1", "AWS", "AWS", "Azure", "AWS", "AWS", "AWS", "DC-1",  ])
+        # Dates        
+        from datetime import datetime, date, timedelta, timezone
+        date1, date2 = datetime(2014, 6, 3, tzinfo=timezone.utc), datetime(2022, 2, 1, tzinfo=timezone.utc)
+        dates_between = date2 - date1
+        total_days = dates_between.days
+        created = date1 + timedelta(days=random.randrange(total_days))
+        next_audit = datetime.now().date() + timedelta(random.randint(40,600))
+        next_scan = datetime.combine(datetime.now().date() + timedelta(random.randint(2,12)), datetime.min.time()).replace(tzinfo=timezone.utc)
+
+        # datetime.combine(date.today(), datetime.min.time())
+        # next_scan = next_scan.replace(tzinfo=timezone.utc)
+        dates_between_created = created - date1
+        pen_test = created + timedelta(days=random.randrange(dates_between_created.days))
+
+        # Fake data for System
+        system = {
+            "id": system_id,
+            "other_id": other_id,
+            "name": system_name,
+            "organization_name": organization_name,
+            "aka": aka,
+            "impact": impact,
+            "status": status,
+            "type": system_type,
+            "created": created,
+            "hosting_facility": hosting_facility,
+            "next_audit": next_audit,
+            "next_scan": next_scan, #"05/01/22",
+            "security_scan": "Last known-04/20/22 @ 1:23pm",
+            "pen_test": pen_test, #"Scheduled for 05/05/22",
+            "config_scan": "Last known-01/17/20 @ 4:32pm",
+            "purpose": system_from_sorn['purpose']
+        }
+
+        system_events = [
+            { "event_tag": "TEST", "event_summary": "Penetration test scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do..."},
+            { "event_tag": "SCAN", "event_summary": "Security scan scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do..."},
+            { "event_tag": "SYS", "event_summary": "Isso appointed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod..."}
+        ]
+
+        # Fix menu data
+        project.system.root_element.name = system['name']
+        project.root_task.title_override = system['name']
+        # Return the controls
+
+        # Example reading POA&Ms from xlsx file using Pandas
+        # This is to just demonstrate reading POA&Ms from imported spreadsheet
+        # TODO: Move to a serializer and filter for one sysyem only
+        # import pandas
+        # poams_list = []
+        # fn = "local/poams_list.xlsx"
+        # if pathlib.Path(fn).is_file():
+        #     try:
+        #         df_dict = pandas.read_excel(fn, header=1)
+        #         for index, row in df_dict.iterrows():
+        #             poam_dict = {
+        #                 "id": row.get('CSAM ID', ""),
+        #                 "CSAM_ID": row.get('CSAM ID', ""   ),
+        #                 "Org": row.get('Org', ""   ),
+        #                 "Sub_Org": row.get('Sub Org', ""   ),
+        #                 "System_Name": row.get('System Name', ""   ),
+        #                 "POAM_ID": row.get('POAM ID', ""   ),
+        #                 "POAM_Title": row.get('POAM Title', "" ),
+        #                 "System_Type": row.get('System Type', ""   ),
+        #                 "Detailed_Weakness_Description": row.get('Detailed Weakness Description', ""   ),
+        #                 "Status": row.get('Status', "" )
+        #             }
+        #             poams_list.append(poam_dict)
+        #     except FileNotFoundError as e:
+        #         logger.error(f"Error reading file {fn}: {e}")
+        #     except Exception as e:
+        #         logger.error(f"Other Error reading file {fn}: {e}")
+
+        context = {
+            "system": system,
+            #"project": project,
+            "system_events": system_events,
+            # "deployments": deployments,
+            # "poams_list": poams_list,
+            "display_urls": project_context(project)
+        }
+        return render(request, "systems/system_summary_2.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+@login_required
+@transaction.atomic
+def import_poams_xlsx(request):
+
+    poams_xlsx_file = request.FILES.get("file")
+    http_referer = request.META.get('HTTP_REFERER')
+    redirect_url = http_referer
+    if poams_xlsx_file:
+        try:
+            poams_xlsx_filename = os.path.splitext(poams_xlsx_file.name)
+            poams_xlsx_filename = "poams_list.xlsx"
+            # Save file
+            with open(os.path.join("local", poams_xlsx_filename), 'wb') as destination:
+                for chunk in poams_xlsx_file.chunks():
+                    destination.write(chunk)
+            # Check if file format is .xlsx or .csv
+            filetype = None
+            import pandas
+            try:
+                df = pandas.read_excel(os.path.join("local", poams_xlsx_filename))
+                filetype = 'EXCEL'
+            except Exception:
+                try:
+                    df = pandas.read_csv(os.path.join("local", poams_xlsx_filename))
+                    filetype = 'CSV'
+                except Exception:
+                    pass
+            if filetype == 'EXCEL' or filetype == 'CSV':
+                logger.info(
+                    event=f"poa&ms import file added {poams_xlsx_file.name}",
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                messages.add_message(request, messages.INFO, f"Successfully imported {len(df.index)} POA&Ms.")
+                return JsonResponse({ "status": "ok", "redirect": redirect_url })
+            else:
+                logger.info(
+                    event=f"failed poa&ms import file added {poams_xlsx_file.name}",
+                    error=f"file type is not .xlsx or .csv",
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                messages.add_message(request, messages.ERROR, f"POA&Ms file is not .xlsx or .csv.")
+                return JsonResponse({ "status": "ok", "redirect": redirect_url })
+        except ValueError:
+            messages.add_message(request, messages.ERROR, f"Failure processing: {ValueError}")
+            return JsonResponse({ "status": "ok", "redirect": redirect_url })
+    else:
+        messages.add_message(request, messages.ERROR, f"POA&Ms spreadsheet file required.")
+        return JsonResponse({ "status": "ok", "redirect": redirect_url })
 
 # System Deployments
 @login_required

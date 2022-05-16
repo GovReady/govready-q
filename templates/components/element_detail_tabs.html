@@ -114,7 +114,7 @@
       {% endif %}
       <li id="permissions-tab" role="presentation"><a href="#permissions" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> Permissions </a></li>
       <li id="access-management-tab" role="presentation" onclick="return edit_access_management();"><a href="#access_management" aria-controls="access-management" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-user"></span> Access Management </a></li>
-      <li id="requests-tab" role="presentation"><a href="#requests" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-envelope"></span> Requests </a></li>
+      <li id="requests-tab" role="presentation"><a href="#requests" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-envelope"></span> Requests &nbsp;<div id="common-tab-count">{{ totalRequests }}</div></a></li>
       <div style="margin: 0px 12px 0px 0px;">
         <a id="copy_component" class="btn btn btn-default pull-right" href={% url 'component_library_component_copy' element_id=element.id %} role="button" style="color: black;">Clone component</a>
       </div>
@@ -317,10 +317,10 @@
                   {% for cs in consuming_systems %}
                       <div class="consuming-system">
                         <a class=""
-                           href={% url 'system_element' system_id=cs.id element_id=element.id %}>
-                           {% for p in cs.projects.all %}
+                           href="{% url 'system_element' system_id=cs.id element_id=element.id %}">
+                           <!-- {% for p in cs.projects.all %}
                             <img id="project-icon" src="{{ p.root_task.get_app_icon_url }}" alt="Project Icon" height="24">
-                           {% endfor %}
+                           {% endfor %} -->
                           {{ cs.root_element.name }}
                           </a>
                       </div>
@@ -393,35 +393,10 @@
       </div>
 
       <!-- Tab panel: Requests -->
-        <!--<div role="tabpanel" class="tab-pane" id="procurement">
-        <div class="row">
-          <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-            <h3>TBD</h3>
-          </div>
-        </div>
-      </div> -->
-
-      <!-- Tab panel: Requests -->
       <div role="tabpanel" class="tab-pane" id="requests">
-        <div class="row">
-          <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-            <h3>Requested Usage</h3>
-            {% comment %} <div><span>{{users_can_edit}}</span></div> {% endcomment %}
-
-            <h3>Approved Usage ({{users_with_permission | length}})</h3>
-            <div><span>{{users_with_permission}}</span></div>
-            <div class="container">
-              <div class="row">
-                <div class="col-md-4"><strong>Requested By</strong></div>
-              </div>
-
-              {% for user in users_with_permission %}
-                <div class="username">
-                  <h4>{{ user.username }}</h4>
-                </div>
-              {% endfor%}
-            </div>
-          </div>
+        <h3>Requested Usage ({{ totalRequests }})</h3>
+        <div id="requests-table" style="height: 100%; width: 100%;"></div>
+          
       </div> 
       
     </div>
@@ -439,6 +414,7 @@
         window.cmptPartiesTable( {{ element.id }}, {{ contacts | safe }}, "{{is_owner}}" === 'True' ? true : false );
         window.permissionsTable( {{ element.id }}, "{{is_owner}}" === 'True' ? true : false );
         window.renderElementTags({{ element.id }}, {{ tags | safe }});
+        window.requestsTable( {{ element.id }}, "{{is_owner}}" === 'True' ? true : false );
       </script>
       <script>
         // Navigate to tab identifed after URL #

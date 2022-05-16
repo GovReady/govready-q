@@ -20,6 +20,7 @@ v0.9.14-dev (April xx, 2022)
 * Added tabs for coponent requests.
 * Only Component owner can edit user permissions.
 * Display the control framework along side of controls in component control listing page.
+* Remove icons from project listing.
 
 **Developer changes**
 
