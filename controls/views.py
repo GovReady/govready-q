@@ -308,6 +308,9 @@ def system_proposal_remove(request, system_id, proposal_id):
     # Retrieve related selected controls if user has permission on system
     if request.user.has_perm('change_system', system):
         system.remove_proposals([proposal.id])
+        if proposal.req != None:
+            proposal.req.status = 'Closed'
+            proposal.req.save()
         Proposal.objects.filter(id=proposal_id).delete()
         messages.add_message(request, messages.INFO, f"Removed proposal '{proposal.requested_element.name}' from system.")
         # Log result
@@ -1158,7 +1161,6 @@ def system_element(request, system_id, element_id):
 
         # Retrieve element
         element = Element.objects.get(id=element_id)
-
         # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
         # if this is a proposal then we wont have any impl_smts, so we need to check if there is a proposal
@@ -1169,15 +1171,19 @@ def system_element(request, system_id, element_id):
         if(impl_smts.exists()):
             # Retrieve used catalog_key
             catalog_key = impl_smts[0].sid_class     
-            
-            # Retrieve related Proposal and request
-            proposals = Proposal.objects.filter(requested_element=element.id, req__system=system, req__status="Approve")
-            proposal = proposals.first()
             component_request = None
             hasSentRequest = False
-            if proposals.exists():
-                component_request = proposal.req
-                hasSentRequest = True
+            # Retrieve related Proposal and request
+            try:
+                proposals = Proposal.objects.filter(requested_element=element.id, req__system=system, req__status="Approve")
+                proposal = proposals.first()
+                if proposal != None:
+                    component_request = proposal.req
+                    hasSentRequest = True
+            except Proposal.DoesNotExist:
+                proposal = None
+            
+                
 
             # Retrieve control ids
             catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
@@ -1208,7 +1214,12 @@ def system_element(request, system_id, element_id):
             }
             return render(request, "systems/element_detail_tabs.html", context)
         else:
-            proposal = system.proposals.get(requested_element__id=element_id)
+            try:
+                proposal = system.proposals.get(requested_element__id=element_id)
+            except Proposal.DoesNotExist: 
+                proposal = None
+                return HttpResponseRedirect("/controls/{}/components/selected".format(system_id))
+
             #get all statements that are not component_approval_criteria
             impl_smts = element.statements_produced.filter(~Q(statement_type='COMPONENT_APPROVAL_CRITERIA'))
             # Retrieve used catalog_key
@@ -1226,9 +1237,10 @@ def system_element(request, system_id, element_id):
             requests = Request.objects.filter(system=system, requested_element=element)
             component_request = None
             hasSentRequest = False
-            if requests.exists():
-                hasSentRequest = requests.exists()
-                component_request = requests[0]
+            
+            if proposal.req != None:
+                hasSentRequest = True
+                component_request = proposal.req
 
             context = {
                 "states": states,
@@ -1339,7 +1351,13 @@ def system_element_remove(request, system_id, element_id):
 
         # Retrieve element
         element = Element.objects.get(id=element_id)
-
+        try:
+            req = Request.objects.get(system=system, requested_element=element, status="Approve")
+            req.status = "Closed"
+            req.save()
+        except Request.DoesNotExist:
+            pass
+        
         # Delete the control implementation statements associated with this component
         result = element.statements_produced.filter(consumer_element=system.root_element).delete()
 

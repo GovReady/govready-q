@@ -289,6 +289,7 @@ export const RequestsTable = ({ elementId, isOwner }) => {
       console.error("Something went wrong in creating and setting new request to element");
     }
   }
+  
   useEffect(() => {
     axios(`/api/v2/elements/${elementId}/retrieveRequests/`).then(response => {
       setData(response.data.requested);
@@ -336,11 +337,12 @@ export const RequestsTable = ({ elementId, isOwner }) => {
           <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
             {data.length !== 0 && <Grid item xs={6}>
                 <CustomSelect value={params.row.status} onChange={(event) => handleChange(event, params, data)}>
-                  <StyledOption value={"Started"}>Started</StyledOption>
+                  <StyledOption value={"Open"}>Open</StyledOption>
                   <StyledOption value={"Pending"}>Pending</StyledOption>
                   <StyledOption value={"In Progress"}>In Progress</StyledOption>
                   <StyledOption value={"Approve"}>Approve</StyledOption>
                   <StyledOption value={"Reject"}>Reject</StyledOption>
+                  <StyledOption value={"Closed"}>Closed</StyledOption>
                 </CustomSelect>
             </Grid>}
             <Grid item xs={6}>

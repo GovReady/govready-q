@@ -1482,29 +1482,26 @@ class Request(BaseModel):
     
     def save(self, *args, **kwargs):
         if self.status == "Approve": 
-            print("Approved")
             self.approve_request()
+        elif self.status == "Closed":
+            self.close_request()
         else:
-            print("Not approved.")
             self.remove_component()
 
         return super(Request, self).save(*args, **kwargs)
     
     def approve_request(self):
-        print("I've assigned the controls to the system.")
         # code for assigning controls to system
         
         elements_selected = self.system.producer_elements
         elements_selected_ids = [e.id for e in elements_selected]
         producer_element = Element.objects.get(pk=self.requested_element.id)
         # check system if it has controls implemented already
-        if producer_element.id in elements_selected_ids:
-            print("Element already selected.")
-        else:
+        if producer_element.id not in elements_selected_ids:
             smts = Statement.objects.filter(producer_element_id = self.requested_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
             for smt in smts:
                 smt.create_system_control_smt_from_component_prototype_smt(self.system.root_element.id)
-                
+
         self.system.remove_proposals([self.proposal.id])
         self.system.save()
         return 1
@@ -1519,6 +1516,10 @@ class Request(BaseModel):
             result = self.requested_element.statements_produced.filter(consumer_element=self.system.root_element).delete()
             self.system.add_proposals([self.proposal.id])
             self.system.save()
+        return 1
+    def close_request(self):
+        self.system.remove_proposals([self.proposal.id])
+        self.system.save()
         return 1
 
 class Proposal(BaseModel):

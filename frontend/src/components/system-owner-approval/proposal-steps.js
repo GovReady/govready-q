@@ -102,7 +102,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
             systemId: system.id,
             criteria_comment: proposal.criteria_comment,
             criteria_reject_comment: "",
-            status: "open",
+            status: "Open",
         }
 
         const checkElement = await axios.get(`/api/v2/elements/${element.id}/retrieveRequests/`);
