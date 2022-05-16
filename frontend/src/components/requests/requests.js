@@ -297,7 +297,8 @@ export const RequestsTable = ({ elementId, isOwner }) => {
   }, []);
 
   useEffect(() => {
-    setRows(data);
+    const newData = data.filter((item) => item.status != "Closed")
+    setRows(newData);
   }, [data]);
 
   useEffect(() => {
