@@ -258,6 +258,9 @@ export const RequestsTable = ({ elementId, isOwner }) => {
     const filteredRows = data.filter((row) => {
       return Object.keys(row).some((field) => {
         if(row[field] !== null){
+          if(field === 'system'){
+            return searchRegex.test(row[field].name.toString().toLowerCase());
+          }
           return searchRegex.test(row[field].toString().toLowerCase());
         }
       });
@@ -286,6 +289,7 @@ export const RequestsTable = ({ elementId, isOwner }) => {
       console.error("Something went wrong in creating and setting new request to element");
     }
   }
+  
   useEffect(() => {
     axios(`/api/v2/elements/${elementId}/retrieveRequests/`).then(response => {
       setData(response.data.requested);
@@ -293,7 +297,8 @@ export const RequestsTable = ({ elementId, isOwner }) => {
   }, []);
 
   useEffect(() => {
-    setRows(data);
+    const newData = data.filter((item) => item.status != "Closed")
+    setRows(newData);
   }, [data]);
 
   useEffect(() => {
@@ -333,11 +338,12 @@ export const RequestsTable = ({ elementId, isOwner }) => {
           <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
             {data.length !== 0 && <Grid item xs={6}>
                 <CustomSelect value={params.row.status} onChange={(event) => handleChange(event, params, data)}>
-                  <StyledOption value={"Started"}>Started</StyledOption>
+                  <StyledOption value={"Open"}>Open</StyledOption>
                   <StyledOption value={"Pending"}>Pending</StyledOption>
                   <StyledOption value={"In Progress"}>In Progress</StyledOption>
                   <StyledOption value={"Approve"}>Approve</StyledOption>
                   <StyledOption value={"Reject"}>Reject</StyledOption>
+                  <StyledOption value={"Closed"}>Closed</StyledOption>
                 </CustomSelect>
             </Grid>}
             <Grid item xs={6}>
@@ -353,14 +359,14 @@ export const RequestsTable = ({ elementId, isOwner }) => {
   return (
       <div style={{ maxHeight: '2000px', width: '100%' }}>
           {data !== null && columnsForEditor.length !== 0 && <Grid className="poc-data-grid" sx={{ minHeight: '500px' }}>
-          {/* <QuickSearchToolbar value={searchText} onChange={(event) => requestSearch(event.target.value)} clearSearch={() => requestSearch('')}/> */}
+          <QuickSearchToolbar value={searchText} onChange={(event) => requestSearch(event.target.value)} clearSearch={() => requestSearch('')}/>
               <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
                   <div style={{ width: "100%", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
                       <DataGrid
                         className={dgClasses.root}
                         autoHeight={true}
                         density="compact"
-                        rows={data}
+                        rows={rows}
                         columns={isOwner ? columnsForEditor : columns}
                         pageSize={25}
                         rowsPerPageOptions={[25]}
