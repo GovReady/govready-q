@@ -242,7 +242,7 @@ class ElementSetRequestsSerializer(WriteOnlySerializer):
         fields = ['requests_ids']
 
 class ElementCreateAndSetRequestSerializer(WriteOnlySerializer):
-    # request = serializers.JSONField()
+    proposalId = serializers.IntegerField(max_value=None, min_value=None)
     userId = serializers.IntegerField(max_value=None, min_value=None)
     systemId = serializers.IntegerField(max_value=None, min_value=None)
     criteria_comment = serializers.CharField(min_length=None, max_length=None, allow_blank=True, trim_whitespace=True)
@@ -250,4 +250,4 @@ class ElementCreateAndSetRequestSerializer(WriteOnlySerializer):
     status = serializers.CharField(min_length=None, max_length=None, allow_blank=True, trim_whitespace=True)
     class Meta:
         model = Element
-        fields = ['userId', 'systemId', 'criteria_comment', 'criteria_reject_comment', 'status']
+        fields = ['proposalId', 'userId', 'systemId', 'criteria_comment', 'criteria_reject_comment', 'status']

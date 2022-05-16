@@ -1168,8 +1168,17 @@ def system_element(request, system_id, element_id):
         
         if(impl_smts.exists()):
             # Retrieve used catalog_key
-            catalog_key = impl_smts[0].sid_class
+            catalog_key = impl_smts[0].sid_class     
             
+            # Retrieve related Proposal and request
+            proposals = Proposal.objects.filter(requested_element=element.id, req__system=system, req__status="Approve")
+            proposal = proposals.first()
+            component_request = None
+            hasSentRequest = False
+            if proposals.exists():
+                component_request = proposal.req
+                hasSentRequest = True
+
             # Retrieve control ids
             catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
 
@@ -1192,22 +1201,10 @@ def system_element(request, system_id, element_id):
                 "oscal": oscal_string,
                 "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
                 "opencontrol": opencontrol_string,
-                "display_urls": project_context(project)
-                # "states": states,
-                # "types": types,
-                # "system": system,
-                # "project": project,
-                # "element": element,
-                # "proposal": proposal,
-                # "component_request": component_request,
-                # "hasSentRequest": hasSentRequest,
-                # "impl_smts": impl_smts,
-                # "catalog_controls": catalog_controls,
-                # "catalog_key": catalog_key,
-                # "oscal": oscal_string,
-                # "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-                # "opencontrol": opencontrol_string,
-                # "display_urls": project_context(project)
+                "display_urls": project_context(project),
+                "proposal": proposal,
+                "hasSentRequest": hasSentRequest,
+                "component_request": component_request,
             }
             return render(request, "systems/element_detail_tabs.html", context)
         else:
@@ -1232,7 +1229,7 @@ def system_element(request, system_id, element_id):
             if requests.exists():
                 hasSentRequest = requests.exists()
                 component_request = requests[0]
-            # TODO FALCON
+
             context = {
                 "states": states,
                 "types": types,

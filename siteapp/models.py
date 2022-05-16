@@ -26,7 +26,8 @@ from siteapp.enums.access_level import AccessLevelEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from siteapp.enums.assets import AssetTypeEnum
 from siteapp.utils.uploads import hash_file
-from controls.models import ImportRecord, System, Element
+from controls.models import Element, ImportRecord, Statement, System
+from controls.enums.statements import StatementTypeEnum
 from controls.utilities import *
 
 logging.basicConfig()
@@ -1478,13 +1479,56 @@ class Request(BaseModel):
 
     def serialize(self):
         return {"system": self.system, "requested_element": self.requested_element, "id": self.id}
+    
+    def save(self, *args, **kwargs):
+        if self.status == "Approve": 
+            print("Approved")
+            self.approve_request()
+        else:
+            print("Not approved.")
+            self.remove_component()
+
+        return super(Request, self).save(*args, **kwargs)
+    
+    def approve_request(self):
+        print("I've assigned the controls to the system.")
+        # code for assigning controls to system
+        
+        elements_selected = self.system.producer_elements
+        elements_selected_ids = [e.id for e in elements_selected]
+        producer_element = Element.objects.get(pk=self.requested_element.id)
+        # check system if it has controls implemented already
+        if producer_element.id in elements_selected_ids:
+            print("Element already selected.")
+        else:
+            smts = Statement.objects.filter(producer_element_id = self.requested_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
+            for smt in smts:
+                smt.create_system_control_smt_from_component_prototype_smt(self.system.root_element.id)
+                
+        self.system.remove_proposals([self.proposal.id])
+        self.system.save()
+        return 1
+    
+    def remove_component(self):
+        elements_selected = self.system.producer_elements
+        elements_selected_ids = [e.id for e in elements_selected]
+        producer_element = Element.objects.get(pk=self.requested_element.id)
+        if producer_element.id in elements_selected_ids:
+            print("Element has been implemented.")
+            # Delete the control implementation statements associated with this component
+            result = self.requested_element.statements_produced.filter(consumer_element=self.system.root_element).delete()
+            self.system.add_proposals([self.proposal.id])
+            self.system.save()
+        return 1
 
 class Proposal(BaseModel):
     user = models.ForeignKey(User, blank=True, null=True, related_name="propose", on_delete=models.CASCADE, help_text="User creating the request proposal.")
     requested_element = models.ForeignKey(Element, blank=True, null=True, related_name="propose", on_delete=models.CASCADE, help_text="Element being proposed for request.")
     criteria_comment = models.TextField(blank=True, null=True, help_text="Comments on this proposal.")
     status = models.TextField(blank=True, null=True, help_text="Status of the proposal.")
-
+    req = models.OneToOneField(Request, related_name="proposal", unique=False, blank=True, null=True,
+                                     on_delete=models.CASCADE,
+                                     help_text="Request associated with this proposal.")
     def __repr__(self):
         return f"Proposing request -> {self.requested_element} - {self.status}"
 
@@ -1493,6 +1537,11 @@ class Proposal(BaseModel):
 
     def serialize(self):
         return {"requested_element": self.requested_element, "id": self.id}
+    
+    def change_status(self, status):
+        self.status = status
+        self.save()
+        return self.status
 
 class Asset(BaseModel):
     UPLOAD_TO = None  # Should be overriden when iheritted

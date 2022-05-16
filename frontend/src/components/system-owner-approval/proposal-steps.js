@@ -35,6 +35,18 @@ const useStyles = makeStyles({
             display: 'inline-block'
         }
     },
+    currentRejected: {
+        backgroundColor: '#ffffe3',
+        '& .dot': {
+            marginLeft: '1rem',
+            marginTop: '1rem',
+            width: '75px', 
+            height: '75px', 
+            backgroundColor: 'red',
+            borderRadius: '50%', 
+            display: 'inline-block'
+        }
+    },
     notStarted: {
         backgroundColor: 'white',
         '& .dot': {
@@ -52,42 +64,6 @@ const useStyles = makeStyles({
 export const ProposalSteps = ({ userId, system, element, proposal, request, hasSentRequest }) => {
     const classes = useStyles(proposal.status);
 
-    useEffect(() => {
-        if(hasSentRequest && request){
-            
-            if(proposal.status.toLowerCase() !== 'approval' && request.status.toLowerCase() === 'approve'){
-                const updatedProposal = {
-                    "user": userId,
-                    "requested_element": parseInt(element.id),
-                    "criteria_comment": proposal.criteria_comment,
-                    "status": "Approval",
-                }
-                const updateProposalApproval = axios.put(`/api/v2/proposals/${parseInt(proposal.id)}/`, updatedProposal);
-                if(updateProposalApproval.status === 200){
-                    addComponentStatements();
-                    // window.location.reload();
-                } else {
-                    console.error("Something went wrong in updating proposal1");
-                }
-            } else if(proposal.status.toLowerCase() === 'approval' && request.status.toLowerCase() !== 'approve'){
-                const updatedProposalToRequest = {
-                    "user": userId,
-                    "requested_element": parseInt(element.id),
-                    "criteria_comment": proposal.criteria_comment,
-                    "status": "Request",
-                }
-                const updateProposalToNewStatus = axios.put(`/api/v2/proposals/${parseInt(proposal.id)}/`, updatedProposalToRequest);
-                if(updateProposalToNewStatus.status === 200){
-                    window.location.reload();
-                } else {
-                    console.error("Something went wrong in updating proposal2");
-                }
-            } else {
-                console.log('everything else');
-            }
-        }
-    }, []);
-    
     const getStatusLevel = (status) => {
         switch (status.toLowerCase()) {
             case 'planning':
@@ -121,11 +97,12 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
 
     const submitRequest = async () => {
         const newReq = {
-          userId: userId,
-          systemId: system.id,
-          criteria_comment: proposal.criteria_comment,
-          criteria_reject_comment: "",
-          status: "open",
+            proposalId: proposal.id,
+            userId: userId,
+            systemId: system.id,
+            criteria_comment: proposal.criteria_comment,
+            criteria_reject_comment: "",
+            status: "open",
         }
 
         const checkElement = await axios.get(`/api/v2/elements/${element.id}/retrieveRequests/`);
@@ -176,7 +153,6 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                 producer_element_id: `${parseInt(element.id)},False`,
                 redirect_url: `/systems/${parseInt(system.id)}/components/selected`,
             },
-            // system_id: system.id,
             success: function(res) {
                 ajax_with_indicator({
                     url: `/systems/${parseInt(system.id)}/components/remove_proposal/${parseInt(proposal.id)}`,
@@ -186,7 +162,6 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                         proposal_id: proposal.id,
                         element_id: element.id,
                     },
-                    // system_id: system.id,
                     success: function(res) {
                         // redirect to main project page after successful upgrade
                         window.location = `/systems/${parseInt(system.id)}/components/selected`
@@ -197,9 +172,23 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
         });
     }
 
+    const getCurrentStatusLevel = () => {
+        if(proposal.status.toLowerCase() === 'request'){
+            if (hasSentRequest && request.status.toLowerCase() === 'approve') {
+                return classes.completed
+            } else if (hasSentRequest && request.status.toLowerCase() === 'reject') {
+                return classes.currentRejected
+            } else {
+                return classes.current
+            }
+        } else {
+            return classes.notStarted
+        }
+    }
+
     return (
         <div>
-            {element.require_approval && <ListGroup>
+            {element.require_approval && proposal.id !== '' && <ListGroup>
                 <ListGroupItem className={getStatusLevel(proposal.status) === 1 ? classes.current : getStatusLevel(proposal.status) > 1 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={3}>
@@ -219,7 +208,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                         </Grid>
                     </Grid>
                 </ListGroupItem>
-                <ListGroupItem className={getStatusLevel(proposal.status) === 2 ? classes.current : getStatusLevel(proposal.status) > 2 ? classes.completed : classes.notStarted}>
+                <ListGroupItem className={getCurrentStatusLevel()}>
                     <Grid container>
                         <Grid item xs={3}>
                             <span className="dot"></span>
@@ -234,7 +223,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                         </Grid>
                     </Grid>
                 </ListGroupItem>
-                <ListGroupItem className={getStatusLevel(proposal.status) === 3 ? classes.completed : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
+                <ListGroupItem className={request.status.toLowerCase() === "approve" ? classes.completed : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={3}>
                             <span className="dot"></span>
@@ -248,7 +237,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                         </Grid>
                     </Grid>
                 </ListGroupItem>
-                <ListGroupItem className={getStatusLevel(proposal.status) === 3 ? classes.current : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
+                <ListGroupItem className={request.status.toLowerCase() === "approve" ? classes.current : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={3}>
                             <span className="dot"></span>
