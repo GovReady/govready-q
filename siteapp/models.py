@@ -1504,7 +1504,7 @@ class Request(BaseModel):
 
         self.system.remove_proposals([self.proposal.id])
         self.system.save()
-        return 1
+        return True
     
     def remove_component(self):
         elements_selected = self.system.producer_elements
@@ -1516,11 +1516,12 @@ class Request(BaseModel):
             result = self.requested_element.statements_produced.filter(consumer_element=self.system.root_element).delete()
             self.system.add_proposals([self.proposal.id])
             self.system.save()
-        return 1
+        return True
+
     def close_request(self):
         self.system.remove_proposals([self.proposal.id])
         self.system.save()
-        return 1
+        return True
 
 class Proposal(BaseModel):
     user = models.ForeignKey(User, blank=True, null=True, related_name="propose", on_delete=models.CASCADE, help_text="User creating the request proposal.")
