@@ -7,6 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('controls', '0071_system_proposals'),
+        ('controls', '0072_auto_20220516_1141'),
     ]
 
     operations = [
