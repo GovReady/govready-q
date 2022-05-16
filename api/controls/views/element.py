@@ -7,7 +7,7 @@ from api.base.views.viewsets import ReadOnlyViewSet, ReadWriteViewSet
 from api.controls.serializers.element import DetailedElementSerializer, SimpleElementSerializer, \
     WriteElementTagsSerializer, ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer, WriteElementAppointPartySerializer, ElementPartySerializer, DeletePartyAppointmentsFromElementSerializer, CreateMultipleAppointmentsFromRoleIds, ElementRequestsSerializer, ElementSetRequestsSerializer, ElementCreateAndSetRequestSerializer
 from controls.models import Element, System
-from siteapp.models import Appointment, Party, Role, Request, User
+from siteapp.models import Appointment, Party, Proposal, Role, Request, User
 
 class ElementViewSet(ReadOnlyViewSet):
     queryset = Element.objects.all()
@@ -135,6 +135,7 @@ class ElementViewSet(ReadOnlyViewSet):
     @action(detail=True, url_path="CreateAndSetRequest", methods=["POST"])
     def CreateAndSetRequest(self, request, **kwargs):
         element, validated_data = self.validate_serializer_and_get_object(request)
+        prop = Proposal.objects.get(id=validated_data['proposalId'])
         newRequest = Request.objects.create(
             user=User.objects.get(id=validated_data['userId']),
             system=System.objects.get(id=validated_data['systemId']),
@@ -144,6 +145,8 @@ class ElementViewSet(ReadOnlyViewSet):
             status=validated_data['status'],
         )
         newRequest.save()
+        prop.req = newRequest
+        prop.save()
         element.add_requests([newRequest.id])
         element.save()
 
