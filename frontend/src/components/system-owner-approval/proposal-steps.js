@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { 
+import {
     Button,
     Grid,
 } from '@mui/material';
@@ -12,14 +12,14 @@ const useStyles = makeStyles({
       fontweight: 900,
     },
     completed: {
-        backgroundColor: '#dae0d2',
+        backgroundColor: '#ffffff',
         '& .dot': {
             marginLeft: '1rem',
             marginTop: '1rem',
-            width: '75px', 
-            height: '75px', 
-            backgroundColor: '#06b30d', 
-            borderRadius: '50%', 
+            width: '50px',
+            height: '50px',
+            backgroundColor: '#06b30d',
+            borderRadius: '50%',
             display: 'inline-block'
         }
     },
@@ -28,10 +28,10 @@ const useStyles = makeStyles({
         '& .dot': {
             marginLeft: '1rem',
             marginTop: '1rem',
-            width: '75px', 
-            height: '75px', 
+            width: '50px',
+            height: '50px',
             backgroundColor: '#ffb404',
-            borderRadius: '50%', 
+            borderRadius: '50%',
             display: 'inline-block'
         }
     },
@@ -40,22 +40,23 @@ const useStyles = makeStyles({
         '& .dot': {
             marginLeft: '1rem',
             marginTop: '1rem',
-            width: '75px', 
-            height: '75px', 
+            width: '50px',
+            height: '50px',
             backgroundColor: 'red',
-            borderRadius: '50%', 
+            borderRadius: '50%',
             display: 'inline-block'
         }
     },
     notStarted: {
         backgroundColor: 'white',
+        color: '#B3B3B3',
         '& .dot': {
             marginLeft: '1rem',
             marginTop: '1rem',
-            width: '75px', 
-            height: '75px', 
-            backgroundColor: '#717171', 
-            borderRadius: '50%', 
+            width: '50px',
+            height: '50px',
+            backgroundColor: '#B3B3B3',
+            borderRadius: '50%',
             display: 'inline-block'
         }
     },
@@ -87,7 +88,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
         document.getElementById("req_message").value = message;
         document.send_request_message.submit()
       }
-    
+
       const send_alreadyRequest_message = (systemName, elementName) => {
         const message = `System ${systemName} has already proposed ${elementName}.`;
         document.getElementById("req_message_type").value = "WARNING";
@@ -167,7 +168,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                         window.location = `/systems/${parseInt(system.id)}/components/selected`
                     }
                 });
-                
+
             }
         });
     }
@@ -191,60 +192,64 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
             {element.require_approval && proposal.id !== '' && <ListGroup>
                 <ListGroupItem className={getStatusLevel(proposal.status) === 1 ? classes.current : getStatusLevel(proposal.status) > 1 ? classes.completed : classes.notStarted}>
                     <Grid container>
-                        <Grid item xs={3}>
-                            <span className="dot"></span>
+                        <Grid item xs={1}>
+                            <span className="dot glyphicon glyphicon-check"></span>
                         </Grid>
                         <Grid item xs={9}>
-                            <div><h2>Planning</h2></div>
-                            <div><h4>List of criteria:</h4></div>
-                            <div>
+                            <div className="step-box"><h4>Planning</h4>
+                            <p className="step-box-content">List of criteria:
                                 <div style={{ whiteSpace: 'break-spaces' }}>
                                     {proposal.criteria_comment === '' ? "Criteria has not been set" : proposal.criteria_comment}
-                                </div>
-                                <div style={{float: 'right'}}>
-                                    {getStatusLevel(proposal.status) === 1 && <Button variant="contained" onClick={completePlanningPhase}>Completed Planning</Button>}
-                                </div>
+                                </div></p>
+
                             </div>
+                        </Grid>
+                        <Grid item xs={2}><div style={{float: 'right'}}>
+                            {getStatusLevel(proposal.status) === 1 && <Button variant="contained" onClick={completePlanningPhase}>Completed Planning</Button>}
+                        </div>
                         </Grid>
                     </Grid>
                 </ListGroupItem>
                 <ListGroupItem className={getCurrentStatusLevel()}>
                     <Grid container>
-                        <Grid item xs={3}>
-                            <span className="dot"></span>
+                        <Grid item xs={1}>
+                            <span className="dot glyphicon glyphicon-check"></span>
                         </Grid>
                         <Grid item xs={9}>
-                            <div><h2>Request</h2></div>
-                            {hasSentRequest ? <div>You have already requested access to the {element.name} and its related controls.</div> : <div>Please submit a request.</div>}
-                            <div style={{float: 'right'}}>
-                                {getStatusLevel(proposal.status) === 2 && hasSentRequest !== true && <Button variant="contained" onClick={submitRequest}>Submit Request</Button>}
-                            </div>
+                            <div className="step-box"><h4>Request</h4>
+                            {hasSentRequest ? <div><p className="step-box-content">You have already requested access to the {element.name} and its related controls.</p></div> : <div><p className="step-box-content">Please submit a request.</p></div>}
+
                             {hasSentRequest ? <div>Status of request: <b>{request.status}</b></div> : null}
+                            </div>
                         </Grid>
+                        <Grid item xs={2}><div style={{float: 'right'}}>
+                            {getStatusLevel(proposal.status) === 2 && hasSentRequest !== true && <Button variant="contained" onClick={submitRequest}>Submit Request</Button>}
+                        </div></Grid>
                     </Grid>
                 </ListGroupItem>
                 <ListGroupItem className={request.status.toLowerCase() === "approve" ? classes.completed : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
                     <Grid container>
-                        <Grid item xs={3}>
-                            <span className="dot"></span>
+                        <Grid item xs={1}>
+                            <span className="dot glyphicon glyphicon-check"></span>
                         </Grid>
                         <Grid item xs={9}>
-                            <div><h2>Approval</h2></div>
-                            <div>The confirmation fo system using {element.name} from component owner. System can proceed to use the component.</div>
-                            <div style={{float: 'right'}}>
-                            {getStatusLevel(proposal.status) === 3 && hasSentRequest === true &&<Button variant="contained" onClick={addComponentStatements}>Add Selected Componenet</Button>}
+                            <div className="step-box"><h4>Approval</h4>
+                            <p className="step-box-content">The confirmation of system using {element.name} from component owner. System can proceed to use the component.</p>
                             </div>
                         </Grid>
+                          <Grid item xs={2}><div style={{float: 'right'}}>{getStatusLevel(proposal.status) === 3 && hasSentRequest === true &&<Button variant="contained" onClick={addComponentStatements}>Add Selected Componenet</Button>}</div>
+                          </Grid>
                     </Grid>
                 </ListGroupItem>
                 <ListGroupItem className={request.status.toLowerCase() === "approve" ? classes.current : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
                     <Grid container>
-                        <Grid item xs={3}>
-                            <span className="dot"></span>
+                        <Grid item xs={1}>
+                            <span className="dot glyphicon glyphicon-check"></span>
                         </Grid>
-                        <Grid item xs={9}>
-                            <div><h2>Additional Steps</h2></div>
-                            <div>Technical team will need to understack various activities to configure your {element.name} (Paas-Server Service).</div>
+                        <Grid item xs={11}>
+                            <div className="step-box"><h4>Additional Steps</h4>
+                            <p className="step-box-content">Technical team will need to understack various activities to configure your {element.name} (Paas-Server Service).</p>
+                            </div>
                         </Grid>
                     </Grid>
                 </ListGroupItem>
