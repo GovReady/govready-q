@@ -193,7 +193,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                 <ListGroupItem className={getStatusLevel(proposal.status) === 1 ? classes.current : getStatusLevel(proposal.status) > 1 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={1}>
-                            <span className="dot glyphicon glyphicon-check"></span>
+                            <span className="dot glyphicon glyphicon-ok"></span>
                         </Grid>
                         <Grid item xs={9}>
                             <div className="step-box"><h4>Planning</h4>
@@ -213,7 +213,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                 <ListGroupItem className={getCurrentStatusLevel()}>
                     <Grid container>
                         <Grid item xs={1}>
-                            <span className="dot glyphicon glyphicon-check"></span>
+                            <span className="dot glyphicon glyphicon-ok"></span>
                         </Grid>
                         <Grid item xs={9}>
                             <div className="step-box"><h4>Request</h4>
@@ -230,7 +230,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                 <ListGroupItem className={request.status.toLowerCase() === "approve" ? classes.completed : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={1}>
-                            <span className="dot glyphicon glyphicon-check"></span>
+                            <span className="dot glyphicon glyphicon-ok"></span>
                         </Grid>
                         <Grid item xs={9}>
                             <div className="step-box"><h4>Approval</h4>
@@ -244,7 +244,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                 <ListGroupItem className={request.status.toLowerCase() === "approve" ? classes.current : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={1}>
-                            <span className="dot glyphicon glyphicon-check"></span>
+                            <span className="dot glyphicon glyphicon-ok"></span>
                         </Grid>
                         <Grid item xs={11}>
                             <div className="step-box"><h4>Additional Steps</h4>
