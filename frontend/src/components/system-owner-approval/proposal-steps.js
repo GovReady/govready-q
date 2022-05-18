@@ -21,6 +21,11 @@ const useStyles = makeStyles({
             backgroundColor: '#06b30d',
             borderRadius: '50%',
             display: 'inline-block'
+          },
+        '& .glyphicon-ok': {
+              color:'#ffffff',
+              fontSize:'24px',
+              padding:'12px 0 0 13px'
         }
     },
     current: {
@@ -33,7 +38,12 @@ const useStyles = makeStyles({
             backgroundColor: '#ffb404',
             borderRadius: '50%',
             display: 'inline-block'
-        }
+        },
+      '& .glyphicon-plus': {
+            color:'#ffffff',
+            fontSize:'24px',
+            padding:'12px 0 0 14px'
+      }
     },
     currentRejected: {
         backgroundColor: '#ffffe3',
@@ -45,7 +55,12 @@ const useStyles = makeStyles({
             backgroundColor: 'red',
             borderRadius: '50%',
             display: 'inline-block'
-        }
+        },
+      '& .glyphicon-remove': {
+            color:'#ffffff',
+            fontSize:'24px',
+            padding:'13px 0 0 13px'
+      }
     },
     notStarted: {
         backgroundColor: 'white',
@@ -58,7 +73,12 @@ const useStyles = makeStyles({
             backgroundColor: '#B3B3B3',
             borderRadius: '50%',
             display: 'inline-block'
-        }
+        },
+      '& .glyphicon-plus': {
+            color:'#ffffff',
+            fontSize:'24px',
+            padding:'12px 0 0 13px'
+      }
     },
 });
 
@@ -193,7 +213,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                 <ListGroupItem className={getStatusLevel(proposal.status) === 1 ? classes.current : getStatusLevel(proposal.status) > 1 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={1}>
-                            <span className="dot glyphicon glyphicon-ok"></span>
+                            <span className="dot"><span className="glyphicon glyphicon-ok"></span></span>
                         </Grid>
                         <Grid item xs={9}>
                             <div className="step-box"><h4>Planning</h4>
@@ -213,13 +233,13 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                 <ListGroupItem className={getCurrentStatusLevel()}>
                     <Grid container>
                         <Grid item xs={1}>
-                            <span className="dot glyphicon glyphicon-ok"></span>
+                            <span className="dot"><span className="glyphicon glyphicon-ok"></span><span className="glyphicon glyphicon-plus"></span><span className="glyphicon glyphicon-remove"></span></span>
                         </Grid>
                         <Grid item xs={9}>
                             <div className="step-box"><h4>Request</h4>
-                            {hasSentRequest ? <div><p className="step-box-content">You have already requested access to the {element.name} and its related controls.</p></div> : <div><p className="step-box-content">Please submit a request.</p></div>}
+                            {hasSentRequest ? <div><p className="step-box-content">You have requested access to the {element.name} and its related controls. Status: <strong>{request.status}</strong></p></div> : <div><p className="step-box-content">Please submit a request.</p></div>}
 
-                            {hasSentRequest ? <div>Status of request: <b>{request.status}</b></div> : null}
+
                             </div>
                         </Grid>
                         <Grid item xs={2}><div style={{float: 'right'}}>
@@ -230,21 +250,21 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                 <ListGroupItem className={request.status.toLowerCase() === "approve" ? classes.completed : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={1}>
-                            <span className="dot glyphicon glyphicon-ok"></span>
+                            <span className="dot"><span className="glyphicon glyphicon-ok"></span></span>
                         </Grid>
                         <Grid item xs={9}>
                             <div className="step-box"><h4>Approval</h4>
                             <p className="step-box-content">The confirmation of system using {element.name} from component owner. System can proceed to use the component.</p>
                             </div>
                         </Grid>
-                          <Grid item xs={2}><div style={{float: 'right'}}>{getStatusLevel(proposal.status) === 3 && hasSentRequest === true &&<Button variant="contained" onClick={addComponentStatements}>Add Selected Componenet</Button>}</div>
+                          <Grid item xs={2}><div style={{float: 'right'}}>{getStatusLevel(proposal.status) === 3 && hasSentRequest === true &&<Button variant="contained" onClick={addComponentStatements}>Add Selected Component</Button>}</div>
                           </Grid>
                     </Grid>
                 </ListGroupItem>
                 <ListGroupItem className={request.status.toLowerCase() === "approve" ? classes.current : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={1}>
-                            <span className="dot glyphicon glyphicon-ok"></span>
+                            <span className="dot"><span className="glyphicon glyphicon-plus"></span></span>
                         </Grid>
                         <Grid item xs={11}>
                             <div className="step-box"><h4>Additional Steps</h4>
