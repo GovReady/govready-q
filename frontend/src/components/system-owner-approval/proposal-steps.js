@@ -39,11 +39,16 @@ const useStyles = makeStyles({
             borderRadius: '50%',
             display: 'inline-block'
         },
-      '& .glyphicon-plus': {
+      '& .glyphicon-paperclip': {
             color:'#ffffff',
             fontSize:'24px',
             padding:'12px 0 0 14px'
-      }
+      },
+    '& .glyphicon-plus': {
+          color:'#ffffff',
+          fontSize:'24px',
+          padding:'12px 0 0 13px'
+    }
     },
     currentRejected: {
         backgroundColor: '#ffffe3',
@@ -213,7 +218,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                 <ListGroupItem className={getStatusLevel(proposal.status) === 1 ? classes.current : getStatusLevel(proposal.status) > 1 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={1}>
-                            <span className="dot"><span className="glyphicon glyphicon-ok"></span></span>
+                            <span className="dot"><span className="glyphicon glyphicon-ok"></span><span className="glyphicon glyphicon-paperclip"></span></span>
                         </Grid>
                         <Grid item xs={9}>
                             <div className="step-box"><h4>Planning</h4>
@@ -233,7 +238,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                 <ListGroupItem className={getCurrentStatusLevel()}>
                     <Grid container>
                         <Grid item xs={1}>
-                            <span className="dot"><span className="glyphicon glyphicon-ok"></span><span className="glyphicon glyphicon-plus"></span><span className="glyphicon glyphicon-remove"></span></span>
+                            <span className="dot"><span className="glyphicon glyphicon-ok"></span><span className="glyphicon glyphicon-paperclip"></span><span className="glyphicon glyphicon-remove"></span></span>
                         </Grid>
                         <Grid item xs={9}>
                             <div className="step-box"><h4>Request</h4>
