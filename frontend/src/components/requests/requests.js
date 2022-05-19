@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 import { DataGrid } from '@mui/x-data-grid';
 import {
   Button,
+  IconButton,
   Grid,
+  TextField,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import SelectUnstyled, { selectUnstyledClasses } from '@mui/base/SelectUnstyled';
 import OptionUnstyled, { optionUnstyledClasses } from '@mui/base/OptionUnstyled';
 import PopperUnstyled from '@mui/base/PopperUnstyled';
 import { styled } from '@mui/system';
+import ClearIcon from '@mui/icons-material/Clear';
+import SearchIcon from '@mui/icons-material/Search';
 
 const blue = {
   100: '#DAECFF',
@@ -162,6 +166,46 @@ const datagridStyles = makeStyles({
   }
 });
 
+function QuickSearchToolbar(props) {
+  // const classes = searchStyles();
+
+  return (
+    <div style={{ float: 'right' }}>
+      <TextField
+        variant="standard"
+        value={props.value}
+        onChange={props.onChange}
+        placeholder="Search…"
+        InputProps={{
+          startAdornment: <SearchIcon fontSize="large" />,
+          endAdornment: (
+            <IconButton
+              title="Clear"
+              aria-label="Clear"
+              size="large"
+              style={{ visibility: props.value ? 'visible' : 'hidden' }}
+              onClick={props.clearSearch}
+            >
+              <ClearIcon />
+            </IconButton>
+          ),
+        }}
+        sx={{ 
+          marginBottom: '1rem', 
+          input: { 
+            fontSize: '18px',
+          } 
+        }}
+      />
+    </div>
+  );
+}
+
+QuickSearchToolbar.propTypes = {
+  clearSearch: PropTypes.func.isRequired,
+  onChange: PropTypes.func.isRequired,
+  value: PropTypes.string.isRequired,
+};
 
 const useStyles = makeStyles({
   root: {
@@ -177,7 +221,9 @@ const useStyles = makeStyles({
 export const RequestsTable = ({ elementId, isOwner }) => {
   const dgClasses = datagridStyles();
   const [data, setData] = useState([]);
+  const [ rows, setRows ] = useState(data)
   const [sortby, setSortBy] = useState(["name", "asc"]);
+  const [ searchText, setSearchText ] = useState('');
   const [columnsForEditor, setColumnsForEditor] = useState([]);
   const [columns, setColumns] = useState([
     {
@@ -202,6 +248,26 @@ export const RequestsTable = ({ elementId, isOwner }) => {
         valueGetter: (params) => params.row.status,
     },
   ]);
+  function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+  const requestSearch = (searchValue) => {
+    setSearchText(searchValue);
+    const searchRegex = new RegExp(escapeRegex(searchValue.toLowerCase()));
+    
+    const filteredRows = data.filter((row) => {
+      return Object.keys(row).some((field) => {
+        if(row[field] !== null){
+          if(field === 'system'){
+            return searchRegex.test(row[field].name.toString().toLowerCase());
+          }
+          return searchRegex.test(row[field].toString().toLowerCase());
+        }
+      });
+    });
+    setRows(filteredRows);
+  };
+
   const handleChange = (event, params, data) => {
     const updatedData = [...data];
     updatedData[params.row.id-1].status = event;
@@ -223,11 +289,17 @@ export const RequestsTable = ({ elementId, isOwner }) => {
       console.error("Something went wrong in creating and setting new request to element");
     }
   }
+  
   useEffect(() => {
     axios(`/api/v2/elements/${elementId}/retrieveRequests/`).then(response => {
       setData(response.data.requested);
     });
   }, []);
+
+  useEffect(() => {
+    const newData = data.filter((item) => item.status != "Closed")
+    setRows(newData);
+  }, [data]);
 
   useEffect(() => {
     setColumnsForEditor([
@@ -266,11 +338,12 @@ export const RequestsTable = ({ elementId, isOwner }) => {
           <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
             {data.length !== 0 && <Grid item xs={6}>
                 <CustomSelect value={params.row.status} onChange={(event) => handleChange(event, params, data)}>
-                  <StyledOption value={"Started"}>Started</StyledOption>
+                  <StyledOption value={"Open"}>Open</StyledOption>
                   <StyledOption value={"Pending"}>Pending</StyledOption>
                   <StyledOption value={"In Progress"}>In Progress</StyledOption>
                   <StyledOption value={"Approve"}>Approve</StyledOption>
                   <StyledOption value={"Reject"}>Reject</StyledOption>
+                  <StyledOption value={"Closed"}>Closed</StyledOption>
                 </CustomSelect>
             </Grid>}
             <Grid item xs={6}>
@@ -286,13 +359,14 @@ export const RequestsTable = ({ elementId, isOwner }) => {
   return (
       <div style={{ maxHeight: '2000px', width: '100%' }}>
           {data !== null && columnsForEditor.length !== 0 && <Grid className="poc-data-grid" sx={{ minHeight: '500px' }}>
+          <QuickSearchToolbar value={searchText} onChange={(event) => requestSearch(event.target.value)} clearSearch={() => requestSearch('')}/>
               <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
                   <div style={{ width: "100%", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
                       <DataGrid
                         className={dgClasses.root}
                         autoHeight={true}
                         density="compact"
-                        rows={data}
+                        rows={rows}
                         columns={isOwner ? columnsForEditor : columns}
                         pageSize={25}
                         rowsPerPageOptions={[25]}

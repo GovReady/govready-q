@@ -21,6 +21,7 @@
     margin-top: 20px;
   }
 
+/*
   #above-tab-content {
     max-width: 1250px;
     margin: auto;
@@ -33,6 +34,8 @@
 
 
   .container { width: 90%; }
+
+*/
 
   .control-text {
     white-space: pre-wrap;
@@ -77,36 +80,77 @@
 
   .control-id-text { font-weight: bold; }
 
-</style>
-{% endblock %}
 
-<!-- action buttons included from project-base.html -->
+  /* added */
+.component-status-alert { border: 1px solid #ffb523;background-color: #ffffe2; text-align:center; padding:5px; }
+#system-owner-proposal-steps { margin-top:2em; margin-bottom:3em; max-width:1000px;}
+#system-owner-proposal-steps h4 { font-size: 1em; font-family: 'Lato', sans-serif; font-weight:bold; margin:.3em 0 .5em 0; padding:0;}
+#system-owner-proposal-steps .dot { width:50px; height:50px;}
+#system-owner-proposal-steps button { margin:2em 2em 0 0;}
+#system-owner-proposal-steps .step-box { margin-left:10px; padding-top:10px; }
 
-<!-- authoring_tool_enabled included from project-base.html -->
+#system-owner-proposal-steps .glyphicon-ok { display:hidden; }
+#system-owner-proposal-steps .glyphicon-plus { display:hidden; }
+#system-owner-proposal-steps .glyphicon-remove { display:hidden; }
+#system-owner-proposal-steps .glyphicon-paperclip { display:hidden; }
 
-{% block body_content %}
-  <div class="systems-top">
-    <div id="above-tab-content" class="row">
-      {% if proposal %}
-        <div class="row" style="margin-left: 1rem;border: 2px solid #ffb523;background-color: #ffffe2;text-align:center;vertical-align:middle;">
-            <b style="vertical-align:middle;">Access Required</b> <span style="color:grey;font-size:14px;vertical-align:middle;">({{proposal.created}})</span> | Current status: {{proposal.status}} stage
-        </div>
-      {% endif %}
-      <div class="col-sm-10 ">
-        <h2>
-            {{ element.name }} System Component
-        </h2>
-        {% if catalog.catalog_key_display %}
-          <h3 id="catalog-key-display">
-            {{ catalog.catalog_key_display }}
-          </h3>
-        {% endif %}
-      </div>
-      <div class="col-sm-2">
-        <div id="btn-edit-title" style="text-align: center;">
-        </div>
-      </div>
+#system-owner-proposal-steps .makeStyles-completed-2 .glyphicon-remove { display:none; }
+#system-owner-proposal-steps .makeStyles-completed-2 .glyphicon-plus { display:none; }
+#system-owner-proposal-steps .makeStyles-completed-2 .glyphicon-paperclip { display:none; }
+
+#system-owner-proposal-steps .makeStyles-current-3 .glyphicon-remove { display:none; }
+#system-owner-proposal-steps .makeStyles-current-3 .glyphicon-ok { display:none; }
+
+#system-owner-proposal-steps .makeStyles-currentRejected-4 .glyphicon-plus { display:none; }
+#system-owner-proposal-steps .makeStyles-currentRejected-4 .glyphicon-ok { display:none; }
+
+
+#system-owner-proposal-steps .makeStyles-notStarted-5 .glyphicon-paperclip { display:none; }
+#system-owner-proposal-steps .makeStyles-notStarted-5 .glyphicon-ok { display:none; }
+#system-owner-proposal-steps .makeStyles-notStarted-5 .glyphicon-remove { display:none; }
+#system-owner-proposal-steps .makeStyles-notStarted-5 .glyphicon-plus { display:none; }
+
+p.step-box-content { font-size:.9em; }
+
+#component-detail-content { border:0;}
+.list-group-item { padding:0 0 15px 0;}
+
+
+  </style>
+  {% endblock %}
+
+  <!-- action buttons included from project-base.html -->
+
+  <!-- authoring_tool_enabled included from project-base.html -->
+
+  {% block body_content %}
+
+  <div>
+
+  {% if proposal %}
+    <div class="component-status-alert">
+        <strong>Component Access Requested</strong> <span>({{proposal.created}})</span> | Current status: {{proposal.status}} stage
     </div>
+  {% endif %}
+
+
+    <div class="systems-top">
+        <div class="col-sm-10 ">
+          <h2>{{ element.name }} System Component</h2>
+
+          {% if catalog.catalog_key_display %}
+            <h3 id="catalog-key-display">{{ catalog.catalog_key_display }}</h3>
+          {% endif %}
+        </div>
+
+        <div class="col-sm-2">
+          <div id="btn-edit-title"></div>
+        </div>
+
+    </div>
+
+
+
     <div id="component-detail-content">
       <!-- Tab panel: component_controls -->
       <div role="tabpanel" class="tab-pane active" id="component_controls">
@@ -133,12 +177,20 @@
             </div>
           </div>
 
+
+
+
           <div id="system-owner-proposal-steps"></div>
+
+
           <form  style="display:none;" id="send_request_message" name="send_request_message" method="post" action="{% url 'system_element' system_id=system.id element_id=element.id %}">
             {% csrf_token %}
             <input type="hidden" id="req_message_type" name="req_message_type" value="" />
             <input type="hidden" id="req_message" name="req_message" value="" />
           </form>
+
+
+
 
           <div id="control-description" class="">
             <h3>{{ element.name }} contributes {{ impl_smts|length }} statements to controls</h3>
@@ -360,7 +412,7 @@
           }
         }
         window.proposalSteps({{request.user.id}}, current_system, req_ele, proposal, req, `{{hasSentRequest}}` === 'True' ? true : false);
-        
+
         // Adds statement form to page
         function add_smt() {
           var panel_num = $('.panel-smt').length + 1

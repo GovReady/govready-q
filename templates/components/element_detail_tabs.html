@@ -114,7 +114,7 @@
       {% endif %}
       <li id="permissions-tab" role="presentation"><a href="#permissions" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> Permissions </a></li>
       <li id="access-management-tab" role="presentation" onclick="return edit_access_management();"><a href="#access_management" aria-controls="access-management" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-user"></span> Access Management </a></li>
-      <li id="requests-tab" role="presentation"><a href="#requests" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-envelope"></span> Requests </a></li>
+      <li id="requests-tab" role="presentation"><a href="#requests" aria-controls="requests" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-envelope"></span> Requests &nbsp;<div id="common-tab-count">{{ totalRequests }}</div></a></li>
       <div style="margin: 0px 12px 0px 0px;">
         <a id="copy_component" class="btn btn btn-default pull-right" href={% url 'component_library_component_copy' element_id=element.id %} role="button" style="color: black;">Clone component</a>
       </div>
@@ -394,7 +394,7 @@
 
       <!-- Tab panel: Requests -->
       <div role="tabpanel" class="tab-pane" id="requests">
-        <h3>Requested Usage({{requestsTotal}})</h3>
+        <h3>Requested Usage ({{ totalRequests }})</h3>
         <div id="requests-table" style="height: 100%; width: 100%;"></div>
           
       </div> 
