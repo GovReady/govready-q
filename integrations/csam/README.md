@@ -27,12 +27,23 @@ For local dev and testing, create an Integration record in Django admin for CSAM
 ```json
 {
     "base_url": "http://localhost:9002",
-    "personal_access_token": "FAD619",
+    "personal_access_token": "FAD619"
 }
 ```
 - Config schema:
 ```json
 {}
+```
+
+## Testing with Mock Service
+
+The CSAM integration includes a mock CSAM service you can launch in the terminal to test your integration.
+
+To launch the mock service do the following in a separate terminal:
+
+```python
+cd integrations/csam
+python 
 ```
 
 ## Details
