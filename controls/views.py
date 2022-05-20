@@ -1427,7 +1427,17 @@ def edit_element_access_management(request, element_id):
     # The original element(component) 
     element = get_object_or_404(Element, id=element_id)
     # statement related to element
-    statement = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name).first()
+    if element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name).exists():
+        statement = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name).first()
+    else:
+        # create new statement and assign statement to element
+        statement = Statement.objects.create(
+            sid = None,
+            sid_class = None,
+            body = "",
+            statement_type = StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name,
+            producer_element = element
+        )
     if request.method == 'POST':
         form = ElementEditAccessManagementForm(request.POST or None, instance=element)
         statementForm = StatementEditForm(request.POST, instance=statement)
