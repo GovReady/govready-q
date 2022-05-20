@@ -349,7 +349,6 @@ export const RequestsTable = ({ elementId, isOwner }) => {
             <Grid item xs={6}>
               <Button variant="primary" onClick={() => handleSubmit(params)}>Submit</Button>
             </Grid>
-            
           </Grid>
         ),
       },

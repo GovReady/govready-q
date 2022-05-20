@@ -302,7 +302,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
         }
         const addNewResponse = await axios.post(`/api/v2/elements/${elementId}/CreateAndSet/`, appointmentsToBeAdded);
         if(addNewResponse.status === 200){
-          // window.location.reload();
+          window.location.reload();
           // handleClose();
         } else {
           console.error("Something went wrong in creating and appointing new appointments")
@@ -336,44 +336,35 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
 
   const [columns, setColumns] = useState([
     {
-        field: 'name',
-        headerName: 'Party Name',
-        width: 150,
-        editable: false,
-        valueGetter: (params) => params.row.user.username,
-      },
-      {
-        field: 'email',
-        headerName: 'Email',
-        width: 300,
-        editable: false,
-        valueGetter: (params) => params.row.user.email,
-      },
-      {
-        field: 'phone_number',
-        headerName: 'Phone #',
-        width: 100,
-        editable: false,
-        renderCell: (params) => (
-          <div
-            style={{ width: "100%" }}
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-            }}
-          >
-            {params.row.view ? <Glyphicon glyph="ok" style={{ color: green[700] }} /> : <Glyphicon glyph="remove" style={{ color: 'rgb(245,48,48,1)' }} />}
-          </div>
-        ),
-      },
-      {
-        field: 'roles',
-        headerName: 'Roles',
-        width: 200,
-        editable: false,
-        renderCell: (params) => (
-          <div style={{ width: "100%", marginTop: "0.5rem", marginBottom: "0.5rem"}}>
-            <Stack direction="row" spacing={1}>
+      field: 'name',
+      headerName: 'Party Name',
+      width: 150,
+      editable: false,
+      valueGetter: (params) => params.row.name,
+    },
+    {
+      field: 'email',
+      headerName: 'Email',
+      width: 300,
+      editable: false,
+      valueGetter: (params) => params.row.email,
+    },
+    {
+      field: 'phone_number',
+      headerName: 'Phone Number',
+      width: 300,
+      editable: false,
+      valueGetter: (params) => params.row.phone_number,
+    },
+    {
+      field: 'roles',
+      headerName: 'Roles',
+      width: 200,
+      editable: false,
+      type: 'text',
+      renderCell: (params) => (
+        <div style={{ width: "100%", marginTop: "0.5rem", marginBottom: "0.5rem"}}>
+          <Stack direction="row" spacing={1}>
             {params.row.roles.map((role, index) => (
               <div key={index}>
                 <Chip 
@@ -384,10 +375,10 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
                 <br/>
               </div>
             ))}
-            </Stack>
-          </div>
-        ),
-      },
+          </Stack>
+        </div>
+      ),
+    },
   ]);
 
   
