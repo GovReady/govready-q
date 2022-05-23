@@ -39,11 +39,11 @@ For local dev and testing, create an Integration record in Django admin for CSAM
 
 The CSAM integration includes a mock CSAM service you can launch in the terminal to test your integration.
 
-To launch the mock service do the following in a separate terminal:
+To launch the mock service do the following in a separate terminal from the root directory of GovReady-Q:
 
 ```python
-cd integrations/csam
-python 
+pip install click
+python integrations/csam/mock.py
 ```
 
 ## Details
@@ -60,9 +60,9 @@ system.name = get_object_or_404(Endpoint, integration=csam, endpoint_path=f'/sys
 ```
 ## Testing in Browser
 
-The following URLs will test the integration. Data will be returned from either the mock service or actual service based on integration configuration.
+The following URLs will test the integration from your browser. Data will be returned from either the mock service or actual service based on integration configuration.
 
-- URL: http://localhost:8000/integrations/csam/identify 
+- URL: http://localhost:8000/integrations/csam/identify
 - Purpose: Identifies the integration. All integrations have this URL.
 - Returns:
 ```text
@@ -101,7 +101,7 @@ TODO: Pass in multiple systems parameters
 
 The integration's mock service consists of a simple Python webserver to simulate CSAM's API.
 
-Start mock service in its own terminal window:
+Start mock service in its own terminal window. *Be sure to star the mock service within the `govready-q-dev` Docker container*:
 
 ```bash
 docker exec -it govready-q-dev python3 integrations/csam/mock.py
@@ -117,13 +117,15 @@ The following `curl` commands can be run from within the govready-q-dev containe
 
 ```bash
 # Accessing mock service
-curl localhost:9002/test/hello
-curl localhost:9002/v1/system/111  # requires authentication
+curl localhost:9002/v1/test/hello
+curl localhost:9002/v1/test/authenticate-test
+curl localhost:9002/v1/systems/111  # Will faill because requires authentication
 
 # Accessing mock service with authentication
- curl -X 'GET' 'http://localhost:9002/v1/system/111' \
- -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' \
- -H 'Authorization: Bearer FAD619'
+curl -X 'GET' \
+-H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' \
+-H 'Authorization: Bearer FAD619' \
+'http://localhost:9002/v1/systems/111'
 ```
 
 ## Experimenting
