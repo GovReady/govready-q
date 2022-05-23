@@ -49,10 +49,14 @@ class CSAMCommunication(Communication):
             "accept":"application/json;odata.metadata=minimal;odata.streaming=true",
             "Authorization": f"Bearer {self.personal_access_token}"
         }
+        print(f"get_response headers, {headers}")
+        print(f"get_response base_url: {self.base_url}{endpoint}")
         # get response
         if self.ssl_verify:
             verify = self.ssl_verify
+        print(f"request info: ========= {self.base_url}{endpoint}")
         response = requests.get(f"{self.base_url}{endpoint}", headers=headers, verify=verify)
+        print(f"get_response, response {response}")
         self.status_code = response.status_code
         if self.status_code == 200:
             self.data = response.json()

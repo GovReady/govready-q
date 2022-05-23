@@ -22,9 +22,9 @@
 # Accessing with simple authentication:
 #
 #   curl -X 'GET' \
-#     -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' \
-#     -H 'Authorization: Bearer FAD619'
-#     'http://localhost:9002/system/111' \
+#   -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' \
+#   -H 'Authorization: Bearer FAD619' \
+#   'http://localhost:9002/v1/systems/111'
 #
 #    curl -X 'GET' -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' -H 'Authorization: Bearer FAD619' 'http://localhost:9002/v1/systems/111'
 #
@@ -149,15 +149,32 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             # system_id = re.search(r"/v1/systems/([0-9]{1,8})", request.path).group(1).strip()
             pat = None
+            print(1,pat)
+            print(1,2, self.headers)
             if 'Authorization' in self.headers:
                 pat = self.headers['Authorization'].split("Bearer ")[-1]
+            print(2,pat)
+
+
+
+                # # Authentication succeeds
+                # self.send_response(200)
+                # self.send_header('Content-Type', 'application/json')
+                # self.end_headers()
+                # if '111' in request.path:
+                #     data = self.mk_csam_system_info_response('111')
+                # elif '222' in request.path:
+                #     data = self.mk_csam_system_info_response('222')
+                # self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
+
             if pat is None or pat != "FAD619":
                 # Authentication fails
                 self.send_response(401)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                data = {"message": "Unauthorized request",
-                        "endpoint": request.path
+                data = {"reply": "Fail",
+                        "Authorization": None,
+                        "pat": None
                         }
             else:
                 # Authentication succeeds
@@ -169,7 +186,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 elif '222' in request.path:
                     data = self.mk_csam_system_info_response('222')
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
-
         else:
             """Reply with Path not found"""
             self.send_response(404)
