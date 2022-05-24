@@ -2,7 +2,7 @@ from django.db import models
 from django.http import JsonResponse
 
 class RequestsModelMixin(models.Model):
-    requests = models.ManyToManyField("siteapp.Request", related_name="%(class)s")
+    requests = models.ManyToManyField("siteapp.Request", blank=True, related_name="%(class)s")
 
     class Meta:
         abstract = True

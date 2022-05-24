@@ -9,6 +9,8 @@ v0.9.14-dev (April xx, 2022)
 * Support private components (elements).
 * Assign responsible roles to components (elements) and appointing parties to roles. 
 
+Release adds support for private components and integrations with third party services.
+
 **UI changes**
 
 * Change label 'certified statement' to 'reference statement'.
@@ -31,6 +33,9 @@ v0.9.14-dev (April xx, 2022)
 * Support for hidden components by adding 'hidden' boolean field to controls.models.Element.
 * Support for requiring approval components by adding 'require_approval' boolean field to controls.models.Element.
 * Create new components as private and assign owner permissions to user who created the component.
+* Added extensible Integrations Django appplication to support communication with third-party services via APIs, etc.
+* Added initial support for DoJ's CSAM integration.
+* Added ElementPermissionSerializer for component (element) permissions.
 * Add tests for component creation form user interface.
 * Add ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer for component (element) permissions.
 * Add ElementWithPermissionsViewSet for component (element) permissions.

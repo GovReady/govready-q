@@ -1,0 +1,63 @@
+{% extends "project-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+{% load integration_tags %}
+
+{% block title %}
+  {{title}}
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+<style>
+
+  #focus-area-wrapper {
+    padding: 2em 2em 3em 2em;
+  }
+
+  body { height: 100vh; width: 100vw;}
+</style>
+{% endblock %}
+
+{% block body_content %}
+
+    <div class="row" style="max-width: 1200px;">
+      <div class="col-md-12">
+
+        <h2>{{ system.root_element.name }} &lt;==&gt; CSAM {{ ep.data.name }}</h2>
+
+        <h3>The system "{{ system.root_element.name }}" (id: {{ system.id }}) is paired with CSAM system "{{ ep.data.name }}" (id: {{ ep.data.id }})</h3>
+
+        <p>endpoint: {{ ep.endpoint_path }}</p>
+
+        {% if cached %}
+            <p>cached: {{ ep.updated|naturaltime|capfirst }}</p>
+        {% else %}
+            <p>Returned data:</p>
+        {% endif %}
+        <table class="table">
+            <thead>
+                <tr><th scope="col">CSAM Key</th><th scope="col">CAM Value</th></tr>
+            </thead>
+            <tbody>
+                {% for key, value in ep.data.items %}
+                    <tr><th style="width:200px;">{{key}}</th><td>{{value}}</td></tr>
+                {% endfor %}
+            </tbody>
+      </div>
+    </div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+<script>
+
+</script>
+{% endblock %}
+
