@@ -1,0 +1,90 @@
+{% extends "summary-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+{% load system_tags %}
+
+{% block title %}
+Deployments List
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+<!-- action buttons included from project-base.html -->
+<!-- authoring_tool_enabled included from project-base.html -->
+
+{% block body_content %}
+
+<div style="margin-top:8px; padding:20px 50px 0 50px; border-top:1px solid #ccc; background-color:#F5F5F5;">
+<div class="row">
+      <div class="col-md-8" style="">
+          <h3 class="system-classification">{{ system.impact }}</h3>
+          <h2 class="system-name">{{ system.name }}</h2>
+          <h3 class="system-aka"><span style="font-size:.8em;">A.K.A.</span> {% for aka in system.aka %}"{{ aka }}"{% if not forloop.last %}, {% endif %}{% endfor %}</h3>
+      </div>
+
+    <div class="col-md-4"><h5 class="sys-wide-status-header">Organization-wide Initiative Status</h5>
+        <div style="border:1px solid #CCCCCC; padding:8px;">
+            <table id="sys-wide-status">
+                <tr><td style="width:15px;"><div class="status-box status-red">&nbsp;</div></td><td class="sys-wide-status">800-53 rev5 migration</td></tr>
+                <tr><td><div class="status-box status-yellow">&nbsp;</div></td><td class="sys-wide-status">Log4J remediation solution (updated 4/21/22)</td></tr>
+                <tr><td><div class="status-box status-green">&nbsp;</div></td><td class="sys-wide-status">Q3 Audit</td></tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+{% include "summary-horizontal-nav.html" %}
+</div>
+<div style="padding:0 50px 0 50px;">
+  <div class="row">
+
+  <!-- start left sidebar -->
+  <div class="col-sm-3">
+  {% include "summary-sidebar.html" %}
+  </div> <!-- ends left sidebar -->
+
+  <div class="col-sm-9"><!-- starts content area -->
+
+
+  <div class="row" style="padding:50px 0 0 20px; ">
+    <div class="col-md-12"><h3 class="sys-summary-header">Integrations Overview</h3></div>
+
+      <div style="max-width:75%; padding-left:1em;">
+        <p class="sys-summary-content">
+          Integrations extend your risk and compliance information with data from various systems and tools.
+        </p>
+      </div>
+
+      <div class="col-md-8">
+        <div>
+          <table class="sys-recent">
+              {% for si in system_integrations %}
+                <tr>
+                  <td class="sys-recent-left"><div class="sys-recent-tag">{{ si.integration_name }}</div></td><td>{{ si.integration_summary }}</td><td><a href="">[configure]</a></td>
+                </tr>
+              {% endfor %}
+          </table>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        &nbsp;
+      </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+<script>
+    window.system_summary({{system.id}}, {{project.id}});
+</script>
+
+{% endblock %}

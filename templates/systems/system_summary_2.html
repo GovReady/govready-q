@@ -1,4 +1,4 @@
-{% extends "summary-base.html" %}
+{% extends "project-base.html" %}
 {% load humanize %}
 {% load guardian_tags %}
 {% load static %}
@@ -6,7 +6,7 @@
 {% load system_tags %}
 
 {% block title %}
-Deployments List
+Aspen - Summary POA&Ms
 {% endblock %}
 
 {% block head %}
@@ -64,29 +64,8 @@ Deployments List
 
 .vuln-scores-cat-tot { font-weight: bold; display: block; padding-bottom:2em; font-size:1.2em; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; color:#666666;}
 .vuln-scores-cat-title { font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; font-size:.9em; color:#666666;}
-
-
-/* added for the new header */
-#horizontal-nav li { display: inline; padding-right:50px; color:#808080;}
-.summary-nav-icons { padding-right:5px;}
-
-.material-symbols-outlined {
-
-  color:#808080;
-  padding:0;
-  vertical-align: text-top;
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 48
-
-}
-
-.summary-nav-options { padding-left:5px;}
-
 </style>
-<div style="margin-top:8px; padding:20px 50px 0 50px; border-top:1px solid #ccc; background-color:#F5F5F5;">
+
 <div class="row">
       <div class="col-md-8" style="">
           <h3 class="system-classification">{{ system.impact }}</h3>
@@ -105,24 +84,8 @@ Deployments List
     </div>
 </div>
 
-<div class="row">
-<div class="col-md-12">
-  <ul id="horizontal-nav">
-    <li><span class="material-symbols-outlined ">home</span><span class="summary-nav-options"><b>System</b></span></li>
-    <li><span class="material-symbols-outlined ">list</span><span class="summary-nav-options">Controls</span></li>
-    <li><span class="material-symbols-outlined ">settings_input_component</span><span class="summary-nav-options">Components</span></li>
-    <li><span class="material-symbols-outlined ">check_box</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/poams">POA&Ms</a></span></li>
-    <li><span class="material-symbols-outlined ">hub</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/deployments">Deployments</a></span></li>
-    <li><span class="material-symbols-outlined ">article</span><span class="summary-nav-options">Artifacts</span></li>
-    <li><span class="material-symbols-outlined ">hub</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/aspen/integrations">Integrations</a></span></li>
-  </ul>
-</div>
-</div>
-</div>
-<div style="padding:0 50px 0 50px;">
-
 <div class="row" style="margin-top: 20px;">
-  <div class="col-md-12"><h3 class="sys-summary-header">System Overview</h3></div>
+  <div class="col-md-12"><h3 class="sys-summary-header">Overview</h3></div>
 
   <div class="col-md-8">
     <h3 class="system-heading">System Details</h3>
@@ -140,7 +103,7 @@ Deployments List
         <table class="sys-detail-table">
             <tr><td class="sys-detail-table-left">Next Audit: <span class="sys-detail-response">{{ system.next_audit }}</span></td></tr>
             <tr><td class="sys-detail-table-left">Next Scan: <span class="sys-detail-response">{{ system.next_scan|naturaltime }} </span></td></tr>
-            <tr><td class="sys-detail-table-left">Security Scan: <span class="sys-detail-response">{{ system.security_scan }}</span></td></tr>
+            <tr><td class="sys-detail-table-left">Security Scan: <span class="sys-detail-response">{{ system.security_scan }} d</span></td></tr>
             <tr><td class="sys-detail-table-left">Penetration Test: <span class="sys-detail-response">{{ system.pen_test|naturaltime }}</span></td></tr>
             <tr><td class="sys-detail-table-left">Auto-Config Scan: <span class="sys-detail-response">{{ system.config_scan }}</span></td></tr>
         </table>
@@ -148,14 +111,14 @@ Deployments List
     </div>
 <div>
 
-<h3 class="system-heading">Recent System Related Events</h3>
-<table class="sys-recent">
+<!-- <h3 class="system-heading">Recent System Related Events</h3> -->
+<!-- <table class="sys-recent">
     {% for se in system_events %}
       <tr>
         <td class="sys-recent-left"><div class="sys-recent-tag">{{ se.event_tag }}</div></td><td>{{ se.event_summary }}</td>
       </tr>
     {% endfor %}
-</table>
+</table> -->
 
   </div>
 
@@ -169,30 +132,29 @@ Deployments List
 <br />
 </div>
 
-<h4 class="system-heading ownership-tab">Ownership</h4>
+<!-- <h4 class="system-heading ownership-tab">Ownership</h4>
 <div class="col-md-12">
 <h5 class="system-heading" style="padding:0; margin:0;">Organization</h5>
-<p class="sys-summary-content">{{ system.organization_name }}<!-- Forest Service, Office of CIO (Customer Experience Center) --></p>
-
-<div class="col-md-6 sys-ownership-details"><span class="header">System Owner</span>
+<p class="sys-summary-content">{{ system.organization_name }} Forest Service, Office of CIO (Customer Experience Center)</p>
+ -->
+<!-- <div class="col-md-6 sys-ownership-details"><span class="header">System Owner</span>
 <p>Lorem ipsum</br>
 555-888-1212</br>
 contact@dfafsdf.com</p>
-</div>
+</div> -->
 
-<div class="col-md-6 sys-ownership-details"><span class="header">Technical Contact</span>
+<!-- <div class="col-md-6 sys-ownership-details"><span class="header">Technical Contact</span>
 <p> Department of Forgotten Systems</br>
 252-314-1414</br>
 admin@sdfsdqfqfqf.com</p>
-</div>
-</div>
+</div> -->
+<!-- </div> -->
 </div>
 </div>
 
 
 
-
-<div class="row" style="margin-top:3em;">
+<!-- <div class="row" style="margin-top:3em;">
   <div class="col-md-12">
     <h3 class="sys-summary-header">Risk Assessment</h3>
 
@@ -201,13 +163,35 @@ admin@sdfsdqfqfqf.com</p>
     <div style="border:1px solid #ccc; display:block; margin-top:2em; margin-bottom:2em; border-radius: 7px;">
 <table id="sys-vuln-table">
   <tr>
-    <td style="border-right:1px solid #ccc; padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">{{ system.vuln_new_30days }}</h2><span style="color:#808080;"><strong>New</strong> in last 30 days</span></div></td>
-    <td style="border-right:1px solid #ccc; padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">{{ system.vuln_new_rslvd_30days }}</h2><span style="color:#808080;"><strong>Resolved</strong> in last 30 days</span></div></td>
-    <td style="padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">{{ system.vuln_90days }}</h2><span style="color:#808080;"><strong>Ongoing</strong> (90+ days)</span></div></td>
+    <td style="border-right:1px solid #ccc; padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">12</h2><span style="color:#808080;"><strong>New</strong> in last 30 days</span></div></td>
+    <td style="border-right:1px solid #ccc; padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">12</h2><span style="color:#808080;"><strong>Resolved</strong> in last 30 days</span></div></td>
+    <td style="padding:1em;"><div style="text-align:center;"><h2 style="font-size:2em;">12</h2><span style="color:#808080;"><strong>Ongoing</strong> (90+ days)</span></div></td>
   </tr>
 </table>
 </div>
 </div>
+
+</div> -->
+
+
+<div class="row" style="margin-top:3em;">
+  <div class="col-md-12">
+
+    <h3 class="sys-summary-header">Plan of Action &amp; Milestones</h3>
+  <!-- <span class="vuln-header">Plan of Action & Milestones</span><span style="font-size:1.2em; color:#808080;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --><!-- ( 16 open / 72 resolved ) --><!-- </span> -->
+    <!-- {% if poams_list|length > 0 %}
+    <div id="sample-poam-from-xslx">
+      <div>Proof of concept of poams from spreadsheet "poams_list.xlsx":</div>
+      {% for p in poams_list %}
+        <div>{{ p.id }} - {{ p.POAM_Title }}</div>
+      {% endfor %}
+    </div>
+    {% endif %} -->
+    <div id="system-summary-poam-spreadsheet-datagrid"></div>
+</div>
+
+</div>
+
 
 <div class="col-md-12">
 <h3 class="system-heading">Vulnerability Overview</h3>
@@ -217,33 +201,19 @@ admin@sdfsdqfqfqf.com</p>
 </div>
 
 
-<div class="col-md-2"><div class="vuln-scores greybg"><h2 style="font-size:2em;">{{ system.risk_score }}</h2><span style="font-weight:bold; font-size:.9em;">Risk Score</span></div></div>
-<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">{{ system.score_1 }}</span><span class="vuln-scores-cat-title">Lorem</span></div></div>
-<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">{{ system.score_2 }}</span><span class="vuln-scores-cat-title">Ipsum</span></div></div>
-<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">{{ system.score_3 }}</span><span class="vuln-scores-cat-title">Consectetur</span></div></div>
-<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">{{ system.score_4 }}</span><span class="vuln-scores-cat-title">Adipiscing</span></div></div>
-<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">{{ system.score_5 }}</span><span class="vuln-scores-cat-title">Aliqua</span></div></div>
+<div class="col-md-2"><div class="vuln-scores greybg"><h2 style="font-size:2em;">8.7</h2><span style="font-weight:bold; font-size:.9em;">Risk Score</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">9.9</span><span class="vuln-scores-cat-title">Lorem</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">9.2</span><span class="vuln-scores-cat-title">Ipsum</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">8.4</span><span class="vuln-scores-cat-title">Consectetur</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">8.8</span><span class="vuln-scores-cat-title">Adipiscing</span></div></div>
+<div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">7.2</span><span class="vuln-scores-cat-title">Aliqua</span></div></div>
 
-
-</div>
-
-
-<div class="row" style="margin-top:3em;">
-  <div class="col-md-12">
-  <span class="vuln-header">Plan of Action & Milestones</span><span style="font-size:1.2em; color:#808080;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( 16 open / 72 resolved )</span>
-
-    <div id="system-summary-poam-datagrid"></div>
-</div>
-
-</div>
-
-</div>
 {% endblock %}
 
 {% block scripts %}
     {{ block.super }}
 <script>
-    window.system_summary({{system.id}}, {{project.id}});
+    window.system_summary_spreadsheet({{system.id}}, {{project.id}});
 </script>
 
 {% endblock %}

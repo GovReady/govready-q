@@ -1,0 +1,38 @@
+<style>
+  /* added for the new header */
+  #horizontal-nav li { display: inline; padding-right:50px; color:#808080;}
+  .summary-nav-icons { padding-right:5px;}
+
+  .material-symbols-outlined {
+
+    color:#808080;
+    padding:0;
+    vertical-align: text-top;
+    font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 48
+
+  }
+
+
+.summary-nav-options { padding-left:5px;}
+
+
+</style>
+
+
+<div class="row">
+<div class="col-md-12">
+  <ul id="horizontal-nav">
+    <li><span class="material-symbols-outlined ">home</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/aspen/summary">System</a></span></li>
+    <li><span class="material-symbols-outlined ">list</span><span class="summary-nav-options">Controls</span></li>
+    <li><span class="material-symbols-outlined ">settings_input_component</span><span class="summary-nav-options">Components</span></li>
+    <li><span class="material-symbols-outlined ">check_box</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/poams">POA&Ms</a></span></li>
+    <li><span class="material-symbols-outlined ">hub</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/deployments">Deployments</a></span></li>
+    <li><span class="material-symbols-outlined ">article</span><span class="summary-nav-options">Artifacts</span></li>
+    <li><span class="material-symbols-outlined ">hub</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/aspen/integrations">Integrations</a></span></li>
+  </ul>
+</div>
+</div>
