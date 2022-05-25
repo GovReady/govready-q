@@ -347,7 +347,7 @@ export const RequestsTable = ({ elementId, isOwner }) => {
                 </CustomSelect>
             </Grid>}
             <Grid item xs={6}>
-              <Button variant="primary" onClick={() => handleSubmit(params)}>Submit</Button>
+              <Button variant="primary" onClick={() => handleSubmit(params)} sx={{marginTop: '0.8rem'}}>Submit</Button>
             </Grid>
           </Grid>
         ),

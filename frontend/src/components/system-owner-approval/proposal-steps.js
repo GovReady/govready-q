@@ -139,7 +139,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                 return 1;
             case 'request':
                 return 2;
-            case 'approval':
+            case 'approve':
                 return 3;
             case 'additionalSteps':
                 return 4;
@@ -236,7 +236,6 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                         window.location = `/systems/${parseInt(system.id)}/components/selected`
                     }
                 });
-
             }
         });
     }
@@ -250,6 +249,8 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
             } else {
                 return classes.current
             }
+        } else if (proposal.status.toLowerCase() === 'approve') {
+            return classes.completed
         } else {
             return classes.notStarted
         }
@@ -265,12 +266,12 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
 
                         </Grid>
                         <Grid item xs={9}>
-                            <div className="step-box"><h4>Planning</h4>
-                            <p className="step-box-content">List of criteria:
-                                <div style={{ whiteSpace: 'break-spaces' }}>
+                            <div className="step-box">
+                                <h4>Planning</h4>
+                                <p className="step-box-content">List of criteria:</p>
+                                <p className="step-box-content" style={{ whiteSpace: 'break-spaces' }}>
                                     {proposal.criteria_comment === '' ? "Criteria has not been set" : proposal.criteria_comment}
-                                </div></p>
-
+                                </p>
                             </div>
                         </Grid>
                         <Grid item xs={2}><div style={{float: 'right'}}>
@@ -286,9 +287,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                         </Grid>
                         <Grid item xs={9}>
                             <div className="step-box"><h4>Request</h4>
-                            {hasSentRequest ? <div><p className="step-box-content">You have requested access to the {element.name} and its related controls. Status: <strong>{request.status}</strong></p></div> : <div><p className="step-box-content">Please submit a request.</p></div>}
-
-
+                                {hasSentRequest ? <div><p className="step-box-content">You have requested access to the {element.name} and its related controls. Status: <strong>{request.status}</strong></p></div> : <div><p className="step-box-content">Please submit a request.</p></div>}
                             </div>
                         </Grid>
                         <Grid item xs={2}><div style={{float: 'right'}}>
@@ -306,8 +305,6 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                             <p className="step-box-content">The confirmation of system using {element.name} from component owner. System can proceed to use the component.</p>
                             </div>
                         </Grid>
-                          <Grid item xs={2}><div style={{float: 'right'}}>{getStatusLevel(proposal.status) === 3 && hasSentRequest === true &&<Button variant="contained" onClick={addComponentStatements}>Add Selected Component</Button>}</div>
-                          </Grid>
                     </Grid>
                 </ListGroupItem>
                 <ListGroupItem className={request.status.toLowerCase() === "approve" ? classes.current : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>

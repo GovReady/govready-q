@@ -111,7 +111,11 @@ p.step-box-content { font-size:.9em; }
 
   {% if proposal %}
     <div class="component-status-alert">
-        <strong>Component Access Requested</strong> <span>({{proposal.created}})</span> | Current status: {{proposal.status}} stage
+        {% if proposal.status == "Approve" %}
+          <strong>Component Control Inheritance Approved</strong> <span>({{proposal.created}})</span>
+        {% else %}
+          <strong>Proposed Component</strong> <span>({{proposal.created}})</span> | Current status: {{proposal.status}} stage
+        {% endif %}
     </div>
   {% endif %}
 

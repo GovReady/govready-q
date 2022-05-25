@@ -1501,7 +1501,9 @@ class Request(BaseModel):
             smts = Statement.objects.filter(producer_element_id = self.requested_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
             for smt in smts:
                 smt.create_system_control_smt_from_component_prototype_smt(self.system.root_element.id)
-
+        # Update Proposal status
+        self.proposal.status='Approve'
+        self.proposal.save()
         self.system.remove_proposals([self.proposal.id])
         self.system.save()
         return True
@@ -1514,11 +1516,17 @@ class Request(BaseModel):
             print("Element has been implemented.")
             # Delete the control implementation statements associated with this component
             result = self.requested_element.statements_produced.filter(consumer_element=self.system.root_element).delete()
+            # Update Proposal status
+            self.proposal.status='Request'
+            self.proposal.save()
             self.system.add_proposals([self.proposal.id])
             self.system.save()
         return True
 
     def close_request(self):
+        # Update Proposal status
+        self.proposal.status='Closed'
+        self.proposal.save()
         self.system.remove_proposals([self.proposal.id])
         self.system.save()
         return True
