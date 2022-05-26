@@ -26,7 +26,19 @@ const useStyles = makeStyles({
               color:'#ffffff',
               fontSize:'24px',
               padding:'12px 0 0 13px'
-        }
+        },
+      '& .glyphicon-remove': {
+            display: 'none !important',
+            position: 'absolute !important',
+            top: '-9999px !important',
+            left: '-9999px !important'
+      },
+      '& .glyphicon-paperclip': {
+            display: 'none !important',
+            position: 'absolute !important',
+            top: '-9999px !important',
+            left: '-9999px !important'
+      }
     },
     current: {
         backgroundColor: '#ffffe3',
@@ -39,16 +51,28 @@ const useStyles = makeStyles({
             borderRadius: '50%',
             display: 'inline-block'
         },
+      '& .glyphicon-ok': {
+            display: 'none !important',
+            position: 'absolute !important',
+            top: '-9999px !important',
+            left: '-9999px !important'
+      },
       '& .glyphicon-paperclip': {
             color:'#ffffff',
             fontSize:'24px',
             padding:'12px 0 0 14px'
       },
     '& .glyphicon-plus': {
-          color:'#ffffff',
-          fontSize:'24px',
-          padding:'12px 0 0 13px'
-    }
+      color:'#ffffff',
+      fontSize:'24px',
+      padding:'12px 0 0 14px'
+    },
+  '& .glyphicon-remove': {
+        display: 'none !important',
+        position: 'absolute !important',
+        top: '-9999px !important',
+        left: '-9999px !important'
+  }
     },
     currentRejected: {
         backgroundColor: '#ffffe3',
@@ -79,11 +103,30 @@ const useStyles = makeStyles({
             borderRadius: '50%',
             display: 'inline-block'
         },
+      '& .glyphicon-ok': {
+            display: 'none !important',
+            position: 'absolute !important',
+            top: '-9999px !important',
+            left: '-9999px !important'
+      },
       '& .glyphicon-plus': {
-            color:'#ffffff',
-            fontSize:'24px',
-            padding:'12px 0 0 13px'
-      }
+        display: 'none !important',
+        position: 'absolute !important',
+        top: '-9999px !important',
+        left: '-9999px !important'
+      },
+      '& .glyphicon-paperclip': {
+            display: 'none !important',
+            position: 'absolute !important',
+            top: '-9999px !important',
+            left: '-9999px !important'
+      },
+    '& .glyphicon-remove': {
+          display: 'none !important',
+          position: 'absolute !important',
+          top: '-9999px !important',
+          left: '-9999px !important'
+    }
     },
 });
 
@@ -219,6 +262,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                     <Grid container>
                         <Grid item xs={1}>
                             <span className="dot"><span className="glyphicon glyphicon-ok"></span><span className="glyphicon glyphicon-paperclip"></span></span>
+
                         </Grid>
                         <Grid item xs={9}>
                             <div className="step-box"><h4>Planning</h4>

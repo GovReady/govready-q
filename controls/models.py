@@ -655,6 +655,7 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
                                             help_text="The Element that is this System. Element must be type [Application, General Support System]")
     fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=True,
                                 null=True)
+    info = models.JSONField(blank=True, default=dict, help_text="JSON object representing additional system information")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
 

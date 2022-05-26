@@ -123,7 +123,6 @@ class ElementViewSet(ReadOnlyViewSet):
     @action(detail=True, url_path="setRequest", methods=["PUT"])
     def setRequest(self, request, **kwargs):
         element, validated_data = self.validate_serializer_and_get_object(request)
-        # import ipdb; ipdb.set_trace()
         for key, value in validated_data.items():
             element.add_requests(value)
         element.save()

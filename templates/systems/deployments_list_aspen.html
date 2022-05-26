@@ -1,0 +1,151 @@
+{% extends "summary-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+{% load system_tags %}
+
+{% block title %}
+Deployments List
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+<!-- action buttons included from project-base.html -->
+<!-- authoring_tool_enabled included from project-base.html -->
+
+{% block body_content %}
+
+<style>
+</style>
+
+<div style="margin-top:8px; padding:20px 50px 0 50px; border-top:1px solid #ccc; background-color:#F5F5F5;">
+<div class="row">
+      <div class="col-md-8" style="">
+          <h3 class="system-classification">{{ system.impact }}Moderate Impact</h3>
+          <h2 class="system-name">{{ system.name }}eRulemaking</h2>
+          <h3 class="system-aka"><span style="font-size:.8em;">A.K.A.</span> {% for aka in system.aka %}"{{ aka }}"{% if not forloop.last %}, {% endif %}{% endfor %}"eRulemaking</h3>
+      </div>
+
+    <div class="col-md-4"><h5 class="sys-wide-status-header">Organization-wide Initiative Status</h5>
+        <div style="border:1px solid #CCCCCC; padding:8px;">
+            <table id="sys-wide-status">
+                <tr><td style="width:15px;"><div class="status-box status-red">&nbsp;</div></td><td class="sys-wide-status">800-53 rev5 migration</td></tr>
+                <tr><td><div class="status-box status-yellow">&nbsp;</div></td><td class="sys-wide-status">Log4J remediation solution (updated 4/21/22)</td></tr>
+                <tr><td><div class="status-box status-green">&nbsp;</div></td><td class="sys-wide-status">Q3 Audit</td></tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% include "summary-horizontal-nav.html" %}
+</div>
+<div style="padding:0 50px 0 50px;">
+<div class="row">
+<!-- start left sidebar -->
+<div class="col-sm-3">
+{% include "summary-sidebar.html" %}
+</div> <!-- ends left sidebar -->
+
+<div class="col-sm-9"><!-- starts content area -->
+
+  <div class="row" style="padding:50px 0 0 20px; ">
+  <div class="col-md-12"><h4 class="sys-summary-header">Deployments Overview</h4></div>
+
+  <div style="max-width:75%; padding-left:1em;">
+        <p class="sys-summary-content">
+          Deployments are instances of your system installed and operating in your organization.
+        </p>
+      </div>
+
+  <div class="col-md-8">
+    <h3 class="system-heading">Deployment Details</h3>
+    <div class="col-md-12" style="border:1px solid #8C8C8C; background:#f8f8f8; margin-bottom:3em; padding:10px;">
+      <div class="col-md-6">
+        <table class="sys-detail-table">
+            <tr><td class="sys-detail-table-left">Location: <span class="sys-detail-response">{{ system.other_id }}Chicago, IL</span></td></tr>
+            <tr><td class="sys-detail-table-left">Hosting Facility: <span class="sys-detail-response">{{ system.hosting_facility }}Data Center 1</span></td></tr>
+            <tr><td class="sys-detail-table-left">Status: <span class="sys-detail-response">{{ system.status }}Production</span></td></tr>
+            <tr><td class="sys-detail-table-left">Deployment Type: <span class="sys-detail-response">{{ system.type }}Automated</span></td></tr>
+
+        </table>
+      </div>
+      <div class="col-md-6">
+        <table class="sys-detail-table">
+            <tr><td class="sys-detail-table-left">Recent Deployment: <span class="sys-detail-response">{{ system.created|naturaltime }}</span></td></tr>
+            <tr><td class="sys-detail-table-left">Deployment Fequency: <span class="sys-detail-response">{{ system.next_audit }}bi-weekly</span></td></tr>
+            <tr><td class="sys-detail-table-left">Next Scan: <span class="sys-detail-response">{{ system.next_scan|naturaltime }} </span></td></tr>
+            <tr><td class="sys-detail-table-left">Approx. Assets: <span class="sys-detail-response">{{ system.security_scan }}5</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+
+
+  <div class="row" style="margin-top:1em;">
+  <div class="col-md-12">
+    <!-- <h3 class="sys-summary-header">Deployments</h3> -->
+  <!--
+    <div class="col-md-2"><div class="vuln-scores greybg"><h2 style="font-size:2em;">Production</h2><span style="font-weight:bold; font-size:.9em;">Updated: 4:24pm, 04/26/22</span></div></div>
+    <div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">Staging</span><span class="vuln-scores-cat-title">Updated: 8:14am, 04/17/22</span></div></div>
+    <div class="col-md-2"><div class="vuln-scores"><span class="vuln-scores-cat-tot">Dev</span><span class="vuln-scores-cat-title">Updated: 12:43pm, 04/23/22</span></div></div>
+  -->
+
+
+    {% if deployments|length < 1 %}
+      <div id="tab-content" class="row row-control">
+        <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+          <p>No Deployments are currently identified for this system.</p>
+        </div>
+      </div>
+    {% else %}
+      {% for deployment in deployments %}
+
+      <div class="col-md-6">
+        <div class="vuln-scores" style="display:block; margin-bottom:2em;">
+          <span class="vuln-scores-cat-tot">{{ deployment.name }}</span>
+          <span class="vuln-scores-cat-title">{{ deployment.description }}<br />Updated {{ deployment.updated|timesince}} ago
+        <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/edit" title="Edit deployment" aria-label="Edit deployment" ><span class="glyphicon glyphicon-pencil"></span></a>
+                &nbsp;
+                <a class="portfolio-project-link" href="/systems/{{ system.id }}/deployment/{{ deployment.id }}/history" title="View deployment history" aria-label="View deployment history" ><span class="glyphicon glyphicon-calendar"></span></a>
+
+      </span>
+    </div>
+  </div>
+      {% endfor %}
+    {% endif %}
+
+
+  </div>
+  </div>
+
+
+  </div>
+
+
+
+
+
+
+</div> <!-- ends main md content well -->
+</div> <!-- ends row -->
+
+
+
+
+
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+<script>
+    window.system_summary({{system.id}}, {{project.id}});
+</script>
+
+{% endblock %}

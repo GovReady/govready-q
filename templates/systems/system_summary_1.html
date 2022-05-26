@@ -1,4 +1,4 @@
-{% extends "project-base.html" %}
+{% extends "summary-base.html" %}
 {% load humanize %}
 {% load guardian_tags %}
 {% load static %}
@@ -64,8 +64,29 @@ Aspen - Summary
 
 .vuln-scores-cat-tot { font-weight: bold; display: block; padding-bottom:2em; font-size:1.2em; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; color:#666666;}
 .vuln-scores-cat-title { font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; font-size:.9em; color:#666666;}
-</style>
 
+
+/* added for the new header */
+#horizontal-nav li { display: inline; padding-right:50px; color:#808080;}
+.summary-nav-icons { padding-right:5px;}
+
+.material-symbols-outlined {
+
+  color:#808080;
+  padding:0;
+  vertical-align: text-top;
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 48
+
+}
+
+.summary-nav-options { padding-left:5px;}
+
+</style>
+<div style="margin-top:8px; padding:20px 50px 0 50px; border-top:1px solid #ccc; background-color:#F5F5F5;">
 <div class="row">
       <div class="col-md-8" style="">
           <h3 class="system-classification">{{ system.impact }}</h3>
@@ -73,7 +94,7 @@ Aspen - Summary
           <h3 class="system-aka"><span style="font-size:.8em;">A.K.A.</span> {% for aka in system.aka %}"{{ aka }}"{% if not forloop.last %}, {% endif %}{% endfor %}</h3>
       </div>
 
-    <div class="col-md-4"><h5 class="sys-wide-status-header">Systems-wide Initiative Status</h5>
+    <div class="col-md-4"><h5 class="sys-wide-status-header">Organization-wide Initiative Status</h5>
         <div style="border:1px solid #CCCCCC; padding:8px;">
             <table id="sys-wide-status">
                 <tr><td style="width:15px;"><div class="status-box status-red">&nbsp;</div></td><td class="sys-wide-status">800-53 rev5 migration</td></tr>
@@ -84,8 +105,24 @@ Aspen - Summary
     </div>
 </div>
 
+<div class="row">
+<div class="col-md-12">
+  <ul id="horizontal-nav">
+    <li><span class="material-symbols-outlined ">home</span><span class="summary-nav-options"><b>System</b></span></li>
+    <li><span class="material-symbols-outlined ">list</span><span class="summary-nav-options">Controls</span></li>
+    <li><span class="material-symbols-outlined ">settings_input_component</span><span class="summary-nav-options">Components</span></li>
+    <li><span class="material-symbols-outlined ">check_box</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/poams">POA&Ms</a></span></li>
+    <li><span class="material-symbols-outlined ">hub</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/deployments">Deployments</a></span></li>
+    <li><span class="material-symbols-outlined ">article</span><span class="summary-nav-options">Artifacts</span></li>
+    <li><span class="material-symbols-outlined ">hub</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/aspen/integrations">Integrations</a></span></li>
+  </ul>
+</div>
+</div>
+</div>
+<div style="padding:0 50px 0 50px;">
+
 <div class="row" style="margin-top: 20px;">
-  <div class="col-md-12"><h3 class="sys-summary-header">Overview</h3></div>
+  <div class="col-md-12"><h3 class="sys-summary-header">System Overview</h3></div>
 
   <div class="col-md-8">
     <h3 class="system-heading">System Details</h3>
@@ -200,7 +237,7 @@ admin@sdfsdqfqfqf.com</p>
 
 </div>
 
-
+</div>
 {% endblock %}
 
 {% block scripts %}

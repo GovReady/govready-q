@@ -221,9 +221,9 @@ const useStyles = makeStyles({
 export const RequestsTable = ({ elementId, isOwner }) => {
   const dgClasses = datagridStyles();
   const [data, setData] = useState([]);
-  const [ rows, setRows ] = useState(data)
+  const [rows, setRows] = useState(data)
   const [sortby, setSortBy] = useState(["name", "asc"]);
-  const [ searchText, setSearchText ] = useState('');
+  const [searchText, setSearchText] = useState('');
   const [columnsForEditor, setColumnsForEditor] = useState([]);
   const [columns, setColumns] = useState([
     {
@@ -349,7 +349,6 @@ export const RequestsTable = ({ elementId, isOwner }) => {
             <Grid item xs={6}>
               <Button variant="primary" onClick={() => handleSubmit(params)}>Submit</Button>
             </Grid>
-            
           </Grid>
         ),
       },

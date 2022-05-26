@@ -32,13 +32,13 @@ class OIDCAuth(OIDCAuthenticationBackend):
             timeout=self.get_settings('OIDC_TIMEOUT', None),
             proxies=self.get_settings('OIDC_PROXY', None))
         user_response.raise_for_status()
-        # LOGGER.warning(f"user info, {type(user_response.text)}, {user_response.text}")
+        LOGGER.warning(f"DEBUG (5) user_response, {type(user_response.text)}, {user_response.text}")
         # split on ".": Header.Payload.Signature
         header, payload, signature = [self.parse_b64url(content) for content in user_response.text.split(".")]
         header = json.loads(header.decode('UTF-8'))
         payload = payload[:-1] if b'\x1b' in payload else payload
         payload = json.loads(payload.decode('UTF-8)'))
-        # LOGGER.warning(f"header: {header}, \npayload: {payload}, \nsignature: {signature}")
+        LOGGER.warning(f"DEBUG (5) header: {header}, \npayload: {payload}, \nsignature: {signature}")
         #return user_response.json()
         return payload
 
@@ -61,7 +61,25 @@ class OIDCAuth(OIDCAuthenticationBackend):
         """Verify the provided claims to decide if authentication should be allowed."""
 
         # Verify claims required by default configuration
-        scopes = self.get_settings('OIDC_RP_SCOPES', 'openid email')
+        cntr = 0
+        for prop in self.__dict__.keys():
+            cntr += 1
+            LOGGER.warning(f"DEBUG {cntr} self.__dict__[{prop}]: {str(self.__dict__[prop])}")
+            try:
+                LOGGER.warning(f"{str(self.__dict__[prop])}")
+            except:
+                LOGGER.warning(f"Unable to convert self.__dict__[{prop}] to string. Type: {type(self.__dict__[prop])}")
+        scopes = self.get_settings('OIDC_RP_SCOPES', 'openid email profile')
+
+        cntr = 0
+        for scope in scopes.split():
+            cntr += 1
+            LOGGER.warning(f"DEBUG scopes {cntr}: ")
+            try:
+                LOGGER.warning(scope)
+            except:
+                LOGGER.warning(f"Unable to convert scope {cntr}] to string. Type: {type(scope)}")
+
         if 'email' in scopes.split():
             return 'email' in claims
 
@@ -69,7 +87,7 @@ class OIDCAuth(OIDCAuthenticationBackend):
                        'You need to override `verify_claims` for custom claims verification.')
 
         # Custom examination of OIDC_RP_SCOPES
-        # LOGGER.warning(f"\n DEBUG custom OIDC_RP_SCOPES (1):", OIDC_RP_SCOPES)
+        # LOGGER.warning(f"\n DEBUG (7) custom OIDC_RP_SCOPES (1):", OIDC_RP_SCOPES)
 
         return True
 
@@ -79,14 +97,14 @@ class OIDCAuth(OIDCAuthenticationBackend):
         and configured to do so. Returns nothing if multiple users are matched."""
 
         user_info = self.get_userinfo(access_token, id_token, payload)
-        # LOGGER.warning("\n DEBUG user_info (1):", user_info)
+        LOGGER.warning("\n DEBUG user_info (1):", user_info)
 
         claims_verified = self.verify_claims(user_info)
         if not claims_verified:
             msg = 'Claims verification failed'
             raise SuspiciousOperation(msg)
 
-        # LOGGER.warning("\n DEBUG user_info (2):", user_info)
+        LOGGER.warning("\n DEBUG user_info (2):", user_info)
 
         # email based filtering
         #users = self.filter_users_by_claims(user_info)
@@ -126,6 +144,9 @@ class OIDCAuth(OIDCAuthenticationBackend):
         return user
 
     def update_user(self, user, claims):
+
+        LOGGER.warning("\n DEBUG claims (4)", claims)
+
         original_values = [getattr(user, x.name) for x in user._meta.get_fields() if hasattr(user, x.name)]
 
         user.email = claims.get(settings.OIDC_CLAIMS_MAP['email'], "missing@example.com")
