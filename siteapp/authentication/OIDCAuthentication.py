@@ -7,6 +7,7 @@ from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.utils.crypto import get_random_string
+from django.contrib.auth.models import Permission
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend, LOGGER
 from mozilla_django_oidc.middleware import SessionRefresh
 from mozilla_django_oidc.utils import absolutify, add_state_and_nonce_to_session
@@ -32,14 +33,14 @@ class OIDCAuth(OIDCAuthenticationBackend):
             timeout=self.get_settings('OIDC_TIMEOUT', None),
             proxies=self.get_settings('OIDC_PROXY', None))
         user_response.raise_for_status()
-        LOGGER.warning(f"DEBUG (5) user_response, {type(user_response.text)}, {user_response.text}")
+        # LOGGER.warning(f"DEBUG (5) user_response, {type(user_response.text)}, {user_response.text}")
         # split on ".": Header.Payload.Signature
         header, payload, signature = [self.parse_b64url(content) for content in user_response.text.split(".")]
         header = json.loads(header.decode('UTF-8'))
+        # LOGGER.warning(f"DEBUG (6) header: {header}, \npayload: {payload}, \nsignature: {signature}")
         payload = payload[:-1] if b'\x1b' in payload else payload
-        payload = json.loads(payload.decode('UTF-8)'))
-        LOGGER.warning(f"DEBUG (5) header: {header}, \npayload: {payload}, \nsignature: {signature}")
-        #return user_response.json()
+        payload = json.loads(payload.decode('UTF-8)').strip('\x06'))
+        # return user_response.json()
         return payload
 
     def parse_b64url(self, content):
@@ -61,24 +62,24 @@ class OIDCAuth(OIDCAuthenticationBackend):
         """Verify the provided claims to decide if authentication should be allowed."""
 
         # Verify claims required by default configuration
-        cntr = 0
-        for prop in self.__dict__.keys():
-            cntr += 1
-            LOGGER.warning(f"DEBUG {cntr} self.__dict__[{prop}]: {str(self.__dict__[prop])}")
-            try:
-                LOGGER.warning(f"{str(self.__dict__[prop])}")
-            except:
-                LOGGER.warning(f"Unable to convert self.__dict__[{prop}] to string. Type: {type(self.__dict__[prop])}")
+        # cntr = 0
+        # for prop in self.__dict__.keys():
+        #     cntr += 1
+        #     LOGGER.warning(f"DEBUG {cntr} self.__dict__[{prop}]: {str(self.__dict__[prop])}")
+        #     try:
+        #         LOGGER.warning(f"{str(self.__dict__[prop])}")
+        #     except:
+        #         LOGGER.warning(f"Unable to convert self.__dict__[{prop}] to string. Type: {type(self.__dict__[prop])}")
         scopes = self.get_settings('OIDC_RP_SCOPES', 'openid email profile')
 
-        cntr = 0
-        for scope in scopes.split():
-            cntr += 1
-            LOGGER.warning(f"DEBUG scopes {cntr}: ")
-            try:
-                LOGGER.warning(scope)
-            except:
-                LOGGER.warning(f"Unable to convert scope {cntr}] to string. Type: {type(scope)}")
+        # cntr = 0
+        # for scope in scopes.split():
+        #     cntr += 1
+        #     LOGGER.warning(f"DEBUG scopes {cntr}: ")
+        #     try:
+        #         LOGGER.warning(scope)
+        #     except:
+        #         LOGGER.warning(f"Unable to convert scope {cntr}] to string. Type: {type(scope)}")
 
         if 'email' in scopes.split():
             return 'email' in claims
@@ -108,9 +109,8 @@ class OIDCAuth(OIDCAuthenticationBackend):
 
         # email based filtering
         #users = self.filter_users_by_claims(user_info)
-        users = User.objects.filter(username=user_info.get('preferred_username', None))
-
-        # LOGGER.warning("\n DEBUG user (3):", users)
+        # use email as username
+        users = User.objects.filter(username=user_info.get('mail', None))
 
         if len(users) == 1:
             return self.update_user(users[0], user_info)
@@ -139,13 +139,15 @@ class OIDCAuth(OIDCAuthenticationBackend):
                 'is_staff': False}
 
         user = self.UserModel.objects.create_user(**data)
+        user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
+        # Temporarily make user admin
+        user.is_superuser = True
+        user.save()
         if user.default_portfolio is None:
             portfolio = user.create_default_portfolio_if_missing()
         return user
 
     def update_user(self, user, claims):
-
-        LOGGER.warning("\n DEBUG claims (4)", claims)
 
         original_values = [getattr(user, x.name) for x in user._meta.get_fields() if hasattr(user, x.name)]
 
@@ -154,8 +156,10 @@ class OIDCAuth(OIDCAuthenticationBackend):
         user.last_name = claims.get(settings.OIDC_CLAIMS_MAP['last_name'], "missing last_name")
         user.username = claims.get(settings.OIDC_CLAIMS_MAP['username'], "missing username")
         groups = claims.get(settings.OIDC_CLAIMS_MAP['groups'], "missing groups")
-        user.is_staff = self.is_admin(groups)
-        user.is_superuser = user.is_staff
+        # TODO: Adjust to update permissions
+        # Fix below lines after determing maps
+        # user.is_staff = self.is_admin(groups)
+        # user.is_superuser = user.is_staff
 
         new_values = [getattr(user, x.name) for x in user._meta.get_fields() if hasattr(user, x.name)]
         if new_values != original_values:
@@ -221,7 +225,7 @@ class OIDCSessionRefresh(SessionRefresh):
             # LOGGER.debug('id token is still valid (%s > %s)', expiration, now)
             return
 
-        LOGGER.debug('id token has expired')
+        # LOGGER.debug('id token has expired')
         # The id_token has expired, so we have to re-authenticate silently.
         auth_url = self.get_settings('OIDC_OP_AUTHORIZATION_ENDPOINT')
         client_id = self.get_settings('OIDC_RP_CLIENT_ID')
