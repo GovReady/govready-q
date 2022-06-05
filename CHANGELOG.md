@@ -1,13 +1,16 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.14-dev (April xx, 2022)
+v0.10.0-dev-aspen (June xx, 2022)
 ----------------------------
 
 **Feature changes**
 
 * Support private components (elements).
-* Assign responsible roles to components (elements) and appointing parties to roles. 
+* Assign responsible roles to components (elements) and appointing parties to roles.
+* Integrations framework for better inclusion of information from remote services.
+* Component control inheritance workflow.
+* Single Sign On OIDC support.
 
 Release adds support for private components and integrations with third party services.
 
