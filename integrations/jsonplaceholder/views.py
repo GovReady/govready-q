@@ -1,4 +1,7 @@
 import json
+import time
+import importlib
+import markdown
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponse, HttpResponseNotFound
 from integrations.models import Integration, Endpoint
@@ -19,9 +22,36 @@ def set_integration():
 def integration_identify(request):
     """Integration returns an identification"""
 
+    from django.urls import reverse
     communication = set_integration()
-    return HttpResponse(f"Attempting to communicate with {INTEGRATION_NAME} integration: {communication.identify()}")
+    url_patterns = getattr(importlib.import_module(f'integrations.{INTEGRATION_NAME}.urls'), "urlpatterns")
+    url_routes = []
+    for up in url_patterns:
+        try:
+            resolved_url = reverse(up.name)
+        except:
+            # hack to approximate reverse url path
+            url_match_part = str(up.pattern.regex).replace('re.compile','').replace("('^","").replace("$'","")
+            resolved_url = f"/integrations/{INTEGRATION_NAME}/{url_match_part}"
+        up_dict = {
+            "integration_name": INTEGRATION_NAME,
+            "name": up.name,
+            "url": resolved_url,
+            # "importlib": f"importlib.import_module('integrations.{INTEGRATION_NAME}.views.{up.name}')"
+        }
+        url_routes.append(up_dict)
 
+    # Retrieve README
+    with open(f'integrations/{INTEGRATION_NAME}/README.md', 'r') as f:
+        readme_markdown = f.readlines()
+        readme_html = markdown.markdown("\n".join(readme_markdown))
+
+    return render(request, "integrations/integration_detail.html", {
+        "integration": communication.identify(),
+        "integration_name": INTEGRATION_NAME,
+        "url_routes": url_routes,
+        "readme_html": readme_html,
+        })
 
 def integration_endpoint(request, endpoint=None):
     """Communicate with an integrated service"""

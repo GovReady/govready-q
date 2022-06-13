@@ -4,17 +4,16 @@ import json
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.contrib.auth.models import Permission
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend, LOGGER
 from mozilla_django_oidc.middleware import SessionRefresh
 from mozilla_django_oidc.utils import absolutify, add_state_and_nonce_to_session
-from base64 import urlsafe_b64encode, urlsafe_b64decode
+from base64 import urlsafe_b64decode
 
 from siteapp.models import Portfolio, User
-
 
 
 class OIDCAuth(OIDCAuthenticationBackend):
@@ -57,40 +56,19 @@ class OIDCAuth(OIDCAuthenticationBackend):
             return True
         return False
 
-    # override verify_claims to address custom OIDC_RP_SCOPES defined
+    # override verify_claims
     def verify_claims(self, claims):
         """Verify the provided claims to decide if authentication should be allowed."""
 
         # Verify claims required by default configuration
-        # cntr = 0
-        # for prop in self.__dict__.keys():
-        #     cntr += 1
-        #     LOGGER.warning(f"DEBUG {cntr} self.__dict__[{prop}]: {str(self.__dict__[prop])}")
-        #     try:
-        #         LOGGER.warning(f"{str(self.__dict__[prop])}")
-        #     except:
-        #         LOGGER.warning(f"Unable to convert self.__dict__[{prop}] to string. Type: {type(self.__dict__[prop])}")
-        scopes = self.get_settings('OIDC_RP_SCOPES', 'openid email profile')
-
-        # cntr = 0
-        # for scope in scopes.split():
-        #     cntr += 1
-        #     LOGGER.warning(f"DEBUG scopes {cntr}: ")
-        #     try:
-        #         LOGGER.warning(scope)
-        #     except:
-        #         LOGGER.warning(f"Unable to convert scope {cntr}] to string. Type: {type(scope)}")
-
-        if 'email' in scopes.split():
-            return 'email' in claims
-
-        LOGGER.warning('Custom OIDC_RP_SCOPES defined. '
-                       'You need to override `verify_claims` for custom claims verification.')
-
-        # Custom examination of OIDC_RP_SCOPES
-        # LOGGER.warning(f"\n DEBUG (7) custom OIDC_RP_SCOPES (1):", OIDC_RP_SCOPES)
-
-        return True
+        # Check if user has role to access service
+        GROUP_SPLIT_CHAR = '^'
+        user_groups = claims.get(settings.OIDC_CLAIMS_MAP['groups']).split(GROUP_SPLIT_CHAR)
+        if settings.OIDC_ROLES_MAP['admin'] in user_groups:
+            return True
+        if settings.OIDC_ROLES_MAP['normal'] in user_groups:
+            return True
+        return False
 
     # override get_or_create_user method
     def get_or_create_user(self, access_token, id_token, payload):
@@ -98,17 +76,13 @@ class OIDCAuth(OIDCAuthenticationBackend):
         and configured to do so. Returns nothing if multiple users are matched."""
 
         user_info = self.get_userinfo(access_token, id_token, payload)
-        LOGGER.warning("\n DEBUG user_info (1):", user_info)
 
         claims_verified = self.verify_claims(user_info)
         if not claims_verified:
             msg = 'Claims verification failed'
+            HttpResponseForbidden()
             raise SuspiciousOperation(msg)
 
-        LOGGER.warning("\n DEBUG user_info (2):", user_info)
-
-        # email based filtering
-        #users = self.filter_users_by_claims(user_info)
         # use email as username
         users = User.objects.filter(username=user_info.get('mail', None))
 
@@ -130,7 +104,7 @@ class OIDCAuth(OIDCAuthenticationBackend):
 
     def create_user(self, claims):
 
-        # TODO: Better handling if no 'username' set. Current approach will cause duplicate record error
+        # TODO: Better handling if no 'username' set. Current approach could cause duplicate record error
         # TODO: Is the below sufficiently generic for different customizations for a customer?
         data = {'email': claims.get(settings.OIDC_CLAIMS_MAP['email'], "email@example.com"),
                 'first_name': claims.get(settings.OIDC_CLAIMS_MAP['first_name'], "first_name"),
@@ -139,10 +113,15 @@ class OIDCAuth(OIDCAuthenticationBackend):
                 'is_staff': False}
 
         user = self.UserModel.objects.create_user(**data)
+        # Set permissions
         user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
-        # Temporarily make user admin
-        user.is_superuser = True
         user.save()
+        GROUP_SPLIT_CHAR = '^'
+        user_groups = claims.get(settings.OIDC_CLAIMS_MAP['groups']).split(GROUP_SPLIT_CHAR)
+        if settings.OIDC_ROLES_MAP['admin'] in user_groups:
+            user.is_superuser = True
+            user.is_staff = True
+            user.save()
         if user.default_portfolio is None:
             portfolio = user.create_default_portfolio_if_missing()
         return user
@@ -156,10 +135,16 @@ class OIDCAuth(OIDCAuthenticationBackend):
         user.last_name = claims.get(settings.OIDC_CLAIMS_MAP['last_name'], "missing last_name")
         user.username = claims.get(settings.OIDC_CLAIMS_MAP['username'], "missing username")
         groups = claims.get(settings.OIDC_CLAIMS_MAP['groups'], "missing groups")
-        # TODO: Adjust to update permissions
-        # Fix below lines after determing maps
-        # user.is_staff = self.is_admin(groups)
-        # user.is_superuser = user.is_staff
+
+        # Update permissions based on claim groups
+        GROUP_SPLIT_CHAR = '^'
+        user_groups = claims.get(settings.OIDC_CLAIMS_MAP['groups']).split(GROUP_SPLIT_CHAR)
+        if settings.OIDC_ROLES_MAP['admin'] in user_groups:
+            user.is_superuser = True
+            user.is_staff = True
+        else:
+            user.is_superuser = False
+            user.is_staff = False
 
         new_values = [getattr(user, x.name) for x in user._meta.get_fields() if hasattr(user, x.name)]
         if new_values != original_values:

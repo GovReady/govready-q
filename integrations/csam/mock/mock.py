@@ -4,10 +4,6 @@
 #
 # A simple Python webserver to generate mock CSAM API results
 #
-# Requirements:
-#
-#   pip install click
-#
 # Usage:
 #   
 #   # Start mock service
@@ -30,9 +26,7 @@
 #
 ##############################################################
 
-# Parse command-line arguments
-import click
-
+from pathlib import Path
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import json
@@ -42,68 +36,40 @@ from django.utils import timezone
 from time import time
 
 
+HOSTNAME = 'localhost'
 PORT = 9002
 MOCK_SRVC = "CSAM"
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
-    # Mock data
-    SYSTEMS = { "111": {"id": 111,
-                       "externalId": "string",
-                       "name": "System A",
-                       "description": "This is a simple test system",
-                       "acronym": "string",
-                       "organization": "string",
-                       "subOrganization": "string",
-                       "operationalStatus": "string",
-                       "systemType": "string",
-                       "financialSystem": "string",
-                       "classification": "string",
-                       "contractorSystem": True,
-                       "fismaReportable": True,
-                       "criticalInfrastructure": True,
-                       "missionCritical": True,
-                       "purpose": "string",
-                       "ombExhibit": "string",
-                       "uiiCode": "string",
-                       "investmentName": "string",
-                       "portfolio": "string",
-                       "priorFyFunding": 0,
-                       "currentFyFunding": 0,
-                       "nextFyFunding": 0,
-                       "categorization": "string",
-                       "fundingImportStatus": "string"
-                       },
-                "222": {"id": 222,
-                       "externalId": "string",
-                       "name": "System B",
-                       "description": "This is another simple test system",
-                       "acronym": "string",
-                       "organization": "string",
-                       "subOrganization": "string",
-                       "operationalStatus": "string",
-                       "systemType": "string",
-                       "financialSystem": "string",
-                       "classification": "string",
-                       "contractorSystem": True,
-                       "fismaReportable": True,
-                       "criticalInfrastructure": True,
-                       "missionCritical": True,
-                       "purpose": "string",
-                       "ombExhibit": "string",
-                       "uiiCode": "string",
-                       "investmentName": "string",
-                       "portfolio": "string",
-                       "priorFyFunding": 0,
-                       "currentFyFunding": 0,
-                       "nextFyFunding": 0,
-                       "categorization": "string",
-                       "fundingImportStatus": "string"
-                       }
-                }
-
     def mk_csam_system_info_response(self, system_id):
-        return self.SYSTEMS[system_id]
+        """Return system information from working mock data"""
+        with open(self.systems_file, 'r') as f:
+            systems = json.load(f)
+        return systems[system_id] if system_id in systems else self.return_404(f'No system with id {system_id} exists.')
+
+    def update_systems(self, system_id, updates):
+        """Update system information in working mock data"""
+        with open(self.systems_file, 'r') as f:
+            systems = json.load(f)
+        if system_id in systems:
+            system = systems.get(system_id)
+            for key in updates.keys():
+                print(f'Updating system {system_id} key "{key}" with "{updates[key]}"')
+                system[key] = updates[key]
+            with open(self.systems_file, 'w') as f:
+                json.dump(systems, f, indent = 4)
+        else:
+            self.return_404(f'No system with id {system_id} exists.')
+
+    def return_404(self, message):
+        """Return a 404 message"""
+        print(message)
+        self.send_response(404)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        data = {"message": message}
+        self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
     def do_GET(self, method=None):
         """Parse and route GET request"""
@@ -125,18 +91,19 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         elif request.path == "/v1/test/authenticate-test":
             """Test authentication"""
-            # Test authentication by reading headers and looking for 'Authentication'
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            # Read headers
             if 'Authorization' in self.headers:
                 print("Authorization header:", self.headers['Authorization'])
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
                 data = {"reply": "Success",
                         "Authorization": self.headers['Authorization'],
                         "pat": self.headers['Authorization'].split("Bearer ")[-1]
                         }
             else:
+                self.send_response(401)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
                 data = {"reply": "Fail",
                         "Authorization": None,
                         "pat": None
@@ -144,29 +111,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
         elif request.path == "/v1/systems/111" or request.path == "/v1/systems/222":
-        # elif re.search(r"/v1/systems/([0-9]{1,8})", request.path):
             """Reply with system information"""
 
             # system_id = re.search(r"/v1/systems/([0-9]{1,8})", request.path).group(1).strip()
             pat = None
-            print(1,pat)
-            print(1,2, self.headers)
             if 'Authorization' in self.headers:
                 pat = self.headers['Authorization'].split("Bearer ")[-1]
-            print(2,pat)
-
-
-
-                # # Authentication succeeds
-                # self.send_response(200)
-                # self.send_header('Content-Type', 'application/json')
-                # self.end_headers()
-                # if '111' in request.path:
-                #     data = self.mk_csam_system_info_response('111')
-                # elif '222' in request.path:
-                #     data = self.mk_csam_system_info_response('222')
-                # self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
-
             if pat is None or pat != "FAD619":
                 # Authentication fails
                 self.send_response(401)
@@ -186,6 +136,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 elif '222' in request.path:
                     data = self.mk_csam_system_info_response('222')
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
+
         else:
             """Reply with Path not found"""
             self.send_response(404)
@@ -212,15 +163,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
         if request.path == "/v1/systems/111" or request.path == "/v1/systems/222":
-            """Update system information"""
-            # # authorized example
-            # curl -X 'POST' 'http://localhost:9002/system/111' \
-            # -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true' \
-            # -H 'Authorization: Bearer FAD619'
-            #
-            # # unauthorized example:
-            # curl -X 'POST' 'http://localhost:9002/system/111' \
-            # -H 'accept: application/json;odata.metadata=minimal;odata.streaming=true'
             pat = None
             if 'Authorization' in self.headers:
                 pat = self.headers['Authorization'].split("Bearer ")[-1]
@@ -233,7 +175,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         "endpoint": request.path
                         }
             else:
-                # Authorization succeeded - read POST data and update system info
+                # Authorization succeeded; read POST data and update system info
                 content_length = int(self.headers['Content-Length'])
                 self.post_data = self.rfile.read(content_length)
                 self.post_data_json = json.loads(self.post_data)
@@ -241,9 +183,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     system_id = '111'
                 elif '222' in request.path:
                     system_id = '222'
-                self.SYSTEMS[system_id]['name'] = self.post_data_json.get('name', self.SYSTEM['name'])
-                self.SYSTEM[system_id]['description'] = self.post_data_json.get('description', self.SYSTEM['description'])
-                # Send response
+                print(100, self.post_data_json)
+                self.update_systems(system_id, self.post_data_json)
+                # Send the JSON response
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
@@ -260,7 +202,19 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(data, indent=4).encode('UTF-8'))
 
 def main():
-    httpd = HTTPServer(('localhost', PORT), SimpleHTTPRequestHandler)
+
+    print('Loading initial system data')
+    mock_data_dir = Path.joinpath(Path(__file__).resolve().parent, 'assets', 'data')
+    mock_data_file = Path.joinpath(mock_data_dir, 'systems.json')
+    with open(Path.joinpath(mock_data_dir, 'src_systems.json'), 'r') as f:
+        systems = json.load(f)
+    print('Creating system data working file')
+    with open(mock_data_file, 'w') as f:
+        json.dump(systems, f, indent = 4)
+    print('Starting simple web server')
+    SimpleHTTPRequestHandler.systems_file = mock_data_file
+    print(f'Providing mock data on {len(systems)} systems with IDs: 111, 222')
+    httpd = HTTPServer((HOSTNAME, PORT), SimpleHTTPRequestHandler)
     httpd.serve_forever()
 
 if __name__ == "__main__":

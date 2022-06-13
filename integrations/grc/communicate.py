@@ -7,10 +7,10 @@ from integrations.utils.integration import Communication
 from integrations.models import Integration, Endpoint
 
 
-class CSAMCommunication(Communication):
+class GRCCommunication(Communication):
     
     DESCRIPTION = {
-        "name": "csam",
+        "name": "grc",
         "description": "GRC API Service",
         "version": "0.3",
         "integration_db_record": True,
@@ -41,7 +41,7 @@ class CSAMCommunication(Communication):
     def setup(self, **kwargs):
         pass
 
-    def get_response(self, endpoint, headers=None, params=None, verify=False):
+    def get_response(self, endpoint, headers=None, params=None, verify=False, timeout=20):
         """Send request using GET"""
 
         # PAT for mock service is 'FAD619'
@@ -52,14 +52,21 @@ class CSAMCommunication(Communication):
         # get response
         if self.ssl_verify:
             verify = self.ssl_verify
-        response = requests.get(f"{self.base_url}{endpoint}", headers=headers, verify=verify)
-        self.status_code = response.status_code
+        try:
+            response = requests.get(f"{self.base_url}{endpoint}", headers=headers, verify=verify, timeout=10)
+            self.status_code = response.status_code
+        except:
+            response = None
+            self.status_code = None
         if self.status_code == 200:
             self.data = response.json()
         elif self.status_code == 404:
             print("404 - page not found")
+            self.data = {}
         else:
-            pass
+            # problem connecting
+            print("500 - Remote service unavailable or returned error. Is remote service running?")
+            self.data = {"message": "Remote service unavailable or returned error. Is remote service running?"} 
         return self.data
 
     def post_response(self, endpoint, data=None, params=None, verify=False):

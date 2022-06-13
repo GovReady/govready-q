@@ -2,6 +2,7 @@ import functools
 import logging
 import operator
 import pathlib
+import random
 import shutil
 import tempfile
 from collections import defaultdict
@@ -27,6 +28,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.text import slugify
+from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView
 from django.urls import reverse
@@ -36,12 +38,14 @@ from urllib.parse import quote
 
 from api.siteapp.serializers.tags import SimpleTagSerializer
 from guidedmodules.models import Task, Module, AppVersion, AppSource
+from guidedmodules.app_loading import ModuleDefinitionError
 from siteapp.model_mixins.tags import TagView
 from simple_history.utils import update_change_reason
 
-from siteapp.models import Project, Organization, Tag, User
+from siteapp.models import Project, Organization, Folder, Portfolio, Tag, User, Role, Party, Appointment, Request, Proposal
 from siteapp.settings import GOVREADY_URL
-from siteapp.utils.views_helper import project_context
+from siteapp.utils.views_helper import project_context, start_app, get_compliance_apps_catalog, \
+    get_compliance_apps_catalog_for_user, get_compliance_apps_catalog_for_user
 from system_settings.models import SystemSettings
 from .forms import ElementEditForm, ElementEditAccessManagementForm
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
@@ -49,7 +53,6 @@ from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm, Sta
 from .models import *
 from .utilities import *
 from siteapp.utils.views_helper import project_context
-from siteapp.models import Role, Party, Appointment, Request, Proposal
 from integrations.models import Integration
 
 logging.basicConfig()
@@ -157,6 +160,75 @@ def control(request, catalog_key, cl_id):
         "links": links,
     }
     return render(request, "controls/detail.html", context)
+
+@functools.lru_cache()
+def controls_selected_aspen(request, system_id):
+    """Display System's selected controls view"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # if not request.user.has_perm('view_system', system):
+    #     raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_summary = get_integrations_system_info(request, system_id)
+    # system_events = get_integrations_system_events(request, system_id)
+
+    # Fix menu data for old vertical menu
+    project.system.root_element.name = system_summary['name']
+    project.root_task.title_override = system_summary['name']
+
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+        controls = system.root_element.controls.all()
+        impl_smts = system.root_element.statements_consumed.all()
+
+        # sort controls
+        controls = list(controls)
+        controls.sort(key=lambda control: control.get_flattened_oscal_control_as_dict()['sort_id'])
+
+        # Determine if a legacy statement exists for the control
+        impl_smts_legacy = Statement.objects.filter(consumer_element=system.root_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name)
+        impl_smts_legacy_dict = {}
+        for legacy_smt in impl_smts_legacy:
+            impl_smts_legacy_dict[legacy_smt.sid] = legacy_smt
+
+        # Get count of componentes (e.g., producer_elements) associated with a control
+        impl_smts_cmpts_count = {}
+        ikeys = system.smts_control_implementation_as_dict.keys()
+        for c in controls:
+            impl_smts_cmpts_count[c.oscal_ctl_id] = 0
+            if c.oscal_ctl_id in ikeys:
+                impl_smts_cmpts_count[c.oscal_ctl_id] = len(set([s.producer_element for s in system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts']]))
+
+        # Get list of catalog objects
+        catalog_list = Catalogs().list_catalogs()
+        # Remove the 3 nist catalogs that are hard-coded already in template
+        external_catalogs = [catalog for catalog in catalog_list if catalog.catalog_key not in ['NIST_SP-800-53_rev4', 'NIST_SP-800-53_rev5', 'NIST_SP-800-171_rev1', 'CMMC_ver1' ]]
+
+        # Return the controls
+        context = {
+            "system": system,
+            "system_summary": system_summary,
+            "project": project,
+            "controls": controls,
+            "external_catalogs": external_catalogs,
+            "impl_smts_cmpts_count": impl_smts_cmpts_count,
+            "impl_smts_legacy_dict": impl_smts_legacy_dict,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "display_urls": project_context(project)
+        }
+        return render(request, "systems/controls_selected_aspen.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
 
 @functools.lru_cache()
 def controls_selected(request, system_id):
@@ -369,7 +441,6 @@ def controls_updated(request, system_id):
         # User does not have permission to this system
         raise Http404
 
-
 @login_required
 def edit_element(request, element_id):
     """
@@ -448,6 +519,53 @@ class SelectedComponentsList(ListView):
         else:
             # User does not have permission to this system
             raise Http404
+
+class SelectedComponentsListAspen(ListView):
+    """
+    Display System's selected components view
+    """
+    model = Element
+    template_name = 'systems/components_selected_aspen.html'
+    context_object_name = 'system_elements'
+    ordering = ['name']
+    paginate_by = 25
+
+    def get_queryset(self):
+        """
+        Return the systems producer elements.
+        """
+        system = System.objects.get(id=self.kwargs['system_id'])
+        return [element for element in system.producer_elements if element.element_type != "system"]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Retrieve identified System
+
+        system = System.objects.get(id=self.kwargs['system_id'])
+        system_summary = get_integrations_system_info(self.request, self.kwargs['system_id'])
+
+        system_proposals = []
+        system_proposal_elements = []
+        for proposal in system.proposals.all():
+            system_proposals.append(proposal)
+            system_proposal_elements.append(proposal.requested_element)
+        # Retrieve related selected controls if user has permission on system
+        if self.request.user.has_perm('view_system', system):
+            # Retrieve primary system Project
+            # Temporarily assume only one project and get first project
+            project = system.projects.first()
+            context['project'] = project
+            context['system_summary'] = system_summary
+            context['system'] = system
+            context['system_proposals'] = system_proposals
+            context['system_proposal_elements'] =  system_proposal_elements
+            context['elements'] = Element.objects.all().exclude(element_type='system')
+            context["display_urls"] = project_context(project)
+            return context
+        else:
+            # User does not have permission to this system
+            raise Http404
+
 
 @login_required
 def component_library(request):
@@ -816,7 +934,6 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
 
-
 class ComponentSerializer(object):
 
     def __init__(self, element, impl_smts):
@@ -1107,6 +1224,7 @@ class ComponentImporter(object):
             all_tag_ids = [tag.id for tag in new_tags] + [tag['id'] for tag in existing_tags]
             new_component.add_tags(all_tag_ids)
             new_component.save()
+        created_statements = []
         control_implementation_statements = component_json.get('control-implementations', None)
         # If there data exists the OSCAL component's control-implementations key
         if control_implementation_statements:
@@ -1675,7 +1793,6 @@ def import_component(request):
     oscal_component_json = request.POST.get('json_content', '')
     result = ComponentImporter().import_components_as_json(import_name, oscal_component_json, request)
     return component_library(request)
-
 
 def raise_404_if_not_permitted_to_statement(request, statement, system_permission='view_system'):
     """Raises a 404 if the user doesn't have the statement system permission"""
@@ -2637,7 +2754,6 @@ def request_message(request, system_id, element_id):
 @login_required
 def add_system_component(request, system_id):
     """Add an existing element and its statements to a system"""
-# Setting a breakpoint in the code.
 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -2683,8 +2799,7 @@ def add_system_component(request, system_id):
         #   this issue may be best addressed elsewhere.
 
     # Component already added to system. Do not add the component (element) to the system again.
-    
-    
+
     if producer_element.id in elements_selected_ids:
         messages.add_message(request, messages.ERROR,
                             f'Component "{producer_element.name}" already exists in selected components.')
@@ -2729,8 +2844,7 @@ def add_system_component(request, system_id):
         return HttpResponseRedirect(form_values['redirect_url'])
     else:
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
-
-    
+  
 @login_required
 def search_system_component(request):
     """Add an existing element and its statements to a system"""
@@ -3126,7 +3240,64 @@ certifications:
         # User does not have permission to this system
         raise Http404
 
-# PoamS
+# Poams
+@login_required
+def system_poams_aspen(request, system_id):
+    """System Summary page experiment POA&Ms"""
+
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_summary = get_integrations_system_info(request, system_id)
+    system_events = get_integrations_system_events(request, system_id)
+
+    # Fix menu data for old vertical menu
+    project.system.root_element.name = system_summary['name']
+    project.root_task.title_override = system_summary['name']
+
+    controls = system.root_element.controls.all()
+    poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+    # Example reading POA&Ms from xlsx file using Pandas
+    # This is to just demonstrate reading POA&Ms from imported spreadsheet
+    # TODO: Move to a serializer and filter for one sysyem only
+    # import pandas
+    # poams_list = []
+    # fn = "local/poams_list.xlsx"
+    # if pathlib.Path(fn).is_file():
+    #     try:
+    #         df_dict = pandas.read_excel(fn, header=1)
+    #         for index, row in df_dict.iterrows():
+    #             poam_dict = {
+    #                 "id": row.get('CSAM ID', ""),
+    #                 "CSAM_ID": row.get('CSAM ID', ""   ),
+    #                 "Org": row.get('Org', ""   ),
+    #                 "Sub_Org": row.get('Sub Org', ""   ),
+    #                 "System_Name": row.get('System Name', ""   ),
+    #                 "POAM_ID": row.get('POAM ID', ""   ),
+    #                 "POAM_Title": row.get('POAM Title', "" ),
+    #                 "System_Type": row.get('System Type', ""   ),
+    #                 "Detailed_Weakness_Description": row.get('Detailed Weakness Description', ""   ),
+    #                 "Status": row.get('Status', "" )
+    #             }
+    #             poams_list.append(poam_dict)
+    #     except FileNotFoundError as e:
+    #         logger.error(f"Error reading file {fn}: {e}")
+    #     except Exception as e:
+    #         logger.error(f"Other Error reading file {fn}: {e}")
+
+    context = {
+        "system": system_summary,
+        "poam_smts": poam_smts,
+        "display_urls": project_context(project)
+    }
+    return render(request, "systems/poams_list_aspen.html", context)
+
 @login_required
 def poams_list(request, system_id):
     """List Poams for a system"""
@@ -3592,450 +3763,408 @@ def system_profile_oscal_json(request, system_id):
     return response
 
 # System Summaries
+@login_required
+def get_integrations_system_info(request, system_id):
+    """Returns Integrations info for system"""
+
+    system = System.objects.get(id=system_id)
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_name = system.root_element.name
+
+    # Retrieve info from integrations
+    csam_system_id = system.info.get('csam_system_id', None)
+    if csam_system_id is not None:
+        from integrations.models import Endpoint
+        endpoints = Endpoint.objects.filter(endpoint_path=f"/v1/systems/{csam_system_id}")
+        if len(endpoints) == 1:
+            # found cached csam data
+            csam_data = endpoints[0].data
+            # {'id': 111,
+            #  'externalId': 'string',
+            #  'name': 'System A',
+            #  'description': 'This is a simple test system',
+            #  'acronym': 'string',
+            #  'organization': 'string',
+            #  'subOrganization': 'string',
+            #  'operationalStatus': 'string',
+            #  'systemType': 'string',
+            #  'financialSystem': 'string',
+            #  'classification': 'string',
+            #  'contractorSystem': True,
+            #  'fismaReportable': True,
+            #  'criticalInfrastructure': True,
+            #  'missionCritical': True,
+            #  'purpose': 'string',
+            #  'ombExhibit': 'string',
+            #  'uiiCode': 'string',
+            #  'investmentName': 'string',
+            #  'portfolio': 'string',
+            #  'priorFyFunding': 0,
+            #  'currentFyFunding': 0,
+            #  'nextFyFunding': 0,
+            #  'categorization': 'string',
+            #  'fundingImportStatus': 'string'}
+            purpose = f"{csam_data.get('purpose_short', 'Missing')}"
+            organization_name = f"{csam_data.get('organization', 'Missing')} {csam_data.get('subOrganization', 'Missing')}"
+            other_id = f"{csam_data.get('id', 'Missing')}"
+            system_type = f"{csam_data.get('systemType', 'Missing')}"
+            status = f"{csam_data.get('operationalStatus', 'Missing')}"
+            impact = f"{csam_data.get('categorization', 'Missing')}"
+        else:
+            csam_data = {'id': 111,
+             'externalId': 'string',
+             'name': 'System A',
+             'description': 'This is a simple test system',
+             'acronym': 'string',
+             'organization': 'string',
+             'subOrganization': 'string',
+             'operationalStatus': 'string',
+             'systemType': 'string',
+             'financialSystem': 'string',
+             'classification': 'string',
+             'contractorSystem': True,
+             'fismaReportable': True,
+             'criticalInfrastructure': True,
+             'missionCritical': True,
+             'purpose': 'string',
+             'ombExhibit': 'string',
+             'uiiCode': 'string',
+             'investmentName': 'string',
+             'portfolio': 'string',
+             'priorFyFunding': 0,
+             'currentFyFunding': 0,
+             'nextFyFunding': 0,
+             'categorization': 'string',
+             'fundingImportStatus': 'string'}
+            purpose = f"{csam_data.get('purpose_short', 'Missing')}"
+            organization_name = f"{csam_data.get('organization', 'Missing')} {csam_data.get('subOrganization', 'Missing')}"
+            other_id = f"{csam_data.get('id', 'Missing')}"
+            system_type = f"{csam_data.get('systemType', 'Missing')}"
+            status = f"{csam_data.get('operationalStatus', 'Missing')}"
+            impact = f"{csam_data.get('categorization', 'Missing')}"
+    else:
+        # Couldn't find CSAM system
+        # Sample systems from DHS SORNs
+        dhs_sorns = [
+            { "name": "DHS/ALL-037 E-Authentication Records System of Records", "purpose": """This system collects information in order to authenticate an individual's identity for the purpose of obtaining a credential to electronically access a DHS program or application. This system includes DHS programs or applications that use a third-party identity service provider to provide any of the following credential services: Registration, including identity proofing, issuance, authentication, authorization, and maintenance. This system collects information that allows DHS to track the use of programs and applications for system maintenance and troubleshooting. The system also enables DHS to allow an individual to reuse a credential received when applicable and available."""},
+            { "name": "DHS/ALL-032 Official Passport Application and Maintenance Records", "purpose": """The purpose of this system is to collect and maintain a copy of an official passport application or maintenance record on DHS employees and former employees, including political appointees, civilian, and military personnel (and dependents and family members that accompany military members assigned outside the continental United States) assigned or detailed to the Department, individuals who are formally or informally associated with the Department, including advisory committee members, employees of other agencies and departments in the federal government, and other individuals in the private and public sector who are on official business with the Department, who in their official capacity, are applying for an official passport or updating their official passport records where a copy is maintained by the Department."""},
+            { "name": "DHS/ALL-034 Emergency Care Medical Records", "purpose": """The purpose of this system is to support MQM oversight to ensure consistent quality medical care and standardize the documentation of care rendered by DHS EMS medical care providers in diverse environments.""" },
+            { "name": "DHS/ALL-035 Common Entity Index Prototype (CEI Prototype)", "purpose": """The purpose of this prototype is to determine the feasibility of establishing a centralized index of select biographic information that will allow DHS to provide a consolidated and correlated identity, thereby facilitating and improving DHS's ability to carry out its national security, homeland security, law enforcement, and benefits missions.""" },
+            { "name": "DHS/ALL-042 Personnel Networking and Collaboration System of Records.", "purpose": """The purpose of this system is to permit DHS's collection of biographical and professional information of current DHS employees, contractors, and grantees to facilitate connections and collaboration among individuals supporting the Department's mission; aid in the identification of individuals within an organization; and to ensure efficient collaboration within the Department.""" },
+            { "name": "DHS/ALL-044 eRulemaking", "purpose": """The purpose of this system is to permit members of the public to review and comment on DHS rulemakings and notices. DHS will use any submitted contact information to seek clarification of a comment, respond to a comment when warranted, and for such other needs as may be associated with the rule making or notice process.""" },
+            { "name": "DHS/FEMA-006 Citizen Corps Program", "url": "http://www.gpo.gov/fdsys/pkg/FR-2013-07-22/html/2013-17456.htm", "purpose": "The purpose of this system is to allow state, local, tribal, and territorial communities to setup and register Citizen Corps Councils and CERT programs. Also, this system provides a way for individuals to locate and contact Councils, CERTs, and other Citizen Corps partners for more information regarding volunteer programs and opportunities nation-wide. Additionally, this system uses surveys to assess and enhance communities' preparedness and to improve the effectiveness of the Citizen Corps Program."}
+            # { "name": "", "purpose": """ """ },
+        ]
+
+        random.seed(system_id)
+        other_id = random.randint(1,2000)
+        impact = random.choice(["Low Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "High Impact"])
+        status = random.choice(["Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Under Development", "Planned"])
+        system_from_sorn = random.choice(dhs_sorns)
+
+        # Fix purpose
+        if "purpose" not in system_from_sorn:
+            purpose = "Missing"
+        elif len(system_from_sorn['purpose']) > 750:
+            purpose = system_from_sorn['purpose'][0:500]
+        else:
+            purpose = system_from_sorn['purpose']
+
+        # system_name = system_from_sorn['name'].strip(" ").strip(",")
+        if re.search(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", system_name):
+            system_name = re.sub(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", '', system_name)
+
+        # Organization
+        if re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")):
+            organization_name = "DHS " + re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")).group(1).strip()
+        else:
+            organization_name = "DHS"
+
+        system_type = random.choice(["General Support System", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Minor Application", ])
+
+    # Acronym
+    if "(" in system_name:
+        acronym = re.search(r"\((.*)\)", system_name).group(1).strip()
+        system_name = re.sub(r" \(.*\)", '', system_name)
+    else:
+        acronym = "".join([word[0].upper() for word in system_name.replace("(","").replace(")","").split(" ")])
+        if len(acronym) > 5:
+            acronym = acronym[0:3]
+        if len(acronym) == 1:
+            acronym = system_name
+    aka = [acronym]
+    if len(system_name.split(" ")) > 7:
+        short_name = " ".join([word for word in system_name.split(" ")[0:2]]) + " System"
+        aka.append(short_name)
+
+    hosting_facility = random.choice(["DISC", "AWS", "AWS","AWS", "AWS", "DC-1", "AWS", "AWS", "Azure", "AWS", "AWS", "AWS", "DC-1",  ])
+    # Dates
+    from datetime import datetime, date, timedelta, timezone
+    date1, date2 = datetime(2014, 6, 3, tzinfo=timezone.utc), datetime(2022, 2, 1, tzinfo=timezone.utc)
+    dates_between = date2 - date1
+    total_days = dates_between.days
+    created = date1 + timedelta(days=random.randrange(total_days))
+    next_audit = datetime.now().date() + timedelta(random.randint(40,600))
+    next_scan = datetime.combine(datetime.now().date() + timedelta(random.randint(2,12)), datetime.min.time()).replace(tzinfo=timezone.utc)
+
+    # datetime.combine(date.today(), datetime.min.time())
+    # next_scan = next_scan.replace(tzinfo=timezone.utc)
+    dates_between_created = created - date1
+    pen_test = created + timedelta(days=random.randrange(dates_between_created.days))
+
+    # Data for System
+    system = {
+        "id": system_id,
+        "other_id": other_id,
+        "name": system_name,
+        "organization_name": organization_name,
+        "aka": aka,
+        "impact": impact,
+        "status": status,
+        "type": system_type,
+        "created": created,
+        "hosting_facility": hosting_facility,
+        "next_audit": next_audit,
+        "next_scan": next_scan, #"05/01/22",
+        "security_scan": "Last known-04/20/22 @ 1:23pm",
+        "pen_test": pen_test, #"Scheduled for 05/05/22",
+        "config_scan": "Last known-01/17/20 @ 4:32pm",
+        "purpose": purpose,
+        "vuln_new_30days": random.randint(0,12),
+        "vuln_new_rslvd_30days": random.randint(0,20),
+        "vuln_90days": random.randint(0,15),
+        "risk_score": random.randint(6,10) + round(random.random(), 1),
+        "score_1": random.randint(6,10) + round(random.random(), 1),
+        "score_2": random.randint(6,10) + round(random.random(), 1),
+        "score_3": random.randint(6,10) + round(random.random(), 1),
+        "score_4": random.randint(6,10) + round(random.random(), 1),
+        "score_5": random.randint(6,10) + round(random.random(), 1),
+    }
+    return system
 
 @login_required
-def system_summary_1(request, system_id):
+def get_integrations_system_events(request, system_id):
+    """Returns CSAM info for system"""
+
+    system = System.objects.get(id=system_id)
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+    system_name = system.root_element.name
+
+    # Retrieve events from integrations
+    csam_system_id = system.info.get('csam_system_id', None)
+    system_events = [
+        { "event_tag": "TEST", "event_summary": "Penetration test scheduled - Automated penetration test run by SOC"},
+        { "event_tag": "SCAN", "event_summary": "Security scan scheduled - Automated weekly security scan will occur Sunday, June 9"},
+        { "event_tag": "SYS", "event_summary": "ISSO appointed - Janice Avery (contracor) has been appointed as ISSO for System"}
+    ]
+    return system_events
+
+
+@login_required
+def create_system_from_string(request):
+    """Create a system in GovReady-Q based on info from a URL"""
+
+    # communication = set_integration()
+    print("request", request.GET)
+    new_system_str = request.GET.get("s", None)
+    new_system_name = new_system_str.replace("https://", "").replace("http://", "")
+    new_system_description = f"System created from url."
+
+    # Examine remote site for information
+    # Handle error case of no URL
+
+    # Check if system aleady exists with domain name
+    # if not System.objects.filter(Q(info__contains={"csam_system_id": csam_system_id})).exists():
+    if True:
+        # Create new system
+        # What is default template?
+        source_slug = "govready-q-files-startpack"
+        app_name = "speedyssp"
+        # can user start the app?
+        # Is this a module the user has access to? The app store
+        # does some authz based on the organization.
+        catalog = get_compliance_apps_catalog_for_user(request.user)
+        for app_catalog_info in catalog:
+            if app_catalog_info["key"] == source_slug + "/" + app_name:
+                # We found it.
+                break
+        else:
+            raise Http404()
+        # Start the most recent version of the app.
+        appver = app_catalog_info["versions"][0]
+        organization = Organization.objects.first()  # temporary
+        default_folder_name = "Started Apps"
+        folder = Folder.objects.filter(
+            organization=organization,
+            admin_users=request.user,
+            title=default_folder_name,
+        ).first()
+        if not folder:
+            folder = Folder.objects.create(organization=organization, title=default_folder_name)
+            folder.admin_users.add(request.user)
+        task = None
+        q = None
+        # Get portfolio project should be included in.
+        if request.GET.get("portfolio"):
+            portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+        else:
+            if not request.user.default_portfolio:
+                request.user.create_default_portfolio_if_missing()
+            portfolio = request.user.default_portfolio
+        # import ipdb; ipdb.set_trace()
+        try:
+            project = start_app(appver, organization, request.user, folder, task, q, portfolio)
+        except ModuleDefinitionError as e:
+            error = str(e)
+        # Associate System with CSAM system
+        new_system = project.system 
+        new_system.info = {
+            "created_from_input": new_system_str,
+            "system_description": new_system_description
+        }
+        new_system.save()
+        # Update System name to URL system name
+        nsre = new_system.root_element
+        # Make sure system root element name is unique
+        name_suffix = ""
+        while Element.objects.filter(name=f"{new_system_name}{name_suffix}").exists():
+            # Element exists with that name
+            if name_suffix == "":
+                name_suffix = 1
+            else:
+                name_suffix = str(int(name_suffix)+1)
+        if name_suffix == "":
+            nsre.name = new_system_name
+        else:
+            nsre.name = f"{new_system_name}{name_suffix}"
+        nsre.save()
+        # Update System Project title to CSAM system name
+        prt = project.root_task
+        prt.title_override = nsre.name
+        prt.save()
+        logger.info(event=f"create_system_from_url url {new_system_name}",
+                object={"object": "system", "id": new_system.id},
+                user={"id": request.user.id, "username": request.user.username})
+        messages.add_message(request, messages.INFO, f"Created new System in GovReady based on URL {new_system_name}.")
+
+        # Redirect to the new system/project.
+        return HttpResponseRedirect(project.get_absolute_url())   
+        # return HttpResponseRedirect(f"/system/{new_system.id}/aspen/summary")
+
+@login_required
+def system_summary_1_aspen(request, system_id):
     """System Summary page experiment 1"""
 
-    # Retrieve identified System
-    # system = System.objects.get(id=system_id)
-    system = System.objects.get(id=1)
-    # Retrieve related selected controls if user has permission on system
-    # if request.user.has_perm('view_system', system):
-    if True:
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
-
-        # Retrieve list of deployments for the system
-        # deployments = system.deployments.all().order_by(Lower('name'))
-        # controls = system.root_element.controls.all()
-        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
-
-        # Sample systems from DHS SORNs
-        dhs_sorns = [
-            { "name": "DHS/ALL-037 E-Authentication Records System of Records", "purpose": """This system collects information in order to authenticate an individual's identity for the purpose of obtaining a credential to electronically access a DHS program or application. This system includes DHS programs or applications that use a third-party identity service provider to provide any of the following credential services: Registration, including identity proofing, issuance, authentication, authorization, and maintenance. This system collects information that allows DHS to track the use of programs and applications for system maintenance and troubleshooting. The system also enables DHS to allow an individual to reuse a credential received when applicable and available."""},
-            { "name": "DHS/ALL-032 Official Passport Application and Maintenance Records", "purpose": """The purpose of this system is to collect and maintain a copy of an official passport application or maintenance record on DHS employees and former employees, including political appointees, civilian, and military personnel (and dependents and family members that accompany military members assigned outside the continental United States) assigned or detailed to the Department, individuals who are formally or informally associated with the Department, including advisory committee members, employees of other agencies and departments in the federal government, and other individuals in the private and public sector who are on official business with the Department, who in their official capacity, are applying for an official passport or updating their official passport records where a copy is maintained by the Department."""},
-            { "name": "DHS/ALL-034 Emergency Care Medical Records", "purpose": """The purpose of this system is to support MQM oversight to ensure consistent quality medical care and standardize the documentation of care rendered by DHS EMS medical care providers in diverse environments.""" },
-            { "name": "DHS/ALL-035 Common Entity Index Prototype (CEI Prototype)", "purpose": """The purpose of this prototype is to determine the feasibility of establishing a centralized index of select biographic information that will allow DHS to provide a consolidated and correlated identity, thereby facilitating and improving DHS's ability to carry out its national security, homeland security, law enforcement, and benefits missions.""" },
-            { "name": "DHS/ALL-042 Personnel Networking and Collaboration System of Records.", "purpose": """The purpose of this system is to permit DHS's collection of biographical and professional information of current DHS employees, contractors, and grantees to facilitate connections and collaboration among individuals supporting the Department's mission; aid in the identification of individuals within an organization; and to ensure efficient collaboration within the Department.""" },
-            { "name": "DHS/ALL-044 eRulemaking", "purpose": """The purpose of this system is to permit members of the public to review and comment on DHS rulemakings and notices. DHS will use any submitted contact information to seek clarification of a comment, respond to a comment when warranted, and for such other needs as may be associated with the rule making or notice process.""" },
-            { "name": "DHS/FEMA-006 Citizen Corps Program", "url": "http://www.gpo.gov/fdsys/pkg/FR-2013-07-22/html/2013-17456.htm", "purpose": "The purpose of this system is to allow state, local, tribal, and territorial communities to setup and register Citizen Corps Councils and CERT programs. Also, this system provides a way for individuals to locate and contact Councils, CERTs, and other Citizen Corps partners for more information regarding volunteer programs and opportunities nation-wide. Additionally, this system uses surveys to assess and enhance communities' preparedness and to improve the effectiveness of the Citizen Corps Program."}
-            # { "name": "", "purpose": """ """ },
-        ]
-
-        import random
-        from django.utils import timezone
-
-        random.seed(system_id)
-        other_id = random.randint(1,2000)
-        impact = random.choice(["Low Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "High Impact"])
-        status = random.choice(["Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Under Development", "Planned"])
-        system_from_sorn = random.choice(dhs_sorns)
-
-        # Fix purpose
-        if "purpose" not in system_from_sorn:
-            system_from_sorn['purpose'] = "Missing"
-        elif len(system_from_sorn['purpose']) > 750:
-            system_from_sorn['purpose'] = system_from_sorn['purpose'][0:500]
-        # System name
-        system_name = system_from_sorn['name'].strip(" ").strip(",")
-        if re.search(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", system_name):
-            system_name = re.sub(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", '', system_name)
-
-        # Organization
-        if re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")):
-            organization_name = "DHS " + re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")).group(1).strip()
-        else:
-            organization_name = "DHS"
-
-        # Acronym
-        if "(" in system_name:
-            acronym = re.search(r"\((.*)\)", system_name).group(1).strip()
-            system_name = re.sub(r" \(.*\)", '', system_name)
-        else:
-            acronym = "".join([word[0].upper() for word in system_name.replace("(","").replace(")","").split(" ")])
-            if len(acronym) > 5:
-                acronym = acronym[0:3]
-            if len(acronym) == 1:
-                acronym = system_name
-        aka = [acronym]
-        if len(system_name.split(" ")) > 7:
-            short_name = " ".join([word for word in system_name.split(" ")[0:2]]) + " System"
-            aka.append(short_name)
-
-        system_type = random.choice(["General Support System", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Minor Application", ])
-        hosting_facility = random.choice(["DISC", "AWS", "AWS","AWS", "AWS", "DC-1", "AWS", "AWS", "Azure", "AWS", "AWS", "AWS", "DC-1",  ])
-        # Dates
-        from datetime import datetime, date, timedelta, timezone
-        date1, date2 = datetime(2014, 6, 3, tzinfo=timezone.utc), datetime(2022, 2, 1, tzinfo=timezone.utc)
-        dates_between = date2 - date1
-        total_days = dates_between.days
-        created = date1 + timedelta(days=random.randrange(total_days))
-        next_audit = datetime.now().date() + timedelta(random.randint(40,600))
-        next_scan = datetime.combine(datetime.now().date() + timedelta(random.randint(2,12)), datetime.min.time()).replace(tzinfo=timezone.utc)
-
-        # datetime.combine(date.today(), datetime.min.time())
-        # next_scan = next_scan.replace(tzinfo=timezone.utc)
-        dates_between_created = created - date1
-        pen_test = created + timedelta(days=random.randrange(dates_between_created.days))
-
-        # Fake data for System
-        system = {
-            "id": system_id,
-            "other_id": other_id,
-            "name": system_name,
-            "organization_name": organization_name,
-            "aka": aka,
-            "impact": impact,
-            "status": status,
-            "type": system_type,
-            "created": created,
-            "hosting_facility": hosting_facility,
-            "next_audit": next_audit,
-            "next_scan": next_scan, #"05/01/22",
-            "security_scan": "Last known-04/20/22 @ 1:23pm",
-            "pen_test": pen_test, #"Scheduled for 05/05/22",
-            "config_scan": "Last known-01/17/20 @ 4:32pm",
-            "purpose": system_from_sorn['purpose'],
-            "vuln_new_30days": random.randint(0,12),
-            "vuln_new_rslvd_30days": random.randint(0,20),
-            "vuln_90days": random.randint(0,15),
-            "risk_score": random.randint(6,10) + round(random.random(), 1),
-            "score_1": random.randint(6,10) + round(random.random(), 1),
-            "score_2": random.randint(6,10) + round(random.random(), 1),
-            "score_3": random.randint(6,10) + round(random.random(), 1),
-            "score_4": random.randint(6,10) + round(random.random(), 1),
-            "score_5": random.randint(6,10) + round(random.random(), 1),
-        }
-
-        system_events = [
-            { "event_tag": "TEST", "event_summary": "Penetration test scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do..."},
-            { "event_tag": "SCAN", "event_summary": "Security scan scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do..."},
-            { "event_tag": "SYS", "event_summary": "Isso appointed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod..."}
-        ]
-
-        # Fix menu data
-        project.system.root_element.name = system['name']
-        project.root_task.title_override = system['name']
-        # Return the controls
-        
-        context = {
-            "system": system,
-            #"project": project,
-            "system_events": system_events,
-            # "deployments": deployments,
-            "display_urls": project_context(project)
-        }
-        return render(request, "systems/system_summary_1.html", context)
-    else:
-        # User does not have permission to this system
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
         raise Http404
 
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_summary = get_integrations_system_info(request, system_id)
+    system_events = get_integrations_system_events(request, system_id)
+
+    # Get all projects
+    projects = system.projects.all()
+
+    # Fix menu data for old vertical menu
+    project.system.root_element.name = system_summary['name']
+    project.root_task.title_override = system_summary['name']
+
+    context = {
+        "system": system_summary,
+        #"project": project,
+        "project": projects,
+        "system_events": system_events,
+        # "deployments": deployments,
+        "display_urls": project_context(project)
+    }
+    return render(request, "systems/system_summary_1.html", context)
+
 @login_required
-def system_integrations(request, system_id):
+def system_summary_aspen(request, system_id):
+    """System Summary page experiment 2 live data"""
+
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_summary = get_integrations_system_info(request, system_id)
+    system_events = get_integrations_system_events(request, system_id)
+
+    # Get all projects
+    projects = system.projects.all()
+
+    # Fix menu data for old vertical menu
+    project.system.root_element.name = system_summary['name']
+    project.root_task.title_override = system_summary['name']
+
+    context = {
+        "system": system_summary,
+        #"project": project,
+        "projects": projects,
+        "system_events": system_events,
+        # "deployments": deployments,
+        "display_urls": project_context(project)
+    }
+    return render(request, "systems/system_summary_1.html", context)
+
+@login_required
+def system_integrations_aspen(request, system_id):
     """System Integrations page experiment 1"""
 
-    # Retrieve identified System
-    # system = System.objects.get(id=system_id)
-    system = System.objects.get(id=1)
-
-    # Retrieve related selected controls if user has permission on system
-    # if request.user.has_perm('view_system', system):
-    if True:
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
-
-        # Retrieve list of deployments for the system
-        # deployments = system.deployments.all().order_by(Lower('name'))
-        # controls = system.root_element.controls.all()
-        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
-
-        # Sample systems from DHS SORNs
-        dhs_sorns = [
-            { "name": "DHS/ALL-037 E-Authentication Records System of Records", "purpose": """This system collects information in order to authenticate an individual's identity for the purpose of obtaining a credential to electronically access a DHS program or application. This system includes DHS programs or applications that use a third-party identity service provider to provide any of the following credential services: Registration, including identity proofing, issuance, authentication, authorization, and maintenance. This system collects information that allows DHS to track the use of programs and applications for system maintenance and troubleshooting. The system also enables DHS to allow an individual to reuse a credential received when applicable and available."""},
-            { "name": "DHS/ALL-032 Official Passport Application and Maintenance Records", "purpose": """The purpose of this system is to collect and maintain a copy of an official passport application or maintenance record on DHS employees and former employees, including political appointees, civilian, and military personnel (and dependents and family members that accompany military members assigned outside the continental United States) assigned or detailed to the Department, individuals who are formally or informally associated with the Department, including advisory committee members, employees of other agencies and departments in the federal government, and other individuals in the private and public sector who are on official business with the Department, who in their official capacity, are applying for an official passport or updating their official passport records where a copy is maintained by the Department."""},
-            { "name": "DHS/ALL-034 Emergency Care Medical Records", "purpose": """The purpose of this system is to support MQM oversight to ensure consistent quality medical care and standardize the documentation of care rendered by DHS EMS medical care providers in diverse environments.""" },
-            { "name": "DHS/ALL-035 Common Entity Index Prototype (CEI Prototype)", "purpose": """The purpose of this prototype is to determine the feasibility of establishing a centralized index of select biographic information that will allow DHS to provide a consolidated and correlated identity, thereby facilitating and improving DHS's ability to carry out its national security, homeland security, law enforcement, and benefits missions.""" },
-            { "name": "DHS/ALL-042 Personnel Networking and Collaboration System of Records.", "purpose": """The purpose of this system is to permit DHS's collection of biographical and professional information of current DHS employees, contractors, and grantees to facilitate connections and collaboration among individuals supporting the Department's mission; aid in the identification of individuals within an organization; and to ensure efficient collaboration within the Department.""" },
-            { "name": "DHS/ALL-044 eRulemaking", "purpose": """The purpose of this system is to permit members of the public to review and comment on DHS rulemakings and notices. DHS will use any submitted contact information to seek clarification of a comment, respond to a comment when warranted, and for such other needs as may be associated with the rule making or notice process.""" },
-            { "name": "DHS/FEMA-006 Citizen Corps Program", "url": "http://www.gpo.gov/fdsys/pkg/FR-2013-07-22/html/2013-17456.htm", "purpose": "The purpose of this system is to allow state, local, tribal, and territorial communities to setup and register Citizen Corps Councils and CERT programs. Also, this system provides a way for individuals to locate and contact Councils, CERTs, and other Citizen Corps partners for more information regarding volunteer programs and opportunities nation-wide. Additionally, this system uses surveys to assess and enhance communities' preparedness and to improve the effectiveness of the Citizen Corps Program."}
-            # { "name": "", "purpose": """ """ },
-        ]
-
-        import random
-        from django.utils import timezone
-
-        random.seed(system_id)
-        other_id = random.randint(1,2000)
-        impact = random.choice(["Low Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "High Impact"])
-        status = random.choice(["Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Under Development", "Planned"])
-        system_from_sorn = random.choice(dhs_sorns)
-
-        # Fix purpose
-        if "purpose" not in system_from_sorn:
-            system_from_sorn['purpose'] = "Missing"
-        elif len(system_from_sorn['purpose']) > 750:
-            system_from_sorn['purpose'] = system_from_sorn['purpose'][0:500]
-        # System name
-        system_name = system_from_sorn['name'].strip(" ").strip(",")
-        if re.search(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", system_name):
-            system_name = re.sub(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", '', system_name)
-
-        # Organization
-        if re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")):
-            organization_name = "DHS " + re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")).group(1).strip()
-        else:
-            organization_name = "DHS"
-
-        # Acronym
-        if "(" in system_name:
-            acronym = re.search(r"\((.*)\)", system_name).group(1).strip()
-            system_name = re.sub(r" \(.*\)", '', system_name)
-        else:
-            acronym = "".join([word[0].upper() for word in system_name.replace("(","").replace(")","").split(" ")])
-            if len(acronym) > 5:
-                acronym = acronym[0:3]
-            if len(acronym) == 1:
-                acronym = system_name
-        aka = [acronym]
-        if len(system_name.split(" ")) > 7:
-            short_name = " ".join([word for word in system_name.split(" ")[0:2]]) + " System"
-            aka.append(short_name)
-
-        system_type = random.choice(["General Support System", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Minor Application", ])
-        hosting_facility = random.choice(["DISC", "AWS", "AWS","AWS", "AWS", "DC-1", "AWS", "AWS", "Azure", "AWS", "AWS", "AWS", "DC-1",  ])
-        # Dates
-        from datetime import datetime, date, timedelta, timezone
-        date1, date2 = datetime(2014, 6, 3, tzinfo=timezone.utc), datetime(2022, 2, 1, tzinfo=timezone.utc)
-        dates_between = date2 - date1
-        total_days = dates_between.days
-        created = date1 + timedelta(days=random.randrange(total_days))
-        next_audit = datetime.now().date() + timedelta(random.randint(40,600))
-        next_scan = datetime.combine(datetime.now().date() + timedelta(random.randint(2,12)), datetime.min.time()).replace(tzinfo=timezone.utc)
-
-        # datetime.combine(date.today(), datetime.min.time())
-        # next_scan = next_scan.replace(tzinfo=timezone.utc)
-        dates_between_created = created - date1
-        pen_test = created + timedelta(days=random.randrange(dates_between_created.days))
-
-        # Fake data for System
-        system = {
-            "id": system_id,
-            "other_id": other_id,
-            "name": system_name,
-            "organization_name": organization_name,
-            "aka": aka,
-            "impact": impact,
-            "status": status,
-            "type": system_type,
-            "created": created,
-            "hosting_facility": hosting_facility,
-            "next_audit": next_audit,
-            "next_scan": next_scan, #"05/01/22",
-            "security_scan": "Last known-04/20/22 @ 1:23pm",
-            "pen_test": pen_test, #"Scheduled for 05/05/22",
-            "config_scan": "Last known-01/17/20 @ 4:32pm",
-            "purpose": system_from_sorn['purpose']
-        }
-
-        system_events = [
-            { "event_tag": "TEST", "event_summary": "Penetration test scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do..."},
-            { "event_tag": "SCAN", "event_summary": "Security scan scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do..."},
-            { "event_tag": "SYS", "event_summary": "Isso appointed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod..."}
-        ]
-
-        general_integrations = []
-        integrations = Integration.objects.all()
-        for integration in integrations:
-            general_integration = {
-                "integration_name": integration.name,
-                "integration_summary": integration.description
-                }
-            general_integrations.append(general_integration)
-            
-        # system_integrations = [
-        #     { "integration_name": "CSAM", "integration_summary": "Provides access to system information stored in CSAM"},
-        #     { "integration_name": "GITHUB", "integration_summary": "Includes recent developer changes to source code"},
-        #     # { "event_tag": "SYS", "event_summary": "Isso appointed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod..."}
-        # ]
-
-        # Fix menu data
-        project.system.root_element.name = system['name']
-        project.root_task.title_override = system['name']
-        # Return the controls        
-        context = {
-            "system": system,
-            #"project": project,
-            "system_events": system_events,
-            "system_integrations": general_integrations,
-            # "deployments": deployments,
-            "display_urls": project_context(project)
-        }
-        return render(request, "systems/system_integrations_aspen.html", context)
-    else:
-        # User does not have permission to this system
-        raise Http404
-
-@login_required
-def system_summary_poams(request, system_id):
-    """System Summary page experiment POA&Ms"""
-
-    # Retrieve identified System
     system = System.objects.get(id=system_id)
-    # system = System.objects.get(id=1)
-    # Retrieve related selected controls if user has permission on system
-    # if request.user.has_perm('view_system', system):
-    if True:
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
-
-        # Retrieve list of deployments for the system
-        # deployments = system.deployments.all().order_by(Lower('name'))
-        # controls = system.root_element.controls.all()
-        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
-
-        # Sample systems from DHS SORNs
-        dhs_sorns = [
-            { "name": "DHS/ALL-037 E-Authentication Records System of Records", "purpose": """This system collects information in order to authenticate an individual's identity for the purpose of obtaining a credential to electronically access a DHS program or application. This system includes DHS programs or applications that use a third-party identity service provider to provide any of the following credential services: Registration, including identity proofing, issuance, authentication, authorization, and maintenance. This system collects information that allows DHS to track the use of programs and applications for system maintenance and troubleshooting. The system also enables DHS to allow an individual to reuse a credential received when applicable and available."""},
-            { "name": "DHS/ALL-032 Official Passport Application and Maintenance Records", "purpose": """The purpose of this system is to collect and maintain a copy of an official passport application or maintenance record on DHS employees and former employees, including political appointees, civilian, and military personnel (and dependents and family members that accompany military members assigned outside the continental United States) assigned or detailed to the Department, individuals who are formally or informally associated with the Department, including advisory committee members, employees of other agencies and departments in the federal government, and other individuals in the private and public sector who are on official business with the Department, who in their official capacity, are applying for an official passport or updating their official passport records where a copy is maintained by the Department."""},
-            { "name": "DHS/ALL-034 Emergency Care Medical Records", "purpose": """The purpose of this system is to support MQM oversight to ensure consistent quality medical care and standardize the documentation of care rendered by DHS EMS medical care providers in diverse environments.""" },
-            { "name": "DHS/ALL-035 Common Entity Index Prototype (CEI Prototype)", "purpose": """The purpose of this prototype is to determine the feasibility of establishing a centralized index of select biographic information that will allow DHS to provide a consolidated and correlated identity, thereby facilitating and improving DHS's ability to carry out its national security, homeland security, law enforcement, and benefits missions.""" },
-            { "name": "DHS/ALL-042 Personnel Networking and Collaboration System of Records.", "purpose": """The purpose of this system is to permit DHS's collection of biographical and professional information of current DHS employees, contractors, and grantees to facilitate connections and collaboration among individuals supporting the Department's mission; aid in the identification of individuals within an organization; and to ensure efficient collaboration within the Department.""" },
-            { "name": "DHS/ALL-044 eRulemaking", "purpose": """The purpose of this system is to permit members of the public to review and comment on DHS rulemakings and notices. DHS will use any submitted contact information to seek clarification of a comment, respond to a comment when warranted, and for such other needs as may be associated with the rule making or notice process.""" },
-            { "name": "DHS/FEMA-006 Citizen Corps Program", "url": "http://www.gpo.gov/fdsys/pkg/FR-2013-07-22/html/2013-17456.htm", "purpose": "The purpose of this system is to allow state, local, tribal, and territorial communities to setup and register Citizen Corps Councils and CERT programs. Also, this system provides a way for individuals to locate and contact Councils, CERTs, and other Citizen Corps partners for more information regarding volunteer programs and opportunities nation-wide. Additionally, this system uses surveys to assess and enhance communities' preparedness and to improve the effectiveness of the Citizen Corps Program."}
-            # { "name": "", "purpose": """ """ },
-        ]
-
-        import random
-        from django.utils import timezone
-
-        random.seed(system_id)
-        other_id = random.randint(1,2000)
-        impact = random.choice(["Low Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "High Impact"])
-        status = random.choice(["Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Under Development", "Planned"])
-        system_from_sorn = random.choice(dhs_sorns)
-
-        # Fix purpose
-        if "purpose" not in system_from_sorn:
-            system_from_sorn['purpose'] = "Missing"
-        elif len(system_from_sorn['purpose']) > 750:
-            system_from_sorn['purpose'] = system_from_sorn['purpose'][0:500]
-        # System name
-        system_name = system_from_sorn['name'].strip(" ").strip(",")
-        if re.search(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", system_name):
-            system_name = re.sub(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", '', system_name)
-
-        # Organization
-        if re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")):
-            organization_name = "DHS " + re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")).group(1).strip()
-        else:
-            organization_name = "DHS"
-
-        # Acronym
-        if "(" in system_name:
-            acronym = re.search(r"\((.*)\)", system_name).group(1).strip()
-            system_name = re.sub(r" \(.*\)", '', system_name)
-        else:
-            acronym = "".join([word[0].upper() for word in system_name.replace("(","").replace(")","").split(" ")])
-            if len(acronym) > 5:
-                acronym = acronym[0:3]
-            if len(acronym) == 1:
-                acronym = system_name
-        aka = [acronym]
-        if len(system_name.split(" ")) > 7:
-            short_name = " ".join([word for word in system_name.split(" ")[0:2]]) + " System"
-            aka.append(short_name)
-
-        system_type = random.choice(["General Support System", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Minor Application", ])
-        hosting_facility = random.choice(["DISC", "AWS", "AWS","AWS", "AWS", "DC-1", "AWS", "AWS", "Azure", "AWS", "AWS", "AWS", "DC-1",  ])
-        # Dates
-        from datetime import datetime, date, timedelta, timezone
-        date1, date2 = datetime(2014, 6, 3, tzinfo=timezone.utc), datetime(2022, 2, 1, tzinfo=timezone.utc)
-        dates_between = date2 - date1
-        total_days = dates_between.days
-        created = date1 + timedelta(days=random.randrange(total_days))
-        next_audit = datetime.now().date() + timedelta(random.randint(40,600))
-        next_scan = datetime.combine(datetime.now().date() + timedelta(random.randint(2,12)), datetime.min.time()).replace(tzinfo=timezone.utc)
-
-        # datetime.combine(date.today(), datetime.min.time())
-        # next_scan = next_scan.replace(tzinfo=timezone.utc)
-        dates_between_created = created - date1
-        pen_test = created + timedelta(days=random.randrange(dates_between_created.days))
-
-        # Fake data for System
-        system = {
-            "id": system_id,
-            "other_id": other_id,
-            "name": system_name,
-            "organization_name": organization_name,
-            "aka": aka,
-            "impact": impact,
-            "status": status,
-            "type": system_type,
-            "created": created,
-            "hosting_facility": hosting_facility,
-            "next_audit": next_audit,
-            "next_scan": next_scan, #"05/01/22",
-            "security_scan": "Last known-04/20/22 @ 1:23pm",
-            "pen_test": pen_test, #"Scheduled for 05/05/22",
-            "config_scan": "Last known-01/17/20 @ 4:32pm",
-            "purpose": system_from_sorn['purpose']
-        }
-
-        system_events = [
-            { "event_tag": "TEST", "event_summary": "Penetration test scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do..."},
-            { "event_tag": "SCAN", "event_summary": "Security scan scheduled - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do..."},
-            { "event_tag": "SYS", "event_summary": "Isso appointed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod..."}
-        ]
-
-        # Fix menu data
-        project.system.root_element.name = system['name']
-        project.root_task.title_override = system['name']
-        # Return the controls
-
-        # Example reading POA&Ms from xlsx file using Pandas
-        # This is to just demonstrate reading POA&Ms from imported spreadsheet
-        # TODO: Move to a serializer and filter for one sysyem only
-        # import pandas
-        # poams_list = []
-        # fn = "local/poams_list.xlsx"
-        # if pathlib.Path(fn).is_file():
-        #     try:
-        #         df_dict = pandas.read_excel(fn, header=1)
-        #         for index, row in df_dict.iterrows():
-        #             poam_dict = {
-        #                 "id": row.get('CSAM ID', ""),
-        #                 "CSAM_ID": row.get('CSAM ID', ""   ),
-        #                 "Org": row.get('Org', ""   ),
-        #                 "Sub_Org": row.get('Sub Org', ""   ),
-        #                 "System_Name": row.get('System Name', ""   ),
-        #                 "POAM_ID": row.get('POAM ID', ""   ),
-        #                 "POAM_Title": row.get('POAM Title', "" ),
-        #                 "System_Type": row.get('System Type', ""   ),
-        #                 "Detailed_Weakness_Description": row.get('Detailed Weakness Description', ""   ),
-        #                 "Status": row.get('Status', "" )
-        #             }
-        #             poams_list.append(poam_dict)
-        #     except FileNotFoundError as e:
-        #         logger.error(f"Error reading file {fn}: {e}")
-        #     except Exception as e:
-        #         logger.error(f"Other Error reading file {fn}: {e}")
-
-        context = {
-            "system": system,
-            #"project": project,
-            "system_events": system_events,
-            # "deployments": deployments,
-            # "poams_list": poams_list,
-            "display_urls": project_context(project)
-        }
-        return render(request, "systems/system_summary_2.html", context)
-    else:
-        # User does not have permission to this system
+    if not request.user.has_perm('view_system', system):
         raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_summary = get_integrations_system_info(request, system_id)
+    system_events = get_integrations_system_events(request, system_id)
+
+    # Fix menu data for old vertical menu
+    project.system.root_element.name = system_summary['name']
+    project.root_task.title_override = system_summary['name']
+
+    # Get integrations
+    general_integrations = []
+    integrations = Integration.objects.all()
+    for integration in integrations:
+        general_integration = {
+            "integration_name": integration.name,
+            "integration_summary": integration.description,
+            "integration_base_url": integration.config.get('base_url', None)
+            }
+        general_integrations.append(general_integration)
+
+    # system_integrations = [
+    #     { "integration_name": "CSAM", "integration_summary": "Provides access to system information stored in CSAM"},
+    #     { "integration_name": "GITHUB", "integration_summary": "Includes recent developer changes to source code"},
+    #     # { "event_tag": "SYS", "event_summary": "Isso appointed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod..."}
+    # ]
+
+    context = {
+        "system": system_summary,
+        #"project": project,
+        "system_events": system_events,
+        "system_integrations": general_integrations,
+        # "deployments": deployments,
+        "display_urls": project_context(project)
+    }
+    return render(request, "systems/system_integrations_aspen.html", context)
 
 @login_required
 @transaction.atomic
@@ -4086,37 +4215,68 @@ def import_poams_xlsx(request):
         messages.add_message(request, messages.ERROR, f"POA&Ms spreadsheet file required.")
         return JsonResponse({ "status": "ok", "redirect": redirect_url })
 
-
 # System Deployments
+@login_required
+def system_deployments_aspen(request, system_id):
+    """List deployments for a system"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_summary = get_integrations_system_info(request, system_id)
+    system_events = get_integrations_system_events(request, system_id)
+
+    # Retrieve list of deployments for the system
+    deployments = system.deployments.all().order_by(Lower('name'))
+    # controls = system.root_element.controls.all()
+    # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+    # Return the controls
+    context = {
+        "system": system_summary,
+        "project": project,
+        "deployments": deployments,
+        "display_urls": project_context(project)
+    }
+    # return render(request, "systems/deployments_list.html", context)
+    return render(request, "systems/deployments_list_aspen.html", context)
+
 @login_required
 def system_deployments(request, system_id):
     """List deployments for a system"""
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
-    # Retrieve related selected controls if user has permission on system
-    if request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
-
-        # Retrieve list of deployments for the system
-        deployments = system.deployments.all().order_by(Lower('name'))
-        # controls = system.root_element.controls.all()
-        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
-
-        # Return the controls
-        context = {
-            "system": system,
-            "project": project,
-            "deployments": deployments,
-            "display_urls": project_context(project)
-        }
-        # return render(request, "systems/deployments_list.html", context)
-        return render(request, "systems/deployments_list_aspen.html", context)
-    else:
-        # User does not have permission to this system
+    if not request.user.has_perm('view_system', system):
         raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_summary = get_integrations_system_info(request, system_id)
+    system_events = get_integrations_system_events(request, system_id)
+
+    # Retrieve list of deployments for the system
+    deployments = system.deployments.all().order_by(Lower('name'))
+    # controls = system.root_element.controls.all()
+    # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+    # Return the controls
+    context = {
+        "system": system_summary,
+        "project": project,
+        "deployments": deployments,
+        "display_urls": project_context(project)
+    }
+    # return render(request, "systems/deployments_list.html", context)
+    return render(request, "systems/deployments_list.html", context)
 
 @login_required
 def manage_system_deployment(request, system_id, deployment_id=None):

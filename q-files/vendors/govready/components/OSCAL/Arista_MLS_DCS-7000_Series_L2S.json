@@ -1,0 +1,95 @@
+{
+  "component-definition": {
+    "uuid": "9fd8e59f-15b4-474c-94a5-739d5ea80da1",
+    "metadata": {
+      "title": "Arista MLS DCS-7000 Series L2S",
+      "last-modified": "2022-06-12T20:17:24",
+      "version": "2022-06-12T20:17:24",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "79258dc3-c2ba-4f31-bd0e-9f188e5c3acc",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "f1ecf85f-9087-46bb-bc63-d39535fb0faf",
+        "type": "software",
+        "title": "Arista MLS DCS-7000 Series L2S",
+        "description": "Arista MLS DCS-7000 Series L2S based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "79258dc3-c2ba-4f31-bd0e-9f188e5c3acc"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "e2ed1f2a-0ea5-426f-b0fc-76da08ee1a74",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "b40cfd5c-e6ac-41a0-ac62-48e1a327d2cb",
+                "description": "The Arista Multilayer Switch must enforce approved authorizations for controlling the flow of information between interconnected systems based on organization-defined information flow control policies.",
+                "control-id": "ac-4"
+              },
+              {
+                "uuid": "ed7c883c-1554-44e0-84d7-1449868a098d",
+                "description": "The Arista Multilayer Switch must enforce approved authorizations for controlling the flow of information within the network based on organization-defined information flow control policies.",
+                "control-id": "ac-4"
+              }
+            ]
+          },
+          {
+            "uuid": "0326a6f4-9953-47f1-86d3-f6c095336fdd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "8e41016c-2940-4f5f-a35d-18964783a746",
+                "description": "The Arista Multilayer Switch must authenticate 802.1X connected devices before establishing any connection.",
+                "control-id": "ia-3"
+              },
+              {
+                "uuid": "7567eaf7-b62f-4c34-ab7d-a07beb6a5a55",
+                "description": "The Arista Multilayer Switch must uniquely identify all network-connected endpoint devices before establishing any connection.",
+                "control-id": "ia-3"
+              }
+            ]
+          },
+          {
+            "uuid": "84634ad0-ee1c-475c-8a01-544c71083677",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "97eee234-7da3-48c4-a154-c6007f1816a2",
+                "description": "The Arista Multilayer Switch must authenticate all endpoint devices before establishing a network connection using bidirectional authentication that is cryptographically based.\nThe Arista Multilayer Switch must re-authenticate all endpoint devices every 60 minutes or less.",
+                "control-id": "ia-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "e6011989-1f80-442d-bfdc-7dd7d59483e2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "72737a9c-1ba8-4d73-a033-b4174c21689e",
+                "description": "The Arista Multilayer Switch must re-authenticate 802.1X connected devices every hour.",
+                "control-id": "ia-11"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -192,7 +192,6 @@ class User(AbstractUser, BaseModel):
             object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
             user={"id": self.id, "username": self.username}
         )
-        portfolio.assign_owner_permissions(self)
         logger.info(
             event="new_portfolio assign_owner_permissions",
             object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
@@ -400,7 +399,7 @@ class Portfolio(BaseModel):
             name = user.name if user.name else str(user)
             user = {'name': name, 'id': user.id, 'owner': owner}
             users.append(user)
-        sorted_users = sorted(users, key=lambda k: (-k['owner'], k['name'].lower()))
+        sorted_users = sorted(users, key=lambda k: (k['name'].lower()))
         return sorted_users
 
     def can_invite_others(self, user):

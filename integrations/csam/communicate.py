@@ -22,7 +22,7 @@ class CSAMCommunication(Communication):
 
     def __init__(self, **kwargs):
         self.status_code = None
-        self.integration_name = self.DESCRIPTION['name']
+        self.integration_name = self.DESCRIPTION.get('name', "Description missing")
         self.integration = get_object_or_404(Integration, name=self.integration_name)
         self.description = self.integration.description
         self.config = self.integration.config
@@ -41,7 +41,7 @@ class CSAMCommunication(Communication):
     def setup(self, **kwargs):
         pass
 
-    def get_response(self, endpoint, headers=None, params=None, verify=False):
+    def get_response(self, endpoint, headers=None, params=None, verify=False, timeout=20):
         """Send request using GET"""
 
         # PAT for mock service is 'FAD619'
@@ -66,7 +66,7 @@ class CSAMCommunication(Communication):
             pass
         return self.data
 
-    def post_response(self, endpoint, data=None, params=None, verify=False):
+    def post_response(self, endpoint, data=None, params=None, verify=False, timeout=20):
         """Send request using POST"""
 
         headers = {

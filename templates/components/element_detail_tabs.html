@@ -89,6 +89,7 @@
       <div class="col-sm-10 ">
         <h2 id="element-name" class="">
           {{ element.name }}
+          {% if element.element_type == "system" %}(System){% endif %}
           {% if element.private == True %}<span class="glyphicon glyphicon-lock small" style="color:gray;" title="Private" id="lock-glyph"></span>{% endif %}
         </h2>
       </div>

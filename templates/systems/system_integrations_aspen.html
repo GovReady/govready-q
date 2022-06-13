@@ -6,7 +6,7 @@
 {% load system_tags %}
 
 {% block title %}
-Deployments List
+System
 {% endblock %}
 
 {% block head %}
@@ -45,11 +45,11 @@ Deployments List
   <div class="row">
 
   <!-- start left sidebar -->
-  <div class="col-sm-3">
+  <!-- <div class="col-sm-3">
   {% include "summary-sidebar.html" %}
-  </div> <!-- ends left sidebar -->
+  </div>  --><!-- ends left sidebar -->
 
-  <div class="col-sm-9"><!-- starts content area -->
+  <div class="col-sm-12"><!-- starts content area -->
 
 
   <div class="row" style="padding:50px 0 0 20px; ">
@@ -66,7 +66,7 @@ Deployments List
           <table class="sys-recent">
               {% for si in system_integrations %}
                 <tr>
-                  <td class="sys-recent-left"><div class="sys-recent-tag">{{ si.integration_name }}</div></td><td>{{ si.integration_summary }}</td><td><a href="">[configure]</a></td>
+                  <td class="sys-recent-left"><div class="sys-recent-tag">{{ si.integration_name }}</div></td><td>{{ si.integration_summary }}</td><td>{{ si.integration_base_url }}</td><td><a href="">[configure]</a></td>
                 </tr>
               {% endfor %}
           </table>

@@ -18,6 +18,7 @@
 
 
 .summary-nav-options { padding-left:5px;}
+.summary-nav-options a { color: #808080;; }
 
 
 </style>
@@ -27,11 +28,11 @@
 <div class="col-md-12">
   <ul id="horizontal-nav">
     <li><span class="material-symbols-outlined ">home</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/aspen/summary">System</a></span></li>
-    <li><span class="material-symbols-outlined ">list</span><span class="summary-nav-options">Controls</span></li>
-    <li><span class="material-symbols-outlined ">settings_input_component</span><span class="summary-nav-options">Components</span></li>
-    <li><span class="material-symbols-outlined ">check_box</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/poams">POA&Ms</a></span></li>
-    <li><span class="material-symbols-outlined ">hub</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/deployments">Deployments</a></span></li>
-    <li><span class="material-symbols-outlined ">article</span><span class="summary-nav-options">Artifacts</span></li>
+    <li><span class="material-symbols-outlined ">list</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/controls/selected/aspen">Controls</a></span></li>
+    <li><span class="material-symbols-outlined ">settings_input_component</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/aspen/components/selected">Components</a></span></li>
+    <li><span class="material-symbols-outlined ">check_box</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/aspen/poams">POA&Ms</a></span></li>
+    <li><span class="material-symbols-outlined ">hub</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/aspen/deployments">Deployments</a></span></li>
+    <!-- <li><span class="material-symbols-outlined ">article</span><span class="summary-nav-options">Artifacts</span></li> -->
     <li><span class="material-symbols-outlined ">hub</span><span class="summary-nav-options"><a href="/systems/{{ system.id }}/aspen/integrations">Integrations</a></span></li>
   </ul>
 </div>
