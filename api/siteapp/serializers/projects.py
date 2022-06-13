@@ -21,12 +21,12 @@ class DetailedProjectsSerializer(SimpleProjectsSerializer):
     organization = DetailedOrganizationSerializer()
     portfolio = SimplePortfolioSerializer()
     tags = SimpleTagSerializer(many=True)
-    system = SimpleSystemSerializer()
+    # system = SimpleSystemSerializer()
     root_task = TaskSerializer()
 
     class Meta:
         model = Project
-        fields = SimpleProjectsSerializer.Meta.fields + ['organization', 'portfolio',  'system', 'tags', 'root_task']
+        fields = SimpleProjectsSerializer.Meta.fields + ['organization', 'portfolio', 'tags', 'root_task']
 
 
 class SimpleProjectMembershipSerializer(ReadOnlySerializer):

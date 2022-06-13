@@ -1,6 +1,6 @@
 id: ssp_cui
 format: markdown
-title: ManTech CUI SSP
+title: CUI SSP
 ...
 
 # 1. Document Revision History

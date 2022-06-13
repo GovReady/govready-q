@@ -26,6 +26,7 @@ Release adds support for private components and integrations with third party se
 * Only Component owner can edit user permissions.
 * Display the control framework along side of controls in component control listing page.
 * Remove icons from project listing.
+* Add Component search filter to filter results to components owned by user.
 
 **Developer changes**
 

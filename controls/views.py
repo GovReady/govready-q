@@ -452,11 +452,25 @@ class SelectedComponentsList(ListView):
 @login_required
 def component_library(request):
     """Display the library of components"""
+    owned_elements_id = []
 
+    for element in Element.objects.all().exclude(element_type='system').distinct():
+        if element.is_owner(request.user):
+            owned_elements_id.append(element.id)
+    
+    owned_elements_list = Element.objects.filter(id__in=owned_elements_id)
+    
     query = request.GET.get('search')
+    # Setting a breakpoint in the code.
     if query:
         try:
-            element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
+            if request.GET.get('owner'):
+                # Search by owner
+                element_list = Element.objects.filter(id__in=owned_elements_id)
+                element_list = element_list.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
+            else:
+                element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
+
         except:
             logger.info(f"Ah, you are not using Postgres for your Database!")
             element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
@@ -471,17 +485,23 @@ def component_library(request):
 
     # Pagination
     ele_paginator = Paginator(element_list_private_removed, 15)
+    owned_ele_paginator = Paginator(owned_elements_list, 15)
     page_number = request.GET.get('page')
 
     try:
         page_obj = ele_paginator.page(page_number)
+        owned_page_obj = owned_ele_paginator.page(page_number)
     except PageNotAnInteger:
         page_obj = ele_paginator.page(1)
+        owned_page_obj = owned_ele_paginator.page(1)
     except EmptyPage:
         page_obj = ele_paginator.page(ele_paginator.num_pages)
-
+        owned_page_obj = owned_ele_paginator.page(owned_ele_paginator.num_pages)
+    
     context = {
         "page_obj": page_obj,
+        "owned_page_obj": owned_page_obj,
+        "start": False,
         "import_form": ImportOSCALComponentForm(),
         "total_comps": Element.objects.exclude(element_type='system').count(),
     }
@@ -1183,8 +1203,6 @@ def system_element(request, system_id, element_id):
                     hasSentRequest = True
             except Proposal.DoesNotExist:
                 proposal = None
-            
-                
 
             # Retrieve control ids
             catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()

@@ -863,16 +863,20 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
         <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
           <div style={{ width: "100%", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
             <h2>Parties</h2>
-            <Button 
-              style={{ width: "150px", height: "40px", marginTop: "0.5rem" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                handleNewPartyModal();
-              }}
-            >
-              Appoint new party
-            </Button>
+            { isOwner ?
+              <Button 
+                style={{ width: "150px", height: "40px", marginTop: "0.5rem" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleNewPartyModal();
+                }}
+              >
+                Appoint new party
+              </Button> 
+              : 
+              null
+            }
             </div>
           <DataGrid
             className={dgClasses.root}
