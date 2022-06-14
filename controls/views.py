@@ -1777,7 +1777,7 @@ def component_library_component_copy(request, element_id):
         e_copy = element.copy(name=element.name + " copy ("+str(count+1)+')')
     else:
         e_copy = element.copy()
-
+    e_copy.assign_owner_permissions(request.user)
     # Create message to display to user
     messages.add_message(request, messages.INFO,
                          'Component "{}" copied to "{}".'.format(element.name, e_copy.name))
