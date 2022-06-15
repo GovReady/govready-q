@@ -1636,20 +1636,11 @@ def component_library_component(request, element_id):
         listOfContacts.append(user)
 
     get_all_parties = element.appointments.all()
-    total_number_of_requests = element.requests.count()
-    # status=RequestStatusEnum.PENDING.name
-    # req_instance = Request.objects.create(user=user, element=element, status="pending")
-    # req_instance.system.set(system)
-    # req_instance.save()
+    total_number_of_requests = element.requests.filter(status__in=["Open", "Pending", "In Progress", "Reject", "Approve"]).count()
 
     contacts = []
     for poc in get_all_parties:
         contacts.append(poc.party)
-
-
-    @register.filter
-    def get_item(dictionary, key):
-        return dictionary.get(key)
     
     criteria_results = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name)
     if len(criteria_results) > 0:

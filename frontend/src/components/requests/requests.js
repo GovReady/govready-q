@@ -222,7 +222,6 @@ export const RequestsTable = ({ elementId, isOwner }) => {
   const dgClasses = datagridStyles();
   const [data, setData] = useState([]);
   const [rows, setRows] = useState(data)
-  const [sortby, setSortBy] = useState(["name", "asc"]);
   const [searchText, setSearchText] = useState('');
   const [columnsForEditor, setColumnsForEditor] = useState([]);
   const [columns, setColumns] = useState([
@@ -270,9 +269,11 @@ export const RequestsTable = ({ elementId, isOwner }) => {
 
   const handleChange = (event, params, data) => {
     const updatedData = [...data];
-    updatedData[params.row.id-1].status = event;
+    const currentIndex = updatedData.findIndex(item => item.id === params.row.id);
+    updatedData[currentIndex].status = event;
     setData(updatedData);
   }
+
   const handleSubmit = async (params) => {
     const updatedRequest = {
       user: params.row.userId,
@@ -284,7 +285,9 @@ export const RequestsTable = ({ elementId, isOwner }) => {
     }
     const updateRequestResponse = await axios.put(`/api/v2/requests/${params.row.requestId}/`, updatedRequest);
     if(updateRequestResponse.status === 200){
-      
+      if(updatedRequest.status === 'Closed') {
+        window.location.reload();
+      }
     } else {
       console.error("Something went wrong in creating and setting new request to element");
     }
@@ -292,13 +295,12 @@ export const RequestsTable = ({ elementId, isOwner }) => {
   
   useEffect(() => {
     axios(`/api/v2/elements/${elementId}/retrieveRequests/`).then(response => {
-      setData(response.data.requested);
+      setData(response.data.requested.filter((item) => item.status != "Closed"));
     });
   }, []);
 
   useEffect(() => {
-    const newData = data.filter((item) => item.status != "Closed")
-    setRows(newData);
+    setRows(data);
   }, [data]);
 
   useEffect(() => {
