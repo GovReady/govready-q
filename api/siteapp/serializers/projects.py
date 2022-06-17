@@ -26,7 +26,7 @@ class DetailedProjectsSerializer(SimpleProjectsSerializer):
 
     class Meta:
         model = Project
-        fields = SimpleProjectsSerializer.Meta.fields + ['organization', 'portfolio',  'system', 'tags', 'root_task']
+        fields = SimpleProjectsSerializer.Meta.fields + ['organization', 'portfolio', 'tags', 'system', 'root_task']
 
 
 class SimpleProjectMembershipSerializer(ReadOnlySerializer):

@@ -1,0 +1,215 @@
+{
+  "component-definition": {
+    "uuid": "cb7fc2e0-61bd-42fa-8a92-52a8d1394fd3",
+    "metadata": {
+      "title": "Juniper SRX Services Gateway ALG",
+      "last-modified": "2022-06-12T20:17:25",
+      "version": "2022-06-12T20:17:25",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "09aa32e7-0800-4fcf-be26-f76705789d52",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "fb6f8660-7217-489b-a071-2c842d76d01f",
+        "type": "software",
+        "title": "Juniper SRX Services Gateway ALG",
+        "description": "Juniper SRX Services Gateway ALG based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "09aa32e7-0800-4fcf-be26-f76705789d52"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "b8d1f2f7-db3f-49ec-be04-c2e926e8da7e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "5f9b8538-7e4e-4a9a-a144-9d4219e7fc43",
+                "description": "For User Role Firewalls, the Juniper SRX Services Gateway Firewall must employ user attribute-based security policies to enforce approved authorizations for logical access to information and system resources.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "2a2c4368-6bf4-46fc-8f90-00420c0cb8f2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "c89bb5ff-3505-4baa-8f44-14699bae65b0",
+                "description": "The Juniper SRX Services Gateway Firewall must be configured to support centralized management and configuration of the audit log.",
+                "control-id": "au-3.2"
+              }
+            ]
+          },
+          {
+            "uuid": "90d1eb0e-fc43-4d6f-bba8-627877cbead1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "9151d7fa-e6cf-4142-8047-0d31d19c474a",
+                "description": "In the event that communications with the Syslog server is lost, the Juniper SRX Services Gateway must continue to queue traffic log records locally.",
+                "control-id": "au-5"
+              }
+            ]
+          },
+          {
+            "uuid": "6a21a85d-25e5-44cf-8423-d7aa04039b46",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "47db8a4e-3a0b-43f2-a5bf-351b07066f74",
+                "description": "The Juniper SRX Services Gateway must generate log records when firewall filters, security screens and security policies are invoked and the traffic is denied or restricted.\nThe Juniper SRX Services Gateway Firewall must generate audit records when unsuccessful attempts to access security zones occur.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "eb75820a-5fc1-4fc0-9e45-3e38e6ea516a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "d85f974e-681c-471d-a58c-fe899c3e6148",
+                "description": "The Juniper SRX Services Gateway Firewall must be configured to prohibit or restrict the use of unauthorized functions, ports, protocols, and/or services, as defined in the PPSM CAL, vulnerability assessments.",
+                "control-id": "cm-7"
+              },
+              {
+                "uuid": "39346b0a-6e5b-442f-81f2-4af1be49c463",
+                "description": "The Juniper SRX Services Gateway Firewall must disable or remove unnecessary network services and functions that are not used as part of its role in the architecture.\nThe Juniper SRX Services Gateway Firewall must not be configured as an NTP server since providing this network service is unrelated to the role as a firewall.\nThe Juniper SRX Services Gateway Firewall must not be configured as a DNS proxy since providing this network service is unrelated to the role as a Firewall.\nThe Juniper SRX Services Gateway Firewall must not be configured as a DHCP server since providing this network service is unrelated to the role as a Firewall.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "4e84f355-accb-4d71-97db-09e1be3dcf49",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "e9a43281-5641-49c1-9908-6db48570a9c6",
+                "description": "The Juniper SRX Services Gateway Firewall providing content filtering must protect against known and unknown types of Denial of Service (DoS) attacks by implementing statistics-based screens.\nThe Juniper SRX Services Gateway Firewall must implement load balancing on the perimeter firewall, at a minimum, to limit the effects of known and unknown types of Denial of Service (DoS) attacks on the network.\nThe Juniper SRX Services Gateway Firewall must protect against known types of Denial of Service (DoS) attacks by implementing signature-based screens.",
+                "control-id": "sc-5"
+              }
+            ]
+          },
+          {
+            "uuid": "5de97b8b-4adc-421d-a098-ece9de55152e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "05f7b9ae-1f02-4749-8f95-2f67a00669aa",
+                "description": "The Juniper SRX Services Gateway Firewall must block outbound traffic containing known and unknown DoS attacks to protect against the use of internal information systems to launch any Denial of Service (DoS) attacks against other networks or endpoints.",
+                "control-id": "sc-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "521d4f63-af4c-4f76-be82-e44afd770c13",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-7.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "1c50101a-f53b-4ce8-a9f8-08a6d35717e7",
+                "description": "The Juniper SRX Services Gateway Firewall must deny network communications traffic by default and allow network communications traffic by exception (i.e., deny all, permit by exception).",
+                "control-id": "sc-7.5"
+              }
+            ]
+          },
+          {
+            "uuid": "d58777d6-c218-40af-89ea-ad4fff0a1a65",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-7.11.",
+            "implemented-requirements": [
+              {
+                "uuid": "5553bbdc-1914-4da3-bebf-724d9d2ba6c5",
+                "description": "The Juniper SRX Services Gateway Firewall must only allow inbound communications from organization-defined authorized sources routed to organization-defined authorized destinations.",
+                "control-id": "sc-7.11"
+              }
+            ]
+          },
+          {
+            "uuid": "472c2158-8fbc-48c7-9d6d-ed8ec7e40c0f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-7.18.",
+            "implemented-requirements": [
+              {
+                "uuid": "057f84b3-ecbc-4d52-86a2-8f724b785691",
+                "description": "The Juniper SRX Services Gateway Firewall must be configured to fail securely in the event of an operational failure of the firewall filtering or boundary protection function.",
+                "control-id": "sc-7.18"
+              }
+            ]
+          },
+          {
+            "uuid": "eebd56bf-aa66-4155-bd95-8792efefad95",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "e6f7c6e2-4c56-4efe-b346-af28ceaa7b59",
+                "description": "The Juniper SRX Services Gateway Firewall must terminate all communications sessions associated with user traffic after 15 minutes or less of inactivity.",
+                "control-id": "sc-10"
+              }
+            ]
+          },
+          {
+            "uuid": "d6671d0c-6d5e-4ca4-96e1-81fac06c6bb2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-4.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "8a915ba2-414c-43c9-afc8-47ee2112de66",
+                "description": "The Juniper SRX Services Gateway Firewall must continuously monitor outbound communications traffic for unusual/unauthorized activities or conditions.",
+                "control-id": "si-4.4"
+              },
+              {
+                "uuid": "e3f7963b-602e-469a-b840-0ab47431d94c",
+                "description": "The Juniper SRX Services Gateway Firewall must continuously monitor all inbound communications traffic for unusual/unauthorized activities or conditions.",
+                "control-id": "si-4.4"
+              }
+            ]
+          },
+          {
+            "uuid": "0ae6cdc1-e415-49ba-b967-1335f218c74f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-4.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "e5bca41d-17c6-4b75-94ec-b98b72883f78",
+                "description": "The Juniper SRX Services Gateway Firewall must generate an alert to, at a minimum, the ISSO and ISSM when unusual/unauthorized activities or conditions are detected during continuous monitoring of communications traffic as it traverses inbound or outbound  across internal security boundaries.\nThe Juniper SRX Services Gateway Firewall must generate an alert that can be forwarded to, at a minimum, the ISSO and ISSM when threats identified by authoritative sources are detected.\nThe Juniper SRX Services Gateway Firewall must generate an alert that can be forwarded to, at a minimum, the ISSO and ISSM when DoS incidents are detected.",
+                "control-id": "si-4.5"
+              }
+            ]
+          },
+          {
+            "uuid": "76f05548-f13f-4f91-8fc1-c2c928786b10",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "9d93a8ae-ec14-4c36-9148-3a795d684aee",
+                "description": "The Juniper SRX Services Gateway Firewall must configure ICMP to meet DoD requirements.",
+                "control-id": "si-11"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

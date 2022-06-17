@@ -13,11 +13,14 @@
 {{block.super}}
 <style>
 
-  #focus-area-wrapper {
+    #focus-area-wrapper {
     padding: 2em 2em 3em 2em;
-  }
+    }
 
-  body { height: 100vh; width: 100vw;}
+    body { height: 100vh; width: 100vw;}
+
+    .integration-general { width:80%; margin: auto; padding:12px; }
+    .integration-content { margin-top: 20px; padding: 20px 30px 20px 30px; border: 0.5px solid #888; }
 </style>
 {% endblock %}
 
@@ -26,9 +29,9 @@
     <div class="row" style="max-width: 1200px;">
       <div class="col-md-12">
 
-        <h2>{{ system.root_element.name }} &lt;==&gt; CSAM {{ ep.data.name }}</h2>
+        <h2>(local) {{ system.root_element.name }} &lt;==&gt; ({{ integration_name }}) {{ ep.data.name }}</h2>
 
-        <h3>The system "{{ system.root_element.name }}" (id: {{ system.id }}) is paired with CSAM system "{{ ep.data.name }}" (id: {{ ep.data.id }})</h3>
+        <h3>The local system "{{ system.root_element.name }}" (id: {{ system.id }}) is paired with remote {{ integration_name }} system "{{ ep.data.name }}" (id: {{ ep.data.id }})</h3>
 
         <p>endpoint: {{ ep.endpoint_path }}</p>
 
@@ -37,9 +40,20 @@
         {% else %}
             <p>Returned data:</p>
         {% endif %}
+
+        <div class="integration-content">
+            <form id="update_remote" action="/integrations/{{ integration_name }}/update_system_description" method="POST">
+                Push local system info to remote {{ integration_name }} service (overwrite description only) 
+                {% csrf_token %}
+                <input type="hidden" name="system_id" id="system_id" value="{{system.id}}">
+                <input type="submit" name="submit" value="Update {{ integration_name }}">
+                <p>local system_description: "{{ system.info.system_description }}"</p>
+            </form>
+        </div>
+
         <table class="table">
             <thead>
-                <tr><th scope="col">CSAM Key</th><th scope="col">CAM Value</th></tr>
+                <tr><th scope="col">{{ integration_name }} Key</th><th scope="col">{{ integration_name }} Value</th></tr>
             </thead>
             <tbody>
                 {% for key, value in ep.data.items %}

@@ -1,0 +1,604 @@
+{
+  "component-definition": {
+    "uuid": "44c77f24-96b8-42b5-9e29-4e9c8e93e540",
+    "metadata": {
+      "title": "Redis Enterprise 6.x",
+      "last-modified": "2022-06-12T20:17:32",
+      "version": "2022-06-12T20:17:32",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "f714a208-f629-4b07-9ee9-8ca2a0fceb5d",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "7cf98e46-c741-4700-8436-1e5a5336d3bb",
+        "type": "software",
+        "title": "Redis Enterprise 6.x",
+        "description": "Redis Enterprise 6.x based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "f714a208-f629-4b07-9ee9-8ca2a0fceb5d"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "708f0f76-3820-494e-bff0-ab0bee368bcb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "9095b088-76ae-40c5-b26c-a98a32649b31",
+                "description": "Redis Enterprise DBMS must integrate with an organization-level authentication/access mechanism providing account management and automation for all users, groups, roles, and any other principals.",
+                "control-id": "ac-2.1"
+              }
+            ]
+          },
+          {
+            "uuid": "7dbbd480-7c31-4cf4-a505-196e4f826fda",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "4b96cb54-de35-4ef6-b5b7-fb6e82755429",
+                "description": "Redis Enterprise DBMS must enforce approved authorizations for logical access to information and system resources in accordance with applicable access control policies.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "a2c34511-bef0-492b-9d43-008bf181d16e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "69b8bb2c-4fa3-4074-badd-e2980304ad36",
+                "description": "Redis Enterprise DBMS must enforce discretionary access control policies, as defined by the data owner, over defined subjects and objects.\nRedis Enterprise DBMS must enforce access control lists, as defined by the data owner, over defined subjects and objects.",
+                "control-id": "ac-3.4"
+              }
+            ]
+          },
+          {
+            "uuid": "f9eaee47-91c0-48fd-8183-e4654fd38300",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "a9477df7-ca55-4b0f-ac36-57ecebe24152",
+                "description": "Execution of software modules (to include stored procedures, functions, and triggers) with elevated privileges must be restricted to necessary cases only.",
+                "control-id": "ac-6.8"
+              }
+            ]
+          },
+          {
+            "uuid": "3408a46f-33fd-4b0f-80b7-6ccde8cef7a5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "9e51988a-3bec-46ad-b6fd-61305964e77f",
+                "description": "Redis Enterprise DBMS must prevent non-privileged users from executing privileged functions, to include disabling, circumventing, or altering implemented security safeguards/countermeasures.",
+                "control-id": "ac-6.10"
+              }
+            ]
+          },
+          {
+            "uuid": "cb65dee3-fe62-40d1-8a2e-80d50ca1cab4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "2a8cd94d-9674-4e5c-9fef-72bcddd0b64b",
+                "description": "Redis Enterprise DBMS must limit the number of concurrent sessions to an organization-defined number per user for all accounts and/or account types.",
+                "control-id": "ac-10"
+              }
+            ]
+          },
+          {
+            "uuid": "0d0aa308-d10b-4291-98c8-e5b0dcdaef89",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "3a16b3e6-297c-41ee-b0d9-3b5be404a542",
+                "description": "Redis Enterprise DBMS must use centralized management of the content captured in audit records generated by all components of Redis Enterprise DBMS.\nRedis Enterprise DBMS must provide centralized configuration of the content to be captured in audit records generated by all components of Redis Enterprise DBMS.",
+                "control-id": "au-3.2"
+              }
+            ]
+          },
+          {
+            "uuid": "eac8bc68-5e10-4262-aad2-47dacc16ad45",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "ac529f22-94f7-48ed-8509-d7e9819edec7",
+                "description": "Redis Enterprise DBMS must allocate audit record storage capacity in accordance with organization-defined audit record storage requirements.",
+                "control-id": "au-4"
+              }
+            ]
+          },
+          {
+            "uuid": "2b931d33-a08b-46d1-a217-2dddf4b7d68e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "ddfebf76-bdd0-4fa0-b4d6-af48ec3f8d58",
+                "description": "Redis Enterprise DBMS must offload audit data to a separate log management facility; this must be continuous and in near real time for systems with a network connection to the storage facility, and weekly or more often for stand-alone systems.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "b3e55c94-f2ce-4639-8912-4c9f3e11293f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "82bc88f9-70da-4120-b218-689e93a813fc",
+                "description": "Redis Enterprise DBMS must by default shut down upon audit failure, to include the unavailability of space for more audit log records; or must be configurable to shut down upon audit failure.\nRedis Enterprise DBMS must be configurable to overwrite audit log records, oldest first (First-In-First-Out [FIFO]), in the event of unavailability of space for more audit log records.",
+                "control-id": "au-5"
+              }
+            ]
+          },
+          {
+            "uuid": "74d84757-c1a6-41e0-9e53-84c5691fb053",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "7c73034e-96d4-4788-9cbf-3fb5b544d95c",
+                "description": "Redis Enterprise DBMS must provide a warning to appropriate support staff when allocated audit record storage volume reaches 75 percent of maximum audit record storage capacity.",
+                "control-id": "au-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "1a7469f4-0b71-4d2a-a64f-aedbd863d490",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "887e0e3f-3758-4e85-b2f4-410c904e035f",
+                "description": "Redis Enterprise DBMS must provide an immediate real-time alert to appropriate support staff of all audit log failures.",
+                "control-id": "au-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "e3732002-7a9f-4314-9ebc-dd8e75656abd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "303bd435-d108-4ddf-ba88-4e4d74243445",
+                "description": "Redis Enterprise DBMS must record time stamps, in audit records and application data, that can be mapped to Coordinated Universal Time (UTC, formerly GMT).",
+                "control-id": "au-8"
+              }
+            ]
+          },
+          {
+            "uuid": "61d7e0a5-efc3-4677-bf3e-e75ede913f68",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "67cc74da-cc74-4f92-b30b-06d30229ea30",
+                "description": "The audit information produced by Redis Enterprise DBMS must be protected from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "9cf88f21-6988-49f7-b51f-716cea1d86fd",
+                "description": "Redis Enterprise DBMS must protect its audit configuration from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "7af5bb16-7ea5-484f-ba4f-8c6ed2bdb06f",
+                "description": "The audit information produced by Redis Enterprise DBMS must be protected from unauthorized deletion.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "7cc45c47-bd48-41fb-8a64-fd634a76044e",
+                "description": "The audit information produced by Redis Enterprise DBMS must be protected from unauthorized read access.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "e5ccb4cb-8731-4eba-96be-5b9bb3d36086",
+                "description": "Redis Enterprise DBMS must protect its audit features from unauthorized removal.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "48ab0a6b-d9cd-49b8-a7ff-1a9a5cf9bf52",
+                "description": "Redis Enterprise DBMS must protect its audit features from unauthorized access.",
+                "control-id": "au-9"
+              }
+            ]
+          },
+          {
+            "uuid": "ae087172-8484-4285-93f3-62029bd51904",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "bf6fe599-0f04-4070-91ff-08918a311015",
+                "description": "Redis Enterprise DBMS must allow only the ISSM (or individuals or roles appointed by the ISSM) to select which auditable events are to be audited.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "3d26e0ae-f1c1-4ef0-8d79-c505720a9035",
+                "description": "Redis Enterprise DBMS must provide audit record generation capability for DoD-defined auditable events within all DBMS/database components.\nRedis Enterprise DBMS must generate audit records for DoD-defined auditable events within all DBMS/database components.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "d1b9f375-7ff3-40bb-8b3b-fcef27b4ee64",
+                "description": "Redis Enterprise DBMS must generate audit records for all direct access to the database(s).",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "cfe8951d-75e5-4305-b315-6e86f8c5da50",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "b103e01e-459f-4769-bd65-26c756239f96",
+                "description": "Redis Enterprise DBMS must enforce access restrictions associated with changes to the configuration of Redis Enterprise DBMS or database(s).",
+                "control-id": "cm-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "acc400c1-fa83-47cd-83c1-69374eae2927",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "4c0c5fd4-3329-4488-9ff3-4086edfff4ae",
+                "description": "Redis Enterprise DBMS must limit privileges to change software modules; to include stored procedures, functions, and triggers, and links to software external to Redis Enterprise DBMS.\nRedis Enterprise DBMS software installation account must be restricted to authorized users.\nDatabase software, including DBMS configuration files, must be stored in dedicated directories, or DASD pools, separate from the host OS and other applications.\nThe role(s)/group(s) used to modify database structure (including but not necessarily limited to tables, indexes, storage, etc.) and logic modules (stored procedures, functions, triggers, links to software external to Redis Enterprise DBMS, etc.) must be restricted to authorized users.",
+                "control-id": "cm-5.6"
+              }
+            ]
+          },
+          {
+            "uuid": "013789cd-cbcf-412f-ad5b-5cbd916c46fb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "eec22b0d-a32f-423d-b417-951844da76c7",
+                "description": "Redis Enterprise DBMS must be configured in accordance with the security configuration settings based on DoD security configuration and implementation guidance, including STIGs, NSA configuration guides, CTOs, DTMs, and IAVMs.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "bdb88ffc-9fe5-4014-a65f-d4513e9e0f24",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "132031b4-cd83-4f30-a342-300ed26e5709",
+                "description": "Redis Enterprise DBMS must be configured to prohibit or restrict the use of organization-defined functions, ports, protocols, and/or services, as defined in the PPSM CAL and vulnerability assessments.",
+                "control-id": "cm-7"
+              },
+              {
+                "uuid": "ab03f60c-0e61-4bfe-b4a6-381b27ab476a",
+                "description": "Unused database components, DBMS software, and database objects must be removed.\nUnused database components that are integrated in Redis Enterprise DBMS and cannot be uninstalled must be disabled.\nAccess to external executables must be disabled or restricted.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "6160057d-fdc2-4100-9dac-89e5fd8a0d76",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "ec6db1e2-1716-4e24-a7a8-f7a43603f718",
+                "description": "Redis Enterprise DBMS must disable network functions, ports, protocols, and services deemed by the organization to be nonsecure, in accord with the Ports, Protocols, and Services Management (PPSM) guidance.",
+                "control-id": "cm-7.1"
+              }
+            ]
+          },
+          {
+            "uuid": "fb080c98-643c-4807-b6a0-df5f245bd35c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-11.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "a4fbe691-bdea-4765-ad47-28c6e0da4dc5",
+                "description": "Redis Enterprise DBMS must prohibit user installation of logic modules (stored procedures, functions, triggers, views, etc.) without explicit privileged status.",
+                "control-id": "cm-11.2"
+              }
+            ]
+          },
+          {
+            "uuid": "3091bca2-4d3d-4e7b-9dc6-6dfdd91f5984",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "3cc0b0f4-12ed-4b37-a405-b299c11b0b95",
+                "description": "Redis Enterprise DBMS must uniquely identify and authenticate organizational users (or processes acting on behalf of organizational users).",
+                "control-id": "ia-2"
+              }
+            ]
+          },
+          {
+            "uuid": "e453c388-e9df-4646-b51d-e7d2791bce47",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "2ebd9cba-9853-4895-9a20-334baceb2a7d",
+                "description": "If DBMS authentication using passwords is employed, Redis Enterprise DBMS must enforce the DoD standards for password complexity and lifetime.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "06cdc43e-df87-4469-8b1b-84b05ccd6bc0",
+                "description": "If passwords are used for authentication, Redis Enterprise DBMS must store only hashed, salted representations of passwords.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "1eb62742-d6c0-450b-a4c5-72acbebd3ab3",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "03ea3de6-6358-4f3b-b0e6-97c9d4c8be3c",
+                "description": "Redis Enterprise DBMS must enforce authorized access to all PKI private keys stored/used by Redis Enterprise DBMS.",
+                "control-id": "ia-5.2"
+              },
+              {
+                "uuid": "7f8eca62-f396-45f6-bd24-c05b19c3f6cc",
+                "description": "Redis Enterprise DBMS, when utilizing PKI-based authentication, must validate certificates by performing RFC 5280-compliant certification path validation.",
+                "control-id": "ia-5.2"
+              },
+              {
+                "uuid": "b5c4b697-e8f9-4242-a911-79a8a8a3c302",
+                "description": "Redis Enterprise DBMS must map the PKI-authenticated identity to an associated user account.",
+                "control-id": "ia-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "3eda1907-aebb-45ea-9520-a58494f16c91",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.13.",
+            "implemented-requirements": [
+              {
+                "uuid": "2b7708b8-fd0b-47c6-8a18-b9954c3e2a6a",
+                "description": "Redis Enterprise DBMS must prohibit the use of cached authenticators after an organization-defined time period.",
+                "control-id": "ia-5.13"
+              }
+            ]
+          },
+          {
+            "uuid": "f735b4f3-cefe-4260-a4a7-03354bc6bf66",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "99352497-d7f5-4122-865a-05b8ef3b5da8",
+                "description": "Redis Enterprise DBMS must obscure feedback of authentication information during the authentication process to protect the information from possible exploitation/use by unauthorized individuals.",
+                "control-id": "ia-6"
+              }
+            ]
+          },
+          {
+            "uuid": "13a6ee08-b17a-40b1-a64f-947baf592dd4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "af7f7854-b0a9-4a7d-adf9-ec70ca04818f",
+                "description": "Redis Enterprise DBMS must use NIST FIPS 140-2-validated cryptographic modules for cryptographic operations.",
+                "control-id": "ia-7"
+              }
+            ]
+          },
+          {
+            "uuid": "c33bdfed-6727-4646-af80-1bfe7903e727",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "fee4eee1-2d4c-49fc-9590-6b754d5130d1",
+                "description": "Redis Enterprise DBMS must uniquely identify and authenticate non-organizational users (or processes acting on behalf of non-organizational users).",
+                "control-id": "ia-8"
+              }
+            ]
+          },
+          {
+            "uuid": "94120cb7-a03b-47cc-ab16-809bd20efd6e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "48d9db0e-f63c-4a6c-8af0-72b298907419",
+                "description": "Redis Enterprise DBMS must require users to reauthenticate when organization-defined circumstances or situations require reauthentication.",
+                "control-id": "ia-11"
+              }
+            ]
+          },
+          {
+            "uuid": "97a47517-3680-4d4f-bf61-6256b6fed776",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "b2e3e3bd-2ef8-40b2-a16c-f69ba11b03ba",
+                "description": "Redis Enterprise DBMS must separate user functionality (including user interface services) from database management functionality.\nAccess to the Redis Enterprise control plane must be restricted.",
+                "control-id": "sc-2"
+              }
+            ]
+          },
+          {
+            "uuid": "56a55d97-a9ec-4176-a0c3-6c0753a90e64",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "274af183-222d-44b6-8f8c-da18c2afda5b",
+                "description": "Database contents must be protected from unauthorized and unintended information transfer by enforcement of a data-transfer policy.\nRedis Enterprise DBMS must prevent unauthorized and unintended information transfer via shared system resources.\nAccess to database files must be limited to relevant processes and to authorized, administrative users.",
+                "control-id": "sc-4"
+              }
+            ]
+          },
+          {
+            "uuid": "75c3940a-0f00-4d27-8548-26c700842435",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "2c277307-c3bc-48d1-a10c-566c588bf435",
+                "description": "Redis Enterprise DBMS must maintain the confidentiality and integrity of information during preparation for transmission.",
+                "control-id": "sc-8.2"
+              },
+              {
+                "uuid": "eee9c37d-ca8c-416d-8bcf-51915f908f8a",
+                "description": "Redis Enterprise DBMS must maintain the confidentiality and integrity of information during reception.",
+                "control-id": "sc-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "e3091cd2-5ab0-418b-93d7-47d2be001057",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-13.",
+            "implemented-requirements": [
+              {
+                "uuid": "a7cc478b-20fc-43fb-8827-59b2c7cb63cc",
+                "description": "Redis Enterprise DBMS must use NSA-approved cryptography to protect classified information in accordance with the data owners requirements.\nRedis Enterprise DBMS must implement NIST FIPS 140-2-validated cryptographic modules to provision digital signatures.\nRedis Enterprise DBMS must implement NIST FIPS 140-2-validated cryptographic modules to generate and validate cryptographic hashes.\nRedis Enterprise DBMS must implement NIST FIPS 140-2-validated cryptographic modules to protect unclassified information requiring confidentiality and cryptographic protection, in accordance with the data owners requirements.",
+                "control-id": "sc-13"
+              }
+            ]
+          },
+          {
+            "uuid": "96dfc0e8-1e0e-4bad-b574-601c556abc68",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "0a9b4a35-191a-42ba-8d83-f51a3a7e6bba",
+                "description": "Redis Enterprise DBMS must maintain the authenticity of communications sessions by guarding against man-in-the-middle attacks that guess at Session ID values.",
+                "control-id": "sc-23.3"
+              },
+              {
+                "uuid": "041db306-4229-49ae-9593-82a855608b58",
+                "description": "Redis Enterprise DBMS must recognize only system-generated session identifiers.",
+                "control-id": "sc-23.3"
+              }
+            ]
+          },
+          {
+            "uuid": "19ee68a2-07b6-47f6-a52c-73fe6d1d45c1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "d5ab9c88-124e-46c2-b183-ebed70388768",
+                "description": "Redis Enterprise DBMS must only accept end entity certificates issued by DoD PKI or DoD-approved PKI Certification Authorities (CAs) for the establishment of all encrypted sessions.",
+                "control-id": "sc-23.5"
+              }
+            ]
+          },
+          {
+            "uuid": "ed28662c-aafe-41c9-8e43-fc65053adf2b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-24.",
+            "implemented-requirements": [
+              {
+                "uuid": "4dc15dc5-3039-4809-8c9e-8957ee743585",
+                "description": "Redis Enterprise DBMS must fail to a secure state if system initialization fails, shutdown fails, or aborts fail.",
+                "control-id": "sc-24"
+              },
+              {
+                "uuid": "dbc6363a-eabe-4621-94a9-84d97468eb9a",
+                "description": "In the event of a system failure, Redis Enterprise DBMS must preserve any information necessary to determine cause of failure and any information necessary to return to operations with least disruption to mission processes.",
+                "control-id": "sc-24"
+              }
+            ]
+          },
+          {
+            "uuid": "b68219eb-b8da-4243-9a78-58f6ecae68dc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.",
+            "implemented-requirements": [
+              {
+                "uuid": "f6cc3525-7c50-48d3-88e3-7455457f3cc6",
+                "description": "Redis Enterprise DBMS must protect the confidentiality and integrity of all information at rest.",
+                "control-id": "sc-28"
+              }
+            ]
+          },
+          {
+            "uuid": "f3a6387d-5562-4bb6-9883-6baddf97b3bf",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "e6790ff3-29c9-46c3-995a-e5c0234fd355",
+                "description": "Redis Enterprise DBMS must implement cryptographic mechanisms to prevent unauthorized modification of organization-defined information at rest (to include, at a minimum, PII and classified information) on organization-defined information system components.",
+                "control-id": "sc-28.1"
+              },
+              {
+                "uuid": "7ee41269-7959-4cae-bc75-84c639c6a7c4",
+                "description": "Redis Enterprise DBMS must implement cryptographic mechanisms preventing the unauthorized disclosure of organization-defined information at rest on organization-defined information system components.",
+                "control-id": "sc-28.1"
+              }
+            ]
+          },
+          {
+            "uuid": "be5630dd-dfbb-4a11-af43-a4e9bf56d646",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "d65f088b-480a-4e07-bc7c-4a537a5fa5eb",
+                "description": "Redis Enterprise products must be a version supported by the vendor.\nSecurity-relevant software updates to Redis Enterprise DBMS must be installed within the time period directed by an authoritative source (e.g., IAVM, CTOs, DTMs, and STIGs).",
+                "control-id": "si-2"
+              }
+            ]
+          },
+          {
+            "uuid": "5928efe0-906f-44b1-b6cd-0915326d287a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "6ef76334-6a16-44df-8035-031219c22e6f",
+                "description": "When updates are applied to Redis Enterprise DBMS software, any software components that have been replaced or made unnecessary must be removed.",
+                "control-id": "si-2.6"
+              }
+            ]
+          },
+          {
+            "uuid": "132f51c6-ee53-457c-b9d7-98c3c294f9b1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "fb188ceb-a92a-45fb-9b70-9f84f0e94081",
+                "description": "Redis Enterprise DBMS and associated applications must reserve the use of dynamic code execution for situations that require it.\nRedis Enterprise DBMS and associated applications, when making use of dynamic code execution, must scan input data for invalid values that may indicate a code injection attack.",
+                "control-id": "si-10"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -6,7 +6,7 @@
 {% load system_tags %}
 
 {% block title %}
-Deployments List
+System
 {% endblock %}
 
 {% block head %}
@@ -25,9 +25,9 @@ Deployments List
 <div style="margin-top:8px; padding:20px 50px 0 50px; border-top:1px solid #ccc; background-color:#F5F5F5;">
 <div class="row">
       <div class="col-md-8" style="">
-          <h3 class="system-classification">{{ system.impact }}Moderate Impact</h3>
-          <h2 class="system-name">{{ system.name }}eRulemaking</h2>
-          <h3 class="system-aka"><span style="font-size:.8em;">A.K.A.</span> {% for aka in system.aka %}"{{ aka }}"{% if not forloop.last %}, {% endif %}{% endfor %}"eRulemaking</h3>
+          <h3 class="system-classification">{{ system.impact }}</h3>
+          <h2 class="system-name">{{ system.name }}</h2>
+          <h3 class="system-aka"><span style="font-size:.8em;">A.K.A.</span> {% for aka in system.aka %}"{{ aka }}"{% if not forloop.last %}, {% endif %}{% endfor %}"</h3>
       </div>
 
     <div class="col-md-4"><h5 class="sys-wide-status-header">Organization-wide Initiative Status</h5>
@@ -46,11 +46,11 @@ Deployments List
 <div style="padding:0 50px 0 50px;">
 <div class="row">
 <!-- start left sidebar -->
-<div class="col-sm-3">
+<!-- <div class="col-sm-3">
 {% include "summary-sidebar.html" %}
-</div> <!-- ends left sidebar -->
+</div> --> <!-- ends left sidebar -->
 
-<div class="col-sm-9"><!-- starts content area -->
+<div class="col-sm-12"><!-- starts content area -->
 
   <div class="row" style="padding:50px 0 0 20px; ">
   <div class="col-md-12"><h4 class="sys-summary-header">Deployments Overview</h4></div>

@@ -1,13 +1,16 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.14-dev (May xx, 2022)
+v0.10.0-dev-aspen (June xx, 2022)
 ----------------------------
 
 **Feature changes**
 
 * Support private components (elements).
-* Assign responsible roles to components (elements) and appointing parties to roles. 
+* Assign responsible roles to components (elements) and appointing parties to roles.
+* Integrations framework for better inclusion of information from remote services.
+* Component control inheritance workflow.
+* Single Sign On OIDC support.
 
 Release adds support for private components and integrations with third party services.
 
@@ -24,6 +27,7 @@ Release adds support for private components and integrations with third party se
 * Display the control framework along side of controls in component control listing page.
 * Remove icons from project listing.
 * Change 'Template Library' to 'Questionnaires'.
+* Add Component search filter to filter results to components owned by user.
 
 **Developer changes**
 
@@ -46,6 +50,9 @@ Release adds support for private components and integrations with third party se
 * Assign owners to components imported via OSCAL. If no user is identified during component (element creation) assign first Superuser (administrator) as component owner.
 * Support navigating to specific tab on component library component page using URL hash (#) reference.
 * Protype integrations System Summary page.
+* Refactor and OIDC authentication for proper testing of admin and not admin roles.
+* Create a new system via name given by a string in URL.
+* Add a large set of sample components (150+) generated from STIGs.
 
 **Bug fixes**
 
@@ -55,6 +62,7 @@ Release adds support for private components and integrations with third party se
 * Footer fixes.
 * Assign owners to default components (elements) created during install first_run script.
 * Correctly display POA&M forms with left-side menu.
+* Refactor and OIDC authentication for proper testing of admin and not admin roles.
 
 v0.9.13 (January 23, 2022)
 --------------------------

@@ -98,6 +98,7 @@ class Command(BaseCommand):
                 password = User.objects.make_random_password(length=12)
                 user.set_password(password)
                 user.save()
+                portfolio = user.create_default_portfolio_if_missing()
                 print("Created administrator account (username: {}) with password: {}".format(
                     user.username,
                     password
@@ -105,20 +106,6 @@ class Command(BaseCommand):
             # Get the admin user - it was just created and should be the only admin user.
             user = User.objects.filter(is_superuser=True).get()
 
-            # Create the first portfolio
-            portfolio = Portfolio.objects.create(title=user.username)
-            portfolio.assign_owner_permissions(user)
-            print("Created administrator portfolio {}".format(portfolio.title))
-
-            # Add the user to the org's help squad and reviewers lists.
-            try:
-                user
-            except NameError:
-                print("[INFO] Admin already added to Help Squad and Reviewers")
-            else:
-                if user not in org.help_squad.all(): org.help_squad.add(user)
-                if user not in org.reviewers.all(): org.reviewers.add(user)
-                print("[INFO] Admin added to Help Squad and Reviewers")
 
         else:
             # One or more superusers already exists
@@ -185,8 +172,12 @@ class Command(BaseCommand):
                     # Read component json file as text
                     if component_file.endswith(".json"):
                         with open(os.path.join(path, component_file)) as f:
+                            print(f"[INFO] Imported sample generic component {component_file}.")
                             oscal_component_json = f.read()
                             result = ComponentImporter().import_components_as_json(import_name, oscal_component_json)
+            print("[INFO] Imported sample generic components.")
+        else:
+            print("[INFO] Components exists. Skipping sample generic components import.")
 
         # Create initial roles only once
         # TODO: Probably need a field to indicate if first_run has been run to avoid recreating roles that

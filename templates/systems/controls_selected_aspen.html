@@ -1,0 +1,297 @@
+{% extends "summary-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+{% load system_tags %}
+
+{% block title %}
+System
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+<!-- action buttons included from project-base.html -->
+<!-- authoring_tool_enabled included from project-base.html -->
+
+{% block body_content %}
+
+<style>
+</style>
+
+<div style="margin-top:8px; padding:20px 50px 0 50px; border-top:1px solid #ccc; background-color:#F5F5F5;">
+<div class="row">
+      <div class="col-md-8" style="">
+          <h3 class="system-classification">{{ system_summary.impact }}</h3>
+          <h2 class="system-name">{{ system_summary.name }}</h2>
+          <h3 class="system-aka"><span style="font-size:.8em;">A.K.A.</span> {% for aka in system_summary.aka %}"{{ aka }}"{% if not forloop.last %}, {% endif %}{% endfor %}"</h3>
+      </div>
+
+    <div class="col-md-4"><h5 class="sys-wide-status-header">Organization-wide Initiative Status</h5>
+        <div style="border:1px solid #CCCCCC; padding:8px;">
+            <table id="sys-wide-status">
+                <tr><td style="width:15px;"><div class="status-box status-red">&nbsp;</div></td><td class="sys-wide-status">800-53 rev5 migration</td></tr>
+                <tr><td><div class="status-box status-yellow">&nbsp;</div></td><td class="sys-wide-status">Log4J remediation solution (updated 4/21/22)</td></tr>
+                <tr><td><div class="status-box status-green">&nbsp;</div></td><td class="sys-wide-status">Q3 Audit</td></tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% include "summary-horizontal-nav.html" %}
+</div>
+<div style="padding:0 50px 0 50px;">
+<div class="row">
+<!-- start left sidebar -->
+<!-- <div class="col-sm-3">
+{% include "summary-sidebar.html" %}
+</div> --> <!-- ends left sidebar -->
+
+<div class="col-sm-12"><!-- starts content area -->
+
+  <div class="row" style="padding:50px 0 0 20px; ">
+    <div class="col-md-12"><h4 class="sys-summary-header">Controls Overview</h4></div>
+
+    <div style="max-width:75%; padding-left:1em;">
+          <p class="sys-summary-content">
+            Controls are the selected cybersecurity compliance goals required for your system installed and operating in your organization.
+          </p>
+
+      <!-- <div class="col-md-8">
+        <h3 class="system-heading">Deployment Details</h3>
+        <div class="col-md-12" style="border:1px solid #8C8C8C; background:#f8f8f8; margin-bottom:3em; padding:10px;">
+          <div class="col-md-6">
+            <table class="sys-detail-table">
+                <tr><td class="sys-detail-table-left">Location: <span class="sys-detail-response">{{ system_summary.other_id }}Chicago, IL</span></td></tr>
+                <tr><td class="sys-detail-table-left">Hosting Facility: <span class="sys-detail-response">{{ system_summary.hosting_facility }}Data Center 1</span></td></tr>
+                <tr><td class="sys-detail-table-left">Status: <span class="sys-detail-response">{{ system_summary.status }}Production</span></td></tr>
+                <tr><td class="sys-detail-table-left">Deployment Type: <span class="sys-detail-response">{{ system_summary.type }}Automated</span></td></tr>
+
+            </table>
+          </div>
+          <div class="col-md-6">
+            <table class="sys-detail-table">
+                <tr><td class="sys-detail-table-left">Recent Deployment: <span class="sys-detail-response">{{ system_summary.created|naturaltime }}</span></td></tr>
+                <tr><td class="sys-detail-table-left">Deployment Fequency: <span class="sys-detail-response">{{ system_summary.next_audit }}bi-weekly</span></td></tr>
+                <tr><td class="sys-detail-table-left">Next Scan: <span class="sys-detail-response">{{ system_summary.next_scan|naturaltime }} </span></td></tr>
+                <tr><td class="sys-detail-table-left">Approx. Assets: <span class="sys-detail-response">{{ system_summary.security_scan }}5</span></td></tr>
+            </table>
+          </div>
+        </div>
+      </div> -->
+
+      <div class="systems-top">
+        <div id="tab-content" class="rows-header" style="min-height: 50px;">
+            <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4"><span class="systems-selected-items">Selected controls</span></div>
+            <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
+              <form id="add-control" class="form-inline pull-right" method="post"
+                    action="{%  url 'system_controls_add' system_id=system.id %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="control_id">Add control</label>&nbsp;&nbsp;
+                    <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
+                    <select id="add-control_id-select" name="control_id" class="producer_element_id" style="width:440px;">
+                        <option value="None" selected disabled hidden>Select a Control</option>
+                    </select>
+                </div>
+                <input type="hidden" id="add-catalog_key-input" name="catalog_key">
+              </form>
+            </div>
+            <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 pull-right">
+              <!--a href="selected/export/xacta/xlsx">export</a-->
+              <span class="glyphicon glyphicon-download-alt pull-right"
+                    style="cursor: pointer;"
+                    onclick="download_document('{{document.id|escapejs}}', {{ system_summary.id }})"></span>
+            </div>
+        </div>
+        {% if controls|length < 1 %}
+          <div id="tab-content" class="row-control" style="min-height: 50px;">
+            <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+              <p>No controls are currently selected for your system.</p>
+              <p>An appropriate baseline will be assigned based on your questionnaire answers. Alternatively, you can predictively assign a control baseline from the list below.</p>
+              <ul>
+                <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='low' %}>Assign 800-53 rev4 Low Impact Baseline</a></li>
+                <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='moderate' %}>Assign 800-53 rev4 Moderate Impact Baseline</a></li>
+                <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-53_rev4' baseline_name='high' %}>Assign 800-53 rev4 High Impact Baseline</a></li>
+                <br>
+                <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='NIST_SP-800-171_rev1' baseline_name='cui' %}>Assign 800-171 rev1 Baseline</a></li>
+                <br>
+                <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='CMMC_ver1' baseline_name='level 1' %}>Assign CMMC ver1 level 1 Baseline</a></li>
+                <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='CMMC_ver1' baseline_name='level 2' %}>Assign CMMC ver1 level 2 Baseline</a></li>
+                <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='CMMC_ver1' baseline_name='level 3' %}>Assign CMMC ver1 level 3 Baseline</a></li>
+                <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='CMMC_ver1' baseline_name='level 4' %}>Assign CMMC ver1 level 4 Baseline</a></li>
+                <li><a href={% url 'assign_baseline' system_id=system.id catalog_key='CMMC_ver1' baseline_name='level 5' %}>Assign CMMC ver1 level 5 Baseline</a></li>
+
+                  {% for catalog in external_catalogs %}
+                                  <li><a href={% url 'assign_baseline' system_id=system.id catalog_key=catalog.catalog_key  baseline_name='low' %}>Assign {{ catalog.catalog_key_display }} Low Impact Baseline</a></li>
+                                  <li><a href={% url 'assign_baseline' system_id=system.id catalog_key=catalog.catalog_key  baseline_name='moderate' %}>Assign {{ catalog.catalog_key_display }} Moderate Impact Baseline</a></li>
+                                  <li><a href={% url 'assign_baseline' system_id=system.id catalog_key=catalog.catalog_key  baseline_name='high' %}>Assign {{ catalog.catalog_key_display }} High Impact Baseline</a></li>
+                  {% endfor %}
+              </ul>
+            </div>
+          </div>
+        {% else %}
+          {% for control in controls %}
+            <div id="tab-content" class="row-control" style="min-height: 50px;">
+                <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                    <a href="{% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}">{{ control.get_flattened_oscal_control_as_dict.id_display|upper }} </a>
+                    <span class="systems-control-catalog pull-right">{{ control.oscal_catalog_key }}</span>
+                </div>
+                <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                    {{ control.get_flattened_oscal_control_as_dict.title }}
+                </div>
+                <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                  <div class="center-text">
+                    {% with total=impl_smts_cmpts_count|get_item:control.oscal_ctl_id %}
+                      {% if total > 0 %}
+                        {{ total }} component{{ total|pluralize }}
+                      {% else %}
+                          &mdash;
+                      {% endif %}
+                    {% endwith %}
+                  </div>
+                  <div class="center-text">
+                    {% with total=impl_smts_legacy_dict|get_item:control.oscal_ctl_id %}
+                      {% if total %}
+                          1 legacy statement{{ total|pluralize }}
+                      {% endif %}
+                    {% endwith %}
+                  </div>
+                </div>
+                {% get_obj_perms request.user for system as "system_perms" %}
+                {% if "view_system" in system_perms %}
+                  <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 small">
+                    <span class="pull-right">
+                      <a onclick='confirm_cnt_rm("{% url 'system_control_remove' system_id=system.id element_control_id=control.id %}"); return false;'>
+                        <span class="glyphicon glyphicon-trash text-muted small" title="remove control"></span></a>
+                    </span>
+                  </div>
+                {% else %}
+                  <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                    {% if control.smts_updated %}
+                      {{ control.smts_updated|timesince}} ago
+                    {% else %}
+                      {{ control.created|timesince}} ago
+                    {% endif %}
+                  </div>
+                {% endif %}
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+    </div>
+
+  </div>
+
+
+  </div>
+
+
+
+
+
+
+</div> <!-- ends main md content well -->
+</div> <!-- ends row -->
+
+
+
+
+
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+<script>
+    window.system_summary({{system.id}}, {{project.id}});
+</script>
+<script>
+  function show_control_by_id() {
+    var control_id = $('#control-lookup').find('input[name="id"]').val();
+    var url = "/systems/{{ system.id }}/controls/catalogs/{{ control_id.oscal_catalog_key }}/control/" + control_id;
+    window.location.href = url;
+  }
+
+  $(document).ready(function() {
+    // Download button shows a modal to ask what file format to download in.
+    function download_document(document_id, system_id) {
+      var dom = $("<div><p>Select download format:</p>"
+        + "<select class=form-control>"
+        {% if enable_experimental_opencontrol %}
+        + "<option value='opencontrol'>OpenControl Repository</option>"
+        {% endif %}
+        + "<option value='xacta'>Xacta Import Spreadsheet</option>"
+        + "</select>"
+        + "</div>");
+      show_modal_confirm("Download Document", dom, "Download", function() {
+        var format = dom.find("select").val();
+        switch(format) {
+          case "opencontrol":
+            window.location = "/systems/" + system_id + "/components/selected/export/opencontrol";
+            break;
+          case "xacta":
+            window.location = "selected/export/" + format + "/xlsx";
+            break;
+        }
+      });
+    }
+
+    // Add:  Convert form select to jQuery Select2
+    $('#add-control_id-select').select2({
+      ajax: {
+              url: "/controls/api/controlsselect/",
+              dataType: 'json',
+              delay: 250,
+              data: function(params) {
+                  return {
+                      q: params.term // search term
+                  };
+              },
+              processResults: function(data, params) {
+                  var resData = [];
+                  data.data.controls.forEach(function(value) {
+                      if (value.display_text.indexOf(params.term) != -1)
+                          resData.push(value)
+                  })
+                  return {
+                      results: $.map(resData, function(item) {
+                          return {
+                              text: item.display_text,
+                              id: item.id
+                          }
+                      })
+                  };
+              },
+              cache: true
+          },
+          minimumInputLength: 1
+    }).on('select2:select', function (e) {
+      // After change event for which e.params isn't defined
+      // Split the control string to get oscal_control_id and get catalog_key (e.g., catalog identifier)
+      display_text = e.params.data.text;
+      displaytext = display_text.split(' - ');
+      var first = displaytext.shift(); //or arr[arr.length-1];
+      var last = displaytext.pop(); //or arr[0];
+      dtv = [first, displaytext.join(" - "), last]; // [control_id, title, catalog_key]
+      ck = dtv[1];
+      // $('#add-catalog_key-input').val(e.params.data.catalog_key);
+      $('#add-catalog_key-input').val(ck.replace(" ","_"));
+      $('#add-control').submit();
+    });
+
+  }); //$(document).ready(function()
+
+  // Confirm deletion of control
+  function confirm_cnt_rm(cnt_rm_url) {
+    var result = confirm('Remove selected control from system?\nAny customizations to control\'s statements will be lost.');
+      if (result) {
+        window.location.href = cnt_rm_url;
+      }
+    }
+</script>
+
+{% endblock %}

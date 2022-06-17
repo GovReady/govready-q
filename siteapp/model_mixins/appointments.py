@@ -1,5 +1,4 @@
 from django.db import models
-from django.http import JsonResponse
 
 class AppointmentModelMixin(models.Model):
     appointments = models.ManyToManyField("siteapp.Appointment", blank=True, related_name="%(class)s")

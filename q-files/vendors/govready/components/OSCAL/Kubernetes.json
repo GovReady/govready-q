@@ -1,0 +1,382 @@
+{
+  "component-definition": {
+    "uuid": "ac3aab43-f057-4a89-a140-74f2cd876193",
+    "metadata": {
+      "title": "Kubernetes",
+      "last-modified": "2022-06-12T20:17:22",
+      "version": "2022-06-12T20:17:22",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "c587c112-0b1e-4b20-8296-6f19758e76dd",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "beb20262-b8e7-4a20-930e-37900ca060c0",
+        "type": "software",
+        "title": "Kubernetes",
+        "description": "Kubernetes based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "c587c112-0b1e-4b20-8296-6f19758e76dd"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "f30475c7-dcaf-4d7a-9bb3-b0da241a61a5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "5eb446ef-b8b6-49bd-bf18-924c872b7a76",
+                "description": "The Kubernetes Controller Manager must create unique service accounts for each work payload.",
+                "control-id": "ac-2.1"
+              }
+            ]
+          },
+          {
+            "uuid": "17c4adbd-6bf6-4225-a607-2fe775ff58ee",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "41810257-4140-44d7-9d8a-b039b31b83a8",
+                "description": "Kubernetes API Server must generate audit records that identify what type of event has occurred, identify the source of the event, contain the event results, identify any users, and identify any containers associated with the event.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "7598b728-a105-4745-944d-678c1c8ddd79",
+                "description": "Kubernetes API Server must generate audit records that identify what type of event has occurred, identify the source of the event, contain the event results, identify any users, and identify any containers associated with the event.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "c8247a48-289a-4005-9029-87b787fab137",
+                "description": "Kubernetes API Server must generate audit records that identify what type of event has occurred, identify the source of the event, contain the event results, identify any users, and identify any containers associated with the event.",
+                "control-id": "ac-2.4"
+              }
+            ]
+          },
+          {
+            "uuid": "6bf547f8-7cea-4a61-8f45-bbaf3cbbc089",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "5cdbf6ff-c25d-417b-a141-5126cc07f2a1",
+                "description": "The Kubernetes API Server must enable Node,RBAC as the authorization mode.\nThe Kubernetes Scheduler must have secure binding.\nThe Kubernetes Controller Manager must have secure binding.\nThe Kubernetes API server must have the insecure port flag disabled.\nThe Kubernetes Kubelet must have the read-only port flag disabled.\nThe Kubernetes API server must have the insecure bind address not set.\nThe Kubernetes API server must have the secure port set.\nThe Kubernetes API server must have anonymous authentication disabled.\nThe Kubernetes Kubelet must have anonymous authentication disabled.\nThe Kubernetes kubelet must enable explicit authorization.\nKubernetes Worker Nodes must not have sshd service running.\nKubernetes Worker Nodes must not have the sshd service enabled.\nKubernetes dashboard must not be enabled.\nKubernetes Kubectl cp command must give expected access and results.\nThe Kubernetes kubelet static PodPath must not enable static pods.\nKubernetes DynamicAuditing must not be enabled.\nKubernetes DynamicKubeletConfig must not be enabled.\nThe Kubernetes API server must have Alpha APIs disabled.\nKubernetes must prevent non-privileged users from executing privileged functions to include disabling, circumventing, or altering implemented security safeguards/countermeasures or the installation of patches and updates.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "f5fc63e8-d4a4-4aca-8278-b144a5fedc01",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "4f487fc2-d9e8-427a-a854-438bfaf15ec5",
+                "description": "The Kubernetes API server must have the ValidatingAdmissionWebhook enabled.\nKubernetes must have a pod security policy set.",
+                "control-id": "ac-6.8"
+              }
+            ]
+          },
+          {
+            "uuid": "01524d74-a019-42b7-badf-bbab3f23cf53",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.9.",
+            "implemented-requirements": [
+              {
+                "uuid": "355a554b-4bb0-4d88-8857-01c82a4118b3",
+                "description": "Kubernetes API Server must generate audit records that identify what type of event has occurred, identify the source of the event, contain the event results, identify any users, and identify any containers associated with the event.",
+                "control-id": "ac-6.9"
+              }
+            ]
+          },
+          {
+            "uuid": "b013df4d-3df9-4d5d-ad5d-c07fd205a8cc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "df245898-9545-4f64-8420-fb8bf442e260",
+                "description": "Kubernetes must prevent non-privileged users from executing privileged functions to include disabling, circumventing, or altering implemented security safeguards/countermeasures or the installation of patches and updates.",
+                "control-id": "ac-6.10"
+              }
+            ]
+          },
+          {
+            "uuid": "5ec72e00-9af9-4fc6-a8a0-75947f680104",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-17.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "86891b60-accf-407f-b685-ac47310e8c5c",
+                "description": "The Kubernetes Controller Manager must use TLS 1.2, at a minimum, to protect the confidentiality of sensitive data during electronic dissemination.\nThe Kubernetes Scheduler must use TLS 1.2, at a minimum, to protect the confidentiality of sensitive data during electronic dissemination.\nThe Kubernetes API Server must use TLS 1.2, at a minimum, to protect the confidentiality of sensitive data during electronic dissemination.\nThe Kubernetes etcd must use TLS to protect the confidentiality of sensitive data during electronic dissemination.\nThe Kubernetes etcd must use TLS to protect the confidentiality of sensitive data during electronic dissemination.",
+                "control-id": "ac-17.2"
+              },
+              {
+                "uuid": "fd223e67-d6c3-4013-98f5-100a6e72eb8d",
+                "description": "The Kubernetes API Server must prohibit communication using TLS version 1.0 and 1.1, and SSL 2.0 and 3.0.",
+                "control-id": "ac-17.2"
+              }
+            ]
+          },
+          {
+            "uuid": "9102684d-ba45-4053-87f7-ae6d62610440",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "e01380ae-e175-459f-91f5-be17e9b58973",
+                "description": "Kubernetes API Server must generate audit records that identify what type of event has occurred, identify the source of the event, contain the event results, identify any users, and identify any containers associated with the event.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "41fad544-e112-44a3-93a0-27856ce118a2",
+                "description": "Kubernetes API Server must generate audit records that identify what type of event has occurred, identify the source of the event, contain the event results, identify any users, and identify any containers associated with the event.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "47c3da84-4551-49a7-84d6-5b17b15bc3f6",
+                "description": "Kubernetes API Server must generate audit records that identify what type of event has occurred, identify the source of the event, contain the event results, identify any users, and identify any containers associated with the event.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "eaa30a5b-13da-4316-a451-76f35e53d870",
+                "description": "Kubernetes API Server must generate audit records that identify what type of event has occurred, identify the source of the event, contain the event results, identify any users, and identify any containers associated with the event.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "c416a2d5-3556-4c57-b77c-58d680ff6689",
+                "description": "Kubernetes API Server must generate audit records that identify what type of event has occurred, identify the source of the event, contain the event results, identify any users, and identify any containers associated with the event.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "07fa72f3-9b04-433c-b6c9-86684dc1005c",
+                "description": "Kubernetes API Server must generate audit records that identify what type of event has occurred, identify the source of the event, contain the event results, identify any users, and identify any containers associated with the event.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "f48e884b-b655-418c-b5f6-2f8792e4b174",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "35a132f7-a567-42ac-b8bd-210d30d2a3ba",
+                "description": "Kubernetes API Server must generate audit records that identify what type of event has occurred, identify the source of the event, contain the event results, identify any users, and identify any containers associated with the event.",
+                "control-id": "au-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "92aa7905-d75e-4912-aa90-ae9554e1f596",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "d12ff048-2d74-4189-9ed3-f405e4076e6c",
+                "description": "Kubernetes API Server must generate audit records that identify what type of event has occurred, identify the source of the event, contain the event results, identify any users, and identify any containers associated with the event.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "cc42e4a3-4d9f-472f-805a-9810544ade73",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-14.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "504351c5-7eec-45aa-b26c-8c81ecbb1bee",
+                "description": "The Kubernetes API Server must have an audit policy set.\nThe Kubernetes API Server must have an audit log path set.",
+                "control-id": "au-14.1"
+              }
+            ]
+          },
+          {
+            "uuid": "602d65a9-2665-4256-99c9-910c7e63d1d7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "ac39a128-f6c1-4cba-99b5-f9af2375aa35",
+                "description": "Kubernetes API Server must generate audit records that identify what type of event has occurred, identify the source of the event, contain the event results, identify any users, and identify any containers associated with the event.",
+                "control-id": "cm-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "6c210f72-0bd2-4d20-9afb-97cfdf768e0d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "35ac7733-7bc8-4849-a4d5-3c1b2d3955d1",
+                "description": "Kubernetes Kubelet must deny hostname override.\nThe Kubernetes manifests must be owned by root.\nThe Kubernetes kubelet configuration file must be owned by root.\nThe Kubernetes kubelet configuration files must have file permissions set to 644 or more restrictive.\nThe Kubernetes manifests must have least privileges.",
+                "control-id": "cm-5.6"
+              }
+            ]
+          },
+          {
+            "uuid": "64d9fbc0-6077-4f59-8327-f107bf716c46",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "8a330cb0-3aab-43f5-961f-1792e70f059a",
+                "description": "User-managed resources must be created in dedicated namespaces.\nThe Kubernetes component manifests must be owned by root.\nThe Kubernetes component etcd must be owned by etcd.\nThe Kubernetes conf files must be owned by root.\nThe Kubernetes Kube Proxy must have file permissions set to 644 or more restrictive.\nThe Kubernetes Kube Proxy must be owned by root.\nThe Kubernetes Kubelet certificate authority file must have file permissions set to 644 or more restrictive.\nThe Kubernetes Kubelet certificate authority must be owned by root.\nThe Kubernetes component PKI must be owned by root.\nThe Kubernetes kubelet config must have file permissions set to 644 or more restrictive.\nThe Kubernetes kubelet config must be owned by root.\nThe Kubernetes kubeadm.conf must be owned by root.\nThe Kubernetes kubeadm.conf must have file permissions set to 644 or more restrictive.\nThe Kubernetes kubelet config must have file permissions set to 644 or more restrictive.\nThe Kubernetes kubelet config must be owned by root.\nThe Kubernetes API Server must have file permissions set to 644 or more restrictive.\nThe Kubernetes etcd must have file permissions set to 644 or more restrictive.\nThe Kubernetes admin.conf must have file permissions set to 644 or more restrictive.\nKubernetes API Server audit logs must be enabled.\nThe Kubernetes API Server must be set to audit log max size.\nThe Kubernetes API Server must be set to audit log maximum backup.\nThe Kubernetes API Server audit log retention must be set.\nThe Kubernetes API Server audit log path must be set.\nThe Kubernetes PKI CRT must have file permissions set to 644 or more restrictive.\nThe Kubernetes PKI keys must have file permissions set to 600 or more restrictive.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "496ff670-516f-4f14-b406-8584ab5d8db9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "9180c41b-a96f-4fb8-91f6-43fb33ba1ff0",
+                "description": "The Kubernetes API Server must enforce ports, protocols, and services (PPS) that adhere to the Ports, Protocols, and Services Management Category Assurance List (PPSM CAL).\nThe Kubernetes Scheduler must enforce ports, protocols, and services (PPS) that adhere to the Ports, Protocols, and Services Management Category Assurance List (PPSM CAL).\nThe Kubernetes Controllers must enforce ports, protocols, and services (PPS) that adhere to the Ports, Protocols, and Services Management Category Assurance List (PPSM CAL).\nThe Kubernetes etcd must enforce ports, protocols, and services (PPS) that adhere to the Ports, Protocols, and Services Management Category Assurance List (PPSM CAL).\nThe Kubernetes cluster must use non-privileged host ports for user pods.",
+                "control-id": "cm-7"
+              },
+              {
+                "uuid": "5e86e9e9-1066-4dfd-a822-c0040066cb3e",
+                "description": "Kubernetes Controller Manager must disable profiling.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "bffc2692-5d21-458b-8eba-6657f3f58296",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-11.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "bf1cf902-94b8-4465-b0bc-db4e7fb3e3e9",
+                "description": "Kubernetes must prevent non-privileged users from executing privileged functions to include disabling, circumventing, or altering implemented security safeguards/countermeasures or the installation of patches and updates.",
+                "control-id": "cm-11.2"
+              }
+            ]
+          },
+          {
+            "uuid": "6216dfa4-25b7-4981-8164-a115045f0318",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "d94d33fa-2a3a-4884-baed-bb32bd7eb73f",
+                "description": "Secrets in Kubernetes must not be stored as environment variables.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "7eba4bc4-5c67-4078-84ef-3d89a0a8e864",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "427bb8dd-1934-4ceb-8938-2432147c84ed",
+                "description": "Kubernetes must separate user functionality.",
+                "control-id": "sc-2"
+              }
+            ]
+          },
+          {
+            "uuid": "5a2884c0-3884-4a3c-a405-0a84e9bb1caa",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "1ad3ec8f-e80e-4444-888e-0f585baca24a",
+                "description": "Kubernetes Kubelet must enable kernel protection.",
+                "control-id": "sc-3"
+              }
+            ]
+          },
+          {
+            "uuid": "1e50ba57-c4d7-4a16-82c6-1eff2baddf10",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "c21cd8e9-e3a5-4e07-ab05-da683b59a652",
+                "description": "Kubernetes API Server must configure timeouts to limit attack surface.",
+                "control-id": "sc-5"
+              }
+            ]
+          },
+          {
+            "uuid": "25ba5929-7fba-4c0e-96a0-61e41c86af3d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "ad508462-fcec-453b-8d81-6bed6bea8faa",
+                "description": "Kubernetes API Server must disable basic authentication to protect information in transit.\nKubernetes API Server must disable token authentication to protect information in transit.\nKubernetes endpoints must use approved organizational certificate and key pair to protect information in transit.",
+                "control-id": "sc-8"
+              }
+            ]
+          },
+          {
+            "uuid": "d9e683ed-8c32-4711-9677-48439985c823",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "b68e5ae0-dc81-4790-b01f-91f3d2f5d8ba",
+                "description": "Kubernetes Kubelet must not disable timeouts.",
+                "control-id": "sc-10"
+              }
+            ]
+          },
+          {
+            "uuid": "97a99bc0-7634-42c3-a55e-341a5ea7d4e7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.",
+            "implemented-requirements": [
+              {
+                "uuid": "df04f777-2b88-4de1-8d7f-e37cd68c337c",
+                "description": "The Kubernetes API server must use approved cipher suites.\nKubernetes API Server must have the SSL Certificate Authority set.\nKubernetes Kubelet must have the SSL Certificate Authority set.\nKubernetes Controller Manager must have the SSL Certificate Authority set.\nKubernetes API Server must have a certificate for communication.\nKubernetes etcd must enable client authentication to secure service.\nKubernetes Kubelet must enable tls-private-key-file for client authentication to secure service.\nKubernetes Kubelet must enable tls-cert-file for client authentication to secure service.\nKubernetes etcd must enable client authentication to secure service.\nKubernetes etcd must have a key file for secure communication.\nKubernetes etcd must have a certificate for communication.\nKubernetes etcd must have the SSL Certificate Authority set.\nKubernetes etcd must have a certificate for communication.\nKubernetes etcd must have a key file for secure communication.\nKubernetes etcd must have peer-cert-file set for secure communication.\nKubernetes etcd must have a peer-key-file set for secure communication.",
+                "control-id": "sc-23"
+              }
+            ]
+          },
+          {
+            "uuid": "4a5a98c3-1ffa-4c41-9ba4-5903827cac03",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "ce6467b1-0d1e-43e9-a685-64f725175a4a",
+                "description": "Kubernetes must contain the latest updates as authorized by IAVMs, CTOs, DTMs, and STIGs.",
+                "control-id": "si-2"
+              }
+            ]
+          },
+          {
+            "uuid": "74f544d3-e372-4ed6-a828-60aa760add4c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "08a94aa4-e02a-4cb2-9151-a4b2e920f460",
+                "description": "Kubernetes must remove old components after updated versions have been installed.",
+                "control-id": "si-2.6"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

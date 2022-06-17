@@ -1,0 +1,244 @@
+{
+  "component-definition": {
+    "uuid": "14f7ee22-f943-4ad7-9b3a-3bbceb405303",
+    "metadata": {
+      "title": "A10 Networks ADC ALG",
+      "last-modified": "2022-06-12T20:17:24",
+      "version": "2022-06-12T20:17:24",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "21c5247f-7b51-43bc-a21b-05123c81aa74",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "cc46fdbe-afac-49e4-8071-4745e6bf993d",
+        "type": "software",
+        "title": "A10 Networks ADC ALG",
+        "description": "A10 Networks ADC ALG based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "21c5247f-7b51-43bc-a21b-05123c81aa74"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "c79a4911-e37e-4fd9-94c0-6e73f13892c8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-17.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "ba37f6f8-64f3-4a5e-8cb1-7147823d48ed",
+                "description": "The A10 Networks ADC, when used for TLS encryption and decryption, must be configured to comply with the required TLS settings in NIST SP 800-52.",
+                "control-id": "ac-17.2"
+              }
+            ]
+          },
+          {
+            "uuid": "fa05cadb-084c-4fe3-b74b-e415826a27ac",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-23.",
+            "implemented-requirements": [
+              {
+                "uuid": "7af6bfaa-5504-4f9c-8553-4a81b8ef6c76",
+                "description": "To protect against data mining, the A10 Networks ADC providing content filtering must detect code injection attacks from being launched against data storage objects, including, at a minimum, databases, database records, queries, and fields.\nTo protect against data mining, the A10 Networks ADC providing content filtering must detect SQL injection attacks launched against data storage objects, including, at a minimum, databases, database records, and database fields.\nTo protect against data mining, the A10 Networks ADC providing content filtering as part of its intermediary services must detect code injection attacks launched against application objects including, at a minimum, application URLs and application code.",
+                "control-id": "ac-23"
+              },
+              {
+                "uuid": "e8ca0161-067a-4b57-9ffb-3fa2507e6560",
+                "description": "To protect against data mining, the A10 Networks ADC must detect and prevent SQL and other code injection attacks launched against data storage objects, including, at a minimum, databases, database records, queries, and fields.\nTo protect against data mining, the A10 Networks ADC must detect and prevent code injection attacks launched against application objects including, at a minimum, application URLs and application code.\nTo protect against data mining, the A10 Networks ADC providing content filtering must prevent SQL injection attacks launched against data storage objects, including, at a minimum, databases, database records, and database fields.",
+                "control-id": "ac-23"
+              }
+            ]
+          },
+          {
+            "uuid": "682e44cc-c673-4979-bbff-86ec7664ea44",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "43a8bddb-2f90-44b4-af9e-b26154140ccf",
+                "description": "The A10 Networks ADC, when used to load balance web applications, must enable external logging for accessing Web Application Firewall data event messages.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "e041a91b-4e59-4ac3-8b0c-acf79b59641c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "db86a27e-7207-4992-94eb-44b6139bb410",
+                "description": "The A10 Networks ADC must, at a minimum, off-load audit log records onto a centralized log server.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "a4f9e1f0-5f03-4cfb-9569-fb64510993c0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "23d52177-b381-4020-ba42-5bd3176da1ea",
+                "description": "The A10 Networks ADC must send an alert to, at a minimum, the ISSO and SCA when connectivity to the Syslog servers is lost.",
+                "control-id": "au-5"
+              }
+            ]
+          },
+          {
+            "uuid": "8d3a3420-5a73-4e14-8f3a-2c190e54358b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "cb3bc119-ac73-4135-bfaa-ba4cd4fc2248",
+                "description": "The A10 Networks ADC, when used for load balancing web servers, must deploy the WAF in active mode.\nIf the Data Owner requires it, the A10 Networks ADC must be configured to perform CCN Mask, SSN Mask, and PCRE Mask Request checks.\nThe A10 Networks ADC must protect against TCP SYN floods by using TCP SYN Cookies.\nThe A10 Networks ADC must be a FIPS-compliant version.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "9358a412-480f-441b-bbca-f44218c8d6aa",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "279d7023-1e00-4afb-a4bb-b2fa6d73e51e",
+                "description": "The A10 Networks ADC must be configured to prohibit or restrict the use of functions, ports, protocols, and/or services as defined in the PPSM CAL and vulnerability assessments.",
+                "control-id": "cm-7"
+              },
+              {
+                "uuid": "112b3d07-e07c-4cbf-9e65-747ac444d67d",
+                "description": "The A10 Networks ADC must not have unnecessary scripts installed.\nThe A10 Networks ADC must use DNS Proxy mode when Global Server Load Balancing is used.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "ce982e86-116d-4146-b551-7bf076701263",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "2bc82873-921d-41ab-a3f8-6eb05bbbdc9a",
+                "description": "The A10 Networks ADC when used for TLS encryption and decryption must validate certificates used for TLS functions by performing RFC 5280-compliant certification path validation.",
+                "control-id": "ia-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "07c02336-fd88-4813-abc2-85082a23b38e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "854941bf-a5e8-45d1-b3f5-cc42650ddcd6",
+                "description": "The A10 Networks ADC must protect against TCP and UDP Denial of Service (DoS) attacks by employing Source-IP based connection-rate limiting.\nThe A10 Networks ADC must implement load balancing to limit the effects of known and unknown types of Denial of Service (DoS) attacks.\nThe A10 Networks ADC must enable DDoS filters.\nThe A10 Networks ADC must protect against ICMP-based Denial of Service (DoS) attacks by employing ICMP Rate Limiting.",
+                "control-id": "sc-5"
+              }
+            ]
+          },
+          {
+            "uuid": "a03b4b65-be73-4099-be39-1cc0ce985618",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-7.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "4486e8bd-2129-49cd-8bff-bc32c6d64f2d",
+                "description": "The A10 Networks ADC must not have any unnecessary or unapproved virtual servers configured.",
+                "control-id": "sc-7.5"
+              }
+            ]
+          },
+          {
+            "uuid": "3eacdbb6-4b1e-435a-831a-90f2cd6c9d38",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-7.11.",
+            "implemented-requirements": [
+              {
+                "uuid": "ccf17bfb-5409-4b79-b9bb-3d5714697f37",
+                "description": "The A10 Networks ADC, when used to load balance web applications, must examine incoming user requests against the URI White Lists.",
+                "control-id": "sc-7.11"
+              }
+            ]
+          },
+          {
+            "uuid": "0a921687-b0b2-482d-8fda-488e29a647d4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "f2fe99a0-7f75-4a3d-b59f-a35e8c8bb641",
+                "description": "The A10 Networks ADC being used for TLS encryption and decryption using PKI-based user authentication must only accept end entity certificates issued by DoD PKI or DoD-approved PKI Certificate Authorities (CAs) for the establishment of protected sessions.",
+                "control-id": "sc-23.5"
+              }
+            ]
+          },
+          {
+            "uuid": "cf53895e-491b-48db-95fb-ec6c48d69f35",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "a1b2a975-8896-4303-a83a-8b59d8a319b4",
+                "description": "The A10 Networks ADC, when used to load balance web applications, must enable external logging for WAF data event messages.",
+                "control-id": "si-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "2aa70199-c2bf-463e-bcc0-67176c74c4fc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-4.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "c8ad9d9e-26de-47af-b08d-cb168001cb6d",
+                "description": "The A10 Networks ADC must enable logging for packet anomaly events.\nThe A10 Networks ADC must generate an alert to, at a minimum, the ISSO and ISSM when threats identified by authoritative sources (e.g., IAVMs or CTOs) are detected.\nThe A10 Networks ADC must enable logging of Denial of Service (DoS) attacks.",
+                "control-id": "si-4.5"
+              }
+            ]
+          },
+          {
+            "uuid": "169b4f57-c900-495b-b06a-1d0dfa31e8cd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "c2eb6ba9-15b4-4e9f-8d10-d0c9b226e38a",
+                "description": "The A10 Networks ADC, when used for load-balancing web servers, must not allow the HTTP TRACE and OPTIONS methods.",
+                "control-id": "si-10"
+              }
+            ]
+          },
+          {
+            "uuid": "06262882-4f2e-4920-84e8-2d4e69eb9556",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "2cd9fc94-08a0-46c6-80d1-4ed6eb924a8c",
+                "description": "The A10 Networks ADC, when used to load balance web applications, must strip HTTP response headers.\nThe A10 Networks ADC, when used to load balance web applications, must replace response codes.",
+                "control-id": "si-11"
+              },
+              {
+                "uuid": "00cde646-f099-4b1f-9ca3-818e65cff2c3",
+                "description": "The A10 Networks ADC must reveal error messages only to authorized individuals (ISSO, ISSM, and SA).",
+                "control-id": "si-11"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

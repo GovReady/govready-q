@@ -1,0 +1,226 @@
+{% extends "summary-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+{% load system_tags %}
+
+{% block title %}
+System
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+<!-- action buttons included from project-base.html -->
+<!-- authoring_tool_enabled included from project-base.html -->
+
+{% block body_content %}
+
+<style>
+</style>
+
+<div style="margin-top:8px; padding:20px 50px 0 50px; border-top:1px solid #ccc; background-color:#F5F5F5;">
+<div class="row">
+      <div class="col-md-8" style="">
+          <h3 class="system-classification">{{ system_summary.impact }}</h3>
+          <h2 class="system-name">{{ system_summary.name }}</h2>
+          <h3 class="system-aka"><span style="font-size:.8em;">A.K.A.</span> {% for aka in system_summary.aka %}"{{ aka }}"{% if not forloop.last %}, {% endif %}{% endfor %}"</h3>
+      </div>
+
+    <div class="col-md-4"><h5 class="sys-wide-status-header">Organization-wide Initiative Status</h5>
+        <div style="border:1px solid #CCCCCC; padding:8px;">
+            <table id="sys-wide-status">
+                <tr><td style="width:15px;"><div class="status-box status-red">&nbsp;</div></td><td class="sys-wide-status">800-53 rev5 migration</td></tr>
+                <tr><td><div class="status-box status-yellow">&nbsp;</div></td><td class="sys-wide-status">Log4J remediation solution (updated 4/21/22)</td></tr>
+                <tr><td><div class="status-box status-green">&nbsp;</div></td><td class="sys-wide-status">Q3 Audit</td></tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% include "summary-horizontal-nav.html" %}
+</div>
+<div style="padding:0 50px 0 50px;">
+<div class="row">
+<!-- start left sidebar -->
+<!-- <div class="col-sm-3">
+{% include "summary-sidebar.html" %}
+</div> --> <!-- ends left sidebar -->
+
+<div class="col-sm-12"><!-- starts content area -->
+
+  <div class="row" style="padding:50px 0 0 20px; ">
+  <div class="col-md-12"><h4 class="sys-summary-header">Components Overview</h4></div>
+
+    <div style="max-width:75%; padding-left:1em;">
+          <p class="sys-summary-content">
+            Components are the various constituent software, hardware, and process that compose your system.
+          </p>
+
+
+    <div class="systems-top">
+            <div id="tab-content" class="rows-header" style="min-height:50px;">
+                <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span class="systems-selected-items">Selected components</span></div>
+                <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
+                <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 pull-right">
+                    <form id="add_component" name="add_component" class="form-inline" method="post" action="{%  url 'add_system_component' system_id=system.id %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="component">Add component</label>&nbsp;&nbsp;
+                            <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
+                            <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onChange="handleComponentSelection();" style="width:340px;">
+                                <option value="None" selected disabled hidden>Select a Component</option>
+                                {% for component in elements %}
+                                    {% if component not in system.producer_elements and component not in system_proposal_elements%}
+                                        <option value="{{ component.id }},{{component.require_approval}}">{{ component.name }}{%if component.require_approval %}*{% endif%}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <form  style="display:none;" id="send_proposal_message" name="send_proposal_message" method="post" action="{% url 'proposal_message' system_id=system.id %}">
+                {% csrf_token %}
+                <input type="hidden" id="proposal_message_type" name="proposal_message_type" value="" />
+                <input type="hidden" id="proposal_message" name="proposal_message" value="" />
+            </form>
+
+            <div id="private-component-modal"></div>
+
+            {% for component in system_elements %}
+                {# Each "component" is a Element model object. #}
+                    <div id="tab-content" class="row-control" style="min-height:110px;">
+                        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                            <a href={% url 'system_element' system_id=system.id element_id=component.id %}>{{ component.name }}</a>
+                        </div>
+                        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                            <span class="component-type">{{ component.component_type }}</span>
+                            <span class="component-state">{{ component.component_state }}</span>
+                        </div>
+                        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                            {% if component.description %}{{ component.description|truncatewords:10 }}{% else %}<span class="not-provided">No description provided.</span>{% endif %}
+                            <div>{% for tag in component.tags.all %}<span class="component-tag">{{ tag.label }}</span> {% endfor %}</div>
+                        </div>
+                    {% with ctl_count=component.get_control_impl_smts_prototype_count %}
+                        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                            <span class="pull-right">{% if ctl_count %}{{ ctl_count }} control{{ ctl_count|pluralize }}</span>{% else %}None{% endif %}
+                        </div>
+                    {% endwith %}
+                    {% get_obj_perms request.user for system as "system_perms" %}
+                    {% if "change_system" in system_perms %}
+                        <div id="delete-selected-component" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 pull-right">
+                            <a href="{% url 'system_element_remove' system_id=system.id element_id=component.id %}" aria-label="Delete component">
+                              <small>
+                                <span class="glyphicon glyphicon-trash pull-right" title="remove component"></span>
+                              </small>
+                          </a>
+                        </div>
+                    {% endif %}
+                    </div>
+            {% endfor %}
+
+    </div>
+
+    <br />
+
+    <div>
+        <div class="rows-header" style="min-height:50px;">
+            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span class="systems-selected-items">Proposed components</span></div>
+            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
+            <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 pull-right">&nbsp;</div>
+        </div>
+            {% for proposal in system_proposals %}
+                    {# Each "component" is a Element model object. #}
+                        <div class="row-control" style="min-height:110px;">
+                            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                                <a href={% url 'system_element' system_id=system.id element_id=proposal.requested_element.id %}>{{ proposal.requested_element.name }}</a>
+                            </div>
+                            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                                <span class="component-type">{{ proposal.requested_element.component_type }}</span>
+                                <span class="component-state">{{ proposal.requested_element.component_state }}</span>
+                            </div>
+                            <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                                {% if proposal.requested_element.description %}{{ proposal.requested_element.description|truncatewords:10 }}{% else %}<span class="not-provided">No description provided.</span>{% endif %}
+                                <div>{% for tag in proposal.requested_element.tags.all %}<span class="component-tag">{{ tag.label }}</span> {% endfor %}</div>
+                            </div>
+                            {% with ctl_count=proposal.requested_element.get_control_impl_smts_prototype_count %}
+                                <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                                    <span class="pull-right">{% if ctl_count %}{{ ctl_count }} control{{ ctl_count|pluralize }}</span>{% else %}None{% endif %}
+                                </div>
+                            {% endwith %}
+                            {% get_obj_perms request.user for system as "system_perms" %}
+                            {% if "change_system" in system_perms %}
+                                <div id="delete-selected-component" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 pull-right">
+                                    <a href="{% url 'system_proposal_remove' system_id=system.id proposal_id=proposal.id %}" aria-label="Delete proposal">
+                                    <small>
+                                        <span class="glyphicon glyphicon-trash pull-right" title="remove component"></span>
+                                    </small>
+                                </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+            {% endfor %}
+        </div>
+    </div>
+
+    <div>
+        {% include 'components/paginate_comp.html' with system_elements=page_obj %}
+    </div>
+
+
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+
+
+
+</div> <!-- ends main md content well -->
+</div> <!-- ends row -->
+
+
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+<script>
+    window.system_summary({{system_summary.id}}, {{project.id}});
+</script>
+<script>
+    function handleComponentSelection() {
+        /* Check if component selected requires approval or has criteria, if it does, pop up modal, else work as previously */
+        const value = document.getElementById('producer_element_id').value;
+        const [component_id, require_approval] = value.split(',');
+        const userId = {{request.user.id}};
+        const systemId = {{system.id}};
+        const systemName = `{{system.root_element.name}}`;
+        window.requireApprovalModal(userId, systemId, systemName, component_id, require_approval === 'True' ? true : false);
+    }
+
+    // Convert select field for Add Component to jQuery Select2 box
+    $(document).ready(function() {
+        $('#producer_element_id').select2();
+    });
+
+
+  // Confirm deletion of component
+    function confirm_cmpt_rm(cmpt_rm_url) {
+        var result = confirm('Remove component and related controls from system?\nAny customizations to component\'s statements will be lost.');
+        if (result) {
+            // Pass - allow click to propegate and follow to href target
+            window.location.href = cmpt_rm_url;
+        }
+    }
+</script>
+{% endblock %}
+

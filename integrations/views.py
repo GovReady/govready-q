@@ -10,7 +10,6 @@ from .csam.communicate import CSAMCommunication
 from .github.communicate import GithubCommunication
 from .jsonplaceholder.communicate import JsonplaceholderCommunication
 
-
 def set_integration(integration):
     """Select correct integration"""
 
@@ -41,6 +40,25 @@ def set_integration(integration):
         # report/raise error
     # import ipdb; ipdb.set_trace()
     # communication = communication_classes[0]()
+
+def list_integrations(request):
+    """List available integrations"""
+
+    # Get integrations
+    general_integrations = []
+    integrations = Integration.objects.all()
+    for integration in integrations:
+        general_integration = {
+            "integration_name": integration.name,
+            "integration_summary": integration.description,
+            "integration_base_url": integration.config.get('base_url', None)
+            }
+        general_integrations.append(general_integration)
+
+    context = {
+        "integrations": general_integrations,
+    }
+    return render(request, "integrations/integrations.html", context)
 
 def integration_identify(request, integration_name):
     """Integration returns an identification"""

@@ -24,9 +24,7 @@
 {% endblock %}
 
 {% block contextbar %}{% endblock %}
-
 {% block body %}
-
     <div class="portfolio-top">
         <div class="container">
             <div class="portfolio-main">
@@ -34,14 +32,13 @@
                 <a id="component-import-oscal" class="btn btn-success" onclick="show_import_component_modal(); return false;" href="#">Import OSCAL Component</a>
                 <a id="import_records_link" href="{% url 'import_records' %}" class="btn btn-success">Manage Import Records</a>
             </div>
-
             <h2 class="">Component Library</h2>
-
             <form action="{% url 'component_library' %}" method="GET" role="search">
                 <div class="form-inline pull-right create-nav">
                     <div class="form-group">
                         <div class="input-group" id="searchbox-input">
                             <input id="searchbox" name="search" value="{{ request.GET.search }}" type="text" placeholder="search components" spellcheck="false" aria-labelledby="searchbox-input" />
+                            <input id="owner" type="checkbox" name="owner" {% if start %}checked{% endif %} />
                             <span id="searchicon" class="glyphicon glyphicon-search" href="{% url 'component_library' %}"></span>
                             {% if request.GET.search %}
                                 <a id="searchclear" class="glyphicon glyphicon-remove" href="{% url 'component_library' %}"></a>
@@ -50,64 +47,134 @@
                     </div>
                 </div>
             </form>
-
+            <div id="switch-to-owner-components" style="float:right;margin-right:1rem;">
+                <button onclick="return switchData();">
+                    Toggle to owned Components
+                </button>
+            </div>
             {% if page_obj|length > 0 %}
                 <p>You have access to {{ total_comps }} components.</p>
             {% else %}
                 <p>You do not have access to any components.</p>
             {% endif %}
+            
         <form action="{% url 'compare_components' %}" name="compare_form" onsubmit="return clearStorage()" method="POST">
             {% csrf_token %}
         <input type="hidden" name="hiddenChecks" id="hiddenChecks" value="" />
             <div id="" class="row">
                 <button id="compare-components" href="{% url 'compare_components' %}" class="btn btn-info"><em class="glyphicon glyphicon-sort"></em> Compare Components</button>
-                 <button id="compare-select" onclick="select_all(true); return false;" href="#" class="btn btn-success">Select all</button>
-                 <button id="compare-deselect" onclick="select_all(false); return false;" href="#" class=" btn btn-danger">Deselect all</button>
+                <button id="compare-select" onclick="select_all(true); return false;" href="#" class="btn btn-success">Select all</button>
+                <button id="compare-deselect" onclick="select_all(false); return false;" href="#" class=" btn btn-danger">Deselect all</button>
+                
                 <div id="" class="col-xs-12"><span>{% include 'components/paginate_comp.html' %}</span></div>
+                
             </div>
-
             <div id="tab-content" class="row rows-header">
                 <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">Component</div>
                 <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">Description</div>
                 <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">Select</div>
                 <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2"><span class="pull-right">Statements</span></div>
             </div>
-        <div id="checkbox-container">
-            {% for component in page_obj %}
-                <div id="tab-content" class="row row-control" style="">
-                    <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
-                        <div>
-                            <a href={% url 'component_library_component' element_id=component.id %}>{{ component.name }}</a>
-                            {% if component.private == True %}<span class="glyphicon glyphicon-lock small" style="color:gray;" title="Private"></span>{% endif %}
+            <div id="components-list" style="display:hidden;">
+                <div id="checkbox-container">
+                    {% for component in page_obj %}
+                        <div id="tab-content" class="row row-control" style="">
+                            <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                                <div>
+                                    <a href={% url 'component_library_component' element_id=component.id %}>{{ component.name }}</a>
+                                    {% if component.private == True %}<span class="glyphicon glyphicon-lock small" style="color:gray;" title="Private"></span>{% endif %}
+                                </div>
+                            </div>
+                            <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
+                                {% if component.description %}{{ component.description }}{% else %}<span class="not-provided">No description provided.</span>{% endif %}
+                                <div>{% for tag in component.tags.all %}<span class="component-tag"><a href="{% url 'component_library' %}?search={{ tag.label }}">{{ tag.label }}</a></span> {% endfor %}</div>
+                            </div>
+                            <div id="" aria-label="Select component to compare" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+                                {% comment %} <label for="comp_comparison_{{ forloop.counter }}" aria-label="Checkbox to select component"></label> {% endcomment %}
+                                <input aria-label="Checkbox for selecting a component" type="checkbox" id="comp_comparison_{{ forloop.counter }}" name="compareCheckbox" onchange="addCheck()" value="{{ component.id }}">
+                            </div>
+                            <div id="" class="pull-right col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                                <span class="pull-right">{% if component.get_control_impl_smts_prototype_count > 0 %}{{ component.get_control_impl_smts_prototype_count }} control{{ component.get_control_impl_smts_prototype_count|pluralize }}</span>{% else %}
+                                    <span class="not-provided">No statements</span>{% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
-                        {% if component.description %}{{ component.description }}{% else %}<span class="not-provided">No description provided.</span>{% endif %}
-                        <div>{% for tag in component.tags.all %}<span class="component-tag"><a href="{% url 'component_library' %}?search={{ tag.label }}">{{ tag.label }}</a></span> {% endfor %}</div>
-                    </div>
-                    <div id="" aria-label="Select component to compare" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
-                        {% comment %} <label for="comp_comparison_{{ forloop.counter }}" aria-label="Checkbox to select component"></label> {% endcomment %}
-                        <input aria-label="Checkbox for selecting a component" type="checkbox" id="comp_comparison_{{ forloop.counter }}" name="compareCheckbox" onchange="addCheck()" value="{{ component.id }}">
-                    </div>
-                    <div id="" class="pull-right col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                        <span class="pull-right">{% if component.get_control_impl_smts_prototype_count > 0 %}{{ component.get_control_impl_smts_prototype_count }} control{{ component.get_control_impl_smts_prototype_count|pluralize }}</span>{% else %}
-                            <span class="not-provided">No statements</span>{% endif %}
-                    </div>
+                    {% endfor %}
                 </div>
-            {% endfor %}
-        </div>
+            </div>
+            <div id="owned-components-list" style="display:hidden;">
+                <div id="owned-checkbox-container">
+                    {% for component in owned_page_obj %}
+                        <div id="tab-content" class="row row-control" style="">
+                            <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                                <div>
+                                    <a href={% url 'component_library_component' element_id=component.id %}>{{ component.name }}</a>
+                                    {% if component.private == True %}<span class="glyphicon glyphicon-lock small" style="color:gray;" title="Private"></span>{% endif %}
+                                </div>
+                            </div>
+                            <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
+                                {% if component.description %}{{ component.description }}{% else %}<span class="not-provided">No description provided.</span>{% endif %}
+                                <div>{% for tag in component.tags.all %}<span class="component-tag"><a href="{% url 'component_library' %}?search={{ tag.label }}">{{ tag.label }}</a></span> {% endfor %}</div>
+                            </div>
+                            <div id="" aria-label="Select component to compare" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+                                {% comment %} <label for="comp_comparison_{{ forloop.counter }}" aria-label="Checkbox to select component"></label> {% endcomment %}
+                                <input aria-label="Checkbox for selecting a component" type="checkbox" id="comp_owner_comparison_{{ forloop.counter }}" name="compareCheckbox" onchange="addCheck()" value="{{ component.id }}">
+                            </div>
+                            <div id="" class="pull-right col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                                <span class="pull-right">{% if component.get_control_impl_smts_prototype_count > 0 %}{{ component.get_control_impl_smts_prototype_count }} control{{ component.get_control_impl_smts_prototype_count|pluralize }}</span>{% else %}
+                                    <span class="not-provided">No statements</span>{% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
         </form>
-
-            {% include "components/import-component-modal.html" %}
-        </div>
+        
+        {% include "components/import-component-modal.html" %}
+        
     </div>
+    </div>
+    
     {{ block.super }}
+    
 {% endblock %}
-
 {% block scripts %}
 <script>
+
+function switchData(){
+    var $owned_submit = $("#owned-components-list")
+    var $all_list = $("#components-list")
+    var $owner = $("#owner")
+    
+    if(document.getElementById("owner").checked){
+        let data_val = document.getElementById("owner").checked = false;
+        $owned_submit.toggle();
+        $all_list.toggle();
+        $owned_cbs = $('input[name="owner"]').click(function () {
+            $owned_submit.toggle();
+            $all_list.toggle();
+        });
+        localStorage.clear()
+        select_all(false)
+        return true;
+
+    } else {
+        let data_val = document.getElementById("owner").checked = true;
+        $owned_submit.toggle();
+        $all_list.toggle();
+        $owned_cbs = $('input[name="owner"]').click(function () {
+            $owned_submit.toggle();
+            $all_list.toggle();
+        });
+        localStorage.clear()
+        select_all(false)
+        return false;
+    }
+}
+
 //Hide submit button until 1 checkbox is checked
 $(document).ready(function () {
+    var $owned_submit = $("#owned-components-list").hide()
+    var $owner_input = $("#owner").hide()
     var checkBoxValues = JSON.parse(localStorage.getItem('checkBoxValues'))
     // If are no previously checked components then hide button
     var $submit = $("#compare-components").hide()
@@ -115,20 +182,26 @@ $(document).ready(function () {
         $submit.toggle();
     } else {
         $cbs = $('input[name="compareCheckbox"]').click(function () {
-
             $submit.toggle($cbs.is(":checked"));
         });
     }
 });
+
+
 
 function select_all(val) {
     // select and deselect with toggle
     var checkBoxValues = JSON.parse(localStorage.getItem('checkBoxValues')) || {};
     var $checkboxes = $("#checkbox-container :checkbox");//$('input[type=checkbox]')
     $checkboxes.prop('checked', val);
+    var $ownedCheckboxes = $("#owned-checkbox-container :checkbox");//$('input[type=checkbox]')
+    $ownedCheckboxes.prop('checked', val);
 
-    addStorage($checkboxes, checkBoxValues);
-
+    if(document.getElementById("owner").checked){
+        addStorage($ownedCheckboxes, checkBoxValues)
+    } else {
+        addStorage($checkboxes, checkBoxValues)
+    }
     var compare_btn = $("#compare-components")
     if ($checkboxes.prop('checked') && compare_btn.is(":hidden")) {
         compare_btn.toggle()
@@ -141,10 +214,15 @@ function select_all(val) {
 function addCheck() {
     // maintain in localstorage checkboxes that have been checked
     var checkBoxValues = JSON.parse(localStorage.getItem('checkBoxValues')) || {};
-
     var $checkboxes = $("#checkbox-container :checkbox");
-    addStorage($checkboxes, checkBoxValues)
+    var $owned_checkboxes = $("#owned-checkbox-container :checkbox");
 
+    if(document.getElementById("owner").checked){
+        addStorage($owned_checkboxes, checkBoxValues)
+    } else {
+        addStorage($checkboxes, checkBoxValues)
+    }
+    
 }
 
 function addStorage($checkboxes, checkBoxValues) {

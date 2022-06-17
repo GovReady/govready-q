@@ -1,0 +1,572 @@
+{
+  "component-definition": {
+    "uuid": "3fa2ba3d-084d-4b2f-ae1d-96332d8d944d",
+    "metadata": {
+      "title": "Domain Name System (DNS) Security Requirements Guide",
+      "last-modified": "2022-06-12T20:17:27",
+      "version": "2022-06-12T20:17:27",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "5ce43bf9-bcdf-4649-9c4f-b4c78d1603f5",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "d056b331-a3e7-4ec6-9643-694a1bf11774",
+        "type": "software",
+        "title": "Domain Name System (DNS) Security Requirements Guide",
+        "description": "Domain Name System (DNS) Security Requirements Guide based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "5ce43bf9-bcdf-4649-9c4f-b4c78d1603f5"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "99f4ca03-ff39-47ae-968b-e49b198d6253",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-4.12.",
+            "implemented-requirements": [
+              {
+                "uuid": "bc4810f8-661f-45e1-9537-00874bea47e5",
+                "description": "The DNS Name Server software must be configured to refuse queries for its version information.\nThe HINFO, RP, TXT and LOC RR types must not be used in the zone SOA.",
+                "control-id": "ac-4.12"
+              }
+            ]
+          },
+          {
+            "uuid": "2362a09a-d47a-439d-b05f-a5fb6a001dfe",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "732cfa7e-df08-4694-b2d1-537bacb026fb",
+                "description": "The DNS implementation must limit the number of concurrent sessions client connections to the number of allowed dynamic update clients.\nThe DNS implementation must limit the number of concurrent sessions for zone transfers to the number of secondary name servers.",
+                "control-id": "ac-10"
+              }
+            ]
+          },
+          {
+            "uuid": "0294bab6-3e26-46a1-bd01-03a2a347d393",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "9788566b-fb6a-4dcd-984c-53bd9fad43a2",
+                "description": "The DNS server implementation must produce audit records containing information to establish what type of events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "5a51b9ae-85a1-4240-991c-548f755458b9",
+                "description": "The DNS server implementation must produce audit records containing information to establish where the events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "4c8a844c-cc3f-4506-a8b9-5eb245db8cc8",
+                "description": "The DNS server implementation must produce audit records containing information to establish when (date and time) the events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "f53ab646-cd5c-466b-9c9e-ba9a462f1314",
+                "description": "The DNS server implementation must produce audit records containing information to establish the source of the events.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "983b2d2b-a092-46ee-90ee-f7c42486bac1",
+                "description": "The DNS server implementation must generate audit records containing information that establishes the identity of any individual or process associated with the event.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "cad7bcf2-20aa-4712-bc61-9ce9ca1b2807",
+                "description": "The DNS server implementation must produce audit records that contain information to establish the outcome of the events.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "53922c2d-c526-42aa-9e1d-8d150eb6c6ae",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "a85c02de-022f-4731-8502-b62f33d8927f",
+                "description": "The DNS server implementations audit records must be backed up at least every seven days onto a different system or system component than the system or component being audited.",
+                "control-id": "au-9.2"
+              }
+            ]
+          },
+          {
+            "uuid": "ef71d407-dd08-4418-8d5e-ff58cad253d6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-10.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "713c7ffc-2074-4414-8d03-96c8c2c70dbe",
+                "description": "The DNS server implementation must strongly bind the identity of the DNS server with the DNS information.",
+                "control-id": "au-10.1"
+              },
+              {
+                "uuid": "5855a408-ad4e-41bd-9770-5fbe90cceb68",
+                "description": "The DNS server implementation must provide the means for authorized individuals to determine the identity of the source of the DNS server-provided information.",
+                "control-id": "au-10.1"
+              }
+            ]
+          },
+          {
+            "uuid": "6b3112c7-3786-473b-91c9-6db210cb494e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-10.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "a6743fc5-d27e-4d43-b2d0-e72a5527ac34",
+                "description": "A unique TSIG key must be generated for each pair of communicating hosts.",
+                "control-id": "au-10.2"
+              },
+              {
+                "uuid": "04fb0fd6-8387-47e3-9e8c-0381cca5eec7",
+                "description": "In the event of an error when validating the binding of another DNS servers identity to the DNS information, the DNS server implementation must log the event and send notification to the DNS administrator.",
+                "control-id": "au-10.2"
+              },
+              {
+                "uuid": "8385d378-e7a0-4e29-8039-2d90ee873d1b",
+                "description": "The DNS server implementation must validate the binding of the other DNS servers identity to the DNS information for a server-to-server transaction (e.g., zone transfer).",
+                "control-id": "au-10.2"
+              }
+            ]
+          },
+          {
+            "uuid": "91fb4267-92ca-4e10-b9a0-fe8c2c9beb48",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "314f46a5-a39f-47f8-9972-2f3e1b85e540",
+                "description": "The DNS server implementation must be configured to provide audit record generation capability for DoD-defined auditable events within all DNS server components.\nThe DNS server implementation must be configured to provide audit record generation capability for DoD-defined auditable events within all DNS server components.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "5f3790d9-749d-47e9-aca3-80b824459ce0",
+                "description": "The DNS implementation must generate audit records for the success and failure of start and stop of the name server service or daemon.\nThe DNS implementation must generate audit records for the success and failure of all name server events.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "81b2b5de-e5e1-4549-baad-4310be728f1e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "12dea8d4-a733-4e83-93fa-197987106495",
+                "description": "The DNS server implementation must be configured to allow DNS administrators to change the auditing to be performed on all DNS server components, based on all selectable event criteria.",
+                "control-id": "au-12.3"
+              }
+            ]
+          },
+          {
+            "uuid": "2fd3c56b-d293-4b40-99dc-b7eeb6202c6b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "880c0418-55be-403b-b7df-90ba03959b9b",
+                "description": "The DNS implementation must prohibit recursion on authoritative name servers.\nA DNS server implementation must provide data origin artifacts for internal name/address resolution queries.\nA DNS server implementation must provide data integrity protection artifacts for internal name/address resolution queries.\nThe DNS server implementation must follow procedures to re-role a secondary name server as the master name server should the master name server permanently lose functionality.\nThe salt value for zones signed using NSEC3 RRs must be changed every time the zone is completely re-signed.\nThe validity period for the RRSIGs covering a zones DNSKEY RRSet must be no less than two days and no more than one week.\nNSEC3 must be used for all internal DNS zones.\nThe DNS implementation must ensure each NS record in a zone file points to an active name server authoritative for the domain specified in that record.\nThe two files generated by the dnssec-keygen program must be made accessible only to the server administrator account, or deleted, after they have been copied to the key file in the name server.\nAll authoritative name servers for a zone must be located on different network segments.\nAll authoritative name servers for a zone must have the same version of zone information.\nAn authoritative name server must be configured to enable DNSSEC Resource Records.\nFor zones split between the external and internal sides of a network, the RRs for the external hosts must be separate from the RRs for the internal hosts.\nIn a split DNS configuration, where separate name servers are used between the external and internal networks, the external name server must be configured to not be reachable from inside resolvers.\nIn a split DNS configuration, where separate name servers are used between the external and internal networks, the internal name server must be configured to not be reachable from outside resolvers.\nPrimary authoritative name servers must be configured to only receive zone transfer requests from specified secondary name servers.\nThe DNS implementation must be conformant to the IETF DNS specification.\nThe DNS implementation must enforce a Discretionary Access Control (DAC) policy that limits propagation of access rights.\nThe DNS implementation must implement internal/external role separation.\nThe DNS must utilize valid root name servers in the local root zone file.\nThe DNS name server software must be at the latest version.\nThe DNS Name Server software must run with restricted privileges.\nThe IP address for hidden master authoritative name servers must not appear in the name servers set in the zone database.\nThe platform on which the name server software is hosted must be configured to respond to DNS traffic only.\nThe platform on which the name server software is hosted must be configured to send outgoing DNS messages from a random port.\nThe private key corresponding to the ZSK, stored on name servers accepting dynamic updates, must have appropriate directory/file-level access control list-based or cryptography-based protections.\nThe private keys corresponding to both the ZSK and the KSK must not be kept on the DNSSEC-aware primary authoritative name server when the name server does not support dynamic updates.\nA zone file must not include resource records that resolve to a fully qualified domain name residing in another zone.\nCNAME records must not point to a zone with lesser security for more than six months.\nAll authoritative name servers for a zone must be geographically disbursed.\nThe DNS server implementation must, when a component failure is detected, activate a notification to the system administrator.\nThe DNS server implementation must strongly bind the identity of the DNS server with the DNS information.\nThe DNS server implementation must provide the means for authorized individuals to determine the identity of the source of the DNS server-provided information.\nThe DNS server implementation must validate the binding of the other DNS servers identity to the DNS information for a server-to-server transaction (e.g., zone transfer).\nIn the event of an error when validating the binding of another DNS servers identity to the DNS information, the DNS server implementation must log the event and send notification to the DNS administrator.\nDigital signature algorithm used for DNSSEC-enabled zones must be FIPS-compatible.\nThe DNS server implementation must be configured in accordance with the security configuration settings based on DoD security configuration or implementation guidance, including STIGs, NSA configuration guides, CTOs, and DTMs.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "455d348b-4943-4b3f-a369-3d1fc98f13b9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "80d75269-fd69-4ba0-bea6-33ef933d60c9",
+                "description": "The DNS server implementation must be configured to prohibit or restrict unapproved ports and protocols.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "a31d6b7a-ebe8-4bc1-98a2-785b392251fe",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "b23cb1b2-359a-4b85-a50d-f686ffc446c0",
+                "description": "The DNS server implementation must authenticate the other DNS server before responding to a server-to-server transaction.",
+                "control-id": "ia-3"
+              },
+              {
+                "uuid": "96d294bf-c9de-42db-aa3f-815f30d5e025",
+                "description": "The DNS server implementation must uniquely identify the other DNS server before responding to a server-to-server transaction.",
+                "control-id": "ia-3"
+              }
+            ]
+          },
+          {
+            "uuid": "9436c6cd-1c10-44e9-a82f-7699e0aa15a8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "6c3c0b6a-ae86-46d1-95cd-88d09dee2d36",
+                "description": "The DNS server implementation must authenticate another DNS server before establishing a remote and/or network connection using bidirectional authentication that is cryptographically based.",
+                "control-id": "ia-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "4f1190bd-c283-4b34-8568-39daf796aa2b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "5046528c-11c8-4324-a0bb-eaf38a184da4",
+                "description": "The DNS server implementation, when using PKI-based authentication, must enforce authorized access to the corresponding private key.\nThe key file must be owned by the account under which the name server software is run.\nRead/Write access to the key file must be restricted to the account that runs the name server software only.\nOnly the private key corresponding to the ZSK alone must be kept on the name server that does support dynamic updates.\nSignature generation using the KSK must be done off-line, using the KSK-private stored off-line.",
+                "control-id": "ia-5.2"
+              },
+              {
+                "uuid": "62d8b162-3b6c-4371-bb1a-b9af1a6410ac",
+                "description": "The DNS server implementation, for PKI-based authentication, must implement a local cache of revocation data to support path discovery and validation in case of the inability to access revocation information via the network.",
+                "control-id": "ia-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "77a3b698-922d-4be6-a35e-721f720b2efc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "f48ffb00-3b96-479e-b7c1-5d7c236a5c37",
+                "description": "The DNS server implementation must require devices to re-authenticate for each zone transfer and dynamic update request connection attempt.",
+                "control-id": "ia-11"
+              }
+            ]
+          },
+          {
+            "uuid": "7fc3579d-f15c-420e-a6e8-392fda91e604",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ma-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "f570333e-b649-4acc-8da0-7333707dd9ec",
+                "description": "The DNS server implementation must employ strong authenticators in the establishment of nonlocal maintenance and diagnostic sessions.",
+                "control-id": "ma-4"
+              }
+            ]
+          },
+          {
+            "uuid": "88198fa8-7608-4ce9-b7b6-6e7c8c0db70d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "4f95828e-925e-4a40-8c92-1b379c78b740",
+                "description": "The DNS server implementation must prevent unauthorized and unintended information transfer via shared system resources.",
+                "control-id": "sc-4"
+              }
+            ]
+          },
+          {
+            "uuid": "6c9dce6c-0218-44ec-8bd5-6d5b530e622d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "97b63d4d-33c8-4617-99e2-753be0fb88c7",
+                "description": "The DNS server implementation must restrict the ability of individuals to use the DNS server to launch Denial of Service (DoS) attacks against other information systems.",
+                "control-id": "sc-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "ab193b2f-03b3-4911-a0a6-50810f029b1f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "98909b77-0e10-46f2-9cf8-627fc0986112",
+                "description": "The DNS server implementation must manage excess capacity, bandwidth, or other redundancy to limit the effects of information flooding types of Denial of Service (DoS) attacks.",
+                "control-id": "sc-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "4f7ed683-241a-48b3-9395-430ca0bf0ec7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "08701bb0-e38a-47bb-8369-a4ad64cb76de",
+                "description": "The DNS server implementation must protect the integrity of transmitted information.",
+                "control-id": "sc-8"
+              }
+            ]
+          },
+          {
+            "uuid": "d108ce3e-9cd6-4d56-9671-8f154261f37d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "63869959-704b-4abe-998e-5170766cf81c",
+                "description": "The DNS server implementation must implement cryptographic mechanisms to detect changes to information during transmission unless otherwise protected by alternative physical safeguards, such as, at a minimum, a Protected Distribution System (PDS).",
+                "control-id": "sc-8.1"
+              }
+            ]
+          },
+          {
+            "uuid": "85fd2a91-4aaa-407b-b410-49f535f008da",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "6d7f5620-b7d8-4d2a-ac2e-5892a9e4e218",
+                "description": "The DNS server implementation must maintain the integrity of information during preparation for transmission.",
+                "control-id": "sc-8.2"
+              },
+              {
+                "uuid": "e8f7b352-ee8f-4f6c-b0f0-d9d5bf6a5f29",
+                "description": "The DNS server implementation must maintain the integrity of information during reception.",
+                "control-id": "sc-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "f6330344-9c04-4a30-ae30-d055c3583b1c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-13.",
+            "implemented-requirements": [
+              {
+                "uuid": "a0930fd3-8d54-4ecd-86c6-d15e7e3abb8f",
+                "description": "The DNS server must implement NIST FIPS-validated cryptography for provisioning digital signatures, generating cryptographic hashes, and protecting unclassified information requiring confidentiality.",
+                "control-id": "sc-13"
+              }
+            ]
+          },
+          {
+            "uuid": "17213606-1e19-44c0-b861-e870e7499cb5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-20.",
+            "implemented-requirements": [
+              {
+                "uuid": "b7e30e47-c094-467b-85be-f098beb99fd3",
+                "description": "A DNS server implementation must provide additional integrity artifacts along with the authoritative name resolution data the system returns in response to external name/address resolution queries.",
+                "control-id": "sc-20"
+              },
+              {
+                "uuid": "d61a1e81-bd0b-49ca-98d8-f1051e87400c",
+                "description": "The DNS server implementation must enforce approved authorizations for controlling the flow of information between DNS servers and between DNS servers and DNS clients based on DNSSEC policies.\nA DNS server implementation must provide the means to enable verification of a chain of trust among parent and child domains (if the child supports secure resolution services).",
+                "control-id": "sc-20"
+              },
+              {
+                "uuid": "95fa7289-f9d0-4e63-b381-7b239ab8ecbf",
+                "description": "A DNS server implementation must provide the means to indicate the security status of child zones.\nThe validity period for the RRSIGs covering the DS RR for a zones delegated children must be no less than two days and no more than one week.",
+                "control-id": "sc-20"
+              },
+              {
+                "uuid": "35263f2f-c988-4ea8-97ed-e58eec553f68",
+                "description": "A DNS server implementation must provide additional data origin artifacts along with the authoritative data the system returns in response to external name/address resolution queries.",
+                "control-id": "sc-20"
+              }
+            ]
+          },
+          {
+            "uuid": "ad4068f6-ce73-4dc1-9bdd-1ecad66353d9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-20.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "d202d5e4-9eda-4017-95cd-121c0887e608",
+                "description": "A DNS server implementation must provide data integrity protection artifacts for internal name/address resolution queries.",
+                "control-id": "sc-20.2"
+              },
+              {
+                "uuid": "fb6f25e5-c688-4804-b67f-489b20842c91",
+                "description": "A DNS server implementation must provide data origin artifacts for internal name/address resolution queries.",
+                "control-id": "sc-20.2"
+              }
+            ]
+          },
+          {
+            "uuid": "8d866aa1-ae9f-4888-86dd-dad102b4eb7d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-21.",
+            "implemented-requirements": [
+              {
+                "uuid": "c56eb0f2-f09e-4436-b572-92b87e23b959",
+                "description": "A DNS server implementation must perform data integrity verification on the name/address resolution responses the system receives from authoritative sources.",
+                "control-id": "sc-21"
+              },
+              {
+                "uuid": "00870cf8-f5e6-4976-827d-01fe1f9f022d",
+                "description": "A DNS server implementation must perform data origin verification authentication on the name/address resolution responses the system receives from authoritative sources.",
+                "control-id": "sc-21"
+              },
+              {
+                "uuid": "b8e28cc2-430d-4732-ba82-deb53396bfdf",
+                "description": "A DNS server implementation must request data integrity verification on the name/address resolution responses the system receives from authoritative sources.",
+                "control-id": "sc-21"
+              },
+              {
+                "uuid": "84d967ec-6f79-4f8e-bd59-b7b020900f49",
+                "description": "A DNS server implementation must request data origin authentication verification on the name/address resolution responses the system receives from authoritative sources.",
+                "control-id": "sc-21"
+              }
+            ]
+          },
+          {
+            "uuid": "60cbfe04-e8b9-4fb7-bff7-0c0683fd16b8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.",
+            "implemented-requirements": [
+              {
+                "uuid": "98dbd419-a386-47cc-a659-38f6322a757f",
+                "description": "The DNS implementation must protect the authenticity of communications sessions for zone transfers.\nThe DNS implementation must protect the authenticity of communications sessions for dynamic updates.\nThe DNS implementation must protect the authenticity of communications sessions for queries.",
+                "control-id": "sc-23"
+              }
+            ]
+          },
+          {
+            "uuid": "4e03e4b4-830c-4b70-86ca-904119d5ede3",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "bc0b9a21-91a4-40cc-b874-a3c91bfbcf6f",
+                "description": "If the DNS server is using SIG(0), the DNS server implementation must only allow the use of DoD PKI-established certificate authorities for verification of the establishment of protected transactions.",
+                "control-id": "sc-23.5"
+              }
+            ]
+          },
+          {
+            "uuid": "ca332085-abd1-4ab1-b556-c09b475744ad",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-24.",
+            "implemented-requirements": [
+              {
+                "uuid": "faec616c-0bca-4656-87e0-802bf7de92fe",
+                "description": "The DNS server implementation must fail to a secure state if system initialization fails, shutdown fails, or aborts fail.",
+                "control-id": "sc-24"
+              },
+              {
+                "uuid": "2edf428f-d27d-40fa-bb79-702ef840c47f",
+                "description": "In the event of a system failure, the DNS server implementation must preserve any information necessary to determine cause of failure and any information necessary to return to operations with least disruption to mission processes.",
+                "control-id": "sc-24"
+              }
+            ]
+          },
+          {
+            "uuid": "2c290373-237d-404f-a801-c51a6d7bc155",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.",
+            "implemented-requirements": [
+              {
+                "uuid": "5f5070f3-4811-49d4-9333-7e704b97b3c6",
+                "description": "The DNS server implementation must protect the confidentiality and integrity of secret/private cryptographic keys at rest and the integrity of DNS information at rest.",
+                "control-id": "sc-28"
+              }
+            ]
+          },
+          {
+            "uuid": "401c2e28-a0f5-48a6-883e-2140dc50aaa4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "2b079fee-6fd1-4749-a5fd-4b597bd05d70",
+                "description": "The DNS server implementation must utilize cryptographic mechanisms to prevent unauthorized modification of DNS zone data.",
+                "control-id": "sc-28.1"
+              },
+              {
+                "uuid": "3a36221f-3ff7-4624-a183-78ddf8321837",
+                "description": "The DNS server implementation must utilize cryptographic mechanisms to prevent unauthorized disclosure of non-DNS data stored on the DNS server.",
+                "control-id": "sc-28.1"
+              }
+            ]
+          },
+          {
+            "uuid": "163a90f3-ccf4-49b2-94e2-6827187bdd9b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "c70318e9-3b47-4a2d-b23a-4cd8ef699117",
+                "description": "The DNS server implementation must log the event and notify the system administrator when anomalies in the operation of the signed zone transfers are discovered.",
+                "control-id": "si-6"
+              },
+              {
+                "uuid": "9375c9c8-b86e-4a3e-b06e-44c32f6e2fd7",
+                "description": "The DNS server implementation must perform verification of the correct operation of security functions: upon system start-up and/or restart; upon command by a user with privileged access; and/or every 30 days.",
+                "control-id": "si-6"
+              },
+              {
+                "uuid": "e5f11e9a-c48c-4c4b-ad28-be5bd199d112",
+                "description": "The DNS server implementation must be configured to generate audit records for failed security verification tests so that the ISSO and ISSM can be notified of the failures.",
+                "control-id": "si-6"
+              }
+            ]
+          },
+          {
+            "uuid": "335d2821-34f9-4679-81fb-184ca70e7bbe",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "90e9f4ca-2c10-4d48-87e3-c17374c030eb",
+                "description": "The DNS server implementation must check the validity of all data inputs except those specifically identified by the organization.",
+                "control-id": "si-10"
+              }
+            ]
+          },
+          {
+            "uuid": "93b66b7a-be9a-4cca-ae0d-dbd03d2f08f1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "099e210a-a407-4999-b24f-282eb326022d",
+                "description": "The DNS server implementation must behave in a predictable and documented manner that reflects organizational and system objectives when invalid inputs are received.",
+                "control-id": "si-10.3"
+              }
+            ]
+          },
+          {
+            "uuid": "5dd5ee6c-14d0-4f4f-b70c-0023bbc1b75e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-13.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "cde29f9f-1ef8-4bdf-a2af-b5aab8c2ddf7",
+                "description": "The DNS server implementation must, when a component failure is detected, activate a notification to the system administrator.",
+                "control-id": "si-13.4"
+              }
+            ]
+          },
+          {
+            "uuid": "ee41f57c-9766-4f13-bd0f-254970b80fa3",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-17.",
+            "implemented-requirements": [
+              {
+                "uuid": "86f3ec95-48f8-4756-a28e-2856a1b741d8",
+                "description": "The DNS server implementation must follow procedures to re-role a secondary name server as the master name server should the master name server permanently lose functionality.",
+                "control-id": "si-17"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
