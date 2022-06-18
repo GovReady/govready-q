@@ -1,0 +1,77 @@
+{% extends "../base.html" %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} POA&M Detail
+{% endblock %}
+
+{% block head %}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body-wide %}
+
+<div class="container">
+
+    
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Add a System</h2>
+        </div>
+
+        <div class="col-md-3 portfolio-org-col ">
+            <h2>By Name</h2>
+            <p>Add a new or existing IT System for monitoring and compliance.</p>
+        </div>
+
+        <div class="col-md-9 portfolio-org-col ">
+            <div class="well">
+                <form method="get">
+                    {% csrf_token %}
+                    <input type=hidden name=action value=newportfolio>
+                    <div class="form-group">
+                        <label class="control-label" for="id_title">System Name</label>
+                        <input type="text" name="s" maxlength="255" class="form-control" placeholder="e.g., Enterprise Financial System" title="The official name of the syste" required id="id_title">
+                        <!-- <div class="help-block">Official name of system</div> -->
+                    </div>
+                    <p><button type="submit" id="new-system-button" class="btn btn-success">Add &raquo;</button></p>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-3 portfolio-org-col ">
+            <h2>By URL</h2>
+            <p>Add a new or existing IT System for monitoring and compliance.</p>
+        </div>
+        <div class="col-md-9 portfolio-org-col ">
+            <div class="well">
+                <form method="get">
+                    {% csrf_token %}
+                    <input type=hidden name=action value=newportfolio>
+                    <div class="form-group">
+                        <label class="control-label" for="id_title">URL of System</label>
+                        <input type="text" name="s" maxlength="255" class="form-control" placeholder="e.g., https://finsys.example.com" title="The official name of the syste" required id="id_title">
+                        <!-- <div class="help-block">Official name of system</div> -->
+                    </div>
+                    <p><button type="submit" id="new-system-button" class="btn btn-success">Add &raquo;</button></p>
+                </form>
+            </div>
+        </div> 
+
+
+    </div>
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+<script>
+
+</script>
+
+{% endblock %}

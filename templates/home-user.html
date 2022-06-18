@@ -131,8 +131,22 @@ Your Compliance Projects
           <div class="glyphicon glyphicon-duplicate"></div>
         </div>
         <div class="col-md-9">
-            <h3><a id="new-project" href="{% url 'store' %}">I want to start a new System Security Plan using a template</a></h3>
-          <p>Pick a project template to start a new system in the ATO process.</p>
+          <h3><a id="new-system" href="{% url 'create_system_from_string' %}">Add System</a></h3>
+          <div>Add a new system by name or URL.</div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+        <div class="luna-container">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon-duplicate"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a id="new-project" href="{% url 'store' %}">Start Project via template</a></h3>
+          <div>Add a new system via a project template.</div>
         </div>
       </div>
       </div>
@@ -146,11 +160,11 @@ Your Compliance Projects
         </div>
         <div class="col-md-9">
           {% if projects_access|length > 0 %}
-            <h3><a id="new-project-link" href="/projects">I want to view my existing System Security Plan{{ projects_access|pluralize }}</a></h3>
+            <h3><a id="new-project-link" href="/projects">View my {{ projects_access|length }} existing System{{ projects_access|pluralize }}</a></h3>
           {% else %}
-            <h3><a id="new-project-link" href="/projects">You don't have any System Security Plans</a></h3>
+            <h3><a id="new-project-link" href="/projects">You don't have any Systems</a></h3>
           {% endif %}
-          <p>List your IT systems getting or having ATOs. <span id="common-tab-count" style="padding-top:3px;">{{ projects_access|length }}</span></p>
+          <p>List your IT systems getting or having ATOs.</p>
         </div>
       </div>
       </div>
@@ -163,28 +177,28 @@ Your Compliance Projects
           <div class="glyphicon glyphicon-lock"></div>
         </div>
         <div class="col-md-9">
-          <h3><a href="/controls/components">I want to browse security components</a></h3>
+          <h3><a href="/controls/components">Browse security components</a></h3>
           <p>Components are the building blocks of IT systems and provide security controls.</p>
         </div>
       </div>
       </div>
     </div>
 
-    <div class="col-sm-6">
+<!--     <div class="col-sm-6">
         <div class="luna-container">
       <div class="luna-box">
         <div class="col-md-3">
           <div class="glyphicon glyphicon-search"></div>
         </div>
         <div class="col-md-9">
-          <h3><a href="/controls/">I want to search security controls</a></h3>
+          <h3><a href="/controls/">Search security controls</a></h3>
           <p>
             View control catalogs.
           </p>
         </div>
       </div>
       </div>
-    </div>
+    </div> -->
 
 </div>
 

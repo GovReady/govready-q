@@ -11,6 +11,7 @@ v0.10.0-dev-aspen (June xx, 2022)
 * Integrations framework for better inclusion of information from remote services.
 * Component control inheritance workflow.
 * Single Sign On OIDC support.
+* Add form to create system from string or URLs.
 
 Release adds support for private components and integrations with third party services.
 
@@ -27,6 +28,7 @@ Release adds support for private components and integrations with third party se
 * Display the control framework along side of controls in component control listing page.
 * Remove icons from project listing.
 * Add Component search filter to filter results to components owned by user.
+* Add form to create system from string or URLs.
 
 **Developer changes**
 

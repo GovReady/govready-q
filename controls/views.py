@@ -3960,92 +3960,101 @@ def get_integrations_system_events(request, system_id):
 def create_system_from_string(request):
     """Create a system in GovReady-Q based on info from a URL"""
 
-    # communication = set_integration()
-    print("request", request.GET)
     new_system_str = request.GET.get("s", None)
-    new_system_name = new_system_str.replace("https://", "").replace("http://", "")
-    new_system_description = f"System created from url."
 
-    # Examine remote site for information
-    # Handle error case of no URL
+    # Display form when no string received
+    if new_system_str is None:
+        context = {}
+        return render(request, "systems/new_system_form.html", context)
+
+    new_system_msg = f"Created new System in GovReady based with name '{new_system_str}'."
+    new_system_description = f"System created from name."
+
+    # Create for new system based on string
+    if 'http://' in new_system_name or 'https://' in new_system_str:
+        new_system_url = new_system_str
+        new_system_msg = f"Created new System in GovReady based on URL '{new_system_url}'."
+        new_system_name = new_system_url.replace("https://", "").replace("http://", "")
+        new_system_description = f"System created from url."
+        # Examine remote site for information
+        # Handle error case of no URL
 
     # Check if system aleady exists with domain name
     # if not System.objects.filter(Q(info__contains={"csam_system_id": csam_system_id})).exists():
-    if True:
-        # Create new system
-        # What is default template?
-        source_slug = "govready-q-files-startpack"
-        app_name = "speedyssp"
-        # can user start the app?
-        # Is this a module the user has access to? The app store
-        # does some authz based on the organization.
-        catalog = get_compliance_apps_catalog_for_user(request.user)
-        for app_catalog_info in catalog:
-            if app_catalog_info["key"] == source_slug + "/" + app_name:
-                # We found it.
-                break
-        else:
-            raise Http404()
-        # Start the most recent version of the app.
-        appver = app_catalog_info["versions"][0]
-        organization = Organization.objects.first()  # temporary
-        default_folder_name = "Started Apps"
-        folder = Folder.objects.filter(
-            organization=organization,
-            admin_users=request.user,
-            title=default_folder_name,
-        ).first()
-        if not folder:
-            folder = Folder.objects.create(organization=organization, title=default_folder_name)
-            folder.admin_users.add(request.user)
-        task = None
-        q = None
-        # Get portfolio project should be included in.
-        if request.GET.get("portfolio"):
-            portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
-        else:
-            if not request.user.default_portfolio:
-                request.user.create_default_portfolio_if_missing()
-            portfolio = request.user.default_portfolio
-        # import ipdb; ipdb.set_trace()
-        try:
-            project = start_app(appver, organization, request.user, folder, task, q, portfolio)
-        except ModuleDefinitionError as e:
-            error = str(e)
-        # Associate System with CSAM system
-        new_system = project.system 
-        new_system.info = {
-            "created_from_input": new_system_str,
-            "system_description": new_system_description
-        }
-        new_system.save()
-        # Update System name to URL system name
-        nsre = new_system.root_element
-        # Make sure system root element name is unique
-        name_suffix = ""
-        while Element.objects.filter(name=f"{new_system_name}{name_suffix}").exists():
-            # Element exists with that name
-            if name_suffix == "":
-                name_suffix = 1
-            else:
-                name_suffix = str(int(name_suffix)+1)
-        if name_suffix == "":
-            nsre.name = new_system_name
-        else:
-            nsre.name = f"{new_system_name}{name_suffix}"
-        nsre.save()
-        # Update System Project title to CSAM system name
-        prt = project.root_task
-        prt.title_override = nsre.name
-        prt.save()
-        logger.info(event=f"create_system_from_url url {new_system_name}",
-                object={"object": "system", "id": new_system.id},
-                user={"id": request.user.id, "username": request.user.username})
-        messages.add_message(request, messages.INFO, f"Created new System in GovReady based on URL {new_system_name}.")
 
-        # Redirect to the new system/project.
-        return HttpResponseRedirect(project.get_absolute_url())   
-        # return HttpResponseRedirect(f"/system/{new_system.id}/aspen/summary")
+    # What is default template?
+    source_slug = "govready-q-files-startpack"
+    app_name = "speedyssp"
+    # can user start the app?
+    # Is this a module the user has access to? The app store
+    # does some authz based on the organization.
+    catalog = get_compliance_apps_catalog_for_user(request.user)
+    for app_catalog_info in catalog:
+        if app_catalog_info["key"] == source_slug + "/" + app_name:
+            # We found it.
+            break
+    else:
+        raise Http404()
+    # Start the most recent version of the app.
+    appver = app_catalog_info["versions"][0]
+    organization = Organization.objects.first()  # temporary
+    default_folder_name = "Started Apps"
+    folder = Folder.objects.filter(
+        organization=organization,
+        admin_users=request.user,
+        title=default_folder_name,
+    ).first()
+    if not folder:
+        folder = Folder.objects.create(organization=organization, title=default_folder_name)
+        folder.admin_users.add(request.user)
+    task = None
+    q = None
+    # Get portfolio project should be included in.
+    if request.GET.get("portfolio"):
+        portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+    else:
+        if not request.user.default_portfolio:
+            request.user.create_default_portfolio_if_missing()
+        portfolio = request.user.default_portfolio
+    # import ipdb; ipdb.set_trace()
+    try:
+        project = start_app(appver, organization, request.user, folder, task, q, portfolio)
+    except ModuleDefinitionError as e:
+        error = str(e)
+    # Associate System with CSAM system
+    new_system = project.system 
+    new_system.info = {
+        "created_from_input": new_system_str,
+        "system_description": new_system_description
+    }
+    new_system.save()
+    # Update System name to URL system name
+    nsre = new_system.root_element
+    # Make sure system root element name is unique
+    name_suffix = ""
+    while Element.objects.filter(name=f"{new_system_name}{name_suffix}").exists():
+        # Element exists with that name
+        if name_suffix == "":
+            name_suffix = 1
+        else:
+            name_suffix = str(int(name_suffix)+1)
+    if name_suffix == "":
+        nsre.name = new_system_name
+    else:
+        nsre.name = f"{new_system_name}{name_suffix}"
+    nsre.save()
+    # Update System Project title to CSAM system name
+    prt = project.root_task
+    prt.title_override = nsre.name
+    prt.save()
+    logger.info(event=f"create_system_from_url url {new_system_name}",
+            object={"object": "system", "id": new_system.id},
+            user={"id": request.user.id, "username": request.user.username})
+    messages.add_message(request, messages.INFO, new_system_msg)
+
+    # Redirect to the new system/project.
+    return HttpResponseRedirect(project.get_absolute_url())   
+    # return HttpResponseRedirect(f"/system/{new_system.id}/aspen/summary")
 
 @login_required
 def system_summary_1_aspen(request, system_id):
