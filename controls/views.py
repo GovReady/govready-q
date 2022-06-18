@@ -3967,11 +3967,12 @@ def create_system_from_string(request):
         context = {}
         return render(request, "systems/new_system_form.html", context)
 
-    new_system_msg = f"Created new System in GovReady based with name '{new_system_str}'."
+    new_system_name = new_system_str
+    new_system_msg = f"Created new System in GovReady based with name '{new_system_name}'."
     new_system_description = f"System created from name."
 
     # Create for new system based on string
-    if 'http://' in new_system_name or 'https://' in new_system_str:
+    if 'http://' in new_system_str or 'https://' in new_system_str:
         new_system_url = new_system_str
         new_system_msg = f"Created new System in GovReady based on URL '{new_system_url}'."
         new_system_name = new_system_url.replace("https://", "").replace("http://", "")
