@@ -52,6 +52,7 @@ Release adds support for private components and integrations with third party se
 * Refactor and OIDC authentication for proper testing of admin and not admin roles.
 * Create a new system via name given by a string in URL.
 * Add a large set of sample components (150+) generated from STIGs.
+* Detect Apple ARM platform (e.g. 'M1 chip') and use alternate backend Dockerfile with Chromium install commented out.
 
 **Bug fixes**
 
