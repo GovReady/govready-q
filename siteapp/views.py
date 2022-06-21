@@ -1452,7 +1452,7 @@ def delete_project(request, project):
     if len(parents) > 0:
         redirect = parents[0].get_absolute_url()
     else:
-        redirect = "/"
+        redirect = "/projects"
 
     return JsonResponse({"status": "ok", "redirect": redirect})
 

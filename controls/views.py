@@ -3755,6 +3755,73 @@ def system_profile_oscal_json(request, system_id):
 
 # System Summaries
 @login_required
+def get_system_info(request, system_id):
+    """Returns info for system"""
+
+    system = System.objects.get(id=system_id)
+    system_info = system.info
+    print(system_info)
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_info['id'] = system.id
+    system_info['name'] = system.root_element.name
+    # system_info['impact'] = system.get_security_impact_level
+
+    system_info_default = {
+        "system_description": "~",
+        "id": "~",
+        "other_id": "~",
+        "name": "~",
+        "organization_name": "~",
+        "aka": "~",
+        "impact": "~",
+        "status": "~",
+        "type": "~",
+        "created": "~",
+        "hosting_facility": "~",
+        "next_audit": "~",
+        "next_scan": "~", #"05/01/22",
+        "security_scan": "~",
+        "pen_test": "~", #"Scheduled for 05/05/22",
+        "config_scan": "~",
+        "purpose": "~",
+        "vuln_new_30days": "~",
+        "vuln_new_rslvd_30days": "~",
+        "vuln_90days": "~",
+        "risk_score": "~",
+        "score_1": "~",
+        "score_2": "~",
+        "score_3": "~",
+        "score_4": "~",
+        "score_5": "~",
+    }
+
+    # Set any missing defaults
+    for key in system_info_default:
+        if key not in system_info:
+            system_info[key] = system_info_default[key]
+    print(system_info)
+    return system_info
+
+@login_required
+def get_system_events(request, system_id):
+    """Returns Events for system"""
+
+    system = System.objects.get(id=system_id)
+    system_events = [ { "event_tag": e.event_type, "event_summary": e.description} for e in system.events.all()]
+
+    # # Retrieve events from integrations
+    # csam_system_id = system.info.get('csam_system_id', None)
+    # system_events = [
+    #     { "event_tag": "TEST", "event_summary": "Penetration test scheduled - Automated penetration test run by SOC"},
+    #     { "event_tag": "SCAN", "event_summary": "Security scan scheduled - Automated weekly security scan will occur Sunday, June 9"},
+    #     { "event_tag": "SYS", "event_summary": "ISSO appointed - Janice Avery (contracor) has been appointed as ISSO for System"}
+    # ]
+    return system_events
+
+@login_required
 def get_integrations_system_info(request, system_id):
     """Returns Integrations info for system"""
 
@@ -3955,7 +4022,6 @@ def get_integrations_system_events(request, system_id):
     ]
     return system_events
 
-
 @login_required
 def create_system_from_string(request):
     """Create a system in GovReady-Q based on info from a URL"""
@@ -4056,8 +4122,35 @@ def create_system_from_string(request):
     new_system = project.system 
     new_system.info = {
         "created_from_input": new_system_str,
-        "system_description": new_system_description
+        "system_description": new_system_description,
+
+        "id": "~",
+        "other_id": "~",
+        "name": "~",
+        "organization_name": "~",
+        "aka": "~",
+        "impact": "~",
+        "status": "~",
+        "type": "~",
+        "created": "~",
+        "hosting_facility": "~",
+        "next_audit": "~",
+        "next_scan": "~", #"05/01/22",
+        "security_scan": "~",
+        "pen_test": "~", #"Scheduled for 05/05/22",
+        "config_scan": "~",
+        "purpose": "~",
+        "vuln_new_30days": "~",
+        "vuln_new_rslvd_30days": "~",
+        "vuln_90days": "~",
+        "risk_score": "~",
+        "score_1": "~",
+        "score_2": "~",
+        "score_3": "~",
+        "score_4": "~",
+        "score_5": "~",
     }
+    new_system.add_event("SYS", new_system_msg)
     new_system.save()
     # Update System name to URL system name
     nsre = new_system.root_element
@@ -4131,8 +4224,10 @@ def system_summary_aspen(request, system_id):
     # Temporarily assume only one project and get first project
     project = system.projects.all()[0]
 
-    system_summary = get_integrations_system_info(request, system_id)
-    system_events = get_integrations_system_events(request, system_id)
+    # system_summary = get_integrations_system_info(request, system_id)
+    system_summary = get_system_info(request, system_id)
+    # system_events = get_integrations_system_events(request, system_id)
+    system_events = get_system_events(request,system_id)
 
     # Get all projects
     projects = system.projects.all()
@@ -4143,7 +4238,7 @@ def system_summary_aspen(request, system_id):
 
     context = {
         "system": system_summary,
-        #"project": project,
+        "project": project,
         "projects": projects,
         "system_events": system_events,
         # "deployments": deployments,
@@ -4189,7 +4284,7 @@ def system_integrations_aspen(request, system_id):
 
     context = {
         "system": system_summary,
-        #"project": project,
+        "project": project,
         "system_events": system_events,
         "system_integrations": general_integrations,
         # "deployments": deployments,

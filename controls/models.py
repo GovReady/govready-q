@@ -964,6 +964,30 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
         self.root_element.statements_consumed.filter(producer_element=element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).update(status=status)
         return True
 
+    def add_event(self, event_type, description, info={}):
+        """Add event to SystemEvents"""
+
+        se = SystemEvent.objects.create(
+            system = self,
+            event_type = event_type,
+            description = description,
+            info = info
+        )
+
+        return se
+
+class SystemEvent(auto_prefetch.Model, TagModelMixin, BaseModel):
+    system = auto_prefetch.ForeignKey('System', related_name='events', on_delete=models.CASCADE, blank=True,
+                                      null=True, help_text="Events related to the system")
+    event_type = models.CharField(max_length=12, help_text="Event type", unique=False, blank=False, null=False)
+    description = models.CharField(max_length=255, help_text="Brief description of the event", unique=False,
+                                   blank=False, null=False)
+    info = models.JSONField(blank=True, default=dict, help_text="JSON object detailed event information")
+
+    #{ "event_tag": "TEST", "event_summary": "Penetration test scheduled - Automated penetration test run by SOC"},
+    def __str__(self):
+        return f"SystemEvent {self.id} {self.description[:15] + '..'}"
+
 
 class CommonControlProvider(models.Model):
     name = models.CharField(max_length=150, help_text="Name of the CommonControlProvider", unique=False)
