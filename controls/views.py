@@ -3964,7 +3964,37 @@ def create_system_from_string(request):
 
     # Display form when no string received
     if new_system_str is None:
-        context = {}
+
+        # Get the app catalog. If the user is answering a question, then filter to
+        # just the apps that can answer that question.
+        from siteapp.views import filter_app_catalog
+        catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
+        # Group by category from catalog metadata.
+        from collections import defaultdict
+        catalog_by_category = defaultdict(lambda: {"title": None, "apps": []})
+        for app in catalog:
+            source_slug, _ = app["key"].split('/')
+            app['source_slug'] = source_slug
+            # print(f"1 keys: {app.keys()}")
+            # print(f"2 key, title: {app['key']}, {app['title']}")
+            for category in app["categories"]:
+                catalog_by_category[category]["title"] = (category or "Uncategorized")
+                # Only get default apps
+                # TODO: Refactor this code
+                organization = Organization.objects.first()  # temporary
+                # if app['title'] in ['Blank Project', 'Speedy SSP', 'General IT System ATO for 800-53 (low)']:
+                if app['title'] in organization.extra.get('default_appversion_name_list', []): # temporary
+                    catalog_by_category[category]["apps"].append(app)
+
+        # Sort categories by title and discard keys.
+        catalog_by_category = sorted(catalog_by_category.values(), key=lambda category: (
+            category["title"] != "Great starter apps",  # this category goes first
+            category["title"].lower(),  # sort case insensitively
+            category["title"],  # except if two categories differ only in case, sort case-sensitively
+        ))
+        context = {
+            "apps": catalog_by_category
+        }
         return render(request, "systems/new_system_form.html", context)
 
     new_system_name = new_system_str
@@ -4054,8 +4084,8 @@ def create_system_from_string(request):
     messages.add_message(request, messages.INFO, new_system_msg)
 
     # Redirect to the new system/project.
-    return HttpResponseRedirect(project.get_absolute_url())   
-    # return HttpResponseRedirect(f"/system/{new_system.id}/aspen/summary")
+    # return HttpResponseRedirect(project.get_absolute_url())
+    return redirect(reverse('system_summary', args=[new_system.id]))
 
 @login_required
 def system_summary_1_aspen(request, system_id):
