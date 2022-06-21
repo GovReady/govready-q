@@ -8,7 +8,7 @@ services:
     container_name: govready-q-dev
     build:
       context: ../..
-      dockerfile: dev_env/docker/images/backend/Dockerfile
+      dockerfile: dev_env/docker/images/backend/${BACKEND_DOCKERFILE}
     command: /bin/bash -c /usr/src/app/dev_env/docker/images/backend/docker-entrypoint.sh
     volumes:
       - ../..:/usr/src/app
