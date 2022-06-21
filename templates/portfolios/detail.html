@@ -66,7 +66,8 @@ Remove contextbar from top of page
         </div> -->
 
         <div class="col-xs-10 col-md-4">
-          <a href="{% url 'system_summary' system_id=project.system.id %}" class="portfolio-project-link">{{project.title|truncatechars:60}}</a>
+          <a href="{{project.get_absolute_url}}" class="portfolio-project-link">{{project.title|truncatechars:60}}</a>
+          <!-- <a href="{% url 'system_summary' system_id=project.system.id %}" class="portfolio-project-link">{{project.title|truncatechars:60}}</a> -->
         </div>
 
         <div class="col-xs-6 col-sm-1">{{project.id}}</div>

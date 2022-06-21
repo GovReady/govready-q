@@ -4177,8 +4177,8 @@ def create_system_from_string(request):
     messages.add_message(request, messages.INFO, new_system_msg)
 
     # Redirect to the new system/project.
-    # return HttpResponseRedirect(project.get_absolute_url())
-    return redirect(reverse('system_summary', args=[new_system.id]))
+    return HttpResponseRedirect(project.get_absolute_url())
+    # return redirect(reverse('system_summary', args=[new_system.id]))
 
 @login_required
 def system_summary_1_aspen(request, system_id):

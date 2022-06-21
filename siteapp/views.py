@@ -511,9 +511,9 @@ def apps_catalog(request):
                 return HttpResponseRedirect(url)
 
             # Redirect to the new project.
-            # return HttpResponseRedirect(project.get_absolute_url())
-            new_system = project.system
-            return redirect(reverse('system_summary', args=[new_system.id]))
+            return HttpResponseRedirect(project.get_absolute_url())
+            # new_system = project.system
+            # return redirect(reverse('system_summary', args=[new_system.id]))
 
     return render(request, "app-store.html", {
         "apps": catalog_by_category,
@@ -612,9 +612,9 @@ def apps_catalog_item(request, source_slug, app_name):
                     task.get_absolute_url() + "#" + urlencode({"q": q.key, "t": project.root_task.id}))
 
             # Redirect to the new project.
-            # return HttpResponseRedirect(project.get_absolute_url())
-            new_system = project.system
-            return redirect(reverse('system_summary', args=[new_system.id]))
+            return HttpResponseRedirect(project.get_absolute_url())
+            # new_system = project.system
+            # return redirect(reverse('system_summary', args=[new_system.id]))
 
     # Show the "app" page.
     return render(request, "app-store-item.html", {

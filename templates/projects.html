@@ -151,8 +151,8 @@ Systems
       {% endif %}
     </span>
     &nbsp;&nbsp;&nbsp; -->
-    <!-- <a href="{{project.get_absolute_url}}" class="projects-link">{{project.title}}</a> -->
-    <a href="{% url 'system_summary' system_id=project.system.id %}" class="projects-link">{{project.title}}</a>
+    <a href="{{project.get_absolute_url}}" class="projects-link">{{project.title}}</a>
+    <!-- <a href="{% url 'system_summary' system_id=project.system.id %}" class="projects-link">{{project.title}}</a> -->
     
   </div>
   <div class="col-xs-6 col-sm-1">{{project.id}}</div>
