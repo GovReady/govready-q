@@ -19,6 +19,7 @@ from django.http import (Http404, HttpResponse, HttpResponseForbidden,
                          HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -511,6 +512,8 @@ def apps_catalog(request):
 
             # Redirect to the new project.
             return HttpResponseRedirect(project.get_absolute_url())
+            # new_system = project.system
+            # return redirect(reverse('system_summary', args=[new_system.id]))
 
     return render(request, "app-store.html", {
         "apps": catalog_by_category,
@@ -610,6 +613,8 @@ def apps_catalog_item(request, source_slug, app_name):
 
             # Redirect to the new project.
             return HttpResponseRedirect(project.get_absolute_url())
+            # new_system = project.system
+            # return redirect(reverse('system_summary', args=[new_system.id]))
 
     # Show the "app" page.
     return render(request, "app-store-item.html", {
@@ -1447,7 +1452,7 @@ def delete_project(request, project):
     if len(parents) > 0:
         redirect = parents[0].get_absolute_url()
     else:
-        redirect = "/"
+        redirect = "/projects"
 
     return JsonResponse({"status": "ok", "redirect": redirect})
 

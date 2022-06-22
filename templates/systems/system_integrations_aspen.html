@@ -19,7 +19,7 @@ System
 
 {% block body_content %}
 
-<div style="margin-top:8px; padding:20px 50px 0 50px; border-top:1px solid #ccc; background-color:#F5F5F5;">
+<div style="margin-top:8px; padding:20px 50px 0 50px; background-color:#F5F5F5;">
 <div class="row">
       <div class="col-md-8" style="">
           <h3 class="system-classification">{{ system.impact }}</h3>
@@ -27,7 +27,7 @@ System
           <h3 class="system-aka"><span style="font-size:.8em;">A.K.A.</span> {% for aka in system.aka %}"{{ aka }}"{% if not forloop.last %}, {% endif %}{% endfor %}</h3>
       </div>
 
-    <div class="col-md-4"><h5 class="sys-wide-status-header">Organization-wide Initiative Status</h5>
+    <!-- <div class="col-md-4"><h5 class="sys-wide-status-header">Organization-wide Initiative Status</h5>
         <div style="border:1px solid #CCCCCC; padding:8px;">
             <table id="sys-wide-status">
                 <tr><td style="width:15px;"><div class="status-box status-red">&nbsp;</div></td><td class="sys-wide-status">800-53 rev5 migration</td></tr>
@@ -35,7 +35,7 @@ System
                 <tr><td><div class="status-box status-green">&nbsp;</div></td><td class="sys-wide-status">Q3 Audit</td></tr>
             </table>
         </div>
-    </div>
+    </div> -->
 </div>
 
 

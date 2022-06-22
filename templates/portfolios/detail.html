@@ -44,7 +44,7 @@ Remove contextbar from top of page
     <div class="container">
       <div class="row">
         <!-- <div class="col-sm-1">&nbsp;</div> -->
-        <div class="col-xs-10 col-md-4">Project</div>
+        <div class="col-xs-10 col-md-4">System</div>
         <div class="col-xs-6 col-sm-1">ID</div>
         <div class="col-xs-6 col-sm-3">Portfolio</div>
         <div class="col-xs-6 col-sm-2">Role</div>
@@ -67,6 +67,7 @@ Remove contextbar from top of page
 
         <div class="col-xs-10 col-md-4">
           <a href="{{project.get_absolute_url}}" class="portfolio-project-link">{{project.title|truncatechars:60}}</a>
+          <!-- <a href="{% url 'system_summary' system_id=project.system.id %}" class="portfolio-project-link">{{project.title|truncatechars:60}}</a> -->
         </div>
 
         <div class="col-xs-6 col-sm-1">{{project.id}}</div>
@@ -75,7 +76,7 @@ Remove contextbar from top of page
         {% if perms.siteapp.delete_project %}
         <div class="col-xs-6 col-sm-2">Owner</div>
         {% elif perms.siteapp.change_project %}
-        <div class="col-xs-6 col-sm-2">Project Member</div>
+        <div class="col-xs-6 col-sm-2">Member</div>
         {% else %}
         <div class="col-xs-6 col-sm-2">Portfolio Member</div>
         {% endif %}

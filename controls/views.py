@@ -3747,6 +3747,73 @@ def system_profile_oscal_json(request, system_id):
 
 # System Summaries
 @login_required
+def get_system_info(request, system_id):
+    """Returns info for system"""
+
+    system = System.objects.get(id=system_id)
+    system_info = system.info
+    print(system_info)
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_info['id'] = system.id
+    system_info['name'] = system.root_element.name
+    # system_info['impact'] = system.get_security_impact_level
+
+    system_info_default = {
+        "system_description": "~",
+        "id": "~",
+        "other_id": "~",
+        "name": "~",
+        "organization_name": "~",
+        "aka": "~",
+        "impact": "~",
+        "status": "~",
+        "type": "~",
+        "created": "~",
+        "hosting_facility": "~",
+        "next_audit": "~",
+        "next_scan": "~", #"05/01/22",
+        "security_scan": "~",
+        "pen_test": "~", #"Scheduled for 05/05/22",
+        "config_scan": "~",
+        "purpose": "~",
+        "vuln_new_30days": "~",
+        "vuln_new_rslvd_30days": "~",
+        "vuln_90days": "~",
+        "risk_score": "~",
+        "score_1": "~",
+        "score_2": "~",
+        "score_3": "~",
+        "score_4": "~",
+        "score_5": "~",
+    }
+
+    # Set any missing defaults
+    for key in system_info_default:
+        if key not in system_info:
+            system_info[key] = system_info_default[key]
+    print(system_info)
+    return system_info
+
+@login_required
+def get_system_events(request, system_id):
+    """Returns Events for system"""
+
+    system = System.objects.get(id=system_id)
+    system_events = [ { "event_tag": e.event_type, "event_summary": e.description} for e in system.events.all()]
+
+    # # Retrieve events from integrations
+    # csam_system_id = system.info.get('csam_system_id', None)
+    # system_events = [
+    #     { "event_tag": "TEST", "event_summary": "Penetration test scheduled - Automated penetration test run by SOC"},
+    #     { "event_tag": "SCAN", "event_summary": "Security scan scheduled - Automated weekly security scan will occur Sunday, June 9"},
+    #     { "event_tag": "SYS", "event_summary": "ISSO appointed - Janice Avery (contracor) has been appointed as ISSO for System"}
+    # ]
+    return system_events
+
+@login_required
 def get_integrations_system_info(request, system_id):
     """Returns Integrations info for system"""
 
@@ -3947,97 +4014,163 @@ def get_integrations_system_events(request, system_id):
     ]
     return system_events
 
-
 @login_required
 def create_system_from_string(request):
     """Create a system in GovReady-Q based on info from a URL"""
 
-    # communication = set_integration()
-    print("request", request.GET)
     new_system_str = request.GET.get("s", None)
-    new_system_name = new_system_str.replace("https://", "").replace("http://", "")
-    new_system_description = f"System created from url."
 
-    # Examine remote site for information
-    # Handle error case of no URL
+    # Display form when no string received
+    if new_system_str is None:
+
+        # Get the app catalog. If the user is answering a question, then filter to
+        # just the apps that can answer that question.
+        from siteapp.views import filter_app_catalog
+        catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
+        # Group by category from catalog metadata.
+        from collections import defaultdict
+        catalog_by_category = defaultdict(lambda: {"title": None, "apps": []})
+        for app in catalog:
+            source_slug, _ = app["key"].split('/')
+            app['source_slug'] = source_slug
+            # print(f"1 keys: {app.keys()}")
+            # print(f"2 key, title: {app['key']}, {app['title']}")
+            for category in app["categories"]:
+                catalog_by_category[category]["title"] = (category or "Uncategorized")
+                # Only get default apps
+                # TODO: Refactor this code
+                organization = Organization.objects.first()  # temporary
+                # if app['title'] in ['Blank Project', 'Speedy SSP', 'General IT System ATO for 800-53 (low)']:
+                if app['title'] in organization.extra.get('default_appversion_name_list', []): # temporary
+                    catalog_by_category[category]["apps"].append(app)
+
+        # Sort categories by title and discard keys.
+        catalog_by_category = sorted(catalog_by_category.values(), key=lambda category: (
+            category["title"] != "Great starter apps",  # this category goes first
+            category["title"].lower(),  # sort case insensitively
+            category["title"],  # except if two categories differ only in case, sort case-sensitively
+        ))
+        context = {
+            "apps": catalog_by_category
+        }
+        return render(request, "systems/new_system_form.html", context)
+
+    new_system_name = new_system_str
+    new_system_msg = f"Created new System in GovReady based with name '{new_system_name}'."
+    new_system_description = f"System created from name."
+
+    # Create for new system based on string
+    if 'http://' in new_system_str or 'https://' in new_system_str:
+        new_system_url = new_system_str
+        new_system_msg = f"Created new System in GovReady based on URL '{new_system_url}'."
+        new_system_name = new_system_url.replace("https://", "").replace("http://", "")
+        new_system_description = f"System created from url."
+        # Examine remote site for information
+        # Handle error case of no URL
 
     # Check if system aleady exists with domain name
     # if not System.objects.filter(Q(info__contains={"csam_system_id": csam_system_id})).exists():
-    if True:
-        # Create new system
-        # What is default template?
-        source_slug = "govready-q-files-startpack"
-        app_name = "speedyssp"
-        # can user start the app?
-        # Is this a module the user has access to? The app store
-        # does some authz based on the organization.
-        catalog = get_compliance_apps_catalog_for_user(request.user)
-        for app_catalog_info in catalog:
-            if app_catalog_info["key"] == source_slug + "/" + app_name:
-                # We found it.
-                break
-        else:
-            raise Http404()
-        # Start the most recent version of the app.
-        appver = app_catalog_info["versions"][0]
-        organization = Organization.objects.first()  # temporary
-        default_folder_name = "Started Apps"
-        folder = Folder.objects.filter(
-            organization=organization,
-            admin_users=request.user,
-            title=default_folder_name,
-        ).first()
-        if not folder:
-            folder = Folder.objects.create(organization=organization, title=default_folder_name)
-            folder.admin_users.add(request.user)
-        task = None
-        q = None
-        # Get portfolio project should be included in.
-        if request.GET.get("portfolio"):
-            portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
-        else:
-            if not request.user.default_portfolio:
-                request.user.create_default_portfolio_if_missing()
-            portfolio = request.user.default_portfolio
-        # import ipdb; ipdb.set_trace()
-        try:
-            project = start_app(appver, organization, request.user, folder, task, q, portfolio)
-        except ModuleDefinitionError as e:
-            error = str(e)
-        # Associate System with CSAM system
-        new_system = project.system 
-        new_system.info = {
-            "created_from_input": new_system_str,
-            "system_description": new_system_description
-        }
-        new_system.save()
-        # Update System name to URL system name
-        nsre = new_system.root_element
-        # Make sure system root element name is unique
-        name_suffix = ""
-        while Element.objects.filter(name=f"{new_system_name}{name_suffix}").exists():
-            # Element exists with that name
-            if name_suffix == "":
-                name_suffix = 1
-            else:
-                name_suffix = str(int(name_suffix)+1)
-        if name_suffix == "":
-            nsre.name = new_system_name
-        else:
-            nsre.name = f"{new_system_name}{name_suffix}"
-        nsre.save()
-        # Update System Project title to CSAM system name
-        prt = project.root_task
-        prt.title_override = nsre.name
-        prt.save()
-        logger.info(event=f"create_system_from_url url {new_system_name}",
-                object={"object": "system", "id": new_system.id},
-                user={"id": request.user.id, "username": request.user.username})
-        messages.add_message(request, messages.INFO, f"Created new System in GovReady based on URL {new_system_name}.")
 
-        # Redirect to the new system/project.
-        return HttpResponseRedirect(project.get_absolute_url())   
-        # return HttpResponseRedirect(f"/system/{new_system.id}/aspen/summary")
+    # What is default template?
+    source_slug = "govready-q-files-startpack"
+    app_name = "speedyssp"
+    # can user start the app?
+    # Is this a module the user has access to? The app store
+    # does some authz based on the organization.
+    catalog = get_compliance_apps_catalog_for_user(request.user)
+    for app_catalog_info in catalog:
+        if app_catalog_info["key"] == source_slug + "/" + app_name:
+            # We found it.
+            break
+    else:
+        raise Http404()
+    # Start the most recent version of the app.
+    appver = app_catalog_info["versions"][0]
+    organization = Organization.objects.first()  # temporary
+    default_folder_name = "Started Apps"
+    folder = Folder.objects.filter(
+        organization=organization,
+        admin_users=request.user,
+        title=default_folder_name,
+    ).first()
+    if not folder:
+        folder = Folder.objects.create(organization=organization, title=default_folder_name)
+        folder.admin_users.add(request.user)
+    task = None
+    q = None
+    # Get portfolio project should be included in.
+    if request.GET.get("portfolio"):
+        portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+    else:
+        if not request.user.default_portfolio:
+            request.user.create_default_portfolio_if_missing()
+        portfolio = request.user.default_portfolio
+    # import ipdb; ipdb.set_trace()
+    try:
+        project = start_app(appver, organization, request.user, folder, task, q, portfolio)
+    except ModuleDefinitionError as e:
+        error = str(e)
+    # Associate System with CSAM system
+    new_system = project.system 
+    new_system.info = {
+        "created_from_input": new_system_str,
+        "system_description": new_system_description,
+
+        "id": "~",
+        "other_id": "~",
+        "name": "~",
+        "organization_name": "~",
+        "aka": "~",
+        "impact": "~",
+        "status": "~",
+        "type": "~",
+        "created": "~",
+        "hosting_facility": "~",
+        "next_audit": "~",
+        "next_scan": "~", #"05/01/22",
+        "security_scan": "~",
+        "pen_test": "~", #"Scheduled for 05/05/22",
+        "config_scan": "~",
+        "purpose": "~",
+        "vuln_new_30days": "~",
+        "vuln_new_rslvd_30days": "~",
+        "vuln_90days": "~",
+        "risk_score": "~",
+        "score_1": "~",
+        "score_2": "~",
+        "score_3": "~",
+        "score_4": "~",
+        "score_5": "~",
+    }
+    new_system.add_event("SYS", new_system_msg)
+    new_system.save()
+    # Update System name to URL system name
+    nsre = new_system.root_element
+    # Make sure system root element name is unique
+    name_suffix = ""
+    while Element.objects.filter(name=f"{new_system_name}{name_suffix}").exists():
+        # Element exists with that name
+        if name_suffix == "":
+            name_suffix = 1
+        else:
+            name_suffix = str(int(name_suffix)+1)
+    if name_suffix == "":
+        nsre.name = new_system_name
+    else:
+        nsre.name = f"{new_system_name}{name_suffix}"
+    nsre.save()
+    # Update System Project title to CSAM system name
+    prt = project.root_task
+    prt.title_override = nsre.name
+    prt.save()
+    logger.info(event=f"create_system_from_url url {new_system_name}",
+            object={"object": "system", "id": new_system.id},
+            user={"id": request.user.id, "username": request.user.username})
+    messages.add_message(request, messages.INFO, new_system_msg)
+
+    # Redirect to the new system/project.
+    return HttpResponseRedirect(project.get_absolute_url())
+    # return redirect(reverse('system_summary', args=[new_system.id]))
 
 @login_required
 def system_summary_1_aspen(request, system_id):
@@ -4083,8 +4216,10 @@ def system_summary_aspen(request, system_id):
     # Temporarily assume only one project and get first project
     project = system.projects.all()[0]
 
-    system_summary = get_integrations_system_info(request, system_id)
-    system_events = get_integrations_system_events(request, system_id)
+    # system_summary = get_integrations_system_info(request, system_id)
+    system_summary = get_system_info(request, system_id)
+    # system_events = get_integrations_system_events(request, system_id)
+    system_events = get_system_events(request,system_id)
 
     # Get all projects
     projects = system.projects.all()
@@ -4095,7 +4230,7 @@ def system_summary_aspen(request, system_id):
 
     context = {
         "system": system_summary,
-        #"project": project,
+        "project": project,
         "projects": projects,
         "system_events": system_events,
         # "deployments": deployments,
@@ -4141,7 +4276,7 @@ def system_integrations_aspen(request, system_id):
 
     context = {
         "system": system_summary,
-        #"project": project,
+        "project": project,
         "system_events": system_events,
         "system_integrations": general_integrations,
         # "deployments": deployments,
