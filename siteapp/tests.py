@@ -458,9 +458,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             self.click_element("#btn-accept")
 
     def _new_project(self):
-        self.browser.get(self.url("/projects"))
-
-        wait_for_sleep_after(lambda: self.click_element("#new-project-link-from-projects"))
+        self.browser.get(self.url("/store"))
 
         var_sleep(1)
         # Click Add Button
