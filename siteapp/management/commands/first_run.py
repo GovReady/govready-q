@@ -38,9 +38,17 @@ class Command(BaseCommand):
             print("The database is not initialized yet.")
             sys.exit(1)
 
-        # Create the default organization.
+        # Create the default organization and default start apps
         if not Organization.objects.all().exists() and not Organization.objects.filter(name="main").exists():
             org = Organization.objects.create(name="main", slug="main")
+            # Set values for default apps (templates) for Aspen new system page
+            if "default_appversion_name_list" not in org.extra:
+                org.extra["default_appversion_name_list"] = [
+                    "Blank Project",
+                    "Speedy SSP",
+                    "General IT System ATO for 800-53 (low)"
+                ]
+                org.save()
 
         # Create GovReady admin users, if specified in local/environment.json
         if len(settings.GOVREADY_ADMINS):

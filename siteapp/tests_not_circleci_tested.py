@@ -382,6 +382,8 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.click_element('#tab-register')
         self._fill_in_signup_form("test+account@q.govready.com", "portfolio_user")
         self.click_element("#signup-button")
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
 
         # Go to portfolio page
         self.browser.get(self.url("/portfolios"))
@@ -462,16 +464,10 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
         portfolio_id = Project.objects.last().portfolio.id
         url = reverse('portfolio_projects', args=[portfolio_id])
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'portfolios/detail.html')
-        self.assertContains(response, 'Owner', 1)
-        # Context
-        bool_context_objects = ["can_invite_to_portfolio", "can_edit_portfolio"]
-        for context in bool_context_objects:
-            self.assertEqual(response.context[context], True)
+        self.browser.get(self.url(url))
 
-        self.assertEqual(response.context["portfolio"].id, portfolio_id)
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "me-2 Portfolio"))
+        self.assertInNodeText("I want to answer", '.portfolio-project-link')
 
 
     def test_grant_portfolio_access(self):

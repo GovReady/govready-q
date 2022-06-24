@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.10.0-dev-aspen (June xx, 2022)
+v0.10.0-dev (June xx, 2022)
 ----------------------------
 
 **Feature changes**
@@ -11,11 +11,13 @@ v0.10.0-dev-aspen (June xx, 2022)
 * Integrations framework for better inclusion of information from remote services.
 * Component control inheritance workflow.
 * Single Sign On OIDC support.
+* Add form to create system from string or URLs.
 
 Release adds support for private components and integrations with third party services.
 
 **UI changes**
 
+* Change to Aspen UI.
 * Change label 'certified statement' to 'reference statement'.
 * Warning Message appears at the top of home page and login page while using an Internet Explorer browser informing the user of Internet Explorer not being supported.
 * Indicate private components with lock icon.
@@ -27,6 +29,9 @@ Release adds support for private components and integrations with third party se
 * Display the control framework along side of controls in component control listing page.
 * Remove icons from project listing.
 * Add Component search filter to filter results to components owned by user.
+* Add form to create system from string or URLs.
+* Change language in interface to 'system, systems' instead of 'project, projects'.
+* Navigate users to new system form page as starting point to creating new systems.
 
 **Developer changes**
 
@@ -53,6 +58,7 @@ Release adds support for private components and integrations with third party se
 * Create a new system via name given by a string in URL.
 * Add a large set of sample components (150+) generated from STIGs.
 * Detect Apple ARM platform (e.g. 'M1 chip') and use alternate backend Dockerfile with Chromium install commented out.
+* Added SystemEvent object in controls to track system events.
 
 **Bug fixes**
 

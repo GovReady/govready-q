@@ -201,6 +201,38 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         # Create system
         system = System(root_element=element)
         system.save()
+        system.add_event("SYS", f"Created new System in GovReady based on template '{appver.catalog_metadata['title']}'.")
+        system.info == {
+            "created_from_template": project.title,
+            "system_description": "New system",
+
+            "id": system.id,
+            "other_id": "~",
+            "name": project.root_task.title_override,
+            "organization_name": "~",
+            "aka": "~",
+            "impact": "~",
+            "status": "Planned",
+            "type": "~",
+            "created": "~",
+            "hosting_facility": "~",
+            "next_audit": "~",
+            "next_scan": "~", #"05/01/22",
+            "security_scan": "~",
+            "pen_test": "~", #"Scheduled for 05/05/22",
+            "config_scan": "~",
+            "purpose": "~",
+            "vuln_new_30days": "~",
+            "vuln_new_rslvd_30days": "~",
+            "vuln_90days": "~",
+            "risk_score": "~",
+            "score_1": "~",
+            "score_2": "~",
+            "score_3": "~",
+            "score_4": "~",
+            "score_5": "~",
+        }
+        system.save()
         # Link system to project
         project.system = system
         project.save()

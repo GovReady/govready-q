@@ -4,7 +4,7 @@
 {% load humanize %}
 
 {% block title %}
-Your Compliance Projects
+Systems
 {% endblock %}
 
 {% block head %}
@@ -105,10 +105,10 @@ Your Compliance Projects
 <div class="container">
 
 <div class="project-main">
-  <a id="new-project-link-from-projects" href="{% url 'store' %}?start=true" class=" btn btn-success">Start a project</a>
+  <a id="new-project-link-from-projects" href="{% url 'create_system_from_string' %}" class=" btn btn-success">New system</a>
 </div>
 
-<h2 class="">Projects</h2>
+<h2 class="">Systems</h2>
 
 <form action="{% url 'projects' %}" method="GET" role="search">
     <div class="form-inline pull-right create-nav">
@@ -135,7 +135,7 @@ Your Compliance Projects
   <p>&nbsp;</p>
   <div class="container">
   <div class="row">
-    <div class="col-xs-10 col-md-5"><strong>Project</strong></div>
+    <div class="col-xs-10 col-md-5"><strong>System</strong></div>
     <div class="col-xs-6 col-sm-1"><strong>ID</strong></div>
     <div class="col-xs-6 col-sm-4"><strong>Portfolio</strong></div>
     <div class="col-xs-12 col-md-2"><strong>Updated</strong></div>
@@ -152,6 +152,8 @@ Your Compliance Projects
     </span>
     &nbsp;&nbsp;&nbsp; -->
     <a href="{{project.get_absolute_url}}" class="projects-link">{{project.title}}</a>
+    <!-- <a href="{% url 'system_summary' system_id=project.system.id %}" class="projects-link">{{project.title}}</a> -->
+    
   </div>
   <div class="col-xs-6 col-sm-1">{{project.id}}</div>
   <div class="col-xs-6 col-sm-4">{{project.portfolio.title}}</div>

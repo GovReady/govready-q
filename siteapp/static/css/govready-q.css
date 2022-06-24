@@ -183,7 +183,7 @@ a:focus-visible {
 
 /* within navbar and base.html */
 .navbar-brand img { margin: -1px 20px; width:160px; }
-.dropdown-menu { width: 300px; }
+.dropdown-menu { width: 220px; }
 .nav-dropdown-item-text { margin: 0px 12px 8px 20px; }
 .nav-profile { margin: -5px 5px; }
 .message-margin { margin-top: 0em; margin-bottom: 0px; padding: 0px; position:absolute; right: 0px; top: 52px; z-index: 100; width: 340px;}
