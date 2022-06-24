@@ -42,7 +42,7 @@ from guardian.shortcuts import assign_perm
 
 # Control Tests
 
-class CreateSystemTests(SeleniumTest):
+class CreateSystemTests(OrganizationSiteFunctionalTests):
 
     # def test_create_system_from_string(self):
         # cases = (
