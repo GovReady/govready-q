@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.10.0-dev-aspen (June xx, 2022)
+v0.10.0-dev (June xx, 2022)
 ----------------------------
 
 **Feature changes**
