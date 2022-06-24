@@ -399,6 +399,15 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             self.org = Organization.create(name="Our Organization", slug="testorg2",
                                            admin_user=self.user)
 
+        # Set values for default apps (templates) for Aspen new system page
+        if "default_appversion_name_list" not in self.org.extra:
+            self.org.extra["default_appversion_name_list"] = [
+                "Blank Project",
+                "Speedy SSP",
+                "General IT System ATO for 800-53 (low)"
+            ]
+            self.org.save()
+
         # Grant the user permission to change the review state of answers.
         self.org.reviewers.add(self.user)
 

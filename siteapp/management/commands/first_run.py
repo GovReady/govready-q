@@ -50,7 +50,7 @@ class Command(BaseCommand):
                 "General IT System ATO for 800-53 (low)"
             ]
             org.save()
-        ["Blank Project", "Speedy SSP", "General IT System ATO for 800-53 (low)"]
+        # ["Blank Project", "Speedy SSP", "General IT System ATO for 800-53 (low)"]
 
         # Create GovReady admin users, if specified in local/environment.json
         if len(settings.GOVREADY_ADMINS):

@@ -382,6 +382,8 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.click_element('#tab-register')
         self._fill_in_signup_form("test+account@q.govready.com", "portfolio_user")
         self.click_element("#signup-button")
+        if "Warning Message" in self.browser.title:
+            self.click_element("#btn-accept")
 
         # Go to portfolio page
         self.browser.get(self.url("/portfolios"))
