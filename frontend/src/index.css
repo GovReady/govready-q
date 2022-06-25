@@ -1,0 +1,23 @@
+/* @import '~@trussworks/react-uswds/lib/uswds.css';
+@import '~@trussworks/react-uswds/lib/index.css';
+ */
+
+ @import 'react-pro-sidebar/dist/css/styles.css';
+
+
+ body{
+    overflow-x: hidden;
+ }
+
+ .sticky{     
+   height: 200vh;
+   position: sticky;
+   top: 0; 
+ }
+ /* .react-modal.modal-dialog{
+    min-width: 90%;
+  } */
+
+  .sys-owner-request-modal{
+    min-width: 40%;
+  }

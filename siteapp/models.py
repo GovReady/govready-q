@@ -1,6 +1,7 @@
 from collections import ChainMap
 from itertools import chain
 import logging
+from platform import system
 import structlog
 import uuid as uuid
 import auto_prefetch
@@ -9,7 +10,6 @@ from structlog.stdlib import LoggerFactory
 from typing import Dict
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -21,10 +21,13 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_users_with_perms, remove_perm)
 from jsonfield import JSONField
 
+from api.base.models import BaseModel
+from siteapp.enums.access_level import AccessLevelEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from siteapp.enums.assets import AssetTypeEnum
 from siteapp.utils.uploads import hash_file
-from controls.models import ImportRecord
+from controls.models import Element, ImportRecord, Statement, System
+from controls.enums.statements import StatementTypeEnum
 from controls.utilities import *
 
 logging.basicConfig()
@@ -32,8 +35,11 @@ structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
 
+# must start with letter or _ and can only contain letters, digits, underscore, hyphens, and periods
+TOKEN_REGEX = RegexValidator(regex=r"^[a-zA-Z_][a-zA-Z0-9_\-.]*$") 
+PHONE_NUMBER_REGEX = RegexValidator(regex=r"^\+?1?\d{8,15}$")
 
-class User(AbstractUser):
+class User(AbstractUser, BaseModel):
     # Additional user profile data.
     name = models.CharField(max_length=200, blank=True, null=True, unique=True,
                                   help_text="Full name to display.")
@@ -54,9 +60,12 @@ class User(AbstractUser):
                                   help_text="The user's API key with write-only permission.")
     default_portfolio = models.ForeignKey('Portfolio', blank=True, null=True, related_name="default_for", on_delete=models.RESTRICT,
                                   help_text="Default Portfolio of the User.")
-
+    phone_number = models.CharField(validators=[PHONE_NUMBER_REGEX], max_length=16, null=True, blank=True)
 
     # Methods
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.access_level = AccessLevelEnum.READ_WRITE  # Default Login Setting.  API overrides to token specific access
 
     def __str__(self):
         if self.name:
@@ -183,7 +192,6 @@ class User(AbstractUser):
             object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
             user={"id": self.id, "username": self.username}
         )
-        portfolio.assign_owner_permissions(self)
         logger.info(
             event="new_portfolio assign_owner_permissions",
             object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
@@ -227,7 +235,7 @@ class DirectLoginBackend(ModelBackend):
 subdomain_regex = r"^([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])$"
 
 
-class Organization(models.Model):
+class Organization(BaseModel):
     name = models.CharField(max_length=255, help_text="The display name of the Organization.")
     slug = models.CharField(max_length=32, unique=True, help_text="A URL-safe abbreviation for the Organization.",
                             validators=[RegexValidator(regex=subdomain_regex)])
@@ -237,8 +245,6 @@ class Organization(models.Model):
     reviewers = models.ManyToManyField(User, blank=True, related_name="is_reviewer_of",
                                        help_text="Users who are permitted to change the reviewed state of task answers.")
 
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(default={}, blank=True, help_text="Additional information stored with this object.")
 
     def __str__(self):
@@ -321,7 +327,7 @@ class Organization(models.Model):
         return dict((setting.parameter_key, setting.value) for setting in settings)
 
 
-class OrganizationalSetting(models.Model):
+class OrganizationalSetting(BaseModel):
     """
     Captures an organizationally-defined setting for a parameterized control
     in a catalog.
@@ -340,11 +346,9 @@ class OrganizationalSetting(models.Model):
         return f"OrganizationalSetting({org_name}, {self.catalog_key}, {self.parameter_key})"
 
 
-class Portfolio(models.Model):
+class Portfolio(BaseModel):
     title = models.CharField(max_length=255, help_text="The title of this Portfolio.", unique=True)
     description = models.CharField(max_length=512, blank=True, help_text="A description of this Portfolio.")
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         permissions = [
@@ -395,14 +399,14 @@ class Portfolio(models.Model):
             name = user.name if user.name else str(user)
             user = {'name': name, 'id': user.id, 'owner': owner}
             users.append(user)
-        sorted_users = sorted(users, key=lambda k: (-k['owner'], k['name'].lower()))
+        sorted_users = sorted(users, key=lambda k: (k['name'].lower()))
         return sorted_users
 
     def can_invite_others(self, user):
         return user.has_perm('can_grant_portfolio_owner_permission', self)
 
 
-class Folder(models.Model):
+class Folder(BaseModel):
     """A folder is a collection of Projects."""
 
     organization = models.ForeignKey(Organization, related_name="folders", on_delete=models.CASCADE,
@@ -416,8 +420,6 @@ class Folder(models.Model):
     projects = models.ManyToManyField("Project", blank=True, related_name="contained_in_folders",
                                       help_text="The Projects that are listed within this Folder.")
 
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     def __str__(self):
@@ -465,7 +467,7 @@ class Folder(models.Model):
                                                    {"contained_in_folders": self})
 
 
-class Project(TagModelMixin):
+class Project(TagModelMixin, BaseModel):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
     organization = models.ForeignKey(Organization, blank=True, null=True, related_name="projects",
                                      on_delete=models.CASCADE,
@@ -486,8 +488,6 @@ class Project(TagModelMixin):
                                   on_delete=models.CASCADE,
                                   help_text="All Projects have a 'root Task' (e.g., 'guidedmodules.task'). The root Task defines important information about Project.")
 
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     version = models.CharField(max_length=32, unique=False, blank=True, null=True, default="1.0",
@@ -546,7 +546,9 @@ class Project(TagModelMixin):
         queryset2 = get_users_with_perms(self)
         # Project's Portfolio members from 0.9.0 Django guardian permission structure
         queryset3 = get_users_with_perms(self.portfolio)
-        users = list(chain(queryset1, queryset2, queryset3))
+        # Get all superusers
+        queryset4 = User.objects.filter(is_superuser=True)
+        users = list(chain(queryset1, queryset2, queryset3, queryset4))
         return users
 
     def get_admins(self):
@@ -554,7 +556,9 @@ class Project(TagModelMixin):
         queryset1 = User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
         # Project's Portfolio owner from 0.9.0 Django guardian permission structure have Project admin rights
         queryset2 = get_users_with_perms(self, only_with_perms_in=['can_grant_portfolio_owner_permission'])
-        users = list(chain(queryset1, queryset2))
+        # Get all superusers
+        queryset4 = User.objects.filter(is_superuser=True)
+        users = list(chain(queryset1, queryset2, queryset4))
         return users
 
     # faster than checking `get_admins()` on many projects
@@ -564,6 +568,7 @@ class Project(TagModelMixin):
         queryset1 = ProjectMembership.objects.filter(project__in=projects, is_admin=True, user=user)
         # Project's Portfolio owner from 0.9.0 Django guardian permission structure have Project admin rights
         queryset2 = get_objects_for_user(user, ['can_grant_portfolio_owner_permission'], klass=Project)
+        # TODO: Let superusers be admins for all projects
 
         # convert everything to a Project (queryset1 isn't), filter out irrelevant projects, and filter out duplicates
         has_admin_on = set(chain([x.project for x in queryset1], [proj for proj in queryset2 if proj in projects]))
@@ -678,63 +683,74 @@ class Project(TagModelMixin):
 
     @staticmethod
     def get_projects_with_read_priv(user, filters={}, excludes={}):
-        # Gets all projects a user has read priv to, excluding
-        # account and organization profile projects, and sorted
-        # in reverse chronological order by modified date.
-        # TODO: This could probably be optimized with prefetch related
+        """ Return all projects a user has read permissions sorted in reverse chronological order by modified date."""
+
         projects = set()
 
         if not user.is_authenticated:
             return projects
 
-        # Add all of the Projects the user is a member of.
-        for pm in ProjectMembership.objects \
-                .filter(user=user) \
-                .filter(**{"project__" + k: v for k, v in filters.items()}) \
-                .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
-                .select_related('project__root_task__module', 'project__portfolio') \
-                .prefetch_related('project__root_task__module'):
-            projects.add(pm.project)
-            if pm.is_admin:
-                # Annotate with whether the user is an admin of the project.
-                pm.project.user_is_admin = True
-
-        # Add projects that the user is the editor of a task in, even if
-        # the user isn't a team member of that project.
-        from guidedmodules.models import Task
-        for task in Task.get_all_tasks_readable_by(user) \
-                .filter(**{"project__" + k: v for k, v in filters.items()}) \
-                .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
-                .order_by('-created') \
-                .select_related('project__root_task__module', 'project__portfolio') \
-                .prefetch_related('project__root_task__module'):
-            projects.add(task.project)
-
-        # Add projects that the user is participating in a Discussion in
-        # as a guest.
-        from discussion.models import Discussion
-        for d in Discussion.objects.filter(guests=user):
-            if d.attached_to is not None:  # because it is generic there is no cascaded delete and the Discussion can become dangling
-                if not filters or d.attached_to.task.project in Project.objects.filter(**filters):
-                    if not excludes or d.attached_to.task.project not in Project.objects.exclude(**filters):
-                        projects.add(d.attached_to.task.project)
-
-        # Add projects the user has permissions for
-        for project in Project.objects.all():
-            user_permissions = get_user_perms(user, project)
-            if len(user_permissions):
+        # Add all projects if user is admin.
+        projects_queryset = Project.objects.filter(**{"" + k: v for k, v in filters.items()}) \
+                                            .exclude(**{"" + k: v for k, v in excludes.items()}) \
+                                            .select_related('root_task__module', 'portfolio') \
+                                            .prefetch_related('root_task__module') \
+                                            .order_by('system__root_element__name')
+        if user.is_superuser:
+            # Add all projects.
+            for project in projects_queryset:
                 projects.add(project)
-
-        # Add projects the user has permissions for through a portfolio
-        for portfolio in Portfolio.objects.prefetch_related('projects').all():
-            user_permissions = get_user_perms(user, portfolio)
-            if len(user_permissions):
-                for project in portfolio.projects.all():
+        else:
+            # Add projects the user has read/view permissions.
+            for project in projects_queryset:
+                user_permissions = get_user_perms(user, project)
+                if len(user_permissions):
                     projects.add(project)
 
-        # Don't show system projects.
-        system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
-        projects -= system_projects
+            # TODO: Remove all of these permissions by setting project permissions.
+            #       The below query is potentially redundant with user permissions.
+            # Add all of the Projects the user is a member of.
+            project_membership_queryset = ProjectMembership.objects.filter(user=user) \
+                                                .filter(**{"project__" + k: v for k, v in filters.items()}) \
+                                                .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
+                                                .select_related('project__root_task__module', 'project__portfolio') \
+                                                .prefetch_related('project__root_task__module')
+            for pm in project_membership_queryset:
+                projects.add(pm.project)
+                # Annotate whether the user is a project admin.
+                if pm.is_admin:
+                    pm.project.user_is_admin = True
+
+            # v0.9.13 - Removing inclusion of projects via participation in element of project
+            # Add projects the user is the editor of task in, even if user isn't a project team member.
+            # from guidedmodules.models import Task
+            # for task in Task.get_all_tasks_readable_by(user) \
+            #         .filter(**{"project__" + k: v for k, v in filters.items()}) \
+            #         .exclude(**{"project__" + k: v for k, v in excludes.items()}) \
+            #         .order_by('-created') \
+            #         .select_related('project__root_task__module', 'project__portfolio') \
+            #         .prefetch_related('project__root_task__module'):
+            #     projects.add(task.project)
+
+            # Add projects the user is participating in a Discussion in as a guest.
+            # from discussion.models import Discussion
+            # for d in Discussion.objects.filter(guests=user):
+            #     if d.attached_to is not None:  # because it is generic there is no cascaded delete and the Discussion can become dangling
+            #         if not filters or d.attached_to.task.project in Project.objects.filter(**filters):
+            #             if not excludes or d.attached_to.task.project not in Project.objects.exclude(**filters):
+            #                 projects.add(d.attached_to.task.project)
+
+            # Add projects user has permissions for through a portfolio.
+            # for portfolio in Portfolio.objects.prefetch_related('projects').all():
+            #     user_permissions = get_user_perms(user, portfolio)
+            #     if len(user_permissions):
+            #         for project in portfolio.projects.all():
+            #             projects.add(project)
+
+        # v0.9.11 - System projects no longer exist
+        # Remove system projects.
+        # system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
+        # projects -= system_projects
 
         # Sort.
         projects = sorted(projects, key=lambda x: x.updated, reverse=True)
@@ -1214,19 +1230,17 @@ class Project(TagModelMixin):
         return ChainMap(org_params, default_params)
 
 
-class ProjectMembership(models.Model):
+class ProjectMembership(BaseModel):
     project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE,
                                 help_text="The Project this is defining membership for.")
     user = models.ForeignKey(User, on_delete=models.CASCADE, help_text="The user that is a member of the Project.")
     is_admin = models.BooleanField(default=False, help_text="Is the user an administrator of the Project?")
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
 
     class Meta:
         unique_together = [('project', 'user')]
 
 
-class Invitation(models.Model):
+class Invitation(BaseModel):
     # who is sending the invitation
     from_user = models.ForeignKey(User, related_name="invitations_sent", on_delete=models.CASCADE,
                                   help_text="The User who sent the invitation.")
@@ -1272,8 +1286,6 @@ class Invitation(models.Model):
                                              help_text="For emails, a unique verification code.")
 
     # bookkeeping
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     def __str__(self):
@@ -1373,7 +1385,7 @@ class Invitation(models.Model):
         return self.target.get_invitation_redirect_url(self)
 
 
-class Support(models.Model):
+class Support(BaseModel):
     """Model for support information for support page for install of GovReady"""
 
     email = models.EmailField(max_length=254, unique=False, blank=True, null=True, help_text="Support email address")
@@ -1386,7 +1398,7 @@ class Support(models.Model):
         return "Support information"
 
 
-class Tag(models.Model):
+class Tag(BaseModel):
     label = models.CharField(max_length=100, unique=True, help_text="Label for tag")
     system_created = models.BooleanField(default=True)
 
@@ -1400,7 +1412,147 @@ class Tag(models.Model):
         return {"label": self.label, "system_created": self.system_created, "id": self.id}
 
 
-class Asset(models.Model):
+class Party(BaseModel):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Party.")
+    party_type = models.CharField(max_length=100, unique=False, help_text="type for Party.")
+    name = models.CharField(max_length=250, unique=True, help_text="Name of this Party.")
+    short_name = models.CharField(max_length=100, unique=False, help_text="Short name of this Party.")
+    email = models.EmailField(blank=True)
+    phone_number = models.CharField(validators=[PHONE_NUMBER_REGEX], max_length=16, null=True, blank=True)
+    mobile_phone = models.CharField(validators=[PHONE_NUMBER_REGEX], max_length=16, null=True, blank=True)
+    user = models.ForeignKey(User, blank=True, null=True, related_name="party", on_delete=models.SET_NULL,
+                                   help_text="User associated with the Party.")
+
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+    def serialize(self):
+        return {"name": self.name, "id": self.id}
+
+
+class Role(BaseModel):
+    role_id = models.CharField(validators=[TOKEN_REGEX], max_length=16, null=True, blank=True)
+    title = models.CharField(max_length=250, unique=False, blank=False, null=False, help_text="Title of Role.")
+    short_name = models.CharField(max_length=100, unique=False, blank=True, null=True, help_text="Short name of this Role.")
+    description = models.TextField(blank=True, null=True, help_text="Description of this Role.")
+
+    def __repr__(self):
+        return self.title
+
+    def __str__(self):
+        return self.title
+
+    def serialize(self):
+        return {"title": self.title, "id": self.id}
+
+
+class Appointment(BaseModel):
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, help_text="The Role being appointed.")
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, help_text="The Party appointed to the Role.")
+    model_name = models.CharField(max_length=100, unique=False, help_text="The Model name to which the Role and Party are appointed.")
+    comment = models.CharField(max_length=200, help_text="Notes on this Appointment.")
+    # enddate = models.DateField(unique=False, blank=True, null=True, help_text="Date Appointment concludes")
+
+    def __repr__(self):
+        return f"{self.model_name} {self.role.title} - {self.party.name}"
+
+    def __str__(self):
+        return f"{self.model_name} {self.role.title} - {self.party.name}"
+
+class Request(BaseModel):
+    user = models.ForeignKey(User, blank=True, null=True, related_name="request", on_delete=models.CASCADE, help_text="User creating the request.")
+    system = models.ForeignKey(System, blank=True, null=True, related_name="request", on_delete=models.CASCADE, help_text="System making the request.")
+    requested_element = models.ForeignKey(Element, blank=True, null=True, related_name="request", on_delete=models.CASCADE, help_text="Element being requested.")
+    criteria_comment = models.TextField(blank=True, null=True, help_text="Comments on this request.")
+    criteria_reject_comment = models.TextField(blank=True, null=True, help_text="Comment on request rejection.")
+    status = models.TextField(blank=True, null=True, help_text="Status of the request.")
+
+    def __repr__(self):
+        return f"{self.system} requesting -> {self.requested_element} - {self.status}"
+
+    def __str__(self):
+        return f"{self.system} requesting -> {self.requested_element} - {self.status}"
+
+    def serialize(self):
+        return {"system": self.system, "requested_element": self.requested_element, "id": self.id}
+    
+    def save(self, *args, **kwargs):
+        if self.status == "Approve": 
+            self.approve_request()
+        elif self.status == "Closed":
+            self.close_request()
+        else:
+            self.remove_component()
+
+        return super(Request, self).save(*args, **kwargs)
+    
+    def approve_request(self):
+        # code for assigning controls to system
+        
+        elements_selected = self.system.producer_elements
+        elements_selected_ids = [e.id for e in elements_selected]
+        producer_element = Element.objects.get(pk=self.requested_element.id)
+        # check system if it has controls implemented already
+        if producer_element.id not in elements_selected_ids:
+            smts = Statement.objects.filter(producer_element_id = self.requested_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
+            for smt in smts:
+                smt.create_system_control_smt_from_component_prototype_smt(self.system.root_element.id)
+        # Update Proposal status
+        self.proposal.status='Approve'
+        self.proposal.save()
+        self.system.remove_proposals([self.proposal.id])
+        self.system.save()
+        return True
+    
+    def remove_component(self):
+        elements_selected = self.system.producer_elements
+        elements_selected_ids = [e.id for e in elements_selected]
+        producer_element = Element.objects.get(pk=self.requested_element.id)
+        if producer_element.id in elements_selected_ids:
+            print("Element has been implemented.")
+            # Delete the control implementation statements associated with this component
+            result = self.requested_element.statements_produced.filter(consumer_element=self.system.root_element).delete()
+            # Update Proposal status
+            self.proposal.status='Request'
+            self.proposal.save()
+            self.system.add_proposals([self.proposal.id])
+            self.system.save()
+        return True
+
+    def close_request(self):
+        # Update Proposal status
+        self.proposal.status='Closed'
+        self.proposal.save()
+        self.system.remove_proposals([self.proposal.id])
+        self.system.save()
+        return True
+
+class Proposal(BaseModel):
+    user = models.ForeignKey(User, blank=True, null=True, related_name="propose", on_delete=models.CASCADE, help_text="User creating the request proposal.")
+    requested_element = models.ForeignKey(Element, blank=True, null=True, related_name="propose", on_delete=models.CASCADE, help_text="Element being proposed for request.")
+    criteria_comment = models.TextField(blank=True, null=True, help_text="Comments on this proposal.")
+    status = models.TextField(blank=True, null=True, help_text="Status of the proposal.")
+    req = models.OneToOneField(Request, related_name="proposal", unique=False, blank=True, null=True,
+                                     on_delete=models.CASCADE,
+                                     help_text="Request associated with this proposal.")
+    def __repr__(self):
+        return f"Proposing request -> {self.requested_element} - {self.status}"
+
+    def __str__(self):
+        return f"Proposing request -> {self.requested_element} - {self.status}"
+
+    def serialize(self):
+        return {"requested_element": self.requested_element, "id": self.id}
+    
+    def change_status(self, status):
+        self.status = status
+        self.save()
+        return self.status
+
+class Asset(BaseModel):
     UPLOAD_TO = None  # Should be overriden when iheritted
     title = models.CharField(max_length=255, help_text="The title of this asset.")
     asset_type = models.CharField(max_length=150, help_text="Asset type.", unique=False,
@@ -1410,8 +1562,6 @@ class Asset(models.Model):
     description = models.TextField(blank=True, null=True)
     filename = models.CharField(max_length=255)
     file = models.FileField(upload_to=UPLOAD_TO, help_text="The attached file.")
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
     uuid = models.UUIDField(default=uuid.uuid4, editable=False,
                             help_text="A UUID (a unique identifier) for this Asset.")

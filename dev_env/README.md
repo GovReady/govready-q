@@ -10,6 +10,19 @@ This also assumes you can run as root/administrator.  This is due to ports being
 
 Allocate to Docker as much Memory, Swap, and CPUS as you can. For example, GovReady-Q performs much better on a 2015 Quad-Core MacBook Pro with CPUs: 3, Memory: 9GB, SWAP: 4GB, and Disk image size: 50+GB.
 
+## Docker on Mac Notes
+
+For Docker version 20.x on MacOS, disable docker-compose v-2 to avoid blocking automated restart of docker after code changes when in "dev" mode.
+
+```bash
+docker-compose disable-v2
+```
+
+## AMD64 Mac (M1 Chipset) Notes
+
+By default, the dev_en install for local development will detect the Apple ARM platform and launch a Docker image (Dockerfile.M1) that skips the installation of the Chromium driver for UI tests with Selenium that is incompatible with AMD64 Mac (M1 Chipset). 
+
+To instead include the Chromium driver and run the Docker container under emulation use the `--amd` flag described below. Be forewarned that the application  runs _significantly_ slower in this mode.
 
 ## How To
 1. Configure
@@ -21,8 +34,10 @@ Allocate to Docker as much Memory, Swap, and CPUS as you can. For example, GovRe
         * A restart will be required if you modify the values between runs.
      
 2. Start
-    -  `python run.py dev`         : This will run + reuse previously built artifacts (database, files, etc)
-    -  `python run.py dev --clean` : This will run + destroys your existing database and artifacts from previous runs
+    - `python run.py dev`         : This will run + reuse previously built artifacts (database, files, etc)
+    - `python run.py dev --clean` : This will run + destroys your existing database and artifacts from previous runs
+    - `python run.py dev --amd`   : This will run + build for the AMD64 M1 chipset in emulation, but application will run slowly.  Make sure to change your 
+      environment.json to `"test_browser": "firefox"`
     
 3. Stop
     -  `python run.py remove` : Stops the server but keeps persisted items (database volume, artifacts, etc)
@@ -30,15 +45,17 @@ Allocate to Docker as much Memory, Swap, and CPUS as you can. For example, GovRe
 4. Destroy DB
     -  `python run.py wipedb` : Destroys your existing database and artifacts from previous runs
     
-4. Debugging
+5. Debugging
     - `docker attach govready-q-dev`
         - `crtl + c ` : This will detatch & kill the container and restart it
         - `ctrl + pq` : This will detatch
     - use ipdb as you normally would (https://gist.github.com/mono0926/6326015)
     
-5. Connect to Container
+6. Connect to Container
     - `docker exec -it govready-q-dev /bin/bash`
-    
+
+7. Connect to Swagger
+    - http://localhost:8000/api/v2/docs/swagger/
 
 ## Testing (Govready-Q uses Selenium)
 ###  Enable Selenium with Head(GUI)
@@ -117,4 +134,8 @@ I just switched branches and my database is out of sync.  What do I do?
     - Exit the existing run by hitting "ctrl-c"
     - Run: python run.py dev --clean
     - This will clean up all artifacts and will wipe the existing database
-    
+
+How can I access the API?
+
+    - http://localhost:8000/api/v2/docs/swagger/
+

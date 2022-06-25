@@ -4,7 +4,7 @@
 {% load humanize %}
 
 {% block title %}
-Your Compliance Projects
+Systems
 {% endblock %}
 
 {% block head %}
@@ -105,56 +105,59 @@ Your Compliance Projects
 <div class="container">
 
 <div class="project-main">
-  <a id="new-project" href="{% url 'store' %}?start=true" class=" btn btn-success">Start a project</a>
+  <a id="new-project-link-from-projects" href="{% url 'create_system_from_string' %}" class=" btn btn-success">New system</a>
 </div>
 
-<h2 class="">Projects</h2>
+<h2 class="">Systems</h2>
+
+<form action="{% url 'projects' %}" method="GET" role="search">
+    <div class="form-inline pull-right create-nav">
+        <div class="form-group">
+            <div class="input-group" id="searchbox-input">
+                <input id="searchbox" name="search" value="{{ request.GET.search }}" type="text" placeholder="search projects" spellcheck="false" aria-labelledby="searchbox-input" />
+                <span id="searchicon" class="glyphicon glyphicon-search" href="{% url 'projects' %}"></span>
+                {% if request.GET.search %}
+                    <a id="searchclear" class="glyphicon glyphicon-remove" href="{% url 'projects' %}"></a>
+                {% endif %}
+             </div>
+        </div>
+    </div>
+</form>
 
 {% if projects_access|length < 1 %}
 <p>You do not currently have access to any projects.</p>
 {% else %}
-<p>You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}</p>
-
-<div class="container">
-<div class="row">
-  <div class="col-xs-10 col-md-5"><strong>Project</strong></div>
-  <div class="col-xs-6 col-sm-1"><strong>ID</strong></div>
-  <div class="col-xs-6 col-sm-2"><strong>Portfolio</strong></div>
-  <div class="col-xs-6 col-sm-2"><strong>Role</strong></div>
-  <div class="col-xs-12 col-md-2"><strong>Updated</strong></div>
-</div>
+  {% if user.is_superuser %}
+    <p>You are a Superuser and have access to all {{ projects_access|length }} project{{ projects_access|pluralize }}.</p>
+  {% else %}
+    <p>You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}.</p>
+  {% endif %}
+  <p>&nbsp;</p>
+  <div class="container">
+  <div class="row">
+    <div class="col-xs-10 col-md-5"><strong>System</strong></div>
+    <div class="col-xs-6 col-sm-1"><strong>ID</strong></div>
+    <div class="col-xs-6 col-sm-4"><strong>Portfolio</strong></div>
+    <div class="col-xs-12 col-md-2"><strong>Updated</strong></div>
+  </div>
 {% endif %}
 
 {% for project in projects %}
 <div class="row projects-row">
   <div class="col-xs-10 col-md-5">
-    <span class="project-image">
+    <!-- <span class="project-image">
       {% if project.root_task.get_app_icon_url %}
         <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive" alt="App Icon">
       {% endif %}
     </span>
-    &nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp; -->
     <a href="{{project.get_absolute_url}}" class="projects-link">{{project.title}}</a>
+    <!-- <a href="{% url 'system_summary' system_id=project.system.id %}" class="projects-link">{{project.title}}</a> -->
+    
   </div>
-
   <div class="col-xs-6 col-sm-1">{{project.id}}</div>
-  <div class="col-xs-6 col-sm-2">{{project.portfolio.title}}</div>
-
-  {% get_obj_perms request.user for project as "perms" %}
-  {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
-  {% if "delete_project" in perms %}
-  <div class="col-xs-6 col-sm-2">Owner</div>
-  {% elif "change_project" in perms%}
-  <div class="col-xs-6 col-sm-2">Project Member</div>
-  {% elif "portfolio_perms"%}
-  <div class="col-xs-6 col-sm-2">Portfolio Member</div>
-  {% endif %}
-
-  <div class="col-xs-12 col-md-2 left-text">
-      <!-- App version: {{project.root_task.module.spec.catalog.version|force_escape}} -->
-      {{project.root_task.updated|naturaltime}}
-      <!-- Started: {{project.created|naturaltime}} -->
-  </div>
+  <div class="col-xs-6 col-sm-4">{{project.portfolio.title}}</div>
+  <div class="col-xs-12 col-md-2 left-text">{{project.root_task.updated|naturaltime}}</div>
 </div>
 
 {% endfor %}

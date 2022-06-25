@@ -28,3 +28,5 @@ class BaseEnum(enum.Enum):
     def choices(cls):
         return tuple((i.name, i.value) for i in cls)
 
+    def __str__(self):
+        return self.value

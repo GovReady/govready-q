@@ -13,7 +13,7 @@
         <span class="icon-bar"></span>
       </button>
       <a class="navbar-brand" href="/">
-          <img alt="Logo" src="{% static "img/brand/navbar-logo.png" %}">
+          <img alt="navbar-logo" aria-label="Logo for home page" src="{% static "img/brand/navbar-logo.png" %}">
       </a>
     </div>
 
@@ -23,49 +23,50 @@
           <li><a href="/projects" id="menu-projects">Projects</a></li>
           <li><a href="/portfolios" id="menu-portfolios">Portfolios</a></li>
           <li><a href="/controls" id="menu-controls">Controls</a></li>
-          <li><a href="{% url 'component_library' %}" id="menu-controls">Component Library</a></li>
-          <li><a href="{% url 'store' %}">Template Library</a></li>
+          <li><a href="{% url 'component_library' %}" id="menu-components">Component Library</a></li>
+          <li><a href="{% url 'store' %}" id="menu-templates">Template Library</a></li>
         {% endif %}
       </ul>
 
-      <ul class="nav navbar-nav navbar-right">
+      <ul class="nav navbar-nav navbar-right" id="navbar-create">
 
         {% if request.user.is_authenticated %}
-        <!-- Create new projects, portfolios -->
+        <!-- Create new projects, portfolios  class="dropdown-toggle" was removed from all li for 508 compliance and does not seem to have any effect on functionality. (km)-->
           <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="create-menu-dropdown">
+            <a href="#" class="" data-toggle="dropdown" role="link" aria-haspopup="true" aria-expanded="false" id="create-menu-dropdown" aria-label="Create project or portfolio dropdown menu">
               <span class="glyphicon glyphicon-plus"></span>
             </a>
             <ul class="dropdown-menu">
-              <li><a id="" href="{% url 'store' %}?start=true">Start a new project&hellip;</a></li>
-              <li class="dropdown-item-text small text-muted nav-dropdown-item-text">Begin a project from the assessment library. You will be able to choose any available assessment.
-              </li>
-              <li><a href="/portfolios/new" id="">Create a portfolio&hellip;</a></li>
-              <li class="dropdown-item-text small text-muted nav-dropdown-item-text">Portfolios allow you to organize and manage related projects. Members of a portfolio can access all of its unrestricted projects.
-              </li>
+              <li><a id="" href="{% url 'create_system_from_string' %}" role="link">New system</a></li>
+              <li><a href="/portfolios/new" id="" role="link">New portfolio</a></li>
             </ul>
           </li>
         {% endif %}
 
         {% if user.is_staff %}
-          <li><a href="{% url "guidedmodules_analytics" %}" aria-label="Analytics" tooltip="Analytics"><span class="glyphicon glyphicon-dashboard" aria-label="Analytics" tooltip="Analytics"></span></a></li>
+          <li>
+            <a href="{% url "guidedmodules_analytics" %}" aria-label="Analytics" aria-expanded="false" role="link" tooltip="Analytics">
+              <span class="glyphicon glyphicon-dashboard"></span>
+            </a>
+          </li>
         {% endif %}
         {# if user.can_see_any_org_settings or user.is_staff #}
         {% if user.is_staff %}
         <li class="dropdown">
-          <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="settings-menu-dropdown"><span class="glyphicon glyphicon-cog" aria-label="Settings" tooltip="Settings"></span>
+          <a href="#" class="" data-toggle="dropdown" role="button" aria-expanded="false" aria-pressed="false" aria-label="Settings Menu" id="settings-menu-dropdown">
+            <span class="glyphicon glyphicon-cog"></span>
           </a>
           <ul class="dropdown-menu">
-            <li><a href="/settings" id="menu-settings" aria-label="GovReady-Q settings" tooltip="GovReady-Q settings"><span class="glyphicon glyphicon-cog" aria-label="Settings"></span> GovReady-Q settings</a></li>
+            <li><a href="/settings" id="menu-settings" aria-label="GovReady-Q settings" target="_blank" tooltip="GovReady-Q settings"><span class="glyphicon glyphicon-cog" aria-label="Settings"></span> GovReady-Q settings</a></li>
             {% if user.is_staff %}
-              <li><a href="{{settings.SITE_ROOT_URL}}/admin" id="menu-settings" aria-label="Database administration" tooltip="Database administration"><span class="glyphicon glyphicon-cog" aria-label="Database administration"></span> Database administration</a></li>
+              <li><a href="{{settings.SITE_ROOT_URL}}/admin" id="menu-settings" aria-label="Database administration" target="_blank" tooltip="Database administration"><span class="glyphicon glyphicon-cog" aria-label="Database administration"></span> Database administration</a></li>
             {% endif %}
           </ul>
         </li>
         {% endif %}
 
         <li class="dropdown">
-          <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="help-menu-dropdown">Help
+          <a href="#" class="" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="help-menu-dropdown" aria-label="Dropdown menu for helpful links">Help
           </a>
           <ul class="dropdown-menu">
             <li><a href="https://govready-q.readthedocs.io/en/latest/" target="_blank" id="help-govready-q-docs">GovReady-Q documentation</a></li>
@@ -77,7 +78,7 @@
 
         {% if request.user.is_authenticated %}
           <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="user-menu-dropdown">
+            <a href="#" class="" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="user-menu-dropdown" aria-label="Dropdown menu for user settings">
               {% with url=request.user.get_profile_picture_absolute_url %}
                 {% if url %}
                   <img src="{{url}}" height="30" alt="Profile Picture" class="nav-profile">
@@ -104,9 +105,9 @@
           </li>
 
         {% elif LOGIN_ENABLED %}
-            <li><a><form name="form" method="post" action={% url 'homepage' %}>
+            <li><a><form id="login-form" aria-label="login-form" name="form" method="post" action={% url 'homepage' %}>
                    {% csrf_token %}
-        <input type="submit" name="action" value="login"/>
+        <input type="submit" id="login-button" aria-label="login-button" name="action" value="login"/>
         </form></a></li>
         {% endif %}
       </ul>

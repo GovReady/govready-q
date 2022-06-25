@@ -1,0 +1,24 @@
+id: module_10
+title: Module 10
+
+questions:
+- id: q1
+  title: What is your favorite science fiction franchise?
+  prompt: What is your favorite science fiction franchise?
+  type: choice
+  choices:
+    - key: startrek
+      text: Star Trek
+    - key: starwars
+      text: Star Wars
+    - key: lordoftherings
+      text: Lord of the Rings
+    - key: other
+      text: Other
+
+output:
+- id: artifact_1
+  format: markdown
+  title: What You Chose
+  template: |
+    {{q1}}

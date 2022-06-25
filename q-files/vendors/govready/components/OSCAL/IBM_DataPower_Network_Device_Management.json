@@ -1,0 +1,653 @@
+{
+  "component-definition": {
+    "uuid": "0708cc40-82f9-41ce-bde8-cfb8cfeaf099",
+    "metadata": {
+      "title": "IBM DataPower Network Device Management",
+      "last-modified": "2022-06-12T20:17:23",
+      "version": "2022-06-12T20:17:23",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "135104d2-0a39-4bdf-adbb-5e8b30312336",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "67569f56-2d6f-4229-abea-0863717ee805",
+        "type": "software",
+        "title": "IBM DataPower Network Device Management",
+        "description": "IBM DataPower Network Device Management based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "135104d2-0a39-4bdf-adbb-5e8b30312336"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "3b3779b7-3573-4d6a-a593-a935cdd8413e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "d404bda9-93f8-4b84-a754-8eeb0fba21c0",
+                "description": "The DataPower Gateway must generate alerts that can be forwarded to the administrators and ISSO when accounts are disabled.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "74837599-8b1d-4423-a415-e4d0c522a9d6",
+                "description": "The DataPower Gateway must automatically audit account enabling actions.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "bf576490-1227-4e63-8b7c-6e8c25ea2374",
+                "description": "The DataPower Gateway must generate an immediate alert for account enabling actions.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "4b0d1cb5-4d29-4d4d-92f6-5c6d5cfdd6b2",
+                "description": "The DataPower Gateway must generate alerts that can be forwarded to the administrators and ISSO when accounts are modified.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "73ca1cbc-0bd2-40b0-be74-616180e2fd21",
+                "description": "The DataPower Gateway must generate alerts that can be forwarded to the administrators and ISSO when accounts are removed.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "70efa13c-250b-4b41-b3cf-f276739fa459",
+                "description": "The DataPower Gateway must generate alerts that can be forwarded to the administrators and ISSO when accounts are created.",
+                "control-id": "ac-2.4"
+              }
+            ]
+          },
+          {
+            "uuid": "38aae111-4c84-4f9a-8a8d-c8f743462a12",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "21bded90-f088-4eab-90f6-da0b9b5e84c4",
+                "description": "The DataPower Gateway must enforce the assigned privilege level for each administrator and authorizations for access to all commands relative to the privilege level in accordance with applicable policy for the device.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "0487f098-a594-494c-92e5-5697f23237a5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "aea5d891-9d5e-4e1f-9f1f-dd6f7f25e1c4",
+                "description": "If the DataPower Gateway uses discretionary access control, the DataPower Gateway must enforce organization-defined discretionary access control policies over defined subjects and objects.",
+                "control-id": "ac-3.4"
+              }
+            ]
+          },
+          {
+            "uuid": "5106be5b-c178-4b9c-b739-d32df30d3839",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.7.",
+            "implemented-requirements": [
+              {
+                "uuid": "89191a7e-5d82-422a-9103-e114baf9f4f5",
+                "description": "If the DataPower Gateway uses role-based access control, the DataPower Gateway must enforce role-based access control policies over defined subjects and objects.",
+                "control-id": "ac-3.7"
+              }
+            ]
+          },
+          {
+            "uuid": "316633cc-fb81-42ae-9f07-de5d5acc282b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "d9e2a271-076d-4a4c-975b-aee7bd65183d",
+                "description": "The DataPower Gateway must enforce approved authorizations for controlling the flow of management information within DataPower based on information flow control policies.\nThe DataPower Gateway must not use 0.0.0.0 as the management IP address.",
+                "control-id": "ac-4"
+              }
+            ]
+          },
+          {
+            "uuid": "797cea55-4950-436a-ada2-9d2afc791c6f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.9.",
+            "implemented-requirements": [
+              {
+                "uuid": "5f5de692-76df-402c-b347-ad20eb84aa36",
+                "description": "The DataPower Gateway must audit the execution of privileged functions.",
+                "control-id": "ac-6.9"
+              }
+            ]
+          },
+          {
+            "uuid": "92c457ed-8c69-4b26-950b-b7b62f4945a4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "71d85f50-0a9d-4c4c-b0d9-c72bce92a4de",
+                "description": "The DataPower Gateway must display the Standard Mandatory DoD Notice and Consent Banner before granting access to the device.",
+                "control-id": "ac-8"
+              },
+              {
+                "uuid": "c5c68499-56e1-4385-8100-f4367cbf97f8",
+                "description": "The DataPower Gateway must retain the Standard Mandatory DoD Notice and Consent Banner on the screen until the administrator acknowledges the usage conditions and takes explicit actions to log on for further access.",
+                "control-id": "ac-8"
+              }
+            ]
+          },
+          {
+            "uuid": "41dd4e7f-b6f6-459e-8d31-877328a28d8d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "fbb607d6-b6e6-45c6-abe7-bef059b382f5",
+                "description": "The DataPower Gateway must automatically terminate a network administrator session after organization-defined conditions or trigger events requiring session disconnect.",
+                "control-id": "ac-12"
+              }
+            ]
+          },
+          {
+            "uuid": "7a75d75c-0577-4cb2-9f08-cc83a88f1138",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-12.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "320bcac8-37af-4503-8d04-aaf4d1152b3b",
+                "description": "The DataPower Gateway must display an explicit logout message to administrators indicating the reliable termination of authenticated communications sessions.",
+                "control-id": "ac-12.1"
+              },
+              {
+                "uuid": "2b3cddd1-c912-41e7-a68f-bd9e30c51064",
+                "description": "The DataPower Gateway must provide a logout capability for administrator-initiated communication sessions.",
+                "control-id": "ac-12.1"
+              }
+            ]
+          },
+          {
+            "uuid": "12d84ee5-1373-418f-9ee9-5f3e8cf39203",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-24.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "34de83ef-c4a5-45fb-bd80-cb54db395329",
+                "description": "The DataPower Gateway must be compliant with at least one IETF standard authentication protocol.",
+                "control-id": "ac-24.1"
+              }
+            ]
+          },
+          {
+            "uuid": "4e11a844-f0bc-4ea8-978a-c0b875b9d5d3",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "fc818044-7534-4dca-bfa1-57d3821cd650",
+                "description": "The DataPower Gateway must allocate audit record storage capacity in accordance with organization-defined audit record storage requirements.",
+                "control-id": "au-4"
+              }
+            ]
+          },
+          {
+            "uuid": "26dc0830-a4af-460d-a41c-3b94173e6001",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "50262937-c43d-43b6-970c-982bf6ad4918",
+                "description": "The DataPower Gateway must off-load audit records onto a different system or media than the system being audited.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "77965372-7b0f-498f-af45-5502f1f8fa20",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "6caa81f2-fb7c-4c74-a8b5-ef01b27eb6d3",
+                "description": "The DataPower Gateway must alert the ISSO and SA (at a minimum) in the event of an audit processing failure.",
+                "control-id": "au-5"
+              }
+            ]
+          },
+          {
+            "uuid": "e3f8ff7e-a11e-404d-9afb-764f10ba72cb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "58c96c45-3f52-41b5-bfaa-c6fd3c746f86",
+                "description": "The DataPower Gateway must generate an immediate alert when allocated audit record storage volume reaches 75% of repository maximum audit record storage capacity.",
+                "control-id": "au-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "366e52bd-4d74-4ae2-bdd8-35631197255c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "660652b0-5e6b-46af-a774-8466d320259b",
+                "description": "The DataPower Gateway must generate an immediate real-time alert of all audit failure events.",
+                "control-id": "au-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "7344b11e-6e18-4af5-b92d-0759e7f1b7a5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "38e81460-6d4e-4ecb-be8b-3d75c6295165",
+                "description": "The DataPower Gateway must record time stamps for audit records that can be mapped to Coordinated Universal Time (UTC) or Greenwich Mean Time (GMT).",
+                "control-id": "au-8"
+              }
+            ]
+          },
+          {
+            "uuid": "0b37c24a-312f-4615-87f5-faf86fef2ec0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "4955be96-ee2e-4304-90f1-0cb4736c29c3",
+                "description": "The DataPower Gateway must synchronize internal information system clocks to the authoritative time source when the time difference is greater than one second.",
+                "control-id": "au-8.1"
+              },
+              {
+                "uuid": "1eeb3040-7e3c-46e5-8960-445f209e15e5",
+                "description": "The DataPower Gateway must compare internal information system clocks at least every 24 hours with an authoritative time server.",
+                "control-id": "au-8.1"
+              }
+            ]
+          },
+          {
+            "uuid": "fe7cbbd4-6cef-45a2-a070-352cb0e878e1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "bca58261-8a92-49db-ba89-6accef0ac0dc",
+                "description": "The DataPower Gateway must be configured to synchronize internal information system clocks with the primary and secondary time sources located in different geographic regions using redundant authoritative time sources.",
+                "control-id": "au-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "7db0b451-f4ae-45d8-b017-d83a83e7c348",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "224c7c82-1916-42d9-8050-0dec395e913c",
+                "description": "The DataPower Gateway must protect audit tools from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "e76e73d1-7816-49f3-a379-5f3d3d9a8f75",
+                "description": "The DataPower Gateway must protect audit information from any type of unauthorized read access.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "81f3cb9f-40fc-4c42-8db0-0d4c7aa0b766",
+                "description": "The DataPower Gateway must protect audit tools from unauthorized deletion.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "bff1fca7-048e-4107-ad40-883d1ef6e19a",
+                "description": "The DataPower Gateway must protect audit tools from unauthorized access.",
+                "control-id": "au-9"
+              }
+            ]
+          },
+          {
+            "uuid": "5ce777b9-aa0d-404e-9449-eb83762f09fb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "347b488e-6df5-418a-8a4f-865cdf39d9a4",
+                "description": "The DataPower Gateway must back up audit records at least every seven days onto a different system or system component than the system or component being audited.",
+                "control-id": "au-9.2"
+              }
+            ]
+          },
+          {
+            "uuid": "e11f8610-6ff2-49b8-b7c4-031649ebad1b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "a8c8bdd8-7b79-421a-a963-0242bc8e1c71",
+                "description": "The DataPower Gateway must allow only the ISSM (or individuals or roles appointed by the ISSM) to select which auditable events are to be audited.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "257e6c39-e0b5-4e17-ac0e-db38645ba979",
+                "description": "The DataPower Gateway must provide audit record generation capability for DoD-defined auditable events within DataPower.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "faf14afd-6be0-4324-b698-bc43d57be2df",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "ef646861-ae9d-4687-8954-cca81e72141d",
+                "description": "The DataPower Gateway must provide the capability for organization-identified individuals or roles to change the auditing to be performed based on all selectable event criteria within near-real-time.",
+                "control-id": "au-12.3"
+              }
+            ]
+          },
+          {
+            "uuid": "37e3dc3a-6ba3-476b-962a-cbb833584f60",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-3.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "56d0695a-1238-4f38-a3cd-d55ffe9405d6",
+                "description": "The DataPower Gateway must implement organization-defined automated security responses if baseline configurations are changed in an unauthorized manner.",
+                "control-id": "cm-3.5"
+              }
+            ]
+          },
+          {
+            "uuid": "3d3da97b-453a-4aa6-9c01-9c08cb9492b2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "943b8eb3-6219-42ab-856c-cc2bf886c944",
+                "description": "The DataPower Gateway must enforce access restrictions associated with changes to device configuration.",
+                "control-id": "cm-5.1"
+              },
+              {
+                "uuid": "b743d1ed-77cf-4c6e-88d6-e0bc898bf899",
+                "description": "The DataPower Gateway must audit the enforcement actions used to restrict access associated with changes to the device.",
+                "control-id": "cm-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "5df48fd0-f75e-4fcf-bf19-81d99be9ccf6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "cf1eb466-2c0e-45fc-a52f-558818d49105",
+                "description": "The DataPower Gateway must prevent the installation of patches, service packs, or application components without verification the software component has been digitally signed using a certificate that is recognized and approved by the organization.",
+                "control-id": "cm-5.3"
+              }
+            ]
+          },
+          {
+            "uuid": "0012e25d-a869-45eb-abb5-fc1a99fa0cc9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "9187f6fc-ba4d-47d4-9be3-2a699c1bd8d1",
+                "description": "The DataPower Gateway must limit privileges to change the software resident within software libraries.",
+                "control-id": "cm-5.6"
+              }
+            ]
+          },
+          {
+            "uuid": "cc7e7bec-f47a-46bd-b9d9-23ace00dbfcc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "14bf47e5-08c2-4536-b89b-34e1079655ef",
+                "description": "The DataPower Gateway must activate a system alert message, send an alarm, and/or automatically shut down when a component failure is detected.\nThe DataPower Gateway must be compliant with at least one IETF standard authentication protocol.\nIf the DataPower Gateway uses role-based access control, the DataPower Gateway must enforce role-based access control policies over defined subjects and objects.\nThe DataPower Gateway must be configured to synchronize internal information system clocks with the primary and secondary time sources located in different geographic regions using redundant authoritative time sources.\nThe DataPower Gateway must use automated mechanisms to alert security personnel to threats identified by authoritative sources (e.g., CTOs) and in accordance with CJCSM 6510.01B.\nThe DataPower Gateway must generate audit log events for a locally developed list of auditable events.\nThe DataPower Gateway must employ automated mechanisms to centrally manage authentication settings.\nThe DataPower Gateway must employ automated mechanisms to centrally apply authentication settings.\nThe DataPower Gateway must employ automated mechanisms to centrally verify authentication settings.\nThe DataPower Gateway must support organizational requirements to conduct backups of system level information contained in the information system when changes occur or weekly, whichever is sooner.\nThe DataPower Gateway must employ automated mechanisms to assist in the tracking of security incidents.\nThe DataPower Gateway must obtain its public key certificates from an appropriate certificate policy through an approved service provider.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "f00c4bb4-11b2-4eab-a9a0-4c1cb1bde90a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "801af086-ee12-420e-813e-0c124c8ee950",
+                "description": "The DataPower Gateway must employ automated mechanisms to centrally verify authentication settings.",
+                "control-id": "cm-6.1"
+              },
+              {
+                "uuid": "3bc29eae-da0c-4630-bc53-e43b9f52c6c3",
+                "description": "The DataPower Gateway must employ automated mechanisms to centrally apply authentication settings.",
+                "control-id": "cm-6.1"
+              },
+              {
+                "uuid": "cf4ef482-8f3b-4860-a587-2824647c3bf7",
+                "description": "The DataPower Gateway must employ automated mechanisms to centrally manage authentication settings.",
+                "control-id": "cm-6.1"
+              }
+            ]
+          },
+          {
+            "uuid": "285f01dc-ba8d-4fb6-9995-887ec8367190",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "c8ec5735-f57d-4476-8399-c6c53355fcaa",
+                "description": "The DataPower Gateway must have SSH and web management bound to the management interface and Telnet disabled.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "e91ae07a-c079-4dd0-9cff-e997bdc58a69",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cp-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "e5a0960d-c609-4f95-b7a8-429896d57694",
+                "description": "The DataPower Gateway must support organizational requirements to conduct backups of system level information contained in the information system when changes occur or weekly, whichever is sooner.",
+                "control-id": "cp-9"
+              }
+            ]
+          },
+          {
+            "uuid": "90cdd6f6-4451-4686-8f07-d6fc1df93a37",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "f00c3170-7373-4508-bb67-3bc9335b473c",
+                "description": "The DataPower Gateway must use SNMPv3.",
+                "control-id": "ia-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "c857e1da-c68f-49cb-af8b-406754be3f48",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "3d3b3bb0-2997-411c-b136-75f91505b06e",
+                "description": "The DataPower Gateway must enforce a minimum 15-character password length.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "02e93317-f815-4535-98b3-7b0afe0eaa22",
+                "description": "If multifactor authentication is not supported and passwords must be used, the DataPower Gateway must enforce password complexity by requiring that at least one upper-case character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "40822744-165a-4c22-8066-61d1ec140b25",
+                "description": "If multifactor authentication is not supported and passwords must be used, the DataPower Gateway must enforce password complexity by requiring that at least one numeric character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "1b0029db-db8b-4842-82dd-1c88c990200a",
+                "description": "If multifactor authentication is not supported and passwords must be used, the DataPower Gateway must enforce password complexity by requiring that at least one lower-case character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "7a23fcee-ba0a-454c-8226-c924a9256ac6",
+                "description": "If multifactor authentication is not supported and passwords must be used, the DataPower Gateway must enforce password complexity by requiring that at least one special character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "ffd89e00-040f-4a46-9c47-966b7a177d07",
+                "description": "The DataPower Gateway must prohibit password reuse for a minimum of five generations.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "cb0d7852-6545-4e4d-9a79-dc3250c53d2c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "2816b11c-6aeb-4ba1-b182-3e94ee9e8619",
+                "description": "The DataPower Gateway must map the authenticated identity to the user account for PKI-based authentication.",
+                "control-id": "ia-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "8617abb7-2725-48f6-ac2e-9f5ac3a77904",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.13.",
+            "implemented-requirements": [
+              {
+                "uuid": "ff102be4-7db0-4577-b58c-8e4479701721",
+                "description": "The DataPower Gateway must prohibit the use of cached authenticators after an organization-defined time period.",
+                "control-id": "ia-5.13"
+              }
+            ]
+          },
+          {
+            "uuid": "7be564c5-8dc1-4c8f-899f-f73460b96d4a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "360778b9-8884-49c7-a929-f3f4162f9f1a",
+                "description": "The DataPower Gateway must use mechanisms meeting the requirements of applicable federal laws, Executive Orders, directives, policies, regulations, standards, and guidance for authentication to a cryptographic module.",
+                "control-id": "ia-7"
+              }
+            ]
+          },
+          {
+            "uuid": "f6ab2947-8af2-4fd4-9812-1a18409a9821",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "8e260563-cc5e-4ec3-abbd-3e2b2b672df8",
+                "description": "The DataPower Gateway must require users to re-authenticate when privilege escalation or role changes occur.",
+                "control-id": "ia-11"
+              }
+            ]
+          },
+          {
+            "uuid": "f0269d04-7a5b-47ae-95ae-d81b9183ec10",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ir-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "ca8f3dca-49d8-462a-a511-fb6931a9a962",
+                "description": "The DataPower Gateway must employ automated mechanisms to assist in the tracking of security incidents.",
+                "control-id": "ir-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "83b70bc3-33c2-47e1-912b-7b9806920cdd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ma-4.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "32677c43-7f6d-4f16-8854-d6962286153b",
+                "description": "The IBM DataPower Gateway must only allow the use of protocols that implement cryptographic mechanisms to protect the integrity and confidentiality of management communications.",
+                "control-id": "ma-4.6"
+              }
+            ]
+          },
+          {
+            "uuid": "d723aa3f-d72d-471e-94de-efaba03e4a5f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "8d0b5a82-dd81-4742-8b8d-f535ce2bccfc",
+                "description": "The DataPower Gateway must terminate all network connections associated with a device management session at the end of the session, or the session must be terminated after 10 minutes of inactivity except to fulfill documented and validated mission requirements.",
+                "control-id": "sc-10"
+              }
+            ]
+          },
+          {
+            "uuid": "65941a51-30a2-49f8-9827-2dc5c91f5bfa",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-17.",
+            "implemented-requirements": [
+              {
+                "uuid": "08a93cd3-0f12-4756-b569-27fca69eca65",
+                "description": "The DataPower Gateway must obtain its public key certificates from an appropriate certificate policy through an approved service provider.",
+                "control-id": "sc-17"
+              }
+            ]
+          },
+          {
+            "uuid": "e5ff5a6c-af75-4a6a-9785-cbf3022c4ff7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "e280d6f4-d8f9-4415-9b46-63c02f20fd71",
+                "description": "The DataPower Gateway must generate unique session identifiers using a FIPS 140-2 approved random number generator.",
+                "control-id": "sc-23.3"
+              }
+            ]
+          },
+          {
+            "uuid": "1cd6c4bb-e9ce-4000-a9b9-d28830a6db76",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-4.12.",
+            "implemented-requirements": [
+              {
+                "uuid": "6f7921c7-a424-4885-a4eb-e93821e47f50",
+                "description": "The DataPower Gateway must use automated mechanisms to alert security personnel to threats identified by authoritative sources (e.g., CTOs) and in accordance with CJCSM 6510.01B.",
+                "control-id": "si-4.12"
+              }
+            ]
+          },
+          {
+            "uuid": "0598e5b0-7e3d-40bb-92ca-aa848b1f81da",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-13.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "9380fa8c-f177-4189-8dc7-0175255f0738",
+                "description": "The DataPower Gateway must activate a system alert message, send an alarm, and/or automatically shut down when a component failure is detected.",
+                "control-id": "si-13.4"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

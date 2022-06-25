@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 import time
+import platform
 
 from core.prompts import Prompt, Colors
 from core.utils import Runner
@@ -12,8 +13,16 @@ class DockerCompose(Runner):
     REQUIRED_PORTS = [8000, 5432]
     compose_files = ['docker-compose.yml']
 
+    def __init__(self, amd):
+        super().__init__()
+        self.amd = amd
+        os.environ['BACKEND_DOCKERFILE'] = 'Dockerfile'
+
     def build_docker_compose_command(self):
-        return f"docker-compose {' '.join([f'-f {x}' for x in self.compose_files])}"
+        command = f"docker-compose {' '.join([f'-f {x}' for x in self.compose_files])}"
+        if self.amd:
+            return f"DOCKER_DEFAULT_PLATFORM=linux/amd64 {command}"
+        return command
 
     def generate_config(self):
         config = {
@@ -54,16 +63,19 @@ class DockerCompose(Runner):
         auto_admin = re.findall(
             'Created administrator account \(username: (admin)\) with password: ([a-zA-Z0-9#?!@$%^&*-]+)', logs)
         print()
-
+        Prompt.title_banner(f"Service - Backend - Django Application", True)
         Prompt.warning(f"Access application via Browser: {Colors.CYAN}{self.config['govready-url']}")
+        Prompt.warning(f"Access api docs via Browser: {Colors.CYAN}{self.config['govready-url']}/api/v2/docs/swagger/")
         Prompt.warning(f"View logs & debug by running: {Colors.CYAN}docker attach govready-q-dev")
         Prompt.warning(f"Connect to container: {Colors.CYAN}docker exec -it govready-q-dev /bin/bash")
         Prompt.warning(f"Testing: {Colors.CYAN}docker exec -it govready-q-dev ./manage.py test")
+        if not self.amd and platform.processor() == 'arm':
+            Prompt.warning(f"WARNING: Testing unavailable on MacOS ARM chip due to Chromium conflict")
 
         creds_path = os.path.join(self.ROOT_DIR, 'local/admin.creds.json')
         if auto_admin:
             with open(creds_path, 'w') as f:
-                json.dump({"username": auto_admin[0][0], "password": auto_admin[0][1]}, f)
+                json.dump({"username": auto_admin[0][0], "password": auto_admin[0][1].replace("govready-q-dev", "")}, f)
         else:
             if os.path.exists(creds_path):
                 with open(creds_path, 'r') as f:
@@ -72,14 +84,26 @@ class DockerCompose(Runner):
 
         if auto_admin:
             Prompt.warning(f"Administrator Account - "
-                           f"{Colors.CYAN}{auto_admin[0][0]} / {auto_admin[0][1]} - {Colors.FAIL}"
+                           f"{Colors.CYAN}{auto_admin[0][0]} / {auto_admin[0][1].replace('govready-q-dev', '')} - {Colors.FAIL}"
                            f" This is stored in local/admin.creds.json")
+
+        Prompt.title_banner(f"Service - Frontend - Webpack")
+        Prompt.warning(f"View logs & debug by running: {Colors.CYAN}docker attach frontend")
+        Prompt.warning(f"Connect to container: {Colors.CYAN}docker exec -it frontend /bin/sh")
+
+        Prompt.title_banner(f"Service - Database - Postgres")
+        Prompt.warning(f"View logs & debug by running: {Colors.CYAN}docker attach postgres_dev")
+        Prompt.warning(f"Connect to container: {Colors.CYAN}docker exec -it postgres_dev /bin/bash")
+        Prompt.warning(f"Connection String: {Colors.CYAN}{self.config['db'].replace('postgres_dev', 'localhost')}")
 
     def on_sig_kill(self):
         self.execute(cmd=f"{self.build_docker_compose_command()} down --remove-orphans  --rmi all")
 
     def remove(self):
         os.chdir(f"docker")
+        if self.amd is None and platform.processor() == "arm":
+            Prompt.warning(f"Substituting in backend Dockerfile.M1 to support Apple M1 environment. Chromium tests will be unavailable.")
+            os.environ['BACKEND_DOCKERFILE'] = 'Dockerfile.M1'
         self.execute(cmd=f"{self.build_docker_compose_command()} down --remove-orphans  --rmi all")
 
     def wipe_db(self):
@@ -92,7 +116,10 @@ class DockerCompose(Runner):
         os.chdir(cwd)
 
     def run(self):
-        Prompt.warning(f"Attempting to start developer environment via docker-compose")
+        Prompt.warning(f"Attempting to start developer environment via docker-compose modified")
+        if not self.amd and platform.processor() == 'arm':
+            Prompt.warning(f"Substituting in backend the Dockerfile.M1 file to support Apple M1 environment. Chromium tests will be unavailable.")
+            os.environ['BACKEND_DOCKERFILE'] = 'Dockerfile.M1'
         if not os.path.exists("docker/environment.json"):
             self.config = self.generate_config()
         else:

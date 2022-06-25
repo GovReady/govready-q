@@ -11,6 +11,11 @@ Welcome to Compliance Automation
 <body class="splash-bg">
 <div class="container">
   <div class="row">
+    {% if isInternetExplorer %}
+      <div class="alert alert-warning" role="alert">
+        <strong>WARNING</strong>: Internet Explorer is not supported. Please use Microsoft Edge, Google Chrome, or Mozilla FireFox.
+      </div>
+    {% endif %}
     <div class="col-md-7 splash-container" style="margin: 40px 0px 30px 0px;">
       {% include "splash.html" %}
     </div>
@@ -28,14 +33,18 @@ Welcome to Compliance Automation
         <div role="tabpanel" class="tab-pane {% if hide_registration or request.POST.action|escapejs == 'login' %}active{% endif %}" id="signin">
           <div class="well">
             {% if not request.user.is_authenticated %}
-            <a name="signin"></a>
-            <form id="login_form" method="post">
-              {% csrf_token %}
-              <input type=hidden name=action value=login>
-              {% bootstrap_form login_form %}
-              <p><button type="submit" class="btn btn-success">Sign in &raquo;</button></p>
-            </form>
-            <div><a href="/accounts/password/reset">Forgot password?</a></div>
+              <a name="signin"></a>
+              <form id="login_form" method="post">
+                {% csrf_token %}
+                <input type=hidden name=action value=login>
+                {% bootstrap_form login_form %}
+                <p>
+                  <button type="submit" class="btn btn-success">Sign in &raquo;</button>
+                </p>
+              </form>
+              <div>
+                <a href="/accounts/password/reset">Forgot password?</a>
+              </div>
             {% else %}
             <h2 style="margin-top: 0;">Your organizations</h2>
             {% if member_of_orgs %}
@@ -66,7 +75,9 @@ Welcome to Compliance Automation
               {% if not request.user.is_authenticated %}
                 {% bootstrap_form signup_form %}
               {% endif %}
-              <p><button type="submit" id="signup-button" class="btn btn-success">Next &raquo;</button></p>
+              <p>
+                <button type="submit" id="signup-button" class="btn btn-success">Next &raquo;</button>
+              </p>
             </form>
           </div>
         </div>
@@ -74,17 +85,14 @@ Welcome to Compliance Automation
       </div><!-- /Tab panes -->
     </div>
   </div>
-</div>
 
   {{ block.super }}
 {% endblock %}
 
 {% block scripts %}
 <script>
-
-{% if request.method == "POST" %}
-
-smooth_scroll_to($('input[name=action][value={{request.POST.action|escapejs}}]').parent('form'));
-{% endif %}
+  {% if request.method == "POST" %}
+    smooth_scroll_to($('input[name=action][value={{request.POST.action|escapejs}}]').parent('form'));
+  {% endif %}
 </script>
 {% endblock %}

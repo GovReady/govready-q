@@ -30,7 +30,7 @@ class SystemSettings(models.Model):
 
   setting = models.CharField(max_length=200, unique=True, help_text="Name of System Setting")
   active = models.BooleanField(default=False)
-  details = models.JSONField(blank=True, null=True, help_text="Value objects of System Setting in JSON")
+  details = models.JSONField(blank=True, null=True, default=dict, help_text="Value objects of System Setting in JSON")
 
   def __str__(self):
     return self.setting

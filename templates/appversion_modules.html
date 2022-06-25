@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+Modules
+{% endblock %}
+
+{% block head %}
+
+{{block.super}}
+
+<style>
+
+  h1 {
+    margin: 4px 0 18px 0;
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  /*  .form-control {
+    font-size: 14pt;
+    height: 34pt;
+  }*/
+
+  .question {
+    font-size: 10pt;
+  }
+    .question form.disabled label {
+      color: #777;
+      cursor: not-allowed;
+    }
+
+  .question-prompt blockquote {
+    font-size: inherit;
+  }
+
+  .question-prompt {
+    margin: 10px 10px 10px 0px;
+    font-weight: 700;
+  }
+
+  /* since prompts will likely use Markdown ##'s to delimit sections,
+      which we render as h3 because we demote all levels, re-adjust
+      styles */
+  .question-prompt h3 {
+    font-size: 110%;
+    font-weight: bold;
+  }
+
+  {% if q.spec.type == "module" %}
+  .question .radio label {
+    margin: .25em 0;
+  }
+  {% endif %}
+
+  {% if q.spec.type == "interstitial" %}
+    .question img {
+      display: block; /* so that horizontal auto margin centers */
+      margin: 30px auto;
+    }
+  {% endif %}
+
+  {% if q.spec.type == "longtext" %}
+  .question .ql-container {
+    font-size: 10pt !important; /* override default quill style */
+    /*font-family: trebuchet ms;*/
+  }
+  .question .ql-container p {
+    margin-bottom: .75em;
+  }
+    .question .ql-container p:last-child {
+      margin-bottom: 0;
+    }
+  {% endif %}
+
+  label .onhover { display: none; }
+  label:hover .onhover { display: inline; }
+
+
+  #reference-text-wrapper *:first-child { margin-top: 0; }
+
+  /* Legacy background and focus area styling for question pages */
+  body { /*background-color: rgb(247,247,247);*/ }
+
+  #focus-area-wrapper {
+    border-radius: 3px;
+    border: 3px solid rgb(204, 204, 204);
+    padding: 2em 2em 3em 2em;
+    background-color: white;
+    /*background-color: rgba(253,253,253,1);*/
+    /* on mobile, space between columns */
+    margin-bottom: 30px;
+    font-size: 10pt;
+  }
+
+  .datagrid-text {
+    font-size: 0.8em;
+  }
+
+  .datagrid-text-select { er
+    font-size: 1.0em;
+  }
+
+  textarea {
+    padding: 12px 12px 12px 12px;
+  }
+
+  input, textarea, select {
+    margin-bottom: 8px;
+  }
+
+  label {
+    margin-top: 8px;
+  }
+
+
+  /* styles for the table */
+  .question_grid td { padding: 10px 10px 10px 0; }
+  .question_grid tr { border-bottom:1px solid #ccc; padding: 5px; }
+  .question_grid th { font-size:.8em;}
+
+  .question_grid th.tot_col { width: 10%; }
+  .question_grid th.title_col { width: 25%; }
+  .question_grid th.intro_col { width: 65%; }
+
+
+</style>
+{% endblock %}
+
+{% block body %}
+{{block.super}}
+
+<div class="row" style="width: 90%; margin-top: 16px;margin: auto;margin-bottom: 12px;">
+  <h2 style="font-weight:bold; padding-top:0; margin:0;">
+    {{ appversion.catalog_metadata.title }}
+
+    {% if appversion.icon %}<img src="{{ appversion.icon }}" class="img-responsive" style="height:60px;" alt="App Icon">{% endif %}
+  </h2>
+  <div><span class="">Version</span> {{ appversion.version_number }}</div>
+</div>
+<div class="row" style="width: 90%; margin-top: 16px;margin: auto;">
+  <p>View and edit this template's <b>{{ appversion.modules.all|length }} modules</b></p><br />
+</div>
+
+<div class="row" style="width: 90%; margin: auto; margin-bottom: 20px; ">
+
+<table class="question_grid"><tr><th class="title_col">Module</th><th class="tot_col">Num. of Questions</th><th class="intro_col">Intro</th></tr>
+{% for m in modules %}
+<tr><td>{% if user.is_staff %}<a href="/tasks/module/{{m.id}}/questions">{{m.spec.title}}</a>{% endif %}</td><td>{% if user.is_staff %}<a href="/tasks/module/{{m.id}}/questions">{{ m.questions.all|length }} question{{ m.questions.all|pluralize }}</a>{% endif %}</td><td>{{ m.spec.introduction.template|truncatewords:20 }}</td></tr>
+
+{% endfor %}
+</table>
+</div>
+
+<!--
+{% for m in modules %}
+<div class="row" style="width: 750px; margin: auto; margin-bottom: 20px;">
+  <div id="focus-area-wrapper" class="" style="background-color: rgb(250, 250, 250); border: 0.5px solid #eee; border-bottom: 1px solid #bbb;">
+
+    <div class="question" style="">
+
+        <form autocomplete="off" action="" method="post" class="comment-form" onsubmit="return false;">
+          <div>Module {{ forloop.counter0 }}</div>
+          <div class="form-group">
+            <input type="hidden" name="question" value="{{m.id}}">
+            <input type="hidden" name="method" value="save">
+          </div>
+
+            <div class="form-group">
+              <div class="col-sm-10">
+                <h4>{{m.spec.title}}</h4>
+              </div>
+            </div>
+
+          <p>&nbsp;</p>
+          <div class="form-group">
+              <div class="col-sm-10">
+                {{ m.questions.all|length }} question{{ m.questions.all|pluralize }}
+              </div>
+          </div>
+
+          <p>&nbsp;</p>
+          <div class="form-group">
+              <div class="col-sm-10">
+                {{ m.spec.introduction.template }}
+              </div>
+          </div>
+
+          <p>&nbsp;</p>
+          <div class="col-sm-12">
+            {% if user.is_staff %}<a href="/tasks/module/{{m.id}}/questions" class="pull-left" style="font-size:9pt;">edit module questions</a>{% endif %}
+          </div>
+
+        </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+-->
+<script>
+
+$('.comment-form').on('submit', function(e) {
+  e.preventDefault();
+  var formElm = $(this)
+  var prompt = formElm.find('textarea[name="prompt"]').val();
+  console.log(prompt);
+  var data = formElm.serializeArray();
+  data.push( { name: "task", value: {{ task.id }} } );
+  data.push( { name: "question", value: formElm.find('input[name="key"]').val() } );
+  console.log(data);
+  ajax_with_indicator({
+      url: "/tasks/_authoring_tool/edit-question-new",
+      method: "POST",
+      data: data,
+      keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      success: function(res) {
+        // Modal can stay up until the redirect finishes.
+        console.log(res)
+        if (res['status'] == "success") {
+          formElm.find('.success-msg').fadeIn().text('saved')
+        }
+        // window.location = res.redirect;
+        // if (window.location.hash.length > 1)
+          // window.location.reload(); // if there is a # in the URL, the browser won't actually reload
+      }
+  });
+  setTimeout(function () {
+      formElm.find('.success-msg').fadeOut().text('');
+  }, 2000);
+  return false; // Stop form reloading page
+});
+</script>
+
+
+{# endif #}
+
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+
+
+{% endblock %}

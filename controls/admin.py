@@ -1,7 +1,9 @@
 import csv
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import ImportRecord, Statement, StatementRemote, Element, ElementControl, ElementRole, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam, Deployment, SystemAssessmentResult
+from .models import ImportRecord, Statement, StatementRemote, Element, ElementControl, ElementRole
+from .models import System, SystemEvent, CommonControlProvider, CommonControl, ElementCommonControl, Poam 
+from .models import Deployment, SystemAssessmentResult
 from .oscal import CatalogData
 from guardian.admin import GuardedModelAdmin
 from simple_history.admin import SimpleHistoryAdmin
@@ -35,7 +37,7 @@ class ImportRecordAdmin(admin.ModelAdmin, ExportCsvMixin):
 
 class StatementAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     list_display = ('id', 'sid', 'sid_class', 'producer_element', 'statement_type', 'uuid')
-    search_fields = ('id', 'sid', 'sid_class', 'producer_element', 'uuid')
+    search_fields = ('id', 'sid', 'producer_element__name', 'statement_type')
     actions = ["export_as_csv"]
     readonly_fields = ('created', 'updated', 'uuid')
     formfield_overrides = {
@@ -65,6 +67,10 @@ class ElementRoleAdmin(admin.ModelAdmin, ExportCsvMixin):
 
 class SystemAdmin(GuardedModelAdmin, ExportCsvMixin):
     list_display = ('id', 'root_element')
+    actions = ["export_as_csv"]
+
+class SystemEventAdmin(GuardedModelAdmin, ExportCsvMixin):
+    list_display = ('id', 'system', 'event_type', 'description', 'created')
     actions = ["export_as_csv"]
 
 class CommonControlProviderAdmin(admin.ModelAdmin, ExportCsvMixin):
@@ -125,6 +131,7 @@ admin.site.register(Element, ElementAdmin)
 admin.site.register(ElementControl, ElementControlAdmin)
 admin.site.register(ElementRole, ElementRoleAdmin)
 admin.site.register(System, SystemAdmin)
+admin.site.register(SystemEvent, SystemEventAdmin)
 admin.site.register(CommonControlProvider, CommonControlProviderAdmin)
 admin.site.register(CommonControl, CommonControlAdmin)
 admin.site.register(ElementCommonControl, ElementCommonControlAdmin)

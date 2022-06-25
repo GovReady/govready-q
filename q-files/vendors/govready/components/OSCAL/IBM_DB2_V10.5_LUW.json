@@ -1,0 +1,582 @@
+{
+  "component-definition": {
+    "uuid": "043c77c5-74fc-41cc-84c8-7f07a257697e",
+    "metadata": {
+      "title": "IBM DB2 V10.5 LUW",
+      "last-modified": "2022-06-12T20:17:28",
+      "version": "2022-06-12T20:17:28",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "f360cba8-e742-4bd4-99bc-c6d1a32d68ef",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "2156d450-2995-4d24-8a28-61a514a30627",
+        "type": "software",
+        "title": "IBM DB2 V10.5 LUW",
+        "description": "IBM DB2 V10.5 LUW based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "f360cba8-e742-4bd4-99bc-c6d1a32d68ef"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "72a308dc-ab23-4af2-a1af-7cee052c6e36",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "14e8411a-21ae-4b3a-b111-77c4a2bd8d3e",
+                "description": "DB2 must integrate with an organization-level authentication/access mechanism providing account management and automation for all users, groups, roles, and any other principals.",
+                "control-id": "ac-2.1"
+              }
+            ]
+          },
+          {
+            "uuid": "5a954369-0e47-4bd3-9d21-b4caed613c8c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "3a28f134-131e-4924-bb1c-405a47720eed",
+                "description": "DB2 must enforce approved authorizations for logical access to information and system resources in accordance with applicable access control policies.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "b460b6e3-5ecd-40b1-aae0-d149a6e0574e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "bde01e99-f869-48bb-8b5f-51a6da849b52",
+                "description": "DB2 must prevent non-privileged users from executing privileged functions, to include disabling, circumventing, or altering implemented security safeguards/countermeasures.",
+                "control-id": "ac-6.10"
+              }
+            ]
+          },
+          {
+            "uuid": "5eb203ea-e666-43fd-ae66-42fec0e6d60e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "5634de11-2789-4ab6-8432-e163f014cd7f",
+                "description": "DB2 must limit the number of concurrent sessions to an organization-defined number per user for all accounts and/or account types.",
+                "control-id": "ac-10"
+              }
+            ]
+          },
+          {
+            "uuid": "f72bbed6-817f-49dd-990a-21eccd677b35",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "e2e3058e-5f0c-4ef3-88f4-751054b64262",
+                "description": "DB2 must automatically terminate a user session after organization-defined conditions or trigger events requiring session disconnect.",
+                "control-id": "ac-12"
+              }
+            ]
+          },
+          {
+            "uuid": "97e1100a-42cf-40bb-b66e-59fe40c892d7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-16.",
+            "implemented-requirements": [
+              {
+                "uuid": "61e87775-2b1b-43a7-8e6d-fb6d39937ddb",
+                "description": "When supporting applications that require security labeling of data, DB2 must associate organization-defined types of security labels having organization-defined security label values with information in storage.",
+                "control-id": "ac-16"
+              },
+              {
+                "uuid": "5dfc272d-2e37-4618-ac5a-c85ec0a3cb11",
+                "description": "When supporting applications that require security labeling of data, DB2 must associate organization-defined types of security labels having organization-defined security label values with information in process.",
+                "control-id": "ac-16"
+              }
+            ]
+          },
+          {
+            "uuid": "c5dfe167-18cc-4d69-b6a2-edc50d3c4454",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "5aabaa97-82a6-4520-aed3-236463c918c8",
+                "description": "DB2 must produce audit records containing sufficient information to establish the outcome (success or failure) of the events.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "66f4103e-56d9-4b68-97b2-9a744d9e26ac",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "98d03ad7-24dd-495f-ac0c-a7d81258ddc4",
+                "description": "DB2 must include additional, more detailed, organization-defined information in the audit records for audit events identified by type, location, or subject.",
+                "control-id": "au-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "98d3e401-b100-4b20-a2c4-e80528c18097",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "00fea03f-f647-40fa-9318-b1d0063f5ca5",
+                "description": "DB2 must utilize centralized management of the content captured in audit records generated by all components of DB2.",
+                "control-id": "au-3.2"
+              }
+            ]
+          },
+          {
+            "uuid": "57149a34-1f4d-4928-9119-bdd05ff951e5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "dac878b3-1870-4de5-91cd-c6dfda04c0e6",
+                "description": "DB2 must allocate audit record storage capacity in accordance with organization-defined audit record storage requirements.",
+                "control-id": "au-4"
+              }
+            ]
+          },
+          {
+            "uuid": "0e535aa7-2671-4cae-a2fe-681045e86f7c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "0b5d9f67-560f-44d0-bd23-80f1c6ec20f6",
+                "description": "DB2 must off-load audit data to a separate log management facility; this must be continuous and in near real time for systems with a network connection to the storage facility and weekly or more often for stand-alone systems.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "099c16bc-14da-427e-8198-8d7670be3d7d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "7a227b3a-38ee-4b90-9f37-1cb5ea9e1fc0",
+                "description": "Unless it has been determined that availability is paramount, DB2 must, upon audit failure, cease all auditable activity.",
+                "control-id": "au-5"
+              }
+            ]
+          },
+          {
+            "uuid": "f4168b22-1b0b-4950-9ecb-1a8b9496ae37",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "44fb8c94-3112-4e93-88f8-60e870f06324",
+                "description": "DB2 must provide a warning to appropriate support staff when allocated audit record storage volume reaches 75% of maximum audit record storage capacity.",
+                "control-id": "au-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "b8c0cf7f-1c26-4f77-acc0-cee9e7ff9b2b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "6d4ee028-8703-439c-b2fc-79ff2cfad032",
+                "description": "DB2 must provide an immediate real-time alert to appropriate support staff of all audit failure events requiring real-time alerts.",
+                "control-id": "au-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "63c5c4ca-e2a8-4dc3-b793-01a2350d5c03",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "78f29c57-2cf8-408b-aa4f-e889fe782582",
+                "description": "The audit information produced by DB2 must be protected from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "a075069b-d7d8-4341-9549-70a1eb5907f8",
+                "description": "DB2 must protect its audit configuration from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "66a68efc-a242-4888-b18a-7832b5d49e22",
+                "description": "The audit information produced by DB2 must be protected from unauthorized deletion.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "d7c8097f-e962-4947-bbaa-1f3e86ab6a3c",
+                "description": "The audit information produced by DB2 must be protected from unauthorized read access.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "c59497c9-6c32-4351-9525-cb59935c1a77",
+                "description": "DB2 must protect its audit features from unauthorized removal.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "8e05dda6-5579-4ec8-9c59-53c01ae7da69",
+                "description": "DB2 must protect its audit features from unauthorized access.",
+                "control-id": "au-9"
+              }
+            ]
+          },
+          {
+            "uuid": "fb3a7bba-e710-478b-a7df-8b7794229dd6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "d05dbc88-5628-4949-9205-4eb811e60280",
+                "description": "DB2 must protect against a user falsely repudiating having performed organization-defined actions.",
+                "control-id": "au-10"
+              }
+            ]
+          },
+          {
+            "uuid": "7553b7e4-62a5-4462-b96b-d053c66dfabb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "10a0fda6-1d90-430a-bfee-62e13a159493",
+                "description": "DB2 must allow only the ISSM (or individuals or roles appointed by the ISSM) to select which auditable events are to be audited.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "f386d9d1-b7c7-4735-acdc-d512dbf1c65c",
+                "description": "DB2 must provide audit record generation capability for DoD-defined auditable events within all DBMS/database components.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "a0da298b-af41-428e-813f-a87b623c2084",
+                "description": "DB2 must generate audit records when privileges/permissions are retrieved.\nDB2 must generate audit records when unsuccessful attempts to retrieve privileges/permissions occur.\nDB2 must generate audit records for all direct access to the database(s).\nDB2 must generate audit records when unsuccessful accesses to objects occur.\nDB2 must generate audit records when successful accesses to objects occur.\nDB2 must generate audit records when concurrent logons/connections by the same user from different workstations occur.\nDB2 must generate audit records showing starting and ending time for user access to the database(s).\nDB2 must generate audit records when unsuccessful attempts to execute privileged activities or other system-level access occur.\nDB2 must generate audit records when security objects are accessed.\nDB2 must generate audit records when unsuccessful attempts to access security objects occur.\nDB2 must generate audit records when categorized information (e.g., classification levels/security levels) are accessed.\nDB2 must generate audit records when unsuccessful attempts to access categorized information (e.g., classification levels/security levels) occur.\nDB2 must generate audit records when privileges/permissions are added.\nDB2 must generate audit records when unsuccessful attempts to add privileges/permissions occur.\nDB2 must generate audit records when privileges/permissions are modified.\nDB2 must generate audit records when unsuccessful attempts to modify privileges/permissions occur.\nDB2 must generate audit records when security objects are modified.\nDB2 must generate audit records when unsuccessful attempts to modify security objects occur.\nDB2 must generate audit records when categorized information (e.g., classification levels/security levels) is modified.\nDB2 must generate audit records when unsuccessful attempts to modify categorized information (e.g., classification levels/security levels) occur.\nDB2 must generate audit records when privileges/permissions are deleted.\nDB2 must generate audit records when unsuccessful attempts to delete privileges/permissions occur.\nDB2 must generate audit records when security objects are deleted.\nDB2 must generate audit records for all privileged activities or other system-level access.\nDB2 must generate audit records when unsuccessful logons or connection attempts occur.\nDB2 must generate audit records when successful logons or connections occur.\nDB2 must generate audit records when unsuccessful attempts to delete security objects occur.\nDB2 must generate audit records when categorized information (e.g., classification levels/security levels) is deleted.\nDB2 must generate audit records when unsuccessful attempts to delete categorized information (e.g., classification levels/security levels) occur.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "aa7495dc-5232-459b-babb-39333e5ff9c1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-14.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "ddd98d05-0d19-4446-b942-f4fe42307d2c",
+                "description": "DB2 must initiate session auditing upon startup.",
+                "control-id": "au-14.1"
+              }
+            ]
+          },
+          {
+            "uuid": "4d530c25-9a3b-46fb-b049-2d4f919c54c4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "f72c81d8-93a8-4581-95a6-7fb7273be603",
+                "description": "DB2 and the operating system must enforce access restrictions associated with changes to the configuration of DB2 or database(s).",
+                "control-id": "cm-5.1"
+              },
+              {
+                "uuid": "be40cdfa-043c-45cd-9196-f9903942b084",
+                "description": "DB2 must produce audit records of its enforcement of access restrictions associated with changes to the configuration of DB2 or database(s).",
+                "control-id": "cm-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "8a48ad00-a459-45ca-aa87-604a206c3bba",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "f66c42cb-e952-4ffb-9438-c4b586226e54",
+                "description": "DB2 must limit  privileges to change software modules, to include stored procedures, functions and triggers, and links to software external to DB2.\nThe OS must limit privileges to change the DB2 software resident within software libraries (including privileged programs).\nThe DB2 software installation account must be restricted to authorized users.\nDatabase software, including DBMS configuration files, must be stored in dedicated directories, separate from the host OS and other applications.\nDatabase objects (including but not limited to tables, indexes, storage, stored procedures, functions, triggers, links to software external to DB2, etc.) must be owned by database/DBMS principals authorized for ownership.\nThe role(s)/group(s) used to modify database structure (including but not necessarily limited to tables, indexes, storage, etc.) and logic modules (stored procedures, functions, triggers, links to software external to DB2, etc.) must be restricted to authorized users.",
+                "control-id": "cm-5.6"
+              }
+            ]
+          },
+          {
+            "uuid": "8f3e9aa9-f59a-4b31-a637-6f23be53a960",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "441215d7-e3fb-4c50-8987-940502253ec0",
+                "description": "DB2 must be configured to prohibit or restrict the use of organization-defined functions, ports, protocols, and/or services, as defined in the PPSM CAL and vulnerability assessments.",
+                "control-id": "cm-7"
+              },
+              {
+                "uuid": "e75bb9c5-9b67-44c6-9ec3-59186048a891",
+                "description": "Default demonstration and sample databases, database objects, and applications must be removed.\nUnused database components, DBMS software, and database objects must be removed.\nUnused database components which are integrated in DB2 and cannot be uninstalled must be disabled.\nAccess to external executables must be disabled or restricted.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "f33f1924-d975-4473-8b91-db78b30455e4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "05acfb1c-b1fd-436a-9c33-b4feb47d15de",
+                "description": "DB2 must disable network functions, ports, protocols, and services deemed by the organization to be nonsecure, in accord with the Ports, Protocols, and Services Management (PPSM) guidance.",
+                "control-id": "cm-7.1"
+              }
+            ]
+          },
+          {
+            "uuid": "f30c6135-3d9a-4977-8ba6-639b1ec5582a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-11.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "1aa824b4-2d63-4268-b479-d8fb21069c03",
+                "description": "DB2 must prohibit user installation of logic modules (stored procedures, functions, triggers, views, etc.) without explicit privileged status.",
+                "control-id": "cm-11.2"
+              }
+            ]
+          },
+          {
+            "uuid": "be036f6f-621e-4a90-942b-3dd930de1c32",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "ac37ff24-7d61-4777-b418-64a76c2599bd",
+                "description": "If passwords are used for authentication, DB2 must transmit only encrypted representations of passwords.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "b1a66387-ee95-4b77-8854-9c1abd4e27c2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "780df898-4450-422a-8c6a-90f142e01baf",
+                "description": "Applications using the database must obscure feedback of authentication information during the authentication process to protect the information from possible exploitation/use by unauthorized individuals.\nWhen using command-line tools such as db2, users must use a Connect method that does not expose the password.",
+                "control-id": "ia-6"
+              }
+            ]
+          },
+          {
+            "uuid": "197053dd-d71b-46ad-82e9-5c7f0d684070",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "36c44234-79da-4b6d-aa15-21b4f516623e",
+                "description": "DB2 must use NIST FIPS 140-2 validated cryptographic modules for cryptographic operations.",
+                "control-id": "ia-7"
+              }
+            ]
+          },
+          {
+            "uuid": "4a954793-888e-4d26-81ba-436399daf5b2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "307553be-aeae-44dc-9444-4b57727ea8a0",
+                "description": "DB2 must separate user functionality (including user interface services) from database management functionality.",
+                "control-id": "sc-2"
+              }
+            ]
+          },
+          {
+            "uuid": "a5c0fe27-6ebf-4597-8ac1-5e9719b359d1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "97ea1c32-6d97-41ec-a9ef-51284921032b",
+                "description": "DB2 must isolate security functions from non-security functions.",
+                "control-id": "sc-3"
+              }
+            ]
+          },
+          {
+            "uuid": "b9e56dd7-ea58-4057-b002-ca22c9a1f9a9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "f42e6db6-177a-4e9c-8289-74cd4ca6b2a9",
+                "description": "Database contents must be protected from unauthorized and unintended information transfer by enforcement of a data-transfer policy.\nAccess to database files must be limited to relevant processes and to authorized, administrative users.",
+                "control-id": "sc-4"
+              }
+            ]
+          },
+          {
+            "uuid": "a35e83a7-78f6-47dc-adb9-c7d4d96a9db3",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "0519a711-4324-43d8-85c0-355cedc4b5a6",
+                "description": "DB2 must maintain the confidentiality and integrity of information during preparation for transmission.",
+                "control-id": "sc-8.2"
+              },
+              {
+                "uuid": "ac656fc4-a05e-414e-bc7c-93947cb3705c",
+                "description": "DB2 must maintain the confidentiality and integrity of information during reception.",
+                "control-id": "sc-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "559fd1e6-f473-4c0e-ac78-de430d91218e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-13.",
+            "implemented-requirements": [
+              {
+                "uuid": "2108b4cd-f034-4dbc-a2c4-8481ab9ac3e8",
+                "description": "DB2 must use NSA-approved cryptography to protect classified information in accordance with the data owners requirements.",
+                "control-id": "sc-13"
+              }
+            ]
+          },
+          {
+            "uuid": "b6640dcd-3cbc-478a-92d6-630180fb9511",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "3face3e4-cc8e-488c-b1b4-c9a72a4c58c9",
+                "description": "DB2 must maintain the authenticity of communications sessions by guarding against man-in-the-middle attacks that guess at Session ID values.",
+                "control-id": "sc-23.3"
+              }
+            ]
+          },
+          {
+            "uuid": "92697806-7fa5-4d61-a5f9-6f34d8c1345f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "8af65eec-1135-4c2a-a37f-071c38b3034b",
+                "description": "DB2 must only accept end entity certificates issued by DoD PKI or DoD-approved PKI Certification Authorities (CAs) for the establishment of all encrypted sessions.",
+                "control-id": "sc-23.5"
+              }
+            ]
+          },
+          {
+            "uuid": "4b4e14be-7722-480d-a719-0430db150ffe",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-24.",
+            "implemented-requirements": [
+              {
+                "uuid": "15858546-2680-4ea2-8a2c-f2ca1234da33",
+                "description": "In the event of a system failure, DB2 must preserve any information necessary to determine cause of failure and any information necessary to return to operations with least disruption to mission processes.",
+                "control-id": "sc-24"
+              }
+            ]
+          },
+          {
+            "uuid": "97db9921-0736-4612-8bf5-3e9bc1041255",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.",
+            "implemented-requirements": [
+              {
+                "uuid": "8ac8d34a-72f1-4432-840f-c7e9ebc96345",
+                "description": "DB2 must protect the confidentiality and integrity of all information at rest.",
+                "control-id": "sc-28"
+              }
+            ]
+          },
+          {
+            "uuid": "fc9a5d90-29e5-462b-bd72-aec5e9d3ce45",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "3a3d0943-efa1-4d10-a51f-4a3dc2ed701f",
+                "description": "DB2 must implement cryptographic mechanisms to prevent unauthorized modification of organization-defined information at rest (to include, at a minimum, PII and classified information) on organization-defined information system components.",
+                "control-id": "sc-28.1"
+              },
+              {
+                "uuid": "da914715-2d5a-4e40-9f89-ab047bc046d8",
+                "description": "DB2 must implement and/or support cryptographic mechanisms preventing the unauthorized disclosure of organization-defined information at rest on organization-defined information system components.",
+                "control-id": "sc-28.1"
+              }
+            ]
+          },
+          {
+            "uuid": "7581b56e-e649-4264-a55a-e64cf300445c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "4c11f2bf-9225-4361-8926-cf7ca24804b0",
+                "description": "Security-relevant software updates to DB2 must be installed within the time period directed by an authoritative source (e.g. IAVM, CTOs, DTMs, and STIGs).",
+                "control-id": "si-2"
+              }
+            ]
+          },
+          {
+            "uuid": "138fb4fa-4781-45c6-872a-404ff82bc079",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "ad7a6eb6-004b-4330-a1ba-d4d8f9afaea5",
+                "description": "DB2 must check the validity of all data inputs except those specifically identified by the organization.\nDB2 and associated applications must reserve the use of dynamic code execution for situations that require it.\nDB2 and associated applications, when making use of dynamic code execution, must scan input data for invalid values that may indicate a code injection attack.",
+                "control-id": "si-10"
+              }
+            ]
+          },
+          {
+            "uuid": "c31b638f-a15f-4076-9e16-f9bed732a426",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "e86f690c-3332-467f-bd86-67aba7d11d5a",
+                "description": "When invalid inputs are received, DB2 must behave in a predictable and documented manner that reflects organizational and system objectives.",
+                "control-id": "si-10.3"
+              }
+            ]
+          },
+          {
+            "uuid": "3a50ec7c-c3f8-499e-a1cc-ffb7ed62a952",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "9fd38168-a6d3-402f-b4cd-9a5eddc26080",
+                "description": "DB2 must provide non-privileged users with error messages that provide information necessary for corrective actions without revealing information that could be exploited by adversaries.",
+                "control-id": "si-11"
+              },
+              {
+                "uuid": "0cd61649-0474-4197-9735-9c6189a7047c",
+                "description": "DB2 must reveal detailed error messages only to the ISSO, ISSM, SA and DBA.",
+                "control-id": "si-11"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

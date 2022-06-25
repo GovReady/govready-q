@@ -1,5 +1,8 @@
 import logging
 import structlog
+import os.path
+import yaml
+import rtyaml
 from django.utils.functional import cached_property
 from structlog import get_logger
 
@@ -12,6 +15,7 @@ from copy import deepcopy
 from collections import OrderedDict
 import uuid
 
+from api.base.models import BaseModel
 from siteapp.enums.assets import AssetTypeEnum
 from guidedmodules.enums.inputs import InputTypeEnum
 from .module_logic import ModuleAnswers, render_content
@@ -25,7 +29,7 @@ logging.basicConfig()
 logger = get_logger()
 
 
-class AppSource(models.Model):
+class AppSource(BaseModel):
     is_system_source = models.BooleanField(default=False,
                                            help_text="This field is set to True for a single AppSource that holds the system modules such as user profiles.")
     slug = models.CharField(max_length=200, unique=True,
@@ -44,9 +48,6 @@ class AppSource(models.Model):
                                                      help_text="If available_to_all_individuals is False, list the individuals who can start projects defined by Modules provided by this AppSource.")
     available_to_role = models.BooleanField(default=True,
                                             help_text="Turn off to restrict the ability to start projects defined by Modules provided by this AppSource.")
-
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
 
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
@@ -119,7 +120,7 @@ class AppSource(models.Model):
         return appver
 
 
-class AppVersion(models.Model):
+class AppVersion(BaseModel):
     source = models.ForeignKey(AppSource, related_name="appversions", on_delete=models.CASCADE,
                                help_text="The source repository where this AppVersion came from.")
     appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppSource.")
@@ -154,9 +155,6 @@ class AppVersion(models.Model):
     show_in_catalog = models.BooleanField(default=False,
                                           help_text='Whether to show this AppVersion in the compliane app catalog, which allows users to start the app.')
 
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
-
     class Meta:
         unique_together = [
             ("source", "appname", "system_app")
@@ -183,6 +181,12 @@ class AppVersion(models.Model):
         if asset_path not in self.asset_paths:
             raise ValueError("{} is not an asset in {}.".format(asset_path, self))
         return self.asset_files.get(source=self.source, content_hash=self.asset_paths[asset_path]).file
+
+    @property
+    def icon(self):
+        size = 128
+        print(50,"===== image")
+        icon = image_to_dataurl(self.get_asset(self.catalog_metadata["icon"]), size)
 
     def catalog_metadata_yaml(self):
         import rtyaml
@@ -224,8 +228,8 @@ class AppVersion(models.Model):
         role_bool = user.has_perm("guidedmodules.view_appsource")
 
         return AppVersion.objects \
-            .prefetch_related('modules')\
-            .select_related('source')\
+            .prefetch_related('modules') \
+            .select_related('source') \
             .filter(show_in_catalog=True) \
             .filter(source__is_system_source=False) \
             .filter(Q(source__available_to_role=role_bool)) \
@@ -296,7 +300,7 @@ def recombine_catalog_metadata(app_module):
     return ret
 
 
-class AppInput(models.Model):
+class AppInput(BaseModel):
     source = models.ForeignKey(AppSource, related_name="inputs", on_delete=models.CASCADE,
                                help_text="The source of this app input.")
     app = models.ForeignKey(AppVersion, null=True, related_name="inputs", on_delete=models.CASCADE,
@@ -308,8 +312,6 @@ class AppInput(models.Model):
     input_type = models.CharField(max_length=64, unique=False, blank=True, null=True, choices=InputTypeEnum.choices(),
                                     help_text="Type of input (oscal, poam)")
     file = models.FileField(upload_to='guidedmodules/app-inputs', help_text="The input file.")
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
 
     class Meta:
         unique_together = [('source', 'content_hash')]
@@ -323,7 +325,7 @@ class AppInput(models.Model):
         return "<AppInput [%d] %s from %s>" % (self.id, self.file.name, self.source)
 
 
-class Module(models.Model):
+class Module(BaseModel):
     source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE,
                                help_text="The source of this module definition.")
     app = models.ForeignKey(AppVersion, null=True, related_name="modules", on_delete=models.CASCADE,
@@ -336,9 +338,6 @@ class Module(models.Model):
                                       help_text="This field is no longer used. When a Module is superseded by a new version, this points to the newer version.")
 
     spec = JSONField(help_text="Module definition data.", load_kwargs={'object_pairs_hook': OrderedDict})
-
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
 
     class Meta:
         unique_together = [
@@ -503,10 +502,6 @@ class Module(models.Model):
     def serialize(self):
         """Write out the in-memory module specification."""
 
-        import os.path
-        import yaml
-        import rtyaml
-
         spec = OrderedDict(self.spec)
         if self.module_name == "app" and self.app:
             # Add back compliance app catalog information!
@@ -528,41 +523,19 @@ class Module(models.Model):
             qspec = OrderedDict(q.spec)
             if q.answer_type_module:
                 qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
-
             spec["questions"].append(qspec)
+        return spec
+
+    def serialize_to_yaml(self):
+        """Dump the in-memory module specification to YAML."""
+
+        spec = self.serialize()
         return rtyaml.dump(spec)
 
     def serialize_to_disk(self):
         """Write out the in-memory module specification to disk."""
 
-        import os.path
-        import rtyaml
-        from django.http import HttpResponse, Http404
-
-        spec = OrderedDict(self.spec)
-        if self.module_name == "app" and self.app:
-            # Add back compliance app catalog information!
-            spec['catalog'] = recombine_catalog_metadata(self)
-        spec["questions"] = []
-        for i, q in enumerate(self.questions.order_by('definition_order')):
-            if i == 0 and q.key == "_introduction":
-                spec["introduction"] = {"format": "markdown", "template": q.spec["prompt"]}
-                continue
-
-            # TODO: get RTYAML fixed to recognize '\r\n' as well as '\n'
-            # Then we can remove this temporary fix to help out RTYAML
-            # to give us nice output
-            for q_key in ['prompt', 'help', 'default']:
-                if q_key in q.spec:
-                    q.spec[q_key] = q.spec[q_key].replace("\r\n", "\n")
-
-            # Rewrite some fields that get rewritten during module-loading.
-            qspec = OrderedDict(q.spec)
-            if q.answer_type_module:
-                qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
-            spec["questions"].append(qspec)
-        # TODO Add a message that appears on page that questionnaire has been updated.
-
+        spec = self.serialize()
         # Write update to disk if source is local and file is writeable
         if self.source.spec["type"] == "local" and self.source.spec["path"]:
             fn = os.path.join(self.source.spec["path"], self.app.appname, self.module_name + ".yaml")
@@ -594,7 +567,7 @@ class ModuleAsset(models.Model):
         return "<ModuleAsset [%d] %s from %s>" % (self.id, self.file.name, self.source)
 
 
-class ModuleQuestion(models.Model):
+class ModuleQuestion(BaseModel):
     module = models.ForeignKey(Module, related_name="questions", on_delete=models.CASCADE,
                                help_text="The Module that this ModuleQuestion is a part of.")
     key = models.SlugField(max_length=100, help_text="A slug-like identifier for the question.")
@@ -603,11 +576,8 @@ class ModuleQuestion(models.Model):
         help_text="An integer giving the order in which this question is defined by the Module.")
     spec = JSONField(help_text="Module definition data.", load_kwargs={'object_pairs_hook': OrderedDict})
     answer_type_module = models.ForeignKey(Module, blank=True, null=True, related_name="is_type_of_answer_to",
-                                           on_delete=models.PROTECT,
+                                           on_delete=models.CASCADE,
                                            help_text="For module and module-set typed questions, this is the Module that Tasks that answer this question must be for.")
-
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
 
     class Meta:
         unique_together = [("module", "key")]
@@ -671,17 +641,15 @@ class ModuleQuestion(models.Model):
         return ""
 
 
-class Task(models.Model):
+class Task(BaseModel):
     project = models.ForeignKey(Project, related_name="tasks", on_delete=models.CASCADE,
                                 help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
     title_override = models.CharField(max_length=256, blank=True, null=True,
                                       help_text="The title of this Task if overriding the computed instance-name or Module.title default.")
-    editor = models.ForeignKey(User, related_name="tasks_editor_of", on_delete=models.PROTECT,
+    editor = models.ForeignKey(User, related_name="tasks_editor_of", on_delete=models.CASCADE,
                                help_text="The user that has primary responsibility for completing this Task.")
-    module = models.ForeignKey(Module, on_delete=models.PROTECT, help_text="The Module that this Task is answering.")
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, help_text="The Module that this Task is answering.")
     notes = models.TextField(blank=True, help_text="Notes set by the user about why they are completing this task.")
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     deleted_at = models.DateTimeField(blank=True, null=True, db_index=True,
                                       help_text="If 'deleted' by a user, the date & time the Task was deleted.")
     cached_state = JSONField(blank=True, default=None,
@@ -743,6 +711,10 @@ class Task(models.Model):
             import urllib.parse
             return self.get_absolute_url() + "/question/" + urllib.parse.quote(question.key)
 
+    def get_absolute_url_to_questions(self, question):
+        import urllib.parse
+        return self.get_absolute_url() + "/questions/"
+
     def get_static_asset_url(self, asset_path, use_data_urls=False):
         if asset_path not in self.module.app.asset_paths:
             # This path is not an asset, so just return the path as it's probably an absolute URL.
@@ -792,12 +764,15 @@ class Task(models.Model):
             .order_by('-id')
 
         tasks_ = {task.id: task for task in
-                 Task.objects.select_related('module', 'project').filter(id__in=history.values_list("taskanswer__task_id", flat=True))}
+                  Task.objects.select_related('module', 'project').filter(
+                      id__in=history.values_list("taskanswer__task_id", flat=True))}
         questions = {question.id: question for question in
-                     ModuleQuestion.objects.select_related('module').filter(id__in=history.values_list('taskanswer__question_id', flat=True))}
+                     ModuleQuestion.objects.select_related('module').filter(
+                         id__in=history.values_list('taskanswer__question_id', flat=True))}
 
         for ansh in history:
-            current_answers.setdefault((tasks_.get(ansh.taskanswer.task_id), questions.get(ansh.taskanswer.question_id)), ansh)
+            current_answers.setdefault(
+                (tasks_.get(ansh.taskanswer.task_id), questions.get(ansh.taskanswer.question_id)), ansh)
 
         # Batch load all of the ModuleQuestions.
         questions = ModuleQuestion.objects.prefetch_related('answer_type_module__questions').select_related('module') \
@@ -1752,16 +1727,13 @@ class Task(models.Model):
         return did_update_any_questions
 
 
-class TaskAnswer(models.Model):
+class TaskAnswer(BaseModel):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="answers",
                              help_text="The Task that this TaskAnswer is a part of.")
-    question = models.ForeignKey(ModuleQuestion, on_delete=models.PROTECT,
+    question = models.ForeignKey(ModuleQuestion, on_delete=models.CASCADE,
                                  help_text="The question (within the Task's Module) that this TaskAnswer is answering.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by editors working on this question.")
-
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     class Meta:
@@ -2057,11 +2029,11 @@ class TaskAnswer(models.Model):
                 self.save()
 
 
-class TaskAnswerHistory(models.Model):
+class TaskAnswerHistory(BaseModel):
     taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE,
                                    help_text="The TaskAnswer that this is an answer to.")
 
-    answered_by = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that provided this answer.")
+    answered_by = models.ForeignKey(User, on_delete=models.CASCADE, help_text="The user that provided this answer.")
     answered_by_method = models.CharField(max_length=3, choices=[("web", "Web"), ("imp", "Import"), ("api", "API"),
                                                                  ("del", ("Task Deletion"))],
                                           help_text="How this answer was submitted, via the website by a user, via the Export/Import mechanism, or via an API programmatically.")
@@ -2093,8 +2065,6 @@ class TaskAnswerHistory(models.Model):
 
     thumbnail = models.FileField(upload_to='q/thumbnails', blank=True, null=True)
 
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     class Meta:
@@ -2476,7 +2446,7 @@ class TaskAnswerHistory(models.Model):
         return value, answered_by_tasks, answered_by_file, subtasks_updated
 
 
-class InstrumentationEvent(models.Model):
+class InstrumentationEvent(BaseModel):
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
 
     event_time = models.DateTimeField(auto_now_add=True, db_index=True)

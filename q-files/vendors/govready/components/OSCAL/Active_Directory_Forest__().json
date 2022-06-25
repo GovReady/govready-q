@@ -1,0 +1,73 @@
+{
+  "component-definition": {
+    "uuid": "168f68cd-c4c6-49d5-b9cb-06bb0e589e47",
+    "metadata": {
+      "title": "Active Directory Forest  ()",
+      "last-modified": "2022-06-12T20:17:23",
+      "version": "2022-06-12T20:17:23",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "61fa6a7b-b364-4bcc-a142-76e5dc264dab",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "33fa2e7c-a8e0-4551-b524-522e22dd14d8",
+        "type": "software",
+        "title": "Active Directory Forest  ()",
+        "description": "Active Directory Forest  () based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "61fa6a7b-b364-4bcc-a142-76e5dc264dab"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "2e5d7529-4b86-4280-8dae-ecef42dad0a7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "82fcbf9e-a1ac-49c4-9a0c-ee34b6bb1a66",
+                "description": "Update access to the directory schema must be restricted to appropriate accounts.",
+                "control-id": "ac-6.10"
+              }
+            ]
+          },
+          {
+            "uuid": "37467f81-fe7e-4e92-afc8-d1676d7b65ac",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "54fbea90-f995-4a09-b9e5-4e0636b40f65",
+                "description": "The Windows Time Service on the forest root PDC Emulator must be configured to acquire its time from an external time source.",
+                "control-id": "au-8.1"
+              }
+            ]
+          },
+          {
+            "uuid": "ba392a54-3e82-4e90-9d20-feac7f0b3927",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "e2527ed9-682c-4e6c-b842-f035270b16d5",
+                "description": "Changes to the AD schema must be subject to a documented configuration management process.\nAnonymous Access to AD forest data above the rootDSE level must be disabled.\nMembership to the Schema Admins group must be limited.",
+                "control-id": "cm-6"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

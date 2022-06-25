@@ -2,7 +2,7 @@ from django.db import models
 from django.http import JsonResponse
 
 class TagModelMixin(models.Model):
-    tags = models.ManyToManyField("siteapp.Tag", related_name="%(class)s")
+    tags = models.ManyToManyField("siteapp.Tag", blank=True, related_name="%(class)s")
 
     def add_tags(self, tags=None):
         if tags is None:

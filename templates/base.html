@@ -14,7 +14,8 @@
         <link rel="shortcut icon" href='{% static "img/brand/favicon.ico" %}' type="image/x-icon">
         <link rel="icon" href='{% static "img/brand/favicon.ico" %}' type="image/x-icon">
 
-
+        {#<link rel="stylesheet" type="text/css" href="{% static "styles.css" %}">#}
+        {#<link rel="stylesheet" type="text/css" href="{% static "vendors.css" %}">#}
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap.min.css" %}">
         <link rel="stylesheet" href="{% static "css/google-fonts.css" %}">
         <link rel="stylesheet" href="{% static "css/govready-q.css" %}">
@@ -23,9 +24,24 @@
         <link rel="stylesheet" href="{% static "vendor/jsgrid/jsgrid-theme.min.css" %}">
         <link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
         <script defer src="{% static "vendor/fontawesome.js" %}"></script>
+        <script src="{% static "vendor/jquery.js" %}"></script>
+        <script src="{% static "vendor/jquery-ui.js" %}"></script>
+
+        <script src="{% static "vendor/bootstrap/js/bootstrap.min.js" %}"></script>
+        <script src="{% static "vendor/bootstrap-responsive-tabs.js" %}"></script>
+        <script src="{% static "vendor/autosize.min.js" %}"> </script>
+        <script src="{% static "vendor/textcomplete.min.js" %}"> </script>
+        <script src="{% static "vendor/js/select2.min.js" %}"></script>
+        <script src="{% static "vendor/bootstrap-helpers.js" %}"></script>
+        <script src="{% static "vendor/jsgrid/jsgrid.min.js" %}"></script>
+        <script src="{% static "manifest.js" %}"></script>
+        <script src="{% static "styles.js" %}"></script>
+        <script src="{% static "vendors.js" %}"></script>
+        <script src="{% static "main.js" %}"></script>
         {% include "head.html" %}
 
         {% block head %}{% endblock %}
+
 
         <!--[if lt IE 9]>
             <script src="static/js/html5-3.6-respond-1.1.0.min.js"></script>
@@ -37,6 +53,7 @@
     <!--[if gt IE 7]><!-->
 
     {% include "navbar.html" %}
+    {# include "summary_navbar.html" #}
 
     {% block contextbar %}
     <div id="context-bar">
@@ -50,13 +67,13 @@
     {% endblock %}
 
     {% if messages %}
-    <div class="container-fluid message-margin">
+    <div class="message-margin">
       {% for message in messages %}
         {# Django levels are: debug (map to Boostrap 'info'), info, success, warning, error (map to Boostrap 'danger') #}
         {% if message.level_tag != "success" %}{# Skip success messages #}
-        <div class="alert fade in alert-{% if message.level_tag == "error" %}danger{% elif message.level_tag == "debug" %}info{% else %}{{message.level_tag}}{% endif %}">
+        <div class="alert alert-{% if message.level_tag == 'error' %}danger{% elif message.level_tag == 'debug' %}info{% else %}{{message.level_tag}}{% endif %} fade in toast-msg">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ message }}
+            {{ message }}&nbsp;
         </div>
         {% endif %}
       {% endfor %}
@@ -64,26 +81,27 @@
     {% endif %}
 
     {% block body-wide %}
-    <div class="container-fluid" style="min-height: 70vh;">
+    <div class="container-fluid project-base-container" style="min-height: 120vh; height: 300vh">
       {% block body %}
       {% endblock %}
-
       {% block content %}
         {# allauth uses this block #}
       {% endblock %}
     </div>
 
       <!-- <hr> -->
-      <footer>
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col-sm-12">
-              <div class="row footer-row">
-              {% include "footer.html" %}
+      {% block footer %}
+        <footer>
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="row footer-row">
+                {% include "footer.html" %}
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      {% endblock %}
     {% endblock %}
 
     {% include "bootstrap-helpers.html" %}
@@ -115,7 +133,7 @@
                 </div>
                 <div id="invite-message-container">
                   <label for="invite-message">Include a message about why you are sending this invitation:</label>
-                  <textarea id="invite-message invite-message-size" class="form-control"></textarea>
+                  <textarea id="invite-message invite-message-size" aria-label="invite-message invite-message-size" name="invite-message"class="form-control"></textarea>
                 </div>
                 <div id="invite-addtoteam-container" style="display: none"">
                   <div class="checkbox form-checkbox">
@@ -134,18 +152,9 @@
       </div>
     </div>
 
-    <script src="{% static "vendor/jquery.js" %}"></script>
-    <script src="{% static "vendor/jquery-ui.js" %}"></script>
-    <script src="{% static "vendor/bootstrap/js/bootstrap.min.js" %}"></script>
-    <script src="{% static "vendor/bootstrap-responsive-tabs.js" %}"></script>
-    <script src="{% static "vendor/autosize.min.js" %}"> </script>
-    <script src="{% static "vendor/textcomplete.min.js" %}"> </script>
-    <script src="{% static "vendor/js/select2.min.js" %}"></script>
-
     <script src="{% static "js/discussion.js" %}"></script>
     <script src="{% static "js/main.js" %}"></script>
-    <script src="{% static "vendor/bootstrap-helpers.js" %}"></script>
-    <script src="{% static "vendor/jsgrid/jsgrid.min.js" %}"></script>
+
     <script>
     $(document).ajaxSend(function(event, xhr, settings) { if (!/^https?:.*/.test(settings.url)) xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}"); });
     </script>
@@ -183,7 +192,6 @@
     <link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
     {% endif %}
 {#    {% include 'session_security/all.html' %}#}
-    {% block scripts %}
-    {% endblock %}
+    {% block scripts %}{% endblock %}
     </body>
 </html>

@@ -1,0 +1,232 @@
+{
+  "component-definition": {
+    "uuid": "453c7665-efd4-4773-ba63-1b7cfbe84669",
+    "metadata": {
+      "title": "Akamai KSD Service Impact Level 2 NDM",
+      "last-modified": "2022-06-12T20:17:32",
+      "version": "2022-06-12T20:17:32",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "ef38a5ce-ac7a-4b40-b6a8-ebd7d68c60d4",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "3a96dadc-567a-4a6d-a10e-1c9a14ba5913",
+        "type": "software",
+        "title": "Akamai KSD Service Impact Level 2 NDM",
+        "description": "Akamai KSD Service Impact Level 2 NDM based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "ef38a5ce-ac7a-4b40-b6a8-ebd7d68c60d4"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "247ebbfe-c07e-46d3-8bb1-b913d118c029",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "c46b942b-1ca1-40d8-9f2f-5a2bdf8dd3b6",
+                "description": "The Akamai Luna Portal must automatically audit account creation.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "74a2f20f-2b93-4730-8db1-af45319950f7",
+                "description": "The Akamai Luna Portal must automatically audit account enabling actions.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "3f92cc49-97ba-436c-8e84-6754c7d82d5f",
+                "description": "The Akamai Luna Portal must notify the SAs and ISSO when accounts are created, or enabled when previously disabled.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "99b60bd4-04d9-4c12-aea6-072059a6836d",
+                "description": "The Akamai Luna Portal must generate alerts that can be forwarded to the SAs and ISSO when accounts are modified.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "380359be-e73c-49a5-a202-71a4ce18f962",
+                "description": "The Akamai Luna Portal must automatically audit account modification.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "abaaf723-9258-4d32-b2e5-7dda071c9b60",
+                "description": "The Akamai Luna Portal must automatically audit account removal actions.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "c1ce8f8f-8025-4e28-b1ec-5b856e502573",
+                "description": "The Akamai Luna Portal must generate alerts that can be forwarded to the SAs and ISSO when accounts are removed.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "c792f165-49fc-405d-b553-bc63f178dca3",
+                "description": "The Akamai Luna Portal must generate alerts that can be forwarded to the SAs and ISSO when accounts are created.",
+                "control-id": "ac-2.4"
+              }
+            ]
+          },
+          {
+            "uuid": "c61e49d4-e321-4ed3-bc1d-a4866f24bb11",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.9.",
+            "implemented-requirements": [
+              {
+                "uuid": "3fc32759-d805-433a-bc28-8cefe4e7e100",
+                "description": "The Akamai Luna Portal must audit the execution of privileged functions.",
+                "control-id": "ac-6.9"
+              }
+            ]
+          },
+          {
+            "uuid": "aa63a64c-f4a9-498d-9642-95200765380e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "666d792b-3e36-4721-8e78-6a3d113e503b",
+                "description": "Upon successful login, the Akamai Luna Portal must notify the administrator of the date and time of the last login.",
+                "control-id": "ac-9"
+              }
+            ]
+          },
+          {
+            "uuid": "2f9132f6-0877-4ea9-8928-98e4c721f9f8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-9.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "ca54709e-20c5-46a5-b02f-e6e3141e50f9",
+                "description": "The Akamai Luna Portal must notify the administrator of the number of successful login attempts.",
+                "control-id": "ac-9.2"
+              }
+            ]
+          },
+          {
+            "uuid": "da80f237-c629-4db3-9118-64794103a03e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "e3b83819-b3df-4606-8172-4b0c0aaf4937",
+                "description": "The Akamai Luna Portal must initiate a session logoff after a 15-minute period of inactivity.",
+                "control-id": "ac-11"
+              }
+            ]
+          },
+          {
+            "uuid": "49e088cc-7896-48cc-bc8e-1f721e72686f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "02a76f4d-3228-4281-85eb-3726f2295117",
+                "description": "The Akamai Luna Portal must provide audit record generation capability for DoD-defined auditable events within the network device.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "fd2488f6-ea78-47b7-9285-8a764e8cb2b1",
+                "description": "The Akamai Luna Portal must generate audit records when successful/unsuccessful attempts to access privileges occur.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "dfde664e-25a6-4611-81b9-3cbf957a6af0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "eb478043-2686-4459-a1d7-c54d1799cb68",
+                "description": "Upon successful login, the Akamai Luna Portal must notify the administrator of the date and time of the last login.\nThe Akamai Luna Portal must notify the administrator of the number of successful login attempts.\nThe Akamai Luna Portal must employ Security Assertion Markup Language (SAML) to automate central management of administrators.\nThe Akamai Luna Portal must employ Single Sign On (SSO) with Security Assertion Markup Language (SAML) integration to verify authentication settings.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "9e6f4d73-de73-44e4-afb3-e6ff7ac465d6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "78e318d0-3ddd-4dcd-9ef8-c66af626a4e2",
+                "description": "The Akamai Luna Portal must employ Single Sign On (SSO) with Security Assertion Markup Language (SAML) integration to verify authentication settings.",
+                "control-id": "cm-6.1"
+              },
+              {
+                "uuid": "cdee5b8c-214f-44da-9194-509c2273341d",
+                "description": "The Akamai Luna Portal must employ Security Assertion Markup Language (SAML) to automate central management of administrators.",
+                "control-id": "cm-6.1"
+              }
+            ]
+          },
+          {
+            "uuid": "c80101dd-076d-4d78-a55e-635f39a86a04",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "fbc5637f-9b90-4f53-8c28-9972cd8719b1",
+                "description": "The Akamai Luna Portal must enforce a minimum 15-character password length.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "045ac2fe-11db-47c0-860d-417c4a6aab2d",
+                "description": "If multifactor authentication is not supported and passwords must be used, the Akamai Luna Portal must enforce password complexity by requiring that at least one upper-case character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "c3d5115f-88d8-4194-9304-914919b15d49",
+                "description": "If multifactor authentication is not supported and passwords must be used, the Akamai Luna Portal must enforce password complexity by requiring that at least one numeric character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "c818851e-d7e6-4e3b-8ad7-c1e21267f29c",
+                "description": "If multifactor authentication is not supported and passwords must be used, the Akamai Luna Portal must enforce password complexity by requiring that at least one lower-case character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "d9713737-a9e9-40e0-bd17-4599fdb8f62c",
+                "description": "The Akamai Luna Portal must enforce a 60-day maximum password lifetime restriction.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "289438b1-9f79-4aa3-b0e2-5281104c4cf0",
+                "description": "If multifactor authentication is not supported and passwords must be used, the Akamai Luna Portal must enforce password complexity by requiring that at least one special character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "d77ac37e-dd37-42ea-80cd-0b79fd4b8f5d",
+                "description": "The Akamai Luna Portal must prohibit password reuse for a minimum of five generations.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "e0051ffd-c7fc-473b-8046-31e05d025efe",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "532c43b6-6f9d-418e-8d27-50a63af1d3d0",
+                "description": "The Akamai Luna Portal must terminate all network connections associated with a device management session at the end of the session, or the session must be terminated after 15 minutes of inactivity except to fulfill documented and validated mission requirements.",
+                "control-id": "sc-10"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

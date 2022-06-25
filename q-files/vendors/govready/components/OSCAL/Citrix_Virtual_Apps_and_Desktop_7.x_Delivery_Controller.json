@@ -1,0 +1,184 @@
+{
+  "component-definition": {
+    "uuid": "73a7274c-bd01-4623-8d10-f75e536ad776",
+    "metadata": {
+      "title": "Citrix Virtual Apps and Desktop 7.x Delivery Controller",
+      "last-modified": "2022-06-12T20:17:25",
+      "version": "2022-06-12T20:17:25",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "9551f401-1588-44d5-86b1-20f7ad463978",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "d7832d4d-8bd9-47ae-be08-25759a04fe39",
+        "type": "software",
+        "title": "Citrix Virtual Apps and Desktop 7.x Delivery Controller",
+        "description": "Citrix Virtual Apps and Desktop 7.x Delivery Controller based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "9551f401-1588-44d5-86b1-20f7ad463978"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "82df847f-b0fa-49f9-b0d6-2a588485904e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "deb3ebb8-ee8a-46c8-83b4-dad62b1c33dd",
+                "description": "Citrix Delivery Controller must implement DoD-approved encryption.",
+                "control-id": "ac-4"
+              }
+            ]
+          },
+          {
+            "uuid": "b07f90aa-1e8c-4d66-99a4-34e89461fb30",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-17.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "04d84cfd-10df-4095-8abd-07f56d084160",
+                "description": "Citrix Delivery Controller must implement DoD-approved encryption.",
+                "control-id": "ac-17.2"
+              },
+              {
+                "uuid": "bf9142ce-09f2-4fca-a363-0c8f2675726e",
+                "description": "Citrix Delivery Controller must implement DoD-approved encryption.",
+                "control-id": "ac-17.2"
+              }
+            ]
+          },
+          {
+            "uuid": "9f20543d-90e6-4f4c-88b2-52c97b5201bb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "190ff1bc-2fc2-4fac-a8eb-acb573084eb2",
+                "description": "Citrix Delivery Controller must be configured in accordance with the security configuration settings based on DoD security configuration or implementation guidance, including STIGs, NSA configuration guides, CTOs, and DTMs.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "9ff7a493-5b02-4d41-be15-6269c87a205f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "ea772b22-4add-470e-9221-07a16f5af3fe",
+                "description": "Citrix Delivery Controller must implement DoD-approved encryption.",
+                "control-id": "cm-7"
+              },
+              {
+                "uuid": "1d2942d5-cad9-40e1-aa4e-873d27650897",
+                "description": "Citrix Delivery Controller must be configured to disable non-essential capabilities.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "ba5b2d14-613b-4a0b-b747-12fba59ae7bd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "c406744f-6c41-4fb2-9e77-893bfef51fe9",
+                "description": "Citrix Delivery Controller must implement DoD-approved encryption.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "973d3948-2acb-4955-a38a-c36b1fdc70e9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "fb62abda-273c-4bde-b7ef-26c6521846dc",
+                "description": "Citrix Delivery Controller must implement DoD-approved encryption.",
+                "control-id": "sc-8"
+              }
+            ]
+          },
+          {
+            "uuid": "6606eaf0-c50f-4f53-8487-e57ae2c92f4a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "09633f3c-1ba3-4e90-a33d-eedc3517e4f5",
+                "description": "Citrix Delivery Controller must implement DoD-approved encryption.",
+                "control-id": "sc-8.1"
+              }
+            ]
+          },
+          {
+            "uuid": "4628d95b-400b-478b-93e8-4201284b6763",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "abe01661-2179-42d1-9efa-53f17ce12e7f",
+                "description": "Citrix Delivery Controller must implement DoD-approved encryption.",
+                "control-id": "sc-8.2"
+              },
+              {
+                "uuid": "17caf207-f7d3-4290-aee0-b73444d78112",
+                "description": "Citrix Delivery Controller must implement DoD-approved encryption.",
+                "control-id": "sc-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "92e5a2e8-fcd0-4735-9d80-d21a07d0768c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-13.",
+            "implemented-requirements": [
+              {
+                "uuid": "96f8e264-4fa3-4df8-86e4-4a144c2cff9d",
+                "description": "Citrix Delivery Controller must implement DoD-approved encryption.",
+                "control-id": "sc-13"
+              }
+            ]
+          },
+          {
+            "uuid": "d0de030e-7e5f-4165-bf32-f96bc1493894",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.",
+            "implemented-requirements": [
+              {
+                "uuid": "59ab3b76-eea6-4bd8-964d-97cba0e3a979",
+                "description": "Citrix Delivery Controller must implement DoD-approved encryption.",
+                "control-id": "sc-23"
+              }
+            ]
+          },
+          {
+            "uuid": "825358c3-c721-4a93-813b-4fb7572a5202",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "554d6659-f276-4687-b31e-a37dbeb005ea",
+                "description": "Citrix Delivery Controller must implement DoD-approved encryption.",
+                "control-id": "sc-23.3"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,408 @@
+{
+  "component-definition": {
+    "uuid": "982b7f8f-d262-4798-8505-4f28864d3e66",
+    "metadata": {
+      "title": "A10 Networks ADC NDM",
+      "last-modified": "2022-06-12T20:17:30",
+      "version": "2022-06-12T20:17:30",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "725ad160-1b09-49a0-a9db-1195e4532faa",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "544f50b1-b42d-4da8-b92a-6e74434966de",
+        "type": "software",
+        "title": "A10 Networks ADC NDM",
+        "description": "A10 Networks ADC NDM based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "725ad160-1b09-49a0-a9db-1195e4532faa"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "b04c8c23-4171-4d25-9edd-b8031bc6ea2e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "9eae5482-c409-437e-a000-0c170e3eba11",
+                "description": "The A10 Networks ADC must generate alerts to the administrators and ISSO when accounts are disabled.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "c2e719c3-3ffc-414c-9e55-72ba83b9e306",
+                "description": "The A10 Networks ADC must notify System Administrators (SAs) and Information System Security Officers (ISSMs) when accounts are created, or enabled when previously disabled.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "7004937f-d9ac-474b-a318-18e84605663f",
+                "description": "The A10 Networks ADC must generate alerts to the administrators and ISSO when accounts are modified.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "3e5d181d-e79d-4a82-8387-8776fede6567",
+                "description": "The A10 Networks ADC must generate alerts to the administrators and ISSO when accounts are removed.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "541faa97-c1b4-45d2-9549-19f8a93210bc",
+                "description": "The A10 Networks ADC must generate alerts to the administrators and ISSO when accounts are created.",
+                "control-id": "ac-2.4"
+              }
+            ]
+          },
+          {
+            "uuid": "f284e8bb-2be5-41a1-be01-3c72a5c3a23b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "aed6726c-1c1f-46cc-91f0-366bc923e2af",
+                "description": "When anyone who has access to the emergency administration account no longer requires access to it or leaves the organization, the password for the emergency administration account must be changed.",
+                "control-id": "ac-2.10"
+              }
+            ]
+          },
+          {
+            "uuid": "818f5617-106c-47ed-ba84-118cfcea4efb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "4e37bb87-1620-469b-a19e-475b4c570bbd",
+                "description": "The A10 Networks ADC must restrict management connections to the management network.",
+                "control-id": "ac-4"
+              }
+            ]
+          },
+          {
+            "uuid": "677c3ba8-dedf-4f48-a314-d033e689e262",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "018d5bdb-97e3-4d29-b0e0-199ad236ea0b",
+                "description": "The A10 Networks ADC must automatically lock the account until the locked account is released by an administrator when three unsuccessful logon attempts in 15 minutes are exceeded.",
+                "control-id": "ac-7"
+              },
+              {
+                "uuid": "a8425955-4d57-47eb-a47c-39cef3b0da1f",
+                "description": "The A10 Networks ADC must enforce the limit of three consecutive invalid logon attempts.",
+                "control-id": "ac-7"
+              }
+            ]
+          },
+          {
+            "uuid": "f7bbdd53-6921-4c8f-b46b-b5ff421c0a2a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "7a3e7b44-071c-434f-b8f8-c400335f8fb4",
+                "description": "The A10 Networks ADC must display the Standard Mandatory DoD Notice and Consent Banner before granting access to the device.",
+                "control-id": "ac-8"
+              }
+            ]
+          },
+          {
+            "uuid": "3de704cb-7b01-49c3-9af2-159708f42676",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "4068da75-f769-419e-83a4-307a3e66ca32",
+                "description": "The A10 Networks ADC must limit the number of concurrent sessions to one (1) for each administrator account and/or administrator account type.",
+                "control-id": "ac-10"
+              }
+            ]
+          },
+          {
+            "uuid": "78d5641f-795a-4df3-8771-d1d720a993f5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "2eab884f-9056-4c99-94f6-5655db09f1e5",
+                "description": "The A10 Networks ADC must produce audit log records containing information (FQDN, unique hostname, management or loopback IP address) to establish the source of events.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "fbae49f0-c406-4902-b325-df0eb2588bc2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "8e6d1b06-946d-475c-b004-165f066762ee",
+                "description": "The A10 Networks ADC must have command auditing enabled.",
+                "control-id": "au-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "523e767d-7bc7-44de-bdaa-5b0c779baba7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "5f6ee582-ba33-4e08-8628-8edb81152d7e",
+                "description": "The A10 Networks ADC must off-load audit records onto a different system or media than the system being audited.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "9faef459-3b8e-4364-b5da-a097cf4ea51b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "776c8310-c23f-42fc-889c-6b64099afa0f",
+                "description": "The A10 Networks ADC must alert the ISSO and SA (at a minimum) in the event of an audit processing failure.",
+                "control-id": "au-5"
+              }
+            ]
+          },
+          {
+            "uuid": "a045cc04-c99c-47d0-92e1-17461c78c1b0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "eecbb303-065b-430c-912f-d09fed375160",
+                "description": "The A10 Networks ADC must send Emergency messages to the Console, Syslog, and Monitor.",
+                "control-id": "au-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "1b650821-fb1e-4259-a4a8-c930c50a652f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "f8ac5c0d-b47f-46c8-ae68-bac3f36c3e19",
+                "description": "The A10 Networks ADC must record time stamps for audit records that can be mapped to Coordinated Universal Time (UTC) or Greenwich Mean Time (GMT).",
+                "control-id": "au-8"
+              }
+            ]
+          },
+          {
+            "uuid": "8ebe50a7-baf1-4fd1-acab-a2717b6829d6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "f12ffe38-f90c-40c9-aa13-b28ee5526af3",
+                "description": "The A10 Networks ADC must synchronize internal information system clocks to the authoritative time source when the time difference is greater than one second.",
+                "control-id": "au-8.1"
+              },
+              {
+                "uuid": "8fb20105-61ef-47fc-af03-628988f4bf06",
+                "description": "The A10 Networks ADC must compare internal information system clocks at least every 24 hours with an authoritative time server.",
+                "control-id": "au-8.1"
+              }
+            ]
+          },
+          {
+            "uuid": "a118ac14-71c5-40ea-84a0-35b09d99e54e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "bb40ff03-4f95-438e-8787-22967f798f69",
+                "description": "The A10 Networks ADC must be configured to synchronize internal information system clocks with the primary and secondary time sources located in different geographic regions using redundant authoritative time sources.",
+                "control-id": "au-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "ead1595d-731c-4d6c-abe2-b2f9015d5290",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "e79290a9-b39d-4bdf-8bd4-9b78f89a9fcc",
+                "description": "The A10 Networks ADC must back up audit records at least every seven days onto a different system or system component than the system or component being audited.",
+                "control-id": "au-9.2"
+              }
+            ]
+          },
+          {
+            "uuid": "a5532ced-48ea-4a5f-8927-a647f37d399a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "6518410b-4304-4c10-b28a-dd8a6c34f33a",
+                "description": "The A10 Networks ADC must allow only the ISSM (or individuals or roles appointed by the ISSM) Root, Read Write, or Read Only privileges.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "06a3daee-0cf4-4880-9224-52d93d22c44f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "19429a6b-0a1a-4c69-ba8f-311b43a031db",
+                "description": "The A10 Networks ADC must be configured to synchronize internal information system clocks with the primary and secondary time sources located in different geographic regions using redundant authoritative time sources.\nThe A10 Networks ADC must use DoD-approved PKI rather than proprietary or self-signed device certificates.\nThe A10 Networks ADC must use automated mechanisms to alert security personnel to threats identified by authoritative sources (e.g., CTOs) and IAW CJCSM 6510.01B.\nThe A10 Networks ADC must employ centrally managed authentication server(s).",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "9823b747-229d-48c9-856c-efdd97ecd3f0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "e070575b-b9b4-4ce1-b9b3-19a09f5f8033",
+                "description": "The A10 Networks ADC must employ centrally managed authentication server(s).",
+                "control-id": "cm-6.1"
+              }
+            ]
+          },
+          {
+            "uuid": "255fe589-0479-4e33-a71d-1db5441c5829",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "d5c73021-2657-4d9b-a45f-4a083bbdfcca",
+                "description": "The A10 Networks ADC must disable management protocol access to all interfaces except the management interface.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "4449257f-5838-4069-81b9-f6902e60edde",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "b96d8740-a802-49cb-a45e-1aff9ca1c596",
+                "description": "The A10 Networks ADC must not have any shared accounts (other than the emergency administration account).\nThe A10 Networks ADC must not use the default admin account.\nThe A10 Networks ADC must not use the default enable password.",
+                "control-id": "ia-2"
+              }
+            ]
+          },
+          {
+            "uuid": "bdb44d36-5a84-49af-9f8e-7e160c7416a8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "a21c3b20-61e7-47e2-a410-4df121051409",
+                "description": "The A10 Networks ADC must implement replay-resistant authentication mechanisms for network access to privileged accounts.",
+                "control-id": "ia-2.8"
+              }
+            ]
+          },
+          {
+            "uuid": "eb0c56cf-101b-4212-bc1f-34dad3898681",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "74a4675a-04e1-4d46-9394-2d798e2958d2",
+                "description": "The A10 Networks ADC must authenticate Network Time Protocol sources.",
+                "control-id": "ia-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "f69f22ae-167d-469b-aac7-29bd770721fc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "09c52aed-1ff9-427b-bc64-9c396aaeb521",
+                "description": "The A10 Networks ADC must prohibit the use of unencrypted protocols for network access to privileged accounts.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "b081f906-45d1-4bd1-8788-b6bec4e9d470",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ma-4.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "7909ae1e-9e6f-4d8d-bfb1-f63852c958f8",
+                "description": "The A10 Networks ADC must not use SNMP Versions 1 or 2.",
+                "control-id": "ma-4.6"
+              },
+              {
+                "uuid": "0c051e1b-347f-4f05-8029-853170c85116",
+                "description": "Operators of the A10 Networks ADC must not use the Telnet client built into the device.\nThe A10 Networks ADC must only allow the use of secure protocols that implement cryptographic mechanisms to protect the integrity of maintenance and diagnostic communications for nonlocal maintenance sessions.",
+                "control-id": "ma-4.6"
+              }
+            ]
+          },
+          {
+            "uuid": "66207b81-0980-4cf2-a8ab-de7041e26d17",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "c4295876-87e6-43aa-9599-d4b64905fd7f",
+                "description": "The A10 Networks ADC must terminate management sessions after 10 minutes of inactivity except to fulfill documented and validated mission requirements.",
+                "control-id": "sc-10"
+              }
+            ]
+          },
+          {
+            "uuid": "7c9ad47f-72ef-4db4-ab96-ffc5faedc885",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-17.",
+            "implemented-requirements": [
+              {
+                "uuid": "54fd27f2-d42f-4bd2-a29d-562d721b5e64",
+                "description": "The A10 Networks ADC must use DoD-approved PKI rather than proprietary or self-signed device certificates.",
+                "control-id": "sc-17"
+              }
+            ]
+          },
+          {
+            "uuid": "935fa868-91fc-45e0-8ca7-40350b733316",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-4.12.",
+            "implemented-requirements": [
+              {
+                "uuid": "3a1d721a-d30b-4bdb-ad5f-7c46dacf32a8",
+                "description": "The A10 Networks ADC must use automated mechanisms to alert security personnel to threats identified by authoritative sources (e.g., CTOs) and IAW CJCSM 6510.01B.",
+                "control-id": "si-4.12"
+              }
+            ]
+          },
+          {
+            "uuid": "763734f7-ccbe-460e-8e12-04b168d10938",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "3e3e7731-20fe-450f-9dca-43fad651355d",
+                "description": "The A10 Networks ADC must reveal error messages only to authorized individuals (ISSO, ISSM, and SA).",
+                "control-id": "si-11"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

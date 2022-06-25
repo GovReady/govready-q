@@ -1,0 +1,392 @@
+{
+  "component-definition": {
+    "uuid": "467a7371-395c-49a7-9acc-895abbcd6f1a",
+    "metadata": {
+      "title": "ForeScout CounterACT NDM",
+      "last-modified": "2022-06-12T20:17:28",
+      "version": "2022-06-12T20:17:28",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "6b8b152c-53ac-4c19-994d-ee3a660e4924",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "740d5d3f-8e39-4f59-a759-c23ad685ea33",
+        "type": "software",
+        "title": "ForeScout CounterACT NDM",
+        "description": "ForeScout CounterACT NDM based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "6b8b152c-53ac-4c19-994d-ee3a660e4924"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "8f65fa22-ffe3-4cc2-b498-0cdd201443dd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "98237cd8-908f-4e50-a393-07cf86b21c01",
+                "description": "In the event the authentication server is unavailable, one local account must be created for use as the account of last resort.",
+                "control-id": "ac-2"
+              }
+            ]
+          },
+          {
+            "uuid": "f58c1432-0f9a-4c5b-ac47-1f75b8dfe884",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.7.",
+            "implemented-requirements": [
+              {
+                "uuid": "59eab365-90ec-489d-847e-bf16fba64387",
+                "description": "In the event the authentication server is unavailable, one local account must be created for use as the account of last resort.",
+                "control-id": "ac-2.7"
+              }
+            ]
+          },
+          {
+            "uuid": "fbe68a33-6f44-4842-9195-43297ef27b70",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "ef87863c-68f1-4704-8604-d25f579882f0",
+                "description": "The network device must terminate shared/group account credentials when members leave the group.",
+                "control-id": "ac-2.10"
+              }
+            ]
+          },
+          {
+            "uuid": "3089eab2-0cde-4c1f-812c-7f0e83e8694d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "401d7d5f-2f2c-4fc0-b519-c6353c26c406",
+                "description": "CounterACT must automatically lock the account until the locked account is released by an administrator when three unsuccessful logon attempts in 15 minutes are exceeded.",
+                "control-id": "ac-7"
+              },
+              {
+                "uuid": "df7d909a-19e2-4058-aabd-b6ff105a6031",
+                "description": "For the local account, CounterACT must enforce the limit of three consecutive invalid logon attempts by a user during a 15-minute time period.",
+                "control-id": "ac-7"
+              }
+            ]
+          },
+          {
+            "uuid": "a3366947-6213-428f-be74-cf7d9afe9ce6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "05559534-9864-45c2-a01b-7bc2694cc650",
+                "description": "CounterACT must display the Standard Mandatory DoD Notice and Consent Banner before granting access to the device.",
+                "control-id": "ac-8"
+              },
+              {
+                "uuid": "b88e8b56-c174-4bfe-87a5-65c8dca4248a",
+                "description": "CounterACT must retain the Standard Mandatory DoD Notice and Consent Banner on the screen until the administrator acknowledges the usage conditions and takes explicit actions to log on for further access.",
+                "control-id": "ac-8"
+              }
+            ]
+          },
+          {
+            "uuid": "d31f17ea-3e35-4ad7-b9e6-da4875403c16",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "66364289-b804-4c5e-ba63-9e0ba83cd888",
+                "description": "CounterACT must limit the number of concurrent sessions to an organization-defined number for each administrator account type.",
+                "control-id": "ac-10"
+              }
+            ]
+          },
+          {
+            "uuid": "17614cc3-44cd-4a7e-a2b0-656c2f3635e8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "a83a00c8-6dea-4147-8c0a-c9438839b4e1",
+                "description": "CounterACT must sent audit logs to a centralized audit server (i.e., syslog server).",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "37c49ae8-53a5-4518-bc62-b227f92e6e01",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "0f1ce38e-46dc-4857-be37-abab80953612",
+                "description": "CounterACT must record time stamps for audit records that can be mapped to Coordinated Universal Time (UTC).",
+                "control-id": "au-8"
+              }
+            ]
+          },
+          {
+            "uuid": "846cecee-f8a2-4c30-917a-f6450911968c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "73557514-c8a7-49a7-94f7-4727fae07e9c",
+                "description": "CounterACT must compare internal information systems clocks at least every 24 hours with an authoritative time server.",
+                "control-id": "au-8.1"
+              }
+            ]
+          },
+          {
+            "uuid": "21dbf122-5149-4fad-bbf5-1b7d8538ba5e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "80f60f54-3c0d-46f2-8c31-6cfd85a5104f",
+                "description": "CounterACT must be configured to synchronize internal information system clocks with the organizations primary and secondary NTP servers.",
+                "control-id": "au-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "a0f1fd40-55a5-4720-8bb6-5be99535646d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "b72c09d5-c2f8-457f-9c37-4670e245f9cd",
+                "description": "If any logs are stored locally which are not sent to the centralized audit server, CounterACT must back up audit records at least every seven days onto a different system or system component than the system or component being audited.",
+                "control-id": "au-9.2"
+              }
+            ]
+          },
+          {
+            "uuid": "fc4997b9-1756-43ca-ac18-16bac451eac8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "4e3eab8a-fc80-4ab9-98ac-527e6cf9b30c",
+                "description": "CounterACT must restrict the ability to change the auditing to be performed within the system log based on selectable event criteria to the audit administrators role or to other roles or individuals.",
+                "control-id": "au-12.3"
+              }
+            ]
+          },
+          {
+            "uuid": "9bef6e15-46a5-456f-bd1a-465be4b272c2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "79d99db7-71be-44ec-be01-24e4c482bf36",
+                "description": "CounterACT must enforce access restrictions associated with changes to the system components.",
+                "control-id": "cm-5"
+              }
+            ]
+          },
+          {
+            "uuid": "014056a1-f332-4e3c-91c8-72ef75f69b96",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "55dc5af3-e27f-4278-8bce-cc45374e81c3",
+                "description": "CounterACT must limit privileges to change the software resident within software libraries.",
+                "control-id": "cm-5.6"
+              }
+            ]
+          },
+          {
+            "uuid": "374e0347-b68b-4491-acae-60eacc989967",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "27537889-969a-420c-9753-de5398d6f5c2",
+                "description": "CounterACT must enforce access restrictions associated with changes to the system components.\nCounterACT must generate audit log events for a locally developed list of auditable events.\nCounterACT must support organizational requirements to conduct backups of system-level information contained in the information system when changes occur or weekly, whichever is sooner.\nCounterACT must support organizational requirements to conduct backups of information system documentation, including security-related documentation, when changes occur or weekly, whichever is sooner.\nCounterACT must obtain its public key certificates from an appropriate certificate policy through an approved service provider.\nCounterACT must obtain its public key certificates from an appropriate certificate policy through an approved service provider.\nCounterACT must enable Threat Protection notifications to alert security personnel to Cyber events detected by a CounterACT IAW CJCSM 6510.01B.\nCounterACT appliances performing maintenance functions must restrict use of these functions to authorized personal only.\nCounterACT must employ automated mechanisms to centrally apply authentication settings.\nCounterACT must be configured to synchronize internal information system clocks with the organizations primary and secondary NTP servers.\nThe network device must be configured to use a centralized authentication server to authenticate privileged users for remote and nonlocal access for device management.\nAdministrative accounts for device management must be configured on the authentication server and not the network device itself (except for the account of last resort).",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "630d6230-d333-450f-b531-98f1fbfdae31",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "4e2c4f03-9197-41d4-9d37-9a14b128402b",
+                "description": "The network device must be configured to use a centralized authentication server to authenticate privileged users for remote and nonlocal access for device management.",
+                "control-id": "cm-6.1"
+              },
+              {
+                "uuid": "d0ee88cd-6eaa-412b-a021-4a7fa913ce34",
+                "description": "CounterACT must employ automated mechanisms to centrally apply authentication settings.",
+                "control-id": "cm-6.1"
+              },
+              {
+                "uuid": "fe892b47-8405-4d68-a2f6-5e221a2d14a1",
+                "description": "Administrative accounts for device management must be configured on the authentication server and not the network device itself (except for the account of last resort).",
+                "control-id": "cm-6.1"
+              }
+            ]
+          },
+          {
+            "uuid": "b4ed283e-4e3f-4376-a2af-8e473431adcc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "7e99753d-0abc-4194-ae2f-a4080147ea83",
+                "description": "CounterACT must disable all unnecessary and/or nonsecure plugins.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "58d4dd8a-ba2a-4ac0-b35e-df1acb74c3b4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cp-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "abc3a19b-4ca9-4ced-9843-88e4fc03c570",
+                "description": "CounterACT must support organizational requirements to conduct backups of system-level information contained in the information system when changes occur or weekly, whichever is sooner.",
+                "control-id": "cp-9"
+              },
+              {
+                "uuid": "234ea865-ae3f-45e6-8c3c-3db386d4b671",
+                "description": "CounterACT must support organizational requirements to conduct backups of information system documentation, including security-related documentation, when changes occur or weekly, whichever is sooner.",
+                "control-id": "cp-9"
+              }
+            ]
+          },
+          {
+            "uuid": "4b2eab7c-3cc1-400f-b3cb-19059e1bb361",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "3b138c34-3937-4de8-8c31-af7043d8776c",
+                "description": "CounterACT must authenticate any endpoint used for network management before establishing a local, remote, and/or network connection using cryptographically based bidirectional authentication.\nCounterACT must authenticate SNMPv3 endpoint devices before establishing a local, remote, and/or network connection using bidirectional authentication that is cryptographically based.",
+                "control-id": "ia-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "48a7c9d8-55b2-47bb-b181-19960fb1d3fc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "ef496939-96c9-47b6-8640-963fec8b9374",
+                "description": "CounterACT must enforce a minimum 15-character password length.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "e0be782e-ff28-4597-8e71-9be77796aeb3",
+                "description": "If multifactor authentication is not supported and passwords must be used, CounterACT must enforce password complexity by requiring that at least one upper-case character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "4b0e10df-983c-4c45-8708-50ed1b8268ee",
+                "description": "CounterACT must enforce password complexity by requiring that at least one numeric character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "debc5ef9-9fdf-49f8-93b0-6e7b95b84491",
+                "description": "If multifactor authentication is not supported and passwords must be used, CounterACT must enforce password complexity by requiring that at least one lower-case character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "5882d837-cff5-4b38-b183-449f8f27ea55",
+                "description": "CounterACT must enforce a 60-day maximum password lifetime restriction.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "e2428605-0905-4e8f-b652-f9e504149828",
+                "description": "CounterACT must enforce password complexity by requiring that at least one special character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "edcfd92c-3473-42ce-865a-4ffbf6f5c9c6",
+                "description": "CounterACT must prohibit password reuse for a minimum of five generations.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "d6138689-35a2-4394-86a1-974473e53529",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ma-3.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "75cfdfde-6b07-4af3-b5a0-f9dea869c20d",
+                "description": "CounterACT appliances performing maintenance functions must restrict use of these functions to authorized personal only.",
+                "control-id": "ma-3.4"
+              }
+            ]
+          },
+          {
+            "uuid": "5bcf6a0f-124a-4718-ab47-7fba71113415",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "ddfd1d0c-cc43-44df-b620-d23fa24deaa9",
+                "description": "CounterACT must terminate all network connections associated with an Enterprise Manager Console session upon Exit, or session disconnection, or after 10 minutes of inactivity, except where prevented by documented and validated mission requirements.\nCounterACT must terminate all network connections associated with an SSH connection session upon Exit, session disconnection, or after 10 minutes of inactivity, except where prevented by documented and validated mission requirements.",
+                "control-id": "sc-10"
+              }
+            ]
+          },
+          {
+            "uuid": "2df33504-1f48-4b29-8354-fee0aaaa5892",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-17.",
+            "implemented-requirements": [
+              {
+                "uuid": "d865455c-31e9-416b-bf30-3134af649796",
+                "description": "CounterACT must obtain its public key certificates from an appropriate certificate policy through an approved service provider.\nCounterACT must obtain its public key certificates from an appropriate certificate policy through an approved service provider.",
+                "control-id": "sc-17"
+              }
+            ]
+          },
+          {
+            "uuid": "ca7dd3fb-cf69-40ab-a451-ea3bc2d2abd2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.",
+            "implemented-requirements": [
+              {
+                "uuid": "5c98d65d-e99b-4492-b01e-e8cf3a2ffb5a",
+                "description": "CounterACT must allow only authorized administrators to view or change the device configuration, system files, and other files stored either in the device or on removable media.",
+                "control-id": "sc-28"
+              }
+            ]
+          },
+          {
+            "uuid": "105e9ba4-f3dd-4d73-bc4b-e420da4917bf",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-4.12.",
+            "implemented-requirements": [
+              {
+                "uuid": "fda77e1f-8ec2-4168-bb44-46568d036a2f",
+                "description": "CounterACT must enable Threat Protection notifications to alert security personnel to Cyber events detected by a CounterACT IAW CJCSM 6510.01B.",
+                "control-id": "si-4.12"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

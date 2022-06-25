@@ -1,0 +1,57 @@
+
+
+            <div>
+                <form id="smt_panel_num" class="smt_form">
+                    <div class="form-group">
+                        <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ element.id }}">
+                        <!-- <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ element.id }}" class="systems-link">{{ element.name }}</a></label> -->
+                        <!-- <label for="compoment">Producer Component</label> -->
+                        <input type="hidden" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
+                               onchange="$('#producer_element-panel_num-title').text($(this).val());" value="{{ element.name }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="compoment">Control</label>
+                        <select class=form-control id="sid_panel_num" name="sid">
+                            {% for ctl in catalog_controls %}
+                                <option value='{{ ctl.id }}'>{{ ctl.id|upper }} - {{ ctl.title }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" id="sid_class_panel_num" name="sid_class" prompt="Enter catalog_key" value="{{ catalog_key }}">
+                    </div>
+                    <div class="form-group">
+                        <input type="hidden" id="smt_id" name="smt_id" value="">
+                        <label for="statement">What is the solution and how is it implemented?</label>
+                        <textarea class="form-control" id="body_panel_num" name="body" placeholder="How component contributes to control" rows="5" cols="50"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="statement">Part</label>
+                        <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="" style="width:180px;">
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select class="form-control systems-element-form-status" id="status_{{ forloop.counter }}" name="status">
+                            <option value=''></option>
+                            <option value='Not Implemented'>Not Implemented</option>
+                            <option value='Planned'>Planned</option>
+                            <option value='Partially Implemented'>Partially Implemented</option>
+                            <option value='Implemented'>Implemented</option>
+                            <option value='Unknown'>Unknown</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="remarks">Remarks</label>
+                        <textarea class="form-control" id="remarks_panel_num" name="remarks" placeholder="Add remarks for team" rows="4" cols="50"></textarea>
+                    </div>
+
+                    <input type="hidden" id="system_id_panel_num" name="system_id" value="{{ system.id }}">
+                    <input type="hidden" id="statement_type_panel_num" name="statement_type" value="control_implementation">
+
+                    <div class="modal-footer">
+                        <div id="success-msg-smt_panel_num" class="systems-element-modal-footer"></div>
+                        <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_panel_num');return false;">Delete</button>
+                        <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_panel_num');return false;">Save</button>
+                    </div>
+
+                </form>
+            </div>

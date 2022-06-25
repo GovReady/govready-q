@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}
 {{app.title}} - Compliance Apps
@@ -7,64 +8,7 @@
 {% block head %}
 <style>
 
-  body { background-color: rgb(247,247,247); }
 
-  #app-metadata {
-    padding: 1em;
-    border: 0px solid #999;
-    background-color: #FAFAFA;
-    border-radius: 15px;
-    font-size: 0.9em;
-    text-align: left;
-  }
-  #app-metadata a { color: black; text-decoration: underline; }
-
-  .meta-key { color: #888; }
-  .meta-heading { margin-top: 20px; margin-bottom: 6px; }
-
-  .app-icon { width: 80%; max-width: 128px; }
-
-  @media screen and (max-width: 768px) {
-    .app .app-icon { width: 80%; }
-  }
-
- .app {
-    width: 968px;
-    margin: auto;
-    margin-top: 40px;
-    border: 3px solid #D9D9D9;
-    padding: 12px;
-    background-color: #F2F2F2;
-    margin-bottom: 24px;
-    cursor: default;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-   .app {
-    border: 3px solid #D9D9D9;
-    padding: 12px;
-    background-color: #F2F2F2;
-    margin-bottom: 24px;
-    cursor: default;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .app h3 {
-    margin: 0;
-    font-size: 21px;
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-
-  @media screen and (max-width: 1200px) {
-    .app h3 { font-size: 17px; }
-  }
-
-  .app .body {  }
-  .app .body p {  }
-  .app .body p:last-child { margin: 0; }
 </style>
 {% endblock %}
 
@@ -77,8 +21,8 @@
 
 {% block body %}
 
-      <div>
-        <a href="/" class="glyphicon-home-icon">
+   <div>
+        <a href="/" aria-label="homepage" class="glyphicon-home-icon">
           <span class="glyphicon glyphicon-home"></span>
         </a>
         /
@@ -89,23 +33,69 @@
           <a href="{% url 'store' %}">Compliance Apps</a>
         {% endif %}
         / {{app.title|truncatewords:6}}
-      </div>
+    </div>
 
-    <div class="app">
-        <!-- App Header -->
-        <div class="row app-header">
-            <div class="col-sm-2">
-                {% if app.icon %}<img src="{{ app.icon }}" class="app-icon" alt="App Icon">{% endif %}
+    <div class="panel panel-default" style="width:750px;margin: auto;margin-top:40px;">
+        <div class="panel-body">
+            <div class="row app-max-width-row">
+                <div class="col-sm-8">
+                    <h2>{{ app.title }}</h2>
+                    {% if error %}
+                        <p class="text-danger">{{ error }}</p>
+                    {% endif %}
+                </div>
             </div>
-            <div class="col-sm-8">
-                <h1>{{ app.title }}</h1>
-                <!-- <p>Maintainer: {{app.vendor}}</p> -->
-                {% if error %}
-                    <p class="text-danger">{{ error }}</p>
-                {% endif %}
+
+            <!-- App Description -->
+            <div class="row app-max-width-row">
+                <div class="col-sm-12">
+                    <div class="body app-description">
+                        {{ app.description.long|safe }}
+                    </div>
+                </div>
             </div>
-            <div class="col-sm-2">
-                <form method="post" class="text-center">
+            <!-- App Information -->
+            <div class="row app-max-width-row app-info-height">
+                &nbsp;
+            </div>
+            <div class="row app-max-width-row app-information-row">
+                <div class="col-lg-12 col-sm-12">
+                    <div class="meta-heading"><strong>Information</strong></div>
+                </div>
+            </div>
+            <div class="row app-max-width-row">
+                <div class="col-lg-4 col-sm-4">
+                    <div><span class="meta-key">Provider</span><br>
+                        {% if app.vendor_url is not None %}
+                            <a href="{{ app.vendor_url }}">{{ app.vendor }}</a>
+                        {% else %}
+                            {{ app.vendor }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-lg4 col-sm-4">
+                    <!-- <div><span class="meta-key">Status</span><br>{{app.status}}</div> -->
+                    <div><span class="meta-key">Version</span><br>{{ app.version }}</div>
+                </div>
+                <div class="col-lg4 col-sm-4">
+                    <!-- <div><span class="meta-key">Source</span><br><a href="{{app.source_url}}">{{app.source_url}}</a></div> -->
+                    <div><span class="meta-key">AppSource<br>{{ source_slug }}</span>
+                    </div>
+                </div>
+                <div class="col-lg4 col-sm-4">
+                    <div><span class="meta-key">Startable</span><br>
+                        {% if app.authz == "none" %}
+                            Yes
+                        {% else %}
+                            Requires Admin
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <div class="" style="display:inline;">
+                <form method="post" class="" style="display:inline;">
                     {% csrf_token %}
                     {# If the user is a member of more than one organization that can start this app, the user much choose which organization context to start this app in. #}
                     {% if app.organizations|length == 1 %}
@@ -122,67 +112,64 @@
                             </select>
                         </div>
                     {% endif %}
-                        <button id="start-project" type="submit" class="btn btn-success app-button-width">Add ►</button>
+                        <button id="start-project" type="submit" class="btn btn-success" style="width:120px;">Start</button>
                 </form>
-                <button id="start-project" type="submit" class="btn btn-link btn-start-project">
-                    <a href="/store" class="back-to-link">Back to Apps</a>
+                <button id="" type="submit" class="btn btn-link">
+                    <a href="#" class="back-to-link"
+                       onclick="authoring_tool_create_q_form(argument={ 'app_id': '{{ app.id }}', 'app_title': '{{ app.title }}', 'app_category_title':'{{ app.categories.0 }}', 'app_description': '{{ app.description.short|safe }}' });
+                       return false;">
+                    <span class="glyphicon glyphicon-flash"></span> Clone</a>
+                </button>
+                <button id="" type="submit" class="btn btn-link">
+                    <a href="/store/app/{{app.appversion_id}}/modules" class="back-to-link"> <span class="glyphicon glyphicon-pencil"></span> Edit</a>
+                </button>
+                <button id="" type="submit" class="btn btn-link">
+                    <a href="/store/{{app.key|urlencode}}/zip" class="back-to-link"> <span class="glyphicon glyphicon-download"></span> Download zip</a>
+                </button>
+                <button id="" type="submit" class="btn btn-link">
+                    <a href="/store" class="back-to-link"><span class="glyphicon glyphicon-arrow-left"></span> Back to Apps</a>
                 </button>
             </div>
         </div>
-        <!-- Divider -->
-        <div class="row app-max-width-row">
-            <hr>
-        </div>
-        <!-- App Description -->
-        <div class="row app-max-width-row">
-            <div class="col-sm-12">
-                <div class="body app-description">
-                    {{ app.description.long|safe }}
-                </div>
-            </div>
-        </div>
-        <!-- App Information -->
-        <div class="row app-max-width-row app-info-height">
-            &nbsp;
-        </div>
-        <div class="row app-max-width-row app-information-row">
-            <div class="col-lg-12 col-sm-12">
-                <div class="meta-heading"><strong>Information</strong></div>
-            </div>
-        </div>
-        <div class="row app-max-width-row">
-            <div class="col-lg-4 col-sm-4">
-                <div><span class="meta-key">Provider</span><br>
-                    {% if app.vendor_url is not None %}
-                        <a href="{{ app.vendor_url }}">{{ app.vendor }}</a>
-                    {% else %}
-                        {{ app.vendor }}
-                    {% endif %}
-                </div>
-            </div>
-            <div class="col-lg4 col-sm-4">
-                <!-- <div><span class="meta-key">Status</span><br>{{app.status}}</div> -->
-                <div><span class="meta-key">Version</span><br>{{ app.version }}</div>
-            </div>
-            <div class="col-lg4 col-sm-4">
-                <!-- <div><span class="meta-key">Source</span><br><a href="{{app.source_url}}">{{app.source_url}}</a></div> -->
-                <div><span class="meta-key">AppSource<br>{{ source_slug }}</span>
-                </div>
-            </div>
-            <div class="col-lg4 col-sm-4">
-                <div><span class="meta-key">Startable</span><br>
-                    {% if app.authz == "none" %}
-                        Yes
-                    {% else %}
-                        Requires Admin
-                    {% endif %}
-                </div>
-            </div>
-
-        </div>
     </div>
-
 
 <!-- Spacer bottom of page -->
 <div class="app-bottom-spacer">&nbsp;</div>
+
+{% include "authoring-tool-modal.html" %}
+{% if authoring_tool_enabled %}
+<script src="{% static 'vendor/js-yaml.min.js' %}"></script>
+<script src="{% static 'js/authoring_tool.js' %}"></script>
+<style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
+<script>
+  $(function() {
+    init_authoring_tool({
+      task: "{{task.id}}",
+      module: "{{task.module.spec}}",
+      questions: {
+        q_key: {
+          spec: "{{q.spec}}",
+          choices: "{{q.choices_as_csv|escapejs}}",
+          answer_type_module_id: "{% if q.answer_type_module %}{{q.answer_type_module.id}}{% else %}null{% endif %}"
+        }
+      },
+      answer_type_modules: [{% for m in q.module.get_referenceable_modules %}
+        { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
+        {% endfor %}],
+      autocomplete_questions: { {% for q in q.module.get_questions %}
+        "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}
+      }
+    });
+  });
+
+  // Auto update "slug" name based on title in Create a Q modal
+  $('#authoring_tool_q_2_title').on('keyup', function() {
+      var slug = $(this).val();
+      slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "_");
+      $('#authoring_tool_q_name').val(slug);
+  });
+</script>
+{% endif %}
+
+
 {% endblock %}

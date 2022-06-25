@@ -480,7 +480,6 @@ class Command(BaseCommand):
         from django.conf import settings
         from siteapp import settings_application
         settings.DEBUG = True
-        settings_application.DISABLE_DJANGO_DEBUG_TOOLBAR = True
 
         # Authoring tools also require that the user
         # have the guidedmodules.change_module permission.

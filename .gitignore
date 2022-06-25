@@ -6,6 +6,7 @@ apps/
 static_root/*
 !static_root/README.md
 branding/
+dev_env/docker/environment.json*
 
 # generated files
 .bash_history
@@ -119,4 +120,11 @@ _notes/
 env_var.sh
 dev_env/docker/ssh/
 environment.json
+
+node_modules
+frontend/static/
+
 environment.okta.json
+
+# branding
+*_branding

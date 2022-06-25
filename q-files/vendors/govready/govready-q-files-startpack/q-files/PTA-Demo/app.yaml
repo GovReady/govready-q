@@ -63,7 +63,6 @@ questions:
   module-id: pta_form
   icon: checkmark.png
   # Note: It is not necessary to include an 'icon' key-value pair
-  placement: action-buttons
 
 deprecated-to-delete:
 

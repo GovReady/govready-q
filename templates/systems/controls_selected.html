@@ -29,7 +29,7 @@
             <div class="form-group">
                 <label for="control_id">Add control</label>&nbsp;&nbsp;
                 <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
-                <select class="producer_element_id" id="add-control_id-select" name="control_id" style="width:440px;">
+                <select id="add-control_id-select" name="control_id" class="producer_element_id" style="width:440px;">
                     <option value="None" selected disabled hidden>Select a Control</option>
                 </select>
             </div>
@@ -73,10 +73,10 @@
       {% for control in controls %}
         <div id="tab-content" class="row row-control">
             <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-                <a href= {% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}>{{ control.get_flattened_oscal_control_as_dict.id_display|upper }} </a>
+                <a href="{% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}">{{ control.get_flattened_oscal_control_as_dict.id_display|upper }} </a>
                 <span class="systems-control-catalog pull-right">{{ control.oscal_catalog_key }}</span>
             </div>
-            <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+            <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
                 {{ control.get_flattened_oscal_control_as_dict.title }}
             </div>
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
@@ -99,16 +99,9 @@
             </div>
             {% get_obj_perms request.user for system as "system_perms" %}
             {% if "view_system" in system_perms %}
-              <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-                {% if control.smts_updated %}
-                  {{ control.smts_updated|timesince}} ago
-                {% else %}
-                  {{ control.created|timesince}} ago
-                {% endif %}
-              </div>
               <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 small">
                 <span class="pull-right">
-                  <a href="" onclick='confirm_cnt_rm("{% url 'system_control_remove' system_id=system.id element_control_id=control.id %}"); return false;'>
+                  <a onclick='confirm_cnt_rm("{% url 'system_control_remove' system_id=system.id element_control_id=control.id %}"); return false;'>
                     <span class="glyphicon glyphicon-trash text-muted small" title="remove control"></span></a>
                 </span>
               </div>
@@ -129,6 +122,7 @@
 {% endblock %}
 
 {% block scripts %}
+    {{ block.super }}
 <script>
   function show_control_by_id() {
     var control_id = $('#control-lookup').find('input[name="id"]').val();
@@ -137,8 +131,6 @@
   }
 
   $(document).ready(function() {
-
-
     // Download button shows a modal to ask what file format to download in.
     function download_document(document_id, system_id) {
       var dom = $("<div><p>Select download format:</p>"
@@ -193,12 +185,13 @@
           minimumInputLength: 1
     }).on('select2:select', function (e) {
       // After change event for which e.params isn't defined
+      // Split the control string to get oscal_control_id and get catalog_key (e.g., catalog identifier)
       display_text = e.params.data.text;
       displaytext = display_text.split(' - ');
       var first = displaytext.shift(); //or arr[arr.length-1];
       var last = displaytext.pop(); //or arr[0];
       dtv = [first, displaytext.join(" - "), last]; // [control_id, title, catalog_key]
-      ck = dtv[2];
+      ck = dtv[1];
       // $('#add-catalog_key-input').val(e.params.data.catalog_key);
       $('#add-catalog_key-input').val(ck.replace(" ","_"));
       $('#add-control').submit();

@@ -1,0 +1,210 @@
+{
+  "component-definition": {
+    "uuid": "4b332fc0-0493-4dde-aa9d-f181c1cd58c3",
+    "metadata": {
+      "title": "Google Android 11 COBO",
+      "last-modified": "2022-06-12T20:17:31",
+      "version": "2022-06-12T20:17:31",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "c109b02d-cbcb-4877-a676-2a751e78f597",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "b6abefe6-6b77-4ea5-9e69-d24e8ada52d7",
+        "type": "software",
+        "title": "Google Android 11 COBO",
+        "description": "Google Android 11 COBO based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "c109b02d-cbcb-4877-a676-2a751e78f597"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "7e99646b-84f4-4c12-bc21-8c9e97cf6fa6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "a36541df-3833-4b5e-b483-4a0a179527a7",
+                "description": "Google Android 11 must be configured to disable multi-user modes.",
+                "control-id": "ac-2"
+              }
+            ]
+          },
+          {
+            "uuid": "4a21c3e2-39ff-4cfe-b3c0-d9b75d6b5a7c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "b3ba9763-6f85-4b6d-a2e7-55f57a4025b5",
+                "description": "Google Android 11 must be configured to not allow more than ten consecutive failed authentication attempts.",
+                "control-id": "ac-7"
+              }
+            ]
+          },
+          {
+            "uuid": "e5d4dd43-b4f9-4a56-8b1f-1cb6b3532d14",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "003975de-ff04-4a7b-9660-7d98a9d6fc31",
+                "description": "Google Android 11 must be configured to not display the following (work profile) notifications when the device is locked: [selection:- email notifications - calendar appointments - contact associated with phone call notification - text message notification- other application-based notifications- all notifications].",
+                "control-id": "ac-8"
+              },
+              {
+                "uuid": "9302daf6-06a4-4f1b-8457-ded24c013949",
+                "description": "Google Android 11 must be configured to display the DoD advisory warning message at start-up or each time the user unlocks the device.",
+                "control-id": "ac-8"
+              }
+            ]
+          },
+          {
+            "uuid": "c48e5dd5-5d5f-4139-ba29-c776c8b8767a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "614b6f61-06b9-461f-a787-23a307a6dec0",
+                "description": "Google Android 11 must be configured to enable a screen-lock policy that will lock the display after a period of inactivity.\nGoogle Android 11 must be configured to lock the display after 15 minutes (or less) of inactivity.",
+                "control-id": "ac-11"
+              }
+            ]
+          },
+          {
+            "uuid": "8649d05f-a8e0-46a0-91f4-aa0f9e88e9ae",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-20.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "511ac548-bca4-4c48-b243-c0a46fdeb013",
+                "description": "Google Android 11 must be configured to not allow backup of [all applications, configuration data] to locally connected systems.",
+                "control-id": "ac-20.2"
+              }
+            ]
+          },
+          {
+            "uuid": "16ca268f-1dac-42a4-83b6-abb604de5f8b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-20.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "16f7f957-c0e3-43c7-855c-203018878443",
+                "description": "Google Android 11 must be configured to not allow backup of all applications and configuration data to remote systems.",
+                "control-id": "ac-20.3"
+              }
+            ]
+          },
+          {
+            "uuid": "e0e71f2c-4c12-488a-aa50-96bc06d69f15",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "6f6336eb-623d-4b46-947b-cf87c6dc99df",
+                "description": "Google Android 11 must be configured to enable audit logging.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "e10d80ce-65f1-4135-aa4d-b35eb5fe2781",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "6a4f5995-1967-4549-aa87-d9bea5d580e6",
+                "description": "Google Android 11 must be configured to generate audit records for the following auditable events: detected integrity violations.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "2d4a81c2-2cfa-4ac4-815d-8c8eed93a77b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "12522fde-675f-4d71-9464-484690af60d5",
+                "description": "Google Android 11 must be configured to not allow passwords that include more than two repeating or sequential characters.\nGoogle Android 11 must be configured to enforce an application installation policy by specifying one or more authorized application repositories, including [selection: DoD-approved commercial app repository, EMM server, mobile application store].\nGoogle Android 11 must be configured to enforce an application installation policy by specifying an application allow list that restricts applications by the following characteristics: [selection: list of digital signatures, cryptographic hash values, names, application version].\nGoogle Android 11 allow list must be configured to not include applications with the following characteristics: \n\n- back up MD data to non-DoD cloud servers (including user and application access to cloud backup services);\n- transmit MD diagnostic data to non-DoD servers;\n- voice assistant application if available when MD is locked;\n- voice dialing application if available when MD is locked;\n- allows synchronization of data or applications between devices associated with user; and\n- allows unencrypted (or encrypted but not FIPS 140-2 validated) data sharing with other MDs or printers.\nGoogle Android 11 must be configured to disable Bluetooth or configured via User Based Enforcement (UBE) to allow Bluetooth for only Headset Profile (HSP), HandsFree Profile (HFP), and Serial Port Profile (SPP).\nGoogle Android 11 must be configured to not display the following (work profile) notifications when the device is locked: [selection:- email notifications - calendar appointments - contact associated with phone call notification - text message notification- other application-based notifications- all notifications].\nGoogle Android 11 must be configured to disable trust agents. \n \nNOTE: This requirement is not applicable (NA) for specific biometric authentication factors included in the product's Common Criteria evaluation.\nGoogle Android 11 must be configured to disable multi-user modes.\nGoogle Android 11 must allow only the Administrator (EMM) to perform the following management function: enable/disable location services.\nGoogle Android 11 must be configured to enable audit logging.\nGoogle Android 11 users must complete required training.\nGoogle Android 11 must be configured to enforce that Wi-Fi Sharing is disabled.\nGoogle Android 11 must have the DoD root and intermediate PKI certificates installed.\nGoogle Android 11 must allow only the administrator (EMM) to install/remove DoD root and intermediate PKI certificates.\nGoogle Android 11 work profile must be configured to enforce the system application disable list.\nGoogle Android 11 work profile must be configured to disable automatic completion of workspace Internet browser text input.\nGoogle Android 11 Work Profile must be configured to disable the autofill services.\nGoogle Android 11 must be configured to disallow configuration of date and time.\nGoogle Android 11 devices must have the latest available Google Android 11 operating system installed.\nGoogle Android 11 devices must be configured to disable the use of third-party keyboards.\nGoogle Android 11 devices must be configured to enable Common Criteria Mode (CC Mode).",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "3e62b024-c10f-49cf-af2b-34aebd3b7e52",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "cf6509fd-ae4b-4d16-a22d-29b9c39d3d07",
+                "description": "Google Android 11 must be configured to disable trust agents. \n \nNOTE: This requirement is not applicable (NA) for specific biometric authentication factors included in the product's Common Criteria evaluation.\nGoogle Android 11 must allow only the Administrator (EMM) to perform the following management function: enable/disable location services.\nGoogle Android 11 must be configured to enable audit logging.\nGoogle Android 11 must allow only the administrator (EMM) to install/remove DoD root and intermediate PKI certificates.",
+                "control-id": "cm-6.1"
+              }
+            ]
+          },
+          {
+            "uuid": "b6cefdf5-f0a3-4358-bdbd-0614676f246d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "82798b68-5ce1-49e1-b306-9c143fe54eab",
+                "description": "Google Android 11 must be configured to disable trust agents. \n \nNOTE: This requirement is not applicable (NA) for specific biometric authentication factors included in the product's Common Criteria evaluation.\nGoogle Android 11 must be configured to disable developer modes.\nGoogle Android 11 must be configured to disable USB mass storage mode.\nGoogle Android 11 must allow only the Administrator (EMM) to perform the following management function: enable/disable location services.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "8108afd9-3852-4f91-bef9-38019823317e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "94380bc4-dbd6-4d9c-98ca-c2a4fe853119",
+                "description": "Google Android 11 must be configured to disable Bluetooth or configured via User Based Enforcement (UBE) to allow Bluetooth for only Headset Profile (HSP), HandsFree Profile (HFP), and Serial Port Profile (SPP).",
+                "control-id": "cm-7.1"
+              }
+            ]
+          },
+          {
+            "uuid": "c1027fb3-d64a-4f35-bd6e-c4aa1b46e0bb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "966c14fa-e1fd-4983-8838-ee47e1edb019",
+                "description": "Google Android 11 must be configured to enforce an application installation policy by specifying one or more authorized application repositories, including [selection: DoD-approved commercial app repository, EMM server, mobile application store].\nGoogle Android 11 must be configured to enforce an application installation policy by specifying an application allow list that restricts applications by the following characteristics: [selection: list of digital signatures, cryptographic hash values, names, application version].\nGoogle Android 11 allow list must be configured to not include applications with the following characteristics: \n\n- back up MD data to non-DoD cloud servers (including user and application access to cloud backup services);\n- transmit MD diagnostic data to non-DoD servers;\n- voice assistant application if available when MD is locked;\n- voice dialing application if available when MD is locked;\n- allows synchronization of data or applications between devices associated with user; and\n- allows unencrypted (or encrypted but not FIPS 140-2 validated) data sharing with other MDs or printers.",
+                "control-id": "cm-11"
+              }
+            ]
+          },
+          {
+            "uuid": "8bc8c306-df32-414c-96bd-1d8499dd29ca",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "df0d22b2-dcb8-4362-9c66-f177fdd517cb",
+                "description": "Google Android 11 must be configured to enforce a minimum password length of six characters.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
