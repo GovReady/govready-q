@@ -1,23 +1,48 @@
 GovReady-Q Release Notes
 ========================
 
-v0.10.0-dev (June xx, 2022)
-----------------------------
+v0.10.0 (June 24, 2022)
+-----------------------
+
+Welcome to GovReady-q v0.10.0 "Aspen".
+
+The Aspen release provides major feature and stability improvements to the GovReady-Q GRC software.
+
+Version 0.10 Aspen contains multiple, customer-driven improvements:
+
+* Over 150 sample components based on DOD STIGs and SRGs.
+
+* Private components, component usage approvals, and component responsible roles.
+
+* An integrations framework for interacting with third-party APIs including other GRC software.
+
+* Improved questionnaire editing screens.
+
+* Major bug fixes.
+
+* More generous MIT open source license.
+
+The Aspen release has been under stealth development with select customers for 10 months
+and provides a solid foundation for even more exciting innovations to come.
+
+    *******************************************************************************
+    * IMPORTANT! RELEASES BETWEEN v0.9.11.2 and v0.10.0 CONTAIN BREAKING CHANGES! *
+    *             PLEASE READ CHANGELOGS FOR ALL VERSIONS!                        *
+    *******************************************************************************
 
 **Feature changes**
 
-* Support private components (elements).
-* Assign responsible roles to components (elements) and appointing parties to roles.
+* Support private components.
+* Assign responsible roles to components and appointing parties to roles.
 * Integrations framework for better inclusion of information from remote services.
-* Component control inheritance workflow.
+* Component usage approval workflow.
 * Single Sign On OIDC support.
+* New questionnaire authoring and editing interface.
+* Over 150 sample components created from DOD STIGS.
 * Add form to create system from string or URLs.
-
-Release adds support for private components and integrations with third party services.
 
 **UI changes**
 
-* Change to Aspen UI.
 * Change label 'certified statement' to 'reference statement'.
 * Warning Message appears at the top of home page and login page while using an Internet Explorer browser informing the user of Internet Explorer not being supported.
 * Indicate private components with lock icon.
