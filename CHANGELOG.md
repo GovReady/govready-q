@@ -25,10 +25,10 @@ Version 0.10 Aspen contains multiple, customer-driven improvements:
 The Aspen release has been under stealth development with select customers for 10 months
 and provides a solid foundation for even more exciting innovations to come.
 
-*******************************************************************************
-* IMPORTANT! RELEASES BETWEEN v0.9.11.2 and v0.10.0 CONTAIN BREAKING CHANGES! *
-*             PLEASE READ CHANGELOGS FOR ALL VERSIONS!                        *
-*******************************************************************************
+    *******************************************************************************
+    * IMPORTANT! RELEASES BETWEEN v0.9.11.2 and v0.10.0 CONTAIN BREAKING CHANGES! *
+    *             PLEASE READ CHANGELOGS FOR ALL VERSIONS!                        *
+    *******************************************************************************
 
 **Feature changes**
 
