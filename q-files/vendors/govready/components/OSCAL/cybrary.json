@@ -30,6 +30,11 @@
                   "name": "tag",
                   "ns": "https://govready.com/ns/oscal",
                   "value": "training"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "Cybrary"
                 }
               ],
         "responsible-roles": [

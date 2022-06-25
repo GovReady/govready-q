@@ -2,6 +2,7 @@ import functools
 import logging
 import operator
 import pathlib
+import random
 import shutil
 import tempfile
 from collections import defaultdict
@@ -17,6 +18,7 @@ import trestle.oscal.ssp as trestlessp
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
@@ -26,6 +28,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.text import slugify
+from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView
 from django.urls import reverse
@@ -35,19 +38,21 @@ from urllib.parse import quote
 
 from api.siteapp.serializers.tags import SimpleTagSerializer
 from guidedmodules.models import Task, Module, AppVersion, AppSource
+from guidedmodules.app_loading import ModuleDefinitionError
 from siteapp.model_mixins.tags import TagView
 from simple_history.utils import update_change_reason
 
-from siteapp.models import Project, Organization, Tag
+from siteapp.models import Project, Organization, Folder, Portfolio, Tag, User, Role, Party, Appointment, Request, Proposal
 from siteapp.settings import GOVREADY_URL
-from siteapp.utils.views_helper import project_context
+from siteapp.utils.views_helper import project_context, start_app, get_compliance_apps_catalog, \
+    get_compliance_apps_catalog_for_user, get_compliance_apps_catalog_for_user
 from system_settings.models import SystemSettings
-from .forms import ElementEditForm
+from .forms import ElementEditForm, ElementEditAccessManagementForm
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
-from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
+from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm, StatementEditForm
 from .models import *
 from .utilities import *
-from siteapp.utils.views_helper import project_context
+from integrations.models import Integration
 
 logging.basicConfig()
 import structlog
@@ -57,6 +62,7 @@ structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
 
+from django.template.defaulttags import register
 
 def index(request):
     """Index page for controls"""
@@ -153,6 +159,75 @@ def control(request, catalog_key, cl_id):
         "links": links,
     }
     return render(request, "controls/detail.html", context)
+
+@functools.lru_cache()
+def controls_selected_aspen(request, system_id):
+    """Display System's selected controls view"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # if not request.user.has_perm('view_system', system):
+    #     raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_summary = get_integrations_system_info(request, system_id)
+    # system_events = get_integrations_system_events(request, system_id)
+
+    # Fix menu data for old vertical menu
+    project.system.root_element.name = system_summary['name']
+    project.root_task.title_override = system_summary['name']
+
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+        controls = system.root_element.controls.all()
+        impl_smts = system.root_element.statements_consumed.all()
+
+        # sort controls
+        controls = list(controls)
+        controls.sort(key=lambda control: control.get_flattened_oscal_control_as_dict()['sort_id'])
+
+        # Determine if a legacy statement exists for the control
+        impl_smts_legacy = Statement.objects.filter(consumer_element=system.root_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name)
+        impl_smts_legacy_dict = {}
+        for legacy_smt in impl_smts_legacy:
+            impl_smts_legacy_dict[legacy_smt.sid] = legacy_smt
+
+        # Get count of componentes (e.g., producer_elements) associated with a control
+        impl_smts_cmpts_count = {}
+        ikeys = system.smts_control_implementation_as_dict.keys()
+        for c in controls:
+            impl_smts_cmpts_count[c.oscal_ctl_id] = 0
+            if c.oscal_ctl_id in ikeys:
+                impl_smts_cmpts_count[c.oscal_ctl_id] = len(set([s.producer_element for s in system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts']]))
+
+        # Get list of catalog objects
+        catalog_list = Catalogs().list_catalogs()
+        # Remove the 3 nist catalogs that are hard-coded already in template
+        external_catalogs = [catalog for catalog in catalog_list if catalog.catalog_key not in ['NIST_SP-800-53_rev4', 'NIST_SP-800-53_rev5', 'NIST_SP-800-171_rev1', 'CMMC_ver1' ]]
+
+        # Return the controls
+        context = {
+            "system": system,
+            "system_summary": system_summary,
+            "project": project,
+            "controls": controls,
+            "external_catalogs": external_catalogs,
+            "impl_smts_cmpts_count": impl_smts_cmpts_count,
+            "impl_smts_legacy_dict": impl_smts_legacy_dict,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "display_urls": project_context(project)
+        }
+        return render(request, "systems/controls_selected_aspen.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
 
 @functools.lru_cache()
 def controls_selected(request, system_id):
@@ -295,6 +370,41 @@ def system_control_remove(request, system_id, element_control_id):
     response = redirect(reverse('controls_selected', args=[system_id]))
     return response
 
+@login_required
+def system_proposal_remove(request, system_id, proposal_id):
+    """Remove a proposal from a system"""
+    
+        # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    proposal = Proposal.objects.get(id=proposal_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('change_system', system):
+        system.remove_proposals([proposal.id])
+        if proposal.req != None:
+            proposal.req.status = 'Closed'
+            proposal.req.save()
+        Proposal.objects.filter(id=proposal_id).delete()
+        messages.add_message(request, messages.INFO, f"Removed proposal '{proposal.requested_element.name}' from system.")
+        # Log result
+        logger.info(
+                event="change_system remove_selected_proposal",
+                object={"object": "proposal", "id": proposal_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+    else:
+        # User does not have permission
+        # Log result
+        logger.info(
+                event="change_system remove_selected_proposal permission_denied",
+                object={"object": "proposal", "id": proposal_id},
+                user={"id": request.user.id, "username": request.user.username}
+                )
+
+        # Create message for user
+        messages.add_message(request, messages.INFO, f"You do not have permission to edit the system.")
+    response = redirect(reverse('components_selected', args=[system_id]))
+    return response
+
 @functools.lru_cache()
 def controls_updated(request, system_id):
     """Display System's statements by updated date in reverse chronological order"""
@@ -329,7 +439,6 @@ def controls_updated(request, system_id):
     else:
         # User does not have permission to this system
         raise Http404
-
 
 @login_required
 def edit_element(request, element_id):
@@ -386,8 +495,14 @@ class SelectedComponentsList(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Retrieve identified System
+        
         system = System.objects.get(id=self.kwargs['system_id'])
 
+        system_proposals = []
+        system_proposal_elements = []
+        for proposal in system.proposals.all():
+            system_proposals.append(proposal)
+            system_proposal_elements.append(proposal.requested_element)
         # Retrieve related selected controls if user has permission on system
         if self.request.user.has_perm('view_system', system):
             # Retrieve primary system Project
@@ -395,6 +510,8 @@ class SelectedComponentsList(ListView):
             project = system.projects.first()
             context['project'] = project
             context['system'] = system
+            context['system_proposals'] = system_proposals
+            context['system_proposal_elements'] =  system_proposal_elements
             context['elements'] = Element.objects.all().exclude(element_type='system')
             context["display_urls"] = project_context(project)
             return context
@@ -402,14 +519,75 @@ class SelectedComponentsList(ListView):
             # User does not have permission to this system
             raise Http404
 
+class SelectedComponentsListAspen(ListView):
+    """
+    Display System's selected components view
+    """
+    model = Element
+    template_name = 'systems/components_selected_aspen.html'
+    context_object_name = 'system_elements'
+    ordering = ['name']
+    paginate_by = 25
+
+    def get_queryset(self):
+        """
+        Return the systems producer elements.
+        """
+        system = System.objects.get(id=self.kwargs['system_id'])
+        return [element for element in system.producer_elements if element.element_type != "system"]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Retrieve identified System
+
+        system = System.objects.get(id=self.kwargs['system_id'])
+        system_summary = get_integrations_system_info(self.request, self.kwargs['system_id'])
+
+        system_proposals = []
+        system_proposal_elements = []
+        for proposal in system.proposals.all():
+            system_proposals.append(proposal)
+            system_proposal_elements.append(proposal.requested_element)
+        # Retrieve related selected controls if user has permission on system
+        if self.request.user.has_perm('view_system', system):
+            # Retrieve primary system Project
+            # Temporarily assume only one project and get first project
+            project = system.projects.first()
+            context['project'] = project
+            context['system_summary'] = system_summary
+            context['system'] = system
+            context['system_proposals'] = system_proposals
+            context['system_proposal_elements'] =  system_proposal_elements
+            context['elements'] = Element.objects.all().exclude(element_type='system')
+            context["display_urls"] = project_context(project)
+            return context
+        else:
+            # User does not have permission to this system
+            raise Http404
+
+
 @login_required
 def component_library(request):
     """Display the library of components"""
+    owned_elements_id = []
 
+    for element in Element.objects.all().exclude(element_type='system').distinct():
+        if element.is_owner(request.user):
+            owned_elements_id.append(element.id)
+    
+    owned_elements_list = Element.objects.filter(id__in=owned_elements_id)
+    
     query = request.GET.get('search')
+    # Setting a breakpoint in the code.
     if query:
         try:
-            element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
+            if request.GET.get('owner'):
+                # Search by owner
+                element_list = Element.objects.filter(id__in=owned_elements_id)
+                element_list = element_list.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
+            else:
+                element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
+
         except:
             logger.info(f"Ah, you are not using Postgres for your Database!")
             element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
@@ -419,19 +597,28 @@ def component_library(request):
     # Natural sorting on name
     element_list = natsorted(element_list, key=lambda x: x.name)
 
+    # Remove private elements for which user does not have permission
+    element_list_private_removed = [element for element in element_list if (element.private==False or 'view_element' in get_user_perms(request.user, element))]
+
     # Pagination
-    ele_paginator = Paginator(element_list, 15)
+    ele_paginator = Paginator(element_list_private_removed, 15)
+    owned_ele_paginator = Paginator(owned_elements_list, 15)
     page_number = request.GET.get('page')
 
     try:
         page_obj = ele_paginator.page(page_number)
+        owned_page_obj = owned_ele_paginator.page(page_number)
     except PageNotAnInteger:
         page_obj = ele_paginator.page(1)
+        owned_page_obj = owned_ele_paginator.page(1)
     except EmptyPage:
         page_obj = ele_paginator.page(ele_paginator.num_pages)
-
+        owned_page_obj = owned_ele_paginator.page(owned_ele_paginator.num_pages)
+    
     context = {
         "page_obj": page_obj,
+        "owned_page_obj": owned_page_obj,
+        "start": False,
         "import_form": ImportOSCALComponentForm(),
         "total_comps": Element.objects.exclude(element_type='system').count(),
     }
@@ -746,7 +933,6 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
 
-
 class ComponentSerializer(object):
 
     def __init__(self, element, impl_smts):
@@ -950,7 +1136,11 @@ class ComponentImporter(object):
             [print(issue) for issue in issues]
 
         # Returns list of created components
-        created_components = self.create_components(oscal_json)
+        if request is not None:
+            user_owner = request.user
+        else:
+            user_owner = User.objects.filter(is_superuser=True)[0]
+        created_components = self.create_components(oscal_json, user_owner)
         new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
         return new_import_record
 
@@ -980,22 +1170,23 @@ class ComponentImporter(object):
 
         return import_record
 
-    def create_components(self, oscal_json):
+    def create_components(self, oscal_json, user_owner=None):
         """Creates Elements (Components) from valid OSCAL JSON"""
         components_created = []
         components = oscal_json['component-definition']['components']
         for component in components:
-            new_component = self.create_component(component)
+            new_component = self.create_component(component, user_owner)
             if new_component is not None:
                 components_created.append(new_component)
 
         return components_created
 
-    def create_component(self, component_json):
+    def create_component(self, component_json, user_owner=None, private=False):
         """Creates a component from a JSON dict
 
         @type component_json: dict
         @param component_json: Component attributes from JSON object
+        @param user_owner: Django user
         @rtype: Element
         @returns: Element object if created, None otherwise
         """
@@ -1010,10 +1201,18 @@ class ComponentImporter(object):
             # Components uploaded to the Component Library are all system_element types
             element_type="system_element",
             uuid=component_json['uuid'] if 'uuid' in component_json else uuid.uuid4(),
-            component_type=component_json['type'] if 'type' in component_json else "software"
+            component_type=component_json['type'] if 'type' in component_json else "software",
+            private=private
         )
 
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
+        if user_owner:
+            new_component.assign_owner_permissions(user_owner)
+            logger.info(
+                event="new_element with user as owner",
+                object={"object": "element", "id": new_component.id, "name":new_component.name},
+                user={"id": user_owner.id, "username": user_owner.username}
+            )
 
         component_props = component_json.get('props', None)
         if component_props is not None:
@@ -1024,6 +1223,7 @@ class ComponentImporter(object):
             all_tag_ids = [tag.id for tag in new_tags] + [tag['id'] for tag in existing_tags]
             new_component.add_tags(all_tag_ids)
             new_component.save()
+        created_statements = []
         control_implementation_statements = component_json.get('control-implementations', None)
         # If there data exists the OSCAL component's control-implementations key
         if control_implementation_statements:
@@ -1099,38 +1299,103 @@ def system_element(request, system_id, element_id):
 
         # Retrieve element
         element = Element.objects.get(id=element_id)
-
         # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
+        # if this is a proposal then we wont have any impl_smts, so we need to check if there is a proposal
+        # and if impl_smts is empty
+        
         impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+        
+        if(impl_smts.exists()):
+            # Retrieve used catalog_key
+            catalog_key = impl_smts[0].sid_class     
+            component_request = None
+            hasSentRequest = False
+            # Retrieve related Proposal and request
+            try:
+                proposals = Proposal.objects.filter(requested_element=element.id, req__system=system, req__status="Approve")
+                proposal = proposals.first()
+                if proposal != None:
+                    component_request = proposal.req
+                    hasSentRequest = True
+            except Proposal.DoesNotExist:
+                proposal = None
 
-        # Retrieve used catalog_key
-        catalog_key = impl_smts[0].sid_class
+            # Retrieve control ids
+            catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
 
-        # Retrieve control ids
-        catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+            # Build OSCAL and OpenControl
+            oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+            opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+            states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
+            types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
+            # Return the system's element information
 
-        # Build OSCAL and OpenControl
-        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
-        opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
-        states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
-        types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
-        # Return the system's element information
-        context = {
-            "states": states,
-            "types": types,
-            "system": system,
-            "project": project,
-            "element": element,
-            "impl_smts": impl_smts,
-            "catalog_controls": catalog_controls,
-            "catalog_key": catalog_key,
-            "oscal": oscal_string,
-            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "opencontrol": opencontrol_string,
-            "display_urls": project_context(project)
-        }
-        return render(request, "systems/element_detail_tabs.html", context)
+            context = {
+                "states": states,
+                "types": types,
+                "system": system,
+                "project": project,
+                "element": element,
+                "impl_smts": impl_smts,
+                "catalog_controls": catalog_controls,
+                "catalog_key": catalog_key,
+                "oscal": oscal_string,
+                "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+                "opencontrol": opencontrol_string,
+                "display_urls": project_context(project),
+                "proposal": proposal,
+                "hasSentRequest": hasSentRequest,
+                "component_request": component_request,
+            }
+            return render(request, "systems/element_detail_tabs.html", context)
+        else:
+            try:
+                proposal = system.proposals.get(requested_element__id=element_id)
+            except Proposal.DoesNotExist: 
+                proposal = None
+                return HttpResponseRedirect("/controls/{}/components/selected".format(system_id))
+
+            #get all statements that are not component_approval_criteria
+            impl_smts = element.statements_produced.filter(~Q(statement_type='COMPONENT_APPROVAL_CRITERIA'))
+            # Retrieve used catalog_key
+            catalog_key = impl_smts[0].sid_class
+            
+            # Retrieve control ids
+            catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+            # Build OSCAL and OpenControl
+            oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+            opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+            states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
+            types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
+            # Return the system's element information
+            
+            requests = Request.objects.filter(system=system, requested_element=element)
+            component_request = None
+            hasSentRequest = False
+            
+            if proposal.req != None:
+                hasSentRequest = True
+                component_request = proposal.req
+
+            context = {
+                "states": states,
+                "types": types,
+                "system": system,
+                "project": project,
+                "element": element,
+                "proposal": proposal,
+                "component_request": component_request,
+                "hasSentRequest": hasSentRequest,
+                "impl_smts": impl_smts,
+                "catalog_controls": catalog_controls,
+                "catalog_key": catalog_key,
+                "oscal": oscal_string,
+                "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+                "opencontrol": opencontrol_string,
+                "display_urls": project_context(project)
+            }
+            return render(request, "systems/element_detail_tabs.html", context)
 
 @login_required
 def system_element_control(request, system_id, element_id, catalog_key, control_id):
@@ -1222,7 +1487,13 @@ def system_element_remove(request, system_id, element_id):
 
         # Retrieve element
         element = Element.objects.get(id=element_id)
-
+        try:
+            req = Request.objects.get(system=system, requested_element=element, status="Approve")
+            req.status = "Closed"
+            req.save()
+        except Request.DoesNotExist:
+            pass
+        
         # Delete the control implementation statements associated with this component
         result = element.statements_produced.filter(consumer_element=system.root_element).delete()
 
@@ -1259,12 +1530,24 @@ def new_element(request):
         form = ElementForm(request.POST)
         if form.is_valid():
             form.save()
+            
             element = form.instance
+            element.assign_owner_permissions(request.user)
+
+            Statement.objects.create(
+                sid = None,
+                sid_class = None,
+                body = "",
+                statement_type = StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name,
+                producer_element = element
+            )
+            
             logger.info(
-                event="new_element",
+                event="new_element with user as owner",
                 object={"object": "element", "id": element.id, "name":element.name},
                 user={"id": request.user.id, "username": request.user.username}
             )
+            
             return redirect('component_library_component', element_id=element.id)
     else:
         form = ElementForm()
@@ -1274,13 +1557,97 @@ def new_element(request):
     })
 
 @login_required
-def component_library_component(request, element_id):
-    """Display certified component's element detail view"""
+def edit_element_access_management(request, element_id):
+    """Form to edit system element access management"""
 
+    # The original element(component) 
+    element = get_object_or_404(Element, id=element_id)
+    # statement related to element
+    if element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name).exists():
+        statement = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name).first()
+    else:
+        # create new statement and assign statement to element
+        statement = Statement.objects.create(
+            sid = None,
+            sid_class = None,
+            body = "",
+            statement_type = StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name,
+            producer_element = element
+        )
+    if request.method == 'POST':
+        form = ElementEditAccessManagementForm(request.POST or None, instance=element)
+        statementForm = StatementEditForm(request.POST, instance=statement)
+        if form.is_valid() and statementForm.is_valid():
+            logger.info(
+                event="edit_element_access_management",
+                object={"object": "element", "id": form.instance.id, "name": form.instance.name},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+
+            form.save()
+            statementForm.save()
+            return JsonResponse({"status": "ok"})
+        else:
+            errors = form.errors.get_json_data(escape_html=False)
+            msg_list = [f"{e.title()} - {errors[e][0]['message']}" for e in errors.keys()]
+            return JsonResponse({"status": "err", "message": "Please fix the following problems:<br>"+"<br>".join(msg_list)})
+
+
+@login_required
+def component_library_component(request, element_id):
+    """Display library component's element detail view"""
+    
     # Retrieve element
     element = Element.objects.get(id=element_id)
+    govSystem = System.objects.filter(root_element__name="GovReady-Q Sample System")
+   # Check permissions
+    if element.private == True and 'view_element' not in get_user_perms(request.user, element):
+        logger.warning(
+            event="view_element_private permission_denied",
+            comment=f"User {request.user.username} does not have permission to view this element {element.name}",
+            object={"object": "element", "id": element.id},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        raise Http404
+    hasPermissionToEdit = 'change_element' in get_user_perms(request.user, element)
     smt_query = request.GET.get('search')
+    usersWithPermission = get_users_with_perms(element, attach_perms=True)
+    listUsers = []
+    
+    for user in usersWithPermission:
+        listUsers.append(user.username)
 
+    listOfContacts = []
+    poc_users = element.appointments.filter(role__role_id='poc', party__party_type='POC')
+
+
+    for poc in poc_users:
+        user = {
+            "uuid":poc.party.uuid,
+            "party_type":poc.party.party_type,
+            "name":poc.party.name,
+            "short_name":poc.party.short_name,
+            "email":poc.party.email,
+            "phone_number":poc.party.phone_number,
+            "role_title":poc.role.title,
+            "role_name":poc.role.short_name,
+        }
+        listOfContacts.append(user)
+
+    get_all_parties = element.appointments.all()
+    total_number_of_requests = element.requests.filter(status__in=["Open", "Pending", "In Progress", "Reject", "Approve"]).count()
+
+    contacts = []
+    for poc in get_all_parties:
+        contacts.append(poc.party)
+    
+    criteria_results = element.statements_produced.filter(statement_type=StatementTypeEnum.COMPONENT_APPROVAL_CRITERIA.name)
+    if len(criteria_results) > 0:
+        criteria_text = criteria_results.first().body
+    else:
+        criteria_text = ""
+    is_owner = element.is_owner(request.user)
+    
     # Retrieve systems consuming element
     consuming_systems = element.consuming_systems()
     states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
@@ -1289,28 +1656,33 @@ def component_library_component(request, element_id):
     if smt_query:
         impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
     else:
-        # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
         impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     if len(impl_smts) < 1:
+        # New component, no control statements assigned yet
+        catalog_key = "catalog_key_missing"
+        catalog_controls = None
+        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+        opencontrol_string = None
         context = {
-            "element": element,
             "element": element,
             "states": states,
             "impl_smts": impl_smts,
+            "oscal": oscal_string,
             "is_admin": request.user.is_superuser,
+            "list_of_permissible_users": listUsers,
+            "is_owner": is_owner,
+            "can_edit": hasPermissionToEdit,
+            "users_with_permissions": usersWithPermission,
+            "criteria": criteria_text,
+            "listOfContacts": listOfContacts,
+            "contacts": serializers.serialize('json', contacts),
+            "totalRequests": total_number_of_requests,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library"
         }
         return render(request, "components/element_detail_tabs.html", context)
-
-    if len(impl_smts) == 0:
-        # New component, no control statements assigned yet
-        catalog_key = "catalog_key_missing"
-        catalog_controls = None
-        oscal_string = None
-        opencontrol_string = None
     elif len(impl_smts) > 0:
         # TODO: We may have multiple catalogs in this case in the future
         # Retrieve used catalog_key
@@ -1349,6 +1721,13 @@ def component_library_component(request, element_id):
         "catalog_key": catalog_key,
         "oscal": oscal_string,
         "is_admin": request.user.is_superuser,
+        "list_of_permissible_users": listUsers,
+        "is_owner": is_owner,
+        "can_edit": hasPermissionToEdit,
+        "users_with_permissions": usersWithPermission,
+        "criteria": criteria_text,
+        "contacts": serializers.serialize('json', contacts),
+        "totalRequests": total_number_of_requests,
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,
@@ -1388,7 +1767,7 @@ def component_library_component_copy(request, element_id):
         e_copy = element.copy(name=element.name + " copy ("+str(count+1)+')')
     else:
         e_copy = element.copy()
-
+    e_copy.assign_owner_permissions(request.user)
     # Create message to display to user
     messages.add_message(request, messages.INFO,
                          'Component "{}" copied to "{}".'.format(element.name, e_copy.name))
@@ -1404,7 +1783,6 @@ def import_component(request):
     oscal_component_json = request.POST.get('json_content', '')
     result = ComponentImporter().import_components_as_json(import_name, oscal_component_json, request)
     return component_library(request)
-
 
 def raise_404_if_not_permitted_to_statement(request, statement, system_permission='view_system'):
     """Raises a 404 if the user doesn't have the statement system permission"""
@@ -2056,8 +2434,8 @@ def save_smt(request):
             # Check if statement has the same sid class as the statement object
             if statement.sid_class == form_values['sid_class']:
                 # Check user permissions
-                system = statement.consumer_element
-                if not request.user.has_perm('change_system', system):
+                system_element = statement.consumer_element
+                if not request.user.has_perm("change_element", system_element):
                     # User does not have write permissions
                     # Log permission to save answer denied
                     logger.info(
@@ -2065,9 +2443,9 @@ def save_smt(request):
                         object={"object": "statement", "id": statement.id},
                         user={"id": request.user.id, "username": request.user.username}
                     )
-                    return HttpResponseForbidden(
-                        "Permission denied. {} does not have change privileges to system and/or project.".format(
-                            request.user.username))
+                    statement_status = "error"
+                    statement_msg = f"Permission denied. {request.user.username} does not have change privileges to system and/or project."
+                    return JsonResponse({"status": statement_status, "message": statement_msg})
 
                 if statement is None:
                     # Statement from received has an id no longer in the database.
@@ -2317,6 +2695,51 @@ def delete_smt(request):
 
 
 # Components
+def proposal_message(request, system_id):
+    """ Send a global message to indicate a request has been successful """ 
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+
+    
+    form_dict = dict(request.POST)
+    form_values = {}
+    for key in form_dict.keys():
+        form_values[key] = form_dict[key][0]
+    messageType = form_values['proposal_message_type']
+    message = form_values['proposal_message']
+    
+    # messageType = request.POST.get("proposal_message_type")
+    # message = request.POST.get("proposal_message")
+
+    if(messageType == "INFO"):
+        messages.add_message(request, messages.INFO, f'{message}')
+    elif(messageType == "WARNING"):
+        messages.add_message(request, messages.WARNING, f'{message}')
+    else:
+        messages.add_message(request, messages.ERROR, f'{message}')
+
+    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+
+def request_message(request, system_id, element_id):
+    """ Send a global message to indicate a request has been successful """ 
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    form_dict = dict(request.POST)
+    form_values = {}
+    for key in form_dict.keys():
+        form_values[key] = form_dict[key][0]
+    messageType = form_values['req_message_type']
+    message = form_values['req_message']
+    
+    if(messageType == "INFO"):
+        messages.add_message(request, messages.INFO, f'{message}')
+    elif(messageType == "WARNING"):
+        messages.add_message(request, messages.WARNING, f'{message}')
+    else:
+        messages.add_message(request, messages.ERROR, f'{message}')
+    return HttpResponseRedirect("/controls/{}/component/{}".format(system_id, element_id))
 
 @login_required
 def add_system_component(request, system_id):
@@ -2330,9 +2753,14 @@ def add_system_component(request, system_id):
     for key in form_dict.keys():
         form_values[key] = form_dict[key][0]
 
+    
+    #extract producer_elmentid and require_approval boolean val
+    form_values['producer_element_id'], check_req_approval = form_values['producer_element_id'].split(',')
+    
     # Does user have permission to add element?
     # Check user permissions
     system = System.objects.get(pk=system_id)
+    
     if not request.user.has_perm('change_system', system):
         # User does not have write permissions
         # Log permission to save answer denied
@@ -2354,11 +2782,14 @@ def add_system_component(request, system_id):
     # Look up the element rto add
     producer_element = Element.objects.get(pk=form_values['producer_element_id'])
 
+    
+
     # TODO: various use cases
         # - component previously added but element has statements not yet added to system
         #   this issue may be best addressed elsewhere.
 
     # Component already added to system. Do not add the component (element) to the system again.
+
     if producer_element.id in elements_selected_ids:
         messages.add_message(request, messages.ERROR,
                             f'Component "{producer_element.name}" already exists in selected components.')
@@ -2367,7 +2798,7 @@ def add_system_component(request, system_id):
             return HttpResponseRedirect(form_values['redirect_url'])
         else:
             return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
-
+            
     smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     # Component does not have any statements of type control_implementation_prototype to
@@ -2403,7 +2834,7 @@ def add_system_component(request, system_id):
         return HttpResponseRedirect(form_values['redirect_url'])
     else:
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
-
+  
 @login_required
 def search_system_component(request):
     """Add an existing element and its statements to a system"""
@@ -2799,7 +3230,64 @@ certifications:
         # User does not have permission to this system
         raise Http404
 
-# PoamS
+# Poams
+@login_required
+def system_poams_aspen(request, system_id):
+    """System Summary page experiment POA&Ms"""
+
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_summary = get_integrations_system_info(request, system_id)
+    system_events = get_integrations_system_events(request, system_id)
+
+    # Fix menu data for old vertical menu
+    project.system.root_element.name = system_summary['name']
+    project.root_task.title_override = system_summary['name']
+
+    controls = system.root_element.controls.all()
+    poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+    # Example reading POA&Ms from xlsx file using Pandas
+    # This is to just demonstrate reading POA&Ms from imported spreadsheet
+    # TODO: Move to a serializer and filter for one sysyem only
+    # import pandas
+    # poams_list = []
+    # fn = "local/poams_list.xlsx"
+    # if pathlib.Path(fn).is_file():
+    #     try:
+    #         df_dict = pandas.read_excel(fn, header=1)
+    #         for index, row in df_dict.iterrows():
+    #             poam_dict = {
+    #                 "id": row.get('CSAM ID', ""),
+    #                 "CSAM_ID": row.get('CSAM ID', ""   ),
+    #                 "Org": row.get('Org', ""   ),
+    #                 "Sub_Org": row.get('Sub Org', ""   ),
+    #                 "System_Name": row.get('System Name', ""   ),
+    #                 "POAM_ID": row.get('POAM ID', ""   ),
+    #                 "POAM_Title": row.get('POAM Title', "" ),
+    #                 "System_Type": row.get('System Type', ""   ),
+    #                 "Detailed_Weakness_Description": row.get('Detailed Weakness Description', ""   ),
+    #                 "Status": row.get('Status', "" )
+    #             }
+    #             poams_list.append(poam_dict)
+    #     except FileNotFoundError as e:
+    #         logger.error(f"Error reading file {fn}: {e}")
+    #     except Exception as e:
+    #         logger.error(f"Other Error reading file {fn}: {e}")
+
+    context = {
+        "system": system_summary,
+        "poam_smts": poam_smts,
+        "display_urls": project_context(project)
+    }
+    return render(request, "systems/poams_list_aspen.html", context)
+
 @login_required
 def poams_list(request, system_id):
     """List Poams for a system"""
@@ -2814,6 +3302,7 @@ def poams_list(request, system_id):
         controls = system.root_element.controls.all()
         poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
 
+        
         # impl_smts_count = {}
         # ikeys = system.smts_control_implementation_as_dict.keys()
         # for c in controls:
@@ -3263,35 +3752,656 @@ def system_profile_oscal_json(request, system_id):
     response['Content-Disposition'] = f'attachment; filename="oscal-profile.json"'
     return response
 
+# System Summaries
+@login_required
+def get_system_info(request, system_id):
+    """Returns info for system"""
+
+    system = System.objects.get(id=system_id)
+    system_info = system.info
+    print(system_info)
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_info['id'] = system.id
+    system_info['name'] = system.root_element.name
+    # system_info['impact'] = system.get_security_impact_level
+
+    system_info_default = {
+        "system_description": "~",
+        "id": "~",
+        "other_id": "~",
+        "name": "~",
+        "organization_name": "~",
+        "aka": "~",
+        "impact": "~",
+        "status": "~",
+        "type": "~",
+        "created": "~",
+        "hosting_facility": "~",
+        "next_audit": "~",
+        "next_scan": "~", #"05/01/22",
+        "security_scan": "~",
+        "pen_test": "~", #"Scheduled for 05/05/22",
+        "config_scan": "~",
+        "purpose": "~",
+        "vuln_new_30days": "~",
+        "vuln_new_rslvd_30days": "~",
+        "vuln_90days": "~",
+        "risk_score": "~",
+        "score_1": "~",
+        "score_2": "~",
+        "score_3": "~",
+        "score_4": "~",
+        "score_5": "~",
+    }
+
+    # Set any missing defaults
+    for key in system_info_default:
+        if key not in system_info:
+            system_info[key] = system_info_default[key]
+    print(system_info)
+    return system_info
+
+@login_required
+def get_system_events(request, system_id):
+    """Returns Events for system"""
+
+    system = System.objects.get(id=system_id)
+    system_events = [ { "event_tag": e.event_type, "event_summary": e.description} for e in system.events.all()]
+
+    # # Retrieve events from integrations
+    # csam_system_id = system.info.get('csam_system_id', None)
+    # system_events = [
+    #     { "event_tag": "TEST", "event_summary": "Penetration test scheduled - Automated penetration test run by SOC"},
+    #     { "event_tag": "SCAN", "event_summary": "Security scan scheduled - Automated weekly security scan will occur Sunday, June 9"},
+    #     { "event_tag": "SYS", "event_summary": "ISSO appointed - Janice Avery (contracor) has been appointed as ISSO for System"}
+    # ]
+    return system_events
+
+@login_required
+def get_integrations_system_info(request, system_id):
+    """Returns Integrations info for system"""
+
+    system = System.objects.get(id=system_id)
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_name = system.root_element.name
+
+    # Retrieve info from integrations
+    csam_system_id = system.info.get('csam_system_id', None)
+    if csam_system_id is not None:
+        from integrations.models import Endpoint
+        endpoints = Endpoint.objects.filter(endpoint_path=f"/v1/systems/{csam_system_id}")
+        if len(endpoints) == 1:
+            # found cached csam data
+            csam_data = endpoints[0].data
+            # {'id': 111,
+            #  'externalId': 'string',
+            #  'name': 'System A',
+            #  'description': 'This is a simple test system',
+            #  'acronym': 'string',
+            #  'organization': 'string',
+            #  'subOrganization': 'string',
+            #  'operationalStatus': 'string',
+            #  'systemType': 'string',
+            #  'financialSystem': 'string',
+            #  'classification': 'string',
+            #  'contractorSystem': True,
+            #  'fismaReportable': True,
+            #  'criticalInfrastructure': True,
+            #  'missionCritical': True,
+            #  'purpose': 'string',
+            #  'ombExhibit': 'string',
+            #  'uiiCode': 'string',
+            #  'investmentName': 'string',
+            #  'portfolio': 'string',
+            #  'priorFyFunding': 0,
+            #  'currentFyFunding': 0,
+            #  'nextFyFunding': 0,
+            #  'categorization': 'string',
+            #  'fundingImportStatus': 'string'}
+            purpose = f"{csam_data.get('purpose_short', 'Missing')}"
+            organization_name = f"{csam_data.get('organization', 'Missing')} {csam_data.get('subOrganization', 'Missing')}"
+            other_id = f"{csam_data.get('id', 'Missing')}"
+            system_type = f"{csam_data.get('systemType', 'Missing')}"
+            status = f"{csam_data.get('operationalStatus', 'Missing')}"
+            impact = f"{csam_data.get('categorization', 'Missing')}"
+        else:
+            csam_data = {'id': 111,
+             'externalId': 'string',
+             'name': 'System A',
+             'description': 'This is a simple test system',
+             'acronym': 'string',
+             'organization': 'string',
+             'subOrganization': 'string',
+             'operationalStatus': 'string',
+             'systemType': 'string',
+             'financialSystem': 'string',
+             'classification': 'string',
+             'contractorSystem': True,
+             'fismaReportable': True,
+             'criticalInfrastructure': True,
+             'missionCritical': True,
+             'purpose': 'string',
+             'ombExhibit': 'string',
+             'uiiCode': 'string',
+             'investmentName': 'string',
+             'portfolio': 'string',
+             'priorFyFunding': 0,
+             'currentFyFunding': 0,
+             'nextFyFunding': 0,
+             'categorization': 'string',
+             'fundingImportStatus': 'string'}
+            purpose = f"{csam_data.get('purpose_short', 'Missing')}"
+            organization_name = f"{csam_data.get('organization', 'Missing')} {csam_data.get('subOrganization', 'Missing')}"
+            other_id = f"{csam_data.get('id', 'Missing')}"
+            system_type = f"{csam_data.get('systemType', 'Missing')}"
+            status = f"{csam_data.get('operationalStatus', 'Missing')}"
+            impact = f"{csam_data.get('categorization', 'Missing')}"
+    else:
+        # Couldn't find CSAM system
+        # Sample systems from DHS SORNs
+        dhs_sorns = [
+            { "name": "DHS/ALL-037 E-Authentication Records System of Records", "purpose": """This system collects information in order to authenticate an individual's identity for the purpose of obtaining a credential to electronically access a DHS program or application. This system includes DHS programs or applications that use a third-party identity service provider to provide any of the following credential services: Registration, including identity proofing, issuance, authentication, authorization, and maintenance. This system collects information that allows DHS to track the use of programs and applications for system maintenance and troubleshooting. The system also enables DHS to allow an individual to reuse a credential received when applicable and available."""},
+            { "name": "DHS/ALL-032 Official Passport Application and Maintenance Records", "purpose": """The purpose of this system is to collect and maintain a copy of an official passport application or maintenance record on DHS employees and former employees, including political appointees, civilian, and military personnel (and dependents and family members that accompany military members assigned outside the continental United States) assigned or detailed to the Department, individuals who are formally or informally associated with the Department, including advisory committee members, employees of other agencies and departments in the federal government, and other individuals in the private and public sector who are on official business with the Department, who in their official capacity, are applying for an official passport or updating their official passport records where a copy is maintained by the Department."""},
+            { "name": "DHS/ALL-034 Emergency Care Medical Records", "purpose": """The purpose of this system is to support MQM oversight to ensure consistent quality medical care and standardize the documentation of care rendered by DHS EMS medical care providers in diverse environments.""" },
+            { "name": "DHS/ALL-035 Common Entity Index Prototype (CEI Prototype)", "purpose": """The purpose of this prototype is to determine the feasibility of establishing a centralized index of select biographic information that will allow DHS to provide a consolidated and correlated identity, thereby facilitating and improving DHS's ability to carry out its national security, homeland security, law enforcement, and benefits missions.""" },
+            { "name": "DHS/ALL-042 Personnel Networking and Collaboration System of Records.", "purpose": """The purpose of this system is to permit DHS's collection of biographical and professional information of current DHS employees, contractors, and grantees to facilitate connections and collaboration among individuals supporting the Department's mission; aid in the identification of individuals within an organization; and to ensure efficient collaboration within the Department.""" },
+            { "name": "DHS/ALL-044 eRulemaking", "purpose": """The purpose of this system is to permit members of the public to review and comment on DHS rulemakings and notices. DHS will use any submitted contact information to seek clarification of a comment, respond to a comment when warranted, and for such other needs as may be associated with the rule making or notice process.""" },
+            { "name": "DHS/FEMA-006 Citizen Corps Program", "url": "http://www.gpo.gov/fdsys/pkg/FR-2013-07-22/html/2013-17456.htm", "purpose": "The purpose of this system is to allow state, local, tribal, and territorial communities to setup and register Citizen Corps Councils and CERT programs. Also, this system provides a way for individuals to locate and contact Councils, CERTs, and other Citizen Corps partners for more information regarding volunteer programs and opportunities nation-wide. Additionally, this system uses surveys to assess and enhance communities' preparedness and to improve the effectiveness of the Citizen Corps Program."}
+            # { "name": "", "purpose": """ """ },
+        ]
+
+        random.seed(system_id)
+        other_id = random.randint(1,2000)
+        impact = random.choice(["Low Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "Moderate Impact", "High Impact"])
+        status = random.choice(["Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Operational", "Under Development", "Planned"])
+        system_from_sorn = random.choice(dhs_sorns)
+
+        # Fix purpose
+        if "purpose" not in system_from_sorn:
+            purpose = "Missing"
+        elif len(system_from_sorn['purpose']) > 750:
+            purpose = system_from_sorn['purpose'][0:500]
+        else:
+            purpose = system_from_sorn['purpose']
+
+        # system_name = system_from_sorn['name'].strip(" ").strip(",")
+        if re.search(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", system_name):
+            system_name = re.sub(r"DHS/[A-Za-z/&0-9-]+[0-9]{0,4} ", '', system_name)
+
+        # Organization
+        if re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")):
+            organization_name = "DHS " + re.search(r"DHS/([A-Za-z]{0,4})", system_from_sorn['name'].strip(" ").strip(",")).group(1).strip()
+        else:
+            organization_name = "DHS"
+
+        system_type = random.choice(["General Support System", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Major Application", "Minor Application", ])
+
+    # Acronym
+    if "(" in system_name:
+        acronym = re.search(r"\((.*)\)", system_name).group(1).strip()
+        system_name = re.sub(r" \(.*\)", '', system_name)
+    else:
+        acronym = "".join([word[0].upper() for word in system_name.replace("(","").replace(")","").split(" ")])
+        if len(acronym) > 5:
+            acronym = acronym[0:3]
+        if len(acronym) == 1:
+            acronym = system_name
+    aka = [acronym]
+    if len(system_name.split(" ")) > 7:
+        short_name = " ".join([word for word in system_name.split(" ")[0:2]]) + " System"
+        aka.append(short_name)
+
+    hosting_facility = random.choice(["DISC", "AWS", "AWS","AWS", "AWS", "DC-1", "AWS", "AWS", "Azure", "AWS", "AWS", "AWS", "DC-1",  ])
+    # Dates
+    from datetime import datetime, date, timedelta, timezone
+    date1, date2 = datetime(2014, 6, 3, tzinfo=timezone.utc), datetime(2022, 2, 1, tzinfo=timezone.utc)
+    dates_between = date2 - date1
+    total_days = dates_between.days
+    created = date1 + timedelta(days=random.randrange(total_days))
+    next_audit = datetime.now().date() + timedelta(random.randint(40,600))
+    next_scan = datetime.combine(datetime.now().date() + timedelta(random.randint(2,12)), datetime.min.time()).replace(tzinfo=timezone.utc)
+
+    # datetime.combine(date.today(), datetime.min.time())
+    # next_scan = next_scan.replace(tzinfo=timezone.utc)
+    dates_between_created = created - date1
+    pen_test = created + timedelta(days=random.randrange(dates_between_created.days))
+
+    # Data for System
+    system = {
+        "id": system_id,
+        "other_id": other_id,
+        "name": system_name,
+        "organization_name": organization_name,
+        "aka": aka,
+        "impact": impact,
+        "status": status,
+        "type": system_type,
+        "created": created,
+        "hosting_facility": hosting_facility,
+        "next_audit": next_audit,
+        "next_scan": next_scan, #"05/01/22",
+        "security_scan": "Last known-04/20/22 @ 1:23pm",
+        "pen_test": pen_test, #"Scheduled for 05/05/22",
+        "config_scan": "Last known-01/17/20 @ 4:32pm",
+        "purpose": purpose,
+        "vuln_new_30days": random.randint(0,12),
+        "vuln_new_rslvd_30days": random.randint(0,20),
+        "vuln_90days": random.randint(0,15),
+        "risk_score": random.randint(6,10) + round(random.random(), 1),
+        "score_1": random.randint(6,10) + round(random.random(), 1),
+        "score_2": random.randint(6,10) + round(random.random(), 1),
+        "score_3": random.randint(6,10) + round(random.random(), 1),
+        "score_4": random.randint(6,10) + round(random.random(), 1),
+        "score_5": random.randint(6,10) + round(random.random(), 1),
+    }
+    return system
+
+@login_required
+def get_integrations_system_events(request, system_id):
+    """Returns CSAM info for system"""
+
+    system = System.objects.get(id=system_id)
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+    system_name = system.root_element.name
+
+    # Retrieve events from integrations
+    csam_system_id = system.info.get('csam_system_id', None)
+    system_events = [
+        { "event_tag": "TEST", "event_summary": "Penetration test scheduled - Automated penetration test run by SOC"},
+        { "event_tag": "SCAN", "event_summary": "Security scan scheduled - Automated weekly security scan will occur Sunday, June 9"},
+        { "event_tag": "SYS", "event_summary": "ISSO appointed - Janice Avery (contracor) has been appointed as ISSO for System"}
+    ]
+    return system_events
+
+@login_required
+def create_system_from_string(request):
+    """Create a system in GovReady-Q based on info from a URL"""
+
+    new_system_str = request.GET.get("s", None)
+
+    # Display form when no string received
+    if new_system_str is None:
+
+        # Get the app catalog. If the user is answering a question, then filter to
+        # just the apps that can answer that question.
+        from siteapp.views import filter_app_catalog
+        catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
+        # Group by category from catalog metadata.
+        from collections import defaultdict
+        catalog_by_category = defaultdict(lambda: {"title": None, "apps": []})
+        for app in catalog:
+            source_slug, _ = app["key"].split('/')
+            app['source_slug'] = source_slug
+            # print(f"1 keys: {app.keys()}")
+            # print(f"2 key, title: {app['key']}, {app['title']}")
+            for category in app["categories"]:
+                catalog_by_category[category]["title"] = (category or "Uncategorized")
+                # Only get default apps
+                # TODO: Refactor this code
+                organization = Organization.objects.first()  # temporary
+                # if app['title'] in ['Blank Project', 'Speedy SSP', 'General IT System ATO for 800-53 (low)']:
+                if app['title'] in organization.extra.get('default_appversion_name_list', []): # temporary
+                    catalog_by_category[category]["apps"].append(app)
+
+        # Sort categories by title and discard keys.
+        catalog_by_category = sorted(catalog_by_category.values(), key=lambda category: (
+            category["title"] != "Great starter apps",  # this category goes first
+            category["title"].lower(),  # sort case insensitively
+            category["title"],  # except if two categories differ only in case, sort case-sensitively
+        ))
+        context = {
+            "apps": catalog_by_category
+        }
+        return render(request, "systems/new_system_form.html", context)
+
+    new_system_name = new_system_str
+    new_system_msg = f"Created new System in GovReady based with name '{new_system_name}'."
+    new_system_description = f"System created from name."
+
+    # Create for new system based on string
+    if 'http://' in new_system_str or 'https://' in new_system_str:
+        new_system_url = new_system_str
+        new_system_msg = f"Created new System in GovReady based on URL '{new_system_url}'."
+        new_system_name = new_system_url.replace("https://", "").replace("http://", "")
+        new_system_description = f"System created from url."
+        # Examine remote site for information
+        # Handle error case of no URL
+
+    # Check if system aleady exists with domain name
+    # if not System.objects.filter(Q(info__contains={"csam_system_id": csam_system_id})).exists():
+
+    # What is default template?
+    source_slug = "govready-q-files-startpack"
+    app_name = "speedyssp"
+    # can user start the app?
+    # Is this a module the user has access to? The app store
+    # does some authz based on the organization.
+    catalog = get_compliance_apps_catalog_for_user(request.user)
+    for app_catalog_info in catalog:
+        if app_catalog_info["key"] == source_slug + "/" + app_name:
+            # We found it.
+            break
+    else:
+        raise Http404()
+    # Start the most recent version of the app.
+    appver = app_catalog_info["versions"][0]
+    organization = Organization.objects.first()  # temporary
+    default_folder_name = "Started Apps"
+    folder = Folder.objects.filter(
+        organization=organization,
+        admin_users=request.user,
+        title=default_folder_name,
+    ).first()
+    if not folder:
+        folder = Folder.objects.create(organization=organization, title=default_folder_name)
+        folder.admin_users.add(request.user)
+    task = None
+    q = None
+    # Get portfolio project should be included in.
+    if request.GET.get("portfolio"):
+        portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+    else:
+        if not request.user.default_portfolio:
+            request.user.create_default_portfolio_if_missing()
+        portfolio = request.user.default_portfolio
+    # import ipdb; ipdb.set_trace()
+    try:
+        project = start_app(appver, organization, request.user, folder, task, q, portfolio)
+    except ModuleDefinitionError as e:
+        error = str(e)
+    # Associate System with CSAM system
+    new_system = project.system 
+    new_system.info = {
+        "created_from_input": new_system_str,
+        "system_description": new_system_description,
+
+        "id": "~",
+        "other_id": "~",
+        "name": "~",
+        "organization_name": "~",
+        "aka": "~",
+        "impact": "~",
+        "status": "~",
+        "type": "~",
+        "created": "~",
+        "hosting_facility": "~",
+        "next_audit": "~",
+        "next_scan": "~", #"05/01/22",
+        "security_scan": "~",
+        "pen_test": "~", #"Scheduled for 05/05/22",
+        "config_scan": "~",
+        "purpose": "~",
+        "vuln_new_30days": "~",
+        "vuln_new_rslvd_30days": "~",
+        "vuln_90days": "~",
+        "risk_score": "~",
+        "score_1": "~",
+        "score_2": "~",
+        "score_3": "~",
+        "score_4": "~",
+        "score_5": "~",
+    }
+    new_system.add_event("SYS", new_system_msg)
+    new_system.save()
+    # Update System name to URL system name
+    nsre = new_system.root_element
+    # Make sure system root element name is unique
+    name_suffix = ""
+    while Element.objects.filter(name=f"{new_system_name}{name_suffix}").exists():
+        # Element exists with that name
+        if name_suffix == "":
+            name_suffix = 1
+        else:
+            name_suffix = str(int(name_suffix)+1)
+    if name_suffix == "":
+        nsre.name = new_system_name
+    else:
+        nsre.name = f"{new_system_name}{name_suffix}"
+    nsre.save()
+    # Update System Project title to CSAM system name
+    prt = project.root_task
+    prt.title_override = nsre.name
+    prt.save()
+    logger.info(event=f"create_system_from_url url {new_system_name}",
+            object={"object": "system", "id": new_system.id},
+            user={"id": request.user.id, "username": request.user.username})
+    messages.add_message(request, messages.INFO, new_system_msg)
+
+    # Redirect to the new system/project.
+    return HttpResponseRedirect(project.get_absolute_url())
+    # return redirect(reverse('system_summary', args=[new_system.id]))
+
+@login_required
+def system_summary_1_aspen(request, system_id):
+    """System Summary page experiment 1"""
+
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_summary = get_integrations_system_info(request, system_id)
+    system_events = get_integrations_system_events(request, system_id)
+
+    # Get all projects
+    projects = system.projects.all()
+
+    # Fix menu data for old vertical menu
+    project.system.root_element.name = system_summary['name']
+    project.root_task.title_override = system_summary['name']
+
+    context = {
+        "system": system_summary,
+        #"project": project,
+        "project": projects,
+        "system_events": system_events,
+        # "deployments": deployments,
+        "display_urls": project_context(project)
+    }
+    return render(request, "systems/system_summary_1.html", context)
+
+@login_required
+def system_summary_aspen(request, system_id):
+    """System Summary page experiment 2 live data"""
+
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    # system_summary = get_integrations_system_info(request, system_id)
+    system_summary = get_system_info(request, system_id)
+    # system_events = get_integrations_system_events(request, system_id)
+    system_events = get_system_events(request,system_id)
+
+    # Get all projects
+    projects = system.projects.all()
+
+    # Fix menu data for old vertical menu
+    project.system.root_element.name = system_summary['name']
+    project.root_task.title_override = system_summary['name']
+
+    context = {
+        "system": system_summary,
+        "project": project,
+        "projects": projects,
+        "system_events": system_events,
+        # "deployments": deployments,
+        "display_urls": project_context(project)
+    }
+    return render(request, "systems/system_summary_1.html", context)
+
+@login_required
+def system_integrations_aspen(request, system_id):
+    """System Integrations page experiment 1"""
+
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_summary = get_integrations_system_info(request, system_id)
+    system_events = get_integrations_system_events(request, system_id)
+
+    # Fix menu data for old vertical menu
+    project.system.root_element.name = system_summary['name']
+    project.root_task.title_override = system_summary['name']
+
+    # Get integrations
+    general_integrations = []
+    integrations = Integration.objects.all()
+    for integration in integrations:
+        general_integration = {
+            "integration_name": integration.name,
+            "integration_summary": integration.description,
+            "integration_base_url": integration.config.get('base_url', None)
+            }
+        general_integrations.append(general_integration)
+
+    # system_integrations = [
+    #     { "integration_name": "CSAM", "integration_summary": "Provides access to system information stored in CSAM"},
+    #     { "integration_name": "GITHUB", "integration_summary": "Includes recent developer changes to source code"},
+    #     # { "event_tag": "SYS", "event_summary": "Isso appointed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod..."}
+    # ]
+
+    context = {
+        "system": system_summary,
+        "project": project,
+        "system_events": system_events,
+        "system_integrations": general_integrations,
+        # "deployments": deployments,
+        "display_urls": project_context(project)
+    }
+    return render(request, "systems/system_integrations_aspen.html", context)
+
+@login_required
+@transaction.atomic
+def import_poams_xlsx(request):
+
+    poams_xlsx_file = request.FILES.get("file")
+    http_referer = request.META.get('HTTP_REFERER')
+    redirect_url = http_referer
+    if poams_xlsx_file:
+        try:
+            poams_xlsx_filename = os.path.splitext(poams_xlsx_file.name)
+            poams_xlsx_filename = "poams_list.xlsx"
+            # Save file
+            with open(os.path.join("local", poams_xlsx_filename), 'wb') as destination:
+                for chunk in poams_xlsx_file.chunks():
+                    destination.write(chunk)
+            # Check if file format is .xlsx or .csv
+            filetype = None
+            import pandas
+            try:
+                df = pandas.read_excel(os.path.join("local", poams_xlsx_filename))
+                filetype = 'EXCEL'
+            except Exception:
+                try:
+                    df = pandas.read_csv(os.path.join("local", poams_xlsx_filename))
+                    filetype = 'CSV'
+                except Exception:
+                    pass
+            if filetype == 'EXCEL' or filetype == 'CSV':
+                logger.info(
+                    event=f"poa&ms import file added {poams_xlsx_file.name}",
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                messages.add_message(request, messages.INFO, f"Successfully imported {len(df.index)} POA&Ms.")
+                return JsonResponse({ "status": "ok", "redirect": redirect_url })
+            else:
+                logger.info(
+                    event=f"failed poa&ms import file added {poams_xlsx_file.name}",
+                    error=f"file type is not .xlsx or .csv",
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                messages.add_message(request, messages.ERROR, f"POA&Ms file is not .xlsx or .csv.")
+                return JsonResponse({ "status": "ok", "redirect": redirect_url })
+        except ValueError:
+            messages.add_message(request, messages.ERROR, f"Failure processing: {ValueError}")
+            return JsonResponse({ "status": "ok", "redirect": redirect_url })
+    else:
+        messages.add_message(request, messages.ERROR, f"POA&Ms spreadsheet file required.")
+        return JsonResponse({ "status": "ok", "redirect": redirect_url })
+
 # System Deployments
+@login_required
+def system_deployments_aspen(request, system_id):
+    """List deployments for a system"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    if not request.user.has_perm('view_system', system):
+        raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_summary = get_integrations_system_info(request, system_id)
+    system_events = get_integrations_system_events(request, system_id)
+
+    # Retrieve list of deployments for the system
+    deployments = system.deployments.all().order_by(Lower('name'))
+    # controls = system.root_element.controls.all()
+    # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+    # Return the controls
+    context = {
+        "system": system_summary,
+        "project": project,
+        "deployments": deployments,
+        "display_urls": project_context(project)
+    }
+    # return render(request, "systems/deployments_list.html", context)
+    return render(request, "systems/deployments_list_aspen.html", context)
+
 @login_required
 def system_deployments(request, system_id):
     """List deployments for a system"""
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
-    # Retrieve related selected controls if user has permission on system
-    if request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
-
-        # Retrieve list of deployments for the system
-        deployments = system.deployments.all().order_by(Lower('name'))
-        # controls = system.root_element.controls.all()
-        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
-
-        # Return the controls
-        context = {
-            "system": system,
-            "project": project,
-            "deployments": deployments,
-            "display_urls": project_context(project)
-        }
-        return render(request, "systems/deployments_list.html", context)
-    else:
-        # User does not have permission to this system
+    if not request.user.has_perm('view_system', system):
         raise Http404
+
+    # Retrieve primary system Project
+    # Temporarily assume only one project and get first project
+    project = system.projects.all()[0]
+
+    system_summary = get_integrations_system_info(request, system_id)
+    system_events = get_integrations_system_events(request, system_id)
+
+    # Retrieve list of deployments for the system
+    deployments = system.deployments.all().order_by(Lower('name'))
+    # controls = system.root_element.controls.all()
+    # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+    # Return the controls
+    context = {
+        "system": system_summary,
+        "project": project,
+        "deployments": deployments,
+        "display_urls": project_context(project)
+    }
+    # return render(request, "systems/deployments_list.html", context)
+    return render(request, "systems/deployments_list.html", context)
 
 @login_required
 def manage_system_deployment(request, system_id, deployment_id=None):

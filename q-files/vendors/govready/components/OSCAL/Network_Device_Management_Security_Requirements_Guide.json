@@ -1,0 +1,886 @@
+{
+  "component-definition": {
+    "uuid": "69e0fda9-624c-4b88-ba70-4b2fd02ab397",
+    "metadata": {
+      "title": "Network Device Management Security Requirements Guide",
+      "last-modified": "2022-06-12T20:17:27",
+      "version": "2022-06-12T20:17:27",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "b1dab10e-d101-46a2-a04e-11c0603f223b",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "82b01d73-68cb-41bd-bd58-af2ea8b57ac4",
+        "type": "software",
+        "title": "Network Device Management Security Requirements Guide",
+        "description": "Network Device Management Security Requirements Guide based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "b1dab10e-d101-46a2-a04e-11c0603f223b"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "eec60791-05f2-4c4b-88d0-6898c39e5ee3",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "2249a10c-8bfe-4181-8f6a-e2fd53219a0f",
+                "description": "The network device must be configured with only one local account to be used as the account of last resort in the event the authentication server is unavailable.",
+                "control-id": "ac-2"
+              }
+            ]
+          },
+          {
+            "uuid": "45ed185e-fbd8-4476-aea9-e83b51a6736d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "550086d7-c179-4df6-a8de-98f03fbf37f6",
+                "description": "The network device must automatically audit account disabling actions.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "405ffa9d-d23e-457a-95ad-c542e2537b67",
+                "description": "The network device must automatically audit account removal actions.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "11ab36ea-f65c-4f17-a1ff-fb6a40c430bd",
+                "description": "The network device must automatically audit account creation.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "c0dbf1f5-8fdd-441f-8908-e2019a1462a3",
+                "description": "The network device must automatically audit account modification.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "f528fbda-9472-4324-9d51-0cc8577ea700",
+                "description": "The network device must automatically audit account enabling actions.",
+                "control-id": "ac-2.4"
+              }
+            ]
+          },
+          {
+            "uuid": "dae3ce5a-9439-4625-8ca0-c67de3398a7c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.7.",
+            "implemented-requirements": [
+              {
+                "uuid": "6eb492d0-6735-44ee-ae84-79d90d1c100a",
+                "description": "The network device must be configured with only one local account to be used as the account of last resort in the event the authentication server is unavailable.",
+                "control-id": "ac-2.7"
+              }
+            ]
+          },
+          {
+            "uuid": "58c11e90-ac7e-4780-8ce0-c35352bb7c5c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "1068ebb3-cd0c-46d1-9874-79a1cf65131b",
+                "description": "The network device must terminate shared/group account credentials when members leave the group.",
+                "control-id": "ac-2.10"
+              }
+            ]
+          },
+          {
+            "uuid": "6f2fe396-6904-41de-bd1d-311448c86601",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "e2f54691-a122-4138-abd4-c899cf8dfecf",
+                "description": "The network device must be configured to assign appropriate user roles or access levels to authenticated users.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "62f7d644-ba2a-47d6-8975-9d58025fa5ea",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "fc6dd340-36ac-4315-a204-c4b74fc9f0e5",
+                "description": "If the network device uses mandatory access control, the network device must enforce organization-defined mandatory access control policies over all subjects and objects.",
+                "control-id": "ac-3.3"
+              }
+            ]
+          },
+          {
+            "uuid": "e254c83b-3d4e-46e3-abb4-f2b775e15f2e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "f7ff1eb5-432d-420f-b020-0d8d45960aa0",
+                "description": "If the network device uses discretionary access control, the network device must enforce organization-defined discretionary access control policies over defined subjects and objects.",
+                "control-id": "ac-3.4"
+              }
+            ]
+          },
+          {
+            "uuid": "d23e51fa-5f28-445c-9a8f-bbd02d98f9fb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.7.",
+            "implemented-requirements": [
+              {
+                "uuid": "9d9772ad-670c-49c4-8cb3-2e09b56c8451",
+                "description": "If the network device uses role-based access control, the network device must enforce organization-defined role-based access control policies over defined subjects and objects.",
+                "control-id": "ac-3.7"
+              }
+            ]
+          },
+          {
+            "uuid": "1ab2ed9d-df9c-4514-9271-7fe885f8562e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "11a6d1c9-1a32-49c0-81e3-f9a137079305",
+                "description": "The network device must enforce approved authorizations for controlling the flow of management information within the network device based on information flow control policies.",
+                "control-id": "ac-4"
+              }
+            ]
+          },
+          {
+            "uuid": "84103014-b288-468e-a794-9026fcab5401",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.9.",
+            "implemented-requirements": [
+              {
+                "uuid": "06fd5d3a-1b0b-4316-b601-1a1024dbb630",
+                "description": "The network device must audit the execution of privileged functions.",
+                "control-id": "ac-6.9"
+              }
+            ]
+          },
+          {
+            "uuid": "32532bcd-859e-48d5-b8f0-2b148ad8f2a6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "17c504f2-ca79-40a8-90d1-99ec62d92ab3",
+                "description": "The network device must prevent non-privileged users from executing privileged functions to include disabling, circumventing, or altering implemented security safeguards/countermeasures.",
+                "control-id": "ac-6.10"
+              }
+            ]
+          },
+          {
+            "uuid": "2c257262-2bdb-4a6a-89c2-ff445f48e0de",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "d690cccd-38ce-4688-bf39-6a31cb0e91b7",
+                "description": "The network device must be configured to enforce the limit of three consecutive invalid logon attempts, after which time it must block any login attempt for 15 minutes.",
+                "control-id": "ac-7"
+              }
+            ]
+          },
+          {
+            "uuid": "9d3d5cfa-0067-41cd-98c7-822283ae7101",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "37c4e2d9-fceb-41da-b29d-1d41fcd4a05b",
+                "description": "The network device must retain the Standard Mandatory DoD Notice and Consent Banner on the screen until the administrator acknowledges the usage conditions and takes explicit actions to log on for further access.",
+                "control-id": "ac-8"
+              },
+              {
+                "uuid": "638d9922-4e5c-4ab7-b0fe-2b36aef6c765",
+                "description": "The network device must display the Standard Mandatory DoD Notice and Consent Banner before granting access to the device.",
+                "control-id": "ac-8"
+              }
+            ]
+          },
+          {
+            "uuid": "d8f28709-a1b9-4752-ae15-9f115588a9b1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "11bf703f-7db3-40de-913d-cb99c55459e9",
+                "description": "The network device must limit the number of concurrent sessions to an organization-defined number for each administrator account and/or administrator account type.",
+                "control-id": "ac-10"
+              }
+            ]
+          },
+          {
+            "uuid": "298ffabe-5796-418a-bcc5-b9be4ffa4ce8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "df6ea2fc-e123-4616-be4c-0ce815b6f47a",
+                "description": "The network device must initiate a session lock after a 15-minute period of inactivity.",
+                "control-id": "ac-11"
+              },
+              {
+                "uuid": "30543286-bd82-4412-af94-76f6f79e0183",
+                "description": "The network device must be configured to enable network administrators to directly initiate a session lock.",
+                "control-id": "ac-11"
+              },
+              {
+                "uuid": "1c47d196-61c8-4c7f-84de-ca50721ddbab",
+                "description": "The network device must retain the session lock until the administrator  reestablishes access using established identification and authentication procedures.",
+                "control-id": "ac-11"
+              }
+            ]
+          },
+          {
+            "uuid": "d30b729f-3c6d-4d87-8ab9-8107c3fdfc74",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-11.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "8ca0afb9-4037-4b5b-85a4-0699112a612f",
+                "description": "The network device must conceal, via the session lock, information previously visible on the display with a publicly viewable image.",
+                "control-id": "ac-11.1"
+              }
+            ]
+          },
+          {
+            "uuid": "10ce31a5-b4ec-4df3-89cc-a8e7475b01b7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-12.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "33b12982-d612-4db4-8aca-ace90df0ccee",
+                "description": "The network device must be configured to provide a logout mechanism for administrator-initiated communication sessions.",
+                "control-id": "ac-12.1"
+              },
+              {
+                "uuid": "ed70be49-7471-4df1-95eb-5cefb31ea0c9",
+                "description": "The network device must display an explicit logout message to administrators indicating the reliable termination of authenticated communications sessions.",
+                "control-id": "ac-12.1"
+              }
+            ]
+          },
+          {
+            "uuid": "f1c45371-428e-4821-949a-4ebab5a8c886",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "82c9f558-fb21-4340-bbf5-c2ce53d3f597",
+                "description": "The network device must produce audit log records containing information to establish the source of events.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "b9be9e08-d797-43a0-b8cb-c92f24caa548",
+                "description": "The network device must produce audit log records containing sufficient information to establish what type of event occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "dfe4dd21-e8bf-4d48-b61f-4f1956bdf0c2",
+                "description": "The network device must generate audit records containing information that establishes the identity of any individual or process associated with the event.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "38a6ecb9-e086-4271-9552-5e0592c8208e",
+                "description": "The network device must produce audit records that contain information to establish the outcome of the event.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "9d5692c5-7850-4268-bb51-b7b3ea625aa1",
+                "description": "The network device must produce audit records containing information to establish when (date and time) the events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "59981a60-353b-4b86-831b-f2c880839bb6",
+                "description": "The network device must produce audit records containing information to establish where the events occurred.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "9ad14432-4b51-45fa-9be5-38dcfb3895ad",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "98e0818c-c5b1-426a-b682-00c81780f42e",
+                "description": "The network device must generate audit records containing the full-text recording of privileged commands.",
+                "control-id": "au-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "06af597d-f053-4500-a525-19bf22090a3c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "a0ad7326-b824-48fe-a8e7-31ff8bb51c5b",
+                "description": "The network device must allocate audit record storage capacity in accordance with organization-defined audit record storage requirements.",
+                "control-id": "au-4"
+              }
+            ]
+          },
+          {
+            "uuid": "17c6a804-f38d-451a-92cd-0afd88cd03ae",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "6b947545-4134-4f09-a4b6-8437db7d79d4",
+                "description": "The network device must off-load audit records onto a different system or media than the system being audited.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "8d189f3d-5e46-42b0-931a-48bf4c46d89d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "c92b83ce-5794-4cb6-8087-37fb41e29e9c",
+                "description": "The network device must generate an immediate real-time alert of all audit failure events requiring real-time alerts.",
+                "control-id": "au-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "b2fdd578-c141-493d-92b0-04b21ce99975",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "b66432ba-c856-4244-805f-0586f7d9feb9",
+                "description": "The network device must record time stamps for audit records that meet a granularity of one second for a minimum degree of precision.",
+                "control-id": "au-8"
+              },
+              {
+                "uuid": "7842dd0e-f434-4515-a996-ec440cdc3cd1",
+                "description": "The network device must record time stamps for audit records that can be mapped to Coordinated Universal Time (UTC) or Greenwich Mean Time (GMT).",
+                "control-id": "au-8"
+              },
+              {
+                "uuid": "fc1e2dab-180e-43dc-a3b0-d789c16dcba5",
+                "description": "The network device must use internal system clocks to generate time stamps for audit records.",
+                "control-id": "au-8"
+              }
+            ]
+          },
+          {
+            "uuid": "9f9d4f83-9d42-480a-a1f5-61c4f3716dcb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "965959fd-6d51-4fb0-b5df-d43fbe2541f2",
+                "description": "The network device must be configured to synchronize internal information system clocks using redundant authoritative time sources.",
+                "control-id": "au-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "6c802600-ac93-4b3c-af85-54d716375f83",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "1e4e6da8-bc3d-4fc5-8ad6-5abee517ba3b",
+                "description": "The network device must protect audit information from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "abe94e6e-5525-4d7d-9ca6-68b018c749c5",
+                "description": "The network device must protect audit tools from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "3bb4a014-a7b4-4688-9853-9b8044c57d1e",
+                "description": "The network device must protect audit tools from unauthorized access.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "eb3d24d6-5530-46af-a719-54906936458a",
+                "description": "The network device must protect audit information from unauthorized deletion.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "92ccf853-c580-4b1b-8c14-71f6d61d8cb1",
+                "description": "The network device must protect audit tools from unauthorized deletion.",
+                "control-id": "au-9"
+              }
+            ]
+          },
+          {
+            "uuid": "13e29438-6d97-4df6-ae26-13efde267317",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "e682bc36-f14c-4881-81d8-796afa15e996",
+                "description": "The network device must protect against an individual (or process acting on behalf of an individual) falsely denying having performed organization-defined actions to be covered by non-repudiation.\nThe network device, for PKI-based authentication, must be configured to map validated certificates to unique user accounts.",
+                "control-id": "au-10"
+              }
+            ]
+          },
+          {
+            "uuid": "807afb0f-d21b-49ac-a09b-25fd587cd4fd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "f1dd560c-7b2b-45fd-98cc-397c4c33d2c1",
+                "description": "The network device must generate audit records when successful/unsuccessful attempts to access privileges occur.\nThe network device must generate audit records when successful/unsuccessful attempts to modify administrator privileges occur.\nThe network device must generate audit records when successful/unsuccessful attempts to delete administrator privileges occur.\nThe network device must generate audit records when successful/unsuccessful logon attempts occur.\nThe network device must generate audit records for privileged activities or other system-level access.\nThe network device must generate audit records showing starting and ending time for administrator access to the system.\nThe network device must generate audit records when concurrent logons from different workstations occur.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "0c780b40-cbdb-4f58-a7c7-6a9705c2b260",
+                "description": "The network device must generate log records for a locally developed list of auditable events",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "d50d0faf-495b-4469-8ee7-5d9f050c7f10",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-14.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "67bd52e6-d339-480a-9b54-2b954fb02bb4",
+                "description": "The network device must initiate session auditing upon startup.",
+                "control-id": "au-14.1"
+              }
+            ]
+          },
+          {
+            "uuid": "34a2f4c0-de3b-40e5-b55d-e74153ce78c6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "482d8943-9f8f-456d-af23-0b9eacae2807",
+                "description": "The network device must enforce access restrictions associated with changes to the system components.",
+                "control-id": "cm-5"
+              }
+            ]
+          },
+          {
+            "uuid": "70ba6734-c3c0-4672-8445-298f85d4befe",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "218ab439-fd8b-4e60-bb8c-62be1b583aec",
+                "description": "The network device must enforce access restrictions associated with changes to device configuration.",
+                "control-id": "cm-5.1"
+              },
+              {
+                "uuid": "9582cc6e-63d2-41dc-9b97-eb522c82eb82",
+                "description": "The network device must audit the enforcement actions used to restrict access associated with changes to the device.",
+                "control-id": "cm-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "1e1e70bd-5299-4732-bb83-5417beebbff6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "b5e9ed79-2e62-445d-bb3f-7976f08a270a",
+                "description": "The network device must prevent the installation of patches, service packs, or application components without verification the software component has been digitally signed using a certificate that is recognized and approved by the organization.",
+                "control-id": "cm-5.3"
+              }
+            ]
+          },
+          {
+            "uuid": "02936c4a-86ff-46ce-850b-6241da375623",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "f3f111e9-a54f-465a-8186-523b79d19478",
+                "description": "The network device must limit privileges to change the software resident within software libraries.",
+                "control-id": "cm-5.6"
+              }
+            ]
+          },
+          {
+            "uuid": "d3281154-6155-4d9c-accd-b8a934d9869d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "a77ec989-a3b3-42c6-928c-49cb7d8c4b84",
+                "description": "If the network device uses role-based access control, the network device must enforce organization-defined role-based access control policies over defined subjects and objects.\nThe network device must be configured to synchronize internal information system clocks using redundant authoritative time sources.\nNetwork devices performing maintenance functions must restrict use of these functions to authorized personnel only.\nIf the network device uses mandatory access control, the network device must enforce organization-defined mandatory access control policies over all subjects and objects.\nThe network device must generate log records for a locally developed list of auditable events\nThe network device must enforce access restrictions associated with changes to the system components.\nThe network device must be configured to use an authentication server for the purpose of authenticating users prior to granting administrative access.\nThe network device must be configured to to conduct backups of system level information contained in the information system when changes occur.\nThe network device must support organizational requirements to conduct backups of information system documentation, including security-related documentation, when changes occur or weekly, whichever is sooner.\nThe network device must obtain its public key certificates from an appropriate certificate policy through an approved service provider.\nThe network device  must be running an operating system release that is currently supported by the vendor.\nThe network device must be configured in accordance with the security configuration settings based on DoD security configuration or implementation guidance, including STIGs, NSA configuration guides, CTOs, and DTMs.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "86406d0d-aa31-4249-a25e-a30fd176a9e9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "94876df8-e703-4d20-9923-3aa26182a88a",
+                "description": "The network device must be configured to use an authentication server for the purpose of authenticating users prior to granting administrative access.",
+                "control-id": "cm-6.1"
+              }
+            ]
+          },
+          {
+            "uuid": "3955d32d-58ec-4440-868b-a0befa2ef1ad",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "3b6fa470-6394-4f14-a72e-4f5ffd22bfc3",
+                "description": "The network device must be configured to prohibit the use of all unnecessary and/or nonsecure functions, ports, protocols, and/or services",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "fcfff93f-fb6b-4762-88b8-06f0ca572ad5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-11.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "04bd7c94-aeb7-48a3-8452-08f347fc2249",
+                "description": "The network device must prohibit installation of software without explicit privileged status.",
+                "control-id": "cm-11.2"
+              }
+            ]
+          },
+          {
+            "uuid": "61da8221-50b4-42dd-a674-a9a4998a24ef",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cp-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "cbd378be-01bb-4b1a-9048-c051c823eaf4",
+                "description": "The network device must be configured to to conduct backups of system level information contained in the information system when changes occur.",
+                "control-id": "cp-9"
+              },
+              {
+                "uuid": "d2268b76-afa7-408c-bb8f-ab7336c02f8f",
+                "description": "The network device must support organizational requirements to conduct backups of information system documentation, including security-related documentation, when changes occur or weekly, whichever is sooner.",
+                "control-id": "cp-9"
+              }
+            ]
+          },
+          {
+            "uuid": "02fc0dc8-2520-4bb1-aea3-adade30e73aa",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "84286c5e-81e7-4355-b45e-711af214f89d",
+                "description": "The network device, for PKI-based authentication, must be configured to map validated certificates to unique user accounts.",
+                "control-id": "ia-2"
+              }
+            ]
+          },
+          {
+            "uuid": "87c16a4c-2168-406c-9ede-6800871947b0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "e3345ede-586c-4f2f-95e5-d0398f4ba63a",
+                "description": "The network device must be configured to use DoD PKI as multi-factor authentication (MFA) for interactive logins.",
+                "control-id": "ia-2.1"
+              }
+            ]
+          },
+          {
+            "uuid": "c4760222-8720-4c9a-97c5-1012c74e1d32",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "81195b1f-2de0-495b-9acb-ddc93bc29d73",
+                "description": "The network device must be configured to authenticate each administrator prior to authorizing privileges based on assignment of group or role.",
+                "control-id": "ia-2.5"
+              }
+            ]
+          },
+          {
+            "uuid": "1256de13-9ba5-4426-b9a3-28cc00dfdf6a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "3f59a5b2-f510-4298-93c6-aa339ec6b6df",
+                "description": "The network device must implement replay-resistant authentication mechanisms for network access to privileged accounts.",
+                "control-id": "ia-2.8"
+              }
+            ]
+          },
+          {
+            "uuid": "f85d234c-61d8-4b6d-a330-2abceb67429d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "1a819605-57da-4aa6-99b5-b48517880b19",
+                "description": "The network device must be configured to authenticate SNMP messages using a FIPS-validated Keyed-Hash Message Authentication Code (HMAC).\nThe network device must authenticate Network Time Protocol sources using authentication that is cryptographically based.",
+                "control-id": "ia-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "85d24334-b748-4d8a-a690-01b1c6f97e75",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "4e7c767b-7c3c-4c7f-9970-453e9f4cff66",
+                "description": "The network device must enforce password complexity by requiring that at least one numeric character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "3e092aad-c80e-4192-bccb-e98875ea4232",
+                "description": "The network device must only store cryptographic representations of passwords.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "80cce7c5-3e32-47f8-9b01-8ffcaf59612e",
+                "description": "The network device must transmit only encrypted representations of passwords.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "dde6d9e4-109e-4286-9b48-884694b6f797",
+                "description": "The network device must not have any default manufacturer passwords when deployed.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "65ca072c-5cca-4842-9619-3789a7b20770",
+                "description": "The network device must enforce password complexity by requiring that at least one special character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "c4fdf26f-bb62-48bf-a0ce-5a69b232c8b5",
+                "description": "The network device must enforce a minimum 15-character password length.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "e202b182-7a97-45cd-b0a8-b5a0cd3655a4",
+                "description": "The network device must enforce password complexity by requiring that at least one upper-case character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "2fda66f8-7eb3-49e7-a3fe-db23531a982d",
+                "description": "The network device must enforce password complexity by requiring that at least one lower-case character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "da6c291d-c98c-4444-9ae4-367197f990af",
+                "description": "The network device must require that when a password is changed, the characters are changed in at least eight of the positions within the password.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "5633d571-8e43-42d4-9bf5-fd756a3182c6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "b5d3ef0e-4bd7-4555-afe9-a6b0906c2325",
+                "description": "The network device must be configured to use DoD approved OCSP responders or CRLs to validate certificates used for PKI-based authentication.",
+                "control-id": "ia-5.2"
+              },
+              {
+                "uuid": "36352208-0fd8-4e8f-8899-b48198029c92",
+                "description": "The network device, for PKI-based authentication, must be configured to map validated certificates to unique user accounts.",
+                "control-id": "ia-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "971bc006-f1a4-4142-a74e-8ebfa003f642",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.13.",
+            "implemented-requirements": [
+              {
+                "uuid": "7b0a24c9-c79b-42a3-a88f-87bdad730a43",
+                "description": "The network device must prohibit the use of cached authenticators after an organization-defined time period.",
+                "control-id": "ia-5.13"
+              }
+            ]
+          },
+          {
+            "uuid": "21909c17-9214-413f-b599-af1383835ad2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "19c73586-57bf-4ac1-a11a-b6f8a19bdd89",
+                "description": "The network device must obscure feedback of authentication information during the authentication process to protect the information from possible exploitation/use by unauthorized individuals.",
+                "control-id": "ia-6"
+              }
+            ]
+          },
+          {
+            "uuid": "72b72fff-bc0f-43bb-be0e-8a05462403c9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "9692c6fe-060d-4360-b5be-8cbe831bfb06",
+                "description": "The network device must use FIPS 140-2 approved algorithms for authentication to a cryptographic module.",
+                "control-id": "ia-7"
+              }
+            ]
+          },
+          {
+            "uuid": "4ce19c27-2691-4b06-8572-102587ec09df",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ma-3.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "37a567b8-0d05-48b0-bc2c-473e536157a6",
+                "description": "Network devices performing maintenance functions must restrict use of these functions to authorized personnel only.",
+                "control-id": "ma-3.4"
+              }
+            ]
+          },
+          {
+            "uuid": "bd01b390-dd1e-439e-98b4-2177dbb4dccd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ma-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "200d88f0-c92d-473d-b7f9-3057d1048005",
+                "description": "The network device must terminate all sessions and network connections when nonlocal device maintenance is completed.",
+                "control-id": "ma-4"
+              }
+            ]
+          },
+          {
+            "uuid": "831c21bc-21de-4bb0-87f6-7e15e15b06ae",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ma-4.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "8ea53837-c1bb-48a3-bb72-b8e67cca92f2",
+                "description": "The network devices must use FIPS-validated Keyed-Hash Message Authentication Code (HMAC) to protect the integrity of nonlocal maintenance and diagnostic communications.",
+                "control-id": "ma-4.6"
+              },
+              {
+                "uuid": "11aa09ac-f35a-4ecb-a5b9-40cfb81be697",
+                "description": "The network device must be configured to implement cryptographic mechanisms using a FIPS 140-2 approved algorithm to protect the confidentiality of remote maintenance sessions",
+                "control-id": "ma-4.6"
+              }
+            ]
+          },
+          {
+            "uuid": "5945c276-f971-4e4a-9d2c-23252299ec74",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "382566b9-0b06-4c69-83c5-84506794634d",
+                "description": "The network device must be configured to protect against known types of denial-of-service (DoS) attacks by employing organization-defined security safeguards.",
+                "control-id": "sc-5"
+              }
+            ]
+          },
+          {
+            "uuid": "823fa75b-5a0f-4ff1-b467-799d1791c42d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "885ba3e6-4f55-47f0-a544-5127a1050779",
+                "description": "The network device must terminate all network connections associated with a device management session at the end of the session, or the session must be terminated after 10 minutes of inactivity except to fulfill documented and validated mission requirements.",
+                "control-id": "sc-10"
+              }
+            ]
+          },
+          {
+            "uuid": "23fb1389-8a2b-4d08-9c0c-cd2d2e74d88f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-17.",
+            "implemented-requirements": [
+              {
+                "uuid": "ae308a09-b5f7-4439-ace7-e8a2f1f10b9a",
+                "description": "The network device must obtain its public key certificates from an appropriate certificate policy through an approved service provider.",
+                "control-id": "sc-17"
+              }
+            ]
+          },
+          {
+            "uuid": "033dfe2b-d3d6-435a-b5d4-b106637c6dc0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "1cea423e-bdb8-43cc-a645-08ac01e54101",
+                "description": "The network device must invalidate session identifiers upon administrator logout or other session termination.",
+                "control-id": "sc-23.1"
+              }
+            ]
+          },
+          {
+            "uuid": "e814d3b9-9eb6-4605-abc6-57f5a796349f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "4c4d3d18-c505-4e24-93ed-fd94a1adf319",
+                "description": "The network device must recognize only system-generated session identifiers.",
+                "control-id": "sc-23.3"
+              },
+              {
+                "uuid": "130bf0ae-529c-4272-b9e6-45c86aba8d74",
+                "description": "The network device must generate unique session identifiers using a FIPS 140-2 approved random number generator.",
+                "control-id": "sc-23.3"
+              }
+            ]
+          },
+          {
+            "uuid": "05c17b1d-71ca-4232-af00-e0b53f6d2655",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.",
+            "implemented-requirements": [
+              {
+                "uuid": "6b614ea3-8422-427b-8ea7-8f77d7857274",
+                "description": "The network device must only allow authorized administrators to view or change the device configuration, system files, and other files stored either in the device or on removable media (such as a flash drive).",
+                "control-id": "sc-28"
+              }
+            ]
+          },
+          {
+            "uuid": "048908d4-d180-431f-98d0-c3ce382bb0fe",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "76a45d40-6265-4455-b5cc-39049fc576d2",
+                "description": "The network device must be configured to send log data to a central log server for the purpose of forwarding alerts to the administrators and the ISSO.",
+                "control-id": "si-2"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

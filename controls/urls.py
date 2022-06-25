@@ -8,9 +8,7 @@ from siteapp.model_mixins.tags import TagView, build_tag_urls
 admin.autodiscover()
 
 from django.views.decorators.csrf import csrf_exempt
-from controls import urls_api
 
-import controls.views
 from controls import views
 
 from siteapp.settings import *
@@ -26,18 +24,29 @@ urlpatterns = [
 
     # Systems
     url(r'^(?P<system_id>.*)/controls/selected/export/xacta/xlsx$', views.controls_selected_export_xacta_xslx, name="controls_selected"),
+    url(r'^(?P<system_id>.*)/controls/selected/aspen$', views.controls_selected_aspen, name="controls_selected_aspen"),
     url(r'^(?P<system_id>.*)/controls/selected$', views.controls_selected, name="controls_selected"),
     url(r'^(?P<system_id>.*)/controls/add$', views.system_controls_add, name="system_controls_add"),
     url(r'^(?P<system_id>.*)/controls/remove/(?P<element_control_id>.*)$',  views.system_control_remove, name="system_control_remove"),
+    
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/compare$', views.editor_compare, name="control_compare"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),
     url(r'^editor_autocomplete/', views.EditorAutocomplete.as_view(), name="search_system_component"),
     url(r'^related_system_components/', views.RelatedComponentStatements.as_view(), name="related_system_components"),
     url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),
+    url(r'^(?P<system_id>.*)/components/proposal_message$', views.proposal_message, name="proposal_message"),
+    url(r'^(?P<system_id>.*)/components/remove_proposal/(?P<proposal_id>.*)$', views.system_proposal_remove, name="system_proposal_remove"),
+
     url(r'^(?P<system_id>.*)/components/editor_autocomplete$',  views.EditorAutocomplete.as_view(), name="editor_autocomplete"),
     url(r'^(?P<system_id>.)/profile/oscal/json', views.system_profile_oscal_json, name="profile_oscal_json"),
     url(r'^statement_history/(?P<smt_id>.*)/$', views.statement_history, name="statement_history"),
     url(r'^restore_to/(?P<smt_id>.*)/(?P<history_id>.*)/$', views.restore_to_history, name="restore_to"),
+
+    url(r'^(?P<system_id>.*)/aspen/summary/fake$', views.system_summary_1_aspen, name="system_summary_1"),
+    url(r'^(?P<system_id>.*)/aspen/summary$', views.system_summary_aspen, name="system_summary"),
+    url(r'^(?P<system_id>.*)/aspen/integrations$', views.system_integrations_aspen, name="system_integrations"),
+
+    url(r'^new', views.create_system_from_string, name="create_system_from_string"),
 
     # Systems Assessment Results
     url(r'^(?P<system_id>.*)/assessments$', views.system_assessment_results_list, name="system_assessment_results_list"),
@@ -48,6 +57,7 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/sar/(?P<sar_id>.*)/history$', views.system_assessment_result_history, name="system_assessment_result_history"),
 
     # Systems Inventory and Deployments
+    url(r'^(?P<system_id>.*)/aspen/deployments$', views.system_deployments_aspen, name="system_deployments_aspen"),
     url(r'^(?P<system_id>.*)/deployments$', views.system_deployments, name="system_deployments"),
     url(r'^(?P<system_id>.*)/deployment/new$', views.manage_system_deployment, name="new_system_deployment"),
     url(r'^(?P<system_id>.*)/deployment/(?P<deployment_id>.*)/edit$', views.manage_system_deployment, name="manage_system_deployment"),
@@ -60,6 +70,7 @@ urlpatterns = [
     url(r'^smt/_update_smt_prototype/$', views.update_smt_prototype),
 
     # System Components/Elements
+    url(r'^(?P<system_id>.*)/aspen/components/selected$', views.SelectedComponentsListAspen.as_view(), name="components_selected_aspen"),
     url(r'^(?P<system_id>.*)/components/selected$', views.SelectedComponentsList.as_view(), name="components_selected"),
     url(r'^(?P<system_id>.*)/components/selected/export/opencontrol$', views.export_system_opencontrol, name="export_system_opencontrol"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/download/oscal/json$',
@@ -67,11 +78,11 @@ urlpatterns = [
         name="system_element_download_oscal_json"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/_remove$', views.system_element_remove, name="system_element_remove"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/(?P<catalog_key>.*)/(?P<control_id>.*)$', views.system_element_control, name="system_element_control"),
+    url(r'^(?P<system_id>.*)/components/(?P<element_id>.*)/proposal_message$', views.proposal_message, name="proposal_message"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
     url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
 
     # Component Library
-
     url(r'^components$', views.component_library, name="component_library"),
     url(r'^components/compare$', views.compare_components, name="compare_components"),
     url(r'^components/new$', views.new_element, name="new_element"),
@@ -87,6 +98,7 @@ urlpatterns = [
 
     # Elements
     url(r'^elements/(\d+)/__edit$', views.edit_element, name="edit_element"),
+    url(r'^elements/(\d+)/__edit_access$', views.edit_element_access_management, name="edit_element_access_management"),
     *build_tag_urls(r"^elements/(\d+)/", model=Element),  # Tag Urls
 
     # Controls
@@ -101,6 +113,9 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/controls/baseline/(?P<catalog_key>.*)/(?P<baseline_name>.*)/_assign$', views.assign_baseline, name="assign_baseline"),
 
     # Poams
+    url(r'^(?P<system_id>.*)/aspen/poams$', views.system_poams_aspen, name="system_poams_aspen"),
+    url(r'^import-poams$', views.import_poams_xlsx, name="import_poams_xlsx"),
+
     url(r'^(?P<system_id>.*)/poams$', views.poams_list, name="poams_list"),
     url(r'^(?P<system_id>.*)/poams/new$', views.new_poam, name="new_poam"),
     url(r'^(?P<system_id>.*)/poams/(?P<poam_id>.*)/edit$', views.edit_poam, name="edit_poam"),

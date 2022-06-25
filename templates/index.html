@@ -11,6 +11,11 @@ Welcome to Compliance Automation
 <body class="splash-bg">
 <div class="container">
   <div class="row">
+    {% if isInternetExplorer %}
+      <div class="alert alert-warning" role="alert">
+        <strong>WARNING</strong>: Internet Explorer is not supported. Please use Microsoft Edge, Google Chrome, or Mozilla FireFox.
+      </div>
+    {% endif %}
     <div class="col-md-7 splash-container" style="margin: 40px 0px 30px 0px;">
       {% include "splash.html" %}
     </div>

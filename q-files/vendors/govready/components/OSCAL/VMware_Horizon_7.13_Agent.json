@@ -1,0 +1,49 @@
+{
+  "component-definition": {
+    "uuid": "1ba38f30-8ab5-42f1-8075-bfdc93a7b67e",
+    "metadata": {
+      "title": "VMware Horizon 7.13 Agent",
+      "last-modified": "2022-06-12T20:17:24",
+      "version": "2022-06-12T20:17:24",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "0ae0f643-0317-4fa2-a19c-6ce125f81c5b",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "2b978924-4221-4097-95df-ad6d4c1f4972",
+        "type": "software",
+        "title": "VMware Horizon 7.13 Agent",
+        "description": "VMware Horizon 7.13 Agent based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "0ae0f643-0317-4fa2-a19c-6ce125f81c5b"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "cb02d635-d4f6-4cb9-a090-118184f2a066",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "cd040041-bfd5-4204-a477-8df0e3e512cf",
+                "description": "The Horizon Agent must require TLS connections.\nThe Horizon Agent must only run allowed scripts on user connect.\nThe Horizon Agent must only run allowed scripts on user disconnect.\nThe Horizon Agent must only run allowed scripts on user reconnect.\nThe Horizon Agent must check the entire chain when validating certificates.\nThe Horizon Agent must set an idle timeout.\nThe Horizon Agent must block server to client clipboard actions for Blast.\nThe Horizon Agent must block server to client clipboard actions for PCoIP.\nThe Horizon Agent must not allow file transfers through HTML Access.\nThe Horizon Agent must not allow drag and drop for Blast.\nThe Horizon Agent must not allow drag and drop for PCoIP.\nThe Horizon Agent must audit clipboard actions for Blast.\nThe Horizon Agent must audit clipboard actions for PCoIP.\nThe Horizon Agent desktops must not allow client drive redirection.\nThe Horizon Agent must block USB mass storage.",
+                "control-id": "cm-6"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

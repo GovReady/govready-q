@@ -7,6 +7,7 @@ import json
 
 from guidedmodules.models import AppSource, AppVersion
 from .models import Statement, Poam, Element, Deployment, SystemAssessmentResult
+from siteapp.models import Role
 # from jsonfield import JSONField
 
 
@@ -67,10 +68,13 @@ class ElementForm(ModelForm):
         super().__init__(*args, **kwargs)
         self.initial['element_type'] = 'system_element'
         self.fields['element_type'].widget = forms.HiddenInput()
+        self.initial['private'] = True
+        self.initial['require_approval'] = False
+
 
     class Meta:
         model = Element
-        fields = ['name', 'full_name', 'description', 'element_type', 'component_type', 'component_state']
+        fields = ['name', 'full_name', 'description', 'element_type', 'component_type', 'component_state', 'private', 'require_approval']
 
     def clean(self):
         """Extend clean to validate element name is not reused."""
@@ -84,7 +88,19 @@ class ElementEditForm(ModelForm):
 
     class Meta:
         model = Element
-        fields = ['id', 'name', 'description']
+        fields = ['id', 'name', 'description', 'private', 'require_approval']
+
+class StatementEditForm(ModelForm):
+    class Meta:
+        model = Statement
+        fields = ['id', 'body']
+
+class ElementEditAccessManagementForm(ModelForm):
+
+    class Meta:
+        model = Element
+        fields = ['id', 'require_approval']
+
 class ImportOSCALComponentForm(forms.Form):
 
     file = forms.FileField(label="Select OSCAL file (.json)",

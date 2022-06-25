@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import json
+from unicodedata import name
 import auto_prefetch
 from django.db import models
 from django.db.models import Count
@@ -15,6 +16,9 @@ from natsort import natsorted
 from api.base.models import BaseModel
 from controls.enums.components import ComponentTypeEnum, ComponentStateEnum
 from siteapp.model_mixins.tags import TagModelMixin
+from siteapp.model_mixins.appointments import AppointmentModelMixin
+from siteapp.model_mixins.requests import RequestsModelMixin
+from siteapp.model_mixins.proposals import ProposalModelMixin
 from controls.enums.statements import StatementTypeEnum
 from controls.enums.remotes import RemoteTypeEnum
 from controls.oscal import Catalogs, Catalog, CatalogData
@@ -23,11 +27,21 @@ import uuid
 import tools.diff_match_patch.python3 as dmp_module
 from copy import deepcopy
 from django.db import transaction
+from django.core.validators import RegexValidator
+from django.core.validators import validate_email
+
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'baselines')
 EXTERNAL_BASELINE_PATH = os.path.join(f"{os.getcwd()}", 'local', 'controls', 'data', 'baselines')
 ORGPARAM_PATH = os.path.join(os.path.dirname(__file__), 'data', 'org_defined_parameters')
 
+PHONE_NUMBER_REGEX = RegexValidator(regex=r"^\+?1?\d{8,15}$")
 
 class ImportRecord(BaseModel):
     name = models.CharField(max_length=100, help_text="File name of the import", unique=False, blank=True, null=True)
@@ -249,7 +263,7 @@ class StatementRemote(auto_prefetch.Model):
                                              unique=False, blank=True, null=True, help_text="The Import Record which created this record.")
 
 
-class Element(auto_prefetch.Model, TagModelMixin):
+class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, RequestsModelMixin):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
     description = models.TextField(default="Description needed", help_text="Description of the Element", unique=False, blank=False, null=False)
@@ -263,6 +277,9 @@ class Element(auto_prefetch.Model, TagModelMixin):
                                       unique=False, blank=True, null=True, help_text="The Import Record which created this Element.")
     component_type = models.CharField(default="software", max_length=50, help_text="OSCAL Component Type.", unique=False, blank=True, null=True, choices=ComponentTypeEnum.choices())
     component_state = models.CharField(default="operational", max_length=50, help_text="OSCAL Component State.", unique=False, blank=True, null=True, choices=ComponentStateEnum.choices())
+    private = models.BooleanField(blank=False, null=False, default=True, help_text="Component is private.")
+    require_approval = models.BooleanField(blank=False, null=False, default=False, help_text="Component requires approval to use.")
+    # prequisites = models.TextField(unique=False, blank=True, null=True, help_text="Prequisites for the Element.")
 
     # Notes
     # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)
@@ -289,8 +306,20 @@ class Element(auto_prefetch.Model, TagModelMixin):
             permissions = get_perms_for_model(Element)
             for perm in permissions:
                 assign_perm(perm.codename, user, self)
+            logger.info(
+                event="update_element_permission assign_owner",
+                comment=f"Assigning {user.username} as an owner of component {self.name}",
+                object={"object": "element", "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
             return True
         except:
+            logger.warning(
+                event="update_element_permission update_failed",
+                comment=f"Could not assign {user.username} as an owner of component {self.name}",
+                object={"object": "element", "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
             return False
 
     def assign_edit_permissions(self, user):
@@ -298,9 +327,114 @@ class Element(auto_prefetch.Model, TagModelMixin):
             permissions = ['view_element', 'change_element', 'add_element']
             for perm in permissions:
                 assign_perm(perm, user, self)
+            logger.info(
+                event="update_element_permission assign_edit_permissions",
+                comment=f"Assigning {user.username} as an editor of component {self.name}",
+                object={"object": "element", "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
             return True
         except:
+            logger.warning(
+                event="update_element_permission update_failed",
+                comment=f"Could not assign {user.username} as an editor of element {self.name}",
+                object={"object": "element", "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
             return False
+
+    def assign_user_permissions(self, user, permissions):
+        try:
+            list_of_permissions = ['view_element', 'change_element', 'add_element', 'delete_element']
+            current_permissions = get_user_perms(user, self)
+            users_list_of_perms = []
+            for currentPerm in current_permissions:
+                users_list_of_perms.append(currentPerm)
+            
+            for perm in list_of_permissions:
+                # user already has permission and is requesting to get permission again
+                if(perm in current_permissions and perm in permissions):
+                    print('Already has this permission: ', perm)
+                    assign_perm(perm, user, self)
+                # user doesnt already have permission and is requesting this permission
+                if(perm not in current_permissions and perm in permissions):
+                    print('User has new permission: ', perm)
+                    assign_perm(perm, user, self)
+                 # user already has this permission and is not requesting this permission anymore
+                if(perm in current_permissions and perm not in permissions):
+                    print('Delete permissions: ', perm)
+                    remove_perm(perm, user, self)
+                
+            logger.info(
+                event="update_element_permission assign_permissions",
+                comment=f"Assigning {user.username} these permissions {permissions} to element: {self.name}",
+                object={"object": self, "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
+
+            return True
+        except:
+            logger.warning(
+                event="update_element_permission update_failed",
+                comment=f"Could not assign {user.username} these permissions {permissions} to element: {self.name}",
+                object={"object": self, "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
+            return False
+    def remove_all_permissions_from_user(self, user):
+        try:
+            current_permissions = get_user_perms(user, self)
+            users_list_of_perms = []
+            for currentPerm in current_permissions:
+                users_list_of_perms.append(currentPerm)
+            for perm in users_list_of_perms:
+                remove_perm(perm, user, self)
+            logger.info(
+                event="update_element_permission remove_user_permissions",
+                comment=f"Removing permissions of {user.username} for component {self.name}",
+                object={"object": "element", "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
+            return True
+        except:
+            logger.warning(
+                event="update_element_permission remove_user_failed",
+                comment=f"Could not remove {user.username} permissions to element: {self.name}",
+                object={"object": self, "id": self.id},
+                user={"id": user.id, "username": user.username}
+            )
+            return False
+    def get_permissible_users(self):
+        return get_users_with_perms(self, attach_perms=True)
+
+    def is_owner(self, user):
+        user_perms = get_user_perms(user, self)
+
+        view_perm = False
+        add_perm = False
+        change_perm = False
+        delete_perm = False
+
+        for perm in user_perms:
+            if perm == 'add_element':
+                add_perm = True
+            elif perm == 'change_element':
+                change_perm = True
+            elif (perm == 'delete_element'):
+                delete_perm = True
+            elif (perm == 'view_element'):
+                view_perm = True
+            else:
+                logger.warning(
+                    event="update_element_permission update_failed",
+                    comment=f"Invalid permission assigned to element {self.name}",
+                    object={"object": "element", "id": self.id},
+                    user={"id": user.id, "username": user.username}
+                )
+
+        has_all_perms = view_perm and add_perm and change_perm and delete_perm
+
+        return has_all_perms
 
     @transaction.atomic
     def remove_element_control(self, oscal_ctl_id, oscal_catalog_key):
@@ -516,11 +650,12 @@ class ElementRole(auto_prefetch.Model, BaseModel):
         return "'%s id=%d'" % (self.role, self.id)
 
 
-class System(auto_prefetch.Model, TagModelMixin):
+class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
     root_element = auto_prefetch.ForeignKey(Element, related_name="system", on_delete=models.CASCADE,
                                             help_text="The Element that is this System. Element must be type [Application, General Support System]")
     fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=True,
                                 null=True)
+    info = models.JSONField(blank=True, default=dict, help_text="JSON object representing additional system information")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
 
@@ -828,6 +963,30 @@ class System(auto_prefetch.Model, TagModelMixin):
 
         self.root_element.statements_consumed.filter(producer_element=element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).update(status=status)
         return True
+
+    def add_event(self, event_type, description, info={}):
+        """Add event to SystemEvents"""
+
+        se = SystemEvent.objects.create(
+            system = self,
+            event_type = event_type,
+            description = description,
+            info = info
+        )
+
+        return se
+
+class SystemEvent(auto_prefetch.Model, TagModelMixin, BaseModel):
+    system = auto_prefetch.ForeignKey('System', related_name='events', on_delete=models.CASCADE, blank=True,
+                                      null=True, help_text="Events related to the system")
+    event_type = models.CharField(max_length=12, help_text="Event type", unique=False, blank=False, null=False)
+    description = models.CharField(max_length=255, help_text="Brief description of the event", unique=False,
+                                   blank=False, null=False)
+    info = models.JSONField(blank=True, default=dict, help_text="JSON object detailed event information")
+
+    #{ "event_tag": "TEST", "event_summary": "Penetration test scheduled - Automated penetration test run by SOC"},
+    def __str__(self):
+        return f"SystemEvent {self.id} {self.description[:15] + '..'}"
 
 
 class CommonControlProvider(models.Model):

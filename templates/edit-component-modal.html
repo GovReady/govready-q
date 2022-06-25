@@ -5,18 +5,46 @@
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h4 class="modal-title" id="invitation_modal_title">Edit Component</h4>
         </div>
-        <form role="form" method="POST">
+        <form role="form" method="POST">{% csrf_token %}
            <div class="modal-body">
             <div class="form-group" data-children-count="1">
-                <label class="control-label" for="id_name">Name</label>
-                <input type="text" name="name" maxlength="250" class="form-control" placeholder="Name" title="Common name or acronym of the element" required="" id="name-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0">
+                <label class="control-label" for="name-input">Name</label>
+                <input type="text" name="name" maxlength="250" class="form-control" placeholder="Name" title="Common name or acronym of the element" required="" id="name-input" />
                 <div class="help-block">Common name or acronym of the element</div>
             </div>
             <div class="form-group" data-children-count="1">
-                <label class="control-label" for="id_name">Description</label>
-                <textarea aria-label="Description of the Element" name="name" maxlength="250" class="form-control" placeholder="Description" title="Description of the Element" required="" id="description-input" data-kwimpalastatus="alive" data-kwimpalaid="1609952239310-0"></textarea>
+                <label class="control-label" for="description-input">Description</label>
+                <textarea aria-label="Description of the Element" name="description" maxlength="250" class="form-control" placeholder="Description" title="Description of the Element" required="" id="description-input"></textarea>
                 <div class="help-block">Description of the Element</div>
             </div>
+            {% if is_owner %}
+              <div class="form-group" data-children-count="1">
+                  <label class="control-label" for="private-input">Private</label>
+                  <input
+                    type="checkbox"
+                    aria-label="Private"
+                    name="private"
+                    placeholder=""
+                    title="Mark component private"
+                    required=""
+                    id="private-input"
+                    checked
+                  />
+              </div>
+              <div class="form-group" data-children-count="1">
+                <label class="control-label" for="require-approval-input">Require Approval</label>
+                <input
+                  type="checkbox" 
+                  aria-label="require_approval" 
+                  name="require_approval"
+                  placeholder=""
+                  title="Mark require approval" 
+                  required=""
+                  id="require-approval-input" 
+                  checked
+                />
+              </div>
+            {% endif %}
             <div class="alert alert-danger" role="alert" id="error-alert">
             </div>
            </div>
@@ -32,14 +60,37 @@
 
   {% block scripts %}
   <script>
-    function show_edit_component_modal(name,description,callback) {
+    function show_edit_component_modal(name,description,private,requireApproval,is_owner, callback) {
+      let privateValue = false;
+      if(private === "True"){
+        privateValue = true;
+      } else {
+        privateValue = false;
+      }
+
+      let require_approvalValue = false;
+      if(requireApproval === "False"){
+        require_approvalValue = false;
+      } else {
+        require_approvalValue = true;
+      }
+      
       document.getElementById("name-input").value = name;
       document.getElementById("description-input").value = description;
+      if(is_owner === "True"){
+        document.getElementById("private-input").checked = privateValue;
+        document.getElementById("require-approval-input").checked = require_approvalValue;
+      }
+
       $('#error-alert').hide();
       $('#edit-component-modal').modal();
       $('#submit-btn').on('click', (e) =>{
         e.preventDefault();
-        callback(document.getElementById("name-input").value,document.getElementById("description-input").value);
+        if(is_owner === "True"){
+          callback(document.getElementById("name-input").value,document.getElementById("description-input").value,document.getElementById("private-input").checked,document.getElementById("require-approval-input").checked);
+        } else {
+          callback(document.getElementById("name-input").value,document.getElementById("description-input").value, privateValue, require_approvalValue);
+        }
       });
     }
     function hide_edit_component_modal(){

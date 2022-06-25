@@ -88,9 +88,9 @@ class DiscussionTests(SeleniumTest):
         self.assertRegex(self.browser.title, "Your Compliance Projects")
 
     def _new_project(self):
-        self.browser.get(self.url("/projects"))
+        self.browser.get(self.url("/store"))
 
-        wait_for_sleep_after(lambda: self.click_element("#new-project-link-from-projects"))
+        # wait_for_sleep_after(lambda: self.click_element("#new-project-link-from-projects"))
 
         var_sleep(1)
         # Click Add Button

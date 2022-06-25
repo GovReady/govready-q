@@ -141,8 +141,9 @@ urlpatterns = [
 ]
 
 urlpatterns += [url(r'^api/v2/', include('api.urls'))]
+urlpatterns += [url(r'^integrations/', include('integrations.urls'))]
 
-if settings.OKTA_CONFIG:
+if settings.OKTA_CONFIG or settings.OIDC_CONFIG:
     urlpatterns += [
         path('oidc/', include('mozilla_django_oidc.urls')),
         url(r'^accounts/logout/$', views.logged_out, name="logged_out"),
@@ -169,19 +170,11 @@ urlpatterns += [
     url('^_mark_notifications_as_read', views.mark_notifications_as_read),
 ]
 
-if settings.DEBUG:  # also in urls_landing
-    import debug_toolbar
-
-    urlpatterns += [
-        url(r'^__debug_toolbar__/', include(debug_toolbar.urls)),
-    ]
-
 # Enterprise Single Sign On
 # if SSO Proxy enabled, add-in route to `/accounts/logout/` which comes from Django's account
 # module but is not present from Django when SSO Proxy enabled
 if environment.get("trust-user-authentication-headers"):
     print("settings.PROXY_AUTHENTICATION_USER_HEADER enabled. Catching route accounts/logout/")
-    import debug_toolbar
 
     urlpatterns += [
         url(r'^accounts/logout/$', views.sso_logout, name="sso-logout")

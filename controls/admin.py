@@ -1,7 +1,9 @@
 import csv
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import ImportRecord, Statement, StatementRemote, Element, ElementControl, ElementRole, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam, Deployment, SystemAssessmentResult
+from .models import ImportRecord, Statement, StatementRemote, Element, ElementControl, ElementRole
+from .models import System, SystemEvent, CommonControlProvider, CommonControl, ElementCommonControl, Poam 
+from .models import Deployment, SystemAssessmentResult
 from .oscal import CatalogData
 from guardian.admin import GuardedModelAdmin
 from simple_history.admin import SimpleHistoryAdmin
@@ -67,6 +69,10 @@ class SystemAdmin(GuardedModelAdmin, ExportCsvMixin):
     list_display = ('id', 'root_element')
     actions = ["export_as_csv"]
 
+class SystemEventAdmin(GuardedModelAdmin, ExportCsvMixin):
+    list_display = ('id', 'system', 'event_type', 'description', 'created')
+    actions = ["export_as_csv"]
+
 class CommonControlProviderAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('name', 'id')
     actions = ["export_as_csv"]
@@ -125,6 +131,7 @@ admin.site.register(Element, ElementAdmin)
 admin.site.register(ElementControl, ElementControlAdmin)
 admin.site.register(ElementRole, ElementRoleAdmin)
 admin.site.register(System, SystemAdmin)
+admin.site.register(SystemEvent, SystemEventAdmin)
 admin.site.register(CommonControlProvider, CommonControlProviderAdmin)
 admin.site.register(CommonControl, CommonControlAdmin)
 admin.site.register(ElementCommonControl, ElementCommonControlAdmin)

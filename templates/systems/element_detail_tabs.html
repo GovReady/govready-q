@@ -1,5 +1,6 @@
 {% extends "project-base.html" %}
 {% load humanize %}
+{% load system_tags %}
 {% load static %}
 
 {% block title %}
@@ -20,6 +21,7 @@
     margin-top: 20px;
   }
 
+/*
   #above-tab-content {
     max-width: 1250px;
     margin: auto;
@@ -32,6 +34,8 @@
 
 
   .container { width: 90%; }
+
+*/
 
   .control-text {
     white-space: pre-wrap;
@@ -76,31 +80,63 @@
 
   .control-id-text { font-weight: bold; }
 
-</style>
-{% endblock %}
 
-<!-- action buttons included from project-base.html -->
+  /* added */
+.component-status-alert { border: 1px solid #ffb523;background-color: #ffffe2; text-align:center; padding:5px; }
+#system-owner-proposal-steps { margin-top:2em; margin-bottom:3em; max-width:1000px;}
+#system-owner-proposal-steps h4 { font-size: 1em; font-family: 'Lato', sans-serif; font-weight:bold; margin:.3em 0 .5em 0; padding:0;}
+#system-owner-proposal-steps .dot { width:50px; height:50px;}
+#system-owner-proposal-steps button { margin:2em 2em 0 0;}
+#system-owner-proposal-steps .step-box { margin-left:10px; padding-top:10px; }
 
-<!-- authoring_tool_enabled included from project-base.html -->
+p.step-box-content { font-size:.9em; }
 
-{% block body_content %}
-  <div class="systems-top">
-    <div id="above-tab-content" class="row">
-      <div class="col-sm-10 ">
-        <h2>
-            {{ element.name }} System Component
-        </h2>
-        {% if catalog.catalog_key_display %}
-          <h3 id="catalog-key-display">
-            {{ catalog.catalog_key_display }}
-          </h3>
+#component-detail-content { border:0;}
+.list-group-item { padding:0 0 15px 0;}
+
+
+
+
+
+  </style>
+  {% endblock %}
+
+  <!-- action buttons included from project-base.html -->
+
+  <!-- authoring_tool_enabled included from project-base.html -->
+
+  {% block body_content %}
+
+  <div>
+
+  {% if proposal %}
+    <div class="component-status-alert">
+        {% if proposal.status == "Approve" %}
+          <strong>Component Control Inheritance Approved</strong> <span>({{proposal.created}})</span>
+        {% else %}
+          <strong>Proposed Component</strong> <span>({{proposal.created}})</span> | Current status: {{proposal.status}} stage
         {% endif %}
-      </div>
-      <div class="col-sm-2">
-        <div id="btn-edit-title" style="text-align: center;">
-        </div>
-      </div>
     </div>
+  {% endif %}
+
+
+    <div class="systems-top">
+        <div class="col-sm-10 ">
+          <h2>{{ element.name }} System Component</h2>
+
+          {% if catalog.catalog_key_display %}
+            <h3 id="catalog-key-display">{{ catalog.catalog_key_display }}</h3>
+          {% endif %}
+        </div>
+
+        <div class="col-sm-2">
+          <div id="btn-edit-title"></div>
+        </div>
+
+    </div>
+
+
+
     <div id="component-detail-content">
       <!-- Tab panel: component_controls -->
       <div role="tabpanel" class="tab-pane active" id="component_controls">
@@ -126,6 +162,22 @@
               <a href="{% url 'component_library_component' element.id %}" target="_blank">Read more about {{ element.name }} in component library <span class="glyphicon glyphicon-new-window" style="color: #aaa;"></span></a>
             </div>
           </div>
+
+
+
+
+          <div id="system-owner-proposal-steps"></div>
+
+
+          <form  style="display:none;" id="send_request_message" name="send_request_message" method="post" action="{% url 'system_element' system_id=system.id element_id=element.id %}">
+            {% csrf_token %}
+            <input type="hidden" id="req_message_type" name="req_message_type" value="" />
+            <input type="hidden" id="req_message" name="req_message" value="" />
+          </form>
+
+
+
+
           <div id="control-description" class="">
             <h3>{{ element.name }} contributes {{ impl_smts|length }} statements to controls</h3>
           </div>
@@ -147,6 +199,7 @@
                                   <span id="producer_element-{{ forloop.counter }}-control" class="control-id-text">
                                       {{ smt.sid|upper }} {% if smt.pid %}{{ smt.pid }}.{% endif %} - {{ smt.control_title }}
                                   </span>
+                                  <br /><span class="systems-control-catalog">{{smt.sid_class}}</span>
                               </summary>
                               <div class="component-control-description">{{ smt.catalog_control_as_dict.description }}</div>
                           </details>
@@ -155,7 +208,7 @@
                         <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 remark-text-block">{% spaceless %}
                             {% if smt.prototype_synched == 'not_synched' %}
                                 <span id="diff_alert_{{ forloop.counter }}_notice">
-                                    <span href="#diff_{{ forloop.counter }}" class="" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;cursor: pointer;" onclick="alert('Your statement and component\'s certified statement have diverged.\n\nEdit statement for details.');return false;"><span class="glyphicon glyphicon-alert"></span> Differs from certified</span>
+                                    <span href="#diff_{{ forloop.counter }}" class="" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;cursor: pointer;" onclick="alert('Your statement and component\'s reference statement have diverged.\n\nEdit statement for details.');return false;"><span class="glyphicon glyphicon-alert"></span> Differs from reference</span>
                                 </span>
                             {% elif smt.prototype_synched == 'orphaned' %}
                                 <span id="diff_alert_{{ forloop.counter }}">
@@ -190,6 +243,7 @@
                                           <span id="producer_element-{{ forloop.counter }}-control-edit" class="control-id-text">
                                           {{ smt.sid|upper }} {% if smt.pid not in smt.sid %}{{ smt.pid }}.{% endif %} - {{ smt.control_title }}
                                           </span>
+                                          <br /><span class="systems-control-catalog">{{smt.sid_class}}</span>
                                       </summary>
                                       <div class="component-control-description">{{ smt.catalog_control_as_dict.description }}</div>
                                   </details>
@@ -200,21 +254,21 @@
                                       <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
                                       <label for="statement">
                                           {% if smt.prototype_synched == 'synched'%}
-                                              <span id="diff_alert_{{ forloop.counter }}" style="color: green;font-weight: normal;"><span class="glyphicon glyphicon-check"></span> Same as certified</span>
+                                              <span id="diff_alert_{{ forloop.counter }}" style="color: green;font-weight: normal;"><span class="glyphicon glyphicon-check"></span> Same as reference</span>
                                           {% elif smt.prototype_synched == 'not_synched' %}
-                                              <span id="diff_alert_{{ forloop.counter }}" style="color: firebrick;"> <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span class="glyphicon glyphicon-alert"></span> Click to see differences from certified statement</a></span></span>
+                                              <span id="diff_alert_{{ forloop.counter }}" style="color: firebrick;"> <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span class="glyphicon glyphicon-alert"></span> Click to see differences from reference statement</a></span></span>
                                           {% elif smt.prototype_synched == 'orphaned' %}
                                               <span id="diff_alert_{{ forloop.counter }}" style="color: firebrick;"><span class="glyphicon glyphicon-alert"></span> No related statement for component in library <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt;">view</a></span>
                                           {% endif %}
                                           <div id="diff_{{ forloop.counter }}" class="collapse smt_diff" style="font-size:10pt; font-weight: normal; margin-top: 12px;color: #666;">
                                               <div style="text-decoration: underline;font-weight: bold;">
-                                                  Certified statement for {{ smt.producer_element.name }} {{ control.id_display|upper }} is:
+                                                  Reference statement for {{ smt.producer_element.name }} {{ control.id_display|upper }} is:
                                               </div>
                                               <div id="prototype_body_display_{{ forloop.counter }}">{{ smt.prototype.body|linebreaks }}</div>
                                               <div id="prototype_body_{{ forloop.counter }}" style="display: none;">{{ smt.prototype.body }}</div>
                                               <br/>
                                               <div style="text-decoration: underline;font-weight: bold;">
-                                                  Comparison of current statement to certified statement:
+                                                  Comparison of current statement to reference statement:
                                               </div>
                                               <div id="diff_comparison_{{ forloop.counter }}">
                                                   {% if smt.prototype_synched == 'synched' %}
@@ -229,7 +283,7 @@
                                               </div>
                                               <div>
                                                   {% if smt.prototype_synched == 'not_synched' %}
-                                                      <button type="button" name="overwrite" value="overwrite" class="btn btn-xs btn-primary" onclick="copy_smt_prototype('{{ forloop.counter }}');return false;">Overwrite current statement</button>
+                                                      <button type="button" name="overwrite" value="overwrite" class="btn btn-xs btn-primary" onclick="copy_smt_prototype('{{ forloop.counter }}');return false;">Update current statement to reference statement</button>
                                                   {% endif %}
                                               </div>
                                           </div>
@@ -306,6 +360,44 @@
 {% block scripts %}
       {{block.super}}
       <script>
+        current_system = {
+          id: '{{ system.id }}',
+          name: `{{ system.root_element.name }}`,
+        }
+        req_ele = {
+          id: '{{ element.id }}',
+          name: `{{ element.name }}`,
+          require_approval: `{{ element.require_approval }}` === 'True' ? true : false,
+        }
+        proposal = {
+          id: '{{ proposal.id }}',
+          userId: '{{ proposal.user.id }}',
+          userName: '{{ proposal.user.name }}',
+          requested_element_id: '{{ proposal.requested_element.id  }}',
+          requested_element_name: `{{ proposal.requested_element.name }}`,
+          criteria_comment: `{{ proposal.criteria_comment }}`,
+          status: '{{ proposal.status }}',
+        }
+        if(`{{hasSentRequest}}` === 'True') {
+          req = {
+            id: '{{ component_request.id }}',
+            systemId: '{{ component_request.system.id }}',
+            requested_element: '{{ component_request.requested_element.id }}',
+            criteria_comment: `{{ component_request.criteria_comment }}`,
+            criteria_reject_comment: `{{ component_request.criteria_reject_comment }}`,
+            status: '{{ component_request.status }}',
+          }
+        } else {
+          req = {
+            id: '',
+            systemId: '',
+            requested_element: '',
+            criteria_comment: '',
+            criteria_reject_comment: '',
+            status: '',
+          }
+        }
+        window.proposalSteps({{request.user.id}}, current_system, req_ele, proposal, req, `{{hasSentRequest}}` === 'True' ? true : false);
 
         // Adds statement form to page
         function add_smt() {
@@ -408,12 +500,12 @@
         }
 
         function copy_smt_prototype(smt_panel_num) {
-          // User wants to copy the certified statement locally
+          // User wants to copy the reference statement locally
           // Copy the statement's prototype body text into statement body textarea
           smt_prototype = $('#prototype_body_' + smt_panel_num).text();
           $('#body_' + smt_panel_num).val($('#prototype_body_' + smt_panel_num).text().trim());
           // Update comparison label
-          $('#diff_alert_' + smt_panel_num).html('<span id="diff_alert_' + smt_panel_num + '"><a href="#diff_' + smt_panel_num + '" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span class="glyphicon glyphicon-check"></span> Same as certified</a></span>');
+          $('#diff_alert_' + smt_panel_num).html('<span id="diff_alert_' + smt_panel_num + '"><a href="#diff_' + smt_panel_num + '" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span class="glyphicon glyphicon-check"></span> Same as reference</a></span>');
           // Update comparison
           $('#diff_comparison_' + smt_panel_num).text('Texts are identical.');
         }

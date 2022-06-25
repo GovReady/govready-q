@@ -1,0 +1,491 @@
+{
+  "component-definition": {
+    "uuid": "32566b41-2d43-4ad1-a896-cf242733b5a2",
+    "metadata": {
+      "title": "Cisco IOS Router NDM",
+      "last-modified": "2022-06-12T20:17:31",
+      "version": "2022-06-12T20:17:31",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "e808d5bc-0197-4c4d-88c9-ffe04999a031",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "3d8b4191-af7b-4249-9a09-841923abc69f",
+        "type": "software",
+        "title": "Cisco IOS Router NDM",
+        "description": "Cisco IOS Router NDM based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "e808d5bc-0197-4c4d-88c9-ffe04999a031"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "feaa2153-41f7-46a7-8933-85539f2bc697",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "58750fd4-6e83-4ebe-84fc-d0fbde922a7a",
+                "description": "The Cisco router must be configured with only one local account to be used as the account of last resort in the event the authentication server is unavailable.",
+                "control-id": "ac-2"
+              }
+            ]
+          },
+          {
+            "uuid": "b5835bdb-a815-4b92-bfb7-174c90404995",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "5e0acbeb-67c3-48d8-b63f-ef1f812f8c05",
+                "description": "The Cisco router must be configured to automatically audit account creation.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "e46b3cec-a851-445a-a1ec-2080c5ba0aa8",
+                "description": "The Cisco router must be configured to automatically audit account enabling actions.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "886dfe8b-5f77-4840-b941-ca0fe6d371b9",
+                "description": "The Cisco router must be configured to automatically audit account disabling actions.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "8b3fcea7-fea4-4a08-96f3-7677e693ecd0",
+                "description": "The Cisco router must be configured to automatically audit account modification.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "09a143c9-ca23-48a2-a483-31a0189197aa",
+                "description": "The Cisco router must be configured to automatically audit account removal actions.",
+                "control-id": "ac-2.4"
+              }
+            ]
+          },
+          {
+            "uuid": "d3f9649d-e3a8-4c09-b13e-e28cf0299101",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.7.",
+            "implemented-requirements": [
+              {
+                "uuid": "b4262ad5-8d03-4643-a83f-0416c541232d",
+                "description": "The Cisco router must be configured with only one local account to be used as the account of last resort in the event the authentication server is unavailable.",
+                "control-id": "ac-2.7"
+              }
+            ]
+          },
+          {
+            "uuid": "4ed4f502-99f2-4985-92b2-0d86e41a829d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "e66ffb0c-8a31-42a7-a80a-69083db0be93",
+                "description": "The Cisco router must be configured to enforce approved authorizations for controlling the flow of management information within the device based on control policies.",
+                "control-id": "ac-4"
+              }
+            ]
+          },
+          {
+            "uuid": "d0001758-8df1-4f49-a382-e894d2741fee",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.9.",
+            "implemented-requirements": [
+              {
+                "uuid": "c8aa205a-e04f-47d8-8e93-a5ec84ce9b9c",
+                "description": "The Cisco router must be configured to audit the execution of privileged functions.",
+                "control-id": "ac-6.9"
+              }
+            ]
+          },
+          {
+            "uuid": "957087f5-e7f1-4f50-a883-62d0c100f203",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "6e8f05f2-8957-4aab-a537-2ff4f2e52fa7",
+                "description": "The Cisco router must be configured to enforce the limit of three consecutive invalid logon attempts, after which time it must lock out the user account from accessing the device for 15 minutes.",
+                "control-id": "ac-7"
+              }
+            ]
+          },
+          {
+            "uuid": "fbcbf187-b928-4664-9073-f7148e9736f1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "008c0edd-078c-4601-a136-c3f8992aedd5",
+                "description": "The Cisco router must be configured to display the Standard Mandatory DoD Notice and Consent Banner before granting access to the device.",
+                "control-id": "ac-8"
+              }
+            ]
+          },
+          {
+            "uuid": "3e055a9e-d228-4a99-be45-5cd02230ff52",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "84818e6b-3ce7-4d7b-bcc1-7fde6140b612",
+                "description": "The Cisco router must be configured to limit the number of concurrent management sessions to an organization-defined number.",
+                "control-id": "ac-10"
+              }
+            ]
+          },
+          {
+            "uuid": "57137ce2-8345-4a05-b914-bbe9bd767696",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-17.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "b92e98f3-66bf-4e8a-8815-91a9901b7b48",
+                "description": "The Cisco router must be configured to encrypt SNMP messages using a FIPS 140-2 approved algorithm.",
+                "control-id": "ac-17.2"
+              }
+            ]
+          },
+          {
+            "uuid": "bc705918-0796-4f51-8d7d-e4b5a4bae078",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "cd7fade8-6672-47b8-9bd5-5b46a9636a14",
+                "description": "The Cisco router must produce audit records containing information to establish where the events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "1b1b8e0a-763d-4250-ab11-3fc3e9bb1531",
+                "description": "The Cisco router must produce audit records containing information to establish when (date and time) the events occurred.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "98f1ccf4-efcd-424c-8bb6-59ef45301dad",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "bc44ffdb-452c-4ff0-87ff-e7f970bb690f",
+                "description": "The Cisco router must be configured to generate audit records containing the full-text recording of privileged commands.",
+                "control-id": "au-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "38510915-27de-43b8-9b6c-0e08f552f73b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "81102eea-077f-4aa9-a9aa-551b35885c06",
+                "description": "The Cisco router must be configured to allocate audit record storage capacity in accordance with organization-defined audit record storage requirements.",
+                "control-id": "au-4"
+              }
+            ]
+          },
+          {
+            "uuid": "b7172d10-ac66-4e1e-bfc7-ea7e1ee87246",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "9e72ad4b-e0f2-4fad-ae20-5c0f9fbf709d",
+                "description": "The Cisco router must be configured to off-load log records onto a different system than the system being audited.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "891f82ca-9f3f-48d5-8dcc-4df5ac41fb24",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "7bf915fd-507d-4a3c-8add-cf65b112af27",
+                "description": "The Cisco router must be configured to generate an alert for all audit failure events.",
+                "control-id": "au-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "f185a04d-19fc-4d95-a3e5-520ecd71714f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "6606b9da-fcb0-460a-bcc4-8a9fdee7c94b",
+                "description": "The Cisco router must be configured to record time stamps for log records that can be mapped to Coordinated Universal Time (UTC) or Greenwich Mean Time (GMT).",
+                "control-id": "au-8"
+              },
+              {
+                "uuid": "225fae6e-996f-4a1f-bd2a-791bca85b9d2",
+                "description": "The Cisco router must record time stamps for audit records that meet a granularity of one second for a minimum degree of precision.",
+                "control-id": "au-8"
+              }
+            ]
+          },
+          {
+            "uuid": "feed115a-ebec-42bf-9251-f56a18c889fe",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "ba83bb95-6370-4c37-a201-c730e359141b",
+                "description": "The Cisco router must be configured to synchronize its clock with the primary and secondary time sources using redundant authoritative time sources.",
+                "control-id": "au-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "aaf55d2a-824b-4b5e-8d65-99787b3b6074",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "60f6d6ab-5a91-4b81-aa9e-df762f75ac65",
+                "description": "The Cisco router must be configured to protect audit information from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "f3373bfa-58c5-4a42-8a45-8284c477c57c",
+                "description": "The Cisco router must be configured to protect audit information from unauthorized deletion.",
+                "control-id": "au-9"
+              }
+            ]
+          },
+          {
+            "uuid": "a234e7a9-6d72-4ea7-8343-b7cc1e86ef99",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "c1a2373e-e29f-4faf-8eb0-75f85e333fbf",
+                "description": "The Cisco router must be configured to protect against an individual falsely denying having performed organization-defined actions to be covered by non-repudiation.",
+                "control-id": "au-10"
+              }
+            ]
+          },
+          {
+            "uuid": "b49fad76-ac35-4fc4-a419-4a1b9745c225",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "4c4bb425-a85c-4f37-a703-e6187678b244",
+                "description": "The Cisco router must be configured to generate audit records when successful/unsuccessful attempts to log on with access privileges occur.\nThe Cisco router must be configured to generate log records when administrator privileges are modified.\nThe Cisco router must be configured to generate log records when administrator privileges are deleted.\nThe Cisco router must be configured to generate audit records when successful/unsuccessful logon attempts occur.\nThe Cisco router must be configured to generate log records for privileged activities.\nThe Cisco router must be configured to generate log records when concurrent logons from different workstations occur.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "527686d8-cbe8-4ef6-9762-19939bd1d41f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "1b62bf37-33d2-41e0-965f-3c6b90df11ae",
+                "description": "The Cisco router must be configured to limit privileges to change the software resident within software libraries.",
+                "control-id": "cm-5.6"
+              }
+            ]
+          },
+          {
+            "uuid": "fa2bc958-b518-461d-8efd-db9b3795e84d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "d8f56f79-b42b-4283-b2e8-69fcc3733412",
+                "description": "The Cisco router must be configured to synchronize its clock with the primary and secondary time sources using redundant authoritative time sources.\nThe Cisco router must be configured to use an authentication server for the purpose of authenticating users prior to granting administrative access.\nThe Cisco router must be configured to back up the configuration when changes occur.\nThe Cisco router must be configured to obtain its public key certificates from an appropriate certificate policy through an approved service provider.\nThe Cisco router must be running an IOS release that is currently supported by Cisco Systems.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "6149cf85-f1d2-49a9-99fb-5a476b9f202c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "bb1e36bc-f7c0-4987-9af7-e72624547d8b",
+                "description": "The Cisco router must be configured to use an authentication server for the purpose of authenticating users prior to granting administrative access.",
+                "control-id": "cm-6.1"
+              }
+            ]
+          },
+          {
+            "uuid": "ba08ab6e-8755-446d-9786-797682940ae9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "aa6f7ce9-f531-4485-a086-4af4a1dc9675",
+                "description": "The Cisco router must be configured to prohibit the use of all unnecessary and nonsecure functions and services.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "f23e25f9-e254-4e48-b14b-d63b0187b100",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cp-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "e6904aee-9258-4d63-8224-127ebe88f323",
+                "description": "The Cisco router must be configured to back up the configuration when changes occur.",
+                "control-id": "cp-9"
+              }
+            ]
+          },
+          {
+            "uuid": "c450a672-90c8-4ed0-b864-38dd8c3baefc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "fa5aa41c-45e7-4569-bade-1b06e6f34ce2",
+                "description": "The Cisco router must be configured to implement replay-resistant authentication mechanisms for network access to privileged accounts.",
+                "control-id": "ia-2.8"
+              }
+            ]
+          },
+          {
+            "uuid": "7fe0c164-1b6c-4ded-ad57-c926b4ae4d89",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "50a8a0b2-967c-4624-ba23-47395baf7ac7",
+                "description": "The Cisco router must be configured to authenticate SNMP messages using a FIPS-validated Keyed-Hash Message Authentication Code (HMAC).\nThe Cisco router must be configured to authenticate Network Time Protocol (NTP) sources using authentication that is cryptographically based.",
+                "control-id": "ia-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "f70d2afd-2c18-48c9-af3f-6b17933b1c56",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "ba6cfe02-ad49-450f-b2f2-ad2b77304672",
+                "description": "The Cisco router must be configured to enforce a minimum 15-character password length.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "24ca6a1a-d4fa-4179-8372-7d7f9e0036a1",
+                "description": "The Cisco router must be configured to enforce password complexity by requiring that at least one upper-case character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "7384388e-3d0a-443c-8342-56d68843aa9e",
+                "description": "The Cisco router must be configured to enforce password complexity by requiring that at least one numeric character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "9727dad2-5e21-49e3-81ae-9d6a9884c8b0",
+                "description": "The Cisco router must be configured to enforce password complexity by requiring that at least one lower-case character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "ed349d22-925b-44be-bf7e-49cb90326c29",
+                "description": "The Cisco router must only store cryptographic representations of passwords.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "fa6e38a4-6916-4d27-9504-dfd84b875ab6",
+                "description": "The Cisco router must be configured to require that when a password is changed, the characters are changed in at least eight of the positions within the password.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "856b71a5-cdcd-4e55-9be4-9d94390fc948",
+                "description": "The Cisco router must be configured to enforce password complexity by requiring that at least one special character be used.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "f1b1a9e3-e2e3-4012-ae91-c67ca745739d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ma-4.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "ec22bf8c-d85e-4308-a44a-753e4eb46bf9",
+                "description": "The Cisco router must be configured to implement cryptographic mechanisms to protect the confidentiality of remote maintenance sessions.",
+                "control-id": "ma-4.6"
+              },
+              {
+                "uuid": "d172a6d1-d4bb-4734-a0a9-849f714b4100",
+                "description": "The Cisco router must be configured to use FIPS-validated Keyed-Hash Message Authentication Code (HMAC) to protect the integrity of remote maintenance sessions.",
+                "control-id": "ma-4.6"
+              }
+            ]
+          },
+          {
+            "uuid": "d6972a42-aab7-408c-8880-b1fb3d926a30",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "c8a65463-2702-4595-8580-3768850be664",
+                "description": "The Cisco router must be configured to protect against known types of denial-of-service (DoS) attacks by employing organization-defined security safeguards.",
+                "control-id": "sc-5"
+              }
+            ]
+          },
+          {
+            "uuid": "62411e86-1b05-44a7-baa7-cf4333ca2ed4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "4fa74bc8-aff0-44f9-b264-6dfbdf1beed3",
+                "description": "The Cisco router must be configured to terminate all network connections associated with device management after 10 minutes of inactivity.",
+                "control-id": "sc-10"
+              }
+            ]
+          },
+          {
+            "uuid": "f52a26a1-12e1-4e40-8707-60214094c49e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-17.",
+            "implemented-requirements": [
+              {
+                "uuid": "30edfbae-0f5e-4764-9323-4910af650eb9",
+                "description": "The Cisco router must be configured to obtain its public key certificates from an appropriate certificate policy through an approved service provider.",
+                "control-id": "sc-17"
+              }
+            ]
+          },
+          {
+            "uuid": "f7852282-6291-4fa3-a7be-c45a31bf113a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "d2cf892e-245a-4533-89e2-0a3f46be932d",
+                "description": "The Cisco router must be configured to send log data to a syslog server for the purpose of forwarding alerts to the administrators and the ISSO.",
+                "control-id": "si-2"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

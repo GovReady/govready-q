@@ -1,0 +1,183 @@
+{% extends "base_summary.html" %}
+{% load static %}
+{% load q %}
+
+{% block head %}
+    <style>
+
+        #project-icon {
+            float: left;
+            margin: 0 1.5em 1em 0;
+        {% if title == project.root_task.module.spec.title %}
+            /* if there's no subhead, match icon size to font size */
+            width: 50px;
+            height: 50px;
+        {% else %}
+            width: 80px;
+            height: 80px;
+        {% endif %}
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+        div.subtitle {
+            margin: .2em 0 .75em 0;
+            font-weight: bold;
+        }
+
+        .breadcrumb {
+            font-size: 1.0em;
+        }
+
+        #focus-area-wrapper {
+            padding: 2em 2em 3em 2em;
+        }
+
+        .link-black {
+            color: black;
+        }
+
+        .link-black:hover {
+            color: black;
+        }
+
+        .btn-action {
+            text-align: left;
+            padding-left: 25px;
+        }
+
+        #action-buttons, .action-button-box {
+            width: 150px;
+        }
+
+        body {
+            border-bottom: 0px !important;
+            padding-bottom: 0px !important;
+            height: 100vh;
+            width: 100vw;
+        }
+
+
+
+
+/* style changes for the react sidebar to comply with 508 by showing outline for screen readers */
+
+      .pro-sidebar .pro-menu .pro-menu-item > .pro-inner-item:focus-visible { outline: 2px dashed #60BF60;}
+      .pro-sidebar > .pro-sidebar-inner > .pro-sidebar-layout .pro-sidebar-header { border-bottom: 0;}
+      .pro-sidebar .pro-menu { padding-right:1em;}
+
+
+
+      .sys-summary-header { font-size:1.5em; font-weight:bold; color:#1A1A1A; border-bottom:1px solid; padding:0 0 .3em 0; margin:0 0 1em 0;}
+
+      .sys-detail-response { font-weight:bold; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif;}
+
+      .sys-detail-table { font-size:.8em;}
+      .sys-detail-table td { padding-bottom:.5em;}
+
+      .status-box { width:10px; height:10px; }
+      .status-red { background: #ff0000;}
+      .status-yellow {background: #FFFF00;}
+      .status-green { background: #00FF00;}
+
+      .system-classification { font-size:1em; padding:0; margin:0; color:#1A1A1A; font-weight:bold;}
+      .system-name { font-size:2em; padding:0; margin:0 0 .2em 0; color:#1A1A1A;}
+      .system-aka { font-size:1.2em; padding:0; margin:0;}
+
+      .system-heading { font-size:.7em; font-weight:bold; color:#4D4D4D; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif;}
+
+      .sys-summary-content { font-size:1em; padding-bottom:1em; line-height:1.4em; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; color:#333333;}
+      .sys-ownership-details { font-size:.8em; padding:0;}
+      .sys-wide-status { font-size:.7em;}
+      #sys-wide-status td { padding-bottom:4px; }
+      .sys-wide-status-header { font-weight:bold; padding:0; margin:0 0 .5em 0; color:#4D4D4D;}
+
+      .sys-recent { font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; font-size:.9em; width:100%;}
+      .sys-recent tr { border-bottom:1px solid #ccc;  }
+      .sys-recent-left { padding:10px 15px 10px 0;}
+      .sys-recent-tag { background-color:#F2F2F2; padding:3px 8px; border-radius: 7px; border:1px solid #ccc; font-size:.7em; text-align: center; max-width:70px;}
+
+
+      .ownership-tab { border-bottom:1px solid #ccc; padding:0 0 .2em 0;}
+      .header { font-weight:bold; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; font-size:.8em;}
+
+
+      .vuln-header { font-weight:bold; font-size: 1.2em; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif;}
+
+      .greybg { background-color:#F2F2F2;}
+
+      #sys-vuln-table {width:100%; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif;}
+      .vuln-scores { border:1px solid #ccc; margin-right:3px; padding:1em; border-radius: 5px; height:8em;}
+
+      .vuln-scores-cat-tot { font-weight: bold; display: block; padding-bottom:2em; font-size:1.2em; font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; color:#666666;}
+      .vuln-scores-cat-title { font-family:Helvetica Neue,"Helvetica","Roboto","Arial",sans-serif; font-size:.9em; color:#666666;}
+
+
+
+
+    </style>
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+    {{ block.super }}
+
+{% include "summary_navbar.html" %}
+
+
+    <div class="row">
+
+
+
+
+        <div class="col-md-12 project-body-block">
+
+
+            {% block body_content %}
+            {% endblock %}
+        </div>
+
+
+
+
+    </div> <!-- /row -->
+
+    {% include "edit-project-modal.html" %}
+    {% include "edit-project-security-impact-levels-modal.html" %}
+    {% include "move-project-modal.html" %}
+
+    {% block scripts %}
+        <script>
+            window.projectMenu({{ display_urls | json }});
+            function show_import_project_modal(id, callback) {
+                var m = $('#import_project_modal');
+                $("#import_loading_spinner").hide();
+                m.modal();
+            }
+
+            function fillJSONContent(file) {
+                filecontents = $('#{{import_project_form.file.auto_id}}').prop('files')[0];
+                var reader = new FileReader();
+                reader.readAsText(filecontents);
+                reader.onload = function (e) {
+                    $('#{{import_project_form.json_content.auto_id}}').val(e.target.result);
+                };
+            }
+
+            function show_spinner() {
+                $("#import_loading_spinner").show();
+            }
+
+        </script>
+
+    {% endblock %}
+    {% block footer %}{% endblock %}
+    {% include "controls/import_project_modal.html" %}
+
+    {% block modals %}
+    {% endblock %}
+{% endblock %}

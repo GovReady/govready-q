@@ -18,6 +18,12 @@ For Docker version 20.x on MacOS, disable docker-compose v-2 to avoid blocking a
 docker-compose disable-v2
 ```
 
+## AMD64 Mac (M1 Chipset) Notes
+
+By default, the dev_en install for local development will detect the Apple ARM platform and launch a Docker image (Dockerfile.M1) that skips the installation of the Chromium driver for UI tests with Selenium that is incompatible with AMD64 Mac (M1 Chipset). 
+
+To instead include the Chromium driver and run the Docker container under emulation use the `--amd` flag described below. Be forewarned that the application  runs _significantly_ slower in this mode.
+
 ## How To
 1. Configure
 
@@ -30,7 +36,7 @@ docker-compose disable-v2
 2. Start
     - `python run.py dev`         : This will run + reuse previously built artifacts (database, files, etc)
     - `python run.py dev --clean` : This will run + destroys your existing database and artifacts from previous runs
-    - `python run.py dev --amd`   : This will run + build for the m1 chipset.  Make sure to change your 
+    - `python run.py dev --amd`   : This will run + build for the AMD64 M1 chipset in emulation, but application will run slowly.  Make sure to change your 
       environment.json to `"test_browser": "firefox"`
     
 3. Stop

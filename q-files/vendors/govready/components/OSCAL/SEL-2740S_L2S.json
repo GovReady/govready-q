@@ -1,0 +1,126 @@
+{
+  "component-definition": {
+    "uuid": "2d772574-14d9-4eb1-b385-219b609e2e03",
+    "metadata": {
+      "title": "SEL-2740S L2S",
+      "last-modified": "2022-06-12T20:17:29",
+      "version": "2022-06-12T20:17:29",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "1bb9b78e-b37e-4594-b407-9081ca2f8ad1",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "b05c7233-990d-431e-b169-62545594b7ab",
+        "type": "software",
+        "title": "SEL-2740S L2S",
+        "description": "SEL-2740S L2S based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "1bb9b78e-b37e-4594-b407-9081ca2f8ad1"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "e2b4ccdf-8c39-445a-8df4-e1c06f4f8d33",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-14.",
+            "implemented-requirements": [
+              {
+                "uuid": "d368ee4d-9ff3-428f-94d8-1cbdb815d750",
+                "description": "The SEL-2740S must be configured to packet capture flows.",
+                "control-id": "au-14"
+              }
+            ]
+          },
+          {
+            "uuid": "a5c8581e-b76c-45c9-b0d2-52bd1a97c1c6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-14.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "48d2b61e-4fef-432c-b523-fcf58d1cf1da",
+                "description": "The SEL-2740S must be configured to capture flows for real-time visualization tools.",
+                "control-id": "au-14.3"
+              }
+            ]
+          },
+          {
+            "uuid": "c7fb9aa0-f6a4-4b8d-8e0b-23f95ee9a7e2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "b3abbc61-150a-4b3d-a587-3f9846303ed1",
+                "description": "The SEL-2740S must be configured to mitigate the risk of ARP cache poisoning attacks.\nThe SEL-2740S must be configured to capture all packets without flow rule match criteria.\nThe SEL-2740S must be configured with backup flows for all host and switch flows to ensure proper failover scheme is in place for the network.\nThe SEL-2740S must be configured to forward only frames from allowed network-connected endpoint devices.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "ee361558-c0f5-4d1b-b9fa-c60474d6731d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "e461313b-7e8a-4a93-944a-58233cb5f4c9",
+                "description": "The SEL-2740S must be configured to permit the allowed and necessary ports, functions, protocols, and services.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "95252ebb-2b65-47e6-9969-700f129b344e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "2ba90f34-a1c5-43c2-a973-ff2940a55a76",
+                "description": "The SEL-2740S must authenticate all network-connected endpoint devices before establishing any connection.",
+                "control-id": "ia-3"
+              },
+              {
+                "uuid": "f4248e05-7b34-4f38-8016-0264d7411980",
+                "description": "The SEL-2740S  must uniquely identify all network-connected endpoint devices before establishing any connection.",
+                "control-id": "ia-3"
+              }
+            ]
+          },
+          {
+            "uuid": "4ba6d29d-7141-46c5-858d-81e3cc8c13d8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "0bd4f70b-670f-4521-913f-6aefb6287d3d",
+                "description": "The SEL-2740S must be configured to prevent packet flooding and bandwidth saturation.\nSEL-2740S flow rules must include the host IP addresses that are bound to designated SEL-2740S ports for ensuring trusted host access.\nThe SEL-2740S must be configured with ARP flow rules that are statically created with valid IP-to-MAC address bindings.",
+                "control-id": "sc-5"
+              }
+            ]
+          },
+          {
+            "uuid": "df337840-d90d-4970-ba56-8d90c8340858",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "75ff91d9-b11c-4ceb-879d-178af0f2d562",
+                "description": "The SEL-2740S -must be configured to limit excess bandwidth and denial of service (DoS) attacks.",
+                "control-id": "sc-5.2"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

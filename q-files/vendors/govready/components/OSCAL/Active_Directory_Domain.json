@@ -1,0 +1,133 @@
+{
+  "component-definition": {
+    "uuid": "aba0d2e6-7e0c-4725-bf69-e28de2a7f90f",
+    "metadata": {
+      "title": "Active Directory Domain",
+      "last-modified": "2022-06-12T20:17:23",
+      "version": "2022-06-12T20:17:23",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "2bc07940-d1a7-47b1-b779-171c23d81edb",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "3f278d97-2a55-4ed2-aa05-38c63d767d29",
+        "type": "software",
+        "title": "Active Directory Domain",
+        "description": "Active Directory Domain based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "2bc07940-d1a7-47b1-b779-171c23d81edb"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "86b717b6-7049-479c-915e-efcf5d45b9b0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "2181bda3-e5ce-4ad7-b600-fd9621da0a72",
+                "description": "Selective Authentication must be enabled on outgoing forest trusts.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "aa2edf00-3858-4fd5-82d8-fb9d60971fda",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-17.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "3614afcc-0cc7-4970-85be-3419c8bc0407",
+                "description": "If a VPN is used in the AD implementation, the traffic must be inspected by the network Intrusion detection system (IDS).",
+                "control-id": "ac-17.1"
+              }
+            ]
+          },
+          {
+            "uuid": "6f7387b6-62e9-43a5-b2b7-abb9df9fbd26",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "3b4302d7-fab0-4ab5-89c1-448daf1f2fa8",
+                "description": "Membership to the Enterprise Admins group must be restricted to accounts used only to manage the Active Directory Forest.\nMembership to the Domain Admins group must be restricted to accounts used only to manage the Active Directory domain and domain controllers.\nAdministrators must have separate accounts specifically for managing domain member servers.\nAdministrators must have separate accounts specifically for managing domain workstations.\nDelegation of privileged accounts must be prohibited.\nSeparate smart cards must be used for Enterprise Admin (EA) and Domain Admin (DA) accounts from smart cards used for other accounts.\nSeparate domain accounts must be used to manage public facing servers from any domain accounts used to manage internal servers.\nDomain controllers must be blocked from Internet access.\nUser accounts with domain level administrative privileges must be members of the Protected Users group in domains with a domain functional level of Windows 2012 R2 or higher.\nDomain-joined systems (excluding domain controllers) must not be configured for unconstrained delegation.\nThe Directory Service Restore Mode (DSRM) password must be changed at least annually.\nThe domain functional level must be at a Windows Server version still supported by Microsoft.\nAccess to need-to-know information must be restricted to an authorized community of interest.\nInterconnections between DoD directory services of different classification levels must use a cross-domain solution that is approved for use with inter-classification trusts.\nA controlled interface must have interconnections among DoD information systems operating between DoD and non-DoD systems or networks.\nMembership in the Group Policy Creator Owners and Incoming Forest Trust Builders groups must be limited.\nUser accounts with delegated authority must be removed from Windows built-in administrative groups or remove the delegated authority from the accounts.\nRead-only Domain Controller (RODC) architecture and configuration must comply with directory services requirements.\nUsage of administrative accounts must be monitored for suspicious and anomalous activity.\nSystems must be monitored for attempts to use local accounts to log on remotely from other systems.\nSystems must be monitored for remote desktop logons.\nActive Directory data must be backed up daily for systems with a Risk Management Framework categorization for Availability of moderate or high.  Systems with a categorization of low must be backed up weekly.\nEach cross-directory authentication configuration must be documented.\nAccounts from outside directories that are not part of the same organization or are not subject to the same security policies must be removed from all highly privileged groups.\nInter-site replication must be enabled and configured to occur at least daily.\nActive Directory implementation information must be added to the organization contingency plan where the Risk Management Framework categorization for Availability is moderate or high.\nActive Directory must be supported by multiple domain controllers where the Risk Management Framework categorization for Availability is moderate or high.\nThe impact of INFOCON changes on the cross-directory authentication configuration must be considered and procedures documented.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "0c66a670-d525-4bb4-9bb9-9224f9059bc1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "542a4507-1842-4a25-8337-173e8bfbde05",
+                "description": "Security identifiers (SIDs) must be configured to use only authentication data of directly trusted external or forest trust.",
+                "control-id": "ia-2"
+              }
+            ]
+          },
+          {
+            "uuid": "c8e97ba1-6599-487e-9d6f-b786afcca692",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "992a5a40-e9f5-4c5f-98f0-af2f13cdd40a",
+                "description": "Local administrator accounts on domain systems must not share the same password.",
+                "control-id": "ia-2.8"
+              }
+            ]
+          },
+          {
+            "uuid": "b35cddbe-c242-4c89-9e77-d8e9736853b4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "f10f1807-dc36-4782-86fd-2f581deb9a71",
+                "description": "Windows service \\ application accounts with administrative privileges and manually managed passwords,  must have passwords changed at least every 60 days.\nAll accounts, privileged and unprivileged, that require smart cards must have the underlying NT hash rotated at least every 60 days.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "00e5e795-0179-4804-b8bc-0f1d8707c803",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "4c2405ff-54e4-42bf-9bda-451c0290d6e4",
+                "description": "The Anonymous Logon and Everyone groups must not be members of the Pre-Windows 2000 Compatible Access group.",
+                "control-id": "ia-8"
+              }
+            ]
+          },
+          {
+            "uuid": "eb06bca3-934e-42fb-8046-05b0436ce123",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "aa5b1710-2f9d-45cb-9725-9897d0f66717",
+                "description": "A VPN must be used to protect directory network traffic for directory service implementation spanning enclave boundaries.",
+                "control-id": "sc-8"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

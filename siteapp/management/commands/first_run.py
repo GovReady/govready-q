@@ -1,7 +1,7 @@
 import sys
 import os.path
 import json
-
+from uuid import uuid4
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
@@ -14,6 +14,7 @@ from siteapp.models import User, Organization, Portfolio
 from controls.models import Element
 from controls.oscal import CatalogData
 from django.contrib.auth.management.commands import createsuperuser
+from siteapp.models import Role, Party, Appointment
 
 import fs, fs.errors
 
@@ -37,9 +38,17 @@ class Command(BaseCommand):
             print("The database is not initialized yet.")
             sys.exit(1)
 
-        # Create the default organization.
+        # Create the default organization and default start apps
         if not Organization.objects.all().exists() and not Organization.objects.filter(name="main").exists():
             org = Organization.objects.create(name="main", slug="main")
+            # Set values for default apps (templates) for Aspen new system page
+            if "default_appversion_name_list" not in org.extra:
+                org.extra["default_appversion_name_list"] = [
+                    "Blank Project",
+                    "Speedy SSP",
+                    "General IT System ATO for 800-53 (low)"
+                ]
+                org.save()
 
         # Create GovReady admin users, if specified in local/environment.json
         if len(settings.GOVREADY_ADMINS):
@@ -97,6 +106,7 @@ class Command(BaseCommand):
                 password = User.objects.make_random_password(length=12)
                 user.set_password(password)
                 user.save()
+                portfolio = user.create_default_portfolio_if_missing()
                 print("Created administrator account (username: {}) with password: {}".format(
                     user.username,
                     password
@@ -104,20 +114,6 @@ class Command(BaseCommand):
             # Get the admin user - it was just created and should be the only admin user.
             user = User.objects.filter(is_superuser=True).get()
 
-            # Create the first portfolio
-            portfolio = Portfolio.objects.create(title=user.username)
-            portfolio.assign_owner_permissions(user)
-            print("Created administrator portfolio {}".format(portfolio.title))
-
-            # Add the user to the org's help squad and reviewers lists.
-            try:
-                user
-            except NameError:
-                print("[INFO] Admin already added to Help Squad and Reviewers")
-            else:
-                if user not in org.help_squad.all(): org.help_squad.add(user)
-                if user not in org.reviewers.all(): org.reviewers.add(user)
-                print("[INFO] Admin added to Help Squad and Reviewers")
 
         else:
             # One or more superusers already exists
@@ -184,8 +180,36 @@ class Command(BaseCommand):
                     # Read component json file as text
                     if component_file.endswith(".json"):
                         with open(os.path.join(path, component_file)) as f:
+                            print(f"[INFO] Imported sample generic component {component_file}.")
                             oscal_component_json = f.read()
                             result = ComponentImporter().import_components_as_json(import_name, oscal_component_json)
+            print("[INFO] Imported sample generic components.")
+        else:
+            print("[INFO] Components exists. Skipping sample generic components import.")
 
-        # Provide feedback to user
+        # Create initial roles only once
+        # TODO: Probably need a field to indicate if first_run has been run to avoid recreating roles that
+        #       installation intentionally deleted.
+        roles_desired = [
+            {"role_id": "ao", "title": "Authorizing Official", "short_name": "AO", "description": "Senior federal official or executive with the authority to formally assume responsibility for operating an information system at an acceptable level of risk to organizational operations, other organizations, and the Nation."},
+            {"role_id":"co", "title": "Component Owner", "short_name": "CO", "description": "Business Owner of a Component"},
+            {"role_id": "ccp", "title": "Common Control Provider", "short_name": "CCP", "description": "Business owner of a Common Control"},
+            {"role_id": "iso", "title": "Information System Owner", "short_name": "ISO", "description": "Business Owner of a System"},
+            {"role_id": "isso", "title": "Information System Security Officer", "short_name": "ISSO", "description": "Leads effort to secure a System"},
+            {"role_id": "isse", "title": "Information System Security Engineer", "short_name": "ISSE", "description": "Supports technical engineering to secure a System"},
+            {"role_id": "poc", "title": "Point of Contact", "short_name": "PoC", "description": "Contact for request assistance"}
+        ]
+        roles_to_create = []
+        for r in roles_desired:
+            if not Role.objects.filter(title=r['title']).exists():
+                new_role = Role(
+                    role_id=r['role_id'],
+                    title=r['title'],
+                    short_name=r['short_name'],
+                    description=r['description']
+                )
+                roles_to_create.append(new_role)
+        if len(roles_to_create) > 0:
+            roles_created = Role.objects.bulk_create(roles_to_create)
+
         print("GovReady-Q configuration complete.")

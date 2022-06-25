@@ -1,0 +1,210 @@
+{
+  "component-definition": {
+    "uuid": "cbb3d92b-0992-4fe5-8871-250a64c7305a",
+    "metadata": {
+      "title": "Microsoft Office 365 ProPlus",
+      "last-modified": "2022-06-12T20:17:22",
+      "version": "2022-06-12T20:17:22",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "377db8e4-ffd9-497f-9056-912901387986",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "24e4fd12-6b3c-41d5-a6b9-21d780c0741d",
+        "type": "software",
+        "title": "Microsoft Office 365 ProPlus",
+        "description": "Microsoft Office 365 ProPlus based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "377db8e4-ffd9-497f-9056-912901387986"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "38a4050e-13c3-4027-9cb6-5520147fdc34",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "a216294f-eeaa-4e40-a1c4-f312488dd4c4",
+                "description": "Users must be prevented from creating new trusted locations in the Trust Center.\nOutlook must be configured to prevent users overriding attachment security settings.",
+                "control-id": "ac-6.10"
+              }
+            ]
+          },
+          {
+            "uuid": "0ba15226-d5c9-4891-943f-db5977f2d5e8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "5a07677e-4834-4da1-a504-bf1b5a763715",
+                "description": "Trust Bar Notifications for unsigned application add-ins in Access must be disabled and blocked.\nTrust Bar notifications must be configured to display information in the Message Bar about the content that has been automatically blocked.\nTrust Bar notification must be enabled for unsigned application add-ins in Excel and blocked.\nProject must automatically disable unsigned add-ins without informing users.\nUnsigned add-ins in PowerPoint must be blocked with no Trust Bar Notification to the user.\nPublisher must automatically disable unsigned add-ins without informing users.\nPublisher must disable all unsigned VBA macros.\nVisio must automatically disable unsigned add-ins without informing users.\nWord must automatically disable unsigned add-ins without informing users.",
+                "control-id": "cm-5.3"
+              }
+            ]
+          },
+          {
+            "uuid": "a4f2012a-957d-4650-9db7-d5550981966c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "7aa4529a-426c-4e0f-94cb-d24be15e5dd2",
+                "description": "Custom user interface (UI) code must be blocked from loading in all Office applications.\nOffice applications must not load XML expansion packs with Smart Documents.\nThe Local Machine Zone Lockdown Security must be enabled in all Office programs.\nAutoRepublish in Excel must be disabled.\nAutoRepublish warning alert in Excel must be enabled.\nFile extensions must be enabled to match file types in Excel.\nFiles dragged from an Outlook e-mail to the file system must be created in ANSI format.\nJunk e-mail level must be enabled at a setting of High.\nInternet must not be included in Safe Zone for picture download in Outlook.\nThe Publish to Global Address List (GAL) button must be disabled in Outlook.\nThe Outlook Security Mode must be enabled to always use the Outlook Security Group Policy.\nOutlook must be configured to not allow hyperlinks in suspected phishing messages.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "5a66e55f-7166-44ab-9958-83eb49093953",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "e61e3526-f563-4a03-9881-48e669a1efd5",
+                "description": "VBA Macros not digitally signed must be blocked in Access.\nThe Office client must be prevented from polling the SharePoint Server for published links.\nVBA Macros not digitally signed must be blocked in Excel.\nVBA Macros not digitally signed must be blocked in Project.\nVBA Macros not digitally signed must be blocked in PowerPoint.\nVBA Macros not digitally signed must be blocked in Visio.\nVBA Macros not digitally signed must be blocked in Word.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "d035ae55-ab35-435a-8b03-6ecbb32bf1e9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "9eae7595-1686-4259-aead-0074ab3e000a",
+                "description": "The Exchange client authentication with Exchange servers must be enabled to use Kerberos Password Authentication.\nOutlook must use remote procedure call (RPC) encryption to communicate with Microsoft Exchange servers.",
+                "control-id": "ia-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "37c5465f-74ae-457c-b256-ffd2e5f5c6d5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "32c0bce1-ed64-4244-b157-02c8ffadcf61",
+                "description": "Outlook must be configured to allow retrieving of Certificate Revocation Lists (CRLs) always when online.",
+                "control-id": "ia-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "743e0f54-f7a8-40a0-8d24-66d3826f0b7a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "fe978004-94ad-4121-836c-4232c72d3fec",
+                "description": "Consistent MIME handling must be enabled for all Office 365 ProPlus programs.\nThe MIME Sniffing safety feature must be enabled in all Office programs.\nObject Caching Protection must be enabled in all Office programs.",
+                "control-id": "ia-7"
+              }
+            ]
+          },
+          {
+            "uuid": "14bffea6-1e44-4c8c-b479-2c93f67a40f6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-13.",
+            "implemented-requirements": [
+              {
+                "uuid": "aa6caa0a-90fe-4054-99c7-0666abd56511",
+                "description": "The minimum encryption key length in Outlook must be at least 168.",
+                "control-id": "sc-13"
+              }
+            ]
+          },
+          {
+            "uuid": "c22dc8cd-b8e1-40de-9a3f-3afdb86b20c0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-18.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "be31af66-b20f-4433-8bc9-7fc139f094f3",
+                "description": "Allowing Trusted Locations on the network must be disabled in Access.\nThe Office client must be prevented from polling the SharePoint Server for published links.\nThe load of controls in Forms3 must be blocked.\nAdd-on Management must be enabled for all Office 365 ProPlus programs.\nThe Information Bar must be enabled in all Office programs.\nDynamic Data Exchange (DDE) server launch in Excel must be blocked.\nDynamic Data Exchange (DDE) server lookup in Excel must be blocked.\nOpen/save of dBase III / IV format files must be blocked.\nOpen/save of Dif and Sylk format files must be blocked.\nOpen/save of Excel 2 macrosheets and add-in files must be blocked.\nOpen/save of Excel 2 worksheets must be blocked.\nOpen/save of Excel 3 macrosheets and add-in files must be blocked.\nOpen/save of Excel 3 worksheets must be blocked.\nOpen/save of Excel 4 macrosheets and add-in files must be blocked.\nOpen/save of Excel 4 workbooks must be blocked.\nOpen/save of Excel 4 worksheets must be blocked.\nOpen/save of Excel 95 workbooks must be blocked.\nOpen/save of Excel 95-97 workbooks and templates must be blocked.\nThe default file block behavior must be set to not open blocked files in Excel.\nOpen/save of Web pages and Excel 2003 XML spreadsheets must be blocked.\nExtraction options must be blocked when opening corrupt Excel workbooks.\nWEBSERVICE Function Notification in Excel must be configured to disable all, with notifications.\nUntrusted Microsoft Query files must be blocked from opening in Excel.\nUntrusted database files must be opened in Excel in Protected View mode.\nFiles from Internet zone must be opened in Excel in Protected View mode.\nThe warning about invalid digital signatures must be enabled to warn Outlook users.\nThe ability to demote attachments from Level 2 to Level 1 must be disabled.\nThe display of Level 1 attachments must be disabled in Outlook.\nLevel 1 file attachments must be blocked from being delivered.\nLevel 2 file attachments must be blocked from being delivered.\nThe Security Level for macros in Outlook must be configured to Warn for signed and disable unsigned.\nOpen/Save of PowerPoint 97-2003 presentations, shows, templates, and add-in files must be blocked.\nThe default file block behavior must be set to not open blocked files in PowerPoint.\nFiles downloaded from the Internet must be opened in Protected view in PowerPoint.\nPowerPoint attachments opened from Outlook must be in Protected View.\nFiles in unsafe locations must be opened in Protected view in PowerPoint.\nPublisher must be configured to prompt the user when another application programmatically opens a macro.\nVisio 2000-2002 Binary Drawings, Templates and Stencils must be blocked.\nVisio 2003-2010 Binary Drawings, Templates and Stencils must be blocked.\nVisio 5.0 or earlier Binary Drawings, Templates and Stencils must be blocked.\nFiles downloaded from the Internet must be opened in Protected view in Word.\nFiles located in unsafe locations must be opened in Protected view in Word.\nIf file validation fails, files must be opened in Protected view in Word with ability to edit disabled.\nWord attachments opened from Outlook must be in Protected View.\nThe default file block behavior must be set to not open blocked files in Word.\nOpen/Save of Word 2 and earlier binary documents and templates must be blocked.\nOpen/Save of Word 2000 binary documents and templates must be blocked.\nOpen/Save of Word 2003 binary documents and templates must be blocked.\nOpen/Save of Word 2007 and later binary documents and templates must be blocked.\nOpen/Save of Word 6.0 binary documents and templates must be blocked.\nOpen/Save of Word 95 binary documents and templates must be blocked.\nOpen/Save of Word 97 binary documents and templates must be blocked.\nOpen/Save of Word XP binary documents and templates must be blocked.",
+                "control-id": "sc-18.1"
+              }
+            ]
+          },
+          {
+            "uuid": "75965ed0-32ba-4efb-94de-774d8e7c8e7f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-18.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "d74837dd-7e45-4284-aead-d9d69d4bbd71",
+                "description": "Protection from zone elevation must be enabled in all Office programs.\nFile Download Restriction must be enabled in all Office programs.\nScripted Windows Security restrictions must be enabled in all Office programs.\nFile validation in Excel must be enabled.\nFile validation in Word must be enabled.",
+                "control-id": "sc-18.3"
+              }
+            ]
+          },
+          {
+            "uuid": "dff06461-576e-4eac-b936-285b5eb75d1c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-18.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "5878c214-a0b5-4378-92d3-345c42153df8",
+                "description": "Macros must be blocked from running in Access files from the Internet.\nThe Macro Runtime Scan Scope must be enabled for all documents.\nMacros in all Office applications that are opened programmatically by another application must be opened based upon macro security level.\nUser name and password must be disabled in all Office programs.\nNavigate URL must be enabled in all Office programs.\nThe Save from URL feature must be enabled in all Office programs.\nTrusted Locations on the network must be disabled in Excel.\nUpdating of links in Excel must be prompted and not automatic.\nScan of encrypted macros in Excel Open XML workbooks must be enabled.\nMacros must be blocked from running in Excel files from the Internet.\nFiles from unsafe locations must be opened in Excel in Protected View mode.\nFiles failing file validation must be opened in Excel in Protected view mode and disallow edits.\nFile attachments from Outlook must be opened in Excel in Protected mode.\nScripts associated with public folders must be prevented from execution in Outlook.\nScripts associated with shared folders must be prevented from execution in Outlook.\nActive X One-Off forms must only be enabled to load with Outlook Controls.\nOutlook must be configured to not run scripts in forms in which the script and the layout are contained within the message.\nTrusted Locations on the network must be disabled in Project.\nThe ability to run programs from PowerPoint must be disabled.\nEncrypted macros in PowerPoint Open XML presentations must be scanned.\nFile validation in PowerPoint must be enabled.\nMacros from the Internet must be blocked from running in PowerPoint.\nIf file validation fails, files must be opened in Protected view in PowerPoint with ability to edit disabled.\nThe use of network locations must be ignored in PowerPoint.\nTrusted Locations on the network must be disabled in Visio.\nMacros must be blocked from running in Visio files from the Internet.\nIn Word, encrypted macros must be scanned.\nIn Word, macros must be blocked from running, even if Enable all macros is selected in the Macro Settings section of the Trust Center.\nTrusted Locations on the network must be disabled in Word.",
+                "control-id": "sc-18.4"
+              },
+              {
+                "uuid": "1db24fe0-e710-4b42-9dc5-af9c4a47da88",
+                "description": "ActiveX Controls must be initialized in Safe Mode.\nActiveX installation restriction must be enabled in all Office programs.\nFlash player activation must be disabled in all Office programs.\nLoading of pictures from Web pages not created in Excel must be disabled.\nWhen a custom action is executed that uses the Outlook object model, Outlook must automatically deny it.\nWhen an untrusted program attempts to programmatically access an Address Book using the Outlook object model, Outlook must automatically deny it.\nWhen a user designs a custom form in Outlook and attempts to bind an Address Information field to a combination or formula custom field, Outlook must automatically deny it.\nWhen an untrusted program attempts to use the Save As command to programmatically save an item, Outlook must automatically deny it.\nWhen an untrusted program attempts to gain access to a recipient field, such as the, To: field, using the Outlook object model, Outlook must automatically deny it.\nWhen an untrusted program attempts to programmatically send e-mail in Outlook using the Response method of a task or meeting request, Outlook must automatically deny it.\nWhen an untrusted program attempts to send e-mail programmatically using the Outlook object model, Outlook must automatically deny it.",
+                "control-id": "sc-18.4"
+              }
+            ]
+          },
+          {
+            "uuid": "e351a6b1-78fc-4346-95b5-c57738662f63",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.",
+            "implemented-requirements": [
+              {
+                "uuid": "1a745570-86d1-4bed-b660-f8eed9c73383",
+                "description": "The SIP security mode in Lync must be enabled.\nThe HTTP fallback for SIP connection in Lync must be disabled.",
+                "control-id": "sc-23"
+              }
+            ]
+          },
+          {
+            "uuid": "4910c0d8-21dc-4097-84f9-46691f200c2a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.",
+            "implemented-requirements": [
+              {
+                "uuid": "6271e9c1-fa54-45b4-9911-8c8338ab08b7",
+                "description": "Office applications must be configured to specify encryption type in password-protected Office 97-2003 files.\nOffice applications must be configured to specify encryption type in password-protected Office Open XML files.",
+                "control-id": "sc-28"
+              }
+            ]
+          },
+          {
+            "uuid": "cf6f1886-0e40-4477-b0dc-613de7cdd57e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "47166ff9-7e04-4119-af03-f207689f6eba",
+                "description": "Document metadata for rights managed Office Open XML files must be protected.",
+                "control-id": "sc-28.1"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

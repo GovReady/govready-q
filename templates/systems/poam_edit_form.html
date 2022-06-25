@@ -16,25 +16,12 @@
 
 {% block contextbar %}{% endblock %}
 
-{% block body %}
-
+{% block body_content %}
 <div class="systems-top">
   <div class="container">
 
-  <div class="row">
-    <div id="above-tab-content" class="row">
-      <!-- Page Title-->
-      <div class="systems-title">
-          <h2 class="control-heading">
-            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> > POA&M V-{{ poam_smt.poam.poam_id }}
-          </h2>
-      </div>
-    </div>
-  </div><!--/row-->
-    <p>&nbsp;</p>
-
     <div id="tab-content" class="row rows-header">
-        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">POA&M V-{{ poam_smt.poam.poam_id }}</div>
+        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><b>POA&M V-{{ poam_smt.poam.poam_id }}</b></div>
         <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">&nbsp;</div>
         <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
           <!--a href="selected/export/xacta/xlsx">export</a-->

@@ -9,7 +9,11 @@ from api.siteapp.views.projects import ProjectViewSet
 from api.siteapp.views.support import SupportViewSet
 from api.siteapp.views.tags import TagViewSet
 from api.siteapp.views.users import UsersViewSet
-
+from api.siteapp.views.role import RoleViewSet
+from api.siteapp.views.party import PartyViewSet
+from api.siteapp.views.appointment import AppointmentViewSet
+from api.siteapp.views.request import RequestViewSet
+from api.siteapp.views.proposal import ProposalViewSet
 
 router = routers.DefaultRouter()
 router.register(r'organizations', OrganizationViewSet)
@@ -19,6 +23,11 @@ router.register(r'support', SupportViewSet)
 router.register(r'tags', TagViewSet)
 router.register(r'users', UsersViewSet)
 
+router.register(r'roles', RoleViewSet)
+router.register(r'parties', PartyViewSet)
+router.register(r'appointments', AppointmentViewSet)
+router.register(r'requests', RequestViewSet)
+router.register(r'proposals', ProposalViewSet)
 
 project_router = NestedSimpleRouter(router, r'projects', lookup='projects')
 

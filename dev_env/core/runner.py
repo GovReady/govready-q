@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 import time
+import platform
 
 from core.prompts import Prompt, Colors
 from core.utils import Runner
@@ -15,6 +16,7 @@ class DockerCompose(Runner):
     def __init__(self, amd):
         super().__init__()
         self.amd = amd
+        os.environ['BACKEND_DOCKERFILE'] = 'Dockerfile'
 
     def build_docker_compose_command(self):
         command = f"docker-compose {' '.join([f'-f {x}' for x in self.compose_files])}"
@@ -67,6 +69,8 @@ class DockerCompose(Runner):
         Prompt.warning(f"View logs & debug by running: {Colors.CYAN}docker attach govready-q-dev")
         Prompt.warning(f"Connect to container: {Colors.CYAN}docker exec -it govready-q-dev /bin/bash")
         Prompt.warning(f"Testing: {Colors.CYAN}docker exec -it govready-q-dev ./manage.py test")
+        if not self.amd and platform.processor() == 'arm':
+            Prompt.warning(f"WARNING: Testing unavailable on MacOS ARM chip due to Chromium conflict")
 
         creds_path = os.path.join(self.ROOT_DIR, 'local/admin.creds.json')
         if auto_admin:
@@ -97,6 +101,9 @@ class DockerCompose(Runner):
 
     def remove(self):
         os.chdir(f"docker")
+        if self.amd is None and platform.processor() == "arm":
+            Prompt.warning(f"Substituting in backend Dockerfile.M1 to support Apple M1 environment. Chromium tests will be unavailable.")
+            os.environ['BACKEND_DOCKERFILE'] = 'Dockerfile.M1'
         self.execute(cmd=f"{self.build_docker_compose_command()} down --remove-orphans  --rmi all")
 
     def wipe_db(self):
@@ -109,7 +116,10 @@ class DockerCompose(Runner):
         os.chdir(cwd)
 
     def run(self):
-        Prompt.warning(f"Attempting to start developer environment via docker-compose")
+        Prompt.warning(f"Attempting to start developer environment via docker-compose modified")
+        if not self.amd and platform.processor() == 'arm':
+            Prompt.warning(f"Substituting in backend the Dockerfile.M1 file to support Apple M1 environment. Chromium tests will be unavailable.")
+            os.environ['BACKEND_DOCKERFILE'] = 'Dockerfile.M1'
         if not os.path.exists("docker/environment.json"):
             self.config = self.generate_config()
         else:
