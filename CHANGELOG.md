@@ -1,16 +1,23 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.14-dev (April xx, 2022)
+v0.10.0-dev (June xx, 2022)
 ----------------------------
 
 **Feature changes**
 
 * Support private components (elements).
-* Assign responsible roles to components (elements) and appointing parties to roles. 
+* Assign responsible roles to components (elements) and appointing parties to roles.
+* Integrations framework for better inclusion of information from remote services.
+* Component control inheritance workflow.
+* Single Sign On OIDC support.
+* Add form to create system from string or URLs.
+
+Release adds support for private components and integrations with third party services.
 
 **UI changes**
 
+* Change to Aspen UI.
 * Change label 'certified statement' to 'reference statement'.
 * Warning Message appears at the top of home page and login page while using an Internet Explorer browser informing the user of Internet Explorer not being supported.
 * Indicate private components with lock icon.
@@ -20,6 +27,11 @@ v0.9.14-dev (April xx, 2022)
 * Added tabs for coponent requests.
 * Only Component owner can edit user permissions.
 * Display the control framework along side of controls in component control listing page.
+* Remove icons from project listing.
+* Add Component search filter to filter results to components owned by user.
+* Add form to create system from string or URLs.
+* Change language in interface to 'system, systems' instead of 'project, projects'.
+* Navigate users to new system form page as starting point to creating new systems.
 
 **Developer changes**
 
@@ -30,6 +42,9 @@ v0.9.14-dev (April xx, 2022)
 * Support for hidden components by adding 'hidden' boolean field to controls.models.Element.
 * Support for requiring approval components by adding 'require_approval' boolean field to controls.models.Element.
 * Create new components as private and assign owner permissions to user who created the component.
+* Added extensible Integrations Django appplication to support communication with third-party services via APIs, etc.
+* Added initial support for DoJ's CSAM integration.
+* Added ElementPermissionSerializer for component (element) permissions.
 * Add tests for component creation form user interface.
 * Add ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer for component (element) permissions.
 * Add ElementWithPermissionsViewSet for component (element) permissions.
@@ -38,6 +53,12 @@ v0.9.14-dev (April xx, 2022)
 * Add model Roles, Party, and Appointments to siteapp to support identifying roles on Components (Element).
 * Assign owners to components imported via OSCAL. If no user is identified during component (element creation) assign first Superuser (administrator) as component owner.
 * Support navigating to specific tab on component library component page using URL hash (#) reference.
+* Protype integrations System Summary page.
+* Refactor and OIDC authentication for proper testing of admin and not admin roles.
+* Create a new system via name given by a string in URL.
+* Add a large set of sample components (150+) generated from STIGs.
+* Detect Apple ARM platform (e.g. 'M1 chip') and use alternate backend Dockerfile with Chromium install commented out.
+* Added SystemEvent object in controls to track system events.
 
 **Bug fixes**
 
@@ -46,6 +67,8 @@ v0.9.14-dev (April xx, 2022)
 * Resolve components not displaying the tag widget by properly setting existingTags default for new component.
 * Footer fixes.
 * Assign owners to default components (elements) created during install first_run script.
+* Correctly display POA&M forms with left-side menu.
+* Refactor and OIDC authentication for proper testing of admin and not admin roles.
 
 v0.9.13 (January 23, 2022)
 --------------------------

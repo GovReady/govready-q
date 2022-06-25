@@ -1,0 +1,292 @@
+{
+  "component-definition": {
+    "uuid": "0e14fb8f-754c-49e0-95ab-45f7416b15db",
+    "metadata": {
+      "title": "CA API Gateway NDM",
+      "last-modified": "2022-06-12T20:17:26",
+      "version": "2022-06-12T20:17:26",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "239be9e5-fcdd-4868-bba4-4cd0271d6447",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "f01da0d3-d97f-41e9-97d0-c8e2fa035507",
+        "type": "software",
+        "title": "CA API Gateway NDM",
+        "description": "CA API Gateway NDM based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "239be9e5-fcdd-4868-bba4-4cd0271d6447"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "61e159f3-19e2-438c-8e2e-fddc62b0141d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "5dc7fc3e-4640-407d-a694-a3ae3268e505",
+                "description": "In the event the authentication server is unavailable, there must be one local account of last resort.",
+                "control-id": "ac-2"
+              }
+            ]
+          },
+          {
+            "uuid": "68e2f44c-03e1-42d2-91f5-03b3abeb2bf1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "a51a47ef-fceb-4da9-a28b-9f0a711a516a",
+                "description": "The CA API Gateway must automatically remove or disable emergency accounts, except the emergency administration account, after 72 hours.",
+                "control-id": "ac-2.2"
+              }
+            ]
+          },
+          {
+            "uuid": "f5fd75c6-f5ec-437b-b6e4-e2bc8276ddf2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "c9e6893e-bbcd-47e8-9f8d-5a2dff86abf6",
+                "description": "The CA API Gateway must notify System Administrators (SAs) and Information System Security Officers (ISSMs) when accounts are created, or enabled when previously disabled.",
+                "control-id": "ac-2.4"
+              }
+            ]
+          },
+          {
+            "uuid": "9222cd8e-785d-41e5-b194-e97c6fb340d7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.7.",
+            "implemented-requirements": [
+              {
+                "uuid": "b3161ce9-b23b-4e9b-b6cb-7969c0af07e3",
+                "description": "In the event the authentication server is unavailable, there must be one local account of last resort.",
+                "control-id": "ac-2.7"
+              }
+            ]
+          },
+          {
+            "uuid": "d754c5f5-c671-4b64-8ede-55e29ac28855",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-24.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "81d2f764-6463-4545-b8d6-60cb7ab3386d",
+                "description": "The CA API Gateway must transmit organization-defined access authorization information using organization-defined security safeguards to organization-defined information systems which enforce access control decisions.",
+                "control-id": "ac-24.1"
+              }
+            ]
+          },
+          {
+            "uuid": "6f9700a5-3a1e-4e3b-a34b-b1cc9cd26337",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "83841062-1973-485f-a66a-e9188a21c554",
+                "description": "The CA API Gateway must off-load audit records onto a different system or media than the system being audited.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "af835535-9685-4d23-bba7-97e8d27bab24",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "a2e8f9bd-4ad8-4d95-a635-f090405e9bdb",
+                "description": "The CA API Gateway must shut down by default upon audit failure (unless availability is an overriding concern).",
+                "control-id": "au-5"
+              }
+            ]
+          },
+          {
+            "uuid": "13efd414-c06c-4a1f-90f8-139712c2006a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "9a7a4596-1029-4f49-9ac6-98a9f4bc4d7e",
+                "description": "The CA API Gateway must record time stamps for audit records that can be mapped to Coordinated Universal Time (UTC) or Greenwich Mean Time (GMT).",
+                "control-id": "au-8"
+              },
+              {
+                "uuid": "19fb30a2-85d4-4c92-94b4-29053b5effce",
+                "description": "The CA API Gateway must record time stamps for audit records that meet a granularity of one second for a minimum degree of precision.",
+                "control-id": "au-8"
+              }
+            ]
+          },
+          {
+            "uuid": "9dfee5ba-d2db-495b-800b-df4f1c6580dd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "7eb833d6-0e2b-49a5-8cc2-95006b9c4e96",
+                "description": "The CA API Gateway must be configured to synchronize internal information system clocks with the primary and secondary time sources located in different geographic regions using redundant authoritative time sources.",
+                "control-id": "au-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "4dbff876-c5bb-4a5d-855f-05d8961cbb89",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "63ad85fb-e5e8-437f-8895-bce31fd0cc6b",
+                "description": "The CA API Gateway must forward all log audit log messages to the central log server.",
+                "control-id": "au-9.2"
+              }
+            ]
+          },
+          {
+            "uuid": "17b8c7fe-9236-4723-8fa6-7481f08124d5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "75b962f4-fd91-4311-a524-13a465859053",
+                "description": "The CA API Gateway must generate audit records when successful/unsuccessful logon attempts occur.\nThe CA API Gateway must generate audit records showing starting and ending time for administrator access to the system.\nThe CA API Gateway must generate audit records when concurrent logons from different workstations occur.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "3c86a535-fdab-4655-80d6-a7e0d3dce7bd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "7bf40f75-43c8-4b42-bb0f-41871a671132",
+                "description": "The CA API Gateway must be installed on Red Hat Enterprise Linux (RHEL) Version 6.7 or higher.\nThe CA API Gateway must employ RADIUS + LDAPS or LDAPS to centrally manage authentication settings.\nThe CA API Gateway must activate a system alert message, send an alarm, and/or automatically shut down when a component failure is detected.\nThe CA API Gateway must transmit organization-defined access authorization information using organization-defined security safeguards to organization-defined information systems which enforce access control decisions.\nThe CA API Gateway must be configured to synchronize internal information system clocks with the primary and secondary time sources located in different geographic regions using redundant authoritative time sources.\nThe CA API Gateway must generate audit log events for a locally developed list of auditable events.\nThe CA API Gateway must employ automated mechanisms to assist in the tracking of security incidents.\nThe CA API Gateway must employ automated mechanisms to detect the addition of unauthorized components or devices.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "1b9b4d39-f9c5-4230-aa29-b2517f708501",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "4739ad6b-eacf-4684-9800-78f74c779dd9",
+                "description": "The CA API Gateway must employ RADIUS + LDAPS or LDAPS to centrally manage authentication settings.",
+                "control-id": "cm-6.1"
+              }
+            ]
+          },
+          {
+            "uuid": "0a1f3489-215a-4c70-8b53-07231ac2674d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-8.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "f1158dd1-ef1d-4f96-ad20-1fbb6e0df0e4",
+                "description": "The CA API Gateway must employ automated mechanisms to detect the addition of unauthorized components or devices.",
+                "control-id": "cm-8.3"
+              }
+            ]
+          },
+          {
+            "uuid": "69050ab5-562d-4d0e-85a7-bd58fb73114b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-11.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "40c59590-d7a0-48ff-8217-06bb606ce9e9",
+                "description": "The CA API Gateway must generate an alert that will then be sent to the ISSO, ISSM, and other designated personnel (deemed appropriate by the local organization) when the unauthorized installation of software is detected.",
+                "control-id": "cm-11.1"
+              }
+            ]
+          },
+          {
+            "uuid": "cf79d61d-35da-4a21-85d6-6cdcde79317a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "6513a05b-b272-42fc-a76c-824cdd802b9d",
+                "description": "The CA API Gateway must authenticate NTP endpoint devices before establishing a network connection using bidirectional authentication that is cryptographically based.\nThe CA API Gateway must authenticate SNMP endpoint devices before establishing a network connection using bidirectional authentication that is cryptographically based.\nThe CA API Gateway must authenticate RADIUS endpoint devices before establishing a network connection using bidirectional authentication that is cryptographically based.\nThe CA API Gateway must authenticate LDAPS endpoint devices before establishing a network connection using bidirectional authentication that is cryptographically based.\nThe CA API Gateway must obtain LDAPS server certificates securely to use bidirectional authentication that is cryptographically based.",
+                "control-id": "ia-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "92a21bd6-74ef-441c-85dc-5d90694e8df0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "72cc3d67-ede4-490a-b7b7-d1b3b6c9e761",
+                "description": "The CA API Gateway must enforce a minimum 15-character password length.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "7a8b6863-11b1-406b-abc6-501e3bd059d0",
+                "description": "The CA API Gateway must not have any default manufacturer passwords when deployed.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "09b10c39-ceea-4eb5-85cd-5ebbe2542acb",
+                "description": "If multifactor authentication is not supported and passwords must be used, the CA API Gateway must require that when a password is changed, the characters are changed in at least 8 of the positions within the password.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "4d312c10-7714-4569-8af4-9b3d5508ee70",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ir-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "f75e941e-402e-4259-99bb-fef75ee1dbe6",
+                "description": "The CA API Gateway must employ automated mechanisms to assist in the tracking of security incidents.",
+                "control-id": "ir-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "55ce1c9e-b649-4974-bf76-8bde973452e4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "56d60d3a-1360-418f-8f51-02972e87f83a",
+                "description": "The CA API Gateway must protect against or limit the effects of all known types of Denial of Service (DoS) attacks on the CA API Gateway management network by employing organization-defined security safeguards.",
+                "control-id": "sc-5"
+              }
+            ]
+          },
+          {
+            "uuid": "b621a23f-1da2-4626-b6ed-1588fae03313",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-13.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "ef5677dd-fa86-4bfd-83c5-51ae46912824",
+                "description": "The CA API Gateway must activate a system alert message, send an alarm, and/or automatically shut down when a component failure is detected.",
+                "control-id": "si-13.4"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -17,6 +17,8 @@ from api.base.models import BaseModel
 from controls.enums.components import ComponentTypeEnum, ComponentStateEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from siteapp.model_mixins.appointments import AppointmentModelMixin
+from siteapp.model_mixins.requests import RequestsModelMixin
+from siteapp.model_mixins.proposals import ProposalModelMixin
 from controls.enums.statements import StatementTypeEnum
 from controls.enums.remotes import RemoteTypeEnum
 from controls.oscal import Catalogs, Catalog, CatalogData
@@ -261,7 +263,7 @@ class StatementRemote(auto_prefetch.Model):
                                              unique=False, blank=True, null=True, help_text="The Import Record which created this record.")
 
 
-class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin):
+class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, RequestsModelMixin):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
     description = models.TextField(default="Description needed", help_text="Description of the Element", unique=False, blank=False, null=False)
@@ -648,11 +650,12 @@ class ElementRole(auto_prefetch.Model, BaseModel):
         return "'%s id=%d'" % (self.role, self.id)
 
 
-class System(auto_prefetch.Model, TagModelMixin):
+class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
     root_element = auto_prefetch.ForeignKey(Element, related_name="system", on_delete=models.CASCADE,
                                             help_text="The Element that is this System. Element must be type [Application, General Support System]")
     fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=True,
                                 null=True)
+    info = models.JSONField(blank=True, default=dict, help_text="JSON object representing additional system information")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
 
@@ -960,6 +963,30 @@ class System(auto_prefetch.Model, TagModelMixin):
 
         self.root_element.statements_consumed.filter(producer_element=element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).update(status=status)
         return True
+
+    def add_event(self, event_type, description, info={}):
+        """Add event to SystemEvents"""
+
+        se = SystemEvent.objects.create(
+            system = self,
+            event_type = event_type,
+            description = description,
+            info = info
+        )
+
+        return se
+
+class SystemEvent(auto_prefetch.Model, TagModelMixin, BaseModel):
+    system = auto_prefetch.ForeignKey('System', related_name='events', on_delete=models.CASCADE, blank=True,
+                                      null=True, help_text="Events related to the system")
+    event_type = models.CharField(max_length=12, help_text="Event type", unique=False, blank=False, null=False)
+    description = models.CharField(max_length=255, help_text="Brief description of the event", unique=False,
+                                   blank=False, null=False)
+    info = models.JSONField(blank=True, default=dict, help_text="JSON object detailed event information")
+
+    #{ "event_tag": "TEST", "event_summary": "Penetration test scheduled - Automated penetration test run by SOC"},
+    def __str__(self):
+        return f"SystemEvent {self.id} {self.description[:15] + '..'}"
 
 
 class CommonControlProvider(models.Model):

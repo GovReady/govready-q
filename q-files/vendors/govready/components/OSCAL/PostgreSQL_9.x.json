@@ -1,0 +1,704 @@
+{
+  "component-definition": {
+    "uuid": "8f1ce541-fe39-459d-85b9-7d0772378be6",
+    "metadata": {
+      "title": "PostgreSQL 9.x",
+      "last-modified": "2022-06-12T20:17:25",
+      "version": "2022-06-12T20:17:25",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "a7ea737a-f9dd-4601-b7d4-c28386175fd1",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "ba35a3bb-bfdf-4a50-9ff4-d645fd5eda41",
+        "type": "software",
+        "title": "PostgreSQL 9.x",
+        "description": "PostgreSQL 9.x based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "a7ea737a-f9dd-4601-b7d4-c28386175fd1"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "7fe3e8d7-342d-4e50-8b77-4aa4e1a790e0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "2507e7b3-d51a-4b79-bc55-78a3a71a1cb7",
+                "description": "PostgreSQL must integrate with an organization-level authentication/access mechanism providing account management and automation for all users, groups, roles, and any other principals.",
+                "control-id": "ac-2.1"
+              }
+            ]
+          },
+          {
+            "uuid": "7ee3993f-a3dc-45c1-bde6-c0eede9857d4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "6e901b6f-0f7c-4768-b1fc-0b155e159f34",
+                "description": "PostgreSQL must enforce approved authorizations for logical access to information and system resources in accordance with applicable access control policies.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "90c3fffd-2db0-4503-af91-f63858d5bd15",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "d0ddf931-73a7-4230-aaae-88ae1117fb1f",
+                "description": "PostgreSQL must enforce discretionary access control policies, as defined by the data owner, over defined subjects and objects.",
+                "control-id": "ac-3.4"
+              }
+            ]
+          },
+          {
+            "uuid": "35a73908-35d9-4583-9e01-0e51961c21fb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "18ee64a0-5704-4ac4-9036-3621ced90ff6",
+                "description": "Execution of software modules (to include functions and trigger procedures) with elevated privileges must be restricted to necessary cases only.",
+                "control-id": "ac-6.8"
+              }
+            ]
+          },
+          {
+            "uuid": "27f66a3c-c5b3-457b-b074-19a4e6dbcf64",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "99abe3eb-4346-4110-9ec9-e0482ca1b922",
+                "description": "PostgreSQL must prevent non-privileged users from executing privileged functions, to include disabling, circumventing, or altering implemented security safeguards/countermeasures.",
+                "control-id": "ac-6.10"
+              }
+            ]
+          },
+          {
+            "uuid": "9e6d2652-b193-4430-bbbf-19ca2976638f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "6b24a391-d906-4fa0-ae14-d64e9b1aaad5",
+                "description": "PostgreSQL must limit the number of concurrent sessions to an organization-defined number per user for all accounts and/or account types.",
+                "control-id": "ac-10"
+              }
+            ]
+          },
+          {
+            "uuid": "b32a5a34-6fb1-405e-8c4e-e7c49ff775cd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "7bed359b-b30e-47dd-b3ba-9630255f3804",
+                "description": "PostgreSQL must automatically terminate a user session after organization-defined conditions or trigger events requiring session disconnect.",
+                "control-id": "ac-12"
+              }
+            ]
+          },
+          {
+            "uuid": "12ba224d-1f44-4f8e-b107-aa55ea8fc9a7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-16.",
+            "implemented-requirements": [
+              {
+                "uuid": "390d0cbf-8c2b-48ea-bca9-3ed1fe601124",
+                "description": "PostgreSQL must associate organization-defined types of security labels having organization-defined security label values with information in storage.",
+                "control-id": "ac-16"
+              },
+              {
+                "uuid": "78f066fd-2cf0-4509-97b3-23db65419553",
+                "description": "PostgreSQL must associate organization-defined types of security labels having organization-defined security label values with information in process.",
+                "control-id": "ac-16"
+              },
+              {
+                "uuid": "2b1a9f93-903d-46e8-b8ba-1d2187180f98",
+                "description": "PostgreSQL must associate organization-defined types of security labels having organization-defined security label values with information in transmission.",
+                "control-id": "ac-16"
+              }
+            ]
+          },
+          {
+            "uuid": "d02518a9-43b6-424f-9690-c2f149c4b45b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "871a8850-3ae1-47dd-8e70-61130f1b838d",
+                "description": "PostgreSQL must produce audit records containing sufficient information to establish what type of events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "b3a245f4-1154-48c3-bfd3-a4eea074d14b",
+                "description": "PostgreSQL must produce audit records containing sufficient information to establish where the events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "37d5bcef-359d-4687-bf7e-39092bbb8445",
+                "description": "PostgreSQL must produce audit records containing time stamps to establish when the events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "e29a9a80-a09b-4527-8615-b55133c441f8",
+                "description": "PostgreSQL must produce audit records containing sufficient information to establish the sources (origins) of the events.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "679813c9-10b7-48aa-894e-1b407a571270",
+                "description": "PostgreSQL must produce audit records containing sufficient information to establish the identity of any user/subject or process associated with the event.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "b0b3f563-849a-4548-80e2-33a95ccc1acc",
+                "description": "PostgreSQL must produce audit records containing sufficient information to establish the outcome (success or failure) of the events.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "a0635369-118f-4c27-818e-456b4d282a55",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "6182e414-ee29-4367-b513-8acc98355989",
+                "description": "PostgreSQL must include additional, more detailed, organization-defined information in the audit records for audit events identified by type, location, or subject.",
+                "control-id": "au-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "1cafe719-e06f-4498-b6fe-6595131f342a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "83efa602-58e7-4a02-9aa5-b54d04a74335",
+                "description": "PostgreSQL must utilize centralized management of the content captured in audit records generated by all components of PostgreSQL.",
+                "control-id": "au-3.2"
+              }
+            ]
+          },
+          {
+            "uuid": "7985ed31-358e-415f-bd02-f94d10bd0e7b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "cb986716-e105-43f7-b0eb-428ef2826688",
+                "description": "PostgreSQL must allocate audit record storage capacity in accordance with organization-defined audit record storage requirements.",
+                "control-id": "au-4"
+              }
+            ]
+          },
+          {
+            "uuid": "e6efc545-c62b-4830-bd53-2232af8cb134",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "d2ba8276-810a-4920-8ee0-ed5f77b25e2b",
+                "description": "PostgreSQL must off-load audit data to a separate log management facility; this must be continuous and in near real time for systems with a network connection to the storage facility and weekly or more often for stand-alone systems.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "e42da505-f9a2-4ea4-a545-eb4ce9164821",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "a966ab64-fbe9-4225-95f6-de3ccf7c73d6",
+                "description": "The system must provide a warning to appropriate support staff when allocated audit record storage volume reaches 75% of maximum audit record storage capacity.",
+                "control-id": "au-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "afe087e1-cb15-4e6d-b023-d25bcc9f11ec",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "b7b85eaf-feae-4c5e-809f-c4dbb717e1b8",
+                "description": "PostgreSQL must provide an immediate real-time alert to appropriate support staff of all audit log failures.",
+                "control-id": "au-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "8f11a20f-0c8a-4568-b44f-11bd506ffdd4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "b248d6a3-d7cc-4572-be19-f070da0f2206",
+                "description": "PostgreSQL must record time stamps, in audit records and application data, that can be mapped to Coordinated Universal Time (UTC, formerly GMT).",
+                "control-id": "au-8"
+              },
+              {
+                "uuid": "aa66b793-28a8-4cb7-95c6-f6dd84a79768",
+                "description": "PostgreSQL must generate time stamps, for audit records and application data, with a minimum granularity of one second.",
+                "control-id": "au-8"
+              }
+            ]
+          },
+          {
+            "uuid": "341d3352-fc38-43f5-916c-6941805c1446",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "7ecc4550-3be6-4a72-9735-ba670f307e83",
+                "description": "The audit information produced by PostgreSQL must be protected from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "c8474b23-9686-4c87-9e3d-e13b6fdeab92",
+                "description": "PostgreSQL must protect its audit configuration from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "fe75625b-d386-417f-9147-0ed4741cdea9",
+                "description": "The audit information produced by PostgreSQL must be protected from unauthorized deletion.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "29585f05-6f5d-4f52-a0b6-ce26f267cc13",
+                "description": "The audit information produced by PostgreSQL must be protected from unauthorized read access.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "e435eb11-2be4-4923-bf1e-bb2b9cc8ecfc",
+                "description": "PostgreSQL must protect its audit features from unauthorized removal.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "f633bd9c-5270-438d-9f64-a97f469588fe",
+                "description": "PostgreSQL must protect its audit features from unauthorized access.",
+                "control-id": "au-9"
+              }
+            ]
+          },
+          {
+            "uuid": "f1f59a04-4353-491f-9b08-d6d4169aa7ff",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "3ee9fcb1-9092-4095-8721-2ffe28dc81ae",
+                "description": "PostgreSQL must protect against a user falsely repudiating having performed organization-defined actions.",
+                "control-id": "au-10"
+              }
+            ]
+          },
+          {
+            "uuid": "8c0c9992-1759-49b5-b29a-3e2b685afb44",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "b8a26399-7696-4082-814a-c66ff333bc95",
+                "description": "PostgreSQL must allow only the ISSM (or individuals or roles appointed by the ISSM) to select which auditable events are to be audited.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "6d18af28-b789-4884-ad4d-e0400b3bfbee",
+                "description": "PostgreSQL must provide audit record generation capability for DoD-defined auditable events within all DBMS/database components.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "5a75a399-f384-4026-88e1-0f117fc7808b",
+                "description": "PostgreSQL must generate audit records when categorized information (e.g., classification levels/security levels) is accessed.\nPostgreSQL must generate audit records when unsuccessful attempts to access security objects occur.\nPostgreSQL must generate audit records when unsuccessful logons or connection attempts occur.\nPostgreSQL must generate audit records showing starting and ending time for user access to the database(s).\nPostgreSQL must generate audit records when unsuccessful attempts to modify security objects occur.\nPostgreSQL must generate audit records when privileges/permissions are added.\nPostgreSQL must generate audit records when unsuccessful attempts to delete categorized information (e.g., classification levels/security levels) occur.\nPostgreSQL must generate audit records when successful logons or connections occur.\nPostgreSQL must generate audit records when security objects are deleted.\nPostgreSQL must generate audit records when unsuccessful attempts to retrieve privileges/permissions occur.\nPostgreSQL must generate audit records when unsuccessful attempts to delete privileges/permissions occur.\nPostgreSQL must be able to generate audit records when privileges/permissions are retrieved.\nPostgreSQL must generate audit records when unsuccessful attempts to modify categorized information (e.g., classification levels/security levels) occur.\nPostgreSQL must generate audit records when unsuccessful accesses to objects occur.\nPostgreSQL must generate audit records for all privileged activities or other system-level access.\nPostgreSQL must generate audit records when unsuccessful attempts to access categorized information (e.g., classification levels/security levels) occur.\nPostgreSQL must be able to generate audit records when security objects are accessed.\nPostgreSQL must generate audit records when privileges/permissions are deleted.\nPostgreSQL must generate audit records when concurrent logons/connections by the same user from different workstations occur.\nPostgreSQL must generate audit records when unsuccessful attempts to delete security objects occur.\nPostgreSQL must generate audit records when privileges/permissions are modified.\nPostgreSQL must generate audit records when unsuccessful attempts to execute privileged activities or other system-level access occur.\nPostgreSQL must generate audit records when security objects are modified.\nPostgreSQL must generate audit records when categorized information (e.g., classification levels/security levels) is modified.\nPostgreSQL must generate audit records when unsuccessful attempts to modify privileges/permissions occur.\nPostgreSQL must generate audit records when unsuccessful attempts to add privileges/permissions occur.\nAudit records must be generated when categorized information (e.g., classification levels/security levels) is deleted.\nPostgreSQL must generate audit records when successful accesses to objects occur.\nPostgreSQL must generate audit records for all direct access to the database(s).",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "b65e81b1-e9c4-4797-945f-db3d8623242a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-14.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "e0368914-da79-4314-a797-265b9fc99f46",
+                "description": "PostgreSQL must initiate session auditing upon startup.",
+                "control-id": "au-14.1"
+              }
+            ]
+          },
+          {
+            "uuid": "83bd0138-4229-45c7-8637-ca72f9beef2e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "22be4ed4-242a-4426-8159-20dae4182520",
+                "description": "PostgreSQL must enforce access restrictions associated with changes to the configuration of PostgreSQL or database(s).",
+                "control-id": "cm-5.1"
+              },
+              {
+                "uuid": "8c224778-2af3-4b70-a6eb-8db99d95315c",
+                "description": "PostgreSQL must produce audit records of its enforcement of access restrictions associated with changes to the configuration of PostgreSQL or database(s).",
+                "control-id": "cm-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "899c3aa3-5919-45cd-88d1-f39e9b871560",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "da14674c-ddba-4e9d-9593-8ecaba9f8626",
+                "description": "Privileges to change PostgreSQL software modules must be limited.\nPostgreSQL must limit privileges to change functions and triggers, and links to software external to PostgreSQL.\nThe role(s)/group(s) used to modify database structure (including but not necessarily limited to tables, indexes, storage, etc.) and logic modules (functions, trigger procedures, links to software external to PostgreSQL, etc.) must be restricted to authorized users.\nDatabase objects (including but not limited to tables, indexes, storage, trigger procedures, functions, links to software external to PostgreSQL, etc.) must be owned by database/DBMS principals authorized for ownership.\nThe PostgreSQL software installation account must be restricted to authorized users.\nDatabase software, including PostgreSQL configuration files, must be stored in dedicated directories separate from the host OS and other applications.",
+                "control-id": "cm-5.6"
+              }
+            ]
+          },
+          {
+            "uuid": "2385886d-afbb-4211-a39b-3d7f0872c466",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "e1ef3373-bcd1-4fe2-a5b3-58283e22a018",
+                "description": "PostgreSQL must be configured to prohibit or restrict the use of organization-defined functions, ports, protocols, and/or services, as defined in the PPSM CAL and vulnerability assessments.",
+                "control-id": "cm-7"
+              },
+              {
+                "uuid": "136e6b7c-7720-4fa3-8a31-a6f1c058e3e6",
+                "description": "Unused database components, PostgreSQL software, and database objects must be removed.\nAccess to external executables must be disabled or restricted.\nUnused database components which are integrated in PostgreSQL and cannot be uninstalled must be disabled.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "5e550740-8e35-4c87-b7bf-aa59ab90cd74",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "96aef399-cbcd-436d-9986-7b5bf0f107c9",
+                "description": "PostgreSQL must be configured to prohibit or restrict the use of organization-defined functions, ports, protocols, and/or services, as defined in the PPSM CAL and vulnerability assessments.",
+                "control-id": "cm-7.1"
+              }
+            ]
+          },
+          {
+            "uuid": "4737c4b9-e3c0-494b-afe9-462bb74cbf60",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-11.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "e53bfe48-d7cb-464e-ac3e-46394eb376bf",
+                "description": "PostgreSQL must prohibit user installation of logic modules (functions, trigger procedures, views, etc.) without explicit privileged status.",
+                "control-id": "cm-11.2"
+              }
+            ]
+          },
+          {
+            "uuid": "27ff3c16-2dd1-482c-9d42-9fd2978a34a9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "15ce89c9-265b-4b6c-bcd7-958f17f026b9",
+                "description": "PostgreSQL must uniquely identify and authenticate organizational users (or processes acting on behalf of organizational users).",
+                "control-id": "ia-2"
+              }
+            ]
+          },
+          {
+            "uuid": "2a094311-9805-4da0-b47e-8af0f32027c1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "e60eff53-0def-4abf-82b5-adb654a4ad13",
+                "description": "If passwords are used for authentication, PostgreSQL must store only hashed, salted representations of passwords.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "39b53682-fe61-456a-82d3-0de686868be1",
+                "description": "If passwords are used for authentication, PostgreSQL must transmit only encrypted representations of passwords.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "721d2ac9-566b-49ac-8c4f-7dbc57aabea7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "eb3e79dc-9095-4f7a-961f-8b5196c6db44",
+                "description": "PostgreSQL must enforce authorized access to all PKI private keys stored/utilized by PostgreSQL.",
+                "control-id": "ia-5.2"
+              },
+              {
+                "uuid": "91ab3e31-ce3a-4f0d-a819-bfbb8e07d73d",
+                "description": "PostgreSQL, when utilizing PKI-based authentication, must validate certificates by performing RFC 5280-compliant certification path validation.",
+                "control-id": "ia-5.2"
+              },
+              {
+                "uuid": "2ccfb5d2-96a7-4782-82c4-6bb2fa115f33",
+                "description": "PostgreSQL must map the PKI-authenticated identity to an associated user account.",
+                "control-id": "ia-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "d9faf756-0a56-4749-bc0b-314c58b3ddf2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "2049094e-4972-4565-82d7-52a0da0f8468",
+                "description": "PostgreSQL must use NIST FIPS 140-2 validated cryptographic modules for cryptographic operations.\nThe DBMS must be configured on a platform that has a NIST certified FIPS 140-2 installation of OpenSSL.",
+                "control-id": "ia-7"
+              }
+            ]
+          },
+          {
+            "uuid": "60c331c5-7bdc-47e0-86c3-f353fdb9cf14",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "7ba96809-19af-43b1-9c6e-22fddf608825",
+                "description": "PostgreSQL must uniquely identify and authenticate non-organizational users (or processes acting on behalf of non-organizational users).",
+                "control-id": "ia-8"
+              }
+            ]
+          },
+          {
+            "uuid": "2c066429-23c7-4e9e-ad42-e8de8e07caa1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "d1b1aeed-f6e1-4e04-8e68-72811531adb8",
+                "description": "PostgreSQL must require users to reauthenticate when organization-defined circumstances or situations require reauthentication.",
+                "control-id": "ia-11"
+              }
+            ]
+          },
+          {
+            "uuid": "b218ff6e-ba42-4ca9-be35-bcf811ab5aca",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "1fe50533-cbef-4725-8b14-505c33d3f707",
+                "description": "PostgreSQL must separate user functionality (including user interface services) from database management functionality.",
+                "control-id": "sc-2"
+              }
+            ]
+          },
+          {
+            "uuid": "37ec8c68-508b-42cd-8e28-997999889f23",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "c6883c68-3f4f-4dd0-95bb-e237cee5c7f8",
+                "description": "PostgreSQL must isolate security functions from non-security functions.",
+                "control-id": "sc-3"
+              }
+            ]
+          },
+          {
+            "uuid": "317c53d2-8992-4f18-8e33-786d665a9307",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "e5ebc38b-9ab0-4c84-b23f-0ebe6e5dec8e",
+                "description": "Database contents must be protected from unauthorized and unintended information transfer by enforcement of a data-transfer policy.\nAccess to database files must be limited to relevant processes and to authorized, administrative users.",
+                "control-id": "sc-4"
+              }
+            ]
+          },
+          {
+            "uuid": "b2f9626d-51c8-4078-9544-3d9eaaa08498",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "9ce0ba4e-8134-4c82-8873-57e0c5a286ad",
+                "description": "PostgreSQL must maintain the confidentiality and integrity of information during preparation for transmission.",
+                "control-id": "sc-8.2"
+              },
+              {
+                "uuid": "53bce9a2-84bb-4e96-89bf-8f2fc002f45f",
+                "description": "PostgreSQL must maintain the confidentiality and integrity of information during reception.",
+                "control-id": "sc-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "7c3649f9-389f-4ebf-bb54-1b726f2e9d03",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-13.",
+            "implemented-requirements": [
+              {
+                "uuid": "2ebdfd6a-2fc7-4060-b6b7-485f2947e359",
+                "description": "PostgreSQL must implement NIST FIPS 140-2 validated cryptographic modules to generate and validate cryptographic hashes.\nPostgreSQL must implement NIST FIPS 140-2 validated cryptographic modules to protect unclassified information requiring confidentiality and cryptographic protection, in accordance with the data owners requirements.\nPostgreSQL must use NSA-approved cryptography to protect classified information in accordance with the data owners requirements.",
+                "control-id": "sc-13"
+              }
+            ]
+          },
+          {
+            "uuid": "9a00c2e3-dccf-487c-8ca7-e628a850dc25",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "97ec98a5-d587-41d8-8e18-5eb742ab9fbc",
+                "description": "PostgreSQL must invalidate session identifiers upon user logout or other session termination.",
+                "control-id": "sc-23.1"
+              }
+            ]
+          },
+          {
+            "uuid": "81223b2a-b5a7-4e27-95a1-c7dc99521e9a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "3705a1f1-5bd3-45a0-92f2-b6aceaa83420",
+                "description": "PostgreSQL must maintain the authenticity of communications sessions by guarding against man-in-the-middle attacks that guess at Session ID values.",
+                "control-id": "sc-23.3"
+              }
+            ]
+          },
+          {
+            "uuid": "de10ceb8-bb34-4258-80c2-62e44686f521",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "0bd8f496-f111-4089-bb64-9f45a97d49cd",
+                "description": "PostgreSQL must only accept end entity certificates issued by DoD PKI or DoD-approved PKI Certification Authorities (CAs) for the establishment of all encrypted sessions.",
+                "control-id": "sc-23.5"
+              }
+            ]
+          },
+          {
+            "uuid": "d999a8a0-7949-4647-b9e8-1ca51a9dd8e6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.",
+            "implemented-requirements": [
+              {
+                "uuid": "30227047-cc07-4494-94b0-0ff9bbd8e674",
+                "description": "PostgreSQL must protect the confidentiality and integrity of all information at rest.",
+                "control-id": "sc-28"
+              }
+            ]
+          },
+          {
+            "uuid": "1f36e484-f4aa-4d32-aa8b-3e7b7151d24b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "91704cac-a696-4f25-9e02-4dd7f231deda",
+                "description": "PostgreSQL must implement cryptographic mechanisms to prevent unauthorized modification of organization-defined information at rest (to include, at a minimum, PII and classified information) on organization-defined information system components.",
+                "control-id": "sc-28.1"
+              },
+              {
+                "uuid": "adccbbd0-c4b9-4477-a604-d84cc57a18fa",
+                "description": "PostgreSQL must implement cryptographic mechanisms preventing the unauthorized disclosure of organization-defined information at rest on organization-defined information system components.",
+                "control-id": "sc-28.1"
+              }
+            ]
+          },
+          {
+            "uuid": "b8ec124a-377e-4178-9649-4fb71363bd15",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "db296cb7-5dcc-4d53-9a14-55b5a6fe9311",
+                "description": "Security-relevant software updates to PostgreSQL must be installed within the time period directed by an authoritative source (e.g., IAVM, CTOs, DTMs, and STIGs).",
+                "control-id": "si-2"
+              }
+            ]
+          },
+          {
+            "uuid": "48d773be-add3-4b2d-ad8b-d36003f0d27f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "901c74be-eabe-44b9-ad02-c551d40a40b8",
+                "description": "When updates are applied to PostgreSQL software, any software components that have been replaced or made unnecessary must be removed.",
+                "control-id": "si-2.6"
+              }
+            ]
+          },
+          {
+            "uuid": "cba65f38-000a-4810-a213-0994daecc846",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "fe130f76-5efa-4647-9831-4088c7c8a888",
+                "description": "PostgreSQL must check the validity of all data inputs except those specifically identified by the organization.\nPostgreSQL and associated applications must reserve the use of dynamic code execution for situations that require it.\nPostgreSQL and associated applications, when making use of dynamic code execution, must scan input data for invalid values that may indicate a code injection attack.",
+                "control-id": "si-10"
+              }
+            ]
+          },
+          {
+            "uuid": "e4e40dac-f42d-4f28-9d8d-034f853eacac",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "e5a2fe41-579a-4599-8bb8-b4bf587fab15",
+                "description": "When invalid inputs are received, PostgreSQL must behave in a predictable and documented manner that reflects organizational and system objectives.",
+                "control-id": "si-10.3"
+              }
+            ]
+          },
+          {
+            "uuid": "e42983d9-86fc-4b81-aad6-b00399a697df",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "afda0d91-8b54-4ce6-895b-0ded9dd48c9c",
+                "description": "PostgreSQL must provide non-privileged users with error messages that provide information necessary for corrective actions without revealing information that could be exploited by adversaries.",
+                "control-id": "si-11"
+              },
+              {
+                "uuid": "20875af8-b9ef-430b-9cf7-088e0051d6f5",
+                "description": "PostgreSQL must reveal detailed error messages only to the ISSO, ISSM, SA and DBA.",
+                "control-id": "si-11"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

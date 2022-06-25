@@ -1,0 +1,129 @@
+{% extends "../base.html" %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} POA&M Detail
+{% endblock %}
+
+{% block head %}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body-wide %}
+
+<div class="container">
+
+    
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Track a System</h2>
+            <p>Create a system in GovReady-Q to track a system that undergoing compliance.</p>
+        </div>
+
+
+        <div class="col-md-3 portfolio-org-col ">
+            <h2>Create System from Template</h2>
+            <p>Use a template to start a new system.</p>
+        </div>
+        <div class="col-md-9 portfolio-org-col ">
+            <div class="well" style="height: 180px;">
+                {% for app_category in apps %}
+                    {% for app in app_category.apps %}
+                    <div class="col-lg-3 col-md-4 col-sm-6" >
+                        <div class="panel panel-default">
+                            <div class="panel-heading hidden">{{ app.title }}</div>
+                            <div class="panel-body app" style="" data-app="{{app.key}}" data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}">
+                                <h3 class="app_store small" style="margin-top:0px;font-weight: bold;">{{ app.title|truncatechars_html:18 }}</h2>
+                                <h3 class="app_store small">{{app.description.short|safe|truncatechars_html:20}}</h3>
+                                <!-- <div class="app-version-info">Version: {{ app.version }}</div> -->
+                            </div>
+                            <div class="text-center" style="padding-bottom:1em;">
+                                <div style="display: inline-block;">
+                                    {# Offer quick start button if user can only start the app in a single organization context. #}
+                                    {% if app.organizations|length >= 1 %}
+                                        <form action="/store/{{ app.key|urlencode }}{{ forward_qsargs }}" method="post" style="display: inline-block;" class="app-form" data-app="{{app.key}}">
+                                          {% csrf_token %}
+                                          {% if app.organizations|length > 1 %}
+                                              <select id="app-org-select" class="" onchange="update_org_choice('{{ app.key }}/organization_{{ forloop.counter }}', event)">
+                                                  {% for org in app.organizations %}
+                                                      <option value="{{ org.slug }}">{{ org }}</option>
+                                                  {% endfor %}
+                                              </select>
+                                          {% endif %}
+                                          {% with app.organizations|first as first_org %}
+                                              <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
+                                          {% endwith %}
+                                          {% if 'portfolio' in forward_qsargs %}{% endif %}
+                                            <button type="submit" class="btn btn-default btn-xs btn-justified start-app" style="width:150px; padding:.25em;">Start</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+                <div style="display: block;float: left; border:0.0px solid #888; height: 100px; width:160px; margin-left:20px;">
+                    <p>&nbsp;</p>
+                   <p><a href="{% url 'store' %}?start=true" role="link" style="color: #666;">More templates &gt;&gt;</a></p>
+                </div>
+            </div>
+        </div>
+
+
+       <div class="col-md-3 portfolio-org-col ">
+            <h2>Enter System Name</h2>
+            <p>Create a new or existing IT System for monitoring and compliance.</p>
+        </div>
+
+        <div class="col-md-9 portfolio-org-col ">
+            <div class="well">
+                <form method="get">
+                    {% csrf_token %}
+                    <input type=hidden name=action value=newportfolio>
+                    <div class="form-group">
+                        <label class="control-label" for="id_title">System Name</label>
+                        <input id="new_system_name" type="text" name="s" maxlength="255" class="form-control" placeholder="e.g., Enterprise Financial System" title="The official name of the syste" required>
+                        <!-- <div class="help-block">Official name of system</div> -->
+                    </div>
+                    <p><button type="submit" id="new_system_button" class="btn btn-success">Add &raquo;</button></p>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-3 portfolio-org-col hidden">
+            <h2>By URL</h2>
+            <p>Add a new or existing IT System for monitoring and compliance.</p>
+        </div>
+        <div class="col-md-9 portfolio-org-col hidden">
+            <div class="well">
+                <form method="get">
+                    {% csrf_token %}
+                    <input type=hidden name=action value=newportfolio>
+                    <div class="form-group">
+                        <label class="control-label" for="id_title">URL of System</label>
+                        <input type="text" name="s" maxlength="255" class="form-control" placeholder="e.g., https://finsys.example.com" title="The official name of the syste" required id="id_title">
+                        <!-- <div class="help-block">Official name of system</div> -->
+                    </div>
+                    <p><button type="submit" id="new-system-button" class="btn btn-success">Add &raquo;</button></p>
+                </form>
+            </div>
+        </div> 
+
+
+    </div>
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+<script>
+
+</script>
+
+{% endblock %}

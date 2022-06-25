@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %} - GovReady-Q</title>
+
+        {% comment %}
+        <meta name="description" content="">
+        {% endcomment %}
+        <link rel="shortcut icon" href='{% static "img/brand/favicon.ico" %}' type="image/x-icon">
+        <link rel="icon" href='{% static "img/brand/favicon.ico" %}' type="image/x-icon">
+
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+
+        {#<link rel="stylesheet" type="text/css" href="{% static "styles.css" %}">#}
+        {#<link rel="stylesheet" type="text/css" href="{% static "vendors.css" %}">#}
+        <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap.min.css" %}">
+        <link rel="stylesheet" href="{% static "css/google-fonts.css" %}">
+        <link rel="stylesheet" href="{% static "css/govready-q.css" %}">
+        <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">
+        <link rel="stylesheet" href="{% static "vendor/jsgrid/jsgrid.min.css" %}">
+        <link rel="stylesheet" href="{% static "vendor/jsgrid/jsgrid-theme.min.css" %}">
+        <link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
+        <script defer src="{% static "vendor/fontawesome.js" %}"></script>
+        <script src="{% static "vendor/jquery.js" %}"></script>
+        <script src="{% static "vendor/jquery-ui.js" %}"></script>
+
+        <script src="{% static "vendor/bootstrap/js/bootstrap.min.js" %}"></script>
+        <script src="{% static "vendor/bootstrap-responsive-tabs.js" %}"></script>
+        <script src="{% static "vendor/autosize.min.js" %}"> </script>
+        <script src="{% static "vendor/textcomplete.min.js" %}"> </script>
+        <script src="{% static "vendor/js/select2.min.js" %}"></script>
+        <script src="{% static "vendor/bootstrap-helpers.js" %}"></script>
+        <script src="{% static "vendor/jsgrid/jsgrid.min.js" %}"></script>
+        <script src="{% static "manifest.js" %}"></script>
+        <script src="{% static "styles.js" %}"></script>
+        <script src="{% static "vendors.js" %}"></script>
+        <script src="{% static "main.js" %}"></script>
+        {% include "head.html" %}
+
+        {% block head %}{% endblock %}
+
+
+        <!--[if lt IE 9]>
+            <script src="static/js/html5-3.6-respond-1.1.0.min.js"></script>
+        <![endif]-->
+
+<style>
+body { padding:0; padding-top:60px; !important;}
+</style>
+
+    </head>
+    <body>
+
+    <!--[if lt IE 8]><p>Internet Explorer version 8 or any modern web browser is required to use this website, sorry.<![endif]-->
+    <!--[if gt IE 7]><!-->
+
+    {% include "summary_navbar.html" %}
+
+    {% block contextbar %}
+    <div id="context-bar">
+    <div class="container-fluid">
+    <ol class="breadcrumb">
+      {% block breadcrumbs %}
+      {% endblock %}
+    </ol> <!-- .breadcrumb -->
+    </div><!-- container -->
+    </div><!-- div wrapper -->
+    {% endblock %}
+
+    {% if messages %}
+    <div class="message-margin">
+      {% for message in messages %}
+        {# Django levels are: debug (map to Boostrap 'info'), info, success, warning, error (map to Boostrap 'danger') #}
+        {% if message.level_tag != "success" %}{# Skip success messages #}
+        <div class="alert alert-{% if message.level_tag == 'error' %}danger{% elif message.level_tag == 'debug' %}info{% else %}{{message.level_tag}}{% endif %} fade in toast-msg">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {{ message }}&nbsp;
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block body-wide %}
+    <div class="container-fluid project-base-container" style="min-height: 120vh; height: 300vh">
+      {% block body %}
+      {% endblock %}
+      {% block content %}
+        {# allauth uses this block #}
+      {% endblock %}
+    </div>
+
+      <!-- <hr> -->
+      {% block footer %}
+        <footer>
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="row footer-row">
+                {% include "footer.html" %}
+              </div>
+            </div>
+          </div>
+        </footer>
+      {% endblock %}
+    {% endblock %}
+
+    {% include "bootstrap-helpers.html" %}
+
+    <div id="invitation_modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="invitation_modal_title" aria-hidden="true" data-url="{% url "send_invitation" %}">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="invitation_modal_title">...</h4>
+          </div>
+          <div class="modal-body">
+            <!-- this seems odd -km <p class="modal-text">Hmm text here.</p> -->
+            <form class="form" onsubmit="return send_invitation()">
+                {% csrf_token %}
+                <div class="form-group form-group-margin">
+                  <label for="invite-user-select">Select user to invite</label>
+                  <br>
+                  <select id="invite-user-select" class="form-control" name="user" onchange="invite_toggle_mode()">
+                  </select>
+                </div>
+                <div class="form-group form-by-email">
+                  <label for="invite-user-email">
+                    Invite by Email
+                    <span>(<a onclick="$('#invite-user-select').val(''); invite_toggle_mode()">back</a>)</span>
+                  </label>
+                  <br>
+                  <input id="invite-user-email" class="form-control form-email-width" name="email" type="email" placeholder="person@your-agency.gov">
+                </div>
+                <div id="invite-message-container">
+                  <label for="invite-message">Include a message about why you are sending this invitation:</label>
+                  <textarea id="invite-message invite-message-size" aria-label="invite-message invite-message-size" name="invite-message"class="form-control"></textarea>
+                </div>
+                <div id="invite-addtoteam-container" style="display: none"">
+                  <div class="checkbox form-checkbox">
+                    <label>
+                      <input name="add-to-team" type="checkbox"> Add user to system team
+                    </label>
+                  </div>
+                </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button id="invite_submit_btn" type="button" class="btn btn-success btn-submit" onclick="$('#invitation_modal form').submit()">Invite</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static "js/discussion.js" %}"></script>
+    <script src="{% static "js/main.js" %}"></script>
+
+    <script>
+    $(document).ajaxSend(function(event, xhr, settings) { if (!/^https?:.*/.test(settings.url)) xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}"); });
+    </script>
+
+    {% if MOUSE_CURSOR_FOLLOWER %}
+    <script>enableMouseCursorFollower();</script>
+    {% endif %}
+
+    {% if authoring_tool_enabled %}
+    <script>
+    var upgrade_app_option_force = false; // can only be set to true in dev console
+    var upgrade_app_option_confirm = true; // is set to true in dev tools for headless scripting
+    function upgrade_app(app_id) {
+      if (upgrade_app_option_confirm
+         {% if is_question_page %}
+         && !confirm("All instances of '{{task.project.root_task.title}}' will be updated.\n\nAre you sure you want to upgrade?"))
+         {% else %}
+         && !confirm("All instances of '{{project.root_task.title}}' will be updated.\n\nAre you sure you want to upgrade?"))
+         {% endif %}
+
+      ajax_with_indicator({
+          url: "/tasks/_upgrade-app",
+          method: "POST",
+          data: {
+            app: app_id,
+            force: upgrade_app_option_force ? "true" : "false"
+          },
+          keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect or reload
+          success: function(res) {
+            location.reload();
+          }
+      })
+    }
+    </script>
+    <link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
+    {% endif %}
+{#    {% include 'session_security/all.html' %}#}
+    {% block scripts %}{% endblock %}
+    </body>
+</html>

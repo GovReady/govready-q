@@ -1,0 +1,119 @@
+{
+  "component-definition": {
+    "uuid": "b1416990-7d1d-49af-92e0-86ac20bf56be",
+    "metadata": {
+      "title": "Microsoft Access 2010",
+      "last-modified": "2022-06-12T20:17:22",
+      "version": "2022-06-12T20:17:22",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "c468b816-ba97-4e73-a1ba-d2c0a6b9bc5d",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "71282a41-5fed-48bb-8e22-f7b0a1f116ad",
+        "type": "software",
+        "title": "Microsoft Access 2010",
+        "description": "Microsoft Access 2010 based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "c468b816-ba97-4e73-a1ba-d2c0a6b9bc5d"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "3cbda41b-776c-484a-8afa-5f999d1eccda",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "21162444-f0e9-4b6d-8f01-90e8bfc2d91b",
+                "description": "Trust Bar Notifications for unsigned application add-ins must be blocked.\nApplication add-ins must be signed by Trusted Publisher.",
+                "control-id": "cm-5.3"
+              }
+            ]
+          },
+          {
+            "uuid": "7b6edb59-49e6-4155-bd78-5dfe92e1bd14",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "d6a389eb-71ce-4004-a721-a53a64eae470",
+                "description": "Prompts to convert older databases must be enforced.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "387c8d91-e097-4eaf-9b3f-892ecd325ff1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "63514969-6811-4c23-be6b-9c5b37302733",
+                "description": "Warning Bar settings for VBA macros must be configured.\nThe Default file format must be set.\nDatabase functionality configurations must be displayed to the user.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "af9c2728-b99d-4328-8c3a-cd37ddc8ae5e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-18.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "dbe577c2-b97c-4ca8-8361-6406791f0657",
+                "description": "Links that invoke instances of IE from within an Office product must be blocked.\nAdd-on Management functionality must be allowed.",
+                "control-id": "sc-18.1"
+              }
+            ]
+          },
+          {
+            "uuid": "0c035136-ff2e-45b6-b545-19f5daed97c6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-18.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "3a4feb8b-98c5-4d3d-bede-ce67b2ed8cd6",
+                "description": "Enabling IE Bind to Object functionality must be present.\nProtection from zone elevation must be enforced.\nScripted Window Security must be enforced.",
+                "control-id": "sc-18.3"
+              },
+              {
+                "uuid": "ce58654d-85e8-4a74-9390-593fcc375ab2",
+                "description": "File Downloads must be configured for proper restrictions.",
+                "control-id": "sc-18.3"
+              }
+            ]
+          },
+          {
+            "uuid": "c18eff00-dcd7-4bca-8e1a-d191f310cb9e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-18.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "950a44d7-fdae-411b-9265-695b9f81d8e6",
+                "description": "Disabling of user name and password syntax from being used in URLs must be enforced.\nSaved from URL mark to assure Internet zone processing must be enforced.\nNavigation to URL's embedded in Office products must be blocked.\nData Execution Prevention must be enforced.",
+                "control-id": "sc-18.4"
+              },
+              {
+                "uuid": "eb724f20-ce5e-4503-9286-d5f048734e2c",
+                "description": "Configuration for enabling of hyperlinks must be enforced.\nActiveX Installs must be configured for proper restriction.",
+                "control-id": "sc-18.4"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

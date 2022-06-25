@@ -1,0 +1,1235 @@
+{
+  "component-definition": {
+    "uuid": "4935b86d-7623-4018-8d0c-cc1239a527a3",
+    "metadata": {
+      "title": "Container Platform Security Requirements Guide",
+      "last-modified": "2022-06-12T20:17:27",
+      "version": "2022-06-12T20:17:27",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "ed79dfc1-0efd-4d69-ac24-56ddecad6efe",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "0c5194ae-ab1b-4f9e-beb6-c37ee7ead6b8",
+        "type": "software",
+        "title": "Container Platform Security Requirements Guide",
+        "description": "Container Platform Security Requirements Guide based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "ed79dfc1-0efd-4d69-ac24-56ddecad6efe"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "ad938217-6f65-4f33-b8a0-8f8af23b8489",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "ae8569cc-8203-4a96-b67a-cdadcfc9feb4",
+                "description": "The container platform must use a centralized user management solution to support account management functions.",
+                "control-id": "ac-2.1"
+              }
+            ]
+          },
+          {
+            "uuid": "d9422894-f827-4e3d-b77b-4bb7d468fa89",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "0f263082-2df7-4561-88db-82140dbb6722",
+                "description": "The container platform must automatically remove or disable temporary user accounts after 72 hours.",
+                "control-id": "ac-2.2"
+              },
+              {
+                "uuid": "97e47cab-a1ef-43e4-b4d5-74df280717f4",
+                "description": "The container platform must never automatically remove or disable emergency accounts.",
+                "control-id": "ac-2.2"
+              }
+            ]
+          },
+          {
+            "uuid": "41ff71c8-7a6f-4f29-b6f2-25c9c2dcee1d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "63791de6-a2d0-418e-9eef-0b4364e69b6d",
+                "description": "The container platform must automatically disable accounts after a 35-day period of account inactivity.",
+                "control-id": "ac-2.3"
+              }
+            ]
+          },
+          {
+            "uuid": "0f6360c2-0a30-432e-9be4-2cdbaf913d4e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "9461e392-deef-4caf-b553-06415b275e01",
+                "description": "The container platform must notify system administrator and ISSO of account enabling actions.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "d77b979e-227f-42ae-a959-f5a3d0525f8d",
+                "description": "The container platform must automatically audit account-disabling actions.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "d0d918f6-9311-4fa3-ae57-71240dc2a334",
+                "description": "The container platform must notify system administrators and ISSO when accounts are modified.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "60c522c2-b521-47cf-b410-2ec92c35ccf3",
+                "description": "The container platform must automatically audit account removal actions.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "2c51e6b8-276c-4bce-8b3c-dcb98ca18e9b",
+                "description": "The container platform must notify system administrators and ISSO for account removal actions.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "ce8c2683-4c89-43a9-b1a6-fcd271933521",
+                "description": "The container platform must automatically audit account creation.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "0f395a55-98c4-46c8-a85a-0e5bd8d293ee",
+                "description": "The container platform must notify system administrators and ISSO for account disabling actions.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "57bab632-eb7d-4361-838b-14f7dc822091",
+                "description": "The container platform must automatically audit account modification.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "e4cd00c0-f527-4004-826a-d38e12c4557f",
+                "description": "The container platform must notify system administrators and ISSO when accounts are created.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "a85b313a-f9f7-48f0-96ea-8bf5c9b15021",
+                "description": "The container platform must automatically audit account-enabling actions.",
+                "control-id": "ac-2.4"
+              }
+            ]
+          },
+          {
+            "uuid": "ea313df1-e9ed-440c-8fbb-b2eba0849e79",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "1454387a-d7f8-44ee-a910-a57c3a23956b",
+                "description": "The container platform must terminate shared/group account credentials when members leave the group.",
+                "control-id": "ac-2.10"
+              }
+            ]
+          },
+          {
+            "uuid": "4667a624-05d4-47aa-a391-2a0b133fe396",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.11.",
+            "implemented-requirements": [
+              {
+                "uuid": "2193d887-1422-427a-83f6-025b4697a434",
+                "description": "The container platform must enforce organization-defined circumstances and/or usage conditions for organization-defined accounts.",
+                "control-id": "ac-2.11"
+              }
+            ]
+          },
+          {
+            "uuid": "5527e910-6250-4276-9f2e-12e9e4fe94eb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "af5b914e-8a6d-429a-ac78-698d7c589d64",
+                "description": "Least privilege access and need to know must be required to access the container platform registry.\nLeast privilege access and need to know must be required to access the container platform runtime.\nLeast privilege access and need to know must be required to access the container platform keystore.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "d6e99b44-ee74-47e6-9a2a-7f7702e3b2b3",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "8213b405-79f7-473c-a4c9-a98e8c3a9152",
+                "description": "The container platform must enforce approved authorizations for controlling the flow of information within the container platform based on organization-defined information flow control policies.",
+                "control-id": "ac-4"
+              },
+              {
+                "uuid": "17332968-91ca-4b33-9d74-0586b787a0fd",
+                "description": "The container platform must enforce approved authorizations for controlling the flow of information between interconnected systems and services based on organization-defined information flow control policies.",
+                "control-id": "ac-4"
+              }
+            ]
+          },
+          {
+            "uuid": "2e600973-be4a-423b-bffd-684eae41c846",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "7388fb2f-deb8-4a70-bb3a-2b4fc46e803e",
+                "description": "Container images instantiated by the container platform must execute using least privileges.",
+                "control-id": "ac-6.8"
+              }
+            ]
+          },
+          {
+            "uuid": "19679968-4c7e-4e57-be1f-9d82b637f2b5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.9.",
+            "implemented-requirements": [
+              {
+                "uuid": "811743ac-922a-446d-b6bb-435c1f8c3da3",
+                "description": "The container platform must audit the execution of privileged functions.",
+                "control-id": "ac-6.9"
+              }
+            ]
+          },
+          {
+            "uuid": "e1ff7c06-e20c-45b6-b648-e06ffee2c661",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "0d9a24b9-a465-4a97-8a62-dc8a641c70f2",
+                "description": "The container platform must prevent non-privileged users from executing privileged functions to include disabling, circumventing, or altering implemented security safeguards/countermeasures.",
+                "control-id": "ac-6.10"
+              }
+            ]
+          },
+          {
+            "uuid": "bac45d49-6567-4183-b735-ae97e1bbe9ab",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "1e9fd5b6-13b8-4d84-8bd5-966c7e2c01b6",
+                "description": "The container platform must automatically lock an account until the locked account is released by an administrator when three unsuccessful login attempts in 15 minutes are exceeded.",
+                "control-id": "ac-7"
+              },
+              {
+                "uuid": "6daac559-27da-4d56-93ff-fad1d9721e0e",
+                "description": "The container platform must enforce the limit of three consecutive invalid logon attempts by a user during a 15-minute time period.",
+                "control-id": "ac-7"
+              }
+            ]
+          },
+          {
+            "uuid": "55167955-917f-40f7-9d63-5dbdf15b2633",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "9290b70b-261a-4037-a0f4-b2438dfe6f33",
+                "description": "The container platform must retain the Standard Mandatory DoD Notice and Consent Banner on the screen until users acknowledge the usage and conditions and take explicit actions to log on for further access.",
+                "control-id": "ac-8"
+              },
+              {
+                "uuid": "45210fff-6204-41f6-ade4-33c0c9a3de22",
+                "description": "The container platform must display the Standard Mandatory DoD Notice and Consent Banner before granting access to platform components.",
+                "control-id": "ac-8"
+              }
+            ]
+          },
+          {
+            "uuid": "4c9515eb-cc9c-400e-a3d4-68c10d94e320",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-12.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "1542c832-17a5-427b-93f3-5c9d73b158b6",
+                "description": "Access to the container platform must display an explicit logout message to user indicating the reliable termination of authenticated communication sessions.",
+                "control-id": "ac-12.1"
+              }
+            ]
+          },
+          {
+            "uuid": "c25b3b12-9e73-4614-a23f-e7c288ce44d3",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-17.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "cdbba887-629f-4d17-80cb-55b634aaaecd",
+                "description": "The container platform must use TLS 1.2 or greater for secure container image transport from trusted sources.\nThe container platform must use TLS 1.2 or greater for secure communication.",
+                "control-id": "ac-17.2"
+              },
+              {
+                "uuid": "ed44d566-8dcf-4800-80d0-99ef5a338d61",
+                "description": "The container platform must prohibit communication using TLS versions 1.0 and 1.1, and SSL 2.0 and 3.0.",
+                "control-id": "ac-17.2"
+              }
+            ]
+          },
+          {
+            "uuid": "e68e9d7f-2535-4f78-8df7-cd91709b1918",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "b79b3d8c-84a7-487a-b7b5-d9aa2b04601f",
+                "description": "All audit records must identify the source of the event within the container platform.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "248f3306-9c55-4332-91b8-73a6c69a9d9a",
+                "description": "All audit records must identify what type of event has occurred within the container platform.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "f072bb57-90a9-400f-9a2c-25591a7c19b2",
+                "description": "All audit records must identify any users associated with the event within the container platform.\nAll audit records must identify any containers associated with the event within the container platform.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "45bc6ddc-ec78-4ce9-ae66-77acb3c77a44",
+                "description": "All audit records must generate the event results within the container platform.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "3bb7c52d-5b52-4e61-b2bf-88f4c8820ddc",
+                "description": "The container platform audit records must have a date and time association with all events.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "23870cc6-86fa-40d4-815a-90d37e606c6d",
+                "description": "All audit records must identify where in the container platform the event occurred.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "57707fb8-f151-4534-bb56-b8f94a2983af",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "418b27e7-87ad-4cef-9798-b85b5d003453",
+                "description": "The container platform must generate audit records containing the full-text recording of privileged commands or the individual identities of group account users.",
+                "control-id": "au-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "b9dd8ba4-c7c0-4292-a346-5d10e708b693",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "2f9d1179-4d7d-40d5-8f0f-1985b6f5b325",
+                "description": "The container platform must allocate audit record storage capacity in accordance with organization-defined audit record storage requirements.",
+                "control-id": "au-4"
+              }
+            ]
+          },
+          {
+            "uuid": "e8eaf221-9e8a-4ab9-9ab4-abf39ba5f002",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "f8767cb6-5090-4c36-8673-69b6237436ae",
+                "description": "Audit records must be stored at a secondary location.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "831eb0a3-a309-4eee-ae3a-952940b54a6e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "dcd47b13-d21f-461e-8920-d6793b13b51d",
+                "description": "The container platform must take appropriate action upon an audit failure.",
+                "control-id": "au-5"
+              }
+            ]
+          },
+          {
+            "uuid": "3c75fb79-b8c9-4de0-93f8-429594f4e900",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "d30e4050-8e8d-483f-ae54-1b41b03e7ea3",
+                "description": "The container platform must provide an immediate warning to the SA and ISSO (at a minimum) when allocated audit record storage volume reaches 75 percent of repository maximum audit record storage capacity.",
+                "control-id": "au-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "c06a673f-5231-47c8-966a-19f9903bd25d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "51a50920-0aef-415d-a480-81e9d6120f0f",
+                "description": "The container platform must provide an immediate real-time alert to the SA and ISSO, at a minimum, of all audit failure events requiring real-time alerts.",
+                "control-id": "au-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "22dac078-88c1-4bb6-912d-3d7815963dca",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-6.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "4a7cef48-6d83-4a9b-a56e-33b968175f1e",
+                "description": "The container platform components must provide the ability to send audit logs to a central enterprise repository for review and analysis.",
+                "control-id": "au-6.4"
+              }
+            ]
+          },
+          {
+            "uuid": "8be5ea17-8f95-4ac3-87e2-6ca0690fe6fe",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "6697758b-9332-4f1a-8a6d-2b97cf976ae5",
+                "description": "The container platform must provide an audit reduction capability that supports on-demand reporting requirements.",
+                "control-id": "au-7"
+              }
+            ]
+          },
+          {
+            "uuid": "4a711e1f-e0dd-4e1a-b3ff-e84ebc974d50",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "852f26ba-a35c-4c53-b8ea-d49d10a738b8",
+                "description": "The container platform must record time stamps for audit records that meet a granularity of one second for a minimum degree of precision.",
+                "control-id": "au-8"
+              },
+              {
+                "uuid": "3a0a143f-29d7-4964-81b8-ca7d2132f5aa",
+                "description": "All audit records must use UTC or GMT time stamps.",
+                "control-id": "au-8"
+              },
+              {
+                "uuid": "a7456ee8-0b6c-4173-b257-64779eb38e4b",
+                "description": "The container platform must use internal system clocks to generate audit record time stamps.",
+                "control-id": "au-8"
+              }
+            ]
+          },
+          {
+            "uuid": "f02ec2a4-3763-44fd-aad1-7139e21b54dc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "e43d5b6e-812a-4448-8322-5d40c9c69e45",
+                "description": "The container platform must protect audit information from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "1b2362cc-0db0-429f-ac03-5ada78eafbd9",
+                "description": "The container platform must protect audit tools from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "655dfef6-076f-406a-9c4e-1eaf70dc68f9",
+                "description": "The container platform must protect audit tools from unauthorized access.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "829e7d37-c6d4-4369-be8f-5af067132c81",
+                "description": "The container platform must protect audit information from unauthorized deletion.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "9a6c3d53-51ef-4aaa-aa2e-c9511c1851d9",
+                "description": "The container platform must protect audit information from any type of unauthorized read access.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "04bfa1e0-62df-4bd5-a961-66de37ffa2d5",
+                "description": "The container platform must protect audit tools from unauthorized deletion.",
+                "control-id": "au-9"
+              }
+            ]
+          },
+          {
+            "uuid": "61612101-2fe8-49cf-826e-795364bd8972",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "ecdb8a86-7b53-440e-ad67-cd9e2ba5244c",
+                "description": "The container platform must use FIPS validated cryptographic mechanisms to protect the integrity of log information.",
+                "control-id": "au-9.3"
+              },
+              {
+                "uuid": "66206fbc-c51b-4634-a5b4-6c9b70914836",
+                "description": "The container platform must use cryptographic mechanisms to protect the integrity of audit tools.",
+                "control-id": "au-9.3"
+              }
+            ]
+          },
+          {
+            "uuid": "f614b7fa-547e-416c-9af4-55e63aceee54",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "b8bdfad0-7836-479f-bd90-09a43befbc95",
+                "description": "The container platform must generate audit records when successful/unsuccessful attempts to access privileges occur.\nThe container platform must generate audit records when successful/unsuccessful attempts to access security objects occur.\nThe container platform must generate audit records when successful/unsuccessful attempts to access security levels occur.\nThe container platform must generate audit records when successful/unsuccessful attempts to access categories of information (e.g., classification levels) occur.\nThe container platform must generate audit records when successful/unsuccessful attempts to modify privileges occur.\nThe container platform must generate audit records when successful/unsuccessful attempts to modify security objects occur.\nThe container platform must generate audit records when successful/unsuccessful attempts to modify security levels occur.\nThe container platform must generate audit records when successful/unsuccessful attempts to modify categories of information (e.g., classification levels) occur.\nThe container platform must generate audit records when successful/unsuccessful attempts to delete privileges occur.\nThe container platform must generate audit records when successful/unsuccessful attempts to delete security levels occur.\nThe container platform must generate audit records when successful/unsuccessful attempts to delete security objects occur.\nThe container platform must generate audit records when successful/unsuccessful attempts to delete categories of information (e.g., classification levels) occur.\nThe container platform must generate audit records when successful/unsuccessful logon attempts occur.\nThe container platform must generate audit record for privileged activities.\nThe container platform audit records must record user access start and end times.\nThe container platform must generate audit records when concurrent logons from different workstations and systems occur.\nThe container platform runtime must generate audit records when successful/unsuccessful attempts to access objects occur.\nDirect access to the container platform must generate audit records.\nThe container platform must generate audit records for all account creations, modifications, disabling, and termination events.\nThe container runtime must generate audit records for all container execution, shutdown, restart events, and program initiations.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "0ae571cf-6d84-4882-8fdb-f78c6c7266ef",
+                "description": "The container platform must allow only the ISSM (or individuals or roles appointed by the ISSM) to select which auditable events are to be audited.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "7d6d0b89-9b31-419c-bff1-b40da18ba5e0",
+                "description": "The container platform must generate audit records for all DoD-defined auditable events within all components in the platform.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "0219bef5-7093-49cf-a3e4-923a7805ff69",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-14.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "31e2356f-7c07-4e52-a474-2857731c30f7",
+                "description": "The container platform must initiate session auditing upon startup.",
+                "control-id": "au-14.1"
+              }
+            ]
+          },
+          {
+            "uuid": "89ae577c-1b00-4ae5-a300-8d114c0f0c43",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "d09acbf1-6e84-4615-841b-2d87b3fd3b0c",
+                "description": "The container platform must enforce access restrictions for container platform configuration changes.",
+                "control-id": "cm-5.1"
+              },
+              {
+                "uuid": "684c55a5-dbc5-4301-a127-c68a23e31f6b",
+                "description": "The container platform must enforce access restrictions and support auditing of the enforcement actions.",
+                "control-id": "cm-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "2a1f2df2-665e-4ffa-b900-82b652d1e7fa",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "860ebce1-67e3-4c6c-b4f8-231f5833a3e4",
+                "description": "The container platform must be built from verified packages.\nThe container platform must verify container images.",
+                "control-id": "cm-5.3"
+              }
+            ]
+          },
+          {
+            "uuid": "dbe08f39-0f94-4c07-8aa1-bd8035595b8a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "4a8af328-96f0-493a-add1-358b66943411",
+                "description": "The container platform must limit privileges to the container platform registry.\nThe container platform must limit privileges to the container platform runtime.\nThe container platform must limit privileges to the container platform keystore.\nConfiguration files for the container platform must be protected.\nAuthentication files for the container platform must be protected.",
+                "control-id": "cm-5.6"
+              }
+            ]
+          },
+          {
+            "uuid": "77a5af8e-1dee-4309-947c-b9f48a794b08",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "b2d4e7b7-3e8a-4454-81cf-45f503cd7a30",
+                "description": "The container platform must provide the configuration for organization-identified individuals or roles to change the auditing to be performed on all components, based on all selectable event criteria within organization-defined time thresholds.\nContainer platform components must be configured in accordance with the security configuration settings based on DoD security configuration or implementation guidance, including SRGs, STIGs, NSA configuration guides, CTOs, and DTMs.\nThe container platform must be able to store and instantiate industry standard container images.\nThe container platform must continuously scan components, containers, and images for vulnerabilities.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "b6293e7d-8eda-40de-8c8d-89bb5d709ac5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "439b31df-e955-4bc7-88ba-ab564ef4557a",
+                "description": "The container platform runtime must enforce ports, protocols, and services that adhere to the PPSM CAL.\nThe container platform runtime must enforce the use of ports that are non-privileged.\nThe container platform must prohibit or restrict the use of protocols that transmit unencrypted authentication information or use flawed cryptographic algorithms for transmission.",
+                "control-id": "cm-7"
+              },
+              {
+                "uuid": "f523dbcd-fd3f-45af-9364-e449372763a6",
+                "description": "The container platform must be configured with only essential configurations.\nThe container platform registry must contain only container images for those capabilities being offered by the container platform.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "6d79a616-93cd-4d1b-95dc-03e2508161be",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "39edfc4e-0b28-429b-8146-eea2389163ec",
+                "description": "All non-essential, unnecessary, and unsecure DoD ports, protocols, and services must be disabled in the container platform.",
+                "control-id": "cm-7.1"
+              }
+            ]
+          },
+          {
+            "uuid": "3328161b-ddfa-4151-b720-6a8e6612929e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "7a8341e8-9c84-4283-a953-3a1eefc00a66",
+                "description": "The container platform must prevent component execution in accordance with organization-defined policies regarding software program usage and restrictions, and/or rules authorizing the terms and conditions of software program usage.",
+                "control-id": "cm-7.2"
+              }
+            ]
+          },
+          {
+            "uuid": "2d6d0111-3e55-40fd-b4b9-1dcdff9ed95b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "dba151e9-090a-438b-aabc-0c5cfe947a18",
+                "description": "The container platform registry must employ a deny-all, permit-by-exception (whitelist) policy to allow only authorized container images in the container platform.",
+                "control-id": "cm-7.5"
+              }
+            ]
+          },
+          {
+            "uuid": "0e871fe3-cddd-4fa4-8b31-084e55a49923",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-11.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "74dbf8b0-84ab-4562-abd8-cdbfbfe4ce66",
+                "description": "The container platform must prohibit the installation of patches and updates without explicit privileged status.\nThe container platform runtime must prohibit the instantiation of container images without explicit privileged status.\nThe container platform registry must prohibit installation or modification of container images without explicit privileged status.",
+                "control-id": "cm-11.2"
+              }
+            ]
+          },
+          {
+            "uuid": "d923f63e-f42e-4f15-b5da-a9d3ec5b8d62",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "1006688a-469a-42e8-bbcf-775c5eeb02e6",
+                "description": "The container platform must uniquely identify and authenticate users.\nThe container platform application program interface (API) must uniquely identify and authenticate users.\nThe container platform must uniquely identify and authenticate processes acting on behalf of the users.\nThe container platform application program interface (API) must uniquely identify and authenticate processes acting on behalf of the users.",
+                "control-id": "ia-2"
+              }
+            ]
+          },
+          {
+            "uuid": "ee8de5c0-650b-42a1-b3f7-2504bd834b34",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "1556116f-8c6d-4059-98eb-957073082e8f",
+                "description": "The container platform must use multifactor authentication for network access to privileged accounts.",
+                "control-id": "ia-2.1"
+              }
+            ]
+          },
+          {
+            "uuid": "f20c6c4e-c843-42da-971b-407940dd51ea",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "ec93e4e8-79b2-41cc-be7a-bf7e243402a9",
+                "description": "The container platform must use multifactor authentication for network access to non-privileged accounts.",
+                "control-id": "ia-2.2"
+              }
+            ]
+          },
+          {
+            "uuid": "eac067a8-ad67-4086-9bbc-d60ba2b09807",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "6b3084d9-b4e1-4ad9-83b6-580f814cca20",
+                "description": "The container platform must use multifactor authentication for local access to privileged accounts.",
+                "control-id": "ia-2.3"
+              }
+            ]
+          },
+          {
+            "uuid": "991f73c3-c4db-4b12-926d-170087ede7d9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "04d758d9-24dc-4fba-9219-76bf121b3a70",
+                "description": "The container platform must use multifactor authentication for local access to non-privileged accounts.",
+                "control-id": "ia-2.4"
+              }
+            ]
+          },
+          {
+            "uuid": "1a959df3-93ad-4c0e-a7a4-01be4d39e120",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "b3b32a05-e903-4db5-b5f3-30534ecd22f7",
+                "description": "The container platform must ensure users are authenticated with an individual authenticator prior to using a group authenticator.",
+                "control-id": "ia-2.5"
+              }
+            ]
+          },
+          {
+            "uuid": "90beb044-3712-49ac-8895-4c0b8763912e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "67696bfa-df2a-491f-b76b-7f66d29eecd7",
+                "description": "The container platform must use FIPS-validated SHA-1 or higher hash function to provide replay-resistant authentication mechanisms for network access to privileged accounts.",
+                "control-id": "ia-2.8"
+              }
+            ]
+          },
+          {
+            "uuid": "dfad2809-bc2d-484e-a603-e879f1d7980a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.9.",
+            "implemented-requirements": [
+              {
+                "uuid": "7fc10952-1e2b-493d-bcaa-67bbdbbc32e8",
+                "description": "The container platform must implement replay-resistant authentication mechanisms for network access to non-privileged accounts.",
+                "control-id": "ia-2.9"
+              }
+            ]
+          },
+          {
+            "uuid": "ede568b5-11d2-4812-bc9b-d02a01618188",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.12.",
+            "implemented-requirements": [
+              {
+                "uuid": "84f9df4f-732b-4674-abf7-3c459a462d6f",
+                "description": "The container platform must be configured to use multi-factor authentication for user authentication.",
+                "control-id": "ia-2.12"
+              }
+            ]
+          },
+          {
+            "uuid": "65b96317-3981-4577-886e-75fd7b450bac",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "a100c4f1-4991-43bb-8680-3dd02e62584e",
+                "description": "The container platform must uniquely identify all network-connected nodes before establishing any connection.",
+                "control-id": "ia-3"
+              }
+            ]
+          },
+          {
+            "uuid": "9b3a543e-8fea-45d3-b541-6461c8410245",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "498b4043-3ef4-4f9b-9a3b-433bfd495d2d",
+                "description": "The container platform must disable identifiers (individuals, groups, roles, and devices) after 35 days of inactivity.",
+                "control-id": "ia-4"
+              }
+            ]
+          },
+          {
+            "uuid": "4f38bd0e-0cd8-4d83-8a45-aa4f11893f2a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "949844bc-53b4-4847-8e86-8cec38f0b3a4",
+                "description": "The container platform must enforce password complexity by requiring that at least one numeric character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "eb82289a-f1bf-4abb-9ef3-24ff7f46c47e",
+                "description": "For container platform using password authentication, the application must store only cryptographic representations of passwords.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "d5697acc-62de-4010-8a46-ad507ce40312",
+                "description": "For accounts using password authentication, the container platform must use FIPS-validated SHA-2 or later protocol to protect the integrity of the password authentication process.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "63e8f9db-87fa-4905-bb25-cc101b7c09c6",
+                "description": "The container platform must enforce 24 hours (one day) as the minimum password lifetime.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "3ff377b9-4f1e-4f21-a694-d2fdae0cf1fd",
+                "description": "The container platform must allow the use of a temporary password for system logons with an immediate change to a permanent password.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "e6c69a39-6f07-46cb-a8c5-f1521373f1cd",
+                "description": "The container platform must prohibit password reuse for a minimum of 10 generations.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "496116a3-34a1-4766-b79d-9b56df7af31b",
+                "description": "The container platform must enforce a 60-day maximum password lifetime restriction.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "2ee3c343-da22-43f1-aebe-5f996aa20e96",
+                "description": "The container platform must enforce password complexity by requiring that at least one special character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "489fcc34-f433-4588-8ca7-e0f57b4f9e7b",
+                "description": "The container platform must enforce a minimum 15-character password length.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "f3c707cc-4ca7-42fb-80d8-d7d8e5f0fb51",
+                "description": "The container platform must enforce password complexity by requiring that at least one uppercase character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "b03f55cb-8ea3-4352-b8dd-14c15d44cfdc",
+                "description": "The container platform must enforce password complexity by requiring that at least one lowercase character be used.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "48a31037-c792-4857-9d72-d5ac80bf3762",
+                "description": "The container platform must require the change of at least 15 of the total number of characters when passwords are changed.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "5ce69c13-93a6-4488-af86-e622929e8601",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "b3729a2c-a1b9-48e8-b0f3-d0a673f72afc",
+                "description": "The container platform must validate certificates used for Transport Layer Security (TLS) functions by performing an RFC 5280-compliant certification path validation.",
+                "control-id": "ia-5.2"
+              },
+              {
+                "uuid": "06509ecd-9cde-4811-854e-0942bf0f5016",
+                "description": "The container platform must map the authenticated identity to the individual user or group account for PKI-based authentication.",
+                "control-id": "ia-5.2"
+              },
+              {
+                "uuid": "43ece403-adbf-4403-94c9-f1e9c85f710a",
+                "description": "The container platform, for PKI-based authentication, must implement a local cache of revocation data to support path discovery and validation in case of the inability to access revocation information via the network.",
+                "control-id": "ia-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "73265a15-1596-480e-bedd-2839408a1331",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.13.",
+            "implemented-requirements": [
+              {
+                "uuid": "8e25ce1d-5ed4-4bbb-a7cc-3fc1ce734c24",
+                "description": "The container platform must prohibit the use of cached authenticators after an organization-defined time period.",
+                "control-id": "ia-5.13"
+              }
+            ]
+          },
+          {
+            "uuid": "cfb5aee9-272e-41d1-b1a9-84f9aa8228e5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "2e8a6efd-bafb-4722-b3ec-65d678c52101",
+                "description": "The container platform must obscure feedback of authentication information during the authentication process to protect the information from possible exploitation/use by unauthorized individuals.",
+                "control-id": "ia-6"
+              }
+            ]
+          },
+          {
+            "uuid": "88dcdd74-275c-4f09-9fa0-bd36bb3fc251",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "8102e700-d7d7-42a3-bafd-9b085097b85c",
+                "description": "The container platform must use FIPS-validated SHA-2 or higher hash function for digital signature generation and verification (non-legacy use).",
+                "control-id": "ia-7"
+              }
+            ]
+          },
+          {
+            "uuid": "17f64cf2-4572-416d-8b39-142bbd202a2d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-8.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "6bbd9d40-f1b5-4670-8396-5f97aad1f9e3",
+                "description": "The container platform must accept Personal Identity Verification (PIV) credentials from other federal agencies.",
+                "control-id": "ia-8.1"
+              }
+            ]
+          },
+          {
+            "uuid": "358dc54c-e538-4f80-b3af-b8a11b589eb0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "cada692b-8dd5-40ca-9358-ccc65a4d0552",
+                "description": "The container platform must require users to reauthenticate when organization-defined circumstances or situations require reauthentication.",
+                "control-id": "ia-11"
+              },
+              {
+                "uuid": "52cbfd79-7174-48ac-9aa8-cb597be5b5d4",
+                "description": "The container platform must require devices to reauthenticate when organization-defined circumstances or situations requiring reauthentication.",
+                "control-id": "ia-11"
+              }
+            ]
+          },
+          {
+            "uuid": "a123c52a-4552-40b7-9740-a6715bda069d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ma-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "35af1f01-4573-4596-9130-1e5109789a18",
+                "description": "The container platform must employ strong authenticators in the establishment of non-local maintenance and diagnostic sessions.",
+                "control-id": "ma-4"
+              }
+            ]
+          },
+          {
+            "uuid": "b3c7ee18-a651-4d44-8fe5-5c5116d41de6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ma-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "16f9cbd8-e879-416f-9e9e-0dc2e22b6d3a",
+                "description": "The container platform must audit non-local maintenance and diagnostic sessions' organization-defined audit events associated with non-local maintenance.",
+                "control-id": "ma-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "0d9cb013-e5be-4fec-a163-af0115c1ed10",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ma-4.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "2e780d8b-2c2f-465a-9090-7fb4ee923a6f",
+                "description": "Container platform applications and Application Program Interfaces (API) used for nonlocal maintenance sessions must use FIPS-validated keyed-hash message authentication code (HMAC) to protect the integrity of nonlocal maintenance and diagnostic communications.",
+                "control-id": "ma-4.6"
+              },
+              {
+                "uuid": "cd0d7e14-cc28-4bd5-81eb-2b63dc237728",
+                "description": "The container platform must configure web management tools and Application Program Interfaces (API) with FIPS-validated Advanced Encryption Standard (AES) cipher block algorithm to protect the confidentiality of maintenance and diagnostic communications for nonlocal maintenance sessions.",
+                "control-id": "ma-4.6"
+              }
+            ]
+          },
+          {
+            "uuid": "ee608210-b4da-417c-a0fb-e04bcf2d490e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ra-5.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "a7f56cab-7969-4496-884c-4dced60a1f24",
+                "description": "Vulnerability scanning applications must implement privileged access authorization to all container platform components, containers, and container images for selected organization-defined vulnerability scanning activities.",
+                "control-id": "ra-5.5"
+              }
+            ]
+          },
+          {
+            "uuid": "1be3268f-b24c-4eb5-aed7-d74b36897a6b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "9cd26e2a-b5f5-4c5c-afcd-c2834882ea99",
+                "description": "The container platform must separate user functionality (including user interface services) from information system management functionality.",
+                "control-id": "sc-2"
+              }
+            ]
+          },
+          {
+            "uuid": "241f8127-102e-494d-8b71-fb18e805851f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "4097ee41-ef07-43f4-9a09-988ecce10374",
+                "description": "The container platform runtime must isolate security functions from non-security functions.",
+                "control-id": "sc-3"
+              }
+            ]
+          },
+          {
+            "uuid": "353493aa-80a5-44c6-9077-650901d0e720",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "38416e3a-8d6d-4bb0-ab76-232ac9b15a80",
+                "description": "The container platform must prohibit containers from accessing privileged resources.\nThe container platform must prevent unauthorized and unintended information transfer via shared system resources.",
+                "control-id": "sc-4"
+              }
+            ]
+          },
+          {
+            "uuid": "dc4dea68-778f-40d1-a8c2-d7d75eefbb95",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "f5227730-b0b0-46c1-b864-8641eb178b7d",
+                "description": "The container platform must protect against or limit the effects of all types of denial-of-service (DoS) attacks by employing organization-defined security safeguards.",
+                "control-id": "sc-5"
+              }
+            ]
+          },
+          {
+            "uuid": "ebadac57-2aa4-4842-b6a0-3ff210114cdc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "b094e1ae-9e0e-43e8-b48b-1938fc266466",
+                "description": "The container platform must restrict individuals' ability to launch organizationally defined denial-of-service (DoS) attacks against other information systems.",
+                "control-id": "sc-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "8f0eefe6-4644-4456-bbe9-653fbad2ca57",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "2cc76f77-8f54-429e-9a1e-a7e8f803e699",
+                "description": "The application must protect the confidentiality and integrity of transmitted information.",
+                "control-id": "sc-8"
+              }
+            ]
+          },
+          {
+            "uuid": "4b0f8d55-9ac3-4861-853e-139dd40716a5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "a0525438-e7b3-4e80-89d6-fecedfa2c01b",
+                "description": "The container platform must maintain the confidentiality and integrity of information during reception.",
+                "control-id": "sc-8.2"
+              },
+              {
+                "uuid": "50bdc56e-da6c-4e0c-b298-9adc361a53a1",
+                "description": "The container platform must maintain the confidentiality and integrity of information during preparation for transmission.",
+                "control-id": "sc-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "e0bd31d4-4cb1-4ae2-b5aa-e2b84e58d8a2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "f649f13c-d285-4509-9335-735f90b2366a",
+                "description": "The application must terminate all network connections associated with a communications session at the end of the session, or as follows: for in-band management sessions (privileged sessions), the session must be terminated after 10 minutes of inactivity;",
+                "control-id": "sc-10"
+              }
+            ]
+          },
+          {
+            "uuid": "3b0247b2-409d-47c6-a3a5-0ba1daf4cf3b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-13.",
+            "implemented-requirements": [
+              {
+                "uuid": "2b16ab37-4e1c-433d-87c8-fff5afe362d8",
+                "description": "The container platform must implement NSA-approved cryptography to protect classified information in accordance with applicable federal laws, Executive Orders, directives, policies, regulations, and standards.\nThe container platform must use a valid FIPS 140-2 approved cryptographic modules to generate hashes.\nThe container platform must use a FIPS-validated cryptographic module to implement encryption services for unclassified information requiring confidentiality.",
+                "control-id": "sc-13"
+              }
+            ]
+          },
+          {
+            "uuid": "01b61186-a252-4a8b-b3af-79d9fc514762",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.",
+            "implemented-requirements": [
+              {
+                "uuid": "b0892f0c-04b2-416b-bddc-a1f54def154b",
+                "description": "The container platform must protect authenticity of communications sessions with the use of FIPS-validated 140-2 or 140-3 security requirements for cryptographic modules.",
+                "control-id": "sc-23"
+              }
+            ]
+          },
+          {
+            "uuid": "866c20f4-c156-471a-b256-fa3bb5b0132a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-24.",
+            "implemented-requirements": [
+              {
+                "uuid": "a03349b5-da2f-4922-8549-1ff9d223df6a",
+                "description": "The container platform runtime must fail to a secure state if system initialization fails, shutdown fails, or aborts fail.",
+                "control-id": "sc-24"
+              },
+              {
+                "uuid": "6e3a1a8b-8db9-4a29-860e-ba39c3b79f22",
+                "description": "The container platform must preserve any information necessary to determine the cause of the disruption or failure.",
+                "control-id": "sc-24"
+              }
+            ]
+          },
+          {
+            "uuid": "aba4e70e-7bab-4a8e-a215-65b3770d0b25",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "fadb1695-e629-4414-9020-863629ef48be",
+                "description": "The container platform keystore must implement encryption to prevent unauthorized disclosure of information at rest within the container platform.",
+                "control-id": "sc-28.1"
+              }
+            ]
+          },
+          {
+            "uuid": "6422f19b-3cfd-4392-aafc-3be8964e6e42",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-39.",
+            "implemented-requirements": [
+              {
+                "uuid": "a8d121dc-64f6-4133-a854-534124932472",
+                "description": "The container platform runtime must maintain separate execution domains for each container by assigning each container a separate address space.",
+                "control-id": "sc-39"
+              }
+            ]
+          },
+          {
+            "uuid": "1d7e2e97-f8d9-40fd-a115-ee12096bdbbd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "eb774fd4-05f7-4c0b-940a-99995a284ec1",
+                "description": "The container platform registry must contain the latest images with most recent updates and execute within the container platform runtime as authorized by IAVM, CTOs, DTMs, and STIGs.\nThe container platform runtime must have updates installed within the time period directed by an authoritative source (e.g., IAVM, CTOs, DTMs, and STIGs).",
+                "control-id": "si-2"
+              }
+            ]
+          },
+          {
+            "uuid": "82716413-7bda-486a-b4a4-e25bc2bcbfe1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "c8690549-cfd0-407c-a32d-a52e51f7ba44",
+                "description": "The container platform must remove old components after updated versions have been installed.\nThe container platform registry must remove old container images after updating versions have been made available.",
+                "control-id": "si-2.6"
+              }
+            ]
+          },
+          {
+            "uuid": "c4a1e49a-1d0f-400e-9e75-b0b37ce75d11",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "bcc52be1-5b5d-4c96-ac3f-9e71689e9bb7",
+                "description": "The container platform must perform verification of the correct operation of security functions: upon system startup and/or restart; upon command by a user with privileged access; and/or every 30 days. Security functionality includes, but is not limited to, establishing system accounts, configuring access authorizations (i.e., permissions, privileges), setting events to be audited, and setting intrusion detection parameters.",
+                "control-id": "si-6"
+              },
+              {
+                "uuid": "ddc4d31c-3600-4cf4-a832-3e247a9ee254",
+                "description": "The organization-defined role must verify correct operation of security functions in the container platform.",
+                "control-id": "si-6"
+              },
+              {
+                "uuid": "e63a8cd8-9e5b-4e80-ad1b-9c003cbae227",
+                "description": "The container platform must provide system notifications to the system administrator and operational staff when anomalies in the operation of the organization-defined security functions are discovered.",
+                "control-id": "si-6"
+              }
+            ]
+          },
+          {
+            "uuid": "eaec511e-6053-4a4b-baa4-7deef7d31297",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "f03a89c8-3588-4fff-971d-83b57f80a036",
+                "description": "The container platform must behave in a predictable and documented manner that reflects organizational and system objectives when invalid inputs are received.",
+                "control-id": "si-10.3"
+              }
+            ]
+          },
+          {
+            "uuid": "c00f65d5-b149-4438-8997-9163ecca04f8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "c3672122-1a29-4503-a942-407dde7d03ae",
+                "description": "The container platform must generate error messages that provide information necessary for corrective actions without revealing information that could be exploited by adversaries.",
+                "control-id": "si-11"
+              }
+            ]
+          },
+          {
+            "uuid": "f889989a-4957-4ad0-b0f7-7db58a366bd4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-16.",
+            "implemented-requirements": [
+              {
+                "uuid": "82a4919f-5926-4161-b771-bea4f446b1d1",
+                "description": "The container platform must implement organization-defined security safeguards to protect system CPU and memory from resource depletion and unauthorized code execution.",
+                "control-id": "si-16"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

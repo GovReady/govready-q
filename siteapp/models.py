@@ -1,6 +1,7 @@
 from collections import ChainMap
 from itertools import chain
 import logging
+from platform import system
 import structlog
 import uuid as uuid
 import auto_prefetch
@@ -25,7 +26,8 @@ from siteapp.enums.access_level import AccessLevelEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from siteapp.enums.assets import AssetTypeEnum
 from siteapp.utils.uploads import hash_file
-from controls.models import ImportRecord
+from controls.models import Element, ImportRecord, Statement, System
+from controls.enums.statements import StatementTypeEnum
 from controls.utilities import *
 
 logging.basicConfig()
@@ -190,7 +192,6 @@ class User(AbstractUser, BaseModel):
             object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
             user={"id": self.id, "username": self.username}
         )
-        portfolio.assign_owner_permissions(self)
         logger.info(
             event="new_portfolio assign_owner_permissions",
             object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
@@ -398,7 +399,7 @@ class Portfolio(BaseModel):
             name = user.name if user.name else str(user)
             user = {'name': name, 'id': user.id, 'owner': owner}
             users.append(user)
-        sorted_users = sorted(users, key=lambda k: (-k['owner'], k['name'].lower()))
+        sorted_users = sorted(users, key=lambda k: (k['name'].lower()))
         return sorted_users
 
     def can_invite_others(self, user):
@@ -1461,6 +1462,95 @@ class Appointment(BaseModel):
     def __str__(self):
         return f"{self.model_name} {self.role.title} - {self.party.name}"
 
+class Request(BaseModel):
+    user = models.ForeignKey(User, blank=True, null=True, related_name="request", on_delete=models.CASCADE, help_text="User creating the request.")
+    system = models.ForeignKey(System, blank=True, null=True, related_name="request", on_delete=models.CASCADE, help_text="System making the request.")
+    requested_element = models.ForeignKey(Element, blank=True, null=True, related_name="request", on_delete=models.CASCADE, help_text="Element being requested.")
+    criteria_comment = models.TextField(blank=True, null=True, help_text="Comments on this request.")
+    criteria_reject_comment = models.TextField(blank=True, null=True, help_text="Comment on request rejection.")
+    status = models.TextField(blank=True, null=True, help_text="Status of the request.")
+
+    def __repr__(self):
+        return f"{self.system} requesting -> {self.requested_element} - {self.status}"
+
+    def __str__(self):
+        return f"{self.system} requesting -> {self.requested_element} - {self.status}"
+
+    def serialize(self):
+        return {"system": self.system, "requested_element": self.requested_element, "id": self.id}
+    
+    def save(self, *args, **kwargs):
+        if self.status == "Approve": 
+            self.approve_request()
+        elif self.status == "Closed":
+            self.close_request()
+        else:
+            self.remove_component()
+
+        return super(Request, self).save(*args, **kwargs)
+    
+    def approve_request(self):
+        # code for assigning controls to system
+        
+        elements_selected = self.system.producer_elements
+        elements_selected_ids = [e.id for e in elements_selected]
+        producer_element = Element.objects.get(pk=self.requested_element.id)
+        # check system if it has controls implemented already
+        if producer_element.id not in elements_selected_ids:
+            smts = Statement.objects.filter(producer_element_id = self.requested_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
+            for smt in smts:
+                smt.create_system_control_smt_from_component_prototype_smt(self.system.root_element.id)
+        # Update Proposal status
+        self.proposal.status='Approve'
+        self.proposal.save()
+        self.system.remove_proposals([self.proposal.id])
+        self.system.save()
+        return True
+    
+    def remove_component(self):
+        elements_selected = self.system.producer_elements
+        elements_selected_ids = [e.id for e in elements_selected]
+        producer_element = Element.objects.get(pk=self.requested_element.id)
+        if producer_element.id in elements_selected_ids:
+            print("Element has been implemented.")
+            # Delete the control implementation statements associated with this component
+            result = self.requested_element.statements_produced.filter(consumer_element=self.system.root_element).delete()
+            # Update Proposal status
+            self.proposal.status='Request'
+            self.proposal.save()
+            self.system.add_proposals([self.proposal.id])
+            self.system.save()
+        return True
+
+    def close_request(self):
+        # Update Proposal status
+        self.proposal.status='Closed'
+        self.proposal.save()
+        self.system.remove_proposals([self.proposal.id])
+        self.system.save()
+        return True
+
+class Proposal(BaseModel):
+    user = models.ForeignKey(User, blank=True, null=True, related_name="propose", on_delete=models.CASCADE, help_text="User creating the request proposal.")
+    requested_element = models.ForeignKey(Element, blank=True, null=True, related_name="propose", on_delete=models.CASCADE, help_text="Element being proposed for request.")
+    criteria_comment = models.TextField(blank=True, null=True, help_text="Comments on this proposal.")
+    status = models.TextField(blank=True, null=True, help_text="Status of the proposal.")
+    req = models.OneToOneField(Request, related_name="proposal", unique=False, blank=True, null=True,
+                                     on_delete=models.CASCADE,
+                                     help_text="Request associated with this proposal.")
+    def __repr__(self):
+        return f"Proposing request -> {self.requested_element} - {self.status}"
+
+    def __str__(self):
+        return f"Proposing request -> {self.requested_element} - {self.status}"
+
+    def serialize(self):
+        return {"requested_element": self.requested_element, "id": self.id}
+    
+    def change_status(self, status):
+        self.status = status
+        self.save()
+        return self.status
 
 class Asset(BaseModel):
     UPLOAD_TO = None  # Should be overriden when iheritted
