@@ -102,6 +102,11 @@ and provides a solid foundation for even more exciting innovations to come.
 * Correctly display POA&M forms with left-side menu.
 * Refactor and OIDC authentication for proper testing of admin and not admin roles.
 
+**Security fixes**
+
+* Upgrade npm modules to address multiple vulnerabilities.
+* Upgrade Python libraries to address multiple vulnerabilities.
+
 v0.9.13 (January 23, 2022)
 --------------------------
 
