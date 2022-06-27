@@ -1,19 +1,52 @@
 GovReady-Q Release Notes
 ========================
 
-v0.10.0-dev (June xx, 2022)
-----------------------------
+v0.10.1-dev (June XX, 2022)
+-----------------------
+
+**Security fixes**
+
+* Upgrade npm modules to address multiple vulnerabilities.
+
+v0.10.0 (June 24, 2022)
+-----------------------
+
+Welcome to GovReady-q v0.10.0 "Aspen".
+
+The Aspen release provides major feature and stability improvements to the GovReady-Q GRC software.
+
+Version 0.10 Aspen contains multiple, customer-driven improvements:
+
+* Over 150 sample components based on DOD STIGs and SRGs.
+
+* Private components, component usage approvals, and component responsible roles.
+
+* An integrations framework for interacting with third-party APIs including other GRC software.
+
+* Improved questionnaire editing screens.
+
+* Major bug fixes.
+
+* More generous MIT open source license.
+
+The Aspen release has been under stealth development with select customers for 10 months
+and provides a solid foundation for even more exciting innovations to come.
+
+    *******************************************************************************
+    * IMPORTANT! RELEASES BETWEEN v0.9.11.2 and v0.10.0 CONTAIN BREAKING CHANGES! *
+    *             PLEASE READ CHANGELOGS FOR ALL VERSIONS!                        *
+    *******************************************************************************
 
 **Feature changes**
 
-* Support private components (elements).
-* Assign responsible roles to components (elements) and appointing parties to roles.
+* Support private components.
+* Assign responsible roles to components and appointing parties to roles.
 * Integrations framework for better inclusion of information from remote services.
-* Component control inheritance workflow.
+* Component usage approval workflow.
 * Single Sign On OIDC support.
+* New questionnaire authoring and editing interface.
+* Over 150 sample components created from DOD STIGS.
 * Add form to create system from string or URLs.
-
-Release adds support for private components and integrations with third party services.
 
 **UI changes**
 
@@ -70,6 +103,11 @@ Release adds support for private components and integrations with third party se
 * Assign owners to default components (elements) created during install first_run script.
 * Correctly display POA&M forms with left-side menu.
 * Refactor and OIDC authentication for proper testing of admin and not admin roles.
+
+**Security fixes**
+
+* Upgrade npm modules to address multiple vulnerabilities.
+* Upgrade Python libraries to address multiple vulnerabilities.
 
 v0.9.13 (January 23, 2022)
 --------------------------
@@ -220,6 +258,22 @@ v0.9.11.3 (September 28, 2021)
 * Add new question types `choice-from-data` and `multiple-choice-from-data` to get display choice with options created from dynamic data.
 * Improve DRY-ness of module serialization.
 * Enable downloading of a compliance app directory.
+
+v0.9.11.2.2 (January 11, 2022)
+------------------------------
+
+**Developer changes**
+
+* Update requirements.
+
+
+v0.9.11.2.1 (October 7, 2021)
+-----------------------------
+
+**Developer changes**
+
+* Update requirements.
+
 
 v0.9.11.2 (September 22, 2021)
 ------------------------------

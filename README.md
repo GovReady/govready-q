@@ -19,6 +19,10 @@ If you have questions about if hosted version, email <a href="mailto:info@govrea
 
 [Join our mailing list](http://eepurl.com/cN7oJL) and stay informed of developments.
 
+## Security
+
+Send email to security@govready.com to report a security issue.
+
 ## Noteworthy
 
 GovReady-Q is open source and incorporates the emerging [NIST OSCAL](https://pages.nist.gov/OSCAL/) and [OpenControl](http://open-control.org) data standard for reusable compliance content.

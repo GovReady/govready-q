@@ -39,5 +39,14 @@ if [[ ! -f "/usr/src/app/local/first_run.lock" ]]; then
     touch /usr/src/app/local/first_run.lock
 fi
 
+# Aspen upgrades if installing aspen version
+FILE=/usr/src/app/siteapp/management/commands/upgrade_aspen.py
+if test -f "$FILE"; then
+    echo "[ + ] Applying Aspen configuration upgrades"
+    python3 manage.py upgrade_aspen --non-interactive
+else
+    echo "[ + ] Skipping applying Aspen configuration upgrades"
+fi
+
 echo "[ + ] Starting server"
 ./manage.py runserver 0.0.0.0:8000

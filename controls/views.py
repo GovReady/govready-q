@@ -52,7 +52,6 @@ from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
 from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm, StatementEditForm
 from .models import *
 from .utilities import *
-from siteapp.utils.views_helper import project_context
 from integrations.models import Integration
 
 logging.basicConfig()
