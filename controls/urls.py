@@ -81,6 +81,7 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/components/(?P<element_id>.*)/proposal_message$', views.proposal_message, name="proposal_message"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
     url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
+    url(r'^system_import$', views.system_import, name="system_import"),
 
     # Component Library
     url(r'^components$', views.component_library, name="component_library"),

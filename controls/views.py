@@ -49,7 +49,7 @@ from siteapp.utils.views_helper import project_context, start_app, get_complianc
 from system_settings.models import SystemSettings
 from .forms import ElementEditForm, ElementEditAccessManagementForm
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
-from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm, StatementEditForm
+from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm, StatementEditForm, ImportSystemForm, ImportProjectForm
 from .models import *
 from .utilities import *
 from integrations.models import Integration
@@ -3585,6 +3585,136 @@ def poam_export(request, system_id, format='xlsx'):
 
 # Project
 @login_required
+def system_import(request):
+    """
+    Import an entire project's components and control content
+    """
+    # TODO: FALCON
+    
+    # system_id = project.system.id
+
+    # Retrieve identified System
+    # system = System.objects.get(id=system_id)
+    # system_root_element = system.root_element
+
+    # Retrieve identified System
+    if request.method == 'POST':
+        
+        file_content = request.POST['file_content']
+        file_name = request.POST['file_name']
+        # Need to get or create the app source by the id of the given app source
+        
+        
+        # module_name = json.loads(project_data).get('project').get('module').get('key')
+        # title = json.loads(project_data).get('project').get('title')
+        # system_root_element.name = title
+        
+        # If file is a JSON file
+        new_system_name = file_name + " system"
+        # What is default template?
+        new_system_msg = f"Created new System in GovReady based with name '{new_system_name}'."
+        source_slug = "govready-q-files-startpack"
+        app_name = "speedyssp"
+        # can user start the app?
+        # Is this a module the user has access to? The app store
+        # does some authz based on the organization.
+        catalog = get_compliance_apps_catalog_for_user(request.user)
+        for app_catalog_info in catalog:
+            if app_catalog_info["key"] == source_slug + "/" + app_name:
+                # We found it.
+                break
+        else:
+            raise Http404()
+        # Start the most recent version of the app.
+        appver = app_catalog_info["versions"][0]
+        organization = Organization.objects.first()  # temporary
+        default_folder_name = "Started Apps"
+        folder = Folder.objects.filter(
+            organization=organization,
+            admin_users=request.user,
+            title=default_folder_name,
+        ).first()
+        if not folder:
+            folder = Folder.objects.create(organization=organization, title=default_folder_name)
+            folder.admin_users.add(request.user)
+        task = None
+        q = None
+        # Get portfolio project should be included in.
+        if request.GET.get("portfolio"):
+            portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+        else:
+            if not request.user.default_portfolio:
+                request.user.create_default_portfolio_if_missing()
+            portfolio = request.user.default_portfolio
+        # import ipdb; ipdb.set_trace()
+        try:
+            project = start_app(appver, organization, request.user, folder, task, q, portfolio)
+        except ModuleDefinitionError as e:
+            error = str(e)
+    # Associate System with CSAM system
+    new_system = project.system 
+    new_system.info = {
+        "newwww": "newwwwww",
+    }
+    # new_system.info = {
+    #     "created_from_input": new_system_str,
+    #     "system_description": new_system_description,
+
+    #     "id": "~",
+    #     "other_id": "~",
+    #     "name": "~",
+    #     "organization_name": "~",
+    #     "aka": "~",
+    #     "impact": "~",
+    #     "status": "~",
+    #     "type": "~",
+    #     "created": "~",
+    #     "hosting_facility": "~",
+    #     "next_audit": "~",
+    #     "next_scan": "~", #"05/01/22",
+    #     "security_scan": "~",
+    #     "pen_test": "~", #"Scheduled for 05/05/22",
+    #     "config_scan": "~",
+    #     "purpose": "~",
+    #     "vuln_new_30days": "~",
+    #     "vuln_new_rslvd_30days": "~",
+    #     "vuln_90days": "~",
+    #     "risk_score": "~",
+    #     "score_1": "~",
+    #     "score_2": "~",
+    #     "score_3": "~",
+    #     "score_4": "~",
+    #     "score_5": "~",
+    # }
+    # new_system.add_event("SYS", new_system_msg)
+    new_system.save()
+    # Update System name to URL system name
+    nsre = new_system.root_element
+    # Make sure system root element name is unique
+    name_suffix = ""
+    while Element.objects.filter(name=f"{new_system_name}{name_suffix}").exists():
+        # Element exists with that name
+        if name_suffix == "":
+            name_suffix = 1
+        else:
+            name_suffix = str(int(name_suffix)+1)
+    if name_suffix == "":
+        nsre.name = new_system_name
+    else:
+        nsre.name = f"{new_system_name}{name_suffix}"
+    nsre.save()
+    # Update System Project title to CSAM system name
+    prt = project.root_task
+    prt.title_override = nsre.name
+    prt.save()
+    logger.info(event=f"create_system_from_url url {new_system_name}",
+            object={"object": "system", "id": new_system.id},
+            user={"id": request.user.id, "username": request.user.username})
+    messages.add_message(request, messages.INFO, new_system_msg)
+
+    return HttpResponseRedirect("/projects")
+# Project
+@login_required
 def project_import(request, project_id):
     """
     Import an entire project's components and control content
@@ -3604,7 +3734,7 @@ def project_import(request, project_id):
         system_root_element.name = title
 
 
-
+        import ipdb; ipdb.set_trace()
         logger.info(
             event="project JSON import update",
             object={"object": "project", "id": project.id, "title": project.title},
@@ -4058,7 +4188,9 @@ def create_system_from_string(request):
             category["title"],  # except if two categories differ only in case, sort case-sensitively
         ))
         context = {
-            "apps": catalog_by_category
+            "apps": catalog_by_category,
+            "import_system_form": ImportSystemForm(),
+            "import_project_form": ImportProjectForm(),
         }
         return render(request, "systems/new_system_form.html", context)
 
