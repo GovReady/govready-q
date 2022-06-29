@@ -44,7 +44,7 @@ from guardian.shortcuts import assign_perm
 
 class CreateSystemTests(OrganizationSiteFunctionalTests):
 
-    # def test_create_system_from_string(self):
+    # def test_create_new_system(self):
         # cases = (
         #     ('ac-1', 'a', 'ac-1_smt.a'),
         #     ('ac-1', '', 'ac-1_smt'),
