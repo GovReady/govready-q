@@ -121,8 +121,8 @@
                     {% csrf_token %}
                     <div class="body">
                         {% include "drag-n-drop.html" %}
-                        <div class="hidden">{{ import_system_form.file }}</div>
-                        <div class="hidden">{{ import_system_form.file_content }}</div>
+                        <div class="">{{ import_system_form.file }}</div>
+                        <div class="">{{ import_system_form.file_content }}</div>
                         {{ import_system_form.file_name }}
                         <div class="footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
