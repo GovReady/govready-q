@@ -11,7 +11,7 @@ from itertools import groupby
 from pathlib import PurePath
 from urllib.parse import quote, urlunparse
 from uuid import uuid4
-
+import re
 import rtyaml
 import trestle.oscal.component as trestlecomponent
 import trestle.oscal.ssp as trestlessp
@@ -3603,15 +3603,23 @@ def system_import(request):
         file_content = request.POST['file_content']
         file_name = request.POST['file_name']
         # Need to get or create the app source by the id of the given app source
-        
-        # If file is a JSON file
         new_system_name = file_name + " system"
+
+        xlsl_pattern = re.compile("^.*\.xlsl$")
+        csv_pattern = re.compile("^.*\.csv$")
+        # If file is a JSON file
+        json_pattern = re.compile("^.*\.json$")
+        if(json_pattern.match(file_name)):
+            print("its a json file!")
+            title = json.loads(file_content).get('project').get('title')
+
         # TODO - better default new_system_description
         new_system_description = new_system_name
         new_system_msg = f"System imported by upload"
 
         project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
-        
+
+
         # # What is default template?
         # new_system_msg = f"Created new System in GovReady based with name '{new_system_name}'."
         # source_slug = "govready-q-files-startpack"
