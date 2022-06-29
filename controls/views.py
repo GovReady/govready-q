@@ -3587,7 +3587,7 @@ def poam_export(request, system_id, format='xlsx'):
 @login_required
 def system_import(request):
     """
-    Import an entire project's components and control content
+    Import a system information and create a new system
     """
     # TODO: FALCON
     
@@ -3604,58 +3604,60 @@ def system_import(request):
         file_name = request.POST['file_name']
         # Need to get or create the app source by the id of the given app source
         
-        
-        # module_name = json.loads(project_data).get('project').get('module').get('key')
-        # title = json.loads(project_data).get('project').get('title')
-        # system_root_element.name = title
-        
         # If file is a JSON file
         new_system_name = file_name + " system"
-        # What is default template?
-        new_system_msg = f"Created new System in GovReady based with name '{new_system_name}'."
-        source_slug = "govready-q-files-startpack"
-        app_name = "speedyssp"
-        # can user start the app?
-        # Is this a module the user has access to? The app store
-        # does some authz based on the organization.
-        catalog = get_compliance_apps_catalog_for_user(request.user)
-        for app_catalog_info in catalog:
-            if app_catalog_info["key"] == source_slug + "/" + app_name:
-                # We found it.
-                break
-        else:
-            raise Http404()
-        # Start the most recent version of the app.
-        appver = app_catalog_info["versions"][0]
-        organization = Organization.objects.first()  # temporary
-        default_folder_name = "Started Apps"
-        folder = Folder.objects.filter(
-            organization=organization,
-            admin_users=request.user,
-            title=default_folder_name,
-        ).first()
-        if not folder:
-            folder = Folder.objects.create(organization=organization, title=default_folder_name)
-            folder.admin_users.add(request.user)
-        task = None
-        q = None
-        # Get portfolio project should be included in.
-        if request.GET.get("portfolio"):
-            portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
-        else:
-            if not request.user.default_portfolio:
-                request.user.create_default_portfolio_if_missing()
-            portfolio = request.user.default_portfolio
-        # import ipdb; ipdb.set_trace()
-        try:
-            project = start_app(appver, organization, request.user, folder, task, q, portfolio)
-        except ModuleDefinitionError as e:
-            error = str(e)
-    # Associate System with CSAM system
-    new_system = project.system 
-    new_system.info = {
-        "newwww": "newwwwww",
-    }
+        # TODO - better default new_system_description
+        new_system_description = new_system_name
+        new_system_msg = f"System imported by upload"
+
+        project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
+        
+        # # What is default template?
+        # new_system_msg = f"Created new System in GovReady based with name '{new_system_name}'."
+        # source_slug = "govready-q-files-startpack"
+        # app_name = "speedyssp"
+        # # can user start the app?
+        # # Is this a module the user has access to? The app store
+        # # does some authz based on the organization.
+        # catalog = get_compliance_apps_catalog_for_user(request.user)
+        # for app_catalog_info in catalog:
+        #     if app_catalog_info["key"] == source_slug + "/" + app_name:
+        #         # We found it.
+        #         break
+        # else:
+        #     raise Http404()
+        # # Start the most recent version of the app.
+        # appver = app_catalog_info["versions"][0]
+        # organization = Organization.objects.first()  # temporary
+        # default_folder_name = "Started Apps"
+        # folder = Folder.objects.filter(
+        #     organization=organization,
+        #     admin_users=request.user,
+        #     title=default_folder_name,
+        # ).first()
+        # if not folder:
+        #     folder = Folder.objects.create(organization=organization, title=default_folder_name)
+        #     folder.admin_users.add(request.user)
+        # task = None
+        # q = None
+        # # Get portfolio project should be included in.
+        # if request.GET.get("portfolio"):
+        #     portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+        # else:
+        #     if not request.user.default_portfolio:
+        #         request.user.create_default_portfolio_if_missing()
+        #     portfolio = request.user.default_portfolio
+        # # import ipdb; ipdb.set_trace()
+        # try:
+        #     project = start_app(appver, organization, request.user, folder, task, q, portfolio)
+        # except ModuleDefinitionError as e:
+        #     error = str(e)
+
+    # # Associate System with CSAM system
+    # new_system = project.system 
+    # new_system.info = {
+    #     "newwww": "newwwwww",
+    # }
     # new_system.info = {
     #     "created_from_input": new_system_str,
     #     "system_description": new_system_description,
@@ -3687,33 +3689,34 @@ def system_import(request):
     #     "score_5": "~",
     # }
     # new_system.add_event("SYS", new_system_msg)
-    new_system.save()
-    # Update System name to URL system name
-    nsre = new_system.root_element
-    # Make sure system root element name is unique
-    name_suffix = ""
-    while Element.objects.filter(name=f"{new_system_name}{name_suffix}").exists():
-        # Element exists with that name
-        if name_suffix == "":
-            name_suffix = 1
-        else:
-            name_suffix = str(int(name_suffix)+1)
-    if name_suffix == "":
-        nsre.name = new_system_name
-    else:
-        nsre.name = f"{new_system_name}{name_suffix}"
-    nsre.save()
-    # Update System Project title to CSAM system name
-    prt = project.root_task
-    prt.title_override = nsre.name
-    prt.save()
-    logger.info(event=f"create_system_from_url url {new_system_name}",
-            object={"object": "system", "id": new_system.id},
-            user={"id": request.user.id, "username": request.user.username})
-    messages.add_message(request, messages.INFO, new_system_msg)
+    # new_system.save()
+    # # Update System name to URL system name
+    # nsre = new_system.root_element
+    # # Make sure system root element name is unique
+    # name_suffix = ""
+    # while Element.objects.filter(name=f"{new_system_name}{name_suffix}").exists():
+    #     # Element exists with that name
+    #     if name_suffix == "":
+    #         name_suffix = 1
+    #     else:
+    #         name_suffix = str(int(name_suffix)+1)
+    # if name_suffix == "":
+    #     nsre.name = new_system_name
+    # else:
+    #     nsre.name = f"{new_system_name}{name_suffix}"
+    # nsre.save()
+    # # Update System Project title to CSAM system name
+    # prt = project.root_task
+    # prt.title_override = nsre.name
+    # prt.save()
+    # logger.info(event=f"create_system_from_url url {new_system_name}",
+    #         object={"object": "system", "id": new_system.id},
+    #         user={"id": request.user.id, "username": request.user.username})
+    # messages.add_message(request, messages.INFO, new_system_msg)
 
     return HttpResponseRedirect("/projects")
 # Project
+
 @login_required
 def project_import(request, project_id):
     """
@@ -4151,66 +4154,17 @@ def get_integrations_system_events(request, system_id):
     ]
     return system_events
 
-@login_required
-def create_system_from_string(request):
-    """Create a system in GovReady-Q based on info from a URL"""
+def __create_new_system(request, new_system_name, new_system_description="Missing system description", new_system_msg="Missing new system message"):
+    """Create and return a new system and project from new system name"""
 
-    new_system_str = request.GET.get("s", None)
+    # We'll create a new system by leveraging existing to code to
+    # start a project from template library. We'll get our default
+    # project template from library, create the project which will
+    # also give us a new system. Then we will update name of system.
+    # Finally, we'll return the information to the caller.
 
-    # Display form when no string received
-    if new_system_str is None:
-
-        # Get the app catalog. If the user is answering a question, then filter to
-        # just the apps that can answer that question.
-        from siteapp.views import filter_app_catalog
-        catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
-        # Group by category from catalog metadata.
-        from collections import defaultdict
-        catalog_by_category = defaultdict(lambda: {"title": None, "apps": []})
-        for app in catalog:
-            source_slug, _ = app["key"].split('/')
-            app['source_slug'] = source_slug
-            # print(f"1 keys: {app.keys()}")
-            # print(f"2 key, title: {app['key']}, {app['title']}")
-            for category in app["categories"]:
-                catalog_by_category[category]["title"] = (category or "Uncategorized")
-                # Only get default apps
-                # TODO: Refactor this code
-                organization = Organization.objects.first()  # temporary
-                # if app['title'] in ['Blank Project', 'Speedy SSP', 'General IT System ATO for 800-53 (low)']:
-                if app['title'] in organization.extra.get('default_appversion_name_list', []): # temporary
-                    catalog_by_category[category]["apps"].append(app)
-
-        # Sort categories by title and discard keys.
-        catalog_by_category = sorted(catalog_by_category.values(), key=lambda category: (
-            category["title"] != "Great starter apps",  # this category goes first
-            category["title"].lower(),  # sort case insensitively
-            category["title"],  # except if two categories differ only in case, sort case-sensitively
-        ))
-        context = {
-            "apps": catalog_by_category,
-            "import_system_form": ImportSystemForm(),
-            "import_project_form": ImportProjectForm(),
-        }
-        return render(request, "systems/new_system_form.html", context)
-
-    new_system_name = new_system_str
-    new_system_msg = f"Created new System in GovReady based with name '{new_system_name}'."
-    new_system_description = f"System created from name."
-
-    # Create for new system based on string
-    if 'http://' in new_system_str or 'https://' in new_system_str:
-        new_system_url = new_system_str
-        new_system_msg = f"Created new System in GovReady based on URL '{new_system_url}'."
-        new_system_name = new_system_url.replace("https://", "").replace("http://", "")
-        new_system_description = f"System created from url."
-        # Examine remote site for information
-        # Handle error case of no URL
-
-    # Check if system aleady exists with domain name
-    # if not System.objects.filter(Q(info__contains={"csam_system_id": csam_system_id})).exists():
-
-    # What is default template?
+    # Get a project template - Use Speedy SSP as default
+    # TODO: What if Speedy SSP has been deleted?
     source_slug = "govready-q-files-startpack"
     app_name = "speedyssp"
     # can user start the app?
@@ -4232,27 +4186,34 @@ def create_system_from_string(request):
         admin_users=request.user,
         title=default_folder_name,
     ).first()
+
+    # Get a folder for project & system
     if not folder:
         folder = Folder.objects.create(organization=organization, title=default_folder_name)
         folder.admin_users.add(request.user)
+    
+    # Get default task and q - we can use None
     task = None
     q = None
-    # Get portfolio project should be included in.
+
+    # Get portfolio for project & system
     if request.GET.get("portfolio"):
         portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
     else:
         if not request.user.default_portfolio:
             request.user.create_default_portfolio_if_missing()
         portfolio = request.user.default_portfolio
-    # import ipdb; ipdb.set_trace()
+    
+    # Create new project by starting our app project template
     try:
         project = start_app(appver, organization, request.user, folder, task, q, portfolio)
     except ModuleDefinitionError as e:
         error = str(e)
-    # Associate System with CSAM system
+
+    # Set up additional system information
     new_system = project.system 
     new_system.info = {
-        "created_from_input": new_system_str,
+        "created_from_input": new_system_name,
         "system_description": new_system_description,
 
         "id": "~",
@@ -4283,12 +4244,12 @@ def create_system_from_string(request):
     }
     new_system.add_event("SYS", new_system_msg)
     new_system.save()
-    # Update System name to URL system name
+
+    # Change name of new system by changing name of new system's root element
+    # Use the new_system_name for new name and numbered appendix to avoid name collisions
     nsre = new_system.root_element
-    # Make sure system root element name is unique
     name_suffix = ""
     while Element.objects.filter(name=f"{new_system_name}{name_suffix}").exists():
-        # Element exists with that name
         if name_suffix == "":
             name_suffix = 1
         else:
@@ -4298,14 +4259,77 @@ def create_system_from_string(request):
     else:
         nsre.name = f"{new_system_name}{name_suffix}"
     nsre.save()
-    # Update System Project title to CSAM system name
+
+    # Update System Project title to new system name
     prt = project.root_task
     prt.title_override = nsre.name
     prt.save()
+
+    # Log creation of new system
     logger.info(event=f"create_system_from_url url {new_system_name}",
             object={"object": "system", "id": new_system.id},
             user={"id": request.user.id, "username": request.user.username})
     messages.add_message(request, messages.INFO, new_system_msg)
+
+    return project, new_system
+
+@login_required
+def create_new_system(request):
+    """Create a new system"""
+
+    new_system_str = request.GET.get("s", None)
+    if new_system_str is None:
+        # Display page with various forms to create new system when no data received
+
+        # Get default apps to display on page
+        from siteapp.views import filter_app_catalog
+        catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
+        # Group by category from catalog metadata.
+        from collections import defaultdict
+        catalog_by_category = defaultdict(lambda: {"title": None, "apps": []})
+        for app in catalog:
+            source_slug, _ = app["key"].split('/')
+            app['source_slug'] = source_slug
+            # print(f"1 keys: {app.keys()}")
+            # print(f"2 key, title: {app['key']}, {app['title']}")
+            for category in app["categories"]:
+                catalog_by_category[category]["title"] = (category or "Uncategorized")
+                # Only get default apps
+                # TODO: Refactor this code
+                organization = Organization.objects.first()  # temporary
+                # if app['title'] in ['Blank Project', 'Speedy SSP', 'General IT System ATO for 800-53 (low)']:
+                if app['title'] in organization.extra.get('default_appversion_name_list', []): # temporary
+                    catalog_by_category[category]["apps"].append(app)
+
+        # Sort categories by title and discard keys.
+        catalog_by_category = sorted(catalog_by_category.values(), key=lambda category: (
+            category["title"] != "Great starter apps",  # this category goes first
+            category["title"].lower(),  # sort case insensitively
+            category["title"],  # except if two categories differ only in case, sort case-sensitively
+        ))
+
+        context = {
+            "apps": catalog_by_category,
+            "import_system_form": ImportSystemForm(),
+            "import_project_form": ImportProjectForm(),
+        }
+        return render(request, "systems/new_system_form.html", context)
+
+    new_system_name = new_system_str
+    new_system_msg = f"Created new System in GovReady based with name '{new_system_name}'."
+    new_system_description = f"System created from name."
+
+    # Create for new system based on URL
+    if 'http://' in new_system_str or 'https://' in new_system_str:
+        new_system_url = new_system_str
+        new_system_msg = f"Created new System in GovReady based on URL '{new_system_url}'."
+        new_system_name = new_system_url.replace("https://", "").replace("http://", "")
+        new_system_description = f"System created from url."
+        # Examine remote site for information
+        # Handle error case of no URL
+
+    # Create the new system and it's related project
+    project, new_system = __create_new_system(request, new_system_name, new_system_msg)
 
     # Redirect to the new system/project.
     return HttpResponseRedirect(project.get_absolute_url())
