@@ -897,7 +897,7 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
                                                                 "description": self.system.root_element.description,
                                                                 "system-ids": [{"id": str(self.system.root_element.uuid),# TODO: identifier-type
                                                                                "identifier-type": "https://ietf.org/rfc/rfc4122"}],
-                                                                "security-sensitivity-level": self.system.get_security_sensitivity_level if self.system.get_security_sensitivity_level else "UNKOWN",
+                                                                "security-sensitivity-level": self.system.get_security_sensitivity_level if self.system.get_security_sensitivity_level else "UNKNOWN",
                                                                 "system-information": {
                                                                     "information-types": information_types},
                                                                 "security-impact-level": {
