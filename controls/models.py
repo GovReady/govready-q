@@ -743,7 +743,10 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
         """Get Security Sensitivty level to system"""
 
         # Get or create the security_sensitivity_level smt for system's root_element; should only have 1 statement
-        smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element)
+        if Statement.objects.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element).exists():
+            smt = Statement.objects.get(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, producer_element=self.root_element, consumer_element=self.root_element)
+        else:
+            smt = Statement.objects.create(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name, body="UNKNOWN", producer_element=self.root_element, consumer_element=self.root_element)
         security_sensitivity_level = smt.body
         return security_sensitivity_level
 

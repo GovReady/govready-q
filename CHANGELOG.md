@@ -1,12 +1,20 @@
 GovReady-Q Release Notes
 ========================
 
-v0.10.1-dev (June XX, 2022)
------------------------
+v0.10.1.1-dev (June 29, 2022)
+-----------------------------
+
+**Buf fixes**
+
+* Hot patch to fix OSCAL SSP generation by making sure security_sensitivity_level has value.
+
+v0.10.1-dev (June 28, 2022)
+---------------------------
 
 **Security fixes**
 
 * Upgrade npm modules to address multiple vulnerabilities.
+
 
 v0.10.0 (June 24, 2022)
 -----------------------
