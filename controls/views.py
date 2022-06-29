@@ -3619,111 +3619,15 @@ def system_import(request):
 
         project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
 
+    # Display import results to user
+    systems_imported_list = [1,2,3]
+    systems_not_imported_list = [4,5]
 
-        # # What is default template?
-        # new_system_msg = f"Created new System in GovReady based with name '{new_system_name}'."
-        # source_slug = "govready-q-files-startpack"
-        # app_name = "speedyssp"
-        # # can user start the app?
-        # # Is this a module the user has access to? The app store
-        # # does some authz based on the organization.
-        # catalog = get_compliance_apps_catalog_for_user(request.user)
-        # for app_catalog_info in catalog:
-        #     if app_catalog_info["key"] == source_slug + "/" + app_name:
-        #         # We found it.
-        #         break
-        # else:
-        #     raise Http404()
-        # # Start the most recent version of the app.
-        # appver = app_catalog_info["versions"][0]
-        # organization = Organization.objects.first()  # temporary
-        # default_folder_name = "Started Apps"
-        # folder = Folder.objects.filter(
-        #     organization=organization,
-        #     admin_users=request.user,
-        #     title=default_folder_name,
-        # ).first()
-        # if not folder:
-        #     folder = Folder.objects.create(organization=organization, title=default_folder_name)
-        #     folder.admin_users.add(request.user)
-        # task = None
-        # q = None
-        # # Get portfolio project should be included in.
-        # if request.GET.get("portfolio"):
-        #     portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
-        # else:
-        #     if not request.user.default_portfolio:
-        #         request.user.create_default_portfolio_if_missing()
-        #     portfolio = request.user.default_portfolio
-        # # import ipdb; ipdb.set_trace()
-        # try:
-        #     project = start_app(appver, organization, request.user, folder, task, q, portfolio)
-        # except ModuleDefinitionError as e:
-        #     error = str(e)
-
-    # # Associate System with CSAM system
-    # new_system = project.system 
-    # new_system.info = {
-    #     "newwww": "newwwwww",
-    # }
-    # new_system.info = {
-    #     "created_from_input": new_system_str,
-    #     "system_description": new_system_description,
-
-    #     "id": "~",
-    #     "other_id": "~",
-    #     "name": "~",
-    #     "organization_name": "~",
-    #     "aka": "~",
-    #     "impact": "~",
-    #     "status": "~",
-    #     "type": "~",
-    #     "created": "~",
-    #     "hosting_facility": "~",
-    #     "next_audit": "~",
-    #     "next_scan": "~", #"05/01/22",
-    #     "security_scan": "~",
-    #     "pen_test": "~", #"Scheduled for 05/05/22",
-    #     "config_scan": "~",
-    #     "purpose": "~",
-    #     "vuln_new_30days": "~",
-    #     "vuln_new_rslvd_30days": "~",
-    #     "vuln_90days": "~",
-    #     "risk_score": "~",
-    #     "score_1": "~",
-    #     "score_2": "~",
-    #     "score_3": "~",
-    #     "score_4": "~",
-    #     "score_5": "~",
-    # }
-    # new_system.add_event("SYS", new_system_msg)
-    # new_system.save()
-    # # Update System name to URL system name
-    # nsre = new_system.root_element
-    # # Make sure system root element name is unique
-    # name_suffix = ""
-    # while Element.objects.filter(name=f"{new_system_name}{name_suffix}").exists():
-    #     # Element exists with that name
-    #     if name_suffix == "":
-    #         name_suffix = 1
-    #     else:
-    #         name_suffix = str(int(name_suffix)+1)
-    # if name_suffix == "":
-    #     nsre.name = new_system_name
-    # else:
-    #     nsre.name = f"{new_system_name}{name_suffix}"
-    # nsre.save()
-    # # Update System Project title to CSAM system name
-    # prt = project.root_task
-    # prt.title_override = nsre.name
-    # prt.save()
-    # logger.info(event=f"create_system_from_url url {new_system_name}",
-    #         object={"object": "system", "id": new_system.id},
-    #         user={"id": request.user.id, "username": request.user.username})
-    # messages.add_message(request, messages.INFO, new_system_msg)
-
-    return HttpResponseRedirect("/projects")
-# Project
+    context = {
+        "systems_imported_list": systems_imported_list,
+        "systems_not_imported_list": systems_not_imported_list
+    }
+    return render(request, "systems/new_systems_imported.html", context)
 
 @login_required
 def project_import(request, project_id):
