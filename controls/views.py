@@ -855,27 +855,38 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
 
         of["system-security-plan"]["metadata"]['roles'] =  [{"id": auths.get('role', "member").split(';')[0], "title": auths.get('role', "member").split(';')[0].capitalize()  } for user, auths in users]
         of["system-security-plan"]["system-implementation"]['users'] = [{"uuid":user_party_uuid, "title":user.username, "role-ids": [auths.get('role', "member").split(';')[0]]} for user, auths in users]
-        of["system-security-plan"]["system-implementation"]['components'] = [{"uuid":str(comp_ele.uuid),
-                                                                              "title":comp_ele.name,
-                                                                              "description":comp_ele.description,
-                                                                              "status": {"state": comp_ele.component_state},
-                                                                              "type":comp_ele.component_type,
-                                                                              "responsible-roles": [{
-                                                                                "role-id": "asset-owner",
-                                                                                "party-uuids": [user_party_uuid]
-                                                                                }],
-                                                                              "props": [{"name": "tag",
-                                                                                         "ns": "https://govready.com/ns/oscal",
-                                                                                         "value": tag.label} for tag in
-                                                                                        comp_ele.tags.all()]
-                                                                              } for comp_ele in components]# TODO: responsible-roles
-
+        of["system-security-plan"]["system-implementation"]['components'] = [
+            {
+                "uuid":str(comp_ele.uuid),
+                "title":comp_ele.name,
+                "description":comp_ele.description,
+                "status": {
+                    "state": comp_ele.component_state
+                },
+                "type":comp_ele.component_type,
+                "responsible-roles": [
+                    {
+                        "role-id": "asset-owner",
+                        "party-uuids": [user_party_uuid]
+                    }
+                ],
+                "props": [
+                    {
+                        "name": "tag",
+                        "ns": "https://govready.com/ns/oscal",
+                        "value": tag.label
+                    } for tag in comp_ele.tags.all()
+                ]
+            } for comp_ele in components
+        ]
+        # TODO: responsible-roles
+        
         # System characteristics
         # TODO: status remarks, authorization-boundary
         security_body = project.system.get_security_impact_level
-        confidentiality = security_body.get("security_objective_confidentiality", "UNKOWN")
-        integrity = security_body.get("security_objective_integrity", "UNKOWN")
-        availability = security_body.get("security_objective_availability", "UNKOWN")
+        confidentiality = security_body.get("security_objective_confidentiality", "UNKNOWN")
+        integrity = security_body.get("security_objective_integrity", "UNKNOWN")
+        availability = security_body.get("security_objective_availability", "UNKNOWN")
         information_types = [
             {
                 "uuid": str(uuid.uuid4()),
@@ -893,23 +904,33 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
             }
             }
         ]
-        of["system-security-plan"]["system-characteristics"] = {"system-name": self.system.root_element.name,
-                                                                "description": self.system.root_element.description,
-                                                                "system-ids": [{"id": str(self.system.root_element.uuid),# TODO: identifier-type
-                                                                               "identifier-type": "https://ietf.org/rfc/rfc4122"}],
-                                                                "security-sensitivity-level": self.system.get_security_sensitivity_level if self.system.get_security_sensitivity_level else "UNKNOWN",
-                                                                "system-information": {
-                                                                    "information-types": information_types},
-                                                                "security-impact-level": {
-                                                                    "security-objective-confidentiality": confidentiality,
-                                                                    "security-objective-integrity": integrity,
-                                                                    "security-objective-availability": availability
-                                                                }, "status": {
+        
+        of["system-security-plan"]["system-characteristics"] = {
+            "system-name": self.system.root_element.name,
+            "description": self.system.root_element.description,
+            "system-ids": [
+                {
+                    "id": str(self.system.root_element.uuid), # TODO: identifier-type
+                    "identifier-type": "https://ietf.org/rfc/rfc4122"
+                }
+            ],
+            "security-sensitivity-level": self.system.get_security_sensitivity_level if self.system.get_security_sensitivity_level else "UNKNOWN",
+            "system-information": {
+                "information-types": information_types
+            },
+            "security-impact-level": {
+                "security-objective-confidentiality": confidentiality,
+                "security-objective-integrity": integrity,
+                "security-objective-availability": availability
+            }, 
+            "status": {
                 "state": self.system.root_element.component_state,
                 "remarks": ""
-            }, "authorization-boundary": {
+            }, 
+            "authorization-boundary": {
                 "description": "The description of the authorization boundary would go here."
-            }}
+            }
+        }
         try:
             # Create a temporary directory and dump the json_object in there.
             tempdir = tempfile.mkdtemp()
@@ -3590,38 +3611,91 @@ def system_import(request):
     Import a system information and create a new system
     """
     # TODO: FALCON
-    
-    # system_id = project.system.id
-
-    # Retrieve identified System
-    # system = System.objects.get(id=system_id)
-    # system_root_element = system.root_element
-
     # Retrieve identified System
     if request.method == 'POST':
         
         file_content = request.POST['file_content']
         file_name = request.POST['file_name']
+
+        systems_imported_list = []
+        systems_not_imported_list = []
+
         # Need to get or create the app source by the id of the given app source
         new_system_name = file_name + " system"
-
-        xlsl_pattern = re.compile("^.*\.xlsl$")
-        csv_pattern = re.compile("^.*\.csv$")
-        # If file is a JSON file
-        json_pattern = re.compile("^.*\.json$")
-        if(json_pattern.match(file_name)):
-            print("its a json file!")
-            title = json.loads(file_content).get('project').get('title')
-
         # TODO - better default new_system_description
         new_system_description = new_system_name
         new_system_msg = f"System imported by upload"
+        
 
-        project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
+        
+        json_pattern = re.compile("^.*\.json$")
+        xlsl_pattern = re.compile("^.*\.xlsx$")
+        csv_pattern = re.compile("^.*\.csv$")
 
-    # Display import results to user
-    systems_imported_list = [1,2,3]
-    systems_not_imported_list = [4,5]
+        if(json_pattern.match(file_name)):
+            print("its a json file!")
+            print("check if its an oscal json file")
+            is_ssp = json.loads(file_content).get("system-security-plan")
+
+            if(is_ssp):
+                new_system_name = is_ssp.get("system-characteristics").get("system-name")
+                new_system_description = is_ssp.get("system-characteristics").get("description")
+                
+                new_project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
+                new_system_msg = f"System {new_system.root_element.name} imported by upload"
+                messages.add_message(request, messages.INFO, new_system_msg)
+             
+        if(xlsl_pattern.match(file_name)):
+            print('file_content: ', file_content)
+            print('file_name: ', file_name)
+            
+            print('excel doc~!!')
+            content = eval(file_content)
+            sheet = content['Sheet1']
+            
+            for system in sheet:
+                # we want to find which attribute corresponds with:
+                    # system names
+                    # system description
+                    new_system_name = ''
+                    new_system_description = ''
+                    # 
+                    for column in system:
+                        if "system" and "name" in column:
+                            new_system_name = system[column]
+                        if "system" and "description" or "desc" in column:
+                            new_system_description = system[column]
+
+                    
+                    # check to see system has name and a description to create   
+                    
+                    if(new_system_name and new_system_description):
+                        new_project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
+                        
+
+                    # import ipdb; ipdb.set_trace()
+                    sys_successful = Project.objects.filter(id=new_project.id).exists()
+                    
+                    # Now we check if the system was successfully created
+                    if(sys_successful):
+                        systems_imported_list.append(new_system_name)
+                    else: 
+                        systems_not_imported_list.append(new_system_name)
+                        
+            # new_system_msg = f"System {new_system.root_element.name} imported by upload"
+            # messages.add_message(request, messages.INFO, new_system_msg)
+
+            # If XSLC or CSV
+                #loop through each row
+                    # do data validation
+                    # try to create new system
+                        # project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
+                        # append system to systems_imported_list
+                    # except
+                        # catch errors and append to error list
+                        # append failed system to systems_not_imported_list
+        # Display import results to user
+    
 
     context = {
         "systems_imported_list": systems_imported_list,
@@ -3648,8 +3722,6 @@ def project_import(request, project_id):
         title = json.loads(project_data).get('project').get('title')
         system_root_element.name = title
 
-
-        import ipdb; ipdb.set_trace()
         logger.info(
             event="project JSON import update",
             object={"object": "project", "id": project.id, "title": project.title},
