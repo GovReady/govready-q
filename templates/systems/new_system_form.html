@@ -163,17 +163,16 @@
               if (filecontents.size < 5000000) {
                 $('#{{import_system_form.file_name.auto_id}}').val(filecontents.name);
                 var reader = new FileReader();
+
                 if(excelExtension.exec(filePath)) {
                     
                     reader.onload = function (e) {
                         var data = e.target.result;
-                        console.log('data: ', data);
                         data = new Uint8Array(data);
-                        console.log('new data: ', data)
-                        
+
                         var workbook = XLSX.read(data, {type: 'array'});
-                        console.log(workbook);
                         var result = {};
+
                         workbook.SheetNames.forEach(function (sheetName) {
                             var roa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
                             if (roa.length) result[sheetName] = roa;
@@ -185,7 +184,6 @@
                         let false_regex = /false/gi;
                         
                         resultString = JSON.stringify(result)
-                        
                         resultString = resultString.replace(true_regex, 'True');
                         resultString = resultString.replace(false_regex, 'False');
                         $('#{{import_system_form.file_content.auto_id}}').val(resultString);
@@ -196,6 +194,11 @@
                         Reading a CVS file i.e., comma deliminated rows
                     */
                     console.log('cvs')
+                    reader.readAsText(filecontents);
+                    reader.onload = function (e) {
+                        $('#{{import_system_form.file_content.auto_id}}').val(e.target.result);
+                        
+                    }
                 }
                 else {
                     /*

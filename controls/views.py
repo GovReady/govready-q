@@ -3610,7 +3610,7 @@ def system_import(request):
     """
     Import a system information and create a new system
     """
-    # TODO: FALCON
+
     # Retrieve identified System
     if request.method == 'POST':
         
@@ -3633,8 +3633,7 @@ def system_import(request):
         csv_pattern = re.compile("^.*\.csv$")
 
         if(json_pattern.match(file_name)):
-            print("its a json file!")
-            print("check if its an oscal json file")
+            #JSON FILE
             is_ssp = json.loads(file_content).get("system-security-plan")
 
             if(is_ssp):
@@ -3646,10 +3645,7 @@ def system_import(request):
                 messages.add_message(request, messages.INFO, new_system_msg)
              
         if(xlsl_pattern.match(file_name)):
-            print('file_content: ', file_content)
-            print('file_name: ', file_name)
-            
-            print('excel doc~!!')
+            # EXCEL FILE
             content = eval(file_content)
             sheet = content['Sheet1']
             
@@ -3665,22 +3661,18 @@ def system_import(request):
                             new_system_name = system[column]
                         if "system" and "description" or "desc" in column:
                             new_system_description = system[column]
-
-                    
                     # check to see system has name and a description to create   
-                    
                     if(new_system_name and new_system_description):
                         new_project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
-                        
 
                     # import ipdb; ipdb.set_trace()
                     sys_successful = Project.objects.filter(id=new_project.id).exists()
                     
                     # Now we check if the system was successfully created
                     if(sys_successful):
-                        systems_imported_list.append(new_system_name)
+                        systems_imported_list.append(new_system.root_element.name)
                     else: 
-                        systems_not_imported_list.append(new_system_name)
+                        systems_not_imported_list.append(new_system.root_element.nameystem_name)
                         
             # new_system_msg = f"System {new_system.root_element.name} imported by upload"
             # messages.add_message(request, messages.INFO, new_system_msg)
@@ -3695,7 +3687,33 @@ def system_import(request):
                         # catch errors and append to error list
                         # append failed system to systems_not_imported_list
         # Display import results to user
-    
+        if(csv_pattern.match(file_name)):
+            # CSV FILE
+            csv_systems = file_content.split('\n')
+            csv_headers = csv_systems[0].split(',')
+            csv_headers[-1] = csv_headers[-1].split('\r')
+            csv_systems.pop(0)
+            num_of_column = len(csv_headers)
+            updated_csv_system = []
+            for sys in csv_systems:
+                if not sys:
+                    continue
+                sys = sys.split(',')
+                sys.pop(-1)
+                sys_dict = {}
+                for x in range(0, num_of_column-1):
+                    sys_dict[csv_headers[x]] = sys[x]
+                updated_csv_system.append(sys_dict)
+            
+            for sys in updated_csv_system:
+                new_project, new_system = __create_new_system(request, sys['system_name'], sys['system_description'], new_system_msg)
+                
+                # Now we check if the system was successfully created
+                sys_successful = Project.objects.filter(id=new_project.id).exists()
+                if(sys_successful):
+                    systems_imported_list.append(new_system.root_element.name)
+                else: 
+                    systems_not_imported_list.append(new_system.root_element.name)
 
     context = {
         "systems_imported_list": systems_imported_list,

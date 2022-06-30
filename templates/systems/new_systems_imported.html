@@ -50,67 +50,6 @@
 
 {% block scripts %}
 {{ block.super }}
-    
     <script>
-        $("#import_loading_spinner").hide();
-
-        function fillFileContent(file) {
-            console.log('@@@@@@@@   fillFileContent     @@@@@@@@')
-            var fileInput = document.getElementById('file_content')
-      
-            var filePath = fileInput.value;
-            var allowedExtensions = /(\.json)|(\.xlsx)|(\.csv)$/i;
-            var jsonExtension = /(\.json)$/i;
-            var excelExtension = /(\.xlsx)$/i;
-            var csvExtension = /(\.csv)$/i;
-
-            if (!allowedExtensions.exec(filePath)) {
-              fileInput.value = '';
-              show_modal_error("Wrong File Type Error", "Please only provide either a json file or xlsx file!");
-            } else {
-              filecontents = fileInput.files[0];
-              if (filecontents.size < 5000000) {
-                $('#{{import_system_form.file_name.auto_id}}').val(filecontents.name);
-                var reader = new FileReader();
-                if(excelExtension.exec(filePath)) {
-                    reader.onload = function (e) {
-                        var data = e.target.result;
-                        data = new Uint8Array(data);
-                        var workbook = XLSX.read(data, {type: 'array'});
-                        console.log(workbook);
-                        var result = {};
-                        workbook.SheetNames.forEach(function (sheetName) {
-                            var roa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1});
-                            if (roa.length) result[sheetName] = roa;
-                        });
-                        // see the result, caution: it works after reader event is done.
-                        console.log('result: ', result);
-                        resultString = ``;
-                        for(var i = 0; i < result['Sheet1'].length; i++) {
-                            resultString += result['Sheet1'][i].toString() + '\n';
-                        }
-                        debugger;
-                        $('#{{import_system_form.file_content.auto_id}}').val(resultString);
-                    };
-                    reader.readAsArrayBuffer(filecontents);
-                } else if (csvExtension.exec(filePath)){
-                    print('csv')
-                }
-                else {
-                    reader.readAsText(filecontents);
-                    reader.onload = function (e) {
-                        $('#{{import_system_form.file_content.auto_id}}').val(e.target.result);
-                    }
-                }
-                
-              } else {
-                show_modal_error("File is too large", "Maximum size is under 5MBs");
-              }
-            }
-          }
-          
-        function show_spinner() {
-            $("#import_loading_spinner").show();
-        }
     </script>
 {% endblock %}
