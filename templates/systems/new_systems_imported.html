@@ -50,8 +50,7 @@
 
 {% block scripts %}
 {{ block.super }}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/jszip.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
+    
     <script>
         $("#import_loading_spinner").hide();
 
@@ -61,8 +60,9 @@
       
             var filePath = fileInput.value;
             var allowedExtensions = /(\.json)|(\.xlsx)|(\.csv)$/i;
-            var jsonExtensions = /(\.json)$/i;
-            var excelExtensions = /(\.xlsx)$/i;
+            var jsonExtension = /(\.json)$/i;
+            var excelExtension = /(\.xlsx)$/i;
+            var csvExtension = /(\.csv)$/i;
 
             if (!allowedExtensions.exec(filePath)) {
               fileInput.value = '';
@@ -72,7 +72,7 @@
               if (filecontents.size < 5000000) {
                 $('#{{import_system_form.file_name.auto_id}}').val(filecontents.name);
                 var reader = new FileReader();
-                if(excelExtensions.exec(filePath)) {
+                if(excelExtension.exec(filePath)) {
                     reader.onload = function (e) {
                         var data = e.target.result;
                         data = new Uint8Array(data);
@@ -93,7 +93,10 @@
                         $('#{{import_system_form.file_content.auto_id}}').val(resultString);
                     };
                     reader.readAsArrayBuffer(filecontents);
-                } else {
+                } else if (csvExtension.exec(filePath)){
+                    print('csv')
+                }
+                else {
                     reader.readAsText(filecontents);
                     reader.onload = function (e) {
                         $('#{{import_system_form.file_content.auto_id}}').val(e.target.result);
