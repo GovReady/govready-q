@@ -43,25 +43,6 @@
             </div>
         </div>
 
-        <div class="col-md-3 portfolio-org-col hidden">
-            <h2>By URL</h2>
-            <p>Add a new or existing IT System for monitoring and compliance.</p>
-        </div>
-        <div class="col-md-9 portfolio-org-col hidden">
-            <div class="well">
-                <form method="get">
-                    {% csrf_token %}
-                    <input type=hidden name=action value=newportfolio>
-                    <div class="form-group">
-                        <label class="control-label" for="id_title">URL of System</label>
-                        <input type="text" name="s" maxlength="255" class="form-control" placeholder="e.g., https://finsys.example.com" title="The official name of the syste" required id="id_title">
-                        <!-- <div class="help-block">Official name of system</div> -->
-                    </div>
-                    <p><button type="submit" id="new-system-button" class="btn btn-success">Add &raquo;</button></p>
-                </form>
-            </div>
-        </div> 
-
         <div class="col-md-3 portfolio-org-col ">
             <h2>Create from Template</h2>
             <p>Use a template to start a new system.</p>
@@ -122,16 +103,19 @@
                     <div class="body">
                         {% include "drag-n-drop.html" %}
                         <div class="hidden">{{ import_system_form.file }}</div>
-                        {{ import_system_form.file_content }}
-                        {{ import_system_form.file_name }}
+                        <div class="hidden">{{ import_system_form.file_content }}</div>
+                        <div class="">{{ import_system_form.file_name }}</div>
                         <div class="footer">
-                            <input id="import_system_submit" class="btn btn-success btn-submit btn-lg" type="submit" value="Import" />
+                            <p>&nbsp;</p>
+                            <p><button id="import_system_submit" type="submit" id="new-system-button" class="btn btn-success">Add &raquo;</button></p>
+                            <!-- <inputx id="import_system_submit" class="btn btn-success btn-submit btn-lg" type="submit" value="Import" /> -->
                             <img id="import_loading_spinner" aria-label="Loading Spinner"src="{% static "img/icons/spinner.gif" %}" />
                         </div>
                     </div>
                 </form>
             </div>
         </div>
+
     </div>
 </div>
 
@@ -143,6 +127,7 @@
     
 
     <script>
+
         $("#import_loading_spinner").hide();
 
         function fillFileContent(file) {

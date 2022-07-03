@@ -5,6 +5,7 @@ import pathlib
 import random
 import shutil
 import tempfile
+import ast
 from collections import defaultdict
 from datetime import datetime
 from itertools import groupby
@@ -3610,8 +3611,7 @@ def system_import(request):
     """
     Import a system information and create a new system
     """
-    # TODO: FALCON
-    # Retrieve identified System
+
     if request.method == 'POST':
         
         file_content = request.POST['file_content']
@@ -3620,71 +3620,39 @@ def system_import(request):
         systems_imported_list = []
         systems_not_imported_list = []
 
-        # Need to get or create the app source by the id of the given app source
-        new_system_name = file_name + " system"
-        # TODO - better default new_system_description
-        new_system_description = new_system_name
-        new_system_msg = f"System imported by upload"
-        
-
-        
         json_pattern = re.compile("^.*\.json$")
         xlsl_pattern = re.compile("^.*\.xlsx$")
         csv_pattern = re.compile("^.*\.csv$")
 
         if(json_pattern.match(file_name)):
-            print("its a json file!")
-            print("check if its an oscal json file")
-            is_ssp = json.loads(file_content).get("system-security-plan")
-
+            is_ssp = json.loads(file_content).get("system-security-plan", None)
             if(is_ssp):
                 new_system_name = is_ssp.get("system-characteristics").get("system-name")
                 new_system_description = is_ssp.get("system-characteristics").get("description")
-                
-                new_project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
                 new_system_msg = f"System {new_system.root_element.name} imported by upload"
-                messages.add_message(request, messages.INFO, new_system_msg)
-             
+                new_project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
+                # messages.add_message(request, messages.INFO, new_system_msg)
+
         if(xlsl_pattern.match(file_name)):
-            print('file_content: ', file_content)
-            print('file_name: ', file_name)
-            
-            print('excel doc~!!')
-            content = eval(file_content)
+            content = ast.literal_eval(file_content)
             sheet = content['Sheet1']
-            
             for system in sheet:
-                # we want to find which attribute corresponds with:
-                    # system names
-                    # system description
-                    new_system_name = ''
-                    new_system_description = ''
-                    # 
                     for column in system:
                         if "system" and "name" in column:
                             new_system_name = system[column]
                         if "system" and "description" or "desc" in column:
                             new_system_description = system[column]
-
-                    
-                    # check to see system has name and a description to create   
-                    
                     if(new_system_name and new_system_description):
+                        new_system_msg = f"System imported from uploaded XLSX file"
                         new_project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
-                        
-
-                    # import ipdb; ipdb.set_trace()
                     sys_successful = Project.objects.filter(id=new_project.id).exists()
-                    
-                    # Now we check if the system was successfully created
                     if(sys_successful):
-                        systems_imported_list.append(new_system_name)
+                        systems_imported_list.append(new_system)
                     else: 
-                        systems_not_imported_list.append(new_system_name)
-                        
-            # new_system_msg = f"System {new_system.root_element.name} imported by upload"
-            # messages.add_message(request, messages.INFO, new_system_msg)
+                        systems_not_imported_list.append({'name': new_system_name})
 
+        if(csv_pattern.match(file_name)):
+            pass
             # If XSLC or CSV
                 #loop through each row
                     # do data validation
@@ -4175,7 +4143,7 @@ def __create_new_system(request, new_system_name, new_system_description="Missin
     if not folder:
         folder = Folder.objects.create(organization=organization, title=default_folder_name)
         folder.admin_users.add(request.user)
-    
+
     # Get default task and q - we can use None
     task = None
     q = None
@@ -4187,7 +4155,7 @@ def __create_new_system(request, new_system_name, new_system_description="Missin
         if not request.user.default_portfolio:
             request.user.create_default_portfolio_if_missing()
         portfolio = request.user.default_portfolio
-    
+
     # Create new project by starting our app project template
     try:
         project = start_app(appver, organization, request.user, folder, task, q, portfolio)
@@ -4199,7 +4167,6 @@ def __create_new_system(request, new_system_name, new_system_description="Missin
     new_system.info = {
         "created_from_input": new_system_name,
         "system_description": new_system_description,
-
         "id": "~",
         "other_id": "~",
         "name": "~",
@@ -4253,7 +4220,6 @@ def __create_new_system(request, new_system_name, new_system_description="Missin
     logger.info(event=f"create_system_from_url url {new_system_name}",
             object={"object": "system", "id": new_system.id},
             user={"id": request.user.id, "username": request.user.username})
-    messages.add_message(request, messages.INFO, new_system_msg)
 
     return project, new_system
 
@@ -4314,6 +4280,7 @@ def create_new_system(request):
 
     # Create the new system and it's related project
     project, new_system = __create_new_system(request, new_system_name, new_system_msg)
+    # messages.add_message(request, messages.INFO, new_system_msg)
 
     # Redirect to the new system/project.
     return HttpResponseRedirect(project.get_absolute_url())
