@@ -3612,6 +3612,7 @@ def system_import(request):
     Import a system information and create a new system
     """
 
+    # Retrieve identified System
     if request.method == 'POST':
         
         file_content = request.POST['file_content']
@@ -3625,6 +3626,7 @@ def system_import(request):
         csv_pattern = re.compile("^.*\.csv$")
 
         if(json_pattern.match(file_name)):
+            #JSON FILE
             is_ssp = json.loads(file_content).get("system-security-plan", None)
             if(is_ssp):
                 new_system_name = is_ssp.get("system-characteristics").get("system-name")
@@ -3632,38 +3634,58 @@ def system_import(request):
                 new_system_msg = f"System {new_system.root_element.name} imported by upload"
                 new_project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
                 # messages.add_message(request, messages.INFO, new_system_msg)
+                sys_successful = Project.objects.filter(id=new_project.id).exists()
+                if(sys_successful):
+                    systems_imported_list.append(new_system)
+                else: 
+                    systems_not_imported_list.append({'name': new_system_name})
 
         if(xlsl_pattern.match(file_name)):
             content = ast.literal_eval(file_content)
             sheet = content['Sheet1']
             for system in sheet:
-                    for column in system:
-                        if "system" and "name" in column:
-                            new_system_name = system[column]
-                        if "system" and "description" or "desc" in column:
-                            new_system_description = system[column]
-                    if(new_system_name and new_system_description):
-                        new_system_msg = f"System imported from uploaded XLSX file"
-                        new_project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
-                    sys_successful = Project.objects.filter(id=new_project.id).exists()
-                    if(sys_successful):
-                        systems_imported_list.append(new_system)
-                    else: 
-                        systems_not_imported_list.append({'name': new_system_name})
+                for column in system:
+                    if "system" and "name" in column:
+                        new_system_name = system[column]
+                    if "system" and "description" or "desc" in column:
+                        new_system_description = system[column]
+
+                # check to see system has name and a description to create   
+                if(new_system_name and new_system_description):
+                    new_system_msg = f"System imported from uploaded XLSX file"
+                    new_project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
+                sys_successful = Project.objects.filter(id=new_project.id).exists()
+                if(sys_successful):
+                    systems_imported_list.append(new_system)
+                else: 
+                    systems_not_imported_list.append({'name': new_system_name})
 
         if(csv_pattern.match(file_name)):
-            pass
-            # If XSLC or CSV
-                #loop through each row
-                    # do data validation
-                    # try to create new system
-                        # project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
-                        # append system to systems_imported_list
-                    # except
-                        # catch errors and append to error list
-                        # append failed system to systems_not_imported_list
-        # Display import results to user
-    
+            # CSV FILE
+            csv_systems = file_content.split('\n')
+            csv_headers = csv_systems[0].split(',')
+            csv_headers[-1] = csv_headers[-1].split('\r')
+            csv_systems.pop(0)
+            num_of_column = len(csv_headers)
+            updated_csv_system = []
+            for sys in csv_systems:
+                if not sys:
+                    continue
+                sys = sys.split(',')
+                sys.pop(-1)
+                sys_dict = {}
+                for x in range(0, num_of_column-1):
+                    sys_dict[csv_headers[x]] = sys[x]
+                updated_csv_system.append(sys_dict)
+
+            for sys in updated_csv_system:
+                new_project, new_system = __create_new_system(request, sys['system_name'], sys['system_description'], new_system_msg)
+                # Now we check if the system was successfully created
+                sys_successful = Project.objects.filter(id=new_project.id).exists()
+                if(sys_successful):
+                    systems_imported_list.append(new_system.root_element.name)
+                else: 
+                    systems_not_imported_list.append(new_system.root_element.name)
 
     context = {
         "systems_imported_list": systems_imported_list,
