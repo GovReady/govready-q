@@ -3605,6 +3605,193 @@ def poam_export(request, system_id, format='xlsx'):
         # User does not have permission to this system
         raise Http404
 
+@login_required
+def system_csv_template(request):
+    import csv
+    # Create the HttpResponse object with the appropriate CSV header
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=system_template.csv'
+    # Create the CSV writer using the HttpResponse as the "file"
+    writer = csv.writer(response)
+    writer.writerow([
+        'system_name', 
+        'system_description', 
+        'system_uuid', 
+        'system_private', 
+        'system_require_approval', 
+        'system_created', 
+        'system_updated',
+        'system_oscal_version',
+        'system_component_type', 
+        'system_component_state',
+        'system_roles'
+    ])
+
+    return response
+
+@login_required
+def system_xlsx_template(request):
+    # response = HttpResponse(content_type='application/ms-excel')
+    # response['Content-Disposition'] = 'attachment; filename="system_template.xlsx"'
+    # df = pandas.DataFrame([],column=['system_name', 'system_description'])
+    # print('df: ', df)
+    # df.to_excel('system_template.xlsx', index=False, header=True)
+
+    from openpyxl import Workbook
+    from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
+    from tempfile import NamedTemporaryFile
+
+    wb = Workbook()
+    ws = wb.active
+    # create alignment style
+    wrap_alignment = Alignment(wrap_text=True)
+    ws.title = "Sheet1"
+    system_headers = [
+        {'var_name': 'system_name', 'name': 'System Name', 'width': 32},
+        {'var_name': 'system_description', 'name': 'System Description', 'width': 32},
+        {'var_name': 'system_uuid', 'name': 'System UUID', 'width': 32},
+        {'var_name': 'system_private', 'name': 'System Private', 'width': 32},
+        {'var_name': 'system_require_approval', 'name': 'System Require Approval', 'width': 32},
+        {'var_name': 'system_created', 'name': 'System Created', 'width': 32},
+        {'var_name': 'system_updated', 'name': 'System Updated', 'width': 32},
+        {'var_name': 'system_oscal_version', 'name': 'System OSCAL Version', 'width': 32},
+        {'var_name': 'system_component_type', 'name': 'System Component Type', 'width': 32},
+        {'var_name': 'system_component_state', 'name': 'System Component State', 'width': 32},
+        {'var_name': 'system_roles', 'name': 'System Roles', 'width': 32},
+    ]
+
+     # create header row
+    column = 0
+    ord_zeroth_column = ord('A') - 1
+    csv_row = []
+
+    for header in system_headers:
+        column += 1
+        c = ws.cell(row=1, column=column, value=header['name'])
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(left=Side(border_style="thin", color="444444"),
+                            right=Side(border_style="thin", color="444444"),
+                            bottom=Side(border_style="thin", color="444444"),
+                            outline=Side(border_style="thin", color="444444"))
+        ws.column_dimensions[chr(ord_zeroth_column + column)].width = header['width']
+
+
+    filename = "system_template.xlsx"
+    mime_type = "application/octet-stream"
+    with NamedTemporaryFile() as tmp:
+                wb.save(tmp.name)
+                tmp.seek(0)
+                stream = tmp.read()
+                blob = stream
+    response = HttpResponse(blob, mime_type)
+    response['Content-Disposition'] = 'inline; filename=' + filename
+    return response
+
+@login_required
+def system_oscal_template(request):
+    system_example = {
+        "uuid": str(uuid.uuid4()),
+        "name": "New System Name",
+        "description": "New System Description"
+    }
+    
+    of = {
+        "system-security-plan": {
+            "uuid": system_example["uuid"],
+            "metadata": {
+                "title": "{} System Security Plan".format(system_example["name"]),
+                "last-modified": datetime.today().replace(microsecond=0).isoformat(),
+                "version": "1.0",
+                "oscal-version": "1.0.0",
+                "roles": [
+                    {
+                        "id": "admin", 
+                        "title": "admin"
+                    }
+                ],
+                "parties": [
+                    {
+                        "uuid": str(uuid.uuid4()),
+                        "type": "organization",
+                        "name": "organization name"
+                    }
+                ],
+            },
+            "import-profile": {
+                "href": "http://localhost:8000/profile_path"
+            },
+            "system-characteristics": {
+                "system-name": system_example["name"],
+                "description": system_example["description"],
+                "system-ids":[
+                    {
+                        "id": system_example["uuid"],
+                        "identifier-type": "https://ietf.org/rfc/rfc4122"
+                    }
+                ]
+            },
+            "system-implementation": {
+                "remarks": "",
+                "users": [],
+                "components": [],
+                "inventory-items": [        
+                    {
+                        "uuid": str(uuid.uuid4()),
+                        "description": "An inventory item",
+                        "implemented-components": [
+                            {
+                                "uuid": str(uuid.uuid4()),
+                                "description": "An inventory item",
+                                "implemented-components": [
+                                    {
+                                    "component-uuid": str(uuid.uuid4())
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "control-implementation": {
+                "description": "",
+                "implemented-requirements": [], 
+            }
+        }
+    }
+
+    try:
+        # Create a temporary directory and dump the json_object in there.
+        tempdir = tempfile.mkdtemp()
+        path = os.path.join(tempdir, "ssp_object.json")
+        # Use trestle's ComponentDefinition method oscal_read to read the path to json in the temporary folder
+        path_ssp_definition = pathlib.Path(path)
+
+        with open(path, 'w+') as cred:
+            json.dump(of, cred)
+        # Read in temporary file and shape into trestle pydantic SSP definition.
+        trestle_oscal_json = trestlessp.SystemSecurityPlan.oscal_read(path_ssp_definition)
+        # Finally validate that this object is valid by the OSCAL System Security Plan definition
+        trestlessp.SystemSecurityPlan.validate(trestle_oscal_json)
+        # Cleanup
+        shutil.rmtree(tempdir)
+    except Exception as e:
+        logger.error(f"Invalid System Security Plan JSON: {e}")
+        shutil.rmtree(tempdir)
+        return HttpResponse(e)
+
+    oscal_string = json.dumps(of, sort_keys=False, indent=2)
+    return oscal_string
+
+import uuid
+
+def is_valid_uuid(val):
+    try:
+        uuid.UUID(str(val))
+        return True
+    except ValueError:
+        return False
+
 # Project
 @login_required
 def system_import(request):
@@ -3643,22 +3830,67 @@ def system_import(request):
         if(xlsl_pattern.match(file_name)):
             content = ast.literal_eval(file_content)
             sheet = content['Sheet1']
+            
             for system in sheet:
+                # Assigning each column to appropriate variable
+                # check if value in column is the correct format
+                new_system_info = {}
+                faulty_system = {}
                 for column in system:
-                    if "system" and "name" in column:
-                        new_system_name = system[column]
-                    if "system" and "description" or "desc" in column:
-                        new_system_description = system[column]
+                    if "System" and "Name" in column:
+                        if (system[column]):
+                            new_system_info['name'] = system[column]
+                        else:
+                            faulty_system['name'] = new_system_name
+                    if "System" and "Description" or "Desc" in column:
+                        new_system_info['description'] = system[column]
+                    if "System" and "UUID" in column:
+                        if is_valid_uuid(system[column]):
+                            new_system_info['uuid'] = system[column]
+                        else:
+                            faulty_system['uuid error'] = 'incorrect uuid format'
+                    if "System" and "Private" in column:
+                        if system[column] == True or system[column] == False:
+                            new_system_info['private'] = system[column]
+                    if "System" and "Approval" in column:
+                        if system[column] == True or system[column] == False:
+                            new_system_info['require_approval'] = system[column]
+                    if "System" and "Created" in column:
+                        # how to transform this float value to datetime object
+                        new_system_info['created'] = system[column]
+                    if "System" and "Updated" in column:
+                        # how to transform this float value to datetime object
+                        new_system_info['updated'] = system[column]
+                    if "System" and "OSCAL" and "Version" in column:
+                        new_system_info['oscal_version'] = system[column]
+                    if "System" and "Component" and "Type" in column:
+                        new_system_info['component_type'] = system[column]
+                    if "System" and "Component" and "State" in column:
+                        new_system_info['component_state'] = system[column]
+                    if "System" and "Role" in column:
+                        # Read role information to create a new role and assign it
+                        new_system_info['roles'] = system[column]
 
                 # check to see system has name and a description to create   
-                if(new_system_name and new_system_description):
+                if(new_system_info['name'] and new_system_info['description'] and not faulty_system):
                     new_system_msg = f"System imported from uploaded XLSX file"
-                    new_project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
-                sys_successful = Project.objects.filter(id=new_project.id).exists()
-                if(sys_successful):
-                    systems_imported_list.append(new_system)
-                else: 
-                    systems_not_imported_list.append({'name': new_system_name})
+                    new_project, new_system = __create_new_system(request, new_system_info['name'], new_system_info['description'], new_system_msg)
+                    
+                    # Assigning properties as dictated in the excel document to the system
+                    # Check if uuid was assigned, if it was, check if valid UUID, if true => set, else throw as error and return as not implemented
+                    if new_system_info['uuid']:
+                        new_system.root_element.uuid = new_system_info['uuid']
+                    new_system.root_element.private = new_system_info['private']
+                    new_system.root_element.require_approval = new_system_info['require_approval']
+                    new_system.root_element.created = new_system_info['created']
+                    new_system.root_element.updated = new_system_info['updated']
+                    new_system.root_element.oscal_version = new_system_info['oscal_version']
+
+                    sys_successful = Project.objects.filter(id=new_project.id).exists()
+                    if(sys_successful):
+                        systems_imported_list.append(new_system)
+                if faulty_system:
+                    systems_not_imported_list.append(faulty_system)
 
         if(csv_pattern.match(file_name)):
             # CSV FILE
@@ -3668,6 +3900,7 @@ def system_import(request):
             csv_systems.pop(0)
             num_of_column = len(csv_headers)
             updated_csv_system = []
+            new_system_msg = f"System imported from uploaded CSV file"
             for sys in csv_systems:
                 if not sys:
                     continue
@@ -3677,15 +3910,15 @@ def system_import(request):
                 for x in range(0, num_of_column-1):
                     sys_dict[csv_headers[x]] = sys[x]
                 updated_csv_system.append(sys_dict)
-
+            
             for sys in updated_csv_system:
                 new_project, new_system = __create_new_system(request, sys['system_name'], sys['system_description'], new_system_msg)
                 # Now we check if the system was successfully created
                 sys_successful = Project.objects.filter(id=new_project.id).exists()
                 if(sys_successful):
-                    systems_imported_list.append(new_system.root_element.name)
+                    systems_imported_list.append(new_system)
                 else: 
-                    systems_not_imported_list.append(new_system.root_element.name)
+                    systems_not_imported_list.append({'name': new_system.root_element.name})
 
     context = {
         "systems_imported_list": systems_imported_list,

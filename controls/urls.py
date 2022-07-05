@@ -47,6 +47,9 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/aspen/integrations$', views.system_integrations_aspen, name="system_integrations"),
 
     url(r'^new', views.create_new_system, name="create_new_system"),
+    url(r'^csv_system_template', views.system_csv_template, name="csv_system_template"),
+    url(r'^xlsx_system_template', views.system_xlsx_template, name="xlsx_system_template"),
+    url(r'^oscal_system_template', views.system_oscal_template, name="oscal_system_template"),
 
     # Systems Assessment Results
     url(r'^(?P<system_id>.*)/assessments$', views.system_assessment_results_list, name="system_assessment_results_list"),
