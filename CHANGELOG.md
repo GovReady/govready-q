@@ -1,10 +1,21 @@
 GovReady-Q Release Notes
 ========================
 
+v0.10.1.2-dev (June 29, 2022)
+-----------------------------
+
+**Developer changes**
+
+* Remove Opera from test options.
+
+**Bug fixes**
+
+* Upgrade to Django 3.2.14 to fix Django vulnerability.
+
 v0.10.1.1-dev (June 29, 2022)
 -----------------------------
 
-**Buf fixes**
+**Bug fixes**
 
 * Hot patch to fix OSCAL SSP generation by making sure security_sensitivity_level has value.
 

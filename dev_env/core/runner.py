@@ -134,7 +134,7 @@ class DockerCompose(Runner):
             "chrome": {"port": 6900, "file": "selenium/selenium-chrome.yml"},
             # "edge": {"port": 6901, "file": "selenium/selenium-edge.yml"},
             "firefox": {"port": 6902, "file": "selenium/selenium-firefox.yml"},
-            "opera": {"port": 6903, "file": "selenium/selenium-opera.yml"},
+            # "opera": {"port": 6903, "file": "selenium/selenium-opera.yml"},
         }
 
         if self.config['test_visible']:
