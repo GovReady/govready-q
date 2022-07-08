@@ -136,7 +136,6 @@
         $("#import_loading_spinner").hide();
 
         function fillFileContent(file) {
-            console.log('@@@@@@@@   fillFileContent     @@@@@@@@')
             var fileInput = document.getElementById('file_content')
       
             var filePath = fileInput.value;
@@ -162,10 +161,17 @@
 
                         var workbook = XLSX.read(data, {type: 'array'});
                         var result = {};
-
+                        
                         workbook.SheetNames.forEach(function (sheetName) {
                             var roa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-                            if (roa.length) result[sheetName] = roa;
+                            /* Work around to get the string representation for dates */
+                            var tempRaw = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {raw:false})
+                            var systems = roa.map((sys, index) => {
+                                sys["System Created"] = tempRaw[index]["System Created"]
+                                sys["System Updated"] = tempRaw[index]["System Updated"]
+                                return sys;
+                            })
+                            if (systems.length) result[sheetName] = systems;
                         });
                         
                         // see the result, caution: it works after reader event is done.                        
@@ -185,10 +191,11 @@
                     */
                     console.log('cvs')
                     reader.readAsText(filecontents);
+                    
                     reader.onload = function (e) {
                         $('#{{import_system_form.file_content.auto_id}}').val(e.target.result);
-                        
                     }
+                    
                 }
                 else {
                     /*

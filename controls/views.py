@@ -3614,17 +3614,16 @@ def system_csv_template(request):
     # Create the CSV writer using the HttpResponse as the "file"
     writer = csv.writer(response)
     writer.writerow([
-        'system_name', 
-        'system_description', 
-        'system_uuid', 
-        'system_private', 
-        'system_require_approval', 
-        'system_created', 
-        'system_updated',
-        'system_oscal_version',
-        'system_component_type', 
-        'system_component_state',
-        'system_roles'
+        'System Name', 
+        'System Description', 
+        'System UUID', 
+        'System Private', 
+        'System Require Approval', 
+        'System Created', 
+        'System Updated',
+        'System OSCAL Version',
+        'System Component Type', 
+        'System Component State'
     ])
 
     return response
@@ -3656,14 +3655,12 @@ def system_xlsx_template(request):
         {'var_name': 'system_updated', 'name': 'System Updated', 'width': 32},
         {'var_name': 'system_oscal_version', 'name': 'System OSCAL Version', 'width': 32},
         {'var_name': 'system_component_type', 'name': 'System Component Type', 'width': 32},
-        {'var_name': 'system_component_state', 'name': 'System Component State', 'width': 32},
-        {'var_name': 'system_roles', 'name': 'System Roles', 'width': 32},
+        {'var_name': 'system_component_state', 'name': 'System Component State', 'width': 32}
     ]
 
      # create header row
     column = 0
     ord_zeroth_column = ord('A') - 1
-    csv_row = []
 
     for header in system_headers:
         column += 1
@@ -3675,7 +3672,6 @@ def system_xlsx_template(request):
                             bottom=Side(border_style="thin", color="444444"),
                             outline=Side(border_style="thin", color="444444"))
         ws.column_dimensions[chr(ord_zeroth_column + column)].width = header['width']
-
 
     filename = "system_template.xlsx"
     mime_type = "application/octet-stream"
@@ -3792,6 +3788,74 @@ def is_valid_uuid(val):
     except ValueError:
         return False
 
+def validate_field(validation_type, value):
+    """
+    Evaluates a value against a known value type, and returns desired evaluated value
+    """
+    if validation_type == "System Name":
+        if value:
+            return value
+        else:
+            return {
+                validation_type: "Missing System Name",
+            }
+    if validation_type == "System Description":
+        if value:
+            return value
+        else:
+            return {
+                validation_type: "Missing System Description",
+            }
+    if validation_type == "System UUID":
+        if is_valid_uuid(value):
+            return value
+        else:
+            return None
+    if validation_type == "System Private":
+        if value == True or value == False:
+            return value
+        else:
+            return None
+    if validation_type == "System Require Approval":
+        if value == True or value == False:
+            return value
+        else:
+            return None
+    if validation_type == "System Created":
+        # dateFormat = re.search(r'^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{}$', value)
+        try:
+            created = datetime.strptime(value, '%m/%d/%y')
+            return created
+        except:
+            return None
+    if validation_type == "System Updated":
+        try: 
+            updated = datetime.strptime(value, '%m/%d/%y')
+            return updated
+        except:
+            return None
+    if validation_type == "System OSCAL Version":
+        isOSCALVersionFormatValid = re.search(r'^[0-9]+\.[0-9]*\.[0-9]*[-[a-zA-Z0-9]*]?$', str(value))
+        if isOSCALVersionFormatValid:
+            return value
+        else:
+            return None
+    if validation_type == "System Component Type":
+         # Check if input is one of the accepted values - []
+        validTypes = ["hardware", "software", "service", "policy", "process", "procedure"]
+        if value.lower() in validTypes:
+            return value
+        else:
+            return None
+    if validation_type == "System Component State":
+         # Check if input is one of the accepted values - []
+        validStates = ["under-development", "operational", "disposition", "other"]
+        if value.lower() in validStates:
+            return value
+        else:
+            return None
+    return "type not found"
+
 # Project
 @login_required
 def system_import(request):
@@ -3809,7 +3873,7 @@ def system_import(request):
         systems_not_imported_list = []
 
         json_pattern = re.compile("^.*\.json$")
-        xlsl_pattern = re.compile("^.*\.xlsx$")
+        xlsx_pattern = re.compile("^.*\.xlsx$")
         csv_pattern = re.compile("^.*\.csv$")
 
         if(json_pattern.match(file_name)):
@@ -3818,74 +3882,124 @@ def system_import(request):
             if(is_ssp):
                 new_system_name = is_ssp.get("system-characteristics").get("system-name")
                 new_system_description = is_ssp.get("system-characteristics").get("description")
-                new_system_msg = f"System {new_system.root_element.name} imported by upload"
+                new_system_msg = f"System {new_system_name} imported by upload"
                 new_project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
                 # messages.add_message(request, messages.INFO, new_system_msg)
+                
+                # import  all the other system characteristics
+                security_sensitivity_level = is_ssp.get("system-characteristics").get("security-sensitivity-level")
+                info_types = is_ssp.get("system-characteristics").get("system-information")
+                security_impact_level = is_ssp.get("system-characteristics").get("security-impact-level")
+                status = is_ssp.get("system-characteristics").get("status")
+                system_authorization_boundary = is_ssp.get("system-characteristics").get("authorization-boundary")
+                new_system.set_security_sensitivity_level(security_sensitivity_level)
+                
+                
+                # import all users
+                system_users = is_ssp.get("system-implementation").get("users")
+
+                # import all of the components, check if it already exists, if it doesn't then create
+                new_components_list = is_ssp.get("system-implementation").get("components")
+                for comp in new_components_list:
+                    # for each component in the imported components, check if it exists
+                        # if it does, continue 
+                        # else -> create
+
+                        {
+                            'uuid': '37107aa8-8cea-4a49-9222-cd157f075690', 
+                            'title': 'Central Log Server Security Requirements Guide', 
+                            'description': 'Central Log Server Security Requirements Guide based on DOD SRG/STIG.', 
+                            'status': {'state': 'operational'}, 
+                            'type': 'software', 
+                            'responsible-roles': 
+                                [{
+                                    'role-id': 'asset-owner', 
+                                    'party-uuids': ['7e909baa-9c1f-4d36-9992-6830ea461b7f']}
+                                ], 
+                            'props': []
+                        }
+                        newComponent = Element.objects.get_or_create(
+                            title = comp["title"],
+                            description = comp["description"],
+                            component_type = comp["type"],
+                            component_state = comp["status"]["state"],
+                            uuid = comp["uuid"],
+                        )
+                        # Add responsible-roles to component
+                        # Assign parties to component
+                        Party.objects.get_or_create(
+                            comp["responsible-roles"][0]["party-uuids"],
+                        )
+                        print(comp)
+
+                # import all of the invenvtory items
+                # import all of the control implementations
+                
+
+
+
                 sys_successful = Project.objects.filter(id=new_project.id).exists()
+
+
                 if(sys_successful):
                     systems_imported_list.append(new_system)
                 else: 
                     systems_not_imported_list.append({'name': new_system_name})
 
-        if(xlsl_pattern.match(file_name)):
+        if(xlsx_pattern.match(file_name)):
             content = ast.literal_eval(file_content)
             sheet = content['Sheet1']
-            
+            columns = [
+                "System Name", 
+                "System Description", 
+                "System UUID", 
+                "System Private", 
+                "System Require Approval", 
+                "System Created", 
+                "System Updated", 
+                "System OSCAL Version",
+                "System Component Type",
+                "System Component State"
+            ]
+
+
+
             for system in sheet:
                 # Assigning each column to appropriate variable
                 # check if value in column is the correct format
                 new_system_info = {}
-                faulty_system = {}
+                faulty_system = []
                 for column in system:
-                    if "System" and "Name" in column:
-                        if (system[column]):
-                            new_system_info['name'] = system[column]
-                        else:
-                            faulty_system['name'] = new_system_name
-                    if "System" and "Description" or "Desc" in column:
-                        new_system_info['description'] = system[column]
-                    if "System" and "UUID" in column:
-                        if is_valid_uuid(system[column]):
-                            new_system_info['uuid'] = system[column]
-                        else:
-                            faulty_system['uuid error'] = 'incorrect uuid format'
-                    if "System" and "Private" in column:
-                        if system[column] == True or system[column] == False:
-                            new_system_info['private'] = system[column]
-                    if "System" and "Approval" in column:
-                        if system[column] == True or system[column] == False:
-                            new_system_info['require_approval'] = system[column]
-                    if "System" and "Created" in column:
-                        # how to transform this float value to datetime object
-                        new_system_info['created'] = system[column]
-                    if "System" and "Updated" in column:
-                        # how to transform this float value to datetime object
-                        new_system_info['updated'] = system[column]
-                    if "System" and "OSCAL" and "Version" in column:
-                        new_system_info['oscal_version'] = system[column]
-                    if "System" and "Component" and "Type" in column:
-                        new_system_info['component_type'] = system[column]
-                    if "System" and "Component" and "State" in column:
-                        new_system_info['component_state'] = system[column]
-                    if "System" and "Role" in column:
-                        # Read role information to create a new role and assign it
-                        new_system_info['roles'] = system[column]
+                    validated_value = validate_field(column, system[column])
+                    if isinstance(validated_value, dict):
+                        faulty_system.append(validated_value)
+                    else:
+                        new_system_info[column] = validated_value
+                if 'System Name' not in new_system_info:
+                    faulty_system.append({"System Name": "Missing System Name"})
+                if 'System Description' not in new_system_info:
+                    faulty_system.append({"System Description": "Missing System Description"})
 
                 # check to see system has name and a description to create   
-                if(new_system_info['name'] and new_system_info['description'] and not faulty_system):
+                if('System Name' in new_system_info and 'System Description' in new_system_info and not faulty_system):
                     new_system_msg = f"System imported from uploaded XLSX file"
-                    new_project, new_system = __create_new_system(request, new_system_info['name'], new_system_info['description'], new_system_msg)
+                    new_project, new_system = __create_new_system(request, new_system_info['System Name'], new_system_info['System Description'], new_system_msg)
                     
                     # Assigning properties as dictated in the excel document to the system
                     # Check if uuid was assigned, if it was, check if valid UUID, if true => set, else throw as error and return as not implemented
-                    if new_system_info['uuid']:
-                        new_system.root_element.uuid = new_system_info['uuid']
-                    new_system.root_element.private = new_system_info['private']
-                    new_system.root_element.require_approval = new_system_info['require_approval']
-                    new_system.root_element.created = new_system_info['created']
-                    new_system.root_element.updated = new_system_info['updated']
-                    new_system.root_element.oscal_version = new_system_info['oscal_version']
-
+                    if 'System UUID' in new_system_info and new_system_info['System UUID']:
+                        new_system.root_element.uuid = new_system_info['System UUID']
+                    if 'System Private' in new_system_info and new_system_info['System Private']:
+                        new_system.root_element.private = new_system_info['System Private']
+                    if 'System Require Approval' in new_system_info and new_system_info['System Require Approval']:
+                        new_system.root_element.require_approval = new_system_info['System Require Approval']
+                    if 'System Created' in new_system_info and new_system_info['System Created']:
+                        new_system.root_element.created = new_system_info['System Created']
+                    if 'System Updated' in new_system_info and new_system_info['System Updated']:
+                        new_system.root_element.updated = new_system_info['System Updated']
+                    if 'System OSCAL Version' in new_system_info and new_system_info['System OSCAL Version']:
+                        new_system.root_element.oscal_version = new_system_info['System OSCAL Version']
+                    
                     sys_successful = Project.objects.filter(id=new_project.id).exists()
                     if(sys_successful):
                         systems_imported_list.append(new_system)
@@ -3899,8 +4013,12 @@ def system_import(request):
             csv_headers[-1] = csv_headers[-1].split('\r')
             csv_systems.pop(0)
             num_of_column = len(csv_headers)
-            updated_csv_system = []
             new_system_msg = f"System imported from uploaded CSV file"
+            
+            updated_csv_system = []
+            systems_imported_list = []
+            systems_not_imported_list = []
+
             for sys in csv_systems:
                 if not sys:
                     continue
@@ -3912,14 +4030,44 @@ def system_import(request):
                 updated_csv_system.append(sys_dict)
             
             for sys in updated_csv_system:
-                new_project, new_system = __create_new_system(request, sys['system_name'], sys['system_description'], new_system_msg)
-                # Now we check if the system was successfully created
-                sys_successful = Project.objects.filter(id=new_project.id).exists()
-                if(sys_successful):
-                    systems_imported_list.append(new_system)
-                else: 
-                    systems_not_imported_list.append({'name': new_system.root_element.name})
+                # Check each system attribute to see if they follow correct format/information
+                new_system_info = {}
+                faulty_system = {}
+                
+                for key in sys.keys():
+                    validated_value = validate_field(key, sys[key])
+                    if isinstance(validated_value, dict):
+                        faulty_system.append(validated_value)
+                    else:
+                        new_system_info[column] = validated_value
+                
+                if 'System Name' not in new_system_info:
+                    faulty_system.append({"System Name": "Missing System Name"})
+                if 'System Description' not in new_system_info:
+                    faulty_system.append({"System Description": "Missing System Description"})
 
+                if 'name' in new_system_info and 'description' in new_system_info and not faulty_system: 
+                    new_project, new_system = __create_new_system(request, new_system_info['name'], new_system_info['description'], new_system_msg)
+                    
+                    if "uuid" in new_system_info and new_system_info['uuid']:
+                        new_system.root_element.uuid = new_system_info['uuid']
+                    if "private" in new_system_info and new_system_info['private']:
+                        new_system.root_element.private = new_system_info['private']
+                    if "require_approval" in new_system_info and new_system_info['require_approval']:
+                        new_system.root_element.require_approval = new_system_info['require_approval']
+                    if "created" in new_system_info and new_system_info['created']:
+                        new_system.root_element.created = new_system_info['created']
+                    if "updated" in new_system_info and new_system_info['updated']:
+                        new_system.root_element.updated = new_system_info['updated']
+                    if "oscal_version" in new_system_info and new_system_info['oscal_version']:                        
+                        new_system.root_element.oscal_version = new_system_info['oscal_version']
+                    # Now we check if the system was successfully created
+                    sys_successful = Project.objects.filter(id=new_project.id).exists()
+                    if(sys_successful):
+                        systems_imported_list.append(new_system)
+                else:
+                    systems_not_imported_list.append(faulty_system)
+            print('systems with errors: ', systems_not_imported_list)
     context = {
         "systems_imported_list": systems_imported_list,
         "systems_not_imported_list": systems_not_imported_list
