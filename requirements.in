@@ -24,13 +24,13 @@ termcolor # MIT License
 xxhash # BSD License
 importlib-resources<2,>=1.0 # Apache License
 pyinstrument==3.2.0 # BSD License
-compliance-trestle==0.33.0 # OSI Approved :: Apache Software License
+compliance-trestle==1.1.0 # OSI Approved :: Apache Software License
 markdown # As Is Custom License
 
 jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages
-Django==3.2.13 # BSD License
+Django==3.2.14 # BSD License
 django-allauth # MIT License
 django-bootstrap3 # BSD 3-Clause License
 importlib-metadata>=1.7.0 # Apache License 2.0
@@ -61,10 +61,11 @@ click # BSD License (BSD-3-Clause)
 # more-itertools # MIT License
 simplejson # Academic Free License (AFL), MIT License
 pandas # BSD License (BSD-3-Clause)
-spacy # MIT License
+# spacy # MIT License
 Unidecode # GNU General Public License
 wordcloud # MIT License
-numpy==1.22.2 # BSD 3-Clause "New" or "Revised" License
+numpy>=1.23.0 # BSD 3-Clause "New" or "Revised" License
+backports.zoneinfo==0.2.1 # Apache 2.0
 
 # Python Packages Developed by GovReady and/or Josh
 rtyaml # CC0
@@ -95,7 +96,7 @@ rfc5424-logging-handler # BSD License
 # Development & testing only
 bandit # Apache License 2.0
 coverage==6.0b1 # Apache License 2.0
-selenium # Apache License 2.0
+selenium==4.2.0 # Apache License 2.0
 safety # MIT License
 parsel # BSD License
 
