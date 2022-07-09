@@ -3646,9 +3646,61 @@ def system_xlsx_template(request):
     wrap_alignment = Alignment(wrap_text=True)
     ws.title = "Sheet1"
     system_headers = [
+        {'var_name': 'csam_id', 'name': 'CSAM ID', 'width': 32},
+        {'var_name': 'org', 'name': 'Org', 'width': 32},
+        {'var_name': 'sub_org', 'name': 'Sub Org', 'width': 32},
         {'var_name': 'system_name', 'name': 'System Name', 'width': 32},
         {'var_name': 'system_description', 'name': 'System Description', 'width': 32},
+        {'var_name': 'acronym', 'name': 'Acronym', 'width': 32},
+        {'var_name': 'system_category', 'name': 'System Category', 'width': 32},
+        {'var_name': 'system_operational_status', 'name': 'System Operational Status', 'width': 32},
+        {'var_name': 'system_type', 'name': 'System Type', 'width': 32},
+        {'var_name': 'contractor_system', 'name': 'Contractor System', 'width': 32},
+        {'var_name': 'financial_system', 'name': 'Financial System', 'width': 32},
+        {'var_name': 'fisma_reportable', 'name': 'FISMA Reportable', 'width': 32},
+        {'var_name': 'critical_infrastructure', 'name': 'Critical Infrastructure', 'width': 32},
+        {'var_name': 'mission_critical', 'name': 'Mission Critical', 'width': 32},
         {'var_name': 'system_uuid', 'name': 'System UUID', 'width': 32},
+        {'var_name': 'uui_code', 'name': 'UII Code', 'width': 32},
+        {'var_name': 'investment_name', 'name': 'Investment Name', 'width': 32},
+        {'var_name': 'portfolio', 'name': 'Portfolio', 'width': 32},
+        {'var_name': 'poam_id', 'name': 'POAM ID', 'width': 32},
+        {'var_name': 'poam_sequence', 'name': 'POAM Sequence', 'width': 32},
+        {'var_name': 'poam_title', 'name': 'POAM Title', 'width': 32},
+        {'var_name': 'detailed_weakness_description', 'name': 'Detailed Weakness Description', 'width': 32},
+        {'var_name': 'create_date', 'name': 'Create Date', 'width': 32},
+        {'var_name': 'days_since_creation', 'name': 'Days Since Creation', 'width': 32},
+        {'var_name': 'scheduled_completion_date', 'name': 'Scheduled Completion Date', 'width': 32},
+        {'var_name': 'planned_start_date', 'name': 'Planned Start Date', 'width': 32},
+        {'var_name': 'planned_finish_date', 'name': 'Planned Finish Date', 'width': 32},
+        {'var_name': 'status', 'name': 'status', 'width': 32},
+        {'var_name': 'weakness', 'name': 'weakness', 'width': 32},
+        {'var_name': 'cost', 'name': 'cost', 'width': 32},
+        {'var_name': 'control_risk_severity', 'name': 'Control Risk Severity', 'width': 32},
+        {'var_name': 'user_identified_critically', 'name': 'User Identified Critically', 'width': 32},
+        {'var_name': 'severity', 'name': 'Severity', 'width': 32},
+        {'var_name': 'workflow_status', 'name': 'Workflow Status', 'width': 32},
+        {'var_name': 'workflow_status_date', 'name': 'Workflow Status Date', 'width': 32},
+        {'var_name': 'days_until_auto_approved', 'name': 'Days Until Auto-Approved', 'width': 32},
+        {'var_name': 'exclude_from_omb', 'name': 'Exclude From OMB', 'width': 32},
+        {'var_name': 'accepted_risk', 'name': 'Accepted Risk', 'width': 32},
+        {'var_name': 'assigned_to', 'name': 'Assigned To', 'width': 32},
+        {'var_name': 'phone', 'name': 'Phone', 'width': 32},
+        {'var_name': 'email', 'name': 'Email', 'width': 32},
+        {'var_name': 'assigned_date', 'name': 'Assigned Date', 'width': 32},
+        {'var_name': 'delay_reason', 'name': 'Delay Reason', 'width': 32},
+        {'var_name': 'controls', 'name': 'Controls', 'width': 32},
+        {'var_name': 'csffunction', 'name': 'CSFFunction', 'width': 32},
+        {'var_name': 'csfcategory', 'name': 'CSFCategory', 'width': 32},
+        {'var_name': 'csfsubcategory', 'name': 'CSFSubCategory', 'width': 32},
+        {'var_name': 'number_milestones', 'name': 'Number Milestones', 'width': 32},
+        {'var_name': 'number_artifacts', 'name': 'Number Artifacts', 'width': 32},
+        {'var_name': 'rbd_approval_date', 'name': 'RBD Approval Date', 'width': 32},
+        {'var_name': 'deficiency_category', 'name': 'Deficiency Category', 'width': 32},
+        {'var_name': 'source_of_finding', 'name': 'Source of Finding', 'width': 32},
+        {'var_name': 'percent_complete', 'name': 'Percent Complete:', 'width': 32},
+        {'var_name': 'date_percent_complete_late_updated', 'name': 'Date % Complete Last Updated:', 'width': 32},
+
         {'var_name': 'system_private', 'name': 'System Private', 'width': 32},
         {'var_name': 'system_require_approval', 'name': 'System Require Approval', 'width': 32},
         {'var_name': 'system_created', 'name': 'System Created', 'width': 32},
@@ -3810,7 +3862,9 @@ def validate_field(validation_type, value):
         if is_valid_uuid(value):
             return value
         else:
-            return None
+            return {
+                validation_type: "Invalid UUID format",
+            }
     if validation_type == "System Private":
         if value == True or value == False:
             return value
@@ -3820,7 +3874,9 @@ def validate_field(validation_type, value):
         if value == True or value == False:
             return value
         else:
-            return None
+            return {
+                validation_type: "Invalid boolean value: please use True or False",
+            }
     if validation_type == "System Created":
         # dateFormat = re.search(r'^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{}$', value)
         try:
@@ -3833,27 +3889,35 @@ def validate_field(validation_type, value):
             updated = datetime.strptime(value, '%m/%d/%y')
             return updated
         except:
-            return None
+            return {
+                validation_type: "Invalid Date format, please use mm/dd/yyyy",
+            }
     if validation_type == "System OSCAL Version":
         isOSCALVersionFormatValid = re.search(r'^[0-9]+\.[0-9]*\.[0-9]*[-[a-zA-Z0-9]*]?$', str(value))
         if isOSCALVersionFormatValid:
             return value
         else:
-            return None
+            return {
+                validation_type: "Invalid OSCAL version format, please use #.#.# format, optional #.#.#-L#",
+            }
     if validation_type == "System Component Type":
          # Check if input is one of the accepted values - []
         validTypes = ["hardware", "software", "service", "policy", "process", "procedure"]
         if value.lower() in validTypes:
             return value
         else:
-            return None
+            return {
+                validation_type: "Invalid System component type: please use one of the following options: hardware, software, service, policy, process, procedure",
+            }
     if validation_type == "System Component State":
          # Check if input is one of the accepted values - []
         validStates = ["under-development", "operational", "disposition", "other"]
         if value.lower() in validStates:
             return value
         else:
-            return None
+            return {
+                validation_type: "Invalid System component state: please use one of the following options: under-development, operational, disposition, other",
+            }
     return "type not found"
 
 # Project
@@ -3949,39 +4013,31 @@ def system_import(request):
         if(xlsx_pattern.match(file_name)):
             content = ast.literal_eval(file_content)
             sheet = content['Sheet1']
-            columns = [
-                "System Name", 
-                "System Description", 
-                "System UUID", 
-                "System Private", 
-                "System Require Approval", 
-                "System Created", 
-                "System Updated", 
-                "System OSCAL Version",
-                "System Component Type",
-                "System Component State"
-            ]
 
-
-
-            for system in sheet:
+            for index, system in enumerate(sheet):
                 # Assigning each column to appropriate variable
                 # check if value in column is the correct format
                 new_system_info = {}
-                faulty_system = []
+                faulty_system = {}
+                sys_name = ''
+                if 'System Name' in system:
+                    sys_name = system['System Name']
+                    faulty_system[sys_name] = []
+                if 'System Name' not in system:
+                    sys_name = f"System on Row {index + 1}"
+                    faulty_system[sys_name] = ["Missing System Name"]
+                if 'System Description' not in system:
+                    faulty_system[sys_name].append("Missing System Description")
+                
                 for column in system:
                     validated_value = validate_field(column, system[column])
-                    if isinstance(validated_value, dict):
-                        faulty_system.append(validated_value)
-                    else:
+                    if not isinstance(validated_value, dict):
                         new_system_info[column] = validated_value
-                if 'System Name' not in new_system_info:
-                    faulty_system.append({"System Name": "Missing System Name"})
-                if 'System Description' not in new_system_info:
-                    faulty_system.append({"System Description": "Missing System Description"})
+                    else:
+                        faulty_system[sys_name].append(validated_value)
 
                 # check to see system has name and a description to create   
-                if('System Name' in new_system_info and 'System Description' in new_system_info and not faulty_system):
+                if('System Name' in new_system_info and 'System Description' in new_system_info and not faulty_system[sys_name]):
                     new_system_msg = f"System imported from uploaded XLSX file"
                     new_project, new_system = __create_new_system(request, new_system_info['System Name'], new_system_info['System Description'], new_system_msg)
                     
@@ -3999,11 +4055,20 @@ def system_import(request):
                         new_system.root_element.updated = new_system_info['System Updated']
                     if 'System OSCAL Version' in new_system_info and new_system_info['System OSCAL Version']:
                         new_system.root_element.oscal_version = new_system_info['System OSCAL Version']
+                    if 'System Component Type' in new_system_info and new_system_info['System Component Type']:
+                        new_system.root_element.oscal_version = new_system_info['System Component Type']
+                    if 'System Component State' in new_system_info and new_system_info['System Component State']:
+                        new_system.root_element.oscal_version = new_system_info['System Component State']
                     
+                    # Setting system information 
+                    if 'CSAM ID' in new_system_info and new_system_info['CSAM ID']:
+                        new_system.info["other_id"] = new_system_info['CSAM ID']
+
                     sys_successful = Project.objects.filter(id=new_project.id).exists()
+                    
                     if(sys_successful):
                         systems_imported_list.append(new_system)
-                if faulty_system:
+                if faulty_system[sys_name]:
                     systems_not_imported_list.append(faulty_system)
 
         if(csv_pattern.match(file_name)):
@@ -4046,21 +4111,26 @@ def system_import(request):
                 if 'System Description' not in new_system_info:
                     faulty_system.append({"System Description": "Missing System Description"})
 
-                if 'name' in new_system_info and 'description' in new_system_info and not faulty_system: 
-                    new_project, new_system = __create_new_system(request, new_system_info['name'], new_system_info['description'], new_system_msg)
+                if 'System Name' in new_system_info and 'System Description' in new_system_info and not faulty_system: 
+                    new_project, new_system = __create_new_system(request, new_system_info['System Name'], new_system_info['System Description'], new_system_msg)
                     
-                    if "uuid" in new_system_info and new_system_info['uuid']:
-                        new_system.root_element.uuid = new_system_info['uuid']
-                    if "private" in new_system_info and new_system_info['private']:
-                        new_system.root_element.private = new_system_info['private']
-                    if "require_approval" in new_system_info and new_system_info['require_approval']:
-                        new_system.root_element.require_approval = new_system_info['require_approval']
-                    if "created" in new_system_info and new_system_info['created']:
-                        new_system.root_element.created = new_system_info['created']
-                    if "updated" in new_system_info and new_system_info['updated']:
-                        new_system.root_element.updated = new_system_info['updated']
-                    if "oscal_version" in new_system_info and new_system_info['oscal_version']:                        
-                        new_system.root_element.oscal_version = new_system_info['oscal_version']
+                    if "System UUID" in new_system_info and new_system_info['System UUID']:
+                        new_system.root_element.uuid = new_system_info['System UUID']
+                    if "System Private" in new_system_info and new_system_info['System Private']:
+                        new_system.root_element.private = new_system_info['System Private']
+                    if "System Require Approval" in new_system_info and new_system_info['System Require Approval']:
+                        new_system.root_element.require_approval = new_system_info['System Require Approval']
+                    if "System Created" in new_system_info and new_system_info['System Created']:
+                        new_system.root_element.created = new_system_info['System Created']
+                    if "System Updated" in new_system_info and new_system_info['System Updated']:
+                        new_system.root_element.updated = new_system_info['System Updated']
+                    if "System OSCAL Version" in new_system_info and new_system_info['System OSCAL Version']:                        
+                        new_system.root_element.oscal_version = new_system_info['System OSCAL Version']
+                    if 'System Component Type' in new_system_info and new_system_info['System Component Type']:
+                        new_system.root_element.oscal_version = new_system_info['System Component Type']
+                    if 'System Component State' in new_system_info and new_system_info['System Component State']:
+                        new_system.root_element.oscal_version = new_system_info['System Component State']
+
                     # Now we check if the system was successfully created
                     sys_successful = Project.objects.filter(id=new_project.id).exists()
                     if(sys_successful):
