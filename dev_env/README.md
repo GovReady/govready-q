@@ -65,7 +65,7 @@ environment.json to include:
     "test_visible": true,
     "test_browser": "chrome" 
 ```````````
-You can choose from `firefox`, `chrome`, or `opera`
+You can choose from `firefox` or `chrome`.
 
 ### Connecting to the Selenium
 You will have to install a VNC Viewer (https://www.realvnc.com/en/connect/download/viewer/)
@@ -76,7 +76,6 @@ Open VNC Viewer and connect to the browser image you chose in your environment.j
 |---------|----------------|----------|
 | Chrome  | localhost:6900 | secret   |
 | Firefox | localhost:6902 | secret   |
-| Opera   | localhost:6903 | secret   |
 
 Then you can run your tests as you typically would by connecting to your container and running the tests.  Ex: 
 `docker exec -it govready-q-dev ./manage.py test`
