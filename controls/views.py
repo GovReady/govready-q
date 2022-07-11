@@ -3892,6 +3892,21 @@ def validate_field(validation_type, value):
             return {
                 validation_type: "Invalid Date format, please use mm/dd/yyyy",
             }
+    if "date" in validation_type.lower():
+        if value:
+            try:
+                date = datetime.strptime(value, '%m/%d/%y')
+                return date
+            except:
+                try:
+                    date = datetime.strptime(value, '%m-%d-%Y %H:%M:%S %p')
+                    return date
+                except:
+                    return {
+                        validation_type: "Invalid Date format, please use mm/dd/yyyy",
+                    }
+        else:
+            return None
     if validation_type == "System OSCAL Version":
         isOSCALVersionFormatValid = re.search(r'^[0-9]+\.[0-9]*\.[0-9]*[-[a-zA-Z0-9]*]?$', str(value))
         if isOSCALVersionFormatValid:
@@ -3918,7 +3933,7 @@ def validate_field(validation_type, value):
             return {
                 validation_type: "Invalid System component state: please use one of the following options: under-development, operational, disposition, other",
             }
-    return "type not found"
+    return value
 
 # Project
 @login_required
@@ -4026,8 +4041,8 @@ def system_import(request):
                 if 'System Name' not in system:
                     sys_name = f"System on Row {index + 1}"
                     faulty_system[sys_name] = ["Missing System Name"]
-                if 'System Description' not in system:
-                    faulty_system[sys_name].append("Missing System Description")
+                # if 'System Description' not in system:
+                #     faulty_system[sys_name].append("Missing System Description")
                 
                 for column in system:
                     validated_value = validate_field(column, system[column])
@@ -4037,37 +4052,83 @@ def system_import(request):
                         faulty_system[sys_name].append(validated_value)
 
                 # check to see system has name and a description to create   
-                if('System Name' in new_system_info and 'System Description' in new_system_info and not faulty_system[sys_name]):
-                    new_system_msg = f"System imported from uploaded XLSX file"
-                    new_project, new_system = __create_new_system(request, new_system_info['System Name'], new_system_info['System Description'], new_system_msg)
+                # import ipdb; ipdb.set_trace()
+                if('System Name' in new_system_info and not faulty_system[sys_name]):
+                    sys = System.objects.filter(root_element__name=new_system_info["System Name"]).first()
                     
+                    if sys:
+                        print("SYS ALREADY EXISTS~!")
+                        proj = Project.objects.get(system=sys)
+                    else:
+                        print("CREATING A NEW SYSTEM!~")
+                        new_system_msg = f"System imported from uploaded XLSX file"
+                        proj, sys = __create_new_system(request, new_system_info['System Name'], "", new_system_msg)
+                    
+                    # Check if POAM already exists within System
+                    # import ipdb; ipdb.set_trace()]
+                    if 'POAM ID' in new_system_info and new_system_info['POAM ID']:
+                        poamExists = Poam.objects.filter(poam_id=new_system_info["POAM ID"]).first()
+                        if poamExists:
+                            # POAM exists, update values as needed
+                            # Get Statement/Poam and assign to sys
+                            poamExists.statement.consumer_element = sys.root_element
+                        else:
+                            # Create a new POAM statement object, then a POAM object
+                            poam_statement = Statement.objects.create(
+                                sid = None,
+                                sid_class = None,
+                                body = new_system_info["Detailed Weakness Description"],
+                                statement_type = StatementTypeEnum.POAM.name,
+                                consumer_element = sys.root_element,
+                                status= new_system_info["Status"],
+                                created = new_system_info["Create Date"],
+                                updated = datetime.now()
+                            )
+                            new_poam = Poam.objects.create(
+                                statement = poam_statement,
+                                poam_id = new_system_info["POAM ID"],
+                                controls = new_system_info["Controls"],
+                                weakness_name = new_system_info["POAM Title"],
+                                # weakness_detection_source = 
+                                # weakness_source_identifier = 
+                                # remediation_plan = 
+                                scheduled_completion_date = new_system_info["Planned Finish Date"],
+                                milestones = new_system_info["Number Milestones"],
+                                # milestone_changes =
+                                # risk_rating_original =
+                                # risk_rating_adjusted =
+                                # poam_group =
+                            )
+                            # Insert everything into System's info dictionary
+                            for key in new_system_info:
+                                sys.info[key] = new_system_info[key]
                     # Assigning properties as dictated in the excel document to the system
-                    # Check if uuid was assigned, if it was, check if valid UUID, if true => set, else throw as error and return as not implemented
-                    if 'System UUID' in new_system_info and new_system_info['System UUID']:
-                        new_system.root_element.uuid = new_system_info['System UUID']
-                    if 'System Private' in new_system_info and new_system_info['System Private']:
-                        new_system.root_element.private = new_system_info['System Private']
-                    if 'System Require Approval' in new_system_info and new_system_info['System Require Approval']:
-                        new_system.root_element.require_approval = new_system_info['System Require Approval']
-                    if 'System Created' in new_system_info and new_system_info['System Created']:
-                        new_system.root_element.created = new_system_info['System Created']
-                    if 'System Updated' in new_system_info and new_system_info['System Updated']:
-                        new_system.root_element.updated = new_system_info['System Updated']
-                    if 'System OSCAL Version' in new_system_info and new_system_info['System OSCAL Version']:
-                        new_system.root_element.oscal_version = new_system_info['System OSCAL Version']
-                    if 'System Component Type' in new_system_info and new_system_info['System Component Type']:
-                        new_system.root_element.oscal_version = new_system_info['System Component Type']
-                    if 'System Component State' in new_system_info and new_system_info['System Component State']:
-                        new_system.root_element.oscal_version = new_system_info['System Component State']
                     
                     # Setting system information 
-                    if 'CSAM ID' in new_system_info and new_system_info['CSAM ID']:
-                        new_system.info["other_id"] = new_system_info['CSAM ID']
+                    # Check if uuid was assigned, if it was, check if valid UUID, if true => set, else throw as error and return as not implemented
+                    if 'System UUID' in new_system_info and new_system_info['System UUID']:
+                        sys.root_element.uuid = new_system_info['System UUID']
+                    if 'System Private' in new_system_info and new_system_info['System Private']:
+                        sys.root_element.private = new_system_info['System Private']
+                    if 'System Require Approval' in new_system_info and new_system_info['System Require Approval']:
+                        sys.root_element.require_approval = new_system_info['System Require Approval']
+                    if 'System Created' in new_system_info and new_system_info['System Created']:
+                        sys.root_element.created = new_system_info['System Created']
+                    if 'System Updated' in new_system_info and new_system_info['System Updated']:
+                        sys.root_element.updated = new_system_info['System Updated']
+                    if 'System OSCAL Version' in new_system_info and new_system_info['System OSCAL Version']:
+                        sys.root_element.oscal_version = new_system_info['System OSCAL Version']
+                    if 'System Component Type' in new_system_info and new_system_info['System Component Type']:
+                        sys.root_element.oscal_version = new_system_info['System Component Type']
+                    if 'System Component State' in new_system_info and new_system_info['System Component State']:
+                        sys.root_element.oscal_version = new_system_info['System Component State']
 
-                    sys_successful = Project.objects.filter(id=new_project.id).exists()
+                    if 'CSAM ID' in new_system_info and new_system_info['CSAM ID']:
+                        sys.info["other_id"] = new_system_info['CSAM ID']
+                    sys_successful = Project.objects.filter(id=proj.id).exists()
                     
                     if(sys_successful):
-                        systems_imported_list.append(new_system)
+                        systems_imported_list.append(sys)
                 if faulty_system[sys_name]:
                     systems_not_imported_list.append(faulty_system)
 
@@ -4108,8 +4169,8 @@ def system_import(request):
                 
                 if 'System Name' not in new_system_info:
                     faulty_system.append({"System Name": "Missing System Name"})
-                if 'System Description' not in new_system_info:
-                    faulty_system.append({"System Description": "Missing System Description"})
+                # if 'System Description' not in new_system_info:
+                #     faulty_system.append({"System Description": "Missing System Description"})
 
                 if 'System Name' in new_system_info and 'System Description' in new_system_info and not faulty_system: 
                     new_project, new_system = __create_new_system(request, new_system_info['System Name'], new_system_info['System Description'], new_system_msg)

@@ -166,9 +166,20 @@
                             var roa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
                             /* Work around to get the string representation for dates */
                             var tempRaw = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {raw:false})
+                            //Reassign any dates as a string
                             var systems = roa.map((sys, index) => {
                                 sys["System Created"] = tempRaw[index]["System Created"]
                                 sys["System Updated"] = tempRaw[index]["System Updated"]
+                                sys["Create Date"] = tempRaw[index]["Create Date"]
+                                sys["Scheduled Completion Date"] = tempRaw[index]["Scheduled Completion Date"]
+                                sys["Planned Start Date"] = tempRaw[index]["Planned Start Date"]
+                                sys["Actual Start Date"] = tempRaw[index]["Actual Start Date"]
+                                sys["Planned Finish Date"] = tempRaw[index]["Planned Finish Date"]
+                                sys["Actual Finish Date"] = tempRaw[index]["Actual Finish Date"]
+                                sys["Workflow Status Date"] = tempRaw[index]["Workflow Status Date"]
+                                sys["Assigned Date"] = tempRaw[index]["Assigned Date"]
+                                sys["Date % Complete Last Updated:"] = tempRaw[index]["Date % Complete Last Updated:"]
+
                                 return sys;
                             })
                             if (systems.length) result[sheetName] = systems;
