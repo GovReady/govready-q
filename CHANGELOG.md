@@ -11,6 +11,7 @@ v0.10.1.2-dev (June 29, 2022)
 **Bug fixes**
 
 * Upgrade to Django 3.2.14 to fix Django vulnerability.
+* Remove edit action information from proposed component control statements.
 
 v0.10.1.1-dev (June 29, 2022)
 -----------------------------
