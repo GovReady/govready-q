@@ -4044,6 +4044,7 @@ def system_import(request):
                 sys_name = ''
                 sys_log = []
                 hasSystemUpdated = False
+                hasPoamUpdated = False
 
                 if 'System Name' in system:
                     sys_name = system['System Name']
@@ -4065,16 +4066,13 @@ def system_import(request):
                 if('System Name' in new_system_info and not faulty_system[sys_name]):
                     sys = System.objects.filter(root_element__name=new_system_info["System Name"]).first()
                     if sys:
-                        print("SYS ALREADY EXISTS~!")
                         proj = Project.objects.get(system=sys)
                         sys_log.append("System already exists.")
                     else:
-                        print("CREATING A NEW SYSTEM!~")
                         new_system_msg = f"System imported from uploaded XLSX file"
                         proj, sys = __create_new_system(request, new_system_info['System Name'], "", new_system_msg, file_import_record)
                         hasSystemUpdated = True
                         sys_log.append("Creating a new System and Project")
-                        print("CREATED A NEW SYSTEM WITH AN IMPORT RECORD")
                     
                     # Check if POAM already exists within System
                     print("POAMs!!~")
@@ -4082,8 +4080,6 @@ def system_import(request):
                         poamExists = Poam.objects.filter(poam_id=new_system_info["POAM ID"]).first()
                         if poamExists:
                             sys_log.append("POAM already exists.")
-                            hasPoamUpdated = False
-                            
                             # POAM exists, update values as needed
                             poamStatement = Statement.objects.get(id=poamExists.statement.id)
                             if poamStatement.body != new_system_info["Detailed Weakness Description"]:
@@ -4162,58 +4158,68 @@ def system_import(request):
                                 # poam_group =
                             )
                             sys_log.append(f"POAM {new_poam.poam_id} was created")
+                    
                     # Insert everything into System's info dictionary
                     for key in new_system_info:
-                        if key in sys.info and sys.info[key] != new_system_info[key]:
-                            if key == "CSAM ID":
+                        if key == "CSAM ID":
                                 sys.info["other_id"] = new_system_info[key]
                                 sys_log.append("Setting CSAM ID to System's info")
+                        if key in sys.info and sys.info[key] != new_system_info[key]:
+                            if "date" in key.lower():
+                                sys.info[key] = new_system_info[key].strftime('%m/%d/%Y')
+                                sys_log.append(f"Updated {key} = {new_system_info[key].strftime('%m/%d/%Y')} into System Info Log")
                             else:
                                 sys.info[key] = new_system_info[key]
-                                sys_log.append(f"Setting {key} = {new_system_info[key]} into System Log")
+                                sys_log.append(f"Updated {key} = {new_system_info[key]} into System Info Log")
+                        if "date" in key.lower() and key not in sys.info and new_system_info[key]:
+                            if new_system_info[key]:
+                                sys.info[key] = new_system_info[key].strftime('%m/%d/%Y')
+                                sys_log.append(f"Added {key} = {new_system_info[key].strftime('%m/%d/%Y')} into System Info Log")
+                            else:
+                                sys.info[key] = ""
+                                sys_log.append(f"Added {key} = '' into System Info Log")
+                    sys.save()
                     # Assigning properties as dictated in the excel document to the system
                     
                     # Setting system information 
                     # Check if uuid was assigned, if it was, check if valid UUID, if true => set, else throw as error and return as not implemented
-                    print("ADD SYSTEM PROPERTIES!~")
                     if 'System UUID' in new_system_info and new_system_info['System UUID']:
                         sys.root_element.uuid = new_system_info['System UUID']
                         hasSystemUpdated = True
-                        sys_log.append(f"Setting System UUID has been updated to: {new_system_info['System UUID']}")
+                        sys_log.append(f"Setting System UUID has been updated to: {sys.root_element.uuid}")
                     if 'System Private' in new_system_info and new_system_info['System Private']:
                         sys.root_element.private = new_system_info['System Private']
                         hasSystemUpdated = True
-                        sys_log.append(f"Private has been updated to: {new_system_info['System Private']}")
+                        sys_log.append(f"Private has been updated to: {sys.root_element.private}")
                     if 'System Require Approval' in new_system_info and new_system_info['System Require Approval']:
                         sys.root_element.require_approval = new_system_info['System Require Approval']
                         hasSystemUpdated = True
-                        sys_log.append(f"System Require Approval has been updated to: {new_system_info['System Require Approval']}")
+                        sys_log.append(f"System Require Approval has been updated to: {sys.root_element.require_approval}")
                     if 'System Created' in new_system_info and new_system_info['System Created']:
                         sys.root_element.created = new_system_info['System Created']
                         hasSystemUpdated = True
-                        sys_log.append(f"System Created has been updated to: {new_system_info['System Created']}")
+                        sys_log.append(f"System Created has been updated to: {sys.root_element.created}")
                     if 'System Updated' in new_system_info and new_system_info['System Updated']:
                         sys.root_element.updated = new_system_info['System Updated']
                         hasSystemUpdated = True
-                        sys_log.append(f"System Private has been updated to: {new_system_info['System Private']}")
+                        sys_log.append(f"System Private has been updated to: {sys.root_element.updated}")
                     if 'System OSCAL Version' in new_system_info and new_system_info['System OSCAL Version']:
                         sys.root_element.oscal_version = new_system_info['System OSCAL Version']
                         hasSystemUpdated = True
-                        sys_log.append(f"System Private has been updated to: {new_system_info['System Private']}")
+                        sys_log.append(f"System Private has been updated to: {sys.root_element.oscal_version}")
                     if 'System Component Type' in new_system_info and new_system_info['System Component Type']:
-                        sys.root_element.oscal_version = new_system_info['System Component Type']
+                        sys.root_element.component_type = new_system_info['System Component Type']
                         hasSystemUpdated = True
-                        sys_log.append(f"System Private has been updated to: {new_system_info['System Private']}")
+                        sys_log.append(f"System Private has been updated to: {sys.root_element.component_type}")
                     if 'System Component State' in new_system_info and new_system_info['System Component State']:
-                        sys.root_element.oscal_version = new_system_info['System Component State']
+                        sys.root_element.component_state = new_system_info['System Component State']
                         hasSystemUpdated = True
-                        sys_log.append(f"System Private has been updated to: {new_system_info['System Private']}")
+                        sys_log.append(f"System Private has been updated to: {sys.root_element.component_state}")
 
                     # if System has been updated at all, document file as it's import record
                     if hasSystemUpdated:
                         sys.import_record = file_import_record
-                        print("SYSTEM HAS BEEN UPDATED!~")
-                        sys_log.append(f"System Import_Record has been updated to: {file_import_record}")
+                        sys_log.append(f"System Import_Record has been updated to: {sys.import_record.name}")
                     if not hasSystemUpdated and not hasPoamUpdated:
                         sys_log.append(f"Nothing has been updated on this system: {sys.root_element.name}")
                     sys_successful = Project.objects.filter(id=proj.id).exists()
