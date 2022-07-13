@@ -50,6 +50,22 @@
                 </div>
             </div>
         {% endif %}
+
+        {% if system_logs|length > 0 %}
+            <div class="col-md-3 portfolio-org-col ">
+                <h2>Log of Imports</h2>
+            </div>
+            <div class="col-md-9 portfolio-org-col ">
+                <div class="well">
+                    {% for system in system_logs %}
+                        <p>{{system.name}}</p>
+                        {% for line in system.log %}
+                            <p>&emsp;{{line}}</p>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
     </div>
 </div>
 
