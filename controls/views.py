@@ -3899,12 +3899,16 @@ def validate_field(validation_type, value):
                 return date
             except:
                 try:
-                    date = datetime.strptime(value, '%m-%d-%Y %H:%M:%S %p').replace(tzinfo = timezone.utc)
+                    date = datetime.strptime(value, '%m/%d/%Y').replace(tzinfo = timezone.utc)
                     return date
                 except:
-                    return {
-                        validation_type: "Invalid Date format, please use mm/dd/yyyy",
-                    }
+                    try:
+                        date = datetime.strptime(value, '%m-%d-%Y %H:%M:%S %p').replace(tzinfo = timezone.utc)
+                        return date
+                    except:
+                        return {
+                            validation_type: "Invalid Date format, please use mm/dd/yyyy",
+                        }
         else:
             return None
     if validation_type == "System OSCAL Version":
@@ -4075,7 +4079,6 @@ def system_import(request):
                         sys_log.append("Creating a new System and Project")
                     
                     # Check if POAM already exists within System
-                    print("POAMs!!~")
                     if 'POAM ID' in new_system_info and new_system_info['POAM ID']:
                         poamExists = Poam.objects.filter(poam_id=new_system_info["POAM ID"]).first()
                         if poamExists:
@@ -4126,7 +4129,6 @@ def system_import(request):
                                     sys_log.append(f"POAM Import Record has been updated to: {file_import_record.name}")
                                 poamStatement.save()
                                 poamExists.save()
-                                print("Updated POAM with new values")
                         else:
                             # Create a new POAM statement object, then a POAM object
                             poam_statement = Statement.objects.create(
@@ -4226,14 +4228,15 @@ def system_import(request):
                     sys.save()
                     if(sys_successful):
                         systems_imported_list.append(sys)
+                    system_logs.append(
+                        {
+                            "name": sys.root_element.name, 
+                            "log": sys_log
+                        }
+                    )
                 if faulty_system[sys_name]:
                     systems_not_imported_list.append(faulty_system)
-                system_logs.append(
-                    {
-                        "name": sys.root_element.name, 
-                        "log": sys_log
-                    }
-                )
+                
 
         if(csv_pattern.match(file_name)):
             # CSV FILE
@@ -4301,7 +4304,6 @@ def system_import(request):
                         systems_imported_list.append(new_system)
                 else:
                     systems_not_imported_list.append(faulty_system)
-            print('systems with errors: ', systems_not_imported_list)
     context = {
         "systems_imported_list": systems_imported_list,
         "systems_not_imported_list": systems_not_imported_list,
