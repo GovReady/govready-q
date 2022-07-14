@@ -1,33 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.10.1.2-dev (June 29, 2022)
------------------------------
-
-**Developer changes**
-
-* Remove Opera from test options.
-
-**Bug fixes**
-
-* Upgrade to Django 3.2.14 to fix Django vulnerability.
-
-v0.10.1.1-dev (June 29, 2022)
------------------------------
-
-**Bug fixes**
-
-* Hot patch to fix OSCAL SSP generation by making sure security_sensitivity_level has value.
-
-v0.10.1-dev (June 28, 2022)
----------------------------
-
-**Security fixes**
-
-* Upgrade npm modules to address multiple vulnerabilities.
-
-
-v0.10.0 (June 24, 2022)
+v0.10.0 (July 13, 2022)
 -----------------------
 
 Welcome to GovReady-q v0.10.0 "Aspen".
@@ -110,6 +84,7 @@ and provides a solid foundation for even more exciting innovations to come.
 * Add a large set of sample components (150+) generated from STIGs.
 * Detect Apple ARM platform (e.g. 'M1 chip') and use alternate backend Dockerfile with Chromium install commented out.
 * Added SystemEvent object in controls to track system events.
+* Remove Opera from test options.
 
 **Bug fixes**
 
@@ -120,11 +95,15 @@ and provides a solid foundation for even more exciting innovations to come.
 * Assign owners to default components (elements) created during install first_run script.
 * Correctly display POA&M forms with left-side menu.
 * Refactor and OIDC authentication for proper testing of admin and not admin roles.
+* Upgrade to Django 3.2.14 to fix Django vulnerability.
+* Hot patch to fix OSCAL SSP generation by making sure security_sensitivity_level has value.
+* Remove edit action information from proposed component control statements.
 
 **Security fixes**
 
 * Upgrade npm modules to address multiple vulnerabilities.
 * Upgrade Python libraries to address multiple vulnerabilities.
+
 
 v0.9.13 (January 23, 2022)
 --------------------------
