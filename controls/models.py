@@ -46,6 +46,7 @@ PHONE_NUMBER_REGEX = RegexValidator(regex=r"^\+?1?\d{8,15}$")
 class ImportRecord(BaseModel):
     name = models.CharField(max_length=100, help_text="File name of the import", unique=False, blank=True, null=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier for this Import Record.")
+    comment = models.TextField(help_text="Comment for this import record", unique=False, blank=True, null=True)
 
     def get_components_statements(self):
         components = Element.objects.filter(import_record=self)
@@ -55,7 +56,7 @@ class ImportRecord(BaseModel):
             component_statements[component] = Statement.objects.filter(producer_element=component)
 
         return component_statements
-
+    
 
 STATEMENT_SYNCHED = 'synched'
 STATEMENT_NOT_SYNCHED = 'not_synched'
@@ -87,8 +88,8 @@ class Statement(auto_prefetch.Model):
     consumer_element = auto_prefetch.ForeignKey('Element', related_name='statements_consumed', on_delete=models.CASCADE, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
-    import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_statements", on_delete=models.CASCADE,
-                                      unique=False, blank=True, null=True, help_text="The Import Record which created this Statement.")
+    import_record = models.ManyToManyField(ImportRecord, related_name="import_record_statements", 
+                                      unique=False, blank=True, help_text="The Import Record which created this Statement.")
     change_log = models.JSONField(blank=True, null=True, help_text="JSON object representing changes to the statement")
     history = HistoricalRecords(cascade_delete_history=True)
 
@@ -106,6 +107,14 @@ class Statement(auto_prefetch.Model):
     
     def save(self, *args, **kwargs):
         return super(Statement, self).save(*args, **kwargs)
+
+    def save_without_historical_record(self, *args, **kwargs):
+        self.skip_history_when_saving = True
+        try:
+            ret = self.save(*args, **kwargs)
+        finally:
+            del self.skip_history_when_saving
+        return ret
 
     @cached_property
     def producer_element_name(self):
@@ -661,8 +670,9 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
     info = models.JSONField(blank=True, default=dict, help_text="JSON object representing additional system information")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
-    import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_systems", on_delete=models.CASCADE,
-                                        unique=False, blank=True, null=True, help_text="The Import Record which created this System.")
+    import_record = models.ManyToManyField(ImportRecord, related_name="import_record_systems",
+                                        unique=False, blank=True, help_text="The Import Record which created this System.")
+    history = HistoricalRecords(cascade_delete_history=True)
     # Notes
     # Retrieve system implementation statements
     #   system = System.objects.get(pk=2)
@@ -683,6 +693,14 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
 
     def save(self, *args, **kwargs):
         return super(System, self).save(*args, **kwargs)
+
+    def save_without_historical_record(self, *args, **kwargs):
+        self.skip_history_when_saving = True
+        try:
+            ret = self.save(*args, **kwargs)
+        finally:
+            del self.skip_history_when_saving
+        return ret
 
     # @property
     # def statements_consumed(self):
@@ -1161,7 +1179,9 @@ class Poam(BaseModel):
                                             help_text="The current or modified risk rating of the weakness.")
     poam_group = models.CharField(max_length=50, unique=False, blank=True, null=True,
                                   help_text="A name to collect related POA&Ms together.")
-
+    import_record = models.ManyToManyField(ImportRecord, related_name="import_record_poam", 
+                                      unique=False, blank=True, help_text="The Import Record which created this Poam.")
+    history = HistoricalRecords(cascade_delete_history=True)
     # spec = JSONField(help_text="A load_modules ModuleRepository spec.", load_kwargs={'object_pairs_hook': OrderedDict})
     # Spec will hold additional values, such as: POC, resources_required, vendor_dependency
 
@@ -1178,7 +1198,15 @@ class Poam(BaseModel):
     
     def save(self, *args, **kwargs):
         return super(Poam, self).save(*args, **kwargs)
-        
+
+    def save_without_historical_record(self, *args, **kwargs):
+        self.skip_history_when_saving = True
+        try:
+            ret = self.save(*args, **kwargs)
+        finally:
+            import ipdb; ipdb.set_trace()
+            del self.skip_history_when_saving
+        return ret    
     # TODO:
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
@@ -1238,4 +1266,3 @@ class SystemAssessmentResult(auto_prefetch.Model, BaseModel):
     def __repr__(self):
         # For debugging.
         return "<SystemAssesmentResult %s id=%d>" % (self.system, self.id)
-

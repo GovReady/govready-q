@@ -170,7 +170,7 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         project.portfolio = portfolio
 
         # Save and add to folder
-        project.save()
+        project.save_without_historical_record()
         project.set_root_task(appver.modules.get(module_name="app"), user)
         # Update default name to be unique by using project.id
         project.root_task.title_override = project.title + " " + str(project.id)
@@ -200,7 +200,7 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         element.save()
         # Create system
         system = System(root_element=element)
-        system.save()
+        system.save_without_historical_record()
         system.add_event("SYS", f"Created new System in GovReady based on template '{appver.catalog_metadata['title']}'.")
         system.info == {
             "created_from_template": project.title,
@@ -232,10 +232,10 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             "score_4": "~",
             "score_5": "~",
         }
-        system.save()
+        system.save_without_historical_record()
         # Link system to project
         project.system = system
-        project.save()
+        project.save_without_historical_record()
         # Log start app / new project
         logger.info(
             event="new_element new_system",

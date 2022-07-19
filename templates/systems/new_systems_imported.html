@@ -19,8 +19,13 @@
         <div class="col-md-12">
             <h2>Results of System Import</h2>
             <p>Results of your recent importing of one or more systems</p>
+            <div style="float:right;">
+                <form method="POST" action="{% url 'revert_system_import' %}" id="revert_system_import">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" name="import_uuid" value={{import_uuid}}>Undo Import</button>
+                </form>
+            </div>
         </div>
-
         <div class="col-md-3 portfolio-org-col ">
             <h2>Successful Imports</h2>
             <p>List of systems successfully imported.</p>

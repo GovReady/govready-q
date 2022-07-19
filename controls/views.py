@@ -4047,8 +4047,10 @@ def system_import(request):
                 faulty_system = {}
                 sys_name = ''
                 sys_log = []
+                wasSystemCreated = False
                 hasSystemUpdated = False
                 hasPoamUpdated = False
+                hasPoamStmtUpdated = False
 
                 if 'System Name' in system:
                     sys_name = system['System Name']
@@ -4075,7 +4077,7 @@ def system_import(request):
                     else:
                         new_system_msg = f"System imported from uploaded XLSX file"
                         proj, sys = __create_new_system(request, new_system_info['System Name'], "", new_system_msg, file_import_record)
-                        hasSystemUpdated = True
+                        wasSystemCreated = True
                         sys_log.append("Creating a new System and Project")
                     
                     # Check if POAM already exists within System
@@ -4087,24 +4089,24 @@ def system_import(request):
                             poamStatement = Statement.objects.get(id=poamExists.statement.id)
                             if poamStatement.body != new_system_info["Detailed Weakness Description"]:
                                 poamStatement.body = new_system_info["Detailed Weakness Description"]
-                                hasPoamUpdated = True
-                                sys_log.append(f"POAM Body has been updated to: {poamExists.statement.body}")
+                                hasPoamStmtUpdated = True
+                                sys_log.append(f"POAM Body has been updated to: {poamStatement.body}")
                             if poamStatement.statement_type != StatementTypeEnum.POAM.name:
                                 poamStatement.statement_type = StatementTypeEnum.POAM.name
-                                hasPoamUpdated = True
-                                sys_log.append(f"POAM Type has been updated to: {poamExists.statement.statement_type}")
+                                hasPoamStmtUpdated = True
+                                sys_log.append(f"POAM Type has been updated to: {poamStatement.statement_type}")
                             if poamStatement.consumer_element != sys.root_element:
                                 poamStatement.consumer_element = sys.root_element
-                                hasPoamUpdated = True
-                                sys_log.append(f"POAM Consumer_Element has been updated to: {poamExists.statement.consumer_element}")
+                                hasPoamStmtUpdated = True
+                                sys_log.append(f"POAM Consumer_Element has been updated to: {poamStatement.consumer_element}")
                             if poamStatement.status != new_system_info["Status"]:
                                 poamStatement.status = new_system_info["Status"]
-                                hasPoamUpdated = True
-                                sys_log.append(f"POAM Status has been updated to: {poamExists.statement.status}")
+                                hasPoamStmtUpdated = True
+                                sys_log.append(f"POAM Status has been updated to: {poamStatement.status}")
                             if poamStatement.created != new_system_info["Create Date"]:
                                 poamStatement.created = new_system_info["Create Date"]
-                                hasPoamUpdated = True
-                                sys_log.append(f"POAM Created has been updated to: {poamExists.statement.created}")
+                                hasPoamStmtUpdated = True
+                                sys_log.append(f"POAM Created has been updated to: {poamStatement.created}")
                             if poamExists.controls != new_system_info["Controls"]:
                                 poamExists.controls = new_system_info["Controls"]
                                 hasPoamUpdated = True
@@ -4122,13 +4124,15 @@ def system_import(request):
                                 hasPoamUpdated = True
                                 sys_log.append(f"POAM Milestones has been updated to: {poamExists.milestones}")
                             # Check if POAM has been updated at all, if it has update the updated field to statement and document import_record with this file
-                            if hasPoamUpdated:
+                            if hasPoamUpdated or hasPoamStmtUpdated:
                                 poamStatement.updated = datetime.now()
-                                if poamStatement.import_record != file_import_record:
-                                    poamStatement.import_record = file_import_record
-                                    sys_log.append(f"POAM Import Record has been updated to: {file_import_record.name}")
+                                poamStatement.import_record.add(file_import_record)
+                                poamExists.import_record.add(file_import_record)
+                                sys_log.append(f"POAM Import Record has been updated to: {file_import_record.name}")
                                 poamStatement.save()
                                 poamExists.save()
+                            if not hasPoamUpdated:
+                                sys_log.append(f"POAM did not update.")
                         else:
                             # Create a new POAM statement object, then a POAM object
                             poam_statement = Statement.objects.create(
@@ -4139,11 +4143,12 @@ def system_import(request):
                                 consumer_element = sys.root_element,
                                 status = new_system_info["Status"],
                                 created = new_system_info["Create Date"],
-                                updated = datetime.now(),
-                                import_record = file_import_record,
+                                updated = datetime.now()
                             )
+                            poam_statement.import_record.add(file_import_record)
                             poam_statement.created = new_system_info["Create Date"]
-                            poam_statement.save()
+                            poam_statement.save_without_historical_record()
+                            
                             new_poam = Poam.objects.create(
                                 statement = poam_statement,
                                 poam_id = new_system_info["POAM ID"],
@@ -4163,15 +4168,18 @@ def system_import(request):
                     
                     # Insert everything into System's info dictionary
                     for key in new_system_info:
-                        if key == "CSAM ID":
+                        if key == "CSAM ID" and sys.info['other_id'] != new_system_info[key]:
                                 sys.info["other_id"] = new_system_info[key]
-                                sys_log.append("Setting CSAM ID to System's info")
-                        if key in sys.info and sys.info[key] != new_system_info[key]:
+                                hasSystemUpdated = True
+                                sys_log.append("Setting CSAM ID to System info as other_id")
+                        if key in sys.info and sys.info[key] != new_system_info[key].strftime("%m/%d/%Y"):
                             if "date" in key.lower():
                                 sys.info[key] = new_system_info[key].strftime('%m/%d/%Y')
+                                hasSystemUpdated = True
                                 sys_log.append(f"Updated {key} = {new_system_info[key].strftime('%m/%d/%Y')} into System Info Log")
                             else:
                                 sys.info[key] = new_system_info[key]
+                                hasSystemUpdated = True
                                 sys_log.append(f"Updated {key} = {new_system_info[key]} into System Info Log")
                         if "date" in key.lower() and key not in sys.info and new_system_info[key]:
                             if new_system_info[key]:
@@ -4180,7 +4188,7 @@ def system_import(request):
                             else:
                                 sys.info[key] = ""
                                 sys_log.append(f"Added {key} = '' into System Info Log")
-                    sys.save()
+                    sys.save_without_historical_record()
                     # Assigning properties as dictated in the excel document to the system
                     
                     # Setting system information 
@@ -4219,13 +4227,17 @@ def system_import(request):
                         sys_log.append(f"System Private has been updated to: {sys.root_element.component_state}")
 
                     # if System has been updated at all, document file as it's import record
-                    if hasSystemUpdated:
-                        sys.import_record = file_import_record
-                        sys_log.append(f"System Import_Record has been updated to: {sys.import_record.name}")
+                    if wasSystemCreated:
+                        sys.import_record.add(file_import_record)
+                        sys_log.append(f"System created using this import_record: {file_import_record.name}")
+                        sys.save_without_historical_record()
+                    if not wasSystemCreated and hasSystemUpdated:
+                        sys.import_record.add(file_import_record)
+                        sys_log.append(f"System Import_Record has been updated to: {file_import_record.name}")
+                        sys.save()
                     if not hasSystemUpdated and not hasPoamUpdated:
                         sys_log.append(f"Nothing has been updated on this system: {sys.root_element.name}")
                     sys_successful = Project.objects.filter(id=proj.id).exists()
-                    sys.save()
                     if(sys_successful):
                         systems_imported_list.append(sys)
                     system_logs.append(
@@ -4236,8 +4248,7 @@ def system_import(request):
                     )
                 if faulty_system[sys_name]:
                     systems_not_imported_list.append(faulty_system)
-                
-
+         
         if(csv_pattern.match(file_name)):
             # CSV FILE
             csv_systems = file_content.split('\n')
@@ -4304,7 +4315,9 @@ def system_import(request):
                         systems_imported_list.append(new_system)
                 else:
                     systems_not_imported_list.append(faulty_system)
+
     context = {
+        "import_uuid": str(file_import_record.uuid),
         "systems_imported_list": systems_imported_list,
         "systems_not_imported_list": systems_not_imported_list,
         "updated_systems_list": updated_systems_list,
@@ -4312,6 +4325,57 @@ def system_import(request):
         "system_logs": system_logs,
     }
     return render(request, "systems/new_systems_imported.html", context)
+
+def undo_import(object, import_record_uuid):
+    import types
+    type_system = type(System.objects.first())
+
+    for obj in type(object).objects.filter(import_record__uuid=import_record_uuid):
+        if obj.history.all().count() == 1:
+            # project was just created from the import, we have to delete now
+            # If system also delete system element
+            if type(object) == type_system:
+                element = Element.objects.get(id=obj.root_element.id)
+                element.delete()
+            obj.delete()
+        elif obj.history.all().count() > 1:
+            prev_obj = obj.history.first().prev_record
+            # project was updated, so we must revert to the previous state
+            for key, value in obj.__dict__.items():
+                if not isinstance(value, types.FunctionType or types.MethodType) and not key.startswith('_'):
+                    # if getattr(obj, key) != getattr(prev_obj, key):
+                    print(key, type(key))
+                    setattr(obj, key, getattr(prev_obj, key))
+            obj.save()
+        else:
+            pass
+
+def revert_system_import(request):
+    """
+    Reverting system import
+    """
+
+    # Grab import record uuid
+    # cycle through all records of Project/System/Poam/etc that has an import record
+    # revert to previous historical state
+    if request.method == 'POST':
+        data = request.POST
+        import_uuid = data.get('import_uuid')
+        # Cycle through all import elements
+        # if element was already in the system and no change
+            # wouldnt have import_record, but we also wouldn't need to revert anything
+        # if there was an update on the element, then element would have an import record with file_name and uuid
+        # if element was created, then we need to delete
+            # how do we tell which element was created from the system import
+            # has IMPORT_RECORD
+        
+        # TODO: FALCON
+        undo_import(Project.objects.first(), import_uuid)
+        undo_import(System.objects.first(), import_uuid)
+        undo_import(Statement.objects.first(), import_uuid)
+        undo_import(Poam.objects.first(), import_uuid)
+
+        return HttpResponseRedirect("/projects")
 
 @login_required
 def project_import(request, project_id):
@@ -4835,11 +4899,11 @@ def __create_new_system(request, new_system_name, new_system_description="Missin
         "score_4": "~",
         "score_5": "~",
     }
-    project.import_record = import_record
-    new_system.import_record = import_record
+    project.import_record.add(import_record)
+    new_system.import_record.add(import_record)
     new_system.add_event("SYS", new_system_msg)
-    new_system.save()
-    project.save()
+    new_system.save_without_historical_record()
+    project.save_without_historical_record()    
 
     # Change name of new system by changing name of new system's root element
     # Use the new_system_name for new name and numbered appendix to avoid name collisions
