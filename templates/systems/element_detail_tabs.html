@@ -21,22 +21,6 @@
     margin-top: 20px;
   }
 
-/*
-  #above-tab-content {
-    max-width: 1250px;
-    margin: auto;
-  }
-
-  #component-detail-content {
-    border: 0px solid green;
-    max-width: 1250px;
-  }
-
-
-  .container { width: 90%; }
-
-*/
-
   .control-text {
     white-space: pre-wrap;
     font-size: 11pt;
@@ -80,30 +64,21 @@
 
   .control-id-text { font-weight: bold; }
 
-
   /* added */
-.component-status-alert { border: 1px solid #ffb523;background-color: #ffffe2; text-align:center; padding:5px; }
-#system-owner-proposal-steps { margin-top:2em; margin-bottom:3em; max-width:1000px;}
-#system-owner-proposal-steps h4 { font-size: 1em; font-family: 'Lato', sans-serif; font-weight:bold; margin:.3em 0 .5em 0; padding:0;}
-#system-owner-proposal-steps .dot { width:50px; height:50px;}
-#system-owner-proposal-steps button { margin:2em 2em 0 0;}
-#system-owner-proposal-steps .step-box { margin-left:10px; padding-top:10px; }
+  .component-status-alert { border: 1px solid #ffb523;background-color: #ffffe2; text-align:center; padding:5px; }
+  #system-owner-proposal-steps { margin-top:2em; margin-bottom:3em; max-width:1000px;}
+  #system-owner-proposal-steps h4 { font-size: 1em; font-family: 'Lato', sans-serif; font-weight:bold; margin:.3em 0 .5em 0; padding:0;}
+  #system-owner-proposal-steps .dot { width:50px; height:50px;}
+  #system-owner-proposal-steps button { margin:2em 2em 0 0;}
+  #system-owner-proposal-steps .step-box { margin-left:10px; padding-top:10px; }
 
-p.step-box-content { font-size:.9em; }
+  p.step-box-content { font-size:.9em; }
 
-#component-detail-content { border:0;}
-.list-group-item { padding:0 0 15px 0;}
-
-
-
-
+  #component-detail-content { border:0;}
+  .list-group-item { padding:0 0 15px 0;}
 
   </style>
   {% endblock %}
-
-  <!-- action buttons included from project-base.html -->
-
-  <!-- authoring_tool_enabled included from project-base.html -->
 
   {% block body_content %}
 
@@ -119,7 +94,6 @@ p.step-box-content { font-size:.9em; }
     </div>
   {% endif %}
 
-
     <div class="systems-top">
         <div class="col-sm-10 ">
           <h2>{{ element.name }} System Component</h2>
@@ -132,10 +106,7 @@ p.step-box-content { font-size:.9em; }
         <div class="col-sm-2">
           <div id="btn-edit-title"></div>
         </div>
-
     </div>
-
-
 
     <div id="component-detail-content">
       <!-- Tab panel: component_controls -->
@@ -163,11 +134,7 @@ p.step-box-content { font-size:.9em; }
             </div>
           </div>
 
-
-
-
           <div id="system-owner-proposal-steps"></div>
-
 
           <form  style="display:none;" id="send_request_message" name="send_request_message" method="post" action="{% url 'system_element' system_id=system.id element_id=element.id %}">
             {% csrf_token %}
@@ -175,16 +142,21 @@ p.step-box-content { font-size:.9em; }
             <input type="hidden" id="req_message" name="req_message" value="" />
           </form>
 
-
-
-
           <div id="control-description" class="">
-            <h3>{{ element.name }} contributes {{ impl_smts|length }} statements to controls</h3>
+            {% if proposal %}
+              <h3>{{ element.name }} will contribute {{ impl_smts|length }} statements to system controls when approved</h3>
+            {% else %}
+              <h3>{{ element.name }} contributes {{ impl_smts|length }} statements to system controls</h3>
+            {% endif %}
           </div>
           <div class="row statement-column-headings" style="">
             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Control</div>
             <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">Statement</div>
+            {% if proposal %}
+              <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span class="pull-left">Remarks</span></div>
+            {% else %}
               <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span class="pull-right">Action</span></div>
+            {% endif %}
           </div>
           <div id="smt-list" class="" style="width: 100%">
             <!-- Loop through existing component-control statements -->
@@ -206,17 +178,24 @@ p.step-box-content { font-size:.9em; }
                         </div>
                         <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 statement-text-block">{{ smt.body }}</div>
                         <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 remark-text-block">{% spaceless %}
-                            {% if smt.prototype_synched == 'not_synched' %}
+                          {% if proposal %}
+
+                            <span style="font-size: 9pt; color: #999;cursor: pointer;" onclick="alert('A component statement can be edited only after the component is approved for the system.');return false;">Editable after approval</span>
+                          {% else %}
+                            {% if smt.prototype_synched == 'not_synched'%}
                                 <span id="diff_alert_{{ forloop.counter }}_notice">
-                                    <span href="#diff_{{ forloop.counter }}" class="" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;cursor: pointer;" onclick="alert('Your statement and component\'s reference statement have diverged.\n\nEdit statement for details.');return false;"><span class="glyphicon glyphicon-alert"></span> Differs from reference</span>
+                                    <span href="#diff_{{ forloop.counter }}" class="" style="font-size: 9pt; color: firebrick;cursor: pointer;" onclick="alert('Your statement and component\'s reference statement have diverged.\n\nEdit statement for details.');return false;"><span class="glyphicon glyphicon-alert"></span> Differs from reference</span>
                                 </span>
                             {% elif smt.prototype_synched == 'orphaned' %}
                                 <span id="diff_alert_{{ forloop.counter }}">
-                                    <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span class="glyphicon glyphicon-alert"></span> No related statement for component in library</a>
+                                    <a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="normal; font-size: 9pt; color: firebrick;"><span class="glyphicon glyphicon-alert"></span> No related statement for component in library</a>
                                 </span>
                             {% endif %}
+                          {% endif %}
                           <span class="pull-right">
+                            {% if not proposal %}
                             <a role="button" class="glyphicon glyphicon-pencil" style="color: #aaa;" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body"onclick="$('#document-{{ forloop.counter }}-title').css('background-color','#f4f5f8');$('#document-{{ forloop.counter }}-title').css('display','none');"></a>
+                            {% endif %}
                           </span>
                           {% if smt.remarks %}
                             <details>
@@ -346,9 +325,11 @@ p.step-box-content { font-size:.9em; }
             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">&nbsp;</div>
             <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
               <!-- Add component statement-->
+              {% if not proposal %}
               <div>
                   <button type="submit" id="new_component_statement" class="btn btn-xs btn-success" onclick="add_smt()">Add component statement</button>
               </div>
+              {% endif %}
             </div>
           </div>
 

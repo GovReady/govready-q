@@ -101,7 +101,6 @@ class SeleniumTest(StaticLiveServerTestCase):
         option_map = {
             "chrome": (selenium.webdriver.ChromeOptions, DesiredCapabilities.CHROME),
             "firefox": (selenium.webdriver.FirefoxOptions, DesiredCapabilities.FIREFOX),
-            "opera": (selenium.webdriver.ChromeOptions, DesiredCapabilities.OPERA),
         }
         option = option_map[SELENIUM_BROWSER]
         options = option[0]()
