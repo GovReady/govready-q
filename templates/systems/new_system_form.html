@@ -108,7 +108,6 @@
                             <p>&nbsp;</p>
                             <p><button id="import_system_submit" type="submit" id="new-system-button" class="btn btn-success">Add &raquo;</button></p>
                             <!-- <inputx id="import_system_submit" class="btn btn-success btn-submit btn-lg" type="submit" value="Import" /> -->
-                            <img id="import_loading_spinner" aria-label="Loading Spinner"src="{% static "img/icons/spinner.gif" %}" />
                         </div>
                     </div>
                 </form>
@@ -119,6 +118,7 @@
             <button class="btn btn-primary" type="button">
                 <a style="color: #fff; text-decoration: none;" href="{% url 'xlsx_system_template' %}">XLSX Template</a>
             </button>
+            <img id="import_loading_spinner" style="width: 100px;" aria-label="Loading Spinner"src="{% static "img/icons/spinner.gif" %}" />
         </div>
         
     </div>
