@@ -23,9 +23,27 @@
             <p>Create a system in GovReady-Q to track a system that undergoing compliance.</p>
         </div>
 
+       <div class="col-md-3 portfolio-org-col ">
+            <h2>Enter System Name</h2>
+            <p>Create a new or existing IT System for monitoring and compliance.</p>
+        </div>
+        <div class="col-md-9 portfolio-org-col ">
+            <div class="well">
+                <form method="get">
+                    {% csrf_token %}
+                    <input type=hidden name=action value=newportfolio>
+                    <div class="form-group">
+                        <label class="control-label" for="id_title">System Name</label>
+                        <input id="new_system_name" type="text" name="s" maxlength="255" class="form-control" placeholder="e.g., Enterprise Financial System" title="The official name of the syste" required>
+                        <!-- <div class="help-block">Official name of system</div> -->
+                    </div>
+                    <p><button type="submit" id="new_system_button" class="btn btn-success">Add &raquo;</button></p>
+                </form>
+            </div>
+        </div>
 
         <div class="col-md-3 portfolio-org-col ">
-            <h2>Create System from Template</h2>
+            <h2>Create from Template</h2>
             <p>Use a template to start a new system.</p>
         </div>
         <div class="col-md-9 portfolio-org-col ">
@@ -73,47 +91,36 @@
             </div>
         </div>
 
-
-       <div class="col-md-3 portfolio-org-col ">
-            <h2>Enter System Name</h2>
-            <p>Create a new or existing IT System for monitoring and compliance.</p>
+        <div class="col-md-3 portfolio-org-col">
+            <h2>Upload (Excel or OSCAL)</h2>
+            <p>Upload an Excel or OSCAL file containing system information.</p>
         </div>
-
-        <div class="col-md-9 portfolio-org-col ">
+        <div class="col-md-9 drag-and-drop-col"> 
             <div class="well">
-                <form method="get">
+                <form id="system_import_form" action="{% url 'system_import' %}" onsubmit="show_spinner();" role="form" method="POST">
                     {% csrf_token %}
-                    <input type=hidden name=action value=newportfolio>
-                    <div class="form-group">
-                        <label class="control-label" for="id_title">System Name</label>
-                        <input id="new_system_name" type="text" name="s" maxlength="255" class="form-control" placeholder="e.g., Enterprise Financial System" title="The official name of the syste" required>
-                        <!-- <div class="help-block">Official name of system</div> -->
+                    <div class="body">
+                        {% include "drag-n-drop.html" %}
+                        <div class="hidden">{{ import_system_form.file }}</div>
+                        <div class="hidden">{{ import_system_form.file_content }}</div>
+                        <div class="">{{ import_system_form.file_name }}</div>
+                        <div class="footer">
+                            <p>&nbsp;</p>
+                            <p><button id="import_system_submit" type="submit" id="new-system-button" class="btn btn-success">Add &raquo;</button></p>
+                            <!-- <inputx id="import_system_submit" class="btn btn-success btn-submit btn-lg" type="submit" value="Import" /> -->
+                        </div>
                     </div>
-                    <p><button type="submit" id="new_system_button" class="btn btn-success">Add &raquo;</button></p>
                 </form>
             </div>
+            <button class="btn btn-primary" type="button">
+                <a style="color: #fff; text-decoration: none;" href="{% url 'csv_system_template' %}"> CSV Template</a>
+            </button>
+            <button class="btn btn-primary" type="button">
+                <a style="color: #fff; text-decoration: none;" href="{% url 'xlsx_system_template' %}">XLSX Template</a>
+            </button>
+            <img id="import_loading_spinner" style="width: 100px;" aria-label="Loading Spinner"src="{% static "img/icons/spinner.gif" %}" />
         </div>
-
-        <div class="col-md-3 portfolio-org-col hidden">
-            <h2>By URL</h2>
-            <p>Add a new or existing IT System for monitoring and compliance.</p>
-        </div>
-        <div class="col-md-9 portfolio-org-col hidden">
-            <div class="well">
-                <form method="get">
-                    {% csrf_token %}
-                    <input type=hidden name=action value=newportfolio>
-                    <div class="form-group">
-                        <label class="control-label" for="id_title">URL of System</label>
-                        <input type="text" name="s" maxlength="255" class="form-control" placeholder="e.g., https://finsys.example.com" title="The official name of the syste" required id="id_title">
-                        <!-- <div class="help-block">Official name of system</div> -->
-                    </div>
-                    <p><button type="submit" id="new-system-button" class="btn btn-success">Add &raquo;</button></p>
-                </form>
-            </div>
-        </div> 
-
-
+        
     </div>
 </div>
 
@@ -121,9 +128,105 @@
 {% endblock %}
 
 {% block scripts %}
-    {{ block.super }}
-<script>
+{{ block.super }}
+    
 
-</script>
+    <script>
 
+        $("#import_loading_spinner").hide();
+
+        function fillFileContent(file) {
+            var fileInput = document.getElementById('file_content')
+      
+            var filePath = fileInput.value;
+            var allowedExtensions = /(\.json)|(\.xlsx)|(\.csv)$/i;
+            var jsonExtension = /(\.json)$/i;
+            var csvExtension = /(\.csv)$/i;
+            var excelExtension = /(\.xlsx)$/i;
+
+            if (!allowedExtensions.exec(filePath)) {
+              fileInput.value = '';
+              show_modal_error("Wrong File Type Error", "Please only provide either a json file or xlsx file!");
+            } else {
+              filecontents = fileInput.files[0];
+              if (filecontents.size < 5000000) {
+                $('#{{import_system_form.file_name.auto_id}}').val(filecontents.name);
+                var reader = new FileReader();
+
+                if(excelExtension.exec(filePath)) {
+                    
+                    reader.onload = function (e) {
+                        var data = e.target.result;
+                        data = new Uint8Array(data);
+
+                        var workbook = XLSX.read(data, {type: 'array'});
+                        var result = {};
+                        
+                        workbook.SheetNames.forEach(function (sheetName) {
+                            var roa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                            /* Work around to get the string representation for dates */
+                            var tempRaw = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {raw:false})
+                            //Reassign any dates as a string
+                            var systems = roa.map((sys, index) => {
+                                sys["System Created"] = tempRaw[index]["System Created"]
+                                sys["System Updated"] = tempRaw[index]["System Updated"]
+                                sys["Create Date"] = tempRaw[index]["Create Date"]
+                                sys["Scheduled Completion Date"] = tempRaw[index]["Scheduled Completion Date"]
+                                sys["Planned Start Date"] = tempRaw[index]["Planned Start Date"]
+                                sys["Actual Start Date"] = tempRaw[index]["Actual Start Date"]
+                                sys["Planned Finish Date"] = tempRaw[index]["Planned Finish Date"]
+                                sys["Actual Finish Date"] = tempRaw[index]["Actual Finish Date"]
+                                sys["Workflow Status Date"] = tempRaw[index]["Workflow Status Date"]
+                                sys["Assigned Date"] = tempRaw[index]["Assigned Date"]
+                                sys["Date % Complete Last Updated:"] = tempRaw[index]["Date % Complete Last Updated:"]
+
+                                return sys;
+                            })
+                            if (systems.length) result[sheetName] = systems;
+                        });
+                        
+                        // see the result, caution: it works after reader event is done.                        
+                        // Replace true and false to True and False, for Python to read it properly
+                        let true_regex = /true/gi;
+                        let false_regex = /false/gi;
+                        
+                        resultString = JSON.stringify(result)
+                        resultString = resultString.replace(true_regex, 'True');
+                        resultString = resultString.replace(false_regex, 'False');
+                        $('#{{import_system_form.file_content.auto_id}}').val(resultString);
+                    };
+                    reader.readAsArrayBuffer(filecontents);
+                } else if (csvExtension.exec(filePath)) {
+                    /*
+                        Reading a CVS file i.e., comma deliminated rows
+                    */
+                    console.log('cvs')
+                    reader.readAsText(filecontents);
+                    
+                    reader.onload = function (e) {
+                        $('#{{import_system_form.file_content.auto_id}}').val(e.target.result);
+                    }
+                    
+                }
+                else {
+                    /*
+                        Default read as a JSON file
+                    */
+                    console.log('is this readfing correctly?')
+                    reader.readAsText(filecontents);
+                    reader.onload = function (e) {
+                        $('#{{import_system_form.file_content.auto_id}}').val(e.target.result);
+                    }
+                }
+                
+              } else {
+                show_modal_error("File is too large", "Maximum size is under 5MBs");
+              }
+            }
+          }
+          
+        function show_spinner() {
+            $("#import_loading_spinner").show();
+        }
+    </script>
 {% endblock %}

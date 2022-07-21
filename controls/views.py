@@ -5,13 +5,14 @@ import pathlib
 import random
 import shutil
 import tempfile
+import ast
 from collections import defaultdict
 from datetime import datetime
 from itertools import groupby
 from pathlib import PurePath
 from urllib.parse import quote, urlunparse
 from uuid import uuid4
-
+import re
 import rtyaml
 import trestle.oscal.component as trestlecomponent
 import trestle.oscal.ssp as trestlessp
@@ -49,7 +50,7 @@ from siteapp.utils.views_helper import project_context, start_app, get_complianc
 from system_settings.models import SystemSettings
 from .forms import ElementEditForm, ElementEditAccessManagementForm
 from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
-from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm, StatementEditForm
+from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm, StatementEditForm, ImportSystemForm, ImportProjectForm
 from .models import *
 from .utilities import *
 from integrations.models import Integration
@@ -855,27 +856,38 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
 
         of["system-security-plan"]["metadata"]['roles'] =  [{"id": auths.get('role', "member").split(';')[0], "title": auths.get('role', "member").split(';')[0].capitalize()  } for user, auths in users]
         of["system-security-plan"]["system-implementation"]['users'] = [{"uuid":user_party_uuid, "title":user.username, "role-ids": [auths.get('role', "member").split(';')[0]]} for user, auths in users]
-        of["system-security-plan"]["system-implementation"]['components'] = [{"uuid":str(comp_ele.uuid),
-                                                                              "title":comp_ele.name,
-                                                                              "description":comp_ele.description,
-                                                                              "status": {"state": comp_ele.component_state},
-                                                                              "type":comp_ele.component_type,
-                                                                              "responsible-roles": [{
-                                                                                "role-id": "asset-owner",
-                                                                                "party-uuids": [user_party_uuid]
-                                                                                }],
-                                                                              "props": [{"name": "tag",
-                                                                                         "ns": "https://govready.com/ns/oscal",
-                                                                                         "value": tag.label} for tag in
-                                                                                        comp_ele.tags.all()]
-                                                                              } for comp_ele in components]# TODO: responsible-roles
-
+        of["system-security-plan"]["system-implementation"]['components'] = [
+            {
+                "uuid":str(comp_ele.uuid),
+                "title":comp_ele.name,
+                "description":comp_ele.description,
+                "status": {
+                    "state": comp_ele.component_state
+                },
+                "type":comp_ele.component_type,
+                "responsible-roles": [
+                    {
+                        "role-id": "asset-owner",
+                        "party-uuids": [user_party_uuid]
+                    }
+                ],
+                "props": [
+                    {
+                        "name": "tag",
+                        "ns": "https://govready.com/ns/oscal",
+                        "value": tag.label
+                    } for tag in comp_ele.tags.all()
+                ]
+            } for comp_ele in components
+        ]
+        # TODO: responsible-roles
+        
         # System characteristics
         # TODO: status remarks, authorization-boundary
         security_body = project.system.get_security_impact_level
-        confidentiality = security_body.get("security_objective_confidentiality", "UNKOWN")
-        integrity = security_body.get("security_objective_integrity", "UNKOWN")
-        availability = security_body.get("security_objective_availability", "UNKOWN")
+        confidentiality = security_body.get("security_objective_confidentiality", "UNKNOWN")
+        integrity = security_body.get("security_objective_integrity", "UNKNOWN")
+        availability = security_body.get("security_objective_availability", "UNKNOWN")
         information_types = [
             {
                 "uuid": str(uuid.uuid4()),
@@ -893,23 +905,33 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
             }
             }
         ]
-        of["system-security-plan"]["system-characteristics"] = {"system-name": self.system.root_element.name,
-                                                                "description": self.system.root_element.description,
-                                                                "system-ids": [{"id": str(self.system.root_element.uuid),# TODO: identifier-type
-                                                                               "identifier-type": "https://ietf.org/rfc/rfc4122"}],
-                                                                "security-sensitivity-level": self.system.get_security_sensitivity_level if self.system.get_security_sensitivity_level else "UNKNOWN",
-                                                                "system-information": {
-                                                                    "information-types": information_types},
-                                                                "security-impact-level": {
-                                                                    "security-objective-confidentiality": confidentiality,
-                                                                    "security-objective-integrity": integrity,
-                                                                    "security-objective-availability": availability
-                                                                }, "status": {
+        
+        of["system-security-plan"]["system-characteristics"] = {
+            "system-name": self.system.root_element.name,
+            "description": self.system.root_element.description,
+            "system-ids": [
+                {
+                    "id": str(self.system.root_element.uuid), # TODO: identifier-type
+                    "identifier-type": "https://ietf.org/rfc/rfc4122"
+                }
+            ],
+            "security-sensitivity-level": self.system.get_security_sensitivity_level if self.system.get_security_sensitivity_level else "UNKNOWN",
+            "system-information": {
+                "information-types": information_types
+            },
+            "security-impact-level": {
+                "security-objective-confidentiality": confidentiality,
+                "security-objective-integrity": integrity,
+                "security-objective-availability": availability
+            }, 
+            "status": {
                 "state": self.system.root_element.component_state,
                 "remarks": ""
-            }, "authorization-boundary": {
+            }, 
+            "authorization-boundary": {
                 "description": "The description of the authorization boundary would go here."
-            }}
+            }
+        }
         try:
             # Create a temporary directory and dump the json_object in there.
             tempdir = tempfile.mkdtemp()
@@ -3575,7 +3597,778 @@ def poam_export(request, system_id, format='xlsx'):
         # User does not have permission to this system
         raise Http404
 
+@login_required
+def system_csv_template(request):
+    import csv
+    # Create the HttpResponse object with the appropriate CSV header
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=system_template.csv'
+    # Create the CSV writer using the HttpResponse as the "file"
+    writer = csv.writer(response)
+    writer.writerow([
+        'System Name', 
+        'System Description', 
+        'System UUID', 
+        'System Private', 
+        'System Require Approval', 
+        'System Created', 
+        'System Updated',
+        'System OSCAL Version',
+        'System Component Type', 
+        'System Component State'
+    ])
+
+    return response
+
+@login_required
+def system_xlsx_template(request):
+    # response = HttpResponse(content_type='application/ms-excel')
+    # response['Content-Disposition'] = 'attachment; filename="system_template.xlsx"'
+    # df = pandas.DataFrame([],column=['system_name', 'system_description'])
+    # print('df: ', df)
+    # df.to_excel('system_template.xlsx', index=False, header=True)
+
+    from openpyxl import Workbook
+    from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
+    from tempfile import NamedTemporaryFile
+
+    wb = Workbook()
+    ws = wb.active
+    # create alignment style
+    wrap_alignment = Alignment(wrap_text=True)
+    ws.title = "Sheet1"
+    system_headers = [
+        {'var_name': 'csam_id', 'name': 'CSAM ID', 'width': 32},
+        {'var_name': 'org', 'name': 'Org', 'width': 32},
+        {'var_name': 'sub_org', 'name': 'Sub Org', 'width': 32},
+        {'var_name': 'system_name', 'name': 'System Name', 'width': 32},
+        {'var_name': 'system_description', 'name': 'System Description', 'width': 32},
+        {'var_name': 'acronym', 'name': 'Acronym', 'width': 32},
+        {'var_name': 'system_category', 'name': 'System Category', 'width': 32},
+        {'var_name': 'system_operational_status', 'name': 'System Operational Status', 'width': 32},
+        {'var_name': 'system_type', 'name': 'System Type', 'width': 32},
+        {'var_name': 'contractor_system', 'name': 'Contractor System', 'width': 32},
+        {'var_name': 'financial_system', 'name': 'Financial System', 'width': 32},
+        {'var_name': 'fisma_reportable', 'name': 'FISMA Reportable', 'width': 32},
+        {'var_name': 'critical_infrastructure', 'name': 'Critical Infrastructure', 'width': 32},
+        {'var_name': 'mission_critical', 'name': 'Mission Critical', 'width': 32},
+        {'var_name': 'system_uuid', 'name': 'System UUID', 'width': 32},
+        {'var_name': 'uui_code', 'name': 'UII Code', 'width': 32},
+        {'var_name': 'investment_name', 'name': 'Investment Name', 'width': 32},
+        {'var_name': 'portfolio', 'name': 'Portfolio', 'width': 32},
+        {'var_name': 'poam_id', 'name': 'POAM ID', 'width': 32},
+        {'var_name': 'poam_sequence', 'name': 'POAM Sequence', 'width': 32},
+        {'var_name': 'poam_title', 'name': 'POAM Title', 'width': 32},
+        {'var_name': 'detailed_weakness_description', 'name': 'Detailed Weakness Description', 'width': 32},
+        {'var_name': 'create_date', 'name': 'Create Date', 'width': 32},
+        {'var_name': 'days_since_creation', 'name': 'Days Since Creation', 'width': 32},
+        {'var_name': 'scheduled_completion_date', 'name': 'Scheduled Completion Date', 'width': 32},
+        {'var_name': 'planned_start_date', 'name': 'Planned Start Date', 'width': 32},
+        {'var_name': 'planned_finish_date', 'name': 'Planned Finish Date', 'width': 32},
+        {'var_name': 'status', 'name': 'status', 'width': 32},
+        {'var_name': 'weakness', 'name': 'weakness', 'width': 32},
+        {'var_name': 'cost', 'name': 'cost', 'width': 32},
+        {'var_name': 'control_risk_severity', 'name': 'Control Risk Severity', 'width': 32},
+        {'var_name': 'user_identified_critically', 'name': 'User Identified Critically', 'width': 32},
+        {'var_name': 'severity', 'name': 'Severity', 'width': 32},
+        {'var_name': 'workflow_status', 'name': 'Workflow Status', 'width': 32},
+        {'var_name': 'workflow_status_date', 'name': 'Workflow Status Date', 'width': 32},
+        {'var_name': 'days_until_auto_approved', 'name': 'Days Until Auto-Approved', 'width': 32},
+        {'var_name': 'exclude_from_omb', 'name': 'Exclude From OMB', 'width': 32},
+        {'var_name': 'accepted_risk', 'name': 'Accepted Risk', 'width': 32},
+        {'var_name': 'assigned_to', 'name': 'Assigned To', 'width': 32},
+        {'var_name': 'phone', 'name': 'Phone', 'width': 32},
+        {'var_name': 'email', 'name': 'Email', 'width': 32},
+        {'var_name': 'assigned_date', 'name': 'Assigned Date', 'width': 32},
+        {'var_name': 'delay_reason', 'name': 'Delay Reason', 'width': 32},
+        {'var_name': 'controls', 'name': 'Controls', 'width': 32},
+        {'var_name': 'csffunction', 'name': 'CSFFunction', 'width': 32},
+        {'var_name': 'csfcategory', 'name': 'CSFCategory', 'width': 32},
+        {'var_name': 'csfsubcategory', 'name': 'CSFSubCategory', 'width': 32},
+        {'var_name': 'number_milestones', 'name': 'Number Milestones', 'width': 32},
+        {'var_name': 'number_artifacts', 'name': 'Number Artifacts', 'width': 32},
+        {'var_name': 'rbd_approval_date', 'name': 'RBD Approval Date', 'width': 32},
+        {'var_name': 'deficiency_category', 'name': 'Deficiency Category', 'width': 32},
+        {'var_name': 'source_of_finding', 'name': 'Source of Finding', 'width': 32},
+        {'var_name': 'percent_complete', 'name': 'Percent Complete:', 'width': 32},
+        {'var_name': 'date_percent_complete_late_updated', 'name': 'Date % Complete Last Updated:', 'width': 32},
+
+        {'var_name': 'system_private', 'name': 'System Private', 'width': 32},
+        {'var_name': 'system_require_approval', 'name': 'System Require Approval', 'width': 32},
+        {'var_name': 'system_created', 'name': 'System Created', 'width': 32},
+        {'var_name': 'system_updated', 'name': 'System Updated', 'width': 32},
+        {'var_name': 'system_oscal_version', 'name': 'System OSCAL Version', 'width': 32},
+        {'var_name': 'system_component_type', 'name': 'System Component Type', 'width': 32},
+        {'var_name': 'system_component_state', 'name': 'System Component State', 'width': 32}
+    ]
+
+     # create header row
+    column = 0
+    ord_zeroth_column = ord('A') - 1
+
+    for header in system_headers:
+        column += 1
+        c = ws.cell(row=1, column=column, value=header['name'])
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(left=Side(border_style="thin", color="444444"),
+                            right=Side(border_style="thin", color="444444"),
+                            bottom=Side(border_style="thin", color="444444"),
+                            outline=Side(border_style="thin", color="444444"))
+        ws.column_dimensions[chr(ord_zeroth_column + column)].width = header['width']
+
+    filename = "system_template.xlsx"
+    mime_type = "application/octet-stream"
+    with NamedTemporaryFile() as tmp:
+                wb.save(tmp.name)
+                tmp.seek(0)
+                stream = tmp.read()
+                blob = stream
+    response = HttpResponse(blob, mime_type)
+    response['Content-Disposition'] = 'inline; filename=' + filename
+    return response
+
+@login_required
+def system_oscal_template(request):
+    system_example = {
+        "uuid": str(uuid.uuid4()),
+        "name": "New System Name",
+        "description": "New System Description"
+    }
+    
+    of = {
+        "system-security-plan": {
+            "uuid": system_example["uuid"],
+            "metadata": {
+                "title": "{} System Security Plan".format(system_example["name"]),
+                "last-modified": datetime.today().replace(microsecond=0).isoformat(),
+                "version": "1.0",
+                "oscal-version": "1.0.0",
+                "roles": [
+                    {
+                        "id": "admin", 
+                        "title": "admin"
+                    }
+                ],
+                "parties": [
+                    {
+                        "uuid": str(uuid.uuid4()),
+                        "type": "organization",
+                        "name": "organization name"
+                    }
+                ],
+            },
+            "import-profile": {
+                "href": "http://localhost:8000/profile_path"
+            },
+            "system-characteristics": {
+                "system-name": system_example["name"],
+                "description": system_example["description"],
+                "system-ids":[
+                    {
+                        "id": system_example["uuid"],
+                        "identifier-type": "https://ietf.org/rfc/rfc4122"
+                    }
+                ]
+            },
+            "system-implementation": {
+                "remarks": "",
+                "users": [],
+                "components": [],
+                "inventory-items": [        
+                    {
+                        "uuid": str(uuid.uuid4()),
+                        "description": "An inventory item",
+                        "implemented-components": [
+                            {
+                                "uuid": str(uuid.uuid4()),
+                                "description": "An inventory item",
+                                "implemented-components": [
+                                    {
+                                    "component-uuid": str(uuid.uuid4())
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "control-implementation": {
+                "description": "",
+                "implemented-requirements": [], 
+            }
+        }
+    }
+
+    try:
+        # Create a temporary directory and dump the json_object in there.
+        tempdir = tempfile.mkdtemp()
+        path = os.path.join(tempdir, "ssp_object.json")
+        # Use trestle's ComponentDefinition method oscal_read to read the path to json in the temporary folder
+        path_ssp_definition = pathlib.Path(path)
+
+        with open(path, 'w+') as cred:
+            json.dump(of, cred)
+        # Read in temporary file and shape into trestle pydantic SSP definition.
+        trestle_oscal_json = trestlessp.SystemSecurityPlan.oscal_read(path_ssp_definition)
+        # Finally validate that this object is valid by the OSCAL System Security Plan definition
+        trestlessp.SystemSecurityPlan.validate(trestle_oscal_json)
+        # Cleanup
+        shutil.rmtree(tempdir)
+    except Exception as e:
+        logger.error(f"Invalid System Security Plan JSON: {e}")
+        shutil.rmtree(tempdir)
+        return HttpResponse(e)
+
+    oscal_string = json.dumps(of, sort_keys=False, indent=2)
+    return oscal_string
+
+import uuid
+
+def is_valid_uuid(val):
+    try:
+        uuid.UUID(str(val))
+        return True
+    except ValueError:
+        return False
+
+def validate_field(validation_type, value):
+    """
+    Evaluates a value against a known value type, and returns desired evaluated value
+    """
+    if validation_type == "System Name":
+        if value:
+            return value
+        else:
+            return {
+                validation_type: "Missing System Name",
+            }
+    if validation_type == "System Description":
+        if value:
+            return value
+        else:
+            return {
+                validation_type: "Missing System Description",
+            }
+    if validation_type == "System UUID":
+        if is_valid_uuid(value):
+            return value
+        else:
+            return {
+                validation_type: "Invalid UUID format",
+            }
+    if validation_type == "System Private":
+        if value == True or value == False:
+            return value
+        else:
+            return None
+    if validation_type == "System Require Approval":
+        if value == True or value == False:
+            return value
+        else:
+            return {
+                validation_type: "Invalid boolean value: please use True or False",
+            }
+    if validation_type == "System Created":
+        # dateFormat = re.search(r'^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{}$', value)
+        try:
+            created = datetime.strptime(value, '%m/%d/%y').replace(tzinfo = timezone.utc)
+            return created
+        except:
+            return None
+    if validation_type == "System Updated":
+        try: 
+            updated = datetime.strptime(value, '%m/%d/%y').replace(tzinfo = timezone.utc)
+            return updated
+        except:
+            return {
+                validation_type: "Invalid Date format, please use mm/dd/yyyy",
+            }
+    if "date" in validation_type.lower():
+        if value:
+            try:
+                date = datetime.strptime(value, '%m/%d/%y').replace(tzinfo = timezone.utc)
+                return date
+            except:
+                try:
+                    date = datetime.strptime(value, '%m/%d/%Y').replace(tzinfo = timezone.utc)
+                    return date
+                except:
+                    try:
+                        date = datetime.strptime(value, '%m-%d-%Y %H:%M:%S %p').replace(tzinfo = timezone.utc)
+                        return date
+                    except:
+                        return {
+                            validation_type: "Invalid Date format, please use mm/dd/yyyy",
+                        }
+        else:
+            return None
+    if validation_type == "System OSCAL Version":
+        isOSCALVersionFormatValid = re.search(r'^[0-9]+\.[0-9]*\.[0-9]*[-[a-zA-Z0-9]*]?$', str(value))
+        if isOSCALVersionFormatValid:
+            return value
+        else:
+            return {
+                validation_type: "Invalid OSCAL version format, please use #.#.# format, optional #.#.#-L#",
+            }
+    if validation_type == "System Component Type":
+         # Check if input is one of the accepted values - []
+        validTypes = ["hardware", "software", "service", "policy", "process", "procedure"]
+        if value.lower() in validTypes:
+            return value
+        else:
+            return {
+                validation_type: "Invalid System component type: please use one of the following options: hardware, software, service, policy, process, procedure",
+            }
+    if validation_type == "System Component State":
+         # Check if input is one of the accepted values - []
+        validStates = ["under-development", "operational", "disposition", "other"]
+        if value.lower() in validStates:
+            return value
+        else:
+            return {
+                validation_type: "Invalid System component state: please use one of the following options: under-development, operational, disposition, other",
+            }
+    return value
+
 # Project
+@login_required
+def system_import(request):
+    """
+    Import a system information and create a new system
+    """
+
+    # Retrieve identified System
+    if request.method == 'POST':
+        
+        file_content = request.POST['file_content']
+        file_name = request.POST['file_name']
+
+        systems_imported_list = []
+        systems_not_imported_list = []
+        poams_imported_list = []
+        updated_systems_list = []
+        updated_poams_list = []
+        system_logs = []
+
+        json_pattern = re.compile("^.*\.json$")
+        xlsx_pattern = re.compile("^.*\.xlsx$")
+        csv_pattern = re.compile("^.*\.csv$")
+        
+        file_import_record = ImportRecord.objects.create(name=file_name)
+    
+        if(json_pattern.match(file_name)):
+            #JSON FILE
+            is_ssp = json.loads(file_content).get("system-security-plan", None)
+            if(is_ssp):
+                new_system_name = is_ssp.get("system-characteristics").get("system-name")
+                new_system_description = is_ssp.get("system-characteristics").get("description")
+                new_system_msg = f"System {new_system_name} imported by upload"
+                new_project, new_system = __create_new_system(request, new_system_name, new_system_description, new_system_msg)
+                # messages.add_message(request, messages.INFO, new_system_msg)
+                
+                # import  all the other system characteristics
+                security_sensitivity_level = is_ssp.get("system-characteristics").get("security-sensitivity-level")
+                info_types = is_ssp.get("system-characteristics").get("system-information")
+                security_impact_level = is_ssp.get("system-characteristics").get("security-impact-level")
+                status = is_ssp.get("system-characteristics").get("status")
+                system_authorization_boundary = is_ssp.get("system-characteristics").get("authorization-boundary")
+                new_system.set_security_sensitivity_level(security_sensitivity_level)
+                
+                
+                # import all users
+                system_users = is_ssp.get("system-implementation").get("users")
+
+                # import all of the components, check if it already exists, if it doesn't then create
+                new_components_list = is_ssp.get("system-implementation").get("components")
+                for comp in new_components_list:
+                    # for each component in the imported components, check if it exists
+                        # if it does, continue 
+                        # else -> create
+
+                        {
+                            'uuid': '37107aa8-8cea-4a49-9222-cd157f075690', 
+                            'title': 'Central Log Server Security Requirements Guide', 
+                            'description': 'Central Log Server Security Requirements Guide based on DOD SRG/STIG.', 
+                            'status': {'state': 'operational'}, 
+                            'type': 'software', 
+                            'responsible-roles': 
+                                [{
+                                    'role-id': 'asset-owner', 
+                                    'party-uuids': ['7e909baa-9c1f-4d36-9992-6830ea461b7f']}
+                                ], 
+                            'props': []
+                        }
+                        newComponent = Element.objects.get_or_create(
+                            title = comp["title"],
+                            description = comp["description"],
+                            component_type = comp["type"],
+                            component_state = comp["status"]["state"],
+                            uuid = comp["uuid"],
+                        )
+                        # Add responsible-roles to component
+                        # Assign parties to component
+                        Party.objects.get_or_create(
+                            comp["responsible-roles"][0]["party-uuids"],
+                        )
+                        print(comp)
+
+                # import all of the invenvtory items
+                # import all of the control implementations
+                
+
+
+
+                sys_successful = Project.objects.filter(id=new_project.id).exists()
+
+
+                if(sys_successful):
+                    systems_imported_list.append(new_system)
+                else: 
+                    systems_not_imported_list.append({'name': new_system_name})
+
+        if(xlsx_pattern.match(file_name)):
+            content = ast.literal_eval(file_content)
+            firstSheet = next(iter(content))
+            sheet = content[firstSheet]
+            
+            for index, system in enumerate(sheet):
+                # Assigning each column to appropriate variable
+                # check if value in column is the correct format
+                new_system_info = {}
+                faulty_system = {}
+                sys_name = ''
+                sys_log = []
+                wasSystemCreated = False
+                hasSystemUpdated = False
+                hasPoamUpdated = False
+                hasPoamStmtUpdated = False
+
+                if 'System Name' in system:
+                    sys_name = system['System Name']
+                    faulty_system[sys_name] = []
+                if 'System Name' not in system:
+                    sys_name = f"System on Row {index + 1}"
+                    faulty_system[sys_name] = ["Missing System Name"]
+                # if 'System Description' not in system:
+                #     faulty_system[sys_name].append("Missing System Description")
+                
+                for column in system:
+                    validated_value = validate_field(column, system[column])
+                    if not isinstance(validated_value, dict):
+                        new_system_info[column] = validated_value
+                    else:
+                        faulty_system[sys_name].append(validated_value)
+
+                # check to see system has name and a description to create   
+                if('System Name' in new_system_info and not faulty_system[sys_name]):
+                    sys = System.objects.filter(root_element__name=new_system_info["System Name"]).first()
+                    if sys:
+                        proj = Project.objects.get(system=sys)
+                        sys_log.append("System already exists.")
+                    else:
+                        new_system_msg = f"System imported from uploaded XLSX file"
+                        proj, sys = __create_new_system(request, new_system_info['System Name'], "", new_system_msg, file_import_record)
+                        wasSystemCreated = True
+                        sys_log.append("Creating a new System and Project")
+                    
+                    # Check if POAM already exists within System
+                    if 'POAM ID' in new_system_info and new_system_info['POAM ID']:
+                        poamExists = Poam.objects.filter(poam_id=new_system_info["POAM ID"]).first()
+                        if poamExists:
+                            sys_log.append("POAM already exists.")
+                            # POAM exists, update values as needed
+                            poamStatement = Statement.objects.get(id=poamExists.statement.id)
+                            if poamStatement.body != new_system_info["Detailed Weakness Description"]:
+                                poamStatement.body = new_system_info["Detailed Weakness Description"]
+                                hasPoamStmtUpdated = True
+                                sys_log.append(f"POAM Body has been updated to: {poamStatement.body}")
+                            if poamStatement.statement_type != StatementTypeEnum.POAM.name:
+                                poamStatement.statement_type = StatementTypeEnum.POAM.name
+                                hasPoamStmtUpdated = True
+                                sys_log.append(f"POAM Type has been updated to: {poamStatement.statement_type}")
+                            if poamStatement.consumer_element != sys.root_element:
+                                poamStatement.consumer_element = sys.root_element
+                                hasPoamStmtUpdated = True
+                                sys_log.append(f"POAM Consumer_Element has been updated to: {poamStatement.consumer_element}")
+                            if poamStatement.status != new_system_info["Status"]:
+                                poamStatement.status = new_system_info["Status"]
+                                hasPoamStmtUpdated = True
+                                sys_log.append(f"POAM Status has been updated to: {poamStatement.status}")
+                            if poamStatement.created != new_system_info["Create Date"]:
+                                poamStatement.created = new_system_info["Create Date"]
+                                hasPoamStmtUpdated = True
+                                sys_log.append(f"POAM Created has been updated to: {poamStatement.created}")
+                            if poamExists.controls != new_system_info["Controls"]:
+                                poamExists.controls = new_system_info["Controls"]
+                                hasPoamUpdated = True
+                                sys_log.append(f"POAM Controls has been updated to: {poamExists.controls}")
+                            if poamExists.weakness_name != new_system_info["POAM Title"]:
+                                poamExists.weakness_name = new_system_info["POAM Title"]
+                                hasPoamUpdated = True
+                                sys_log.append(f"POAM Title has been updated to: {poamExists.weakness_name}")
+                            if poamExists.scheduled_completion_date != new_system_info["Planned Finish Date"]:
+                                poamExists.scheduled_completion_date = new_system_info["Planned Finish Date"]
+                                hasPoamUpdated = True
+                                sys_log.append(f"POAM Scheduled Completion Date has been updated to: {poamExists.scheduled_completion_date}")
+                            if int(poamExists.milestones) != int(new_system_info["Number Milestones"]):
+                                poamExists.milestones = int(new_system_info["Number Milestones"])
+                                hasPoamUpdated = True
+                                sys_log.append(f"POAM Milestones has been updated to: {poamExists.milestones}")
+                            # Check if POAM has been updated at all, if it has update the updated field to statement and document import_record with this file
+                            if hasPoamUpdated or hasPoamStmtUpdated:
+                                poamStatement.updated = datetime.now()
+                                poamStatement.import_record.add(file_import_record)
+                                poamExists.import_record.add(file_import_record)
+                                sys_log.append(f"POAM Import Record has been updated to: {file_import_record.name}")
+                                poamStatement.save()
+                                poamExists.save()
+                            if not hasPoamUpdated:
+                                sys_log.append(f"POAM did not update.")
+                        else:
+                            # Create a new POAM statement object, then a POAM object
+                            poam_statement = Statement.objects.create(
+                                sid = None,
+                                sid_class = None,
+                                body = new_system_info["Detailed Weakness Description"],
+                                statement_type = StatementTypeEnum.POAM.name,
+                                consumer_element = sys.root_element,
+                                status = new_system_info["Status"],
+                                created = new_system_info["Create Date"],
+                                updated = datetime.now()
+                            )
+                            poam_statement.import_record.add(file_import_record)
+                            poam_statement.created = new_system_info["Create Date"]
+                            poam_statement.save_without_historical_record()
+                            
+                            new_poam = Poam.objects.create(
+                                statement = poam_statement,
+                                poam_id = new_system_info["POAM ID"],
+                                controls = new_system_info["Controls"],
+                                weakness_name = new_system_info["POAM Title"],
+                                # weakness_detection_source = 
+                                # weakness_source_identifier = 
+                                # remediation_plan = 
+                                scheduled_completion_date = new_system_info["Planned Finish Date"],
+                                milestones = new_system_info["Number Milestones"],
+                                # milestone_changes =
+                                # risk_rating_original =
+                                # risk_rating_adjusted =
+                                # poam_group =
+                            )
+                            sys_log.append(f"POAM {new_poam.poam_id} was created")
+                    
+                    # Insert everything into System's info dictionary
+                    for key in new_system_info:
+                        if key == "CSAM ID" and sys.info['other_id'] != new_system_info[key]:
+                                sys.info["other_id"] = new_system_info[key]
+                                hasSystemUpdated = True
+                                sys_log.append("Setting CSAM ID to System info as other_id")
+                        if key in sys.info and sys.info[key] != new_system_info[key].strftime("%m/%d/%Y"):
+                            if "date" in key.lower():
+                                sys.info[key] = new_system_info[key].strftime('%m/%d/%Y')
+                                hasSystemUpdated = True
+                                sys_log.append(f"Updated {key} = {new_system_info[key].strftime('%m/%d/%Y')} into System Info Log")
+                            else:
+                                sys.info[key] = new_system_info[key]
+                                hasSystemUpdated = True
+                                sys_log.append(f"Updated {key} = {new_system_info[key]} into System Info Log")
+                        if "date" in key.lower() and key not in sys.info and new_system_info[key]:
+                            if new_system_info[key]:
+                                sys.info[key] = new_system_info[key].strftime('%m/%d/%Y')
+                                sys_log.append(f"Added {key} = {new_system_info[key].strftime('%m/%d/%Y')} into System Info Log")
+                            else:
+                                sys.info[key] = ""
+                                sys_log.append(f"Added {key} = '' into System Info Log")
+                    sys.save_without_historical_record()
+                    # Assigning properties as dictated in the excel document to the system
+                    
+                    # Setting system information 
+                    # Check if uuid was assigned, if it was, check if valid UUID, if true => set, else throw as error and return as not implemented
+                    if 'System UUID' in new_system_info and new_system_info['System UUID']:
+                        sys.root_element.uuid = new_system_info['System UUID']
+                        hasSystemUpdated = True
+                        sys_log.append(f"Setting System UUID has been updated to: {sys.root_element.uuid}")
+                    if 'System Private' in new_system_info and new_system_info['System Private']:
+                        sys.root_element.private = new_system_info['System Private']
+                        hasSystemUpdated = True
+                        sys_log.append(f"Private has been updated to: {sys.root_element.private}")
+                    if 'System Require Approval' in new_system_info and new_system_info['System Require Approval']:
+                        sys.root_element.require_approval = new_system_info['System Require Approval']
+                        hasSystemUpdated = True
+                        sys_log.append(f"System Require Approval has been updated to: {sys.root_element.require_approval}")
+                    if 'System Created' in new_system_info and new_system_info['System Created']:
+                        sys.root_element.created = new_system_info['System Created']
+                        hasSystemUpdated = True
+                        sys_log.append(f"System Created has been updated to: {sys.root_element.created}")
+                    if 'System Updated' in new_system_info and new_system_info['System Updated']:
+                        sys.root_element.updated = new_system_info['System Updated']
+                        hasSystemUpdated = True
+                        sys_log.append(f"System Private has been updated to: {sys.root_element.updated}")
+                    if 'System OSCAL Version' in new_system_info and new_system_info['System OSCAL Version']:
+                        sys.root_element.oscal_version = new_system_info['System OSCAL Version']
+                        hasSystemUpdated = True
+                        sys_log.append(f"System Private has been updated to: {sys.root_element.oscal_version}")
+                    if 'System Component Type' in new_system_info and new_system_info['System Component Type']:
+                        sys.root_element.component_type = new_system_info['System Component Type']
+                        hasSystemUpdated = True
+                        sys_log.append(f"System Private has been updated to: {sys.root_element.component_type}")
+                    if 'System Component State' in new_system_info and new_system_info['System Component State']:
+                        sys.root_element.component_state = new_system_info['System Component State']
+                        hasSystemUpdated = True
+                        sys_log.append(f"System Private has been updated to: {sys.root_element.component_state}")
+
+                    # if System has been updated at all, document file as it's import record
+                    if wasSystemCreated:
+                        sys.import_record.add(file_import_record)
+                        sys_log.append(f"System created using this import_record: {file_import_record.name}")
+                        sys.save_without_historical_record()
+                    if not wasSystemCreated and hasSystemUpdated:
+                        sys.import_record.add(file_import_record)
+                        sys_log.append(f"System Import_Record has been updated to: {file_import_record.name}")
+                        sys.save()
+                    if not hasSystemUpdated and not hasPoamUpdated:
+                        sys_log.append(f"Nothing has been updated on this system: {sys.root_element.name}")
+                    sys_successful = Project.objects.filter(id=proj.id).exists()
+                    if(sys_successful):
+                        systems_imported_list.append(sys)
+                    system_logs.append(
+                        {
+                            "name": sys.root_element.name, 
+                            "log": sys_log
+                        }
+                    )
+                if faulty_system[sys_name]:
+                    systems_not_imported_list.append(faulty_system)
+         
+        if(csv_pattern.match(file_name)):
+            # CSV FILE
+            csv_systems = file_content.split('\n')
+            csv_headers = csv_systems[0].split(',')
+            csv_headers[-1] = csv_headers[-1].split('\r')
+            csv_systems.pop(0)
+            num_of_column = len(csv_headers)
+            new_system_msg = f"System imported from uploaded CSV file"
+            
+            updated_csv_system = []
+            systems_imported_list = []
+            systems_not_imported_list = []
+
+            for sys in csv_systems:
+                if not sys:
+                    continue
+                sys = sys.split(',')
+                sys.pop(-1)
+                sys_dict = {}
+                for x in range(0, num_of_column-1):
+                    sys_dict[csv_headers[x]] = sys[x]
+                updated_csv_system.append(sys_dict)
+            
+            for sys in updated_csv_system:
+                # Check each system attribute to see if they follow correct format/information
+                new_system_info = {}
+                faulty_system = {}
+                
+                for key in sys.keys():
+                    validated_value = validate_field(key, sys[key])
+                    if isinstance(validated_value, dict):
+                        faulty_system.append(validated_value)
+                    else:
+                        new_system_info[column] = validated_value
+                
+                if 'System Name' not in new_system_info:
+                    faulty_system.append({"System Name": "Missing System Name"})
+                # if 'System Description' not in new_system_info:
+                #     faulty_system.append({"System Description": "Missing System Description"})
+
+                if 'System Name' in new_system_info and 'System Description' in new_system_info and not faulty_system: 
+                    new_project, new_system = __create_new_system(request, new_system_info['System Name'], new_system_info['System Description'], new_system_msg)
+                    
+                    if "System UUID" in new_system_info and new_system_info['System UUID']:
+                        new_system.root_element.uuid = new_system_info['System UUID']
+                    if "System Private" in new_system_info and new_system_info['System Private']:
+                        new_system.root_element.private = new_system_info['System Private']
+                    if "System Require Approval" in new_system_info and new_system_info['System Require Approval']:
+                        new_system.root_element.require_approval = new_system_info['System Require Approval']
+                    if "System Created" in new_system_info and new_system_info['System Created']:
+                        new_system.root_element.created = new_system_info['System Created']
+                    if "System Updated" in new_system_info and new_system_info['System Updated']:
+                        new_system.root_element.updated = new_system_info['System Updated']
+                    if "System OSCAL Version" in new_system_info and new_system_info['System OSCAL Version']:                        
+                        new_system.root_element.oscal_version = new_system_info['System OSCAL Version']
+                    if 'System Component Type' in new_system_info and new_system_info['System Component Type']:
+                        new_system.root_element.oscal_version = new_system_info['System Component Type']
+                    if 'System Component State' in new_system_info and new_system_info['System Component State']:
+                        new_system.root_element.oscal_version = new_system_info['System Component State']
+
+                    # Now we check if the system was successfully created
+                    sys_successful = Project.objects.filter(id=new_project.id).exists()
+                    if(sys_successful):
+                        systems_imported_list.append(new_system)
+                else:
+                    systems_not_imported_list.append(faulty_system)
+
+    context = {
+        "import_uuid": str(file_import_record.uuid),
+        "systems_imported_list": systems_imported_list,
+        "systems_not_imported_list": systems_not_imported_list,
+        "updated_systems_list": updated_systems_list,
+        "updated_poams_list": updated_poams_list,
+        "system_logs": system_logs,
+    }
+    return render(request, "systems/new_systems_imported.html", context)
+
+def undo_import(object, import_record_uuid):
+    import types
+    type_system = type(System.objects.first())
+
+    for obj in type(object).objects.filter(import_record__uuid=import_record_uuid):
+        if obj.history.all().count() == 1:
+            # project was just created from the import, we have to delete now
+            # If system also delete system element
+            if type(object) == type_system:
+                element = Element.objects.get(id=obj.root_element.id)
+                element.delete()
+            obj.delete()
+        elif obj.history.all().count() > 1:
+            prev_obj = obj.history.first().prev_record
+            # project was updated, so we must revert to the previous state
+            for key, value in obj.__dict__.items():
+                if not isinstance(value, types.FunctionType or types.MethodType) and not key.startswith('_'):
+                    # if getattr(obj, key) != getattr(prev_obj, key):
+                    print(key, type(key))
+                    setattr(obj, key, getattr(prev_obj, key))
+            obj.save()
+        else:
+            pass
+
+def revert_system_import(request):
+    """
+    Reverting system import
+    """
+
+    # Grab import record uuid
+    # cycle through all records of Project/System/Poam/etc that has an import record
+    # revert to previous historical state
+    if request.method == 'POST':
+        data = request.POST
+        import_uuid = data.get('import_uuid')
+        # Cycle through all import elements
+        # if element was already in the system and no change
+            # wouldnt have import_record, but we also wouldn't need to revert anything
+        # if there was an update on the element, then element would have an import record with file_name and uuid
+        # if element was created, then we need to delete
+            # how do we tell which element was created from the system import
+            # has IMPORT_RECORD
+        
+        # TODO: FALCON
+        undo_import(Project.objects.first(), import_uuid)
+        undo_import(System.objects.first(), import_uuid)
+        undo_import(Statement.objects.first(), import_uuid)
+        undo_import(Poam.objects.first(), import_uuid)
+
+        return HttpResponseRedirect("/projects")
+
 @login_required
 def project_import(request, project_id):
     """
@@ -3594,8 +4387,6 @@ def project_import(request, project_id):
         #module_name = json.loads(project_data).get('project').get('module').get('key')
         title = json.loads(project_data).get('project').get('title')
         system_root_element.name = title
-
-
 
         logger.info(
             event="project JSON import update",
@@ -4013,64 +4804,17 @@ def get_integrations_system_events(request, system_id):
     ]
     return system_events
 
-@login_required
-def create_system_from_string(request):
-    """Create a system in GovReady-Q based on info from a URL"""
+def __create_new_system(request, new_system_name, new_system_description="Missing system description", new_system_msg="Missing new system message", import_record=None):
+    """Create and return a new system and project from new system name"""
 
-    new_system_str = request.GET.get("s", None)
+    # We'll create a new system by leveraging existing to code to
+    # start a project from template library. We'll get our default
+    # project template from library, create the project which will
+    # also give us a new system. Then we will update name of system.
+    # Finally, we'll return the information to the caller.
 
-    # Display form when no string received
-    if new_system_str is None:
-
-        # Get the app catalog. If the user is answering a question, then filter to
-        # just the apps that can answer that question.
-        from siteapp.views import filter_app_catalog
-        catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
-        # Group by category from catalog metadata.
-        from collections import defaultdict
-        catalog_by_category = defaultdict(lambda: {"title": None, "apps": []})
-        for app in catalog:
-            source_slug, _ = app["key"].split('/')
-            app['source_slug'] = source_slug
-            # print(f"1 keys: {app.keys()}")
-            # print(f"2 key, title: {app['key']}, {app['title']}")
-            for category in app["categories"]:
-                catalog_by_category[category]["title"] = (category or "Uncategorized")
-                # Only get default apps
-                # TODO: Refactor this code
-                organization = Organization.objects.first()  # temporary
-                # if app['title'] in ['Blank Project', 'Speedy SSP', 'General IT System ATO for 800-53 (low)']:
-                if app['title'] in organization.extra.get('default_appversion_name_list', []): # temporary
-                    catalog_by_category[category]["apps"].append(app)
-
-        # Sort categories by title and discard keys.
-        catalog_by_category = sorted(catalog_by_category.values(), key=lambda category: (
-            category["title"] != "Great starter apps",  # this category goes first
-            category["title"].lower(),  # sort case insensitively
-            category["title"],  # except if two categories differ only in case, sort case-sensitively
-        ))
-        context = {
-            "apps": catalog_by_category
-        }
-        return render(request, "systems/new_system_form.html", context)
-
-    new_system_name = new_system_str
-    new_system_msg = f"Created new System in GovReady based with name '{new_system_name}'."
-    new_system_description = f"System created from name."
-
-    # Create for new system based on string
-    if 'http://' in new_system_str or 'https://' in new_system_str:
-        new_system_url = new_system_str
-        new_system_msg = f"Created new System in GovReady based on URL '{new_system_url}'."
-        new_system_name = new_system_url.replace("https://", "").replace("http://", "")
-        new_system_description = f"System created from url."
-        # Examine remote site for information
-        # Handle error case of no URL
-
-    # Check if system aleady exists with domain name
-    # if not System.objects.filter(Q(info__contains={"csam_system_id": csam_system_id})).exists():
-
-    # What is default template?
+    # Get a project template - Use Speedy SSP as default
+    # TODO: What if Speedy SSP has been deleted?
     source_slug = "govready-q-files-startpack"
     app_name = "speedyssp"
     # can user start the app?
@@ -4092,29 +4836,35 @@ def create_system_from_string(request):
         admin_users=request.user,
         title=default_folder_name,
     ).first()
+
+    # Get a folder for project & system
     if not folder:
         folder = Folder.objects.create(organization=organization, title=default_folder_name)
         folder.admin_users.add(request.user)
+
+    # Get default task and q - we can use None
     task = None
     q = None
-    # Get portfolio project should be included in.
+
+    # Get portfolio for project & system
     if request.GET.get("portfolio"):
         portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
     else:
         if not request.user.default_portfolio:
             request.user.create_default_portfolio_if_missing()
         portfolio = request.user.default_portfolio
-    # import ipdb; ipdb.set_trace()
+
+    # Create new project by starting our app project template
     try:
         project = start_app(appver, organization, request.user, folder, task, q, portfolio)
     except ModuleDefinitionError as e:
         error = str(e)
-    # Associate System with CSAM system
+
+    # Set up additional system information
     new_system = project.system 
     new_system.info = {
-        "created_from_input": new_system_str,
+        "created_from_input": new_system_name,
         "system_description": new_system_description,
-
         "id": "~",
         "other_id": "~",
         "name": "~",
@@ -4141,14 +4891,17 @@ def create_system_from_string(request):
         "score_4": "~",
         "score_5": "~",
     }
+    project.import_record.add(import_record)
+    new_system.import_record.add(import_record)
     new_system.add_event("SYS", new_system_msg)
-    new_system.save()
-    # Update System name to URL system name
+    new_system.save_without_historical_record()
+    project.save_without_historical_record()    
+
+    # Change name of new system by changing name of new system's root element
+    # Use the new_system_name for new name and numbered appendix to avoid name collisions
     nsre = new_system.root_element
-    # Make sure system root element name is unique
     name_suffix = ""
     while Element.objects.filter(name=f"{new_system_name}{name_suffix}").exists():
-        # Element exists with that name
         if name_suffix == "":
             name_suffix = 1
         else:
@@ -4158,14 +4911,77 @@ def create_system_from_string(request):
     else:
         nsre.name = f"{new_system_name}{name_suffix}"
     nsre.save()
-    # Update System Project title to CSAM system name
+
+    # Update System Project title to new system name
     prt = project.root_task
     prt.title_override = nsre.name
     prt.save()
+
+    # Log creation of new system
     logger.info(event=f"create_system_from_url url {new_system_name}",
             object={"object": "system", "id": new_system.id},
             user={"id": request.user.id, "username": request.user.username})
-    messages.add_message(request, messages.INFO, new_system_msg)
+
+    return project, new_system
+
+@login_required
+def create_new_system(request):
+    """Create a new system"""
+
+    new_system_str = request.GET.get("s", None)
+    if new_system_str is None:
+        # Display page with various forms to create new system when no data received
+
+        # Get default apps to display on page
+        from siteapp.views import filter_app_catalog
+        catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
+        # Group by category from catalog metadata.
+        from collections import defaultdict
+        catalog_by_category = defaultdict(lambda: {"title": None, "apps": []})
+        for app in catalog:
+            source_slug, _ = app["key"].split('/')
+            app['source_slug'] = source_slug
+            # print(f"1 keys: {app.keys()}")
+            # print(f"2 key, title: {app['key']}, {app['title']}")
+            for category in app["categories"]:
+                catalog_by_category[category]["title"] = (category or "Uncategorized")
+                # Only get default apps
+                # TODO: Refactor this code
+                organization = Organization.objects.first()  # temporary
+                # if app['title'] in ['Blank Project', 'Speedy SSP', 'General IT System ATO for 800-53 (low)']:
+                if app['title'] in organization.extra.get('default_appversion_name_list', []): # temporary
+                    catalog_by_category[category]["apps"].append(app)
+
+        # Sort categories by title and discard keys.
+        catalog_by_category = sorted(catalog_by_category.values(), key=lambda category: (
+            category["title"] != "Great starter apps",  # this category goes first
+            category["title"].lower(),  # sort case insensitively
+            category["title"],  # except if two categories differ only in case, sort case-sensitively
+        ))
+
+        context = {
+            "apps": catalog_by_category,
+            "import_system_form": ImportSystemForm(),
+            "import_project_form": ImportProjectForm(),
+        }
+        return render(request, "systems/new_system_form.html", context)
+
+    new_system_name = new_system_str
+    new_system_msg = f"Created new System in GovReady based with name '{new_system_name}'."
+    new_system_description = f"System created from name."
+
+    # Create for new system based on URL
+    if 'http://' in new_system_str or 'https://' in new_system_str:
+        new_system_url = new_system_str
+        new_system_msg = f"Created new System in GovReady based on URL '{new_system_url}'."
+        new_system_name = new_system_url.replace("https://", "").replace("http://", "")
+        new_system_description = f"System created from url."
+        # Examine remote site for information
+        # Handle error case of no URL
+
+    # Create the new system and it's related project
+    project, new_system = __create_new_system(request, new_system_name, new_system_msg)
+    # messages.add_message(request, messages.INFO, new_system_msg)
 
     # Redirect to the new system/project.
     return HttpResponseRedirect(project.get_absolute_url())
