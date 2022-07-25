@@ -33,7 +33,7 @@ class SimplePoamSerializer(ReadOnlySerializer):
             # 'consumer_element': poam.statement.consumer_element,
             # 'mentioned_elements': poam.statement.mentioned_elements,
             'uuid': poam.statement.uuid,
-            'import_record': poam.statement.import_record,
+            'import_record': poam.statement.import_record.name,
             # 'change_log': poam.statement.change_log,
             # 'history': poam.statement.history,
         }
@@ -57,7 +57,7 @@ class SimpleSpreadsheetPoamSerializer(ReadOnlySerializer):
                 df_dict = pandas.read_excel(fn, header=1)
                 for index, row in df_dict.iterrows():
                     # import ipdb; ipdb.set_trace()
-                    if system.id == row.get('CSAM ID', ""):
+                    if "CSAM ID" in system.info  and system.info["CSAM ID"] == row.get('CSAM ID'):
                         poam_dict = {
                             "id": index,
                             "csam_id": row.get('CSAM ID', ""),

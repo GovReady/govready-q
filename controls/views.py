@@ -4162,6 +4162,7 @@ def system_import(request):
                     for key in new_system_info:
                         if key == "CSAM ID" and sys.info['other_id'] != new_system_info[key]:
                                 sys.info["other_id"] = new_system_info[key]
+                                sys.info["CSAM ID"] = new_system_info[key]
                                 hasSystemUpdated = True
                                 sys_log.append("Setting CSAM ID to System info as other_id")
                         if key in sys.info and sys.info[key] != new_system_info[key].strftime("%m/%d/%Y"):
