@@ -1378,7 +1378,7 @@ def system_element(request, system_id, element_id):
                 proposal = None
                 return HttpResponseRedirect("/controls/{}/components/selected".format(system_id))
 
-            #get all statements that are not component_approval_criteria
+            # Get all statements that are not component_approval_criteria
             impl_smts = element.statements_produced.filter(~Q(statement_type='COMPONENT_APPROVAL_CRITERIA'))
             # Retrieve used catalog_key
             catalog_key = impl_smts[0].sid_class
