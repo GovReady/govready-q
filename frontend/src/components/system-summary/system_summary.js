@@ -178,8 +178,10 @@ export const SystemSummary = ({ systemId, projectId }) => {
   useEffect(() => {
     axios(`/api/v2/systems/${systemId}/poams/`).then(response => {
       setData(response.data.data);
+      debugger;
     });
   }, [])
+
 
   const [columns, setColumns] = useState([
     {
@@ -225,13 +227,24 @@ export const SystemSummary = ({ systemId, projectId }) => {
           valueGetter: (params) => moment(params.row.updated).format('MM/DD/YYYY'),
       },
     //   {
-    //       field: 'comments',
-    //       headerName: 'Comments',
-    //       width: 150,
-    //       editable: false,
-    //       valueGetter: (params) => params.row.status,
-    //   },
+    //     field: 'debug',
+    //     headerName: 'debug',
+    //     width: 150,
+    //     editable: false,
+    //     valueGetter: (params) => {debugger;},
+    // },
+    {
+        field: 'comments',
+        headerName: 'Comments',
+        width: 150,
+        editable: true,
+        valueGetter: (params) => params.row.extra.Comments,
+    },
   ]);
+
+
+
+
   return (
       <div style={{ maxHeight: '2000px', width: '100%' }}>  
           <Grid className="poc-data-grid" sx={{ minHeight: '500px' }}>

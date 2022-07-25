@@ -22,9 +22,13 @@
     <h2>POA&Ms (Plan of Actions and Milestones)</h2>
     <h3>POA&MS from CSAM</h3>
     <p>The following POA&MS are imported from a CSAM remote service. Changes you make will be exported and uploaded to the remote service monthly.</p>
-    <div id="system-summary-poam-spreadsheet-datagrid"></div>
-    <script>
+    {% comment %} <div id="system-summary-poam-spreadsheet-datagrid"></div> {% endcomment %}
+    <div id="system-summary-poam-datagrid"></div>
+    {% comment %} <script>
       window.system_summary_spreadsheet({{system.id}}, {{project.id}});
+    </script> {% endcomment %}
+    <script>
+      window.system_summary({{system.id}}, {{project.id}});
     </script>
 
     <h3>POA&MS Managed Locally in GovReady-Q</h3>
