@@ -4116,6 +4116,10 @@ def system_import(request):
                                 poamExists.milestones = int(new_system_info["Number Milestones"])
                                 hasPoamUpdated = True
                                 sys_log.append(f"POAM Milestones has been updated to: {poamExists.milestones}")
+                            
+                            for key in new_system_info:
+                                if key in list_of_poam_attributes:
+                                    poamExists.extra[key] = system[key]
                             # Check if POAM has been updated at all, if it has update the updated field to statement and document import_record with this file
                             if hasPoamUpdated or hasPoamStmtUpdated:
                                 poamStatement.updated = datetime.now()
@@ -4157,6 +4161,13 @@ def system_import(request):
                                 # risk_rating_adjusted =
                                 # poam_group =
                             )
+                            for key in new_system_info:
+                                if key in list_of_poam_attributes:
+                                    if "date" in key.lower(): #Checking if we are going to assign a datetime object
+                                        new_poam.extra[key] = system[key]
+                                    else:
+                                        new_poam.extra[key] = new_system_info[key]
+                            new_poam.save_without_historical_record()
                             sys_log.append(f"POAM {new_poam.poam_id} was created")
                     
                     # Insert everything into System's info dictionary
@@ -4166,21 +4177,27 @@ def system_import(request):
                                 sys.info["CSAM ID"] = new_system_info[key]
                                 hasSystemUpdated = True
                                 sys_log.append("Setting CSAM ID to System info as other_id")
+
+                        # Check if key is already in system info
                         if key in sys.info:
-                            if key in list_of_poam_attributes:
-                                if poamExists:
-                                    poamExists.extra[key] = sys.info[key]
-                                if new_poam:
-                                    new_poam.extra[key] = sys.info[key]
-                            if "date" in key.lower() and sys.info[key] != new_system_info[key].strftime("%m/%d/%Y"):
-                                sys.info[key] = new_system_info[key].strftime('%m/%d/%Y')
-                                hasSystemUpdated = True
-                                sys_log.append(f"Updated {key} = {new_system_info[key].strftime('%m/%d/%Y')} into System Info Log")
+                            # Check datetime objects
+                            if "date" in key.lower():
+                                try:
+                                    print("key: ", key)
+                                    temp_dt = new_system_info[key].strftime("%m/%d/%Y")
+                                    if sys.info[key] != temp_dt:
+                                        sys.info[key] = new_system_info[key].strftime('%m/%d/%Y')
+                                        hasSystemUpdated = True
+                                        sys_log.append(f"Updated {key} = {new_system_info[key].strftime('%m/%d/%Y')} into System Info Log")
+                                except:
+                                    print("EXCEPTION at key: ", key)
                             else:
                                 sys.info[key] = new_system_info[key]
                                 hasSystemUpdated = True
                                 sys_log.append(f"Updated {key} = {new_system_info[key]} into System Info Log")
+                        # Adding new key into system info
                         if "date" in key.lower() and key not in sys.info and new_system_info[key]:
+                            print("1: ", key)
                             if new_system_info[key]:
                                 sys.info[key] = new_system_info[key].strftime('%m/%d/%Y')
                                 sys_log.append(f"Added {key} = {new_system_info[key].strftime('%m/%d/%Y')} into System Info Log")
