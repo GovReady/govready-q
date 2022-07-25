@@ -1,6 +1,20 @@
 GovReady-Q Release Notes
 ========================
 
+v0.11.0-dev (July xx, 2022)
+---------------------------
+
+**Feature changes**
+
+* Support dynamic POA&M spreadsheet upload and editing.
+
+
+**UI changes**
+
+* Use React table for displaying list of POA&Ms.
+* Add better styled ACE JSON editing widget to all admin pages for a model with JSONField.
+
+
 v0.10.0.1 (July 25, 2022)
 -------------------------
 
