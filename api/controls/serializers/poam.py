@@ -42,7 +42,7 @@ class SimplePoamSerializer(ReadOnlySerializer):
         model = Poam
         fields = ['poam_id', 'controls', 'weakness_name', 'weakness_detection_source', 'weakness_source_identifier',
                   'remediation_plan', 'scheduled_completion_date', 'milestones','milestone_changes',
-                  'risk_rating_original', 'risk_rating_adjusted', 'poam_group', 'statement']
+                  'risk_rating_original', 'risk_rating_adjusted', 'poam_group', 'statement', 'extra']
 
 class SimpleSpreadsheetPoamSerializer(ReadOnlySerializer):
     spreadsheet_poams = serializers.SerializerMethodField('get_spreadsheet_poams')
