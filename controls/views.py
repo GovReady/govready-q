@@ -4039,6 +4039,7 @@ def system_import(request):
                 faulty_system = {}
                 sys_name = ''
                 sys_log = []
+                list_of_poam_attributes = ["POAM Sequence", "Days Since Creation", "Scheduled Completion Date", "Planned Start Date", "Actual Start Date", "Planned Finish Date", "Actual Finish Date", "Weakness", "Cost", "Control Risk Severity", "User Identified Criticality", "Severity", "Workflow Status", "Workflow Status Date", "Days Until Auto-Approved", "Exclude from OMB", "Accepted Risk", "Assigned To", "Phone", "Email", "Assigned Date", "Delay Reason", "CSFFunction", "CSFCategory", "CSFSubCategory", "Number Milestones", "Number Artifacts", "RBD Approval Date", "Deficiency Category", "Source of Finding", "Percent Complete", "Date % Complete Last Updated", "Delay Justification", "Status as of", "Comments"]
                 wasSystemCreated = False
                 hasSystemUpdated = False
                 hasPoamUpdated = False
@@ -4165,8 +4166,13 @@ def system_import(request):
                                 sys.info["CSAM ID"] = new_system_info[key]
                                 hasSystemUpdated = True
                                 sys_log.append("Setting CSAM ID to System info as other_id")
-                        if key in sys.info and sys.info[key] != new_system_info[key].strftime("%m/%d/%Y"):
-                            if "date" in key.lower():
+                        if key in sys.info:
+                            if key in list_of_poam_attributes:
+                                if poamExists:
+                                    poamExists.extra[key] = sys.info[key]
+                                if new_poam:
+                                    new_poam.extra[key] = sys.info[key]
+                            if "date" in key.lower() and sys.info[key] != new_system_info[key].strftime("%m/%d/%Y"):
                                 sys.info[key] = new_system_info[key].strftime('%m/%d/%Y')
                                 hasSystemUpdated = True
                                 sys_log.append(f"Updated {key} = {new_system_info[key].strftime('%m/%d/%Y')} into System Info Log")

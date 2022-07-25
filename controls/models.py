@@ -673,6 +673,7 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
     import_record = models.ManyToManyField(ImportRecord, related_name="import_record_systems",
                                         unique=False, blank=True, help_text="The Import Record which created this System.")
     history = HistoricalRecords(cascade_delete_history=True)
+    extra = models.JSONField(blank=True, default=dict, help_text="Additional fields")
     # Notes
     # Retrieve system implementation statements
     #   system = System.objects.get(pk=2)
@@ -1182,6 +1183,7 @@ class Poam(BaseModel):
     import_record = models.ManyToManyField(ImportRecord, related_name="import_record_poam", 
                                       unique=False, blank=True, help_text="The Import Record which created this Poam.")
     history = HistoricalRecords(cascade_delete_history=True)
+    extra = models.JSONField(blank=True, default=dict, help_text="Additional fields")
     # spec = JSONField(help_text="A load_modules ModuleRepository spec.", load_kwargs={'object_pairs_hook': OrderedDict})
     # Spec will hold additional values, such as: POC, resources_required, vendor_dependency
 
