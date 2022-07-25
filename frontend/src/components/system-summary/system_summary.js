@@ -153,10 +153,16 @@ export const SystemSummary = ({ systemId, projectId }) => {
   const [sortby, setSortBy] = useState(["name", "asc"]);
   const [ rows, setRows ] = useState(data)
   const [ searchText, setSearchText ] = useState('');
+  const [columns, setColumns] = useState([]);
 
   function escapeRegex(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
+
+  const isObjectEmpty = (obj) => {
+    return Object.keys(obj).length === 0;
+  }
+  
   const requestSearch = (searchValue) => {
     setSearchText(searchValue);
     const searchRegex = new RegExp(escapeRegex(searchValue.toLowerCase()));
@@ -178,69 +184,71 @@ export const SystemSummary = ({ systemId, projectId }) => {
   useEffect(() => {
     axios(`/api/v2/systems/${systemId}/poams/`).then(response => {
       setData(response.data.data);
-      debugger;
+      
+      // if (!isObjectEmpty(response.data.data[0].extra)) {
+        
+      // }
+      const newColumns = [
+        {
+            field: 'weakness_name',
+            headerName: 'POA&M',
+            width: 150,
+            editable: false,
+            hideable: false,
+            valueGetter: (params) => params.row.weakness_name,
+          },
+          {
+            field: 'evidence',
+            headerName: 'Evidence',
+            width: 150,
+            editable: false,
+            valueGetter: (params) => params.row.weakness_name,
+          },
+          {
+            field: 'status',
+            headerName: 'Status',
+            width: 150,
+            editable: false,
+            valueGetter: (params) => params.row.statement.status,
+          },
+          {
+              field: 'risk_rating_adjusted',
+              headerName: 'Criticality',
+              width: 150,
+              editable: false,
+              valueGetter: (params) => params.row.risk_rating_adjusted,
+          },
+          {
+              field: 'created',
+              headerName: 'Date Reported',
+              width: 150,
+              editable: false,
+              valueGetter: (params) => moment(params.row.created).format('MM/DD/YYYY'),
+          },
+          {
+              field: 'updated',
+              headerName: 'Reported By',
+              width: 150,
+              editable: false,
+              valueGetter: (params) => moment(params.row.updated).format('MM/DD/YYYY'),
+          },
+      ];
+      for (const [key, value] of Object.entries(response.data.data[0].extra)) {
+        // console.log(`${key}: ${value}`);
+        newColumns.push({
+          field: key,
+          headerName: key,
+          width: 150,
+          editable: ["Delay Justification", "Status as of June", "Comments"].includes(key) ? true : false,
+          valueGetter: (params) => params.row.extra[key]
+        })
+      }
+      setColumns(newColumns)
     });
   }, [])
 
 
-  const [columns, setColumns] = useState([
-    {
-        field: 'weakness_name',
-        headerName: 'POA&M',
-        width: 150,
-        editable: false,
-        valueGetter: (params) => params.row.weakness_name,
-      },
-      {
-        field: 'evidence',
-        headerName: 'Evidence',
-        width: 150,
-        editable: false,
-        valueGetter: (params) => params.row.weakness_name,
-      },
-      {
-        field: 'status',
-        headerName: 'Status',
-        width: 150,
-        editable: false,
-        valueGetter: (params) => params.row.statement.status,
-      },
-      {
-          field: 'risk_rating_adjusted',
-          headerName: 'Criticality',
-          width: 150,
-          editable: false,
-          valueGetter: (params) => params.row.risk_rating_adjusted,
-      },
-      {
-          field: 'created',
-          headerName: 'Date Reported',
-          width: 150,
-          editable: false,
-          valueGetter: (params) => moment(params.row.created).format('MM/DD/YYYY'),
-      },
-      {
-          field: 'updated',
-          headerName: 'Reported By',
-          width: 150,
-          editable: false,
-          valueGetter: (params) => moment(params.row.updated).format('MM/DD/YYYY'),
-      },
-    //   {
-    //     field: 'debug',
-    //     headerName: 'debug',
-    //     width: 150,
-    //     editable: false,
-    //     valueGetter: (params) => {debugger;},
-    // },
-    {
-        field: 'comments',
-        headerName: 'Comments',
-        width: 150,
-        editable: true,
-        valueGetter: (params) => params.row.extra.Comments,
-    },
-  ]);
+  
 
 
 
@@ -261,6 +269,42 @@ export const SystemSummary = ({ systemId, projectId }) => {
                         rowsPerPageOptions={[25]}
                         rowHeight={50}
                         checkboxSelection
+                        initialState={{
+                          columns: {
+                            columnVisibilityModel: {
+                              // Hide columns status and traderName, the other columns will remain visible
+                              evidence: false,
+                              status: false,
+                              risk_rating_adjusted: false,
+                              created: false,
+                              updated: false,
+                              "Assigned To": false,
+                              "User Identified Criticality": false,
+                              "Workflow Status Date": false,
+                              "Scheduled Completion Date": false,
+                              "Planned Start Date": false,
+                              "Planned Finish Date": false,
+                              "Actual Finish Date": false,
+                              "Deficiency Category": false,
+                              "Days Since Creation": false,
+                              "Source of Finding": false,
+                              "RBD Approval Date": false,
+                              "Actual Start Date": false,
+                              "Number Milestones": false,
+                              "Number Artifacts": false,
+                              "Workflow Status": false,
+                              "CSFSubCategory": false,
+                              "CSFFunction": false,
+                              "CSFCategory": false,
+                              "Delay Reason": false,
+                              "Accepted Risk": false,
+                              "Assigned Date": false,
+                              "POAM Sequence": false,
+                              "Weakness": false,
+                            }
+                          },
+                        }}
+                        
                         // components={{ Toolbar: QuickSearchToolbar }}
                         // componentsProps={{
                         //   toolbar: {

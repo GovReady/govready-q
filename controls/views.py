@@ -4039,7 +4039,7 @@ def system_import(request):
                 faulty_system = {}
                 sys_name = ''
                 sys_log = []
-                list_of_poam_attributes = ["POAM Sequence", "Days Since Creation", "Scheduled Completion Date", "Planned Start Date", "Actual Start Date", "Planned Finish Date", "Actual Finish Date", "Weakness", "Cost", "Control Risk Severity", "User Identified Criticality", "Severity", "Workflow Status", "Workflow Status Date", "Days Until Auto-Approved", "Exclude from OMB", "Accepted Risk", "Assigned To", "Phone", "Email", "Assigned Date", "Delay Reason", "CSFFunction", "CSFCategory", "CSFSubCategory", "Number Milestones", "Number Artifacts", "RBD Approval Date", "Deficiency Category", "Source of Finding", "Percent Complete", "Date % Complete Last Updated", "Delay Justification", "Status as of", "Comments"]
+                list_of_poam_attributes = ["POAM Sequence", "Days Since Creation", "Scheduled Completion Date", "Planned Start Date", "Actual Start Date", "Planned Finish Date", "Actual Finish Date", "Weakness", "Cost", "Control Risk Severity", "User Identified Criticality", "Severity", "Workflow Status", "Workflow Status Date", "Days Until Auto-Approved", "Exclude from OMB", "Accepted Risk", "Assigned To", "Phone", "Email", "Assigned Date", "Delay Reason", "CSFFunction", "CSFCategory", "CSFSubCategory", "Number Milestones", "Number Artifacts", "RBD Approval Date", "Deficiency Category", "Source of Finding", "Percent Complete", "Date % Complete Last Updated", "Delay Justification", "Status as of June", "Comments"]
                 wasSystemCreated = False
                 hasSystemUpdated = False
                 hasPoamUpdated = False
