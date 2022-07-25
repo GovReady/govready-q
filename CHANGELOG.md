@@ -1,6 +1,15 @@
 GovReady-Q Release Notes
 ========================
 
+v0.10.0.1 (July 25, 2022)
+-------------------------
+
+**Security fixes**
+
+* Upgrade npm modules to address multiple vulnerabilities.
+* Upgrade Python libraries to address multiple vulnerabilities.
+
+
 v0.10.0 (July 13, 2022)
 -----------------------
 
