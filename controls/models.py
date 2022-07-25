@@ -1184,8 +1184,6 @@ class Poam(BaseModel):
                                       unique=False, blank=True, help_text="The Import Record which created this Poam.")
     history = HistoricalRecords(cascade_delete_history=True)
     extra = models.JSONField(blank=True, default=dict, help_text="Additional fields")
-    # spec = JSONField(help_text="A load_modules ModuleRepository spec.", load_kwargs={'object_pairs_hook': OrderedDict})
-    # Spec will hold additional values, such as: POC, resources_required, vendor_dependency
 
     def __str__(self):
         return "<Poam %s id=%d>" % (self.statement, self.id)

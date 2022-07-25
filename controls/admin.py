@@ -41,7 +41,7 @@ class StatementAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     actions = ["export_as_csv"]
     readonly_fields = ('created', 'updated', 'uuid')
     formfield_overrides = {
-        models.JSONField: {'widget': JSONEditorWidget},
+        models.JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
 class StatementRemoteAdmin(admin.ModelAdmin):
@@ -68,6 +68,9 @@ class ElementRoleAdmin(admin.ModelAdmin, ExportCsvMixin):
 class SystemAdmin(GuardedModelAdmin, ExportCsvMixin):
     list_display = ('id', 'root_element')
     actions = ["export_as_csv"]
+    formfield_overrides = {
+        models.JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 40em; width: 650px; margin-left: 160px;'})},
+    }
 
 class SystemEventAdmin(GuardedModelAdmin, ExportCsvMixin):
     list_display = ('id', 'system', 'event_type', 'description', 'created')
@@ -90,7 +93,7 @@ class PoamAdmin(admin.ModelAdmin, ExportCsvMixin):
     search_fields = ('id', 'poam_id', 'statement', 'controls', 'uuid')
     actions = ["export_as_csv"]
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        models.JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
     def uuid(self, obj):
@@ -104,7 +107,7 @@ class DeploymentAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     search_fields = ('id', 'name', 'uuid')
     actions = ["export_as_csv"]
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        models.JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
     def uuid(self, obj):
@@ -114,14 +117,14 @@ class SystemAssessmentResultAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'system', 'deployment', 'uuid')
     search_fields = ('id', 'name', 'system', 'deployment', 'uuid')
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        models.JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
 class CatalogDataAdmin(admin.ModelAdmin):
     list_display = ('catalog_key',)
     search_fields = ('catalog_key',)
     formfield_overrides = {
-        models.JSONField: {'widget': JSONEditorWidget},
+        models.JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 40em; width: 650px; margin-left: 160px;'})},
     }
 
 admin.site.register(ImportRecord, ImportRecordAdmin)
