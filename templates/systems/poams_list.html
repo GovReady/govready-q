@@ -30,7 +30,7 @@
     <script>
       window.system_summary({{system.id}}, {{project.id}});
     </script>
-
+{% comment %} 
     <h3>POA&MS Managed Locally in GovReady-Q</h3>
     <p>The following POA&Ms originate locally in GovReady-Q.</p>
     <div id="tab-content" class="row rows-header">
@@ -66,7 +66,7 @@
             </div>
         </div>
       {% endfor %}
-    {% endif %}
+    {% endif %} {% endcomment %}
 </div>
 
 {% endblock %}

@@ -8,6 +8,7 @@ import {
   GridToolbar, 
   useGridApiContext,
 } from '@mui/x-data-grid';
+
 // import {
 //   DataGrid,
 //   escapeRegExp,
@@ -34,43 +35,15 @@ import {
   OverlayTrigger,
   Col, 
   ControlLabel,
-  Form,
-  FormControl,
-  FormGroup, 
   Row,
   Modal
 } from 'react-bootstrap';
+import Form from "@rjsf/core";
 import { AsyncPagination } from "../shared/asyncTypeahead";
 import { red, green } from '@mui/material/colors';
 import { ReactModal } from '../shared/modal';
 import { hide, show } from '../shared/modalSlice';
-// const defaultTheme = createMuiTheme();
-
-// const searchStyles = makeStyles({
-//     root: {
-//       padding: theme.spacing(0.5, 0.5, 0),
-//       justifyContent: 'space-between',
-//       display: 'flex',
-//       alignItems: 'flex-start',
-//       flexWrap: 'wrap',
-//     },
-//     textField: {
-//       [theme.breakpoints.down('xs')]: {
-//         width: '100%',
-//       },
-//       margin: theme.spacing(1, 0.5, 1.5),
-//       '& .MuiSvgIcon-root': {
-//         marginRight: theme.spacing(0.5),
-//       },
-//       '& .MuiInput-underline:before': {
-//         borderBottom: `1px solid ${theme.palette.divider}`,
-//       },
-//     },
-//   }
-// );
-
 function QuickSearchToolbar(props) {
-  // const classes = searchStyles();
 
   return (
     <div style={{ float: 'right' }}>
@@ -125,10 +98,11 @@ const datagridStyles = makeStyles({
     },
     "& .MuiDataGrid-main":{
       height: "30rem !important",
+      // overflowX: "scroll",
     },
-    "& .MuiDataGrid-virtualScroller":{
-      height: "30rem !important",
-    }
+    // "& .MuiDataGrid-virtualScroller":{
+    //   height: "30rem !important",
+    // }
   }
 });
 
@@ -141,8 +115,210 @@ const useStyles = makeStyles({
     '& .MuiDataGrid-columnHeaderTitleContainer':{
       flexFlow: 'row-reverse',
     },
+  },
+  leftColumn: {
+    position: '-webkit-sticky',
+    position: 'sticky',
   }
 });
+
+// const JForm = JSONSchemaForm.default;
+
+const schema = {
+  title: "Test form",
+  type: "object",
+  properties: {
+    id: {
+      type: "string",
+    },
+    controls: {
+      type: "string"
+    },
+    created: {
+      type: "string"
+    },
+    updated: {
+      type: "string"
+    },
+    weakness_detection_source: {
+      type: "string",
+      title: "Weakness Detection Source"
+    },
+    weakness_name: {
+      type: "string",
+      title: "Weakness Name"
+    },
+    weakness_source_identifier: {
+      type: "string",
+      title: "Weakness Source Identifier"
+    },
+    poam_id: {
+      type: "string",
+      title: "Poam Id"
+    },
+    poam_group: {
+      type: "string",
+      title: "Poam Group"
+    },
+    milestones: {
+      type: "string"
+    },
+    milestone_changes: {
+      type: "string",
+      title: "Milestone Changes"
+    },
+    remediation_plan: {
+      type: "string",
+      title: "Remediation_plan"
+    },
+    risk_rating_original: {
+      type: "string",
+      title: "Risk Rating Original"
+    },
+    risk_rating_adjusted: {
+      type: "string",
+      title: "Risk Rating Adjusted"
+    },
+    scheduled_completion_date: {
+      type: "string",
+      title: "Scheduled Completion Date"
+    },
+    extra: {
+      title: "",
+      type: "object",
+      properties: {
+        "Accepted Risk": {
+          type: "string"
+        },
+        "Actual Start Date": {
+          type: "string"
+        },
+        "Actual Finish Date": {
+          type: "string"
+        },
+        "Assigned Date": {
+          type: "string"
+        },
+        "Assigned To": {
+          type: "string"
+        },
+        "CSFCategory": {
+          type: "string"
+        },
+        "CSFSubCategory": {
+          type: "string"
+        },
+        "CSFFunction": {
+          type: "string"
+        },
+        Comments: {
+          type: "string"
+        },
+        Cost: {
+          type: "string"
+        },
+        "Days Since Creation": {
+          type: "string"
+        },
+        "Deficiency Category": {
+          type: "string"
+        },
+        "Delay Justification": {
+          type: "string"
+        },
+        "Deay Reason": {
+          type: "string"
+        },
+        Email: {
+          type: "string"
+        },
+        "Number Artifacts": {
+          type: "string"
+        },
+        "Number Milestones": {
+          type: "string"
+        },
+        "POAM Sequence": {
+          type: "string"
+        },
+        "Planned Start Date": {
+          type: "string"
+        },
+        "Planned Finish Date": {
+          type: "string"
+        },
+        "RBD Approval Date": {
+          type: "string"
+        },
+        "Scheduled Completion Date": {
+          type: "string"
+        },
+        Severity: {
+          type: "string"
+        },
+        "Source of Finding": {
+          type: "string"
+        },
+        "Status as of June": {
+          type: "string"
+        },
+        "User Identified Criticality": {
+          type: "string"
+        },
+        Weakness: {
+          type: "string"
+        },
+        "Workflow Status": {
+          type: "string"
+        },
+        "Workflow Status Date": {
+          type: "string"
+        },
+      }
+    },
+    statement: {
+      title: "",
+      type: "object",
+      properties: {
+        body: { 
+          type: "string"
+        },
+        created: {
+          type: "string"
+        },
+        import_record: {
+          type: "string",
+          title: "Import Record"
+        },
+        updated: {
+          type: "string"
+        },
+        uuid: {
+          type: "string"
+        },
+        status: {
+          type: "string"
+        },
+        remarks: {
+          type: "string"
+        },
+        pid: {
+          type: "string"
+        },
+        sid: {
+          type: "string"
+        },
+        sid_class: {
+          type: "string",
+          title: "sid class"
+        },
+        source: {
+          type: "string"
+        },
+      }
+    }
+  }
+};
 
 export const SystemSummary = ({ systemId, projectId }) => {
   const dispatch = useDispatch();
@@ -154,6 +330,19 @@ export const SystemSummary = ({ systemId, projectId }) => {
   const [ rows, setRows ] = useState(data)
   const [ searchText, setSearchText ] = useState('');
   const [columns, setColumns] = useState([]);
+
+  const [openEditPoamModal, setOpenEditPoamModal] = useState(false);
+  const [currentPoam, setCurrentPoam] = useState({})
+  
+  
+  const handleClose = () => {
+    setOpenEditPoamModal(false);
+  }
+  
+  const handleOpenIndividualPoam = (row) => {
+    setOpenEditPoamModal(true);
+    setCurrentPoam(row);
+  }
 
   function escapeRegex(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -195,7 +384,17 @@ export const SystemSummary = ({ systemId, projectId }) => {
             width: 150,
             editable: false,
             hideable: false,
-            valueGetter: (params) => params.row.weakness_name,
+            // valueGetter: (params) => params.row.weakness_name,
+            renderCell: (params) => (
+              <div className={classes.leftColumn} onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleOpenIndividualPoam(params.row)
+                }
+              }>
+                {params.row.weakness_name}
+              </div>
+            )
           },
           {
             field: 'evidence',
@@ -247,10 +446,25 @@ export const SystemSummary = ({ systemId, projectId }) => {
     });
   }, [])
 
-
-  
-
-
+  // const createFormControl = (obj) => {
+  //   Object.entries(obj).map(([key, value], index) => {
+  //     if (typeof(value) !== 'object') {
+  //       // console.log(`not object => key: ${key} value: ${value} at index: ${index}`)
+  //       return (
+  //         <p key={index}>{key}</p>
+  //       )
+  //     } 
+  //     else if(value === null){
+  //       // console.log(`null => key: ${key} value: ${value} at index: ${index}`)
+  //       return (
+  //         <p key={index}>{key}</p>
+  //       )
+  //     }
+  //     else {
+  //       createFormControl(value)
+  //     }
+  //   })
+  // }
 
 
   return (
@@ -261,7 +475,7 @@ export const SystemSummary = ({ systemId, projectId }) => {
                   <div style={{ width: "100%", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
                       <DataGrid
                         className={dgClasses.root}
-                        autoHeight={true}
+                        // autoHeight={true}
                         density="compact"
                         rows={rows}
                         columns={columns}
@@ -269,40 +483,47 @@ export const SystemSummary = ({ systemId, projectId }) => {
                         rowsPerPageOptions={[25]}
                         rowHeight={50}
                         checkboxSelection
+                        showScrollbar={true}
+                        selectRow
                         initialState={{
-                          columns: {
-                            columnVisibilityModel: {
-                              // Hide columns status and traderName, the other columns will remain visible
-                              evidence: false,
-                              status: false,
-                              risk_rating_adjusted: false,
-                              created: false,
-                              updated: false,
-                              "Assigned To": false,
-                              "User Identified Criticality": false,
-                              "Workflow Status Date": false,
-                              "Scheduled Completion Date": false,
-                              "Planned Start Date": false,
-                              "Planned Finish Date": false,
-                              "Actual Finish Date": false,
-                              "Deficiency Category": false,
-                              "Days Since Creation": false,
-                              "Source of Finding": false,
-                              "RBD Approval Date": false,
-                              "Actual Start Date": false,
-                              "Number Milestones": false,
-                              "Number Artifacts": false,
-                              "Workflow Status": false,
-                              "CSFSubCategory": false,
-                              "CSFFunction": false,
-                              "CSFCategory": false,
-                              "Delay Reason": false,
-                              "Accepted Risk": false,
-                              "Assigned Date": false,
-                              "POAM Sequence": false,
-                              "Weakness": false,
-                            }
-                          },
+                          pinnedColumns: {
+                            left: ['weakness_name'],
+                            // right: ['Delay Justification', 'Status as of June', 'Comments']
+                          }
+                          // columns: {
+                          //   columnVisibilityModel: {
+                          //     // Hide columns status and traderName, the other columns will remain visible
+                          //     evidence: false,
+                          //     status: false,
+                          //     risk_rating_adjusted: false,
+                          //     created: false,
+                          //     updated: false,
+                          //     "Assigned To": false,
+                          //     "User Identified Criticality": false,
+                          //     "Workflow Status Date": false,
+                          //     "Scheduled Completion Date": false,
+                          //     "Planned Start Date": false,
+                          //     "Planned Finish Date": false,
+                          //     "Actual Finish Date": false,
+                          //     "Deficiency Category": false,
+                          //     "Days Since Creation": false,
+                          //     "Source of Finding": false,
+                          //     "RBD Approval Date": false,
+                          //     "Actual Start Date": false,
+                          //     "Number Milestones": false,
+                          //     "Number Artifacts": false,
+                          //     "Workflow Status": false,
+                          //     "CSFSubCategory": false,
+                          //     "CSFFunction": false,
+                          //     "CSFCategory": false,
+                          //     "Delay Reason": false,
+                          //     "Accepted Risk": false,
+                          //     "Assigned Date": false,
+                          //     "POAM Sequence": false,
+                          //     "Weakness": false,
+                          //   }
+                          // },
+                          
                         }}
                         
                         // components={{ Toolbar: QuickSearchToolbar }}
@@ -327,7 +548,23 @@ export const SystemSummary = ({ systemId, projectId }) => {
                           },
                         }}
                       />
+                      
                   </div>
+                  <ReactModal
+                      title={`Edit POAM`}
+                      show={openEditPoamModal}
+                      hide={() => setOpenEditPoamModal(false)}
+                      header={
+                        <span>header{console.log(currentPoam)}</span>
+                      }
+                      body={
+                        <Form 
+                          schema={schema} 
+                          formData={currentPoam}
+                        />
+                        
+                      }
+                      />
               </div>
           </Grid>
       </div>
