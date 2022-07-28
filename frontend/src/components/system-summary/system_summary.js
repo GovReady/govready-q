@@ -132,7 +132,7 @@ const schema = {
       type: "string",
     },
     controls: {
-      type: "string"
+      type: "string",
     },
     created: {
       type: "string"
@@ -212,7 +212,7 @@ const schema = {
           type: "string"
         },
         Comments: {
-          type: "string"
+          type: "string",
         },
         Cost: {
           type: "string"
@@ -226,7 +226,7 @@ const schema = {
         "Delay Justification": {
           type: "string"
         },
-        "Deay Reason": {
+        "Delay Reason": {
           type: "string"
         },
         Email: {
@@ -260,7 +260,7 @@ const schema = {
           type: "string"
         },
         "Status as of June": {
-          type: "string"
+          type: "string",
         },
         "User Identified Criticality": {
           type: "string"
@@ -318,6 +318,151 @@ const schema = {
       }
     }
   }
+};
+const uiSchema = {
+  "ui:widget": "textarea",
+  "ui:options": {
+    rows: 5
+  },
+  "ui:order": [
+    "extra", 
+    "statement", "controls", "created", "id", "updated", "weakness_detection_source",
+    "weakness_name", "weakness_source_identifier", "poam_id", "poam_group", "milestones", 
+    "milestone_changes", "remediation_plan", "risk_rating_original", "risk_rating_adjusted", 
+    "scheduled_completion_date"],
+  "created": {
+    "ui:readonly": true
+  },
+  "controls": {
+    "ui:readonly": true
+  },
+  "id": {
+    "ui:readonly": true
+  },
+  "updated": {
+    "ui:readonly": true
+  },
+  "weakness_detection_source": {
+    "ui:readonly": true
+  },
+  "weakness_name": {
+    "ui:readonly": true
+  }, 
+  "weakness_source_identifier": {
+    "ui:readonly": true
+  }, 
+  "poam_id": {
+    "ui:readonly": true
+  }, 
+  "poam_group": {
+    "ui:readonly": true
+  }, 
+  "milestones": {
+    "ui:readonly": true
+  }, 
+  "milestone_changes": {
+    "ui:readonly": true
+  }, 
+  "remediation_plan": {
+    "ui:readonly": true
+  }, 
+  "risk_rating_original": {
+    "ui:readonly": true
+  }, 
+  "risk_rating_adjusted": {
+    "ui:readonly": true
+  }, 
+  "scheduled_completion_date": {
+    "ui:readonly": true
+  },
+  extra: {
+    "ui:order": ["Delay Justification", "Status as of June", "Comments", "Accepted Risk", "Actual Start Date", "Actual Finish Date", "Assigned Date", "Assigned To", "CSFCategory", "CSFSubCategory", "CSFFunction", "Cost", "Days since Creation", "Deficiency Category", "Delay Reason", "Email", "Number Artifacts", "Nnumber Milestones", "POAM Sequence", "Planned Start Date", "Planned Finish Date", "RBD Approval Date", "Scheduled Completion Date", "Severity", "Source of Finding", "User Identified Criticality", "Weakness", "Workflow Status", "Workflow Status Date", "Number Milestones", "Days Since Creation"],
+    "ui:readonly": false,
+    "Accepted Risk": {
+      "ui:readonly": true
+    },
+    "Actual Start Date": {
+      "ui:readonly": true
+    },
+    "Actual Finish Date": {
+      "ui:readonly": true
+    },
+    "Assigned Date": {
+      "ui:readonly": true
+    },
+    "Assigned To": {
+      "ui:readonly": true
+    },
+    "CSFCategory": {
+      "ui:readonly": true
+    },
+    "CSFSubCategory": {
+      "ui:readonly": true
+    },
+    "CSFFunction": {
+      "ui:readonly": true
+    },
+    "Cost": {
+      "ui:readonly": true
+    },
+    "Days Since Creation": {
+      "ui:readonly": true
+    },
+    "Deficiency Category": {
+      "ui:readonly": true
+    },
+    "Delay Reason": {
+      "ui:readonly": true
+    },
+    "Email": {
+      "ui:readonly": true
+    },
+    "Number Artifacts": {
+      "ui:readonly": true
+    },
+    "Number Milestones": {
+      "ui:readonly": true
+    },
+    "POAM Sequence": {
+      "ui:readonly": true
+    },
+    "Planned Start Date": {
+      "ui:readonly": true
+    },
+    "Planned Finish Date": {
+      "ui:readonly": true
+    },
+    "RBD Approval Date": {
+      "ui:readonly": true
+    },
+    "Scheduled Completion Date": {
+      "ui:readonly": true
+    },
+    "Severity": {
+      "ui:readonly": true
+    },
+    "Source of Finding": {
+      "ui:readonly": true
+    },
+    "User Identfied Criticality": {
+      "ui:readonly": true
+    },
+    "Weakness": {
+      "ui:readonly": true
+    },
+    "Workflow Status": {
+      "ui:readonly": true
+    },
+    "Workflow Status Date": {
+      "ui:readonly": true
+    },
+  },
+  statement: {
+    "ui:order": ["status", "body", "import_record", "updated", "uuid", "remarks", "pid", "sid", "sid_class", "source", "created"],
+    "ui:readonly": true,
+  },
+  
+  
 };
 
 export const SystemSummary = ({ systemId, projectId }) => {
@@ -558,11 +703,13 @@ export const SystemSummary = ({ systemId, projectId }) => {
                         <span>header{console.log(currentPoam)}</span>
                       }
                       body={
-                        <Form 
-                          schema={schema} 
-                          formData={currentPoam}
-                        />
-                        
+                        <div style={{ height: '80%', overflowY: "scroll" }}>
+                          <Form 
+                            schema={schema} 
+                            uiSchema={uiSchema}
+                            formData={currentPoam}
+                          />
+                        </div>
                       }
                       />
               </div>
