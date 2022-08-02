@@ -21,3 +21,8 @@
   .sys-owner-request-modal{
     min-width: 40%;
   }
+  .poam-edit-modal{
+    min-width: 80%;
+    min-height: 90%;
+    margin-top: 10rem;
+  }

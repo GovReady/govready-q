@@ -31,6 +31,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import {
   Tooltip,
   Button,
+  FormGroup,
+  FormControl,
   Glyphicon,
   OverlayTrigger,
   Col, 
@@ -97,7 +99,7 @@ const datagridStyles = makeStyles({
       maxHeight: "none !important"
     },
     "& .MuiDataGrid-main":{
-      height: "30rem !important",
+      height: "75rem !important",
       // overflowX: "scroll",
     },
     // "& .MuiDataGrid-virtualScroller":{
@@ -123,6 +125,33 @@ const useStyles = makeStyles({
 });
 
 // const JForm = JSONSchemaForm.default;
+
+const CustomTextArea = function(props) {
+  return (
+    <FormGroup controlId="formControlsTextarea">
+      <FormControl 
+        componentClass="textarea" 
+        placeholder="textarea" 
+        onChange={(event) => props.onChange(event.target.value)}
+        value={props.value}
+      />
+    </FormGroup>
+  );
+};
+
+const CustomDisabledTextBox = function(props) {
+  return (
+    <FormGroup controlId="formControlsTextarea">
+      <FormControl 
+        type="text" 
+        placeholder={props.value}
+        value={props.value !== null ? props.value : "-"}
+        disabled
+        readOnly
+      />
+    </FormGroup>
+  );
+};
 
 const schema = {
   title: "",
@@ -187,6 +216,26 @@ const schema = {
       title: "",
       type: "object",
       properties: {
+        "Monthly Status": {
+          type: ["string", "null"],
+          enum: [
+            "1. Evidence provided to AIS for review", 
+            "2. remediated -- completed", 
+            "3. in-process -- being worked", 
+            "4. Risk Acceptance - waiver", 
+            "5. Ad-hob scan & results required", 
+            "6. No longer the Sustainment Coordinator", 
+            "7. No longer applicable", 
+            "8. Not sure how to respond, please schedule a meeting to discuss", 
+            "9. Sunset - justification required"
+          ]
+        },
+        "Delay Justification": {
+          type: ["string", "null"]
+        },
+        Comments: {
+          type: ["string", "null"],
+        },
         "Accepted Risk": {
           type: ["string", "null"]
         },
@@ -211,9 +260,6 @@ const schema = {
         "CSFFunction": {
           type: ["string", "null"]
         },
-        Comments: {
-          type: ["string", "null"],
-        },
         Cost: {
           type: ["string", "null"]
         },
@@ -221,9 +267,6 @@ const schema = {
           type: ["integer", "null"]
         },
         "Deficiency Category": {
-          type: ["string", "null"]
-        },
-        "Delay Justification": {
           type: ["string", "null"]
         },
         "Delay Reason": {
@@ -258,9 +301,6 @@ const schema = {
         },
         "Source of Finding": {
           type: ["string", "null"]
-        },
-        "Status as of June": {
-          type: ["string", "null"],
         },
         "User Identified Criticality": {
           type: ["string", "null"]
@@ -320,146 +360,232 @@ const schema = {
   }
 };
 const uiSchema = {
-  "ui:widget": "textarea",
+  "ui:widget": CustomDisabledTextBox,
   "ui:options": {
     rows: 5
   },
   "ui:order": [
-    "extra", 
-    "statement", "controls", "created", "id", "updated", "weakness_detection_source",
+    "extra", "statement", 
+    "controls", "created", "id", "updated", "weakness_detection_source",
     "weakness_name", "weakness_source_identifier", "poam_id", "poam_group", "milestones", 
     "milestone_changes", "remediation_plan", "risk_rating_original", "risk_rating_adjusted", 
-    "scheduled_completion_date"],
+    "scheduled_completion_date"
+  ],
+  
   "created": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   },
   "controls": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   },
   "id": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   },
   "updated": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   },
   "weakness_detection_source": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   },
   "weakness_name": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   }, 
   "weakness_source_identifier": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   }, 
   "poam_id": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   }, 
   "poam_group": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   }, 
   "milestones": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   }, 
   "milestone_changes": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   }, 
   "remediation_plan": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   }, 
   "risk_rating_original": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   }, 
   "risk_rating_adjusted": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   }, 
   "scheduled_completion_date": {
-    "ui:readonly": true
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox
   },
   extra: {
-    "ui:order": ["Delay Justification", "Status as of June", "Comments", "Accepted Risk", "Actual Start Date", "Actual Finish Date", "Assigned Date", "Assigned To", "CSFCategory", "CSFSubCategory", "CSFFunction", "Cost", "Days since Creation", "Deficiency Category", "Delay Reason", "Email", "Number Artifacts", "Nnumber Milestones", "POAM Sequence", "Planned Start Date", "Planned Finish Date", "RBD Approval Date", "Scheduled Completion Date", "Severity", "Source of Finding", "User Identified Criticality", "Weakness", "Workflow Status", "Workflow Status Date", "Number Milestones", "Days Since Creation"],
+    "ui:order": ["Monthly Status", "Delay Justification", "Comments", "Accepted Risk", "Actual Start Date", "Actual Finish Date", "Assigned Date", "Assigned To", "CSFCategory", "CSFSubCategory", "CSFFunction", "Cost", "Days since Creation", "Deficiency Category", "Delay Reason", "Email", "Number Artifacts", "Nnumber Milestones", "POAM Sequence", "Planned Start Date", "Planned Finish Date", "RBD Approval Date", "Scheduled Completion Date", "Severity", "Source of Finding", "User Identified Criticality", "Weakness", "Workflow Status", "Workflow Status Date", "Number Milestones", "Days Since Creation"],
+    "ui:widget": CustomDisabledTextBox,
     "ui:readonly": false,
+
+    "Delay Justification": {
+      "ui:widget": CustomTextArea
+    },
+    "Comments": {
+      "ui:widget": CustomTextArea
+    },
     "Accepted Risk": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Actual Start Date": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox
     },
     "Actual Finish Date": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox
     },
     "Assigned Date": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Assigned To": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "CSFCategory": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "CSFSubCategory": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "CSFFunction": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Cost": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Days Since Creation": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Deficiency Category": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Delay Reason": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Email": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Number Artifacts": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Number Milestones": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "POAM Sequence": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Planned Start Date": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Planned Finish Date": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "RBD Approval Date": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Scheduled Completion Date": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Severity": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Source of Finding": {
+      "ui:widget": CustomDisabledTextBox,
       "ui:readonly": true
     },
     "User Identfied Criticality": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Weakness": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Workflow Status": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
     "Workflow Status Date": {
-      "ui:readonly": true
+      "ui:readonly": true,
+      "ui:widget": CustomDisabledTextBox,
     },
   },
   statement: {
+    "ui:widget": CustomDisabledTextBox,
     "ui:order": ["status", "body", "import_record", "updated", "uuid", "remarks", "pid", "sid", "sid_class", "source", "created"],
     "ui:readonly": true,
+
+    "status": {
+      "ui:widget": CustomDisabledTextBox,
+    },
+    "body": {
+      "ui:widget": CustomDisabledTextBox,
+    },
+    "import_record": {
+      "ui:widget": CustomDisabledTextBox,
+    },
+    "updated": {
+      "ui:widget": CustomDisabledTextBox,
+    },
+    "uuid": {
+      "ui:widget": CustomDisabledTextBox,
+    },
+    "remarks": {
+      "ui:widget": CustomDisabledTextBox,
+    },
+    "pid": {
+      "ui:widget": CustomDisabledTextBox,
+    },
+    "sid": {
+      "ui:widget": CustomDisabledTextBox,
+    },
+    "sid_class": {
+      "ui:widget": CustomDisabledTextBox,
+    },
+    "source": {
+      "ui:widget": CustomDisabledTextBox,
+    },
+    "created": {
+      "ui:widget": CustomDisabledTextBox,
+    }
   },
   
   
@@ -503,11 +629,19 @@ export const SystemSummary = ({ systemId, projectId }) => {
     
     const filteredRows = data.filter((row) => {
       return Object.keys(row).some((field) => {
+        if(row[field] !== null && typeof row[field] === 'object'){          
+          return Object.keys(row[field]).some((secField) => {
+            if(row[field][secField] !== null){
+              return searchRegex.test(row[field][secField].toString().toLowerCase());
+            }
+          });
+        }
         if(row[field] !== null){
           return searchRegex.test(row[field].toString().toLowerCase());
         }
       });
     });
+    
     setRows(filteredRows);
   };
 
@@ -543,21 +677,21 @@ export const SystemSummary = ({ systemId, projectId }) => {
             headerName: 'Evidence',
             width: 150,
             editable: false,
-            valueGetter: (params) => params.row.weakness_name,
+            valueGetter: (params) => params.row.weakness_name !== null ? params.row.weakness_name : "-",
           },
           {
             field: 'status',
             headerName: 'Status',
             width: 150,
             editable: false,
-            valueGetter: (params) => params.row.statement.status,
+            valueGetter: (params) => params.row.statement.status !== null ? params.row.statement.status : "-",
           },
           {
               field: 'risk_rating_adjusted',
               headerName: 'Criticality',
               width: 150,
               editable: false,
-              valueGetter: (params) => params.row.risk_rating_adjusted,
+              valueGetter: (params) => params.row.risk_rating_adjusted !== null ? params.row.risk_rating_adjusted : "-",
           },
           {
               field: 'created',
@@ -580,7 +714,7 @@ export const SystemSummary = ({ systemId, projectId }) => {
           headerName: key,
           width: 150,
           editable: ["Delay Justification", "Status as of June", "Comments"].includes(key) ? true : false,
-          valueGetter: (params) => params.row.extra[key]
+          valueGetter: (params) => params.row.extra[key] !== null ? params.row.extra[key] : "-"
         })
       }
       setColumns(newColumns)
@@ -692,6 +826,7 @@ export const SystemSummary = ({ systemId, projectId }) => {
                   </div>
                   <ReactModal
                       title={`Edit POAM`}
+                      dialogClassName={"poam-edit-modal"}
                       show={openEditPoamModal}
                       hide={() => setOpenEditPoamModal(false)}
                       header={
@@ -709,11 +844,11 @@ export const SystemSummary = ({ systemId, projectId }) => {
                       }
                       bodyStyle={
                         {
-                          height: "50rem",
+                          height: "75rem",
                           overflowY: "scroll" 
                         }
                       }
-                      />
+                    />
               </div>
           </Grid>
       </div>
