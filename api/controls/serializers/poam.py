@@ -44,6 +44,18 @@ class SimplePoamSerializer(ReadOnlySerializer):
                   'remediation_plan', 'scheduled_completion_date', 'milestones','milestone_changes',
                   'risk_rating_original', 'risk_rating_adjusted', 'poam_group', 'statement', 'extra']
 
+class WritePoamSerializer(WriteOnlySerializer):
+    update = serializers.JSONField()
+
+    class Meta:
+        model = Poam
+        fields = ['update']
+class UpdatePoamExtraSerializer(WriteOnlySerializer):
+    update = serializers.JSONField()
+
+    class Meta:
+        model = Poam
+        fields = ['update']
 class SimpleSpreadsheetPoamSerializer(ReadOnlySerializer):
     spreadsheet_poams = serializers.SerializerMethodField('get_spreadsheet_poams')
 

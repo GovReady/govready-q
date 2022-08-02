@@ -4167,6 +4167,13 @@ def system_import(request):
                                         new_poam.extra[key] = system[key]
                                     else:
                                         new_poam.extra[key] = new_system_info[key]
+                            # Check if added attributes are in the excel doc, if not, add them
+                            
+                            monthlyStatus = f"Status as of {datetime.today().strftime('%B')}"
+                            
+                            for attribute in ["Delay Justification", monthlyStatus, "Comments"]:
+                                if attribute not in new_poam.extra:
+                                    new_poam.extra[attribute] = ""
                             new_poam.save_without_historical_record()
                             sys_log.append(f"POAM {new_poam.poam_id} was created")
                     

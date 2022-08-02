@@ -125,62 +125,62 @@ const useStyles = makeStyles({
 // const JForm = JSONSchemaForm.default;
 
 const schema = {
-  title: "Test form",
+  title: "",
   type: "object",
   properties: {
     id: {
-      type: "string",
+      type: "integer",
     },
     controls: {
-      type: "string",
+      type: ["string", "null"],
     },
     created: {
-      type: "string"
+      type: ["string", "null"]
     },
     updated: {
-      type: "string"
+      type: ["string", "null"]
     },
     weakness_detection_source: {
-      type: "string",
+      type: ["string", "null"],
       title: "Weakness Detection Source"
     },
     weakness_name: {
-      type: "string",
+      type: ["string", "null"],
       title: "Weakness Name"
     },
     weakness_source_identifier: {
-      type: "string",
+      type: ["string", "null"],
       title: "Weakness Source Identifier"
     },
     poam_id: {
-      type: "string",
+      type: ["integer", "null"],
       title: "Poam Id"
     },
     poam_group: {
-      type: "string",
+      type: ["string", "null"],
       title: "Poam Group"
     },
     milestones: {
-      type: "string"
+      type: ["string", "null"]
     },
     milestone_changes: {
-      type: "string",
+      type: ["string", "null"],
       title: "Milestone Changes"
     },
     remediation_plan: {
-      type: "string",
+      type: ["string", "null"],
       title: "Remediation_plan"
     },
     risk_rating_original: {
-      type: "string",
+      type: ["string", "null"],
       title: "Risk Rating Original"
     },
     risk_rating_adjusted: {
-      type: "string",
+      type: ["string", "null"],
       title: "Risk Rating Adjusted"
     },
     scheduled_completion_date: {
-      type: "string",
+      type: ["string", "null"],
       title: "Scheduled Completion Date"
     },
     extra: {
@@ -188,91 +188,91 @@ const schema = {
       type: "object",
       properties: {
         "Accepted Risk": {
-          type: "string"
+          type: ["string", "null"]
         },
         "Actual Start Date": {
-          type: "string"
+          type: ["string", "null"]
         },
         "Actual Finish Date": {
-          type: "string"
+          type: ["string", "null"]
         },
         "Assigned Date": {
-          type: "string"
+          type: ["string", "null"]
         },
         "Assigned To": {
-          type: "string"
+          type: ["string", "null"]
         },
         "CSFCategory": {
-          type: "string"
+          type: ["string", "null"]
         },
         "CSFSubCategory": {
-          type: "string"
+          type: ["string", "null"]
         },
         "CSFFunction": {
-          type: "string"
+          type: ["string", "null"]
         },
         Comments: {
-          type: "string",
+          type: ["string", "null"],
         },
         Cost: {
-          type: "string"
+          type: ["string", "null"]
         },
         "Days Since Creation": {
-          type: "string"
+          type: ["integer", "null"]
         },
         "Deficiency Category": {
-          type: "string"
+          type: ["string", "null"]
         },
         "Delay Justification": {
-          type: "string"
+          type: ["string", "null"]
         },
         "Delay Reason": {
-          type: "string"
+          type: ["string", "null"]
         },
         Email: {
-          type: "string"
+          type: ["string", "null"]
         },
         "Number Artifacts": {
-          type: "string"
+          type: ["integer", "null"]
         },
         "Number Milestones": {
-          type: "string"
+          type: ["integer", "null"]
         },
         "POAM Sequence": {
-          type: "string"
+          type: ["integer", "null"]
         },
         "Planned Start Date": {
-          type: "string"
+          type: ["string", "null"]
         },
         "Planned Finish Date": {
-          type: "string"
+          type: ["string", "null"]
         },
         "RBD Approval Date": {
-          type: "string"
+          type: ["string", "null"]
         },
         "Scheduled Completion Date": {
-          type: "string"
+          type: ["string", "null"]
         },
         Severity: {
-          type: "string"
+          type: ["string", "null"]
         },
         "Source of Finding": {
-          type: "string"
+          type: ["string", "null"]
         },
         "Status as of June": {
-          type: "string",
+          type: ["string", "null"],
         },
         "User Identified Criticality": {
-          type: "string"
+          type: ["string", "null"]
         },
         Weakness: {
-          type: "string"
+          type: ["string", "null"]
         },
         "Workflow Status": {
-          type: "string"
+          type: ["string", "null"]
         },
         "Workflow Status Date": {
-          type: "string"
+          type: ["string", "null"]
         },
       }
     },
@@ -281,39 +281,39 @@ const schema = {
       type: "object",
       properties: {
         body: { 
-          type: "string"
+          type: ["string", "null"]
         },
         created: {
-          type: "string"
+          type: ["string", "null"]
         },
         import_record: {
-          type: "string",
+          type: ["string", "null"],
           title: "Import Record"
         },
         updated: {
-          type: "string"
+          type: ["string", "null"]
         },
         uuid: {
-          type: "string"
+          type: ["string", "null"]
         },
         status: {
-          type: "string"
+          type: ["string", "null"]
         },
         remarks: {
-          type: "string"
+          type: ["string", "null"]
         },
         pid: {
-          type: "string"
+          type: ["string", "null"]
         },
         sid: {
-          type: "string"
+          type: ["string", "null"]
         },
         sid_class: {
-          type: "string",
+          type: ["string", "null"],
           title: "sid class"
         },
         source: {
-          type: "string"
+          type: ["string", "null"]
         },
       }
     }
@@ -518,10 +518,7 @@ export const SystemSummary = ({ systemId, projectId }) => {
   useEffect(() => {
     axios(`/api/v2/systems/${systemId}/poams/`).then(response => {
       setData(response.data.data);
-      
-      // if (!isObjectEmpty(response.data.data[0].extra)) {
-        
-      // }
+
       const newColumns = [
         {
             field: 'weakness_name',
@@ -578,7 +575,6 @@ export const SystemSummary = ({ systemId, projectId }) => {
           },
       ];
       for (const [key, value] of Object.entries(response.data.data[0].extra)) {
-        // console.log(`${key}: ${value}`);
         newColumns.push({
           field: key,
           headerName: key,
@@ -589,28 +585,27 @@ export const SystemSummary = ({ systemId, projectId }) => {
       }
       setColumns(newColumns)
     });
-  }, [])
+  }, []);
 
-  // const createFormControl = (obj) => {
-  //   Object.entries(obj).map(([key, value], index) => {
-  //     if (typeof(value) !== 'object') {
-  //       // console.log(`not object => key: ${key} value: ${value} at index: ${index}`)
-  //       return (
-  //         <p key={index}>{key}</p>
-  //       )
-  //     } 
-  //     else if(value === null){
-  //       // console.log(`null => key: ${key} value: ${value} at index: ${index}`)
-  //       return (
-  //         <p key={index}>{key}</p>
-  //       )
-  //     }
-  //     else {
-  //       createFormControl(value)
-  //     }
-  //   })
-  // }
-
+  const onSubmit = async ({formData}, e) => {
+    // 1. PUT update to POAM to DB
+    const updatePOAM = await axios.put(`/api/v2/systems/${systemId}/poams/${formData.id}/updatePoamExtra/`, { update: formData.extra });
+    if(updatePOAM.status === 200){
+      // window.location.reload();
+      // 2. Update current instance on page
+      const updatedRows = rows.map((row) => {
+        if (row.id === formData.id) {
+          return formData;
+        } else {
+          return row;
+        }
+      });
+      setRows(updatedRows);
+      handleClose();
+    } else {
+      console.error("Something went wrong in creating and appointing new appointments")
+    }
+  };
 
   return (
       <div style={{ maxHeight: '2000px', width: '100%' }}>  
@@ -700,16 +695,23 @@ export const SystemSummary = ({ systemId, projectId }) => {
                       show={openEditPoamModal}
                       hide={() => setOpenEditPoamModal(false)}
                       header={
-                        <span>header{console.log(currentPoam)}</span>
+                        <span>Update POAM {currentPoam.id}: {currentPoam.weakness_name}</span>
                       }
                       body={
-                        <div style={{ height: '80%', overflowY: "scroll" }}>
+                        <div>
                           <Form 
                             schema={schema} 
                             uiSchema={uiSchema}
                             formData={currentPoam}
+                            onSubmit={onSubmit}
                           />
                         </div>
+                      }
+                      bodyStyle={
+                        {
+                          height: "50rem",
+                          overflowY: "scroll" 
+                        }
                       }
                       />
               </div>

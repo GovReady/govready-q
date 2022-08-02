@@ -6,9 +6,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from api.base.views.base import SerializerClasses
-from api.base.views.viewsets import ReadOnlyViewSet
+from api.base.views.viewsets import ReadOnlyViewSet, ReadWriteViewSet
 from api.controls.serializers.element import SimpleElementControlSerializer, DetailedElementControlSerializer
-from api.controls.serializers.poam import DetailedPoamSerializer, SimplePoamSerializer, SimpleSpreadsheetPoamSerializer, SimpleUpdatePoamSpreadsheetSerializer
+from api.controls.serializers.poam import DetailedPoamSerializer, SimplePoamSerializer, SimpleSpreadsheetPoamSerializer, SimpleUpdatePoamSpreadsheetSerializer, WritePoamSerializer, UpdatePoamExtraSerializer
 from api.controls.serializers.system import DetailedSystemSerializer, SimpleSystemSerializer, SystemCreateAndSetProposalSerializer, SystemRetrieveProposalsSerializer
 from api.controls.serializers.system_assement_results import DetailedSystemAssessmentResultSerializer, \
     SimpleSystemAssessmentResultSerializer
@@ -67,13 +67,27 @@ class SystemAssessmentViewSet(ReadOnlyViewSet):
     NESTED_ROUTER_PKS = [{'pk': 'systems_pk', 'model_field': 'system'}]
 
 
-class SystemPoamViewSet(ReadOnlyViewSet):
+class SystemPoamViewSet(ReadWriteViewSet):
     queryset = Poam.objects.all()
 
     serializer_classes = SerializerClasses(retrieve=DetailedPoamSerializer,
-                                           list=SimplePoamSerializer)
+                                           list=SimplePoamSerializer,
+                                           create=WritePoamSerializer,
+                                           update=WritePoamSerializer,
+                                           destroy=WritePoamSerializer,
+                                           updatePoamExtra=UpdatePoamExtraSerializer)
 
-    NESTED_ROUTER_PKS = [{'pk': 'systems_pk', 'model_field': 'statement.consumer_element.system'}]
+    @action(detail=True, url_path="updatePoamExtra", methods=["PUT"])
+    def updatePoamExtra(self, request, **kwargs):
+        poam, validated_data = self.validate_serializer_and_get_object(request)
+        for key, value in validated_data.items():
+            poam.extra = value
+        poam.save()
+
+        serializer_class = self.get_serializer_class('updatePoamExtra')
+        serializer = self.get_serializer(serializer_class, poam)
+        return Response(serializer.data)
+    # NESTED_ROUTER_PKS = [{'pk': 'systems_pk', 'model_field': 'statement.consumer_element.system'}]
 
 class SystemPoamSpreadsheetViewSet(ReadOnlyViewSet):
     queryset = System.objects.all()
