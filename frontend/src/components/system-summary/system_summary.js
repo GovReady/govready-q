@@ -121,6 +121,12 @@ const useStyles = makeStyles({
   leftColumn: {
     position: '-webkit-sticky',
     position: 'sticky',
+  },
+  critical: {
+    backgroundColor: "red"
+  },
+  normal: {
+    backgroundColor: "grey"
   }
 });
 
@@ -627,7 +633,7 @@ export const SystemSummary = ({ systemId, projectId }) => {
     setSearchText(searchValue);
     const searchRegex = new RegExp(escapeRegex(searchValue.toLowerCase()));
     
-    const filteredRows = rows.filter((row) => {
+    const filteredRows = data.filter((row) => {
       return Object.keys(row).some((field) => {
         if(row[field] !== null && typeof row[field] === 'object'){          
           return Object.keys(row[field]).some((secField) => {
@@ -657,7 +663,7 @@ export const SystemSummary = ({ systemId, projectId }) => {
         {
             field: 'weakness_name',
             headerName: 'POA&M',
-            width: 150,
+            width: 300,
             editable: false,
             hideable: false,
             // valueGetter: (params) => params.row.weakness_name,
@@ -709,14 +715,20 @@ export const SystemSummary = ({ systemId, projectId }) => {
           },
       ];
       for (const [key, value] of Object.entries(response.data.data[0].extra)) {
-        newColumns.push({
-          field: key,
-          headerName: key,
-          width: 150,
-          editable: ["Delay Justification", "Status as of June", "Comments"].includes(key) ? true : false,
-          valueGetter: (params) => params.row.extra[key] !== null ? params.row.extra[key] : "-"
-        })
+          newColumns.push({
+            field: key,
+            headerName: key,
+            width: 150,
+            editable: ["Delay Justification", "Status as of June", "Comments"].includes(key) ? true : false,
+            valueGetter: (params) => params.row.extra[key] !== null ? params.row.extra[key] : "-"
+          });
+        
       }
+
+      /* TODO: Conditonal Rendering on User Idenrtified Criticality -> color key the background based on the selected option */
+      /* TODO: RE ORDER COLUMNS */
+
+
       setColumns(newColumns)
     });
   }, []);
@@ -734,6 +746,7 @@ export const SystemSummary = ({ systemId, projectId }) => {
           return row;
         }
       });
+      setData(updatedRows);
       setRows(updatedRows);
       handleClose();
     } else {
@@ -760,44 +773,47 @@ export const SystemSummary = ({ systemId, projectId }) => {
                         showScrollbar={true}
                         selectRow
                         initialState={{
-                          pinnedColumns: {
-                            left: ['weakness_name'],
-                            // right: ['Delay Justification', 'Status as of June', 'Comments']
-                          }
-                          // columns: {
-                          //   columnVisibilityModel: {
-                          //     // Hide columns status and traderName, the other columns will remain visible
-                          //     evidence: false,
-                          //     status: false,
-                          //     risk_rating_adjusted: false,
-                          //     created: false,
-                          //     updated: false,
-                          //     "Assigned To": false,
-                          //     "User Identified Criticality": false,
-                          //     "Workflow Status Date": false,
-                          //     "Scheduled Completion Date": false,
-                          //     "Planned Start Date": false,
-                          //     "Planned Finish Date": false,
-                          //     "Actual Finish Date": false,
-                          //     "Deficiency Category": false,
-                          //     "Days Since Creation": false,
-                          //     "Source of Finding": false,
-                          //     "RBD Approval Date": false,
-                          //     "Actual Start Date": false,
-                          //     "Number Milestones": false,
-                          //     "Number Artifacts": false,
-                          //     "Workflow Status": false,
-                          //     "CSFSubCategory": false,
-                          //     "CSFFunction": false,
-                          //     "CSFCategory": false,
-                          //     "Delay Reason": false,
-                          //     "Accepted Risk": false,
-                          //     "Assigned Date": false,
-                          //     "POAM Sequence": false,
-                          //     "Weakness": false,
-                          //   }
-                          // },
-                          
+                          columns: {
+                            columnVisibilityModel: {
+                              // Hide columns status and traderName, the other columns will remain visible
+                              severity: true,
+                              "CSFCategory": true,
+                              status: true,
+                              "Monthly Status": true,
+                              "Delay Justification": true,
+                              "Comments": true,
+                              "User Identified Criticality": true,
+
+                              "risk_rating_adjusted": false,
+                              "Cost": false,
+                              "Email": false,
+                              "Phone": false,
+                              evidence: false,
+                              created: false,
+                              updated: false,
+                              "Assigned To": false,
+                              "Workflow Status Date": false,
+                              "Scheduled Completion Date": false,
+                              "Planned Start Date": false,
+                              "Planned Finish Date": false,
+                              "Actual Finish Date": false,
+                              "Deficiency Category": false,
+                              "Days Since Creation": false,
+                              "Source of Finding": false,
+                              "RBD Approval Date": false,
+                              "Actual Start Date": false,
+                              "Number Milestones": false,
+                              "Number Artifacts": false,
+                              "Workflow Status": false,
+                              "CSFSubCategory": false,
+                              "CSFFunction": false,
+                              "Delay Reason": false,
+                              "Accepted Risk": false,
+                              "Assigned Date": false,
+                              "POAM Sequence": false,
+                              "Weakness": false,
+                            }
+                          },
                         }}
                         
                         // components={{ Toolbar: QuickSearchToolbar }}
