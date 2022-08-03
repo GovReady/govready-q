@@ -627,7 +627,7 @@ export const SystemSummary = ({ systemId, projectId }) => {
     setSearchText(searchValue);
     const searchRegex = new RegExp(escapeRegex(searchValue.toLowerCase()));
     
-    const filteredRows = data.filter((row) => {
+    const filteredRows = rows.filter((row) => {
       return Object.keys(row).some((field) => {
         if(row[field] !== null && typeof row[field] === 'object'){          
           return Object.keys(row[field]).some((secField) => {
