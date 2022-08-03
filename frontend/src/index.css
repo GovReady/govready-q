@@ -22,7 +22,7 @@
     min-width: 40%;
   }
   .poam-edit-modal{
-    min-width: 80%;
-    min-height: 90%;
+    width: 550px;
+    min-height: 70%;
     margin-top: 10rem;
   }

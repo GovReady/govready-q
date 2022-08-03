@@ -99,7 +99,7 @@ const datagridStyles = makeStyles({
       maxHeight: "none !important"
     },
     "& .MuiDataGrid-main":{
-      height: "75rem !important",
+      height: "50rem !important",
       // overflowX: "scroll",
     },
     // "& .MuiDataGrid-virtualScroller":{
@@ -753,8 +753,8 @@ export const SystemSummary = ({ systemId, projectId }) => {
                         density="compact"
                         rows={rows}
                         columns={columns}
-                        pageSize={25}
-                        rowsPerPageOptions={[25]}
+                        pageSize={12}
+                        rowsPerPageOptions={[12]}
                         rowHeight={50}
                         checkboxSelection
                         showScrollbar={true}
