@@ -13,8 +13,9 @@ structlog.configure(logger_factory=LoggerFactory())
 logger = get_logger()
 class SimplePoamSerializer(ReadOnlySerializer):
     statement = serializers.SerializerMethodField('get_statement')
-
+    
     def get_statement(self, poam):
+        
         smt = {
             'sid': poam.statement.sid,
             'sid_class': poam.statement.sid_class,

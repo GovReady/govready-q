@@ -9,7 +9,7 @@ from api.base.views.base import SerializerClasses
 from api.base.views.viewsets import ReadOnlyViewSet, ReadWriteViewSet
 from api.controls.serializers.element import SimpleElementControlSerializer, DetailedElementControlSerializer
 from api.controls.serializers.poam import DetailedPoamSerializer, SimplePoamSerializer, SimpleSpreadsheetPoamSerializer, SimpleUpdatePoamSpreadsheetSerializer, WritePoamSerializer, UpdatePoamExtraSerializer
-from api.controls.serializers.system import DetailedSystemSerializer, SimpleSystemSerializer, SystemCreateAndSetProposalSerializer, SystemRetrieveProposalsSerializer
+from api.controls.serializers.system import DetailedSystemSerializer, SimpleSystemSerializer, SystemCreateAndSetProposalSerializer, SystemRetrieveProposalsSerializer, SimpleSystemPoamsSerializer
 from api.controls.serializers.system_assement_results import DetailedSystemAssessmentResultSerializer, \
     SimpleSystemAssessmentResultSerializer
 from controls.models import System, Element, ElementControl, SystemAssessmentResult, Poam
@@ -22,7 +22,8 @@ class SystemViewSet(ReadOnlyViewSet):
     serializer_classes = SerializerClasses(retrieve=DetailedSystemSerializer,
                                            list=SimpleSystemSerializer,
                                            CreateAndSetProposal=SystemCreateAndSetProposalSerializer,
-                                           retrieveProposals=SystemRetrieveProposalsSerializer,)
+                                           retrieveProposals=SystemRetrieveProposalsSerializer,
+                                           getSystemPoams=SimpleSystemPoamsSerializer)
 
     @action(detail=True, url_path="CreateAndSetProposal", methods=["POST"])
     def CreateAndSetProposal(self, request, **kwargs):
@@ -46,6 +47,17 @@ class SystemViewSet(ReadOnlyViewSet):
         system.save()
 
         serializer_class = self.get_serializer_class('retrieveProposals')
+        serializer = self.get_serializer(serializer_class, system)
+        return Response(serializer.data)
+    
+    @action(detail=True, url_path="getSystemPoams", methods=['GET'])
+    def getSystemPoams(self, request, **kwargs):
+        system, validated_data = self.validate_serializer_and_get_object(request)
+        for key, value in validated_data.items():
+            print(key, value)
+        system.save()
+
+        serializer_class = self.get_serializer_class('getSystemPoams')
         serializer = self.get_serializer(serializer_class, system)
         return Response(serializer.data)
     

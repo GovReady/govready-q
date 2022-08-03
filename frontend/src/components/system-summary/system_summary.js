@@ -123,10 +123,39 @@ const useStyles = makeStyles({
     position: 'sticky',
   },
   critical: {
-    backgroundColor: "red"
+    backgroundColor: "red",
+    height: '100%',
+    width: '100%',
+  },
+  advise: {
+    backgroundColor: "orange",
+    height: '100%',
+    width: '100%',
+  },
+  target: {
+    backgroundColor: "green",
+    height: '100%',
+    width: '100%',
+  },
+  closure: {
+    backgroundColor: "purple",
+    height: '100%',
+    width: '100%',
+  },
+  followup: {
+    backgroundColor: "blue",
+    height: '100%',
+    width: '100%',
+  },
+  new: {
+    backgroundColor: "peach",
+    height: '100%',
+    width: '100%',
   },
   normal: {
-    backgroundColor: "grey"
+    backgroundColor: "grey",
+    height: '100%',
+    width: '100%',
   }
 });
 
@@ -651,12 +680,33 @@ export const SystemSummary = ({ systemId, projectId }) => {
     setRows(filteredRows);
   };
 
+  const getCriticalityLevel = (level) => {
+    // console.log("level: ", level);
+    // debugger;
+    switch(level) {
+      case "Critical":
+        return classes.critical
+      case "Advisory/Awareness":
+        return classes.advise
+      case "On-Target":
+        return classes.target
+      case "Closure Approved":
+        return classes.closure
+      case "Follow-up Required":
+        return classes.followup
+      case "Newly Opened POAM":
+        return classes.new
+      default:
+        return classes.normal
+    }
+  };
+
   useEffect(() => {
     setRows(data);
   }, [data]);
 
   useEffect(() => {
-    axios(`/api/v2/systems/${systemId}/poams/`).then(response => {
+    axios(`/api/v2/systems/${systemId}/getSystemPoams/`).then(response => {
       setData(response.data.data);
 
       const newColumns = [
@@ -715,6 +765,19 @@ export const SystemSummary = ({ systemId, projectId }) => {
           },
       ];
       for (const [key, value] of Object.entries(response.data.data[0].extra)) {
+        if (key === "User Identified Criticality"){
+          newColumns.push({
+            field: key,
+            headerName: key,
+            width: 150,
+            editable: ["Delay Justification", "Status as of June", "Comments"].includes(key) ? true : false,
+            renderCell: (params) => (
+              <div className={getCriticalityLevel(value)}>
+                {params.row.extra[key] !== null ? params.row.extra[key] : "-"}
+              </div>
+            )
+          });
+        } else {
           newColumns.push({
             field: key,
             headerName: key,
@@ -722,9 +785,12 @@ export const SystemSummary = ({ systemId, projectId }) => {
             editable: ["Delay Justification", "Status as of June", "Comments"].includes(key) ? true : false,
             valueGetter: (params) => params.row.extra[key] !== null ? params.row.extra[key] : "-"
           });
+        }
         
       }
-
+      // const updateRendering = newColumns.filter(col => col.field === "User Identified Criticality")[0]
+      // updateRendering.
+      // debugger;
       /* TODO: Conditonal Rendering on User Idenrtified Criticality -> color key the background based on the selected option */
       /* TODO: RE ORDER COLUMNS */
 
