@@ -355,7 +355,7 @@ export const RequestsTable = ({ elementId, isOwner }) => {
         ),
       },
     ]);
-  }, [data])
+  }, [data]);
 
   return (
       <div style={{ maxHeight: '2000px', width: '100%' }}>

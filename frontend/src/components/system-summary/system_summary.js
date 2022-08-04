@@ -3,10 +3,14 @@ import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import moment from 'moment';
+import clsx from 'clsx';
+
 import { 
   DataGrid, 
   GridToolbar, 
   useGridApiContext,
+  GridToolbarContainer,
+  GridToolbarExport 
 } from '@mui/x-data-grid';
 
 // import {
@@ -77,7 +81,15 @@ function QuickSearchToolbar(props) {
       />
     </div>
   );
-}
+};
+
+const CustomToolbar = () => {
+  return (
+    <GridToolbarContainer>
+      <GridToolbarExport csvOptions={{ allColumns: true }} />
+    </GridToolbarContainer>
+  )
+};
 
 QuickSearchToolbar.propTypes = {
   clearSearch: PropTypes.func.isRequired,
@@ -105,6 +117,37 @@ const datagridStyles = makeStyles({
     // "& .MuiDataGrid-virtualScroller":{
     //   height: "30rem !important",
     // }
+    '& .super-app-theme--cell': {
+      backgroundColor: 'rgba(224, 183, 60, 0.55)',
+      color: '#1a3e72',
+      fontWeight: '600',
+    },
+
+    '& .super-app.critical': {
+      backgroundColor: 'red',
+    },
+    '& .super-app.advice': {
+      backgroundColor: 'orange',
+    },
+    '& .super-app.target': {
+      backgroundColor: 'green',
+    },
+    '& .super-app.closure': {
+      backgroundColor: 'purple',
+    },
+    '& .super-app.followup': {
+      backgroundColor: 'blue',
+    },
+    '& .super-app.new': {
+      backgroundColor: 'peachpuff',
+      // color: '#1a3e72',
+      // fontWeight: '600',
+    },
+    '& .super-app.default': {
+      backgroundColor: '#d47483',
+      // color: '#1a3e72',
+      // fontWeight: '600',
+    },
   }
 });
 
@@ -148,7 +191,7 @@ const useStyles = makeStyles({
     width: '100%',
   },
   new: {
-    backgroundColor: "peach",
+    backgroundColor: "peachpuff",
     height: '100%',
     width: '100%',
   },
@@ -470,10 +513,12 @@ const uiSchema = {
   extra: {
     "ui:order": ["Monthly Status", "Delay Justification", "Comments", "Accepted Risk", "Actual Start Date", "Actual Finish Date", "Assigned Date", "Assigned To", "CSFCategory", "CSFSubCategory", "CSFFunction", "Cost", "Days since Creation", "Deficiency Category", "Delay Reason", "Email", "Number Artifacts", "Nnumber Milestones", "POAM Sequence", "Planned Start Date", "Planned Finish Date", "RBD Approval Date", "Scheduled Completion Date", "Severity", "Source of Finding", "User Identified Criticality", "Weakness", "Workflow Status", "Workflow Status Date", "Number Milestones", "Days Since Creation"],
     "ui:widget": CustomDisabledTextBox,
+    
     "ui:readonly": false,
 
     "Delay Justification": {
-      "ui:widget": CustomTextArea
+      "ui:widget": CustomTextArea,
+      "ui:autofocus": true,
     },
     "Comments": {
       "ui:widget": CustomTextArea
@@ -771,11 +816,17 @@ export const SystemSummary = ({ systemId, projectId }) => {
             headerName: key,
             width: 150,
             editable: ["Delay Justification", "Status as of June", "Comments"].includes(key) ? true : false,
-            renderCell: (params) => (
-              <div className={getCriticalityLevel(value)}>
-                {params.row.extra[key] !== null ? params.row.extra[key] : "-"}
-              </div>
-            )
+            cellClassName: (params) =>
+              clsx('super-app', {
+                critical: params.row.extra[key] === 'Critical',
+                advice: params.row.extra[key] === 'Advisory/Awareness',
+                target: params.row.extra[key] === 'On-Target',
+                closure: params.row.extra[key] === 'Closure Approved',
+                followup: params.row.extra[key] === 'Follow-up Required',
+                new: params.row.extra[key] === 'Newly Opened POAM'
+              }
+            ),
+            valueGetter: (params) => params.row.extra[key] !== null ? params.row.extra[key] : "-"
           });
         } else {
           newColumns.push({
@@ -881,8 +932,9 @@ export const SystemSummary = ({ systemId, projectId }) => {
                             }
                           },
                         }}
+
+                        // components={{ Toolbar: CustomToolbar }}
                         
-                        // components={{ Toolbar: QuickSearchToolbar }}
                         // componentsProps={{
                         //   toolbar: {
                         //     value: searchText,

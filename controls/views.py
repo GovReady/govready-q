@@ -4080,6 +4080,10 @@ def system_import(request):
                             sys_log.append("POAM already exists.")
                             # POAM exists, update values as needed
                             poamStatement = Statement.objects.get(id=poamExists.statement.id)
+                            if poamExists.weakness_name != new_system_info["POAM Title"]:
+                                poamExists.weakness_name = new_system_info["POAM Title"]
+                                hasPoamUpdated = True
+                                sys_log.append(f"POAM Title has been updated to: {poamExists.weakness_name}")
                             if poamStatement.body != new_system_info["Detailed Weakness Description"]:
                                 poamStatement.body = new_system_info["Detailed Weakness Description"]
                                 hasPoamStmtUpdated = True
@@ -4104,10 +4108,6 @@ def system_import(request):
                                 poamExists.controls = new_system_info["Controls"]
                                 hasPoamUpdated = True
                                 sys_log.append(f"POAM Controls has been updated to: {poamExists.controls}")
-                            if poamExists.weakness_name != new_system_info["POAM Title"]:
-                                poamExists.weakness_name = new_system_info["POAM Title"]
-                                hasPoamUpdated = True
-                                sys_log.append(f"POAM Title has been updated to: {poamExists.weakness_name}")
                             if poamExists.scheduled_completion_date != new_system_info["Planned Finish Date"]:
                                 poamExists.scheduled_completion_date = new_system_info["Planned Finish Date"]
                                 hasPoamUpdated = True
