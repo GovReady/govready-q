@@ -1,0 +1,46 @@
+{
+"q_plan":{
+    "org.size":{
+    "a_name_str": "org.size",
+        "a_grp": "org",
+        "a_name": "size",
+        "a_type": "str",
+        "a_cmt": "",
+        "p": "Q: What is your org size? Choices are: ['Big', 'Small']\n",
+        "ask":true,
+        "ans": "",
+        "ans_calc": ""},
+    "org.cio":{
+        "a_name_str": "org.cio",
+        "a_grp": "org",
+        "a_name": "cio",
+        "a_type": "str",
+        "a_cmt": "",
+        "p": "Q: Please tell me the org cio.\n",
+        "ask":true,
+        "ans": "",
+        "ans_calc": ""},
+    "org.ciso":{
+        "a_name_str": "org.ciso",
+        "a_grp": "org",
+        "a_name": "ciso",
+        "a_type": "str",
+        "a_cmt": "",
+        "p": "Q: What is the org ciso?\n",
+        "ask":true,
+        "ans": "",
+        "ans_calc": ""},
+    "org.internal_soc":{
+        "a_name_str": "org.internal_soc",
+        "a_grp": "org",
+        "a_name": "internal_soc",
+        "a_type": "bool",
+        "a_cmt": "Do you operate an internal SOC (Security Operations Center)?",
+        "p": "Q: Do you operate an internal SOC (Security Operations Center)?\n",
+        "ask":true,
+        "ans": "",
+        "ans_calc": ""}
+    },
+"uuid": "d238a645-43a8-4503-b5cb-dbae23704c10",
+"cur_prompt_key": "org.size"
+}
