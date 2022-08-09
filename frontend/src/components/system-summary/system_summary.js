@@ -244,12 +244,15 @@ const schema = {
     },
     controls: {
       type: ["string", "null"],
+      title: "Controls"
     },
     created: {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Created"
     },
     updated: {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Updated"
     },
     weakness_detection_source: {
       type: ["string", "null"],
@@ -272,7 +275,8 @@ const schema = {
       title: "Poam Group"
     },
     milestones: {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Milestones"
     },
     milestone_changes: {
       type: ["string", "null"],
@@ -280,7 +284,7 @@ const schema = {
     },
     remediation_plan: {
       type: ["string", "null"],
-      title: "Remediation_plan"
+      title: "Remediation Plan"
     },
     risk_rating_original: {
       type: ["string", "null"],
@@ -318,356 +322,165 @@ const schema = {
       title: "Comments",
     },
     "extra__Accepted Risk": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Accepted Risk"
     },
     "extra__Actual Start Date": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Actual Start Date"
     },
     "extra__Actual Finish Date": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Actual Finish Date"
     },
     "extra__Assigned Date": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Assigned Date"
     },
     "extra__Assigned To": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Assigned To"
     },
     "extra__CSFCategory": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "CSFCategory"
     },
     "extra__CSFSubCategory": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "CSFSubCategory"
     },
     "extra__CSFFunction": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "CSFFunction"
     },
     "extra__Cost": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Cost"
     },
     "extra__Days Since Creation": {
-      type: ["integer", "null"]
+      type: ["integer", "null"],
+      title: "Days Since Creation"
     },
     "extra__Deficiency Category": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Deficiency Category"
     },
     "extra__Delay Reason": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Delay Reason"
     },
     "extra__Email": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Email"
     },
     "extra__Number Artifacts": {
-      type: ["integer", "null"]
+      type: ["integer", "null"],
+      title: "Number Artifacts"
     },
     "extra__Number Milestones": {
-      type: ["integer", "null"]
+      type: ["integer", "null"],
+      title: "Number Milestones"
     },
     "extra__POAM Sequence": {
-      type: ["integer", "null"]
+      type: ["integer", "null"],
+      title: "POAM Sequence"
     },
     "extra__Planned Start Date": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Planned Start Date"
     },
     "extra__Planned Finish Date": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Planned Finish Date"
     },
     "extra__RBD Approval Date": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "RBD Approval Date"
     },
     "extra__Scheduled Completion Date": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Scheduled Completion Date"
     },
     "extra__Severity": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Severity"
     },
     "extra__Source of Finding": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Source of Finding"
     },
     "extra__User Identified Criticality": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "User Identified Criticality"
     },
     "extra__Weakness": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Weakness"
     },
     "extra__Workflow Status": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Workflow Status"
     },
     "extra__Workflow Status Date": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Workflow Status Date"
+    },
+    "extra__Days Until Auto-Approved": {
+      type: ["string", "null"],
+      title: "Days Until Auto-Approved"
+    },
+    "extra__Control Risk Severity": {
+      type: ["string", "null"],
+      title: "Control Risk Severity"
     },
 
     "statement__body": { 
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Body"
     },
     "statement__created": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Created"
     },
     "statement__import_record": {
       type: ["string", "null"],
       title: "Import Record"
     },
     "statement__updated": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Updated"
     },
     "statement__uuid": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "UUID"
     },
     "statement__status": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Status"
     },
     "statement__remarks": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Remarks"
     },
     "statement__pid": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "PID"
     },
     "statement__sid": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "SID"
     },
     "statement__sid_class": {
       type: ["string", "null"],
-      title: "sid class"
+      title: "SID Class"
     },
     "statement__source": {
-      type: ["string", "null"]
+      type: ["string", "null"],
+      title: "Source"
     }
   }
 }
 
-
-// const uiSchema = {
-//   "ui:widget": CustomDisabledTextBox,
-//   "ui:options": {
-//     rows: 5
-//   },
-//   "ui:order": [
-//     "extra", "statement", 
-//     "controls", "created", "id", "updated", "weakness_detection_source",
-//     "weakness_name", "weakness_source_identifier", "poam_id", "poam_group", "milestones", 
-//     "milestone_changes", "remediation_plan", "risk_rating_original", "risk_rating_adjusted", 
-//     "scheduled_completion_date"
-//   ],
-  
-//   "created": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   },
-//   "controls": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   },
-//   "id": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   },
-//   "updated": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   },
-//   "weakness_detection_source": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   },
-//   "weakness_name": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   }, 
-//   "weakness_source_identifier": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   }, 
-//   "poam_id": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   }, 
-//   "poam_group": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   }, 
-//   "milestones": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   }, 
-//   "milestone_changes": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   }, 
-//   "remediation_plan": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   }, 
-//   "risk_rating_original": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   }, 
-//   "risk_rating_adjusted": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   }, 
-//   "scheduled_completion_date": {
-//     "ui:readonly": true,
-//     "ui:widget": CustomDisabledTextBox
-//   },
-//   extra: {
-//     "ui:order": ["Monthly Status", "Delay Justification", "Comments", "Accepted Risk", "Actual Start Date", "Actual Finish Date", "Assigned Date", "Assigned To", "CSFCategory", "CSFSubCategory", "CSFFunction", "Cost", "Days since Creation", "Deficiency Category", "Delay Reason", "Email", "Number Artifacts", "Nnumber Milestones", "POAM Sequence", "Planned Start Date", "Planned Finish Date", "RBD Approval Date", "Scheduled Completion Date", "Severity", "Source of Finding", "User Identified Criticality", "Weakness", "Workflow Status", "Workflow Status Date", "Number Milestones", "Days Since Creation"],
-//     "ui:widget": CustomDisabledTextBox,
-    
-//     "ui:readonly": false,
-
-//     "Delay Justification": {
-//       "ui:widget": CustomTextArea,
-//       "ui:autofocus": true,
-//     },
-//     "Comments": {
-//       "ui:widget": CustomTextArea
-//     },
-//     "Accepted Risk": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Actual Start Date": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox
-//     },
-//     "Actual Finish Date": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox
-//     },
-//     "Assigned Date": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Assigned To": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "CSFCategory": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "CSFSubCategory": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "CSFFunction": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Cost": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Days Since Creation": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Deficiency Category": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Delay Reason": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Email": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Number Artifacts": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Number Milestones": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "POAM Sequence": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Planned Start Date": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Planned Finish Date": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "RBD Approval Date": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Scheduled Completion Date": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Severity": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Source of Finding": {
-//       "ui:widget": CustomDisabledTextBox,
-//       "ui:readonly": true
-//     },
-//     "User Identfied Criticality": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Weakness": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Workflow Status": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "Workflow Status Date": {
-//       "ui:readonly": true,
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//   },
-//   statement: {
-//     "ui:widget": CustomDisabledTextBox,
-//     "ui:order": ["status", "body", "import_record", "updated", "uuid", "remarks", "pid", "sid", "sid_class", "source", "created"],
-//     "ui:readonly": true,
-
-//     "status": {
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "body": {
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "import_record": {
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "updated": {
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "uuid": {
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "remarks": {
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "pid": {
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "sid": {
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "sid_class": {
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "source": {
-//       "ui:widget": CustomDisabledTextBox,
-//     },
-//     "created": {
-//       "ui:widget": CustomDisabledTextBox,
-//     }
-//   },
-  
-  
-// };
 
 
 export const TitleField = (props) => {
@@ -697,66 +510,68 @@ const uiSchema = {
       ] },
 
       { 'ui:group': '', 'ui:row': [
-        { 'ui:col': { xs: 3, children: ['weakness_name'] } },
-        { 'ui:col': { xs: 3, children: ['poam_id'] } },
-        { 'ui:col': { xs: 3, children: ['id'] } },
-        { 'ui:col': { xs: 3, children: ['controls'] } },
-        { 'ui:col': { xs: 3, children: ['created'] } },
-        { 'ui:col': { xs: 3, children: ['updated'] } },
-        { 'ui:col': { xs: 3, children: ['weakness_detection_source'] } },
-        { 'ui:col': { xs: 3, children: ['weakness_name'] } },
-        { 'ui:col': { xs: 3, children: ['weakness_source_identifier'] } },
-        { 'ui:col': { xs: 3, children: ['poam_group'] } },
-        { 'ui:col': { xs: 3, children: ['milestones'] } },
-        { 'ui:col': { xs: 3, children: ['milestone_changes'] } },
-        { 'ui:col': { xs: 3, children: ['remediation_plan'] } },
-        { 'ui:col': { xs: 3, children: ['risk_rating_original'] } },
-        { 'ui:col': { xs: 3, children: ['risk_rating_adjusted'] } },
-        { 'ui:col': { xs: 3, children: ['scheduled_completion_date'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['weakness_name'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['poam_id'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['id'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['controls'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['created'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['updated'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['weakness_detection_source'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['weakness_name'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['weakness_source_identifier'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['poam_group'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['milestones'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['milestone_changes'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['remediation_plan'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['risk_rating_original'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['risk_rating_adjusted'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['scheduled_completion_date'] } },
       ] },
 
       { 'ui:group': '', 'ui:row': [
-        { 'ui:col': { md: 3, children: ['extra__Accepted Risk'] } },
-        { 'ui:col': { md: 3, children: ['extra__Actual Start Date'] } },
-        { 'ui:col': { md: 3, children: ['extra__Actual Finish Date'] } },
-        { 'ui:col': { md: 3, children: ['extra__Assigned Date'] } },
-        { 'ui:col': { md: 3, children: ['extra__Assigned To'] } },
-        { 'ui:col': { md: 3, children: ['extra__CSFCategory'] } },
-        { 'ui:col': { md: 3, children: ['extra__CSFSubCategory'] } },
-        { 'ui:col': { md: 3, children: ['extra__CSFFunction'] } },
-        { 'ui:col': { md: 3, children: ['extra__Cost'] } },
-        { 'ui:col': { md: 3, children: ['extra__Days since Creation'] } },
-        { 'ui:col': { md: 3, children: ['extra__Deficiency Category'] } },
-        { 'ui:col': { md: 3, children: ['extra__Delay Reason'] } },
-        { 'ui:col': { md: 3, children: ['extra__Email'] } },
-        { 'ui:col': { md: 3, children: ['extra__Number Artifacts'] } },
-        { 'ui:col': { md: 3, children: ['extra__Number Milestones'] } },
-        { 'ui:col': { md: 3, children: ['extra__POAM Sequence'] } },
-        { 'ui:col': { md: 3, children: ['extra__Planned Start Date'] } },
-        { 'ui:col': { md: 3, children: ['extra__Planned Finish Date'] } },
-        { 'ui:col': { md: 3, children: ['extra__RBD Approval Date'] } },
-        { 'ui:col': { md: 3, children: ['extra__Scheduled Completion Date'] } },
-        { 'ui:col': { md: 3, children: ['extra__Severity'] } },
-        { 'ui:col': { md: 3, children: ['extra__Source of Finding'] } },
-        { 'ui:col': { md: 3, children: ['extra__User Identified Criticality'] } },
-        { 'ui:col': { md: 3, children: ['extra__Weakness'] } },
-        { 'ui:col': { md: 3, children: ['extra__Workflow Status'] } },
-        { 'ui:col': { md: 3, children: ['extra__Workflow Status Date'] } },
-        { 'ui:col': { md: 3, children: ['extra__Number Milestones'] } },
-        { 'ui:col': { md: 3, children: ['extra__Days Since Creation'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Accepted Risk'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Actual Start Date'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Actual Finish Date'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Assigned Date'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Assigned To'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__CSFCategory'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__CSFSubCategory'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__CSFFunction'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Cost'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Days since Creation'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Deficiency Category'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Delay Reason'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Email'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Number Artifacts'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Number Milestones'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__POAM Sequence'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Planned Start Date'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Planned Finish Date'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__RBD Approval Date'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Scheduled Completion Date'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Severity'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Source of Finding'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__User Identified Criticality'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Weakness'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Workflow Status'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Workflow Status Date'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Number Milestones'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Days Since Creation'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Days Until Auto-Approved'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['extra__Control Risk Severity'] } },
       ] },
       { 'ui:group': '', 'ui:row': [
-        { 'ui:col': { xs: 3, children: ['statement__status'] } },
-        { 'ui:col': { md: 3, children: ['statement__body'] } },
-        { 'ui:col': { md: 3, children: ['statement__import_record'] } },
-        { 'ui:col': { md: 3, children: ['statement__updated'] } },
-        { 'ui:col': { md: 3, children: ['statement__uuid'] } },
-        { 'ui:col': { md: 3, children: ['statement__remarks'] } },
-        { 'ui:col': { md: 3, children: ['statement__pid'] } },
-        { 'ui:col': { md: 3, children: ['statement__sid'] } },
-        { 'ui:col': { md: 3, children: ['statement__sid_class'] } },
-        { 'ui:col': { md: 3, children: ['statement__source'] } },
-        { 'ui:col': { md: 3, children: ['statement__created'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['statement__status'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['statement__body'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['statement__import_record'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['statement__updated'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['statement__uuid'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['statement__remarks'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['statement__pid'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['statement__sid'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['statement__sid_class'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['statement__source'] } },
+        { 'ui:col': { sm: 3, md: 3, lg: 3, children: ['statement__created'] } },
 
       ] },
     ] } },
@@ -934,6 +749,16 @@ const uiSchema = {
     "ui:readonly": true,
     "ui:widget": CustomDisabledTextBox,
   },
+  "extra__Days Until Auto-Approved": {
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox,
+  },
+  "extra__Control Risk Severity": {
+    "ui:readonly": true,
+    "ui:widget": CustomDisabledTextBox,
+  },
+
+
 
   "statement__status": {
     "ui:widget": CustomDisabledTextBox,
@@ -990,8 +815,8 @@ export const SystemSummary = ({ systemId, projectId }) => {
   
   const handleOpenIndividualPoam = (row) => {
     setOpenEditPoamModal(true);
-    setCurrentPoam(flattenObject(row, 'data', 1));
-    console.log(currentPoam)
+    const newpoam = flattenObject(row, 'data', 1);
+    setCurrentPoam(newpoam);
   }
 
   function escapeRegex(string) {
@@ -1156,7 +981,8 @@ export const SystemSummary = ({ systemId, projectId }) => {
         'Planned Finish Date': 34,
         'Workflow Status Date': 35,
         'Scheduled Completion Date': 36,
-
+        'Control Risk Severity': 37,
+        'Days Until Auto-Approved': 38
       }
       const sortedColumns = sortColumns(prioritySet, newColumns);
       
@@ -1290,6 +1116,8 @@ export const SystemSummary = ({ systemId, projectId }) => {
                               "Assigned Date": false,
                               "POAM Sequence": false,
                               "Weakness": false,
+                              'Control Risk Severity': false,
+                              'Days Until Auto-Approved': false
                             }
                           },
                         }}
@@ -1319,7 +1147,10 @@ export const SystemSummary = ({ systemId, projectId }) => {
                       />
                       
                   </div>
-                  <ReactModal
+                  
+              </div>
+          </Grid>
+          <ReactModal
                       title={`Edit POAM`}
                       dialogClassName={"poam-edit-modal"}
                       show={openEditPoamModal}
@@ -1328,15 +1159,8 @@ export const SystemSummary = ({ systemId, projectId }) => {
                         <span>Update POAM {currentPoam.id}: {currentPoam.weakness_name}</span>
                       }
                       body={
-                        <div className='container'>
+                        <div style={{width: '100% !important', height: '100% !important', margin: '2rem'}}>
                           <div className='row'>
-                            {/* <div className="col-xs-8 col-xs-offset-2"> */}
-                              {/* <Form 
-                                schema={schema} 
-                                uiSchema={uiSchema}
-                                formData={currentPoam}
-                                onSubmit={onSubmit}
-                              /> */}
                               <Form
                                 formData={currentPoam}
                                 schema={schema}
@@ -1357,8 +1181,6 @@ export const SystemSummary = ({ systemId, projectId }) => {
                         }
                       }
                     />
-              </div>
-          </Grid>
       </div>
   )
 }
