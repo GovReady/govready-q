@@ -3,6 +3,7 @@
 {% load guardian_tags %}
 {% load static %}
 {% load q %}
+{% load system_tags %}
 
 {% block title %}
   {{title}}
@@ -233,6 +234,30 @@
     <div class="row" style="max-width: 1200px;">
       <div class="col-md-12">
         <div class="question-column">
+        {% if project.system.workflowinstances.all|length > 0 %}
+            <h3 class="question-group-title hr" style="margin-top: 20px;">
+                    <span></span>
+                    &nbsp;
+                    Workflows
+                    &nbsp;
+                    <span></span>
+            </h3>
+            <div>
+                    <p>{{ project.system.workflowinstances.all|length }} workflows</p>
+                    <ul>
+                    {%  for wfit in project.system.workflowinstances.all %}
+                        <li>{{ wfit.name }}</li>
+                        <!--
+                        <ol>
+                            {%  for key, feature in wfit.workflow.q_plan.items %}
+                               <li>{{ feature.p }}</li>
+                            {% endfor %}
+                        </ol>
+                        -->
+                    {%  endfor %}
+                    </ul>
+            </div>
+        {% endif %}
         <h3 class="question-group-title hr" style="margin-top: 20px;">
                 <span></span>
                 &nbsp;

@@ -31,6 +31,13 @@ class WorkflowImage(auto_prefetch.Model, TagModelMixin, BaseModel):
     workflow = models.JSONField(blank=True, default=dict, help_text="Workflow object")
     rules = models.JSONField(blank=True, default=dict, help_text="Rules object")
 
+    def __str__(self):
+        return f'<WorkflowImage name="{self.name}" id={self.id}>'
+
+    def __repr__(self):
+        # For debugging.
+        return f'<WorkflowImage name="{self.name}" id={self.id}>'
+
 
 class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
     name = models.CharField(max_length=100, help_text="Descriptive name", unique=False, blank=True, null=True)
@@ -44,3 +51,10 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
     #                                          help_text="Parent WorkflowInstance")
     system = auto_prefetch.ForeignKey(System, related_name='workflowinstances', on_delete=models.CASCADE, blank=True,
                                       null=True, help_text="System")
+
+    def __str__(self):
+        return f'<WorkflowInstance name="{self.name}" id={self.id}>'
+
+    def __repr__(self):
+        # For debugging.
+        return f'<WorkflowInstance name="{self.name}" id={self.id}>'
