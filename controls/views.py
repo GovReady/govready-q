@@ -4187,7 +4187,6 @@ def system_import(request):
                             # Check datetime objects
                             if "date" in key.lower():
                                 try:
-                                    print("key: ", key)
                                     temp_dt = new_system_info[key].strftime("%m/%d/%Y")
                                     if sys.info[key] != temp_dt:
                                         sys.info[key] = new_system_info[key].strftime('%m/%d/%Y')
