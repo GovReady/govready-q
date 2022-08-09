@@ -55,6 +55,7 @@
     "react-bootstrap": "^0.33.1",
     "react-bootstrap-typeahead": "^6.0.0-alpha.6",
     "react-dom": "^17.0.2",
+    "react-jsonschema-form": "^1.8.1",
     "react-pro-sidebar": "^0.7.1",
     "react-redux": "^7.2.4",
     "react-router-dom": "^5.3.0",
