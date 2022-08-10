@@ -242,21 +242,21 @@
                     &nbsp;
                     <span></span>
             </h3>
-            <div>
-                    <p>{{ project.system.workflowinstances.all|length }} workflows</p>
-                    <ul>
-                    {%  for wfit in project.system.workflowinstances.all %}
-                        <li>{{ wfit.name }}</li>
-                        <!--
-                        <ol>
-                            {%  for key, feature in wfit.workflow.q_plan.items %}
-                               <li>{{ feature.p }}</li>
+            <p>{{ project.system.workflowinstances.all|length }} workflows</p>
+            {%  for wfit in project.system.workflowinstances.all %}
+
+            <div style="border:0.5px solid black; width: 300px;padding: 8px;">
+                <div><b>{{ wfit.name }}</b> <div style="background-color:{{ wfit.workflow.status }};width:12px;height:12px; border:1px solid black; vertical-align: middle; display:inline-block">&nbsp;</div></div>
+
+                            {%  for key, feature in wfit.workflow.features.items %}
+                                {%  if key == wfit.workflow.curr_feature %}
+                                    Status: {{ feature.text }}
+                                {%  endif  %}
                             {% endfor %}
-                        </ol>
-                        -->
-                    {%  endfor %}
-                    </ul>
+
             </div>
+            {%  endfor %}
+
         {% endif %}
         <h3 class="question-group-title hr" style="margin-top: 20px;">
                 <span></span>
