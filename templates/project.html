@@ -129,7 +129,7 @@
   li { padding-left: -10px; }
   .status { font-size:2em; color:#2D3337;}
   .status-welcome { font-size:2em; margin:0 0 1em 0; }
-  .status-box { border:1px solid #C1C1C1; padding:5px; text-align:center; background: rgb(243,250,246);}
+  .status-box { border:1px solid #C1C1C1; padding:5px; text-align:center; background: rgb(243,250,246); margin-bottom: 12px;}
   .status-box-invisible {padding:5px; text-align:center;}
   .status-small { font-size: .8em;}
 
@@ -189,11 +189,12 @@
           <span class="status-small">system components</span>
         </div>
       </div>
-      <!-- <div class="col-md-3">
+      <div class="col-md-3">
         <div id="status-box-poams" class="status-box" onclick="window.location.assign('{% url 'poams_list' system_id=project.system.id %}')" style="cursor: pointer;">
-          <h2 class="status">{{ poam_status_count.Open }}</h2> <span class="status-small">open POA&Ms</span>
+          <h2 class="status"> {{ open_poam_count }}<!--{{ poam_status_count }}--></h2>
+            <span class="status-small">open POA&Ms</span>
         </div>
-      </div> -->
+      </div>
       <div class="col-md-3">
         <div id="status-box-compliance-piechart" class="status-box-invisible">
           <h2 class="piechart" style="background-image: conic-gradient(#E1F8E2 {{ approx_compliance_degrees }}deg,

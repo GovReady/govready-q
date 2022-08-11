@@ -877,6 +877,14 @@ def project(request, project):
     producer_elements_control_impl_smts_dict = project.system.producer_elements_control_impl_smts_dict
     producer_elements_control_impl_smts_status_dict = project.system.producer_elements_control_impl_smts_status_dict
 
+    # determine open POA&Ms by total poams that are not closed
+    closed_status_list = ['closed', "complete", "done"]
+    poam_status_counts = project.system.poam_status_counts
+    open_poam_count = 0
+    for status,count in poam_status_counts.items():
+        if status.lower() not in closed_status_list:
+            open_poam_count += count
+
     # Render.
     return render(request, "project.html", {
         "project": project,
@@ -886,7 +894,7 @@ def project(request, project):
         "availability": availability,
 
         "controls_status_count": project.system.controls_status_count,
-        "poam_status_count": project.system.poam_status_count,
+        "open_poam_count": open_poam_count,
         "percent_compliant": percent_compliant,
         "percent_compliant_100": percent_compliant * 100,
         "approx_compliance_degrees": approx_compliance_degrees,

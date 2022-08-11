@@ -20,9 +20,47 @@
 {% block body_content %}
 <div  class="systems-top">
     <h2>POA&Ms (Plan of Actions and Milestones)</h2>
-    <h3>POA&MS from CSAM</h3>
-    <p>The following POA&MS are imported from a CSAM remote service. Changes you make will be exported and uploaded to the remote service monthly.</p>
-    {% comment %} <div id="system-summary-poam-spreadsheet-datagrid"></div> {% endcomment %}
+    <!-- <h3>TEST CONTENT</h3> -->
+    <p>&nbsp;</p>
+    <!-- <div style="width:250px;font-weight: bold;">Process Monthly POA&Ms</div> -->
+
+    <style type="text/css">
+      .stepper-wrapper { margin-top: auto; display: flex; justify-content: space-between; margin-bottom: 20px; }
+      .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; flex: 1;
+        @media (max-width: 768px) { font-size: 12px; }
+      }
+      .stepper-item::before { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: -50%; z-index: 2; }
+      .stepper-item::after { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: 50%; z-index: 2; }
+      .stepper-item .step-counter { position: relative; z-index: 5; display: flex; justify-content: center; align-items: center; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 2px solid #bebebe; margin-bottom: 6px; color: #bebebe;
+        font-weight: bold; }
+      .stepper-item.active { font-weight: bold; }
+      .stepper-item.completed .step-counter { background-color: #4bb543; border: 2px solid #4bb543; }
+      .stepper-item.completed::after { position: absolute; content: ""; border-bottom: 2px solid #4bb543; width: 100%; top: 15px; left: 50%; z-index: 3; }
+      .stepper-item:first-child::before { content: none; }
+      .stepper-item:last-child::after { content: none; }
+      .step-name { text-align: center; }
+      .stepper-item.completed .step-counter { color: white; }
+    </style>
+
+    <div class="stepper-wrapper">
+      <div class="stepper-item completed">
+        <div class="step-counter">1</div>
+        <div class="step-name">√ Receive montly POA&Ms <br> Aug 3, 2022</div>
+      </div>
+      <div class="stepper-item completed">
+        <div class="step-counter">2</div>
+        <div class="step-name">√ Start monthly review<br>Aug 5, 2022</div>
+      </div>
+      <div class="stepper-item active">
+        <div class="step-counter">3</div>
+        <div class="step-name">Update POA&Ms <br><a href="">[mark done]</a></div>
+      </div>
+      <div class="stepper-item">
+        <div class="step-counter">4</div>
+        <div class="step-name">Complete review <br><span >due: Aug 5, 2022</div>
+      </div>
+    </div>
+
     <div id="system-summary-poam-datagrid"></div>
     {% comment %} <script>
       window.system_summary_spreadsheet({{system.id}}, {{project.id}});
@@ -30,7 +68,8 @@
     <script>
       window.system_summary({{system.id}}, {{project.id}});
     </script>
-{% comment %} 
+
+  {% comment %} 
     <h3>POA&MS Managed Locally in GovReady-Q</h3>
     <p>The following POA&Ms originate locally in GovReady-Q.</p>
     <div id="tab-content" class="row rows-header">
@@ -66,7 +105,8 @@
             </div>
         </div>
       {% endfor %}
-    {% endif %} {% endcomment %}
+    {% endif %}
+  {% endcomment %}
 </div>
 
 {% endblock %}

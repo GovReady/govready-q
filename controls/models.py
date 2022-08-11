@@ -929,21 +929,13 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
         return status_stats
 
     @cached_property
-    def poam_status_count(self):
+    def poam_status_counts(self):
         """Retrieve counts of poam status"""
 
-        # Temporarily hard code status list
-        status_list = ['Open', 'Closed', "In Progress"]
-        # TODO
-        # Get a unique filter of status list and gather on that...
-        status_stats = {status: 0 for status in status_list}
-        # Fetch all system POA&Ms
-        counts = Statement.objects.filter(statement_type="POAM", consumer_element=self.root_element,
-                                          status__in=status_list).values('status').order_by('status').annotate(
+        status_qr = self.root_element.statements_consumed.all().values('status').order_by('status').annotate(
             count=Count('status'))
-        status_stats.update({r['status']: r['count'] for r in counts})
-        # TODO add index on statement status
-        return status_stats
+        status_counts = {sc['status']:sc['count'] for sc in status_qr}
+        return status_counts
 
     # @property (See below for creation of property from method)
     def get_producer_elements(self):
