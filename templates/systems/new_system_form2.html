@@ -1,0 +1,337 @@
+{% extends "../base.html" %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} POA&M Detail
+{% endblock %}
+
+{% block head %}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body-wide %}
+
+<div class="container">
+
+    
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Track a System</h2>
+            <p>Create a system in GovReady-Q to track a system that undergoing compliance.</p>
+        </div>
+
+       <div class="col-md-3 portfolio-org-col ">
+            <h2>Enter System Name</h2>
+            <p>Create a new or existing IT System for monitoring and compliance.</p>
+        </div>
+
+        <div class="col-md-9 portfolio-org-col ">
+            <div class="well">
+                <form method="get">
+                    {% csrf_token %}
+                    <input type=hidden name=action value=newportfolio>
+                    <div class="form-group">
+                        <label class="control-label" for="id_title">System Name</label>
+                        <input id="new_system_name" type="text" name="s" maxlength="255" class="form-control" placeholder="e.g., Enterprise Financial System" title="The official name of the syste" required>
+                        <!-- <div class="help-block">Official name of system</div> -->
+                    </div>
+                    <p><button type="submit" id="new_system_button" class="btn btn-success">Add &raquo;</button></p>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-3 portfolio-org-col hidden">
+            <h2>By URL2</h2>
+            <p>Add a new or existing IT System for monitoring and compliance.</p>
+        </div>
+        <div class="col-md-9 portfolio-org-col hidden">
+            <div class="well">
+                <form method="get">
+                    {% csrf_token %}
+                    <input type=hidden name=action value=newportfolio>
+                    <div class="form-group">
+                        <label class="control-label" for="id_title">URL of System</label>
+                        <input type="text" name="s" maxlength="255" class="form-control" placeholder="e.g., https://finsys.example.com" title="The official name of the syste" required id="id_title">
+                        <!-- <div class="help-block">Official name of system</div> -->
+                    </div>
+                    <p><button type="submit" id="new-system-button" class="btn btn-success">Add &raquo;</button></p>
+                </form>
+            </div>
+        </div> 
+
+        <div class="col-md-3 portfolio-org-col ">
+            <h2>Create from Template</h2>
+            <p>Use a template to start a new system.</p>
+        </div>
+        <div class="col-md-9 portfolio-org-col ">
+            <div class="well" style="height: 180px;">
+                {% for app_category in apps %}
+                    {% for app in app_category.apps %}
+                    <div class="col-lg-3 col-md-4 col-sm-6" >
+                        <div class="panel panel-default">
+                            <div class="panel-heading hidden">{{ app.title }}</div>
+                            <div class="panel-body app" style="" data-app="{{app.key}}" data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}">
+                                <h3 class="app_store small" style="margin-top:0px;font-weight: bold;">{{ app.title|truncatechars_html:18 }}</h2>
+                                <h3 class="app_store small">{{app.description.short|safe|truncatechars_html:20}}</h3>
+                                <!-- <div class="app-version-info">Version: {{ app.version }}</div> -->
+                            </div>
+                            <div class="text-center" style="padding-bottom:1em;">
+                                <div style="display: inline-block;">
+                                    {# Offer quick start button if user can only start the app in a single organization context. #}
+                                    {% if app.organizations|length >= 1 %}
+                                        <form action="/store/{{ app.key|urlencode }}{{ forward_qsargs }}" method="post" style="display: inline-block;" class="app-form" data-app="{{app.key}}">
+                                          {% csrf_token %}
+                                          {% if app.organizations|length > 1 %}
+                                              <select id="app-org-select" class="" onchange="update_org_choice('{{ app.key }}/organization_{{ forloop.counter }}', event)">
+                                                  {% for org in app.organizations %}
+                                                      <option value="{{ org.slug }}">{{ org }}</option>
+                                                  {% endfor %}
+                                              </select>
+                                          {% endif %}
+                                          {% with app.organizations|first as first_org %}
+                                              <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
+                                          {% endwith %}
+                                          {% if 'portfolio' in forward_qsargs %}{% endif %}
+                                            <button type="submit" class="btn btn-default btn-xs btn-justified start-app" style="width:150px; padding:.25em;">Start</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+                <div style="display: block;float: left; border:0.0px solid #888; height: 100px; width:160px; margin-left:20px;">
+                    <p>&nbsp;</p>
+                   <p><a href="{% url 'store' %}?start=true" role="link" style="color: #666;">More templates &gt;&gt;</a></p>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="col-md-3 portfolio-org-col">
+            <h2>Better drag and drop</h2>
+            <p>Add a new or existing IT System for monitoring and compliance.</p>
+        </div>
+        <style>
+
+            form {
+                position: relative;
+                border: dashed 4px #DDD;
+                padding: 0px;
+                width: 500px;
+                background-color: #EEE;
+                min-height: 100px;
+            }
+            #fileInput {
+                position: absolute;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                right: 0;
+                opacity: 0;
+            }
+            #fileTable {
+                width: 500px;
+                border: solid 1px #888;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: solid 1px #888;
+            }
+            #emptyMessage {
+                text-align: center;
+                font-size: 40px;
+                position: absolute;
+                padding-top: 20px;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                right: 0;
+            }
+            #uploadButton {
+                margin: 10px 0 0 400px;
+            }
+
+        </style>
+
+        <div class="col-md-9 portfolio-org-col">
+            <div class="well">
+                <form method="post" enctype="multipart/form-data" id="uploadform" ondrop="dropHandler(event)">
+                    <div id="fileInfo" style="display: none">
+                        <table>
+                            <thead><tr><th>Name</th><th>Size</th><th>Last Modified</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="emptyMessage">Drop Files Here</div>
+                    <input id="fileInput" type="file" name="dragupload[]" multiple="multiple" />
+                    <div style="clear: both"></div>
+                </form>    
+                <button id="uploadButton" type="button">Upload</button>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            function dropHandler(ev) {
+                ev.dataTransfer.setData("text", ev.target.id);
+                console.log('File(s) dropped');
+
+                // Prevent default behavior (Prevent file from being opened)
+                ev.preventDefault();
+
+                if (ev.dataTransfer.items) {
+                    // Use DataTransferItemList interface to access the file(s)
+                    for (let i = 0; i < ev.dataTransfer.items.length; i++) {
+                        // If dropped items aren't files, reject them
+                        if (ev.dataTransfer.items[i].kind === 'file') {
+                            const file = ev.dataTransfer.items[i].getAsFile();
+                            console.log('... file[' + i + '].name = ' + file.name);
+                            var $tbody = $('#fileInfo tbody');
+                            $tbody.empty();
+                            $(ev.srcElement.files).each(function(i, file) {
+                                alert("1 ")
+                                $tbody.append('<tr><td>' + file.fileName + '</td><td>' + file.fileSize + '</td><td>' + file.lastModifiedDate + '</td></tr>')
+                            });
+                            $('#emptyMessage').hide();
+                            $('#fileInfo').show();
+                        }
+                    }
+                } else {
+                    // Use DataTransfer interface to access the file(s)
+                    for (let i = 0; i < ev.dataTransfer.files.length; i++) {
+                        console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
+                        alert("2 ")
+
+                        var $tbody = $('#fileInfo tbody');
+                        $tbody.empty();
+
+                        $(ev.srcElement.files).each(function(i, file) {
+
+                            alert("2 ")
+                            $tbody.append('<tr><td>' + file.fileName + '</td><td>' + file.fileSize + '</td><td>' + file.lastModifiedDate + '</td></tr>')
+                        });
+                        $('#emptyMessage').hide();
+                        $('#fileInfo').show();
+                    }
+                }
+            }
+        </script>
+
+
+        <div class="col-md-3 portfolio-org-col">
+            <h2>Upload (Excel or OSCAL)</h2>
+            <p>Upload an Excel or OSCAL file containing system information.</p>
+        </div>
+        <div class="col-md-9 drag-and-drop-col"> 
+            <div class="well">
+                <form id="system_import_form" action="{% url 'system_import' %}" onsubmit="show_spinner();" role="form" method="POST">
+                    {% csrf_token %}
+                    <div class="body">
+                         include "drag-n-drop.html" 
+                        <div class="hidden">{{ import_system_form.file }}</div>
+                        <div class="hidden">{{ import_system_form.file_content }}</div>
+                        <div class="">{{ import_system_form.file_name }}</div>
+                        <div class="footer">
+                            <p>&nbsp;</p>
+                            <p><button id="import_system_submit" type="submit" id="new-system-button" class="btn btn-success">Add &raquo;</button></p>
+                            <!-- <inputx id="import_system_submit" class="btn btn-success btn-submit btn-lg" type="submit" value="Import" /> -->
+                            <img id="import_loading_spinner" aria-label="Loading Spinner"src="{% static "img/icons/spinner.gif" %}" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+    
+
+    <script>
+
+        $("#import_loading_spinner").hide();
+
+        function fillFileContent(file) {
+            console.log('@@@@@@@@   fillFileContent     @@@@@@@@')
+            var fileInput = document.getElementById('file_content')
+      
+            var filePath = fileInput.value;
+            var allowedExtensions = /(\.json)|(\.xlsx)|(\.csv)$/i;
+            var jsonExtension = /(\.json)$/i;
+            var csvExtension = /(\.csv)$/i;
+            var excelExtension = /(\.xlsx)$/i;
+
+            if (!allowedExtensions.exec(filePath)) {
+              fileInput.value = '';
+              show_modal_error("Wrong File Type Error", "Please only provide either a json file or xlsx file!");
+            } else {
+              filecontents = fileInput.files[0];
+              if (filecontents.size < 5000000) {
+                $('#{{import_system_form.file_name.auto_id}}').val(filecontents.name);
+                var reader = new FileReader();
+                if(excelExtension.exec(filePath)) {
+                    
+                    reader.onload = function (e) {
+                        var data = e.target.result;
+                        console.log('data: ', data);
+                        data = new Uint8Array(data);
+                        console.log('new data: ', data)
+                        
+                        var workbook = XLSX.read(data, {type: 'array'});
+                        console.log(workbook);
+                        var result = {};
+                        workbook.SheetNames.forEach(function (sheetName) {
+                            var roa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                            if (roa.length) result[sheetName] = roa;
+                        });
+                        
+                        // see the result, caution: it works after reader event is done.                        
+                        // Replace true and false to True and False, for Python to read it properly
+                        let true_regex = /true/gi;
+                        let false_regex = /false/gi;
+                        
+                        resultString = JSON.stringify(result)
+                        
+                        resultString = resultString.replace(true_regex, 'True');
+                        resultString = resultString.replace(false_regex, 'False');
+                        $('#{{import_system_form.file_content.auto_id}}').val(resultString);
+                    };
+                    reader.readAsArrayBuffer(filecontents);
+                } else if (csvExtension.exec(filePath)) {
+                    /*
+                        Reading a CVS file i.e., comma deliminated rows
+                    */
+                    console.log('cvs')
+                }
+                else {
+                    /*
+                        Default read as a JSON file
+                    */
+                    console.log('is this readfing correctly?')
+                    reader.readAsText(filecontents);
+                    reader.onload = function (e) {
+                        $('#{{import_system_form.file_content.auto_id}}').val(e.target.result);
+                    }
+                }
+                
+              } else {
+                show_modal_error("File is too large", "Maximum size is under 5MBs");
+              }
+            }
+          }
+          
+        function show_spinner() {
+            $("#import_loading_spinner").show();
+        }
+    </script>
+{% endblock %}
