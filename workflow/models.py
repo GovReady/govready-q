@@ -59,7 +59,7 @@ class WorkflowImage(auto_prefetch.Model, TagModelMixin, BaseModel):
         if name is None:
             name = self.name + " set"
         if description is None:
-            description = f'Set created from {self.name}'
+            description = f'Set created from {name}'
         new_wfinstanceset = WorkflowInstanceSet.objects.create(name=name, description=description)
         print(f'[DEBUG] created new wfinstanceset name={new_wfinstanceset.name}')
 
@@ -77,11 +77,13 @@ class WorkflowImage(auto_prefetch.Model, TagModelMixin, BaseModel):
         for system in systems:
             wfinstance = self.create_workflowinstance_obj()
             wfinstance.workflowinstanceset = new_wfinstanceset
+            wfinstance.name = new_wfinstanceset.name
             wfinstance.system = system
             # tweak instance workflow json
             # set current item
             # add tag(s)
             # update log to indicate created from workflowimage <uuid>
+            print(f'[DEBUG] created new wfinstance name={wfinstance.name}')
             wfinstances.append(wfinstance)
 
         # bulk create wfinstances    

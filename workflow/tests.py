@@ -1,16 +1,138 @@
 from django.test import TestCase
 
+from guidedmodules.tests import TestCaseWithFixtureData
+from siteapp.models import (Organization, Portfolio, Project,
+                            ProjectMembership, User)
+from controls.models import System, Element
+from .models import WorkflowImage, WorkflowInstanceSet, WorkflowInstance
+
 # Create your tests here.
+
+class WorkflowImageUnitTests(TestCase):
+
+    def setUp(self):
+        # create WorkflowImage
+        wfimage = WorkflowImage.objects.create(name="Monthly POA&M Review")
+        wfimage.workflow = {
+          "name": "Monthly POA&M Review",
+          "type": "flow_image",
+          "uuid": "5d777289-906a-4b72-8fad-89077e5a15e5",
+          "status": "red",
+          "features": {
+            "1start_review": {
+              "id": "start_review",
+              "cmd": "STEP",
+              "text": "Start Monthly Review",
+              "props": [
+                {
+                  "id": "system.url"
+                },
+                {
+                  "type": "str"
+                }
+              ],
+              "status": "completed",
+              "feature_descriptor": ""
+            },
+            "2review_poams": {
+              "id": "review_poams",
+              "cmd": "STEP",
+              "text": "Review POA&Ms",
+              "props": [
+                {
+                  "id": "system.data"
+                },
+                {
+                  "type": "text"
+                }
+              ],
+              "status": "not-started",
+              "feature_descriptor": ""
+            },
+            "3submit_review": {
+              "id": "submit_review",
+              "cmd": "STEP",
+              "text": "Submit updated POA&Ms",
+              "props": [
+                {
+                  "id": "system.name"
+                },
+                {
+                  "type": "str"
+                }
+              ],
+              "status": "not-started",
+              "feature_descriptor": ""
+            }
+          },
+          "curr_feature": "2review_poams"
+        }
+        wfimage.save()
+
+        # create 2 Users
+        u1 = User.objects.create(username="Jane1", email="jane1@example.com")
+        u2 = User.objects.create(username="Jane2", email="jane2@example.com")
+        u3 = User.objects.create(username="Jane3", email="jane3@example.com")
+
+        # create 2 Systems
+        sre1 = Element.objects.create(name="New Element 1", full_name="New Element Full Name 1", element_type="system")
+        s1   = System.objects.create(root_element=sre1)
+        sre2 = Element.objects.create(name="New Element 2", full_name="New Element Full Name 2", element_type="system")
+        s2   = System.objects.create(root_element=sre2)
+        sre3 = Element.objects.create(name="New Element 3", full_name="New Element Full Name 3", element_type="system")
+        s3   = System.objects.create(root_element=sre3)
+
+        # assign owner permissions
+        s1.assign_owner_permissions(u1)
+        s2.assign_owner_permissions(u2)
+        s3.assign_owner_permissions(u3)
+
+    def test_workflowimage_attributes(self):
+        """WorkflowImage attributes working"""
+
+        wfimage = WorkflowImage.objects.first()
+        self.assertEqual(wfimage.name, "Monthly POA&M Review")
+        self.assertEqual(len(wfimage.workflow['features']), 3)
+    
+    def test_workflowimage_methods(self):
+        """WorkflowImage methods working"""
+
+        wfimage = WorkflowImage.objects.first()
+        wfimage.create_system_worflowinstances("ALL", name="August Monthly POA&M Review")
+
+        wfinstancesets = WorkflowInstanceSet.objects.all()
+        self.assertEqual(len(wfinstancesets), 1)
+        wfinstanceset = wfinstancesets[0]
+        self.assertEqual(wfinstanceset.name, "August Monthly POA&M Review")
+        self.assertEqual(wfinstanceset.description, f'Set created from {wfinstanceset.name}')
+
+        wfinstances = WorkflowInstance.objects.all()
+        self.assertEqual(len(wfinstances), 3)
+        wfinstance = wfinstances[0]
+        self.assertEqual(wfinstance.name, "August Monthly POA&M Review")
+        self.assertEqual(len(wfinstance.workflow['features']), 3)
+        
+
+    # def setUp(self):
+    #     Animal.objects.create(name="lion", sound="roar")
+    #     Animal.objects.create(name="cat", sound="meow")
+
+    # def test_animals_can_speak(self):
+    #     """Animals that can speak are correctly identified"""
+    #     lion = Animal.objects.get(name="lion")
+    #     cat = Animal.objects.get(name="cat")
+    #     self.assertEqual(lion.speak(), 'The lion says "roar"')
+    #     self.assertEqual(cat.speak(), 'The cat says "meow"')
 
 
 # Scratch code
 
-wfin = WorkflowInstance.objects.first()
-wfin.workflow['q_plan'][wfin.workflow['cur_prompt_key']]
+# wfin = WorkflowInstance.objects.first()
+# wfin.workflow['q_plan'][wfin.workflow['cur_prompt_key']]
 
-wfin.workflow['cur_prompt_key']
+# wfin.workflow['cur_prompt_key']
 
-from dotwiz import DotWiz
-dw = DotWiz(wfin.workflow)
-dw.q_plan.cur_prompt_key
+# from dotwiz import DotWiz
+# dw = DotWiz(wfin.workflow)
+# dw.q_plan.cur_prompt_key
 
