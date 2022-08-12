@@ -48,9 +48,16 @@
           <div class="stepper-wrapper">
             {% for key, feature in wfit.workflow.features.items %}
               <div class="stepper-item {{ feature.status }} 
-                   {% if key == wfit.workflow.curr_feature %}active{% endif %}">
+                   {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
                 <div class="step-counter">{{ forloop.counter }}</div>
-                <div class="step-name">{{ feature.text }} {% if key == wfit.workflow.curr_feature %}<br><a href="/workflow/{{ wfit.id }}/advance">[mark done]</a>{% else %}{% endif %}</div>
+                <div class="step-name">
+                  {% if feature.status == 'completed' %}√{% endif %}
+                  {{ feature.text }} 
+                  {% if key == wfit.workflow.curr_feature and feature.status != 'completed' %}
+                    <br><a href="/workflow/{{ wfit.id }}/advance">[mark done]</a>
+                  {% else %}
+                  {% endif %}
+                </div>
               </div>
             {% endfor %}
           </div>

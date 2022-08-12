@@ -140,22 +140,25 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         """Shift curr_feature forward by one"""
 
         # get features
+        # mark and log current feature completed
+        self.workflow['features'][self.workflow['curr_feature']]['status'] = 'completed'
+        #self.log
 
-        # advance curr_feature_index
         feature_keys = list(self.workflow['features'].keys())
         curr_feature_index = feature_keys.index(self.workflow['curr_feature'])
+        # advance curr_feature_index
+        
         if curr_feature_index < len(feature_keys) - 1:
             new_feature_index = curr_feature_index + 1
             # qq.cur_prompt_key = feature_keys[new_feature_index]
             self.workflow['curr_feature'] = feature_keys[new_feature_index]
-            # self.cur_prompt_key = feature_keys[new_feature_index]
             # qq.log_event('advance_prompt_key', f'Advance cur_prompt_key to \'{qq.cur_prompt_key}\'')
             # prompt = get_qq_prompt_question_dict(qq, qq.cur_prompt_key)
             # prompt['text'] = prompt['text'].replace('Q: ', '')
             # qq.q_plan_complete = False
             # q_plan_complete = qq.q_plan_complete
-            result = self.save()
-            print(f'[DEBUG] Save result wfinstance {self.name}: {result}')
+            # result = self.save()
+            
 
 
             # # skip questions?
@@ -189,3 +192,6 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
             # qq.q_plan_complete = True
             # qq.log_event('q_plan_complete', f'Questionnaire marked complete')
             # q_plan_complete = qq.q_plan_complete
+        result = self.save()
+        print(f'[DEBUG] Save result wfinstance {self.name}: {result}')
+        
