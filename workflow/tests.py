@@ -65,7 +65,7 @@ class WorkflowImageUnitTests(TestCase):
               "feature_descriptor": ""
             }
           },
-          "curr_feature": "2review_poams"
+          "curr_feature": "1start_review"
         }
         wfimage.save()
 
@@ -112,6 +112,30 @@ class WorkflowImageUnitTests(TestCase):
         self.assertEqual(wfinstance.name, "August Monthly POA&M Review")
         self.assertEqual(len(wfinstance.workflow['features']), 3)
         
+    def test_workflowinstance_methods(self):
+
+        wfimage = WorkflowImage.objects.first()
+        self.assertEqual(wfimage.name, "Monthly POA&M Review")
+        self.assertEqual(len(wfimage.workflow['features']), 3)
+
+        wfimage = WorkflowImage.objects.first()
+        wfimage.create_system_worflowinstances("ALL", name="August Monthly POA&M Review")
+
+        wfinstances = WorkflowInstance.objects.all()
+        self.assertEqual(len(wfinstances), 3)
+        wfinstance = wfinstances[0]
+
+        # test advance()
+        # curr_feature = wfinstance.workflow['curr_feature']
+        self.assertEqual(wfinstance.workflow['curr_feature'], "1start_review")
+        wfinstance.advance()
+        self.assertEqual(wfinstance.workflow['curr_feature'], "2review_poams")
+
+        # check if advance saved to database
+        uuid = wfinstance.uuid
+        wfinstance_copy = WorkflowInstance.objects.get(uuid=uuid)
+        self.assertEqual(wfinstance_copy.workflow['curr_feature'], "2review_poams")
+
 
     # def setUp(self):
     #     Animal.objects.create(name="lion", sound="roar")

@@ -142,6 +142,7 @@ urlpatterns = [
 
 urlpatterns += [url(r'^api/v2/', include('api.urls'))]
 urlpatterns += [url(r'^integrations/', include('integrations.urls'))]
+urlpatterns += [url(r'^workflow/', include('workflow.urls'))]
 
 if settings.OKTA_CONFIG or settings.OIDC_CONFIG:
     urlpatterns += [

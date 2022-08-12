@@ -135,3 +135,57 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
     def __repr__(self):
         # For debugging.
         return f'<WorkflowInstance name="{self.name}" id={self.id}>'
+
+    def advance(self):
+        """Shift curr_feature forward by one"""
+
+        # get features
+
+        # advance curr_feature_index
+        feature_keys = list(self.workflow['features'].keys())
+        curr_feature_index = feature_keys.index(self.workflow['curr_feature'])
+        if curr_feature_index < len(feature_keys) - 1:
+            new_feature_index = curr_feature_index + 1
+            # qq.cur_prompt_key = feature_keys[new_feature_index]
+            self.workflow['curr_feature'] = feature_keys[new_feature_index]
+            # self.cur_prompt_key = feature_keys[new_feature_index]
+            # qq.log_event('advance_prompt_key', f'Advance cur_prompt_key to \'{qq.cur_prompt_key}\'')
+            # prompt = get_qq_prompt_question_dict(qq, qq.cur_prompt_key)
+            # prompt['text'] = prompt['text'].replace('Q: ', '')
+            # qq.q_plan_complete = False
+            # q_plan_complete = qq.q_plan_complete
+            result = self.save()
+            print(f'[DEBUG] Save result wfinstance {self.name}: {result}')
+
+
+            # # skip questions?
+            # if prompt['ask'] == False:
+            #     qq.log_event('skip_prompt', f'Skip question \'{qq.cur_prompt_key}\'')
+            #     curr_feature_index = feature_keys.index(qq.cur_prompt_key)
+            #     if curr_feature_index < len(feature_keys) - 1:
+            #         new_feature_index = curr_feature_index + 1
+            #         qq.cur_prompt_key = feature_keys[new_feature_index]
+            #         qq.log_event('advance_prompt_key', f'Advance cur_prompt_key to \'{qq.cur_prompt_key}\'')
+            #     else:
+            #         qq.log_event('q_plan_end', f'Last question skipped (cur_prompt_key to \'{qq.cur_prompt_key}\')')
+            #         prompt = None
+            #         qq.q_plan_complete = True
+            #         qq.log_event('q_plan_complete', f'Questionnaire marked complete')
+            #         q_plan_complete = qq.q_plan_complete
+            #     # save updated qq to file
+            #     filename = f"{uuid}_questions.json"
+            #     filepath = os.path.join(RESPONSE_FILEPATH, filename)
+            #     with open(filepath, 'w') as f:
+            #         f.write(json.dumps(qq.toJson(), indent=4))
+            #     log = qq.log
+            #     q_plan = qq.q_plan
+            #     return redirect(reverse('autoq_qn', args=[uuid]))
+
+
+        else:
+            pass
+            # qq.log_event('q_plan_end', f'Last question answered (cur_prompt_key to \'{qq.cur_prompt_key}\')')
+            # prompt = None
+            # qq.q_plan_complete = True
+            # qq.log_event('q_plan_complete', f'Questionnaire marked complete')
+            # q_plan_complete = qq.q_plan_complete
