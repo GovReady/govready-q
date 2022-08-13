@@ -1,0 +1,100 @@
+{% extends "project-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+{% load system_tags %}
+
+{% block title %}
+Systems
+{% endblock %}
+
+{% block head %}
+<meta http-equiv="refresh" content="6">
+<style type="text/css">
+      .stepper-wrapper { margin-top: auto; display: flex; justify-content: space-between; margin-bottom: 20px; }
+      .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; flex: 1;
+        @media (max-width: 768px) { font-size: 12px; }
+      }
+      .stepper-item::before { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: -50%; z-index: 2; }
+      .stepper-item::after { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: 50%; z-index: 2; }
+      .stepper-item .step-counter { position: relative; z-index: 5; display: flex; justify-content: center; align-items: center; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 2px solid #bebebe; margin-bottom: 6px; color: #bebebe;
+        font-weight: bold; }
+      .stepper-item.active { font-weight: bold; }
+      .stepper-item.completed .step-counter { background-color: #4bb543; border: 2px solid #4bb543; }
+      .stepper-item.completed::after { position: absolute; content: ""; border-bottom: 2px solid #4bb543; width: 100%; top: 15px; left: 50%; z-index: 3; }
+      .stepper-item:first-child::before { content: none; }
+      .stepper-item:last-child::after { content: none; }
+      .step-name { text-align: center; }
+      .stepper-item.completed .step-counter { color: white; }
+      .heading { font-weight: bold; text-align: center;}
+      .bottom-border { border-bottom: 0.5px solid #888; }
+</style>
+{% endblock %}
+
+<!-- Remove context bar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div class="container">
+    <p>&nbsp;</p>
+    <h2>All Workflows</h2>
+
+    <p>&nbsp;</p>
+             <div class="row bottom-border">
+                <div class="col-md-4 heading">
+                    System
+                </div>
+                <div class="col-md-1 heading">
+                    wfid
+                </div>
+                <div class="col-mid-7 heading">
+                    workflow instance
+                </div>
+            </div>
+
+    {% for set in workflowinstancesets %}
+        <h3>{{ set.name }}</h3>
+        <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
+        {% for wfit in set.workflowinstances.all|dictsort:"system.root_element.name" %}
+            <div class="row">
+                <div class="col-md-4">
+                    <a href="/systems/{{ wfit.system.id }}/poams" target="_blank">{{ wfit.system.root_element.name }}</a>
+                </div>
+                <div class="col-md-1" style="text-align: center;">
+                    <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
+                </div>
+                <div class="col-mid-7 stepper-wrapper">
+                    {% for key in wfit.workflow.feature_order %}
+                      {% with feature=wfit.workflow.features|get_item:key %}
+                        <div class="stepper-item {{ feature.status }} 
+                             {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
+                          <div class="step-counter">{{ forloop.counter }}</div>
+                          <div class="step-name">
+                            {% if feature.status == 'completed' %}√{% endif %}
+                            {{ feature.text }}
+                            <!--
+                            {% if key == wfit.workflow.curr_feature and feature.status != 'completed' %}
+                              <br><a href="/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed">[mark done]</a>
+                            {% else %}
+                            {% endif %}
+                            -->
+                          </div>
+                        </div>
+                      {% endwith %}
+                    {% endfor %}
+                </div>
+            </div>
+        {%  endfor %}
+    {% endfor %}
+
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+{% endblock %}
+

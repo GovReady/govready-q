@@ -44,3 +44,15 @@ def set_workflowinstance_feature_completed(request, workflowinstance_id):
     # redirect_url = request.session.get("_post_banner_url", "/")
     redirect_url = f'/systems/{system_id}/poams'
     return HttpResponseRedirect(redirect_url)
+
+def workflowinstances_all(request):
+    """List all workflow instances"""
+    
+    workflowinstancesets = WorkflowInstanceSet.objects.all()
+     # redirect_url = f'/systems/139/poams'
+    # return HttpResponseRedirect(redirect_url)
+    # HttpResponse("workflowinstanceset")
+    context = {
+        "workflowinstancesets": workflowinstancesets,
+    }
+    return render(request, "workflow/all.html", context)
