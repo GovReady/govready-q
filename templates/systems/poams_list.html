@@ -54,7 +54,7 @@
                   {% if feature.status == 'completed' %}√{% endif %}
                   {{ feature.text }} 
                   {% if key == wfit.workflow.curr_feature and feature.status != 'completed' %}
-                    <br><a href="/workflow/{{ wfit.id }}/advance">[mark done]</a>
+                    <br><a href="/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed">[mark done]</a>
                   {% else %}
                   {% endif %}
                 </div>

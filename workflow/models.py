@@ -14,6 +14,7 @@ from natsort import natsorted
 
 from api.base.models import BaseModel
 from controls.models import System
+from siteapp.models import User
 from siteapp.model_mixins.tags import TagModelMixin
 from controls.utilities import *
 
@@ -29,7 +30,7 @@ class WorkflowImage(auto_prefetch.Model, TagModelMixin, BaseModel):
     name = models.CharField(max_length=100, help_text="Descriptive name", unique=False, blank=True, null=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier")
     workflow = models.JSONField(blank=True, default=dict, help_text="Workflow object")
-    rules = models.JSONField(blank=True, default=dict, help_text="Rules object")
+    rules = models.JSONField(blank=True, default=list, help_text="Rules list")
 
     def __str__(self):
         return f'<WorkflowImage name="{self.name}" id={self.id}>'
@@ -118,8 +119,8 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
     name = models.CharField(max_length=100, help_text="Descriptive name", unique=False, blank=True, null=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier")
     workflow = models.JSONField(blank=True, default=dict, help_text="Workflow object")
-    rules = models.JSONField(blank=True, default=dict, help_text="Rules object")
-    log = models.JSONField(blank=True, default=dict, help_text="Log object")
+    rules = models.JSONField(blank=True, default=list, help_text="Rules list")
+    log = models.JSONField(blank=True, default=list, help_text="Log entries")
     workflowimage = auto_prefetch.ForeignKey(WorkflowImage, null=True, related_name="workflowinstances", on_delete=models.SET_NULL,
                                             help_text="WorkflowImage")
     # parent = models.ForeignKey(WorkflowImage, related_name="children", on_delete=models.SET_NULL,
@@ -136,61 +137,69 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         # For debugging.
         return f'<WorkflowInstance name="{self.name}" id={self.id}>'
 
-    def advance(self):
+    @property
+    def feature_keys(self):
+        """Return feature keys"""
+        return list(self.workflow['features'].keys())
+
+    def set_curr_feature(self, curr_feature):
+        """Set current feature"""
+        # TODO: add error check to make sure key exists
+        if curr_feature not in self.workflow['features'].keys():
+            # raise KeyError
+            pass
+        self.workflow['curr_feature'] = curr_feature
+
+    @property
+    def curr_feature(self):
+        """Return current feature"""
+        return self.workflow["curr_feature"]
+
+    @property
+    def curr_feature_index(self):
+        """Return current feature index from list of features"""
+        feature_keys = list(self.workflow['features'].keys())
+        return feature_keys.index(self.workflow['curr_feature'])
+
+    def is_final_feature(self, feature):
+        """Returns True if feature is final feature in workflowinstance"""
+        if self.feature_keys.index(feature) == len(self.feature_keys) - 1:
+            return True
+        else:
+            return False
+
+    def log_event(self, name, description, who='self'):
+        """Log event"""
+        event = {
+            'name': name,
+            'description': description,
+            'who': who
+        }
+        self.log.append(event)
+        return event
+
+    def set_curr_feature_completed(self, who='self'):
+        """Set specfic feature complete"""
+        who_name = User.username if (type(who)==User) else 'self'
+        self.workflow['features'][self.workflow['curr_feature']]['status'] = 'completed'
+        self.log_event('set_feature_completed', f'Set {self.curr_feature} to completed', who_name)
+
+    def advance(self, who='self'):
         """Shift curr_feature forward by one"""
 
-        # get features
-        # mark and log current feature completed
-        self.workflow['features'][self.workflow['curr_feature']]['status'] = 'completed'
-        #self.log
-
-        feature_keys = list(self.workflow['features'].keys())
-        curr_feature_index = feature_keys.index(self.workflow['curr_feature'])
-        # advance curr_feature_index
-        
-        if curr_feature_index < len(feature_keys) - 1:
-            new_feature_index = curr_feature_index + 1
-            # qq.cur_prompt_key = feature_keys[new_feature_index]
-            self.workflow['curr_feature'] = feature_keys[new_feature_index]
-            # qq.log_event('advance_prompt_key', f'Advance cur_prompt_key to \'{qq.cur_prompt_key}\'')
-            # prompt = get_qq_prompt_question_dict(qq, qq.cur_prompt_key)
-            # prompt['text'] = prompt['text'].replace('Q: ', '')
+        who_name = User.username if (type(who)==User) else 'self'
+        # skip hidden features
+        # while not self.is_final_feature(self.curr_feature) and self.workflow['curr_feature']['ask'] == 'skip':
+        if not self.is_final_feature(self.curr_feature):
+            # new_feature_index = self.curr_feature_index + 1
+            # self.workflow['curr_feature'] = self.feature_keys[new_feature_index]
+            self.set_curr_feature(self.feature_keys[self.curr_feature_index + 1])
+            self.log_event('advance_feature_key', f'Advance curr_feature_key to self.workflow["curr_feature"]', who_name)
             # qq.q_plan_complete = False
             # q_plan_complete = qq.q_plan_complete
-            # result = self.save()
-            
-
-
-            # # skip questions?
-            # if prompt['ask'] == False:
-            #     qq.log_event('skip_prompt', f'Skip question \'{qq.cur_prompt_key}\'')
-            #     curr_feature_index = feature_keys.index(qq.cur_prompt_key)
-            #     if curr_feature_index < len(feature_keys) - 1:
-            #         new_feature_index = curr_feature_index + 1
-            #         qq.cur_prompt_key = feature_keys[new_feature_index]
-            #         qq.log_event('advance_prompt_key', f'Advance cur_prompt_key to \'{qq.cur_prompt_key}\'')
-            #     else:
-            #         qq.log_event('q_plan_end', f'Last question skipped (cur_prompt_key to \'{qq.cur_prompt_key}\')')
-            #         prompt = None
-            #         qq.q_plan_complete = True
-            #         qq.log_event('q_plan_complete', f'Questionnaire marked complete')
-            #         q_plan_complete = qq.q_plan_complete
-            #     # save updated qq to file
-            #     filename = f"{uuid}_questions.json"
-            #     filepath = os.path.join(RESPONSE_FILEPATH, filename)
-            #     with open(filepath, 'w') as f:
-            #         f.write(json.dumps(qq.toJson(), indent=4))
-            #     log = qq.log
-            #     q_plan = qq.q_plan
-            #     return redirect(reverse('autoq_qn', args=[uuid]))
-
-
         else:
-            pass
-            # qq.log_event('q_plan_end', f'Last question answered (cur_prompt_key to \'{qq.cur_prompt_key}\')')
-            # prompt = None
+            self.log_event('workflowinstance_completed', f'Workflow completed')
             # qq.q_plan_complete = True
-            # qq.log_event('q_plan_complete', f'Questionnaire marked complete')
             # q_plan_complete = qq.q_plan_complete
         result = self.save()
         print(f'[DEBUG] Save result wfinstance {self.name}: {result}')

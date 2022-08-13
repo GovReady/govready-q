@@ -29,20 +29,18 @@ structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
 
+
 # Create your views here.
-
-
-def workflowinstance_advance(request, workflowinstance_id):
+def set_workflowinstance_feature_completed(request, workflowinstance_id):
     """Advance workflowinstace"""
 
     workflowinstance = get_object_or_404(WorkflowInstance, id=workflowinstance_id)
-    workflowinstance.advance()
+    workflowinstance.set_curr_feature_completed(request.user)
+    workflowinstance.advance(request.user)
 
     # temp hardcode return to system poa&m workflow
-    # TODO: make dynamic
+    # TODO: make return to system dynamic
     system_id = workflowinstance.system.id
     # redirect_url = request.session.get("_post_banner_url", "/")
     redirect_url = f'/systems/{system_id}/poams'
     return HttpResponseRedirect(redirect_url)
-
-
