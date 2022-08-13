@@ -8,9 +8,12 @@ from .models import WorkflowImage, WorkflowInstanceSet, WorkflowInstance
 
 # Create your tests here.
 
-class WorkflowImageUnitTests(TestCase):
+class WorkflowUnitTests(TestCase):
 
     def setUp(self):
+        # def true, false to make json and python dict equivalent
+        true = True
+        false = False
         # create WorkflowImage
         wfimage = WorkflowImage.objects.create(name="Monthly POA&M Review")
         wfimage.workflow = {
@@ -18,8 +21,11 @@ class WorkflowImageUnitTests(TestCase):
           "type": "flow_image",
           "uuid": "5d777289-906a-4b72-8fad-89077e5a15e5",
           "status": "red",
+          "complete": false,
+          "feature_order": ["start_review", "review_poams", "submit_review"],
+          "curr_feature": "start_review",
           "features": {
-            "1start_review": {
+            "start_review": {
               "id": "start_review",
               "cmd": "STEP",
               "text": "Start Monthly Review",
@@ -31,10 +37,12 @@ class WorkflowImageUnitTests(TestCase):
                   "type": "str"
                 }
               ],
-              "status": "completed",
+              "complete": false,
+              "status": "not-started",
+              "skip": false,
               "feature_descriptor": ""
             },
-            "2review_poams": {
+            "review_poams": {
               "id": "review_poams",
               "cmd": "STEP",
               "text": "Review POA&Ms",
@@ -46,10 +54,12 @@ class WorkflowImageUnitTests(TestCase):
                   "type": "text"
                 }
               ],
+              "complete": false,
               "status": "not-started",
+              "skip": false,
               "feature_descriptor": ""
             },
-            "3submit_review": {
+            "submit_review": {
               "id": "submit_review",
               "cmd": "STEP",
               "text": "Submit updated POA&Ms",
@@ -61,11 +71,12 @@ class WorkflowImageUnitTests(TestCase):
                   "type": "str"
                 }
               ],
+              "complete": false,
               "status": "not-started",
+              "skip": false,
               "feature_descriptor": ""
             }
-          },
-          "curr_feature": "1start_review"
+          }
         }
         wfimage.save()
 

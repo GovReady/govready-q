@@ -140,15 +140,20 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
     @property
     def feature_keys(self):
         """Return feature keys"""
-        return list(self.workflow['features'].keys())
+        # return list(self.workflow['features'].keys())
+        return self.workflow['feature_order']
 
-    def set_curr_feature(self, curr_feature):
+    def validate_feature_keys(self):
+        """Return True if workflow instance feature_order contains all feature keys"""
+        return set(self.workflow['feature_order']) == set(self.self.workflow['features'].keys())
+
+    def set_curr_feature(self, curr_feature, who_name='self'):
         """Set current feature"""
-        # TODO: add error check to make sure key exists
-        if curr_feature not in self.workflow['features'].keys():
-            # raise KeyError
-            pass
-        self.workflow['curr_feature'] = curr_feature
+        if curr_feature in self.workflow['features'].keys():
+            self.workflow['curr_feature'] = curr_feature
+            self.log_event('set_feature_key', f'Set curr_feature_key to {self.workflow["curr_feature"]}', who_name)
+        else:
+            raise KeyError
 
     @property
     def curr_feature(self):
@@ -158,8 +163,8 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
     @property
     def curr_feature_index(self):
         """Return current feature index from list of features"""
-        feature_keys = list(self.workflow['features'].keys())
-        return feature_keys.index(self.workflow['curr_feature'])
+        feature_keys = self.workflow['feature_order']
+        return feature_keys.index(self.curr_feature)
 
     def is_final_feature(self, feature):
         """Returns True if feature is final feature in workflowinstance"""
@@ -167,6 +172,18 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
             return True
         else:
             return False
+
+    def set_workflowinstance_complete(self):
+        """Set workflowinstance complete attribute to True"""
+        self.workflow['complete'] = True
+        self.log_event('set_workflowinstance_completed', f'Workflow set to completed')
+        return True
+
+    def set_workflowinstance_not_complete(self):
+        """Set workflowinstance complete attribute to False"""
+        self.workflow['complete'] = False
+        self.log_event('set_workflowinstance_not_completed', f'Workflow set to not completed')
+        return False
 
     def log_event(self, name, description, who='self'):
         """Log event"""
@@ -182,25 +199,18 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         """Set specfic feature complete"""
         who_name = User.username if (type(who)==User) else 'self'
         self.workflow['features'][self.workflow['curr_feature']]['status'] = 'completed'
+        self.workflow['features'][self.workflow['curr_feature']]['complete'] = True
         self.log_event('set_feature_completed', f'Set {self.curr_feature} to completed', who_name)
 
     def advance(self, who='self'):
         """Shift curr_feature forward by one"""
-
         who_name = User.username if (type(who)==User) else 'self'
-        # skip hidden features
+        # TODO: skip hidden features
         # while not self.is_final_feature(self.curr_feature) and self.workflow['curr_feature']['ask'] == 'skip':
         if not self.is_final_feature(self.curr_feature):
-            # new_feature_index = self.curr_feature_index + 1
-            # self.workflow['curr_feature'] = self.feature_keys[new_feature_index]
             self.set_curr_feature(self.feature_keys[self.curr_feature_index + 1])
-            self.log_event('advance_feature_key', f'Advance curr_feature_key to self.workflow["curr_feature"]', who_name)
-            # qq.q_plan_complete = False
-            # q_plan_complete = qq.q_plan_complete
         else:
-            self.log_event('workflowinstance_completed', f'Workflow completed')
-            # qq.q_plan_complete = True
-            # q_plan_complete = qq.q_plan_complete
+            self.set_workflowinstance_complete()
         result = self.save()
         print(f'[DEBUG] Save result wfinstance {self.name}: {result}')
         
