@@ -5,6 +5,8 @@ from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
 from controls.models import System, Element
 from .models import WorkflowImage, WorkflowInstanceSet, WorkflowInstance
+from .factories import FlowImageFactory, FlowImage
+import os
 
 # Create your tests here.
 
@@ -138,14 +140,14 @@ class WorkflowUnitTests(TestCase):
 
         # test advance()
         # curr_feature = wfinstance.workflow['curr_feature']
-        self.assertEqual(wfinstance.workflow['curr_feature'], "1start_review")
+        self.assertEqual(wfinstance.workflow['curr_feature'], "start_review")
         wfinstance.advance()
-        self.assertEqual(wfinstance.workflow['curr_feature'], "2review_poams")
+        self.assertEqual(wfinstance.workflow['curr_feature'], "review_poams")
 
         # check if advance saved to database
         uuid = wfinstance.uuid
         wfinstance_copy = WorkflowInstance.objects.get(uuid=uuid)
-        self.assertEqual(wfinstance_copy.workflow['curr_feature'], "2review_poams")
+        self.assertEqual(wfinstance_copy.workflow['curr_feature'], "review_poams")
 
 
     # def setUp(self):
@@ -159,6 +161,32 @@ class WorkflowUnitTests(TestCase):
     #     self.assertEqual(lion.speak(), 'The lion says "roar"')
     #     self.assertEqual(cat.speak(), 'The cat says "meow"')
 
+    def test_flowimagefactory(self):
+        """Test factories"""
+        
+        flow_file_text = """STEP Start Monthly Reviewx id(Start)
+        STEP Review Monthly POA&Msx id(Review)
+        STEP Submit updated POA&Msx
+        """
+        
+        fac_name = "Monthly POA&M Review 2"
+        fif = FlowImageFactory(fac_name)
+        fif.feature_descriptor_text = flow_file_text
+        fif.split_feature_descriptor_text()
+        fif.prepare_features()
+        workflowimage = fif.create_workflowimage()
+        print(f'[DEBUG] created workflowimage: ', workflowimage)
+        self.assertEqual(len(workflowimage.workflow['features']), 3)
+        
+        # test retrieving flowimage
+        # flow_image_filename = f"{fi1.flow_image['name']}__{fi1.flow_image['uuid']}.fim"
+        # data_dir = os.path.join(f"{os.getcwd()}", 'data')
+        # filepath = os.path.join(data_dir, flow_image_filename)
+        wfi2 = WorkflowImage.objects.get(name=fac_name)
+        print(f'[DEBUG] retrieved workflowimage: ', wfi2.name)
+        self.assertEqual(wfi2.workflow['name'], fac_name)
+        self.assertEqual(len(wfi2.workflow['features']), 3)
+        self.assertEqual(wfi2.workflow['feature_order'], ['Start', 'Review', 'cf03ecad'])
 
 # Scratch code
 

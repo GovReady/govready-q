@@ -13,6 +13,7 @@ Systems
 <meta http-equiv="refresh" content="6">
 <style type="text/css">
       .stepper-wrapper { margin-top: auto; display: flex; justify-content: space-between; margin-bottom: 20px; }
+      .workflowinstance a { color: black; }
       .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; flex: 1;
         @media (max-width: 768px) { font-size: 12px; }
       }
@@ -58,7 +59,7 @@ Systems
         <h3>{{ set.name }}</h3>
         <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
         {% for wfit in set.workflowinstances.all|dictsort:"system.root_element.name" %}
-            <div class="row">
+            <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
                 <div class="col-md-4">
                     <a href="/systems/{{ wfit.system.id }}/poams" target="_blank">{{ wfit.system.root_element.name }}</a>
                 </div>
