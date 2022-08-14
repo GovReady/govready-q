@@ -231,6 +231,15 @@ class FlowImageFactory:
         workflowimage = WorkflowImage.objects.create(name=wf_dict['name'], uuid=wf_dict['uuid'], workflow=wf_dict, rules=rules)
         return workflowimage
 
+    def create_workflowimage_from_flowtext(self, flowtext):
+        """Create the workflow image object from input flow feature text descriptions"""
+
+        self.feature_descriptor_text = flowtext
+        self.split_feature_descriptor_text()
+        self.prepare_features()
+        wfi = self.create_workflowimage()
+        return wfi
+
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)
 
