@@ -6,13 +6,12 @@
 {% load system_tags %}
 
 {% block title %}
-Workflows
+Workflow Recipes
 {% endblock %}
 
 {% block head %}
-<meta http-equiv="refresh" content="6">
 <style type="text/css">
-    .stepper-wrapper { margin-top: auto; display: flex; justify-content: space-between; margin-bottom: 20px; }
+    /*.stepper-wrapper { margin-top: auto; display: flex; justify-content: space-between; margin-bottom: 20px; }
     .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; flex: 1;
     @media (max-width: 768px) { font-size: 12px; }
     }
@@ -26,7 +25,7 @@ Workflows
     .stepper-item:first-child::before { content: none; }
     .stepper-item:last-child::after { content: none; }
     .step-name { text-align: center; }
-    .stepper-item.completed .step-counter { color: white; }
+    .stepper-item.completed .step-counter { color: white; }*/
     .heading { font-weight: bold; text-align: center;}
     .workflowinstance a { color: black; }
     .bottom-border { border-bottom: 0.5px solid #888; }
@@ -43,6 +42,9 @@ Workflows
         border-radius: 4px;
         padding: .5em .5em 0; 
         margin-bottom: 20px;}
+
+    .container { margin-top: 40px; }
+    a.action-link{ color: #888; }
 </style>
 {% endblock %}
 
@@ -52,47 +54,51 @@ Workflows
 {% block body %}
 
 <div class="container">
+    <div class="portfolio-main">
+      <a id="new-portfolio" href="/workflow/recipes/manage" class="btn btn-success">Create a recipe</a>
+    </div>
     <p>&nbsp;</p>
-    <h2>All Workflows</h2>
+    <h2>All Workflow Recipes</h2>
 
     <p>&nbsp;</p>
             <div class="row bottom-border">
                 <div class="col-md-4 heading">
-                    System
+                    Workflow Recipe
                 </div>
                 <div class="col-md-1 heading">
-                    wfid
+                    ID
                 </div>
-                <div class="col-mid-7 heading">
-                    workflow instance
+                <div class="col-mid-6 heading">
+                    Details
+                </div>
+                <div class="col-mid-1 heading">
+                    Actions
                 </div>
             </div>
 
-    {% for set in workflowinstancesets %}
-        <details>
-            <summary><h3>{{ set.name }}</h3></summary>
-            Something small enough to escape casual notice.
-            <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
-            {% for wfit in set.workflowinstances.all|dictsort:"system.root_element.name" %}
+            {% for item in workflowrecipes %}
                 <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
                     <div class="col-md-4">
-                        <a href="/systems/{{ wfit.system.id }}/poams" target="_blank">{{ wfit.system.root_element.name }}</a>
+                        <a href="" target="">{{ item.name }}</a>
                     </div>
                     <div class="col-md-1" style="text-align: center;">
-                        <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
+                        <a href="/admin/workflow/workflowrecipe/{{ item.id }}/change/" target="_blank">{{ item.id }}</a>
                     </div>
-                    <div class="col-mid-7 stepper-wrapper">
-                        {% for key in wfit.workflow.feature_order %}
-                          {% with feature=wfit.workflow.features|get_item:key %}
+                    <div class="col-md-6" style="">
+                        <div>{{ item.description }}</div>
+
+                        {% comment %}
+                        {% for key in item.workflow.feature_order %}
+                          {% with feature=item.workflow.features|get_item:key %}
                             <div class="stepper-item {{ feature.status }} 
-                                 {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
+                                 {% if key == item.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
                               <div class="step-counter">{{ forloop.counter }}</div>
                               <div class="step-name">
                                 {% if feature.status == 'completed' %}√{% endif %}
                                 {{ feature.text }}
                                 <!--
-                                {% if key == wfit.workflow.curr_feature and feature.status != 'completed' %}
-                                  <br><a href="/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed">[mark done]</a>
+                                {% if key == item.workflow.curr_feature and feature.status != 'completed' %}
+                                  <br><a href="/workflow/{{ item.id }}/set_workflowinstance_feature_completed">[mark done]</a>
                                 {% else %}
                                 {% endif %}
                                 -->
@@ -100,14 +106,21 @@ Workflows
                             </div>
                           {% endwith %}
                         {% endfor %}
+                        {% endcomment %}
+                    </div>
+                    <div>
+                        <a id="" class="action-link" href="{% url "edit_recipe" item.id %}" title="Create workflow image" aria-label="Create workflow image" >fi</a>
+                        &nbsp;
+                        <a id="" class="action-link" href="{% url "edit_recipe" item.id %}" title="Edit recipe" aria-label="Edit recipe" ><span class="glyphicon glyphicon-pencil"></span></a>
+                        &nbsp;
+                        <a id="" class="action-link" href="{% url "duplicate_recipe" item.id %}" title="Duplicate recipe" aria-label="Duplicate recipe" ><span class="glyphicon glyphicon-duplicate"></span></a>
+                        &nbsp;
+                        <a id="" class="action-link" href="{% url "delete_recipe" item.id %}" title="Delete recipe" aria-label="Delete recipe" ><span class="glyphicon glyphicon-trash"></span></a>
                     </div>
                 </div>
             {%  endfor %}
-        </details>
-    {% endfor %}
 
 </div>
-
 
 {% endblock %}
 

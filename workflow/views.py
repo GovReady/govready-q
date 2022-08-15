@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 import json
 from datetime import datetime
-
+from django.contrib import messages
 from django.contrib.auth.models import Permission
 from django.http import (Http404, HttpResponse, HttpResponseForbidden,
                          HttpResponseRedirect)
@@ -15,9 +15,11 @@ from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model, get_perms, assign_perm
 
 from controls.models import System
-from .models import WorkflowImage, WorkflowInstanceSet, WorkflowInstance
+from .models import WorkflowImage, WorkflowInstanceSet, WorkflowInstance, WorkflowRecipe
 
 from siteapp.notifications_helpers import *
+
+from .forms import WorkflowRecipeForm
 
 import logging
 logging.basicConfig()
@@ -31,6 +33,186 @@ logger = get_logger()
 
 
 # Create your views here.
+def workflowrecipes_all(request):
+    """List all workflow recipes"""
+
+    workflowrecipes = WorkflowRecipe.objects.all().order_by("name")
+    context = {
+        "workflowrecipes": workflowrecipes,
+    }
+    return render(request, "workflow/recipes_all.html", context)
+
+
+from django.forms import modelformset_factory
+# from django.shortcuts import render
+# from myapp.models import Author
+
+def manage_recipe(request):
+    context ={}
+ 
+    # create object of form
+    form = WorkflowRecipeForm(request.POST or None, request.FILES or None)
+    print(f"[DEBUG] form.__dir__(): ",form.__dir__())
+     
+    # check if form data is valid
+    if form.is_valid():
+        # save the form data to model
+        form.save()
+        messages.add_message(request, messages.INFO, f"Workflow recipe \"{form.data['name']}\" created.")
+        return redirect('workflowrecipes_all')
+
+    context['form'] = form
+    return render(request, "workflow/recipe_form.html", context)
+
+def edit_recipe(request, pk):
+
+    workflowrecipe = get_object_or_404(WorkflowRecipe, pk=pk)
+    form = WorkflowRecipeForm(request.POST or None, instance=workflowrecipe, initial={'workflowrecipe': workflowrecipe.id})
+    if request.method == 'POST':
+        try:
+            form = WorkflowRecipeForm(request.POST, instance=workflowrecipe)
+            if form.is_valid():
+                form.save()
+                messages.add_message(request, messages.INFO, f"Workflow recipe \"{form.data['name']}\" updated.")
+                return redirect("workflowrecipes_all")
+        except:
+            messages.add_message(request, messages.ERROR,
+                                 f"Error. Workflow recipe \"{form.data['name']}\" update failed.")
+    return render(request, 'workflow/recipe_form.html', {
+        'form': form,
+        'workflowrecipe': workflowrecipe,
+    })
+
+# @login_required
+def delete_recipe(request, pk):
+    """Form to delete recipes"""
+
+    if request.method == 'GET':
+        workflowrecipe = get_object_or_404(WorkflowRecipe, pk=pk)
+
+        # Confirm user has permission to delete portfolio
+        # CAN_DELETE_PORTFOLIO = False
+        # if request.user.is_superuser or request.user.has_perm('delete_portfolio', portfolio):
+        #     CAN_DELETE_PORTFOLIO = True
+
+        # if not CAN_DELETE_PORTFOLIO:
+        #     logger.info(
+        #         event="delete_portfolio_failed",
+        #         object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+        #         user={"id": request.user.id, "username": request.user.username},
+        #         detail={"message": "USER IS SUPER USER"}
+        #     )
+        #     messages.add_message(request, messages.ERROR,
+        #                          f"You do not have permission to delete portfolio '{portfolio.title}.'")
+        #     return redirect("list_portfolios")
+
+        # # Only delete a portfolio with no projects
+        # if len(portfolio.projects.all()) > 0:
+        #     logger.info(
+        #         event="delete_portfolio_failed",
+        #         object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+        #         user={"id": request.user.id, "username": request.user.username},
+        #         detail={"message": "Portfolio not empty"}
+        #     )
+        #     messages.add_message(request, messages.ERROR,
+        #                          f"Failed to delete portfolio '{portfolio.title}.' The portfolio is not empty.")
+        #     return redirect("list_portfolios")
+        # # TODO: It will delete everything related to the portfolio as well with a summary of the deletion
+        # Delete portfolio
+        try:
+            WorkflowRecipe.objects.get(pk=pk).delete()
+            # logger.info(
+            #     event="delete_portfolio",
+            #     object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+            #     user={"id": request.user.id, "username": request.user.username}
+            # )
+            messages.add_message(request, messages.INFO, f"Workflow recipe \"{workflowrecipe.name}\" deleted.")
+            return redirect("workflowrecipes_all")
+        except:
+            logger.info(
+                event="delete_workflowrecipe_failed",
+                object={"object": "workflowrecipe", "id": workflowrecipe.id, "name": workflowrecipe.name},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "Other error when running delete on workflowrecipe object."}
+            )
+            return redirect('workflowrecipes_all')
+
+def duplicate_recipe(request, pk):
+    """Duplicate an existing Workflow recipe."""
+
+    if request.method == 'GET':
+        workflowrecipe = get_object_or_404(WorkflowRecipe, pk=pk)
+        workflowrecipe.pk = None
+        workflowrecipe.name = f"Copy of {workflowrecipe.name}"
+        workflowrecipe.save()
+        messages.add_message(request, messages.INFO, f"Workflow recipe \"{workflowrecipe.name}\" copied.")
+        return redirect("workflowrecipes_all")
+
+
+# @login_required
+# def new_workflowrecipe(request):
+#     """Form to create new workflowrecipe"""
+#     if request.method == 'POST':
+#         form = WorkflowRecipeForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             portfolio = form.instance
+#             # logger.info(
+#             #     event="new_portfolio",
+#             #     object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+#             #     user={"id": request.user.id, "username": request.user.username}
+#             # )
+#             # portfolio.assign_owner_permissions(request.user)
+#             # logger.info(
+#             #     event="new_portfolio assign_owner_permissions",
+#             #     object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+#             #     receiving_user={"id": request.user.id, "username": request.user.username},
+#             #     user={"id": request.user.id, "username": request.user.username}
+#             # )
+#             return redirect('workflowrecipes_all')
+#     else:
+#         form = WorkflowRecipeForm()
+#     return WorkflowRecipeForm(request, 'workflow/recipe_form.html', {
+#         'form': form,
+#     })
+
+@login_required
+def new_portfolio(request):
+    """Form to create new portfolios"""
+    if request.method == 'POST':
+        form = PortfolioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            portfolio = form.instance
+            logger.info(
+                event="new_portfolio",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            portfolio.assign_owner_permissions(request.user)
+            logger.info(
+                event="new_portfolio assign_owner_permissions",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                receiving_user={"id": request.user.id, "username": request.user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return redirect('portfolio_projects', pk=portfolio.pk)
+    else:
+        form = PortfolioForm()
+    return render(request, 'portfolios/form.html', {
+        'form': form,
+    })
+
+
+def workflowimages_all(request):
+    """List all workflow images"""
+
+    workflowimages = WorkflowImage.objects.all()
+    context = {
+        "workflowimages": workflowimages,
+    }
+    return render(request, "workflow/images_all.html", context)
+
 def set_workflowinstance_feature_completed(request, workflowinstance_id):
     """Advance workflowinstace"""
 

@@ -26,11 +26,29 @@ from django.core.validators import RegexValidator
 from django.core.validators import validate_email
 
 # Create your models here.
+class WorkflowRecipe(auto_prefetch.Model, TagModelMixin, BaseModel):
+    name = models.CharField(max_length=100, help_text="Descriptive name", unique=False, blank=True, null=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier")
+    description = models.CharField(max_length=250, help_text="Brief description", unique=False, blank=True, null=True)
+    recipe = models.TextField(help_text="Workflow instructions", unique=False, blank=True, null=True)
+    # workflow = models.JSONField(blank=True, default=dict, help_text="Workflow object")
+    # rules = models.JSONField(blank=True, default=list, help_text="Rules list")
+
+    def __str__(self):
+        return f'<WorkflowRecipe name="{self.name}" id={self.id}>'
+
+    def __repr__(self):
+        # For debugging.
+        return f'<WorkflowRecipe name="{self.name}" id={self.id}>'
+
+
 class WorkflowImage(auto_prefetch.Model, TagModelMixin, BaseModel):
     name = models.CharField(max_length=100, help_text="Descriptive name", unique=False, blank=True, null=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier")
     workflow = models.JSONField(blank=True, default=dict, help_text="Workflow object")
     rules = models.JSONField(blank=True, default=list, help_text="Rules list")
+    workflowrecipe = auto_prefetch.ForeignKey(WorkflowRecipe, null=True, related_name="workflowimages", on_delete=models.SET_NULL,
+                                            help_text="WorkflowRecipe")
 
     def __str__(self):
         return f'<WorkflowImage name="{self.name}" id={self.id}>'
@@ -40,13 +58,23 @@ class WorkflowImage(auto_prefetch.Model, TagModelMixin, BaseModel):
         return f'<WorkflowImage name="{self.name}" id={self.id}>'
 
     def create_workflowinstance_obj(self):
-        """Returns a generic workflowinstance unsaved object from workflowimage"""
+        """Returns a generic workflowinstance unsaved object from workflowimage."""
         wfinstance = WorkflowInstance()
         wfinstance.workflowimage = self
         wfinstance.name = self.name
         wfinstance.workflow = self.workflow
         wfinstance.rules = self.rules
         # add tag
+        return wfinstance
+
+    @transaction.atomic
+    def create_orphan_worflowinstance(self, name=None):
+        """Create a workflowinstance not associated with any model/objects."""
+
+        wfinstance = self.create_workflowinstance_obj()
+        wfinstance.name = name
+        wfinstance.save()
+        print(f'[DEBUG] Created 1 instance')
         return wfinstance
 
     @transaction.atomic

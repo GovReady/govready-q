@@ -4,7 +4,7 @@ from guidedmodules.tests import TestCaseWithFixtureData
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
 from controls.models import System, Element
-from .models import WorkflowImage, WorkflowInstanceSet, WorkflowInstance
+from .models import WorkflowImage, WorkflowInstanceSet, WorkflowInstance, WorkflowRecipe
 from .factories import FlowImageFactory, FlowImage
 import os
 
@@ -149,29 +149,22 @@ class WorkflowUnitTests(TestCase):
         wfinstance_copy = WorkflowInstance.objects.get(uuid=uuid)
         self.assertEqual(wfinstance_copy.workflow['curr_feature'], "review_poams")
 
-
-    # def setUp(self):
-    #     Animal.objects.create(name="lion", sound="roar")
-    #     Animal.objects.create(name="cat", sound="meow")
-
-    # def test_animals_can_speak(self):
-    #     """Animals that can speak are correctly identified"""
-    #     lion = Animal.objects.get(name="lion")
-    #     cat = Animal.objects.get(name="cat")
-    #     self.assertEqual(lion.speak(), 'The lion says "roar"')
-    #     self.assertEqual(cat.speak(), 'The cat says "meow"')
-
     def test_flowimagefactory(self):
         """Test factories"""
         
-        flow_file_text = """STEP Start Monthly Reviewx id(Start)
+        # create workflow recipe
+        name = "Monthly POA&M Reviewx"
+        description  = "Simple test recipe for monthly review of POA&Ms"
+        recipe_text = """STEP Start Monthly Reviewx id(Start)
         STEP Review Monthly POA&Msx id(Review)
         STEP Submit updated POA&Msx
         """
+        wfr = WorkflowRecipe.objects.create(name=name, description=description,recipe=recipe_text)
+
         
         fac_name = "Monthly POA&M Review 2"
         fif = FlowImageFactory(fac_name)
-        fif.feature_descriptor_text = flow_file_text
+        fif.feature_descriptor_text = wfr.recipe
         fif.split_feature_descriptor_text()
         fif.prepare_features()
         workflowimage = fif.create_workflowimage()

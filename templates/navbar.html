@@ -25,6 +25,13 @@
           <li><a href="/controls" id="menu-controls">Controls</a></li>
           <li><a href="{% url 'component_library' %}" id="menu-components">Component Library</a></li>
           <li><a href="{% url 'store' %}" id="menu-templates">Template Library</a></li>
+          <li class="dropdown">
+            <a href="#" class="" data-toggle="dropdown" role="button" aria-expanded="false" aria-pressed="false" aria-label="Settings Menu" id="settings-menu-dropdown">Workflows</a>
+            <ul class="dropdown-menu">
+              <li><a href="{% url 'workflowrecipes_all' %}" id="menu-settings" aria-label="Workflow Recipes" tooltip="Workflow Recipes">Workflow Recipes</a></li>
+              <li><a href="{% url 'workflowimages_all' %}" id="menu-settings" aria-label="Workflow Images" tooltip="Workflow Images">Workflow Images</a></li>
+            </ul>
+          </li>
         {% endif %}
       </ul>
 
