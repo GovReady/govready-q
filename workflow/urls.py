@@ -18,6 +18,7 @@ urlpatterns = [
     
     url(r'^images/all$', views.workflowimages_all, name="workflowimages_all"),
     url(r'^instances/all$', views.workflowinstances_all, name="workflowinstances_all"),
+    url(r'^images/(?P<pk>.*)/create_flow_instance$', views.create_flow_instance, name="create_flow_instance"),
 
 
     # url(r'^store/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),

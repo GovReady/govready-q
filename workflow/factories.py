@@ -240,6 +240,15 @@ class FlowImageFactory:
         wfi = self.create_workflowimage()
         return wfi
 
+    def create_workflowimage_from_workflowrecipe(self, workflowrecipe):
+        """Create the workflow image object from workflowrecipe object"""
+
+        flowtext = workflowrecipe.recipe
+        wfi = self.create_workflowimage_from_flowtext(flowtext)
+        wfi.workflowrecipe = workflowrecipe
+        wfi.save()
+        return wfi
+
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)
 

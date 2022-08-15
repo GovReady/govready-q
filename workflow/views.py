@@ -16,10 +16,10 @@ from guardian.shortcuts import get_perms_for_model, get_perms, assign_perm
 
 from controls.models import System
 from .models import WorkflowImage, WorkflowInstanceSet, WorkflowInstance, WorkflowRecipe
+from .forms import WorkflowRecipeForm
+from .factories import *
 
 from siteapp.notifications_helpers import *
-
-from .forms import WorkflowRecipeForm
 
 import logging
 logging.basicConfig()
@@ -32,7 +32,7 @@ structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
 
 
-# Create your views here.
+@login_required
 def workflowrecipes_all(request):
     """List all workflow recipes"""
 
@@ -42,11 +42,7 @@ def workflowrecipes_all(request):
     }
     return render(request, "workflow/recipes_all.html", context)
 
-
-from django.forms import modelformset_factory
-# from django.shortcuts import render
-# from myapp.models import Author
-
+@login_required
 def manage_recipe(request):
     context ={}
  
@@ -56,14 +52,20 @@ def manage_recipe(request):
      
     # check if form data is valid
     if form.is_valid():
-        # save the form data to model
-        form.save()
-        messages.add_message(request, messages.INFO, f"Workflow recipe \"{form.data['name']}\" created.")
+        workflowrecipe = form.save()
+        # create related workflowimage
+        fif = FlowImageFactory(workflowrecipe.name)
+        workflowimage = fif.create_workflowimage_from_workflowrecipe(workflowrecipe)
+        messages.add_message(request, messages.INFO, f"Workflow recipe \"{workflowrecipe.name}\" created.")
+        # create related worflowinstanceset
+        # create related orphan worflowinstance
+        workflowimage.create_orphan_worflowinstance(name=workflowrecipe.name)
         return redirect('workflowrecipes_all')
 
     context['form'] = form
     return render(request, "workflow/recipe_form.html", context)
 
+@login_required
 def edit_recipe(request, pk):
 
     workflowrecipe = get_object_or_404(WorkflowRecipe, pk=pk)
@@ -83,7 +85,7 @@ def edit_recipe(request, pk):
         'workflowrecipe': workflowrecipe,
     })
 
-# @login_required
+@login_required
 def delete_recipe(request, pk):
     """Form to delete recipes"""
 
@@ -137,6 +139,7 @@ def delete_recipe(request, pk):
             )
             return redirect('workflowrecipes_all')
 
+@login_required
 def duplicate_recipe(request, pk):
     """Duplicate an existing Workflow recipe."""
 
@@ -145,65 +148,16 @@ def duplicate_recipe(request, pk):
         workflowrecipe.pk = None
         workflowrecipe.name = f"Copy of {workflowrecipe.name}"
         workflowrecipe.save()
+
+        # create workflow image and instance for duplicate
+        fif = FlowImageFactory(workflowrecipe.name)
+        workflowimage = fif.create_workflowimage_from_workflowrecipe(workflowrecipe)
+        workflowimage.create_orphan_worflowinstance(name=workflowimage.name)
+
         messages.add_message(request, messages.INFO, f"Workflow recipe \"{workflowrecipe.name}\" copied.")
         return redirect("workflowrecipes_all")
 
-
-# @login_required
-# def new_workflowrecipe(request):
-#     """Form to create new workflowrecipe"""
-#     if request.method == 'POST':
-#         form = WorkflowRecipeForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             portfolio = form.instance
-#             # logger.info(
-#             #     event="new_portfolio",
-#             #     object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-#             #     user={"id": request.user.id, "username": request.user.username}
-#             # )
-#             # portfolio.assign_owner_permissions(request.user)
-#             # logger.info(
-#             #     event="new_portfolio assign_owner_permissions",
-#             #     object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-#             #     receiving_user={"id": request.user.id, "username": request.user.username},
-#             #     user={"id": request.user.id, "username": request.user.username}
-#             # )
-#             return redirect('workflowrecipes_all')
-#     else:
-#         form = WorkflowRecipeForm()
-#     return WorkflowRecipeForm(request, 'workflow/recipe_form.html', {
-#         'form': form,
-#     })
-
 @login_required
-def new_portfolio(request):
-    """Form to create new portfolios"""
-    if request.method == 'POST':
-        form = PortfolioForm(request.POST)
-        if form.is_valid():
-            form.save()
-            portfolio = form.instance
-            logger.info(
-                event="new_portfolio",
-                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-                user={"id": request.user.id, "username": request.user.username}
-            )
-            portfolio.assign_owner_permissions(request.user)
-            logger.info(
-                event="new_portfolio assign_owner_permissions",
-                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-                receiving_user={"id": request.user.id, "username": request.user.username},
-                user={"id": request.user.id, "username": request.user.username}
-            )
-            return redirect('portfolio_projects', pk=portfolio.pk)
-    else:
-        form = PortfolioForm()
-    return render(request, 'portfolios/form.html', {
-        'form': form,
-    })
-
-
 def workflowimages_all(request):
     """List all workflow images"""
 
@@ -213,6 +167,15 @@ def workflowimages_all(request):
     }
     return render(request, "workflow/images_all.html", context)
 
+@login_required
+def create_flow_instance(request, pk):
+    """Create a workflow instance from a workflow image"""
+    workflowimage = get_object_or_404(WorkflowImage, pk=pk)
+    workflowimage.create_orphan_worflowinstance(name=workflowimage.name)
+    redirect_url = f'/workflow/instances/all'
+    return HttpResponseRedirect(redirect_url)
+
+@login_required
 def set_workflowinstance_feature_completed(request, workflowinstance_id):
     """Advance workflowinstace"""
 
@@ -222,19 +185,22 @@ def set_workflowinstance_feature_completed(request, workflowinstance_id):
 
     # temp hardcode return to system poa&m workflow
     # TODO: make return to system dynamic
-    system_id = workflowinstance.system.id
-    # redirect_url = request.session.get("_post_banner_url", "/")
-    redirect_url = f'/systems/{system_id}/poams'
+    if workflowinstance.system is not None:
+        system_id = workflowinstance.system.id
+        redirect_url = f'/systems/{system_id}/poams'
+    else:
+        redirect_url = f'/workflow/instances/all'
     return HttpResponseRedirect(redirect_url)
 
+@login_required
 def workflowinstances_all(request):
     """List all workflow instances"""
     
     workflowinstancesets = WorkflowInstanceSet.objects.all()
-     # redirect_url = f'/systems/139/poams'
-    # return HttpResponseRedirect(redirect_url)
-    # HttpResponse("workflowinstanceset")
+    orphan_workflowinstances = WorkflowInstance.objects.filter(workflowinstanceset=None)
+
     context = {
         "workflowinstancesets": workflowinstancesets,
+        "orphan_workflowinstances": orphan_workflowinstances,
     }
     return render(request, "workflow/all.html", context)

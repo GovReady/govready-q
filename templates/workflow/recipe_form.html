@@ -20,13 +20,18 @@ Workflow Recipe
                     {% csrf_token %}
                     <input type=hidden name=action value=newworkflowrecipe>
                     {% bootstrap_form form %}
-                    <p><button type="submit" id="create-portfolio-button" class="btn btn-success">Save</button></p>
+                    <p>
+                        <button type="submit" id="create-portfolio-button" class="btn btn-success" value="save">Save</button>
+                        &nbsp;
+                        <a type="button" class="btn btn-default" href="{% url 'workflowrecipes_all' %}">Cancel</a>
+                        &nbsp;
+                        <a href="{% url 'delete_recipe' workflowrecipe.id %}" id="delete_portfolio_submit" class="btn btn-danger btn-submit confirm-delete" type="submit" onclick="return confirm('Are you sure you want to delete workflow recipe \'{{ workflowrecipe.name }}\'?\n\nThis cannot be undone.')">Delete</a>  
+                    </p>
                 </form>
             </div>
         </div>
     </div>
 </div>
-
 
 {{ block.super }}
 {% endblock %}

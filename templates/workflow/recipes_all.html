@@ -68,10 +68,10 @@ Workflow Recipes
                 <div class="col-md-1 heading">
                     ID
                 </div>
-                <div class="col-mid-6 heading">
+                <div class="col-md-6 heading">
                     Details
                 </div>
-                <div class="col-mid-1 heading">
+                <div class="col-md-1 heading">
                     Actions
                 </div>
             </div>
@@ -79,7 +79,7 @@ Workflow Recipes
             {% for item in workflowrecipes %}
                 <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
                     <div class="col-md-4">
-                        <a href="" target="">{{ item.name }}</a>
+                        <a href="{% url 'edit_recipe' item.id %}" target="">{{ item.name }}</a>
                     </div>
                     <div class="col-md-1" style="text-align: center;">
                         <a href="/admin/workflow/workflowrecipe/{{ item.id }}/change/" target="_blank">{{ item.id }}</a>
@@ -108,14 +108,25 @@ Workflow Recipes
                         {% endfor %}
                         {% endcomment %}
                     </div>
-                    <div>
-                        <a id="" class="action-link" href="{% url "edit_recipe" item.id %}" title="Create workflow image" aria-label="Create workflow image" >fi</a>
-                        &nbsp;
-                        <a id="" class="action-link" href="{% url "edit_recipe" item.id %}" title="Edit recipe" aria-label="Edit recipe" ><span class="glyphicon glyphicon-pencil"></span></a>
-                        &nbsp;
-                        <a id="" class="action-link" href="{% url "duplicate_recipe" item.id %}" title="Duplicate recipe" aria-label="Duplicate recipe" ><span class="glyphicon glyphicon-duplicate"></span></a>
-                        &nbsp;
-                        <a id="" class="action-link" href="{% url "delete_recipe" item.id %}" title="Delete recipe" aria-label="Delete recipe" ><span class="glyphicon glyphicon-trash"></span></a>
+                    <div class="col-md-1" style="text-align: center;">
+                        <span class="dropdown">
+                          <a href="#" class="action-link" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="" aria-label="Dropdown menu for workflow recipe"><span class="glyphicon glyphicon-cog"></span>
+                          </a>
+                          <ul class="dropdown-menu">
+                            <li>
+                                <a id="" class="action-link" href="{% url 'edit_recipe' item.id %}" title="Create workflow image" aria-label="Create workflow image"><span class="glyphicon glyphicon-flash"></span> create flow image</a>
+                            </li>
+                            <li>
+                                <a id="" class="action-link" href="{% url 'edit_recipe' item.id %}" title="Edit recipe" aria-label="Edit recipe" ><span class="glyphicon glyphicon-pencil"></span> edit</a>
+                            </li>
+                            <li>
+                                <a id="" class="action-link" href="{% url 'duplicate_recipe' item.id %}" title="Duplicate recipe" aria-label="Duplicate recipe" ><span class="glyphicon glyphicon-duplicate"></span> duplicate</a>
+                            </li>
+                            <li>
+                                <a id="" class="action-link" href="{% url 'delete_recipe' item.id %}" title="Delete recipe" aria-label="Delete recipe" ><span class="glyphicon glyphicon-trash"></span> delete</a>
+                            </li>
+                          </ul>
+                        </span>
                     </div>
                 </div>
             {%  endfor %}

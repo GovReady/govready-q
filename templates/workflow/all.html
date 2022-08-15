@@ -71,7 +71,6 @@ Workflows
     {% for set in workflowinstancesets %}
         <details>
             <summary><h3>{{ set.name }}</h3></summary>
-            Something small enough to escape casual notice.
             <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
             {% for wfit in set.workflowinstances.all|dictsort:"system.root_element.name" %}
                 <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
@@ -105,6 +104,41 @@ Workflows
             {%  endfor %}
         </details>
     {% endfor %}
+
+        <details open>
+            <summary><h3>Orphan Workflowinstances</h3></summary>
+            <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
+            {% for wfit in orphan_workflowinstances %}
+                <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
+                    <div class="col-md-4">
+                        <a href="/systems/{{ wfit.system.id }}/poams" target="_blank">{{ wfit.system.root_element.name }}</a>
+                    </div>
+                    <div class="col-md-1" style="text-align: center;">
+                        <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
+                    </div>
+                    <div class="col-mid-7 stepper-wrapper">
+                        {% for key in wfit.workflow.feature_order %}
+                          {% with feature=wfit.workflow.features|get_item:key %}
+                            <div class="stepper-item {{ feature.status }} 
+                                 {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
+                              <div class="step-counter">{{ forloop.counter }}</div>
+                              <div class="step-name">
+                                {% if feature.status == 'completed' %}√{% endif %}
+                                {{ feature.text }}
+                                
+                                {% if key == wfit.workflow.curr_feature and feature.status != 'completed' %}
+                                  <br><a href="/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed">[mark done]</a>
+                                {% else %}
+                                {% endif %}
+                                
+                              </div>
+                            </div>
+                          {% endwith %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {%  endfor %}
+        </details>
 
 </div>
 

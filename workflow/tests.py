@@ -161,13 +161,12 @@ class WorkflowUnitTests(TestCase):
         """
         wfr = WorkflowRecipe.objects.create(name=name, description=description,recipe=recipe_text)
 
-        
         fac_name = "Monthly POA&M Review 2"
         fif = FlowImageFactory(fac_name)
-        fif.feature_descriptor_text = wfr.recipe
-        fif.split_feature_descriptor_text()
-        fif.prepare_features()
-        workflowimage = fif.create_workflowimage()
+        # fif.feature_descriptor_text = wfr.recipe
+        # fif.split_feature_descriptor_text()
+        # fif.prepare_features()
+        workflowimage = fif.create_workflowimage_from_flowtext(recipe_text)
         print(f'[DEBUG] created workflowimage: ', workflowimage)
         self.assertEqual(len(workflowimage.workflow['features']), 3)
         

@@ -63,8 +63,11 @@ Workflow Images
                 <div class="col-md-1 heading">
                     ID
                 </div>
-                <div class="col-mid-7 heading">
+                <div class="col-md-6 heading">
                     Details
+                </div>
+                <div class="col-md-6 heading">
+                    Action
                 </div>
             </div>
 
@@ -76,7 +79,7 @@ Workflow Images
                     <div class="col-md-1" style="text-align: center;">
                         <a href="/admin/workflow/workflowimage/{{ wfi.id }}/change/" target="_blank">{{ wfi.id }}</a>
                     </div>
-                    <div class="col-mid-7">
+                    <div class="col-md-6">
                         more info here
 
                         {% comment %}
@@ -99,6 +102,20 @@ Workflow Images
                           {% endwith %}
                         {% endfor %}
                         {% endcomment %}
+                    </div>
+                    <div class="col-md-1" style="text-align: center;">
+                        <span class="dropdown">
+                          <a href="#" class="action-link" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="" aria-label="Dropdown menu for workflow recipe"><span class="glyphicon glyphicon-cog"></span>
+                          </a>
+                          <ul class="dropdown-menu">
+                            <li>
+                                <a id="" class="action-link" href="{% url 'create_flow_instance' wfi.id %}" title="Create workflow instance" aria-label="Create workflow instance"><span class="glyphicon glyphicon-flash"></span> create flow instance</a>
+                            </li>
+                            <li>
+                                <a id="" class="action-link" href="/admin/workflow/workflowimage/{{ wfi.id }}/change/" target="_blank" title="Edit recipe" aria-label="Edit recipe" ><span class="glyphicon glyphicon-pencil"></span> edit (Admin only)</a>
+                            </li>
+                          </ul>
+                        </span>
                     </div>
                 </div>
             {%  endfor %}
