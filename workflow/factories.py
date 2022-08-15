@@ -176,6 +176,12 @@ class FlowImageFactory:
             print(msg)
             feature_fac = FeatureFactory(fd)
             feature = feature_fac.feature
+            # ensure feature id unique
+            fid = feature.id
+            if fid in [f.id for f in self.features]:
+                while fid in [f.id for f in self.features]:
+                    fid = fid + "0"
+                feature.id = fid
             self.features.append(feature)
         return None
 
