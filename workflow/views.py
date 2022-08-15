@@ -158,6 +158,19 @@ def duplicate_recipe(request, pk):
         return redirect("workflowrecipes_all")
 
 @login_required
+def create_workflowimage(request, pk):
+    """Create a workflow image from a workflow recipe"""
+
+    workflowrecipe = get_object_or_404(WorkflowRecipe, pk=pk)
+    # create workflow image and instance for duplicate
+    fif = FlowImageFactory(workflowrecipe.name)
+    workflowimage = fif.create_workflowimage_from_workflowrecipe(workflowrecipe)
+
+    messages.add_message(request, messages.INFO, f"Workflow image \"{workflowimage.name}\" created.")
+    redirect_url = f'/workflow/images/all'
+    return HttpResponseRedirect(redirect_url)
+
+@login_required
 def workflowimages_all(request):
     """List all workflow images"""
 
@@ -168,7 +181,7 @@ def workflowimages_all(request):
     return render(request, "workflow/images_all.html", context)
 
 @login_required
-def create_flow_instance(request, pk):
+def create_workflowinstance(request, pk):
     """Create a workflow instance from a workflow image"""
     workflowimage = get_object_or_404(WorkflowImage, pk=pk)
     workflowimage.create_orphan_worflowinstance(name=workflowimage.name)
@@ -197,7 +210,7 @@ def workflowinstances_all(request):
     """List all workflow instances"""
     
     workflowinstancesets = WorkflowInstanceSet.objects.all()
-    orphan_workflowinstances = WorkflowInstance.objects.filter(workflowinstanceset=None)
+    orphan_workflowinstances = WorkflowInstance.objects.filter(workflowinstanceset=None).order_by('name','id')
 
     context = {
         "workflowinstancesets": workflowinstancesets,

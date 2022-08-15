@@ -112,6 +112,7 @@ Workflows
                 <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
                     <div class="col-md-4">
                         <a href="/systems/{{ wfit.system.id }}/poams" target="_blank">{{ wfit.system.root_element.name }}</a>
+                        <div>{{ wfit.name }} (standalone)</div>
                     </div>
                     <div class="col-md-1" style="text-align: center;">
                         <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
@@ -124,7 +125,7 @@ Workflows
                               <div class="step-counter">{{ forloop.counter }}</div>
                               <div class="step-name">
                                 {% if feature.status == 'completed' %}√{% endif %}
-                                {{ feature.text }}
+                                {{ feature.text|truncatewords:3  }}
                                 
                                 {% if key == wfit.workflow.curr_feature and feature.status != 'completed' %}
                                   <br><a href="/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed">[mark done]</a>
