@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import axios from 'axios';
@@ -168,6 +168,10 @@ const useStyles = makeStyles({
   leftColumn: {
     position: '-webkit-sticky',
     position: 'sticky',
+    '&:hover': {
+      textDecoration: 'underline',
+      cursor: 'pointer'
+    }
   },
   critical: {
     backgroundColor: "red",
@@ -503,7 +507,7 @@ const uiSchema = {
   'ui:layout_grid': { 'ui:row': [
     { 'ui:col': { xs: 12, children: [
       
-      { 'ui:group': 'Editable','ui:row': [
+      { 'ui:group': '','ui:row': [
         { 'ui:col': { md: 12, children: ['extra__Monthly Status'] } },
         { 'ui:col': { md: 12, children: ['extra__Delay Justification'] } },
         { 'ui:col': { md: 12, children: ['extra__Comments'] } },
@@ -576,6 +580,9 @@ const uiSchema = {
       ] },
     ] } },
   ] },
+  'extra__Delay Status': {
+    'autofocus': true,
+  },
   'extra__Delay Justification': {
     'ui:widget': CustomTextArea
   },
@@ -794,6 +801,7 @@ const uiSchema = {
     "ui:widget": CustomDisabledTextBox,
   }
 }
+
 export const SystemSummary = ({ systemId, projectId }) => {
   const dispatch = useDispatch();
 
@@ -801,13 +809,14 @@ export const SystemSummary = ({ systemId, projectId }) => {
   const dgClasses = datagridStyles();
   const [data, setData] = useState([]);
   const [sortby, setSortBy] = useState(["name", "asc"]);
-  const [ rows, setRows ] = useState(data)
+  const [ rows, setRows ] = useState(data);
   const [ searchText, setSearchText ] = useState('');
   const [columns, setColumns] = useState([]);
 
   const [openEditPoamModal, setOpenEditPoamModal] = useState(false);
   const [currentPoam, setCurrentPoam] = useState({})
   
+  const elementRef = useRef(null);
   
   const handleClose = () => {
     setOpenEditPoamModal(false);
@@ -817,6 +826,12 @@ export const SystemSummary = ({ systemId, projectId }) => {
     setOpenEditPoamModal(true);
     const newpoam = flattenObject(row, 'data', 1);
     setCurrentPoam(newpoam);
+    
+    // Add Delay to wait for modal to finish, then grab reference and click to fix dropdown flutter caused 
+    // by focus being taken away by a different element
+    setTimeout(function() {
+      elementRef.current.click();
+    }, 500);
   }
 
   function escapeRegex(string) {
@@ -1151,36 +1166,36 @@ export const SystemSummary = ({ systemId, projectId }) => {
               </div>
           </Grid>
           <ReactModal
-                      title={`Edit POAM`}
-                      dialogClassName={"poam-edit-modal"}
-                      show={openEditPoamModal}
-                      hide={() => setOpenEditPoamModal(false)}
-                      header={
-                        <span>Update POAM {currentPoam.id}: {currentPoam.weakness_name}</span>
-                      }
-                      body={
-                        <div style={{width: '100% !important', height: '100% !important', margin: '2rem'}}>
-                          <div className='row'>
-                              <Form
-                                formData={currentPoam}
-                                schema={schema}
-                                uiSchema={uiSchema}
-                                fields={fields}
-                                // widgets={widgets}
-                                onSubmit={onSubmit}
-                                noHtml5Validate={true}
-                              />
-                            {/* </div> */}
-                          </div>
-                        </div>
-                      }
-                      bodyStyle={
-                        {
-                          height: "75rem",
-                          overflowY: "scroll" 
-                        }
-                      }
+            title={`Edit POAM`}
+            dialogClassName={"poam-edit-modal"}
+            show={openEditPoamModal}
+            hide={() => setOpenEditPoamModal(false)}
+            header={
+              <span>Update POAM {currentPoam.id}: {currentPoam.weakness_name}</span>
+            }
+            body={
+              <div style={{width: '100% !important', height: '100% !important', margin: '2rem'}}>
+                <div className='row' id="form-div" ref={elementRef}> 
+                    <Form
+                      formData={currentPoam}
+                      schema={schema}
+                      uiSchema={uiSchema}
+                      fields={fields}
+                      // widgets={widgets}
+                      onSubmit={onSubmit}
+                      noHtml5Validate={true}
                     />
+                  {/* </div> */}
+                </div>
+              </div>
+            }
+            bodyStyle={
+              {
+                height: "75rem",
+                overflowY: "scroll" 
+              }
+            }
+          />
       </div>
   )
 }
