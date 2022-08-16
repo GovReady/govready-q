@@ -120,6 +120,32 @@ class WorkflowImage(auto_prefetch.Model, TagModelMixin, BaseModel):
         print(f'[DEBUG] Created {len(new_wfinstances)} instances')
         return new_wfinstanceset
 
+    def create_workflowrecipe_from_image(self):
+        """Create a workflowrecipe from a workflow image."""
+
+        # convert workflow to recipe text
+        recipe_features = []
+        for f_key in self.workflow['feature_order']:
+            feature = self.workflow['features'][f_key]
+            cmd = feature['cmd']
+            text = feature['text']
+            # convert props
+            props = []
+            for p in feature['props']:
+                key = list(p.keys())[0]
+                prop = f"{key}({p[key]})"
+                props.append(prop)
+            # build recipe feature
+            recipe_feature = f'{cmd}: {text} {" ".join(props)}'
+            recipe_features.append(recipe_feature)
+        # convert rules to recipe
+        # TODO: convert rules to recipe
+        # make sure name doesn't already exist
+        workflowrecipe = WorkflowRecipe.objects.create(name=self.name)
+        workflowrecipe.description = self.workflow.get('description', None)
+        workflowrecipe.recipe = "\n".join(recipe_features)
+        workflowrecipe.save()
+
 
 class WorkflowInstanceSet(auto_prefetch.Model, TagModelMixin, BaseModel):
     name = models.CharField(max_length=100, help_text="Descriptive name", unique=False, blank=True, null=True)

@@ -165,6 +165,15 @@ def delete_workflowimage(request, pk):
             return redirect('workflowimages_all')
 
 @login_required
+def create_workflowrecipe_from_image(request, pk):
+    """Create a workflow recipe from a workflow image"""
+
+    workflowimage = get_object_or_404(WorkflowImage, pk=pk)
+    workflowrecipe = workflowimage.create_workflowrecipe_from_image()
+    messages.add_message(request, messages.INFO, f"Workflow recipe \"{workflowimage.name}\" created from image \"{workflowimage.name}\".")
+    return redirect('workflowrecipes_all')
+
+@login_required
 def workflowimages_all(request):
     """List all workflow images"""
 

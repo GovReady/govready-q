@@ -20,6 +20,8 @@ urlpatterns = [
     url(r'^images/all$', views.workflowimages_all, name="workflowimages_all"),
     url(r'^images/(?P<pk>.*)/create_workflowinstance$', views.create_workflowinstance, name="create_workflowinstance"),
     url(r'^images/(?P<pk>.*)/delete$', views.delete_workflowimage, name="delete_workflowimage"),
+    url(r'^images/(?P<pk>.*)/create_workflowrecipe$', views.create_workflowrecipe_from_image, name="create_workflowrecipe_from_image"),
+
 
     url(r'^instances/all$', views.workflowinstances_all, name="workflowinstances_all"),
 

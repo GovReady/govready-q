@@ -112,6 +112,9 @@ Workflow Images
                                 <a id="" class="action-link" href="{% url 'create_workflowinstance' item.id %}" title="Create workflow instance" aria-label="Create workflow instance"><span class="glyphicon glyphicon-flash"></span> create flow instance</a>
                             </li>
                             <li>
+                                <a id="" class="action-link" href="{% url 'create_workflowrecipe_from_image' item.id %}" title="Create workflow recipe" aria-label="Create workflow recipe"><span class="glyphicon glyphicon-flash"></span> create flow recipe</a>
+                            </li>
+                            <li>
                                 <a id="" class="action-link" href="/admin/workflow/workflowimage/{{ item.id }}/change/" target="_blank" title="Edit recipe" aria-label="Edit recipe" ><span class="glyphicon glyphicon-pencil"></span> edit (Admin only)</a>
                             </li>
                             <li>
