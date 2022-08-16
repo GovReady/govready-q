@@ -123,7 +123,8 @@ Workflow Recipes
                                 <a id="" class="action-link" href="{% url 'duplicate_recipe' item.id %}" title="Duplicate recipe" aria-label="Duplicate recipe" ><span class="glyphicon glyphicon-duplicate"></span> duplicate</a>
                             </li>
                             <li>
-                                <a id="" class="action-link" href="{% url 'delete_recipe' item.id %}" title="Delete recipe" aria-label="Delete recipe" ><span class="glyphicon glyphicon-trash"></span> delete</a>
+                                <a id="" class="action-link" href="{% url 'delete_recipe' item.id %}" title="Delete recipe" aria-label="Delete recipe"
+                                    onclick="return confirm('Are you sure you want to delete workflow recipe \'{{ item.name }}\'?\n\nThis cannot be undone.')"><span class="glyphicon glyphicon-trash"></span> delete</a>
                             </li>
                           </ul>
                         </span>

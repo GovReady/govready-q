@@ -91,43 +91,13 @@ def delete_recipe(request, pk):
 
     if request.method == 'GET':
         workflowrecipe = get_object_or_404(WorkflowRecipe, pk=pk)
-
-        # Confirm user has permission to delete portfolio
-        # CAN_DELETE_PORTFOLIO = False
-        # if request.user.is_superuser or request.user.has_perm('delete_portfolio', portfolio):
-        #     CAN_DELETE_PORTFOLIO = True
-
-        # if not CAN_DELETE_PORTFOLIO:
-        #     logger.info(
-        #         event="delete_portfolio_failed",
-        #         object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-        #         user={"id": request.user.id, "username": request.user.username},
-        #         detail={"message": "USER IS SUPER USER"}
-        #     )
-        #     messages.add_message(request, messages.ERROR,
-        #                          f"You do not have permission to delete portfolio '{portfolio.title}.'")
-        #     return redirect("list_portfolios")
-
-        # # Only delete a portfolio with no projects
-        # if len(portfolio.projects.all()) > 0:
-        #     logger.info(
-        #         event="delete_portfolio_failed",
-        #         object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-        #         user={"id": request.user.id, "username": request.user.username},
-        #         detail={"message": "Portfolio not empty"}
-        #     )
-        #     messages.add_message(request, messages.ERROR,
-        #                          f"Failed to delete portfolio '{portfolio.title}.' The portfolio is not empty.")
-        #     return redirect("list_portfolios")
-        # # TODO: It will delete everything related to the portfolio as well with a summary of the deletion
-        # Delete portfolio
         try:
             WorkflowRecipe.objects.get(pk=pk).delete()
-            # logger.info(
-            #     event="delete_portfolio",
-            #     object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-            #     user={"id": request.user.id, "username": request.user.username}
-            # )
+            logger.info(
+                event="delete_workflowrecipe",
+                object={"object": "workflowrecipe", "id": workflowrecipe.id, "title": workflowrecipe.title},
+                user={"id": request.user.id, "username": request.user.username}
+            )
             messages.add_message(request, messages.INFO, f"Workflow recipe \"{workflowrecipe.name}\" deleted.")
             return redirect("workflowrecipes_all")
         except:
@@ -169,6 +139,30 @@ def create_workflowimage(request, pk):
     messages.add_message(request, messages.INFO, f"Workflow image \"{workflowimage.name}\" created.")
     redirect_url = f'/workflow/images/all'
     return HttpResponseRedirect(redirect_url)
+
+@login_required
+def delete_workflowimage(request, pk):
+    """Form to delete recipes"""
+
+    if request.method == 'GET':
+        workflowimage = get_object_or_404(WorkflowImage, pk=pk)
+        try:
+            WorkflowImage.objects.get(pk=pk).delete()
+            logger.info(
+                event="delete_workflowimage",
+                object={"object": "workflowimage", "id": workflowimage.id, "title": workflowimage.title},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            messages.add_message(request, messages.INFO, f"Workflow image \"{workflowimage.name}\" deleted.")
+            return redirect("workflowimages_all")
+        except:
+            logger.info(
+                event="delete_workflowimage_failed",
+                object={"object": "workflowimage", "id": workflowimage.id, "name": workflowimage.name},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "Other error when running delete on workflowimage object."}
+            )
+            return redirect('workflowimages_all')
 
 @login_required
 def workflowimages_all(request):

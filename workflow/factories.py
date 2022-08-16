@@ -42,6 +42,8 @@ class FeatureFactory:
     props: list = field(default_factory=empty_list)
     id: str = ''
     feature: Feature = field(default_factory=skeleton_feature)
+    cmd_pattern: str = '(?P<cmd>[A-Z:]+|[a-zA-Z]+:)'
+    props_pattern: str = '[a-zA-Z_\-.0-9]*\(.*?\)'
 
     def __post_init__(self):
         self._set_cmd()
@@ -51,11 +53,11 @@ class FeatureFactory:
 
     def _set_cmd(self):
         """Parse out command from feature descriptor."""
-
+        
         try:
-            regex = r'^(?P<cmd>[A-Z:]+) (?P<cmd_content>.*)$'
+            regex = fr'^{self.cmd_pattern} (?P<cmd_content>.*)$'
             m = re.match(regex, self.feature_descriptor)
-            self.cmd = m.group('cmd')
+            self.cmd = m.group('cmd').strip(':')
             msg = f"[DEBUG] line: '{self.feature_descriptor}'"
             print(msg)
         except Exception as e:
@@ -71,7 +73,7 @@ class FeatureFactory:
 
         # parse out cmd_props
         try:
-            regex = r'[a-zA-Z_\-.0-9]*\(.*?\)'
+            regex = fr'{self.props_pattern}'
             props_list = re.findall(regex, self.feature_descriptor)
             for p_str in props_list:
                 m = re.match(r'(\w+)\((.*)\)', p_str)
@@ -88,8 +90,8 @@ class FeatureFactory:
         """Parse out feature content after removing cmd, props from feature descriptor."""
 
         self.text = self.feature_descriptor
-        regex_rm_cmd = r'^(?P<cmd>[A-Z:]+) '
-        regex_rm_props = r'[a-zA-Z_\-.0-9]*\(.*?\)'
+        regex_rm_cmd = fr'^{self.cmd_pattern} '
+        regex_rm_props = fr'{self.props_pattern}'
         for regex in [regex_rm_cmd, regex_rm_props]:
             self.text = re.sub(regex, '', self.text).strip()
         self.feature.text = self.text
@@ -155,6 +157,7 @@ class FlowImageFactory:
 
     name: str
     uuid: str = str(uuid.uuid4())
+    description: str = ''
     feature_descriptor_text: str = ''
     feature_descriptor_list: list = field(default_factory=empty_list)
     features: list = field(default_factory=empty_list)
@@ -223,6 +226,7 @@ class FlowImageFactory:
         # build workflow dict
         wf_dict = {'name': self.name,
               'uuid': fi_uuid,
+              'description': self.description,
               'type': 'flow_image',
               'status': 'red',
               "complete": False,
@@ -251,6 +255,8 @@ class FlowImageFactory:
 
         flowtext = workflowrecipe.recipe
         wfi = self.create_workflowimage_from_flowtext(flowtext)
+        wfi.workflow['description'] = workflowrecipe.description
+        # relate workflowimage to workflowrecipe
         wfi.workflowrecipe = workflowrecipe
         wfi.save()
         return wfi

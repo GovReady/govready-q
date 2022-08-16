@@ -10,7 +10,6 @@ Workflow Images
 {% endblock %}
 
 {% block head %}
-<meta http-equiv="refresh" content="6">
 <style type="text/css">
     /*.stepper-wrapper { margin-top: auto; display: flex; justify-content: space-between; margin-bottom: 20px; }
     .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; flex: 1;
@@ -43,6 +42,7 @@ Workflow Images
         border-radius: 4px;
         padding: .5em .5em 0; 
         margin-bottom: 20px;}
+    a.action-link{ color: #888; }
 </style>
 {% endblock %}
 
@@ -71,19 +71,19 @@ Workflow Images
                 </div>
             </div>
 
-            {% for wfi in workflowimages %}
+            {% for item in workflowimages %}
                 <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
                     <div class="col-md-4">
-                        <a href="" target="">{{ wfi.name }}</a>
+                        {{ item.name }}
                     </div>
                     <div class="col-md-1" style="text-align: center;">
-                        <a href="/admin/workflow/workflowimage/{{ wfi.id }}/change/" target="_blank">{{ wfi.id }}</a>
+                        <a href="/admin/workflow/workflowimage/{{ item.id }}/change/" target="_blank">{{ item.id }}</a>
                     </div>
                     <div class="col-md-6">
                         more info here
 
                         {% comment %}
-                        {% for key in wfi.workflow.feature_order %}
+                        {% for key in item.workflow.feature_order %}
                           {% with feature=wfit.workflow.features|get_item:key %}
                             <div class="stepper-item {{ feature.status }} 
                                  {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
@@ -109,10 +109,14 @@ Workflow Images
                           </a>
                           <ul class="dropdown-menu">
                             <li>
-                                <a id="" class="action-link" href="{% url 'create_workflowinstance' wfi.id %}" title="Create workflow instance" aria-label="Create workflow instance"><span class="glyphicon glyphicon-flash"></span> create flow instance</a>
+                                <a id="" class="action-link" href="{% url 'create_workflowinstance' item.id %}" title="Create workflow instance" aria-label="Create workflow instance"><span class="glyphicon glyphicon-flash"></span> create flow instance</a>
                             </li>
                             <li>
-                                <a id="" class="action-link" href="/admin/workflow/workflowimage/{{ wfi.id }}/change/" target="_blank" title="Edit recipe" aria-label="Edit recipe" ><span class="glyphicon glyphicon-pencil"></span> edit (Admin only)</a>
+                                <a id="" class="action-link" href="/admin/workflow/workflowimage/{{ item.id }}/change/" target="_blank" title="Edit recipe" aria-label="Edit recipe" ><span class="glyphicon glyphicon-pencil"></span> edit (Admin only)</a>
+                            </li>
+                            <li>
+                                <a id="" class="action-link" href="{% url 'delete_workflowimage' item.id %}" title="Delete image" aria-label="Delete image"
+                                    onclick="return confirm('Are you sure you want to delete workflow image \'{{ item.name }}\'?\n\nThis cannot be undone.')"><span class="glyphicon glyphicon-trash"></span> delete</a>
                             </li>
                           </ul>
                         </span>

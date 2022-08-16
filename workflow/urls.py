@@ -18,8 +18,10 @@ urlpatterns = [
     url(r'^recipes/(?P<pk>.*)/create_workflowimage$', views.create_workflowimage, name="create_workflowimage"),
     
     url(r'^images/all$', views.workflowimages_all, name="workflowimages_all"),
-    url(r'^instances/all$', views.workflowinstances_all, name="workflowinstances_all"),
     url(r'^images/(?P<pk>.*)/create_workflowinstance$', views.create_workflowinstance, name="create_workflowinstance"),
+    url(r'^images/(?P<pk>.*)/delete$', views.delete_workflowimage, name="delete_workflowimage"),
+
+    url(r'^instances/all$', views.workflowinstances_all, name="workflowinstances_all"),
 
 
     # url(r'^store/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
