@@ -33,18 +33,21 @@
       .stepper-item::after { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: 50%; z-index: 2; }
       .stepper-item .step-counter { position: relative; z-index: 5; display: flex; justify-content: center; align-items: center; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 2px solid #bebebe; margin-bottom: 6px; color: #bebebe;
         font-weight: bold; }
-      .stepper-item.active { font-weight: bold; }
+      .stepper-item.active { font-weight: normal; }
       .stepper-item.completed .step-counter { background-color: #4bb543; border: 2px solid #4bb543; }
       .stepper-item.completed::after { position: absolute; content: ""; border-bottom: 2px solid #4bb543; width: 100%; top: 15px; left: 50%; z-index: 3; }
       .stepper-item:first-child::before { content: none; }
       .stepper-item:last-child::after { content: none; }
-      .step-name { text-align: center; }
+      .step-name { text-align: center; font-size: .85em; }
       .stepper-item.completed .step-counter { color: white; }
+      .workflow-name {text-align: center;}
     </style>
 
     {% if project.system.workflowinstances.all|length > 0 %}
         <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
         {% for wfit in project.system.workflowinstances.all %}
+
+          <div class="workflow-name">{{ wfit.name }}</div>
           <div class="stepper-wrapper">
             {% for key in wfit.workflow.feature_order %}
               {% with feature=wfit.workflow.features|get_item:key %}
@@ -55,7 +58,7 @@
                     {% if feature.status == 'completed' %}√{% endif %}
                     {{ feature.text }} 
                     {% if key == wfit.workflow.curr_feature and feature.status != 'completed' %}
-                      <br><a href="/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed">[mark done]</a>
+                      <br><a class="btn btn-success btn-small" href="/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed">mark done &raquo;</a>
                     {% else %}
                     {% endif %}
                   </div>
