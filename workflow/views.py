@@ -198,15 +198,8 @@ def set_workflowinstance_feature_completed(request, workflowinstance_id):
     workflowinstance = get_object_or_404(WorkflowInstance, id=workflowinstance_id)
     workflowinstance.set_curr_feature_completed(request.user)
     workflowinstance.advance(request.user)
-
-    # temp hardcode return to system poa&m workflow
-    # TODO: make return to system dynamic
-    if workflowinstance.system is not None:
-        system_id = workflowinstance.system.id
-        redirect_url = f'/systems/{system_id}/poams'
-    else:
-        redirect_url = f'/workflow/instances/all'
-    return HttpResponseRedirect(redirect_url)
+    # return to referrer page that sent request
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
 
 @login_required
 def workflowinstances_all(request):
