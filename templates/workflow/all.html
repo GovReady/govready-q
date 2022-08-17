@@ -10,7 +10,7 @@ Workflows
 {% endblock %}
 
 {% block head %}
-<meta http-equiv="refresh" content="6">
+<meta http-equiv="refresh" content="30">
 <style type="text/css">
     .stepper-wrapper { margin-top: auto; display: flex; justify-content: space-between; margin-bottom: 20px; }
     .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; flex: 1;
@@ -56,6 +56,11 @@ Workflows
     <h2>All Workflows</h2>
 
     <p>&nbsp;</p>
+
+    {% for set in workflowinstancesets %}
+        <details open>
+            <summary><h3>&bull; {{ set.name }} ({{ set.workflowinstances.all|length }} flows)</h3></summary>
+            <p>&nbsp;</p>
             <div class="row bottom-border">
                 <div class="col-md-4 heading">
                     System
@@ -67,10 +72,6 @@ Workflows
                     workflow instance
                 </div>
             </div>
-
-    {% for set in workflowinstancesets %}
-        <details>
-            <summary><h3>{{ set.name }}</h3></summary>
             <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
             {% for wfit in set.workflowinstances.all|dictsort:"system.root_element.name" %}
                 <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
@@ -105,8 +106,21 @@ Workflows
         </details>
     {% endfor %}
 
+    {% if orphan_workflowinstances|length > 0 %}
         <details open>
-            <summary><h3>Orphan Workflowinstances</h3></summary>
+            <summary><h3>&bull; Orphan Workflowinstances ({{ orphan_workflowinstances|length }} flows)</h3></summary>
+            <p>&nbsp;</p>
+            <div class="row bottom-border">
+                <div class="col-md-4 heading">
+                    workflow
+                </div>
+                <div class="col-md-1 heading">
+                    wfid
+                </div>
+                <div class="col-mid-7 heading">
+                    workflow instance
+                </div>
+            </div>
             <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
             {% for wfit in orphan_workflowinstances %}
                 <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
@@ -140,6 +154,7 @@ Workflows
                 </div>
             {%  endfor %}
         </details>
+    {% endif %}
 
 </div>
 

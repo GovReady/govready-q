@@ -235,6 +235,7 @@
     <div class="row" style="max-width: 1200px;">
       <div class="col-md-12">
         <div class="question-column">
+        {% comment %}
         {% if project.system.workflowinstances.all|length > 0 %}
             <h3 class="question-group-title hr" style="margin-top: 20px;">
                     <span></span>
@@ -259,14 +260,15 @@
             {%  endfor %}
 
         {% endif %}
+        {% endcomment %}
         <h3 class="question-group-title hr" style="margin-top: 20px;">
-                <span></span>
+                <!-- <span></span>
                 &nbsp;
                 Summary
                 &nbsp;
                 <span></span>
               </h3>
-            <div>{{ project.root_task.module.spec.introduction.template }}</div>
+            <div>{{ project.root_task.module.spec.introduction.template }}</div> -->
             {% for group in question_groups.groups %}
             {% if group.title %}<div><a id="{{group.title}}"></a>&nbsp;</div>{% endif %}
             <div class="question-group">

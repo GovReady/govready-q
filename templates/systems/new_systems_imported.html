@@ -31,15 +31,43 @@
             <p>List of systems successfully imported.</p>
         </div>
         <div class="col-md-9 portfolio-org-col ">
-            <div class="well">
-                <p>Imported successfully:</p>
-                <ul>
-                {% for system in systems_imported_list %}
-                    <li>{{forloop.counter }}. {{system.root_element.name}}</li>
-                {% endfor %}
-                </ul>
-            </div>
-            <p>View your <a href="{% url 'projects' %}">systems</a> or <a href="{% url 'create_new_system' %}">import more</a> ...</p>
+            {% if systems_imported_list|length > 0 %}
+
+                {% if systems_imported_list|length > 10 %}
+                    <details>
+                        <summary>Click to view the {{ systems_imported_list|length }} system{{ systems_imported_list|pluralize }} successfully imported.</summary>
+                {% else %}
+                    <p>Imported {{ systems_imported_list|length }} system{{ systems_imported_list|pluralize }} successfully:</p>
+                {% endif %}
+                    <div class="well">
+                        <p>Imported {{ systems_imported_list|length }} system{{ systems_imported_list|pluralize }} successfully:</p>
+                        <ul>
+                        {% for system in systems_imported_list %}
+                            <li>{{forloop.counter }}. {{system.root_element.name}}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                    <p>View your <a href="{% url 'projects' %}">systems</a> or <a href="{% url 'create_new_system' %}">import more</a> ...</p>
+                {% if systems_imported_list|length > 10 %}
+                    </details>
+                {% endif %}
+
+
+                {% comment %}
+                <div class="well">
+                    <p>Imported {{ systems_imported_list|length }} system{{ systems_imported_list|pluralize }} successfully:</p>
+                    <ul>
+                    {% for system in systems_imported_list %}
+                        <li>{{forloop.counter }}. {{system.root_element.name}}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+                <p>View your <a href="{% url 'projects' %}">systems</a> or <a href="{% url 'create_new_system' %}">import more</a> ...</p>
+                {% endcomment %}
+
+            {% else %}
+                <p>No systems imported.</p>
+            {% endif %}
         </div>
 
         {% if systems_not_imported_list|length > 0 %}

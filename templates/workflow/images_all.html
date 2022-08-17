@@ -80,7 +80,10 @@ Workflow Images
                         <a href="/admin/workflow/workflowimage/{{ item.id }}/change/" target="_blank">{{ item.id }}</a>
                     </div>
                     <div class="col-md-6">
-                        more info here
+                        {% if 'description' not in item.workflow or item.workflow.description|length == 0 %}
+                            <div style="color:#888;">No description available</div>
+                        {% endif %}
+                        <div>{{ item.workflow.description }}</div>
 
                         {% comment %}
                         {% for key in item.workflow.feature_order %}
@@ -110,6 +113,9 @@ Workflow Images
                           <ul class="dropdown-menu">
                             <li>
                                 <a id="" class="action-link" href="{% url 'create_workflowinstance' item.id %}" title="Create workflow instance" aria-label="Create workflow instance"><span class="glyphicon glyphicon-flash"></span> create flow instance</a>
+                            </li>
+                            <li>
+                                <a id="" class="action-link" href="{% url 'create_system_worflowinstances' item.id %}" title="Create workflow instance all systems" aria-label="Create workflow instance all systems"><span class="glyphicon glyphicon-flash"></span> assign flow all systems</a>
                             </li>
                             <li>
                                 <a id="" class="action-link" href="{% url 'create_workflowrecipe_from_image' item.id %}" title="Create workflow recipe" aria-label="Create workflow recipe"><span class="glyphicon glyphicon-flash"></span> create flow recipe</a>

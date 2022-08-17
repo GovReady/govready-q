@@ -40,10 +40,12 @@ class FeatureFactory:
     cmd: str = ''
     text: str = ''
     props: list = field(default_factory=empty_list)
+    actions: list = field(default_factory=empty_list)
     id: str = ''
     feature: Feature = field(default_factory=skeleton_feature)
     cmd_pattern: str = '(?P<cmd>[A-Z:]+|[a-zA-Z]+:)'
-    props_pattern: str = '[a-zA-Z_\-.0-9]*\(.*?\)'
+    prop_pattern: str = '[a-zA-Z_\-.0-9]*\(.*?\)'
+    action_pattern: str = '(\+=|-=)[a-zA-Z_\-.0-9]*\(.*?\)'
 
     def __post_init__(self):
         self._set_cmd()
@@ -71,12 +73,12 @@ class FeatureFactory:
     def _set_props(self):
         """Parse out props from feature descriptor."""
 
-        # parse out cmd_props
+        # parse out props
         try:
-            regex = fr'{self.props_pattern}'
-            props_list = re.findall(regex, self.feature_descriptor)
-            for p_str in props_list:
-                m = re.match(r'(\w+)\((.*)\)', p_str)
+            regex = fr'{self.prop_pattern}'
+            match_list = re.findall(regex, self.feature_descriptor)
+            for m_str in match_list:
+                m = re.match(r'(\w+)\((.*)\)', m_str)
                 if m:
                     self.props.append({m.group(1): m.group(2)})
         except Exception as e:
@@ -86,12 +88,30 @@ class FeatureFactory:
         self.feature.props = self.props
         return None
 
+    def _set_actions(self):
+        """Parse out actions from feature descriptor."""
+
+        # parse out actions
+        try:
+            regex = fr'{self.action_pattern}'
+            match_list = re.findall(regex, self.feature_descriptor)
+            for m_str in match_list:
+                m = re.match(r'(\w+):\((.*)\)', m_str)
+                if m:
+                    self.actions.append({m.group(1): m.group(2)})
+        except Exception as e:
+            msg = f"[ERROR] failure '{e}' parsing actions '{self.feature_descriptor}'"
+            print(msg)
+            logging.exception(msg)
+        self.feature.actions = self.actions
+        return None
+
     def _set_text(self):
         """Parse out feature content after removing cmd, props from feature descriptor."""
 
         self.text = self.feature_descriptor
         regex_rm_cmd = fr'^{self.cmd_pattern} '
-        regex_rm_props = fr'{self.props_pattern}'
+        regex_rm_props = fr'{self.prop_pattern}'
         for regex in [regex_rm_cmd, regex_rm_props]:
             self.text = re.sub(regex, '', self.text).strip()
         self.feature.text = self.text

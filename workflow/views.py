@@ -213,3 +213,16 @@ def workflowinstances_all(request):
         "orphan_workflowinstances": orphan_workflowinstances,
     }
     return render(request, "workflow/all.html", context)
+
+
+@login_required
+def create_system_worflowinstances(request, pk):
+    """Create a workflowinstances from a workflowimage and assign to all systems"""
+
+    workflowimage = get_object_or_404(WorkflowImage, pk=pk)
+    assign_filter = 'ALL'
+    workflowimage.create_system_worflowinstances(assign_filter, name=workflowimage.name)
+    if assign_filter == 'ALL':
+        messages.add_message(request, messages.INFO, f"Workflow \"{workflowimage.name}\" assigned to systems.")
+    # TODO: handle INCLUDE, EXCLUDE filters maybe
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))

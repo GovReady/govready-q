@@ -21,10 +21,9 @@ urlpatterns = [
     url(r'^images/(?P<pk>.*)/create_workflowinstance$', views.create_workflowinstance, name="create_workflowinstance"),
     url(r'^images/(?P<pk>.*)/delete$', views.delete_workflowimage, name="delete_workflowimage"),
     url(r'^images/(?P<pk>.*)/create_workflowrecipe$', views.create_workflowrecipe_from_image, name="create_workflowrecipe_from_image"),
-
+    url(r'^images/(?P<pk>.*)/create_system_worflowinstances$', views.create_system_worflowinstances, name="create_system_worflowinstances"),
 
     url(r'^instances/all$', views.workflowinstances_all, name="workflowinstances_all"),
-
 
     # url(r'^store/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
 

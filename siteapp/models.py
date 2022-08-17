@@ -760,7 +760,8 @@ class Project(TagModelMixin, BaseModel):
         # projects -= system_projects
 
         # Sort.
-        projects = sorted(projects, key=lambda x: x.updated, reverse=True)
+        # projects = sorted(projects, key=lambda x: x.updated, reverse=True)
+        projects = sorted(projects, key=lambda x: x.title, reverse=False)
 
         return projects
 

@@ -82,6 +82,8 @@ class WorkflowImage(auto_prefetch.Model, TagModelMixin, BaseModel):
         """Create workflowinstances associated with systems as per filter
             @filter (str) - ALL | INCLUDE | EXCLUDE
             @system_id_list (list) - list of system ids for filter
+            @name - Name of worklfowinstance
+            @description - Brief description of worklfowinstance
         """
 
         # create a WorkflowInstanceSet
