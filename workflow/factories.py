@@ -45,11 +45,12 @@ class FeatureFactory:
     feature: Feature = field(default_factory=skeleton_feature)
     cmd_pattern: str = '(?P<cmd>[A-Z:]+|[a-zA-Z]+:)'
     prop_pattern: str = '[a-zA-Z_\-.0-9]*\(.*?\)'
-    action_pattern: str = '(\+=|-=)[a-zA-Z_\-.0-9]*\(.*?\)'
+    action_pattern: str = '(\+|-)[a-zA-Z_\-.0-9]*\(.*?\)'
 
     def __post_init__(self):
         self._set_cmd()
         self._set_props()
+        self._set_actions()
         self._set_text()
         self._set_id()
 
@@ -91,6 +92,7 @@ class FeatureFactory:
     def _set_actions(self):
         """Parse out actions from feature descriptor."""
 
+        print(f"[DEBUG] _set_actions()")
         # parse out actions
         try:
             regex = fr'{self.action_pattern}'
@@ -195,7 +197,7 @@ class FlowImageFactory:
         """Iterate through feature descriptor list to create features and append them to list of features."""
 
         for fd in self.feature_descriptor_list:
-            msg = f'[INFO] making feature from {fd}'
+            msg = f'[INFO] making feature or rule from {fd}'
             print(msg)
             feature_fac = FeatureFactory(fd)
             feature = feature_fac.feature

@@ -235,34 +235,85 @@
     <div class="row" style="max-width: 1200px;">
       <div class="col-md-12">
         <div class="question-column">
-        {% comment %}
+
         {% if project.system.workflowinstances.all|length > 0 %}
             <h3 class="question-group-title hr" style="margin-top: 20px;">
                     <span></span>
                     &nbsp;
-                    Workflows
+                    Open  Workflows
                     &nbsp;
                     <span></span>
             </h3>
+    <style type="text/css">
+      .stepper-wrapper { margin-top: auto; display: flex; justify-content: space-between; margin-bottom: 20px; }
+      .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; flex: 1;
+        @media (max-width: 768px) { font-size: 12px; }
+      }
+      .stepper-item::before { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: -50%; z-index: 2; }
+      .stepper-item::after { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: 50%; z-index: 2; }
+      .stepper-item .step-counter { position: relative; z-index: 5; display: flex; justify-content: center; align-items: center; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 2px solid #bebebe; margin-bottom: 6px; color: #bebebe;
+        font-weight: bold; }
+      .stepper-item.active { font-weight: normal; }
+      .stepper-item.active .step-counter { border: 2px solid #444; color: #444; }
+      .stepper-item.completed .step-counter { background-color: #4bb543; border: 2px solid #4bb543; }
+      .stepper-item.completed::after { position: absolute; content: ""; border-bottom: 2px solid #4bb543; width: 100%; top: 15px; left: 50%; z-index: 3; }
+      .stepper-item:first-child::before { content: none; }
+      .stepper-item:last-child::after { content: none; }
+      .step-name { text-align: center; font-size: .85em; }
+      .step-name a { color: black; }
+      .stepper-item.completed .step-counter { color: white; }
+      .workflow-name {text-align: center;}
+    </style>
+
+    {% if project.system.workflowinstances.all|length > 0 %}
+        <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
+        {% for wfit in project.system.workflowinstances.all %}
+
+          <div class="workflow-name">{{ wfit.name }}</div>
+          <div class="stepper-wrapper">
+            {% for key in wfit.workflow.feature_order %}
+              {% with feature=wfit.workflow.features|get_item:key %}
+                <div class="stepper-item {{ feature.status }}
+                     {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
+                  <div class="step-counter">{{ forloop.counter }}</div>
+                  <div class="step-name">
+                    {% if feature.status == 'completed' %}<span class="glyphicon glyphicon-check"></span>
+                    {{ feature.text }}
+                    {% elif key == wfit.workflow.curr_feature and feature.status != 'completed'  %}
+                      <a href='/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed'
+                         onclick="return confirm('Mark \'{{ feature.text }}\' complete?')"
+                      ><span class="glyphicon glyphicon-unchecked"></span>
+                      {{ feature.text }}
+                    </a>
+                    {% else %}
+                        {{ feature.text }}
+                    {% endif %}
+                  </div>
+                </div>
+              {% endwith %}
+            {% endfor %}
+          </div>
+        {%  endfor %}
+    {% endif %}
+
+          {% comment %}
             <p>{{ project.system.workflowinstances.all|length }} workflows</p>
             {%  for wfit in project.system.workflowinstances.all %}
-
-            <div style="border:0.5px solid black; width: 300px;padding: 8px;">
-                <div><b>{{ wfit.name }}</b> <div style="background-color:{{ wfit.workflow.status }};width:12px;height:12px; border:1px solid black; vertical-align: middle; display:inline-block">&nbsp;</div></div>
-
-                            {%  for key, feature in wfit.workflow.features.items %}
-                                {%  if key == wfit.workflow.curr_feature %}
-                                    Status: {{ feature.text }}
-                                {%  endif  %}
-                            {% endfor %}
-
-            </div>
+              <div style="border:0.5px solid black; width: 300px;padding: 8px;">
+                  <div><b>{{ wfit.name }}</b> <div style="background-color:{{ wfit.workflow.status }};width:12px;height:12px; border:1px solid black; vertical-align: middle; display:inline-block">&nbsp;</div></div>
+                              {%  for key, feature in wfit.workflow.features.items %}
+                                  {%  if key == wfit.workflow.curr_feature %}
+                                      Status: {{ feature.text }}
+                                  {%  endif  %}
+                              {% endfor %}
+              </div>
             {%  endfor %}
+          {% endcomment %}
 
         {% endif %}
-        {% endcomment %}
-        <h3 class="question-group-title hr" style="margin-top: 20px;">
-                <!-- <span></span>
+
+        <!-- <h3 class="question-group-title hr" style="margin-top: 20px;">
+                <span></span>
                 &nbsp;
                 Summary
                 &nbsp;
