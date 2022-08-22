@@ -3944,11 +3944,11 @@ def system_import(request):
         file_content = request.POST['file_content']
         file_name = request.POST['file_name']
 
-        systems_imported_list = []
-        systems_not_imported_list = []
+        systems_imported_list = set()
+        systems_not_imported_list = set()
         poams_imported_list = []
-        updated_systems_list = []
-        updated_poams_list = []
+        updated_systems_list = set()
+        updated_poams_list = set()
         system_logs = []
 
         json_pattern = re.compile("^.*\.json$")
@@ -4013,19 +4013,15 @@ def system_import(request):
                         )
                         print(comp)
 
-                # import all of the invenvtory items
+                # import all of the inventory items
                 # import all of the control implementations
-                
-
-
 
                 sys_successful = Project.objects.filter(id=new_project.id).exists()
 
-
                 if(sys_successful):
-                    systems_imported_list.append(new_system)
+                    systems_imported_list.add(new_system)
                 else: 
-                    systems_not_imported_list.append({'name': new_system_name})
+                    systems_not_imported_list.add({'name': new_system_name})
 
         if(xlsx_pattern.match(file_name)):
             content = ast.literal_eval(file_content)
@@ -4258,7 +4254,7 @@ def system_import(request):
                         sys_log.append(f"Nothing has been updated on this system: {sys.root_element.name}")
                     sys_successful = Project.objects.filter(id=proj.id).exists()
                     if(sys_successful):
-                        systems_imported_list.append(sys)
+                        systems_imported_list.add(sys)
                     system_logs.append(
                         {
                             "name": sys.root_element.name, 
@@ -4266,7 +4262,7 @@ def system_import(request):
                         }
                     )
                 if faulty_system[sys_name]:
-                    systems_not_imported_list.append(faulty_system)
+                    systems_not_imported_list.add(faulty_system)
          
         if(csv_pattern.match(file_name)):
             # CSV FILE
