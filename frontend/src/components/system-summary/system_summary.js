@@ -217,7 +217,7 @@ const CustomTextArea = function(props) {
     <FormGroup controlId="formControlsTextarea">
       <FormControl 
         componentClass="textarea" 
-        placeholder="textarea" 
+        placeholder="" 
         onChange={(event) => props.onChange(event.target.value)}
         value={props.value}
       />
