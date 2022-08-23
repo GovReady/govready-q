@@ -30,7 +30,7 @@ markdown # As Is Custom License
 jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages
-Django==3.2.14 # BSD License
+Django==3.2.15 # BSD License
 django-allauth # MIT License
 django-bootstrap3 # BSD 3-Clause License
 importlib-metadata>=1.7.0 # Apache License 2.0
