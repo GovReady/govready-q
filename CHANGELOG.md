@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v0.10.0.2 (August 22, 2022)
+---------------------------
+
+**Security fixes**
+
+* Upgrade Python libraries.
+
+
 v0.10.0.1 (July 25, 2022)
 -------------------------
 
