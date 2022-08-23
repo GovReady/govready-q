@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.11.0-dev (July xx, 2022)
+v0.11.0-dev (Aug xx, 2022)
 ---------------------------
 
 **Feature changes**
@@ -13,6 +13,14 @@ v0.11.0-dev (July xx, 2022)
 
 * Use React table for displaying list of POA&Ms.
 * Add better styled ACE JSON editing widget to all admin pages for a model with JSONField.
+
+
+v0.10.0.2 (August 22, 2022)
+---------------------------
+
+**Security fixes**
+
+* Upgrade Python libraries.
 
 
 v0.10.0.1 (July 25, 2022)
