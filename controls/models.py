@@ -56,7 +56,7 @@ class ImportRecord(BaseModel):
             component_statements[component] = Statement.objects.filter(producer_element=component)
 
         return component_statements
-    
+
 
 STATEMENT_SYNCHED = 'synched'
 STATEMENT_NOT_SYNCHED = 'not_synched'
@@ -88,8 +88,8 @@ class Statement(auto_prefetch.Model):
     consumer_element = auto_prefetch.ForeignKey('Element', related_name='statements_consumed', on_delete=models.CASCADE, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
-    import_record = models.ManyToManyField(ImportRecord, related_name="import_record_statements", 
-                                      unique=False, blank=True, help_text="The Import Record which created this Statement.")
+    import_record = models.ManyToManyField(ImportRecord, related_name="import_record_statements",
+                                           unique=False, blank=True, help_text="The Import Record which created this Statement.")
     change_log = models.JSONField(blank=True, null=True, help_text="JSON object representing changes to the statement")
     history = HistoricalRecords(cascade_delete_history=True)
 
@@ -104,7 +104,7 @@ class Statement(auto_prefetch.Model):
     def __repr__(self):
         # For debugging.
         return "'%s %s %s %s %s'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
-    
+
     def save(self, *args, **kwargs):
         return super(Statement, self).save(*args, **kwargs)
 

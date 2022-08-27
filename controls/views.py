@@ -1185,7 +1185,7 @@ class ComponentImporter(object):
         for component in components:
             statements = Statement.objects.filter(producer_element=component)
             for statement in statements:
-                statement.import_record = import_record
+                statement.import_record.add(import_record)
                 #statement.save()
             component.import_record = import_record
             component.save()
