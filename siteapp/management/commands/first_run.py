@@ -192,7 +192,7 @@ class Command(BaseCommand):
                         with open(os.path.join(path, component_file)) as f:
                             print(f"[INFO] Imported sample generic component {component_file}.")
                             oscal_component_json = f.read()
-                            result = ComponentImporter().import_components_as_json(import_name, oscal_component_json)
+                            result = ComponentImporter().import_components_as_json(import_name, oscal_component_json, existing_import_record=True)
             print("[INFO] Imported sample generic components.")
         else:
             print("[INFO] Components exists. Skipping sample generic components import.")
