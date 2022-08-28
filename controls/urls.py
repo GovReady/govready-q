@@ -47,8 +47,6 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/aspen/integrations$', views.system_integrations_aspen, name="system_integrations"),
 
     url(r'^(?P<system_id>.*)/aspen/summary/poams$', views.system_poams_aspen, name="system_summary_poams"),
-    url(r'^import-poams$', views.import_poams_xlsx, name="import_poams_xlsx"),
-    url(r'^export-poams-xlsx$', views.export_poams_xlsx, name="export_poams_xlsx"),
 
     url(r'^new', views.create_new_system, name="create_new_system"),
     url(r'^csv_system_template', views.system_csv_template, name="csv_system_template"),
@@ -123,8 +121,7 @@ urlpatterns = [
 
     # Poams
     url(r'^(?P<system_id>.*)/aspen/poams$', views.system_poams_aspen, name="system_poams_aspen"),
-    url(r'^import-poams$', views.import_poams_xlsx, name="import_poams_xlsx"),
-
+    
     url(r'^(?P<system_id>.*)/poams$', views.poams_list, name="poams_list"),
     url(r'^(?P<system_id>.*)/poams/new$', views.new_poam, name="new_poam"),
     url(r'^(?P<system_id>.*)/poams/(?P<poam_id>.*)/edit$', views.edit_poam, name="edit_poam"),

@@ -5122,68 +5122,6 @@ def system_integrations_aspen(request, system_id):
     }
     return render(request, "systems/system_integrations_aspen.html", context)
 
-@login_required
-@transaction.atomic
-def import_poams_xlsx(request):
-
-    poams_xlsx_file = request.FILES.get("file")
-    http_referer = request.META.get('HTTP_REFERER')
-    redirect_url = http_referer
-    if poams_xlsx_file:
-        try:
-            poams_xlsx_filename = os.path.splitext(poams_xlsx_file.name)
-            poams_xlsx_filename = "poams_list.xlsx"
-            # Save file
-            with open(os.path.join("local", poams_xlsx_filename), 'wb') as destination:
-                for chunk in poams_xlsx_file.chunks():
-                    destination.write(chunk)
-            # Check if file format is .xlsx or .csv
-            filetype = None
-            import pandas
-            try:
-                df = pandas.read_excel(os.path.join("local", poams_xlsx_filename))
-                filetype = 'EXCEL'
-            except Exception:
-                try:
-                    df = pandas.read_csv(os.path.join("local", poams_xlsx_filename))
-                    filetype = 'CSV'
-                except Exception:
-                    pass
-            if filetype == 'EXCEL' or filetype == 'CSV':
-                logger.info(
-                    event=f"poa&ms import file added {poams_xlsx_file.name}",
-                    user={"id": request.user.id, "username": request.user.username}
-                )
-                messages.add_message(request, messages.INFO, f"Successfully imported {len(df.index)} POA&Ms.")
-                return JsonResponse({ "status": "ok", "redirect": redirect_url })
-            else:
-                logger.info(
-                    event=f"failed poa&ms import file added {poams_xlsx_file.name}",
-                    error=f"file type is not .xlsx or .csv",
-                    user={"id": request.user.id, "username": request.user.username}
-                )
-                messages.add_message(request, messages.ERROR, f"POA&Ms file is not .xlsx or .csv.")
-                return JsonResponse({ "status": "ok", "redirect": redirect_url })
-        except ValueError:
-            messages.add_message(request, messages.ERROR, f"Failure processing: {ValueError}")
-            return JsonResponse({ "status": "ok", "redirect": redirect_url })
-    else:
-        messages.add_message(request, messages.ERROR, f"POA&Ms spreadsheet file required.")
-        return JsonResponse({ "status": "ok", "redirect": redirect_url })
-
-@login_required
-@transaction.atomic
-def export_poams_xlsx(request):
-
-    from django.utils.encoding import smart_str
-
-    poams_xlsx_filepath = "local/poams_list.xlsx"
-    file_name = f"poams_list_{datetime.now().strftime('%Y-%m-%d-%H-%M')}.xlsx"
-    path = open(poams_xlsx_filepath, 'rb')
-    response = HttpResponse(path, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') # mimetype is replaced by content_type for django 1.7
-    response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(file_name)
-    return response
-
 # System Deployments
 @login_required
 def system_deployments_aspen(request, system_id):
