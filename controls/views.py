@@ -3944,11 +3944,11 @@ def system_import(request):
         file_content = request.POST['file_content']
         file_name = request.POST['file_name']
 
-        systems_imported_list = []
-        systems_not_imported_list = []
+        systems_imported_list = set()
+        systems_not_imported_list = set()
         poams_imported_list = []
-        updated_systems_list = []
-        updated_poams_list = []
+        updated_systems_list = set()
+        updated_poams_list = set()
         system_logs = []
 
         json_pattern = re.compile("^.*\.json$")
@@ -4013,19 +4013,15 @@ def system_import(request):
                         )
                         print(comp)
 
-                # import all of the invenvtory items
+                # import all of the inventory items
                 # import all of the control implementations
-                
-
-
 
                 sys_successful = Project.objects.filter(id=new_project.id).exists()
 
-
                 if(sys_successful):
-                    systems_imported_list.append(new_system)
+                    systems_imported_list.add(new_system)
                 else: 
-                    systems_not_imported_list.append({'name': new_system_name})
+                    systems_not_imported_list.add({'name': new_system_name})
 
         if(xlsx_pattern.match(file_name)):
             content = ast.literal_eval(file_content)
@@ -4258,7 +4254,7 @@ def system_import(request):
                         sys_log.append(f"Nothing has been updated on this system: {sys.root_element.name}")
                     sys_successful = Project.objects.filter(id=proj.id).exists()
                     if(sys_successful):
-                        systems_imported_list.append(sys)
+                        systems_imported_list.add(sys)
                     system_logs.append(
                         {
                             "name": sys.root_element.name, 
@@ -4266,7 +4262,7 @@ def system_import(request):
                         }
                     )
                 if faulty_system[sys_name]:
-                    systems_not_imported_list.append(faulty_system)
+                    systems_not_imported_list.add(faulty_system)
          
         if(csv_pattern.match(file_name)):
             # CSV FILE
@@ -5125,68 +5121,6 @@ def system_integrations_aspen(request, system_id):
         "display_urls": project_context(project)
     }
     return render(request, "systems/system_integrations_aspen.html", context)
-
-@login_required
-@transaction.atomic
-def import_poams_xlsx(request):
-
-    poams_xlsx_file = request.FILES.get("file")
-    http_referer = request.META.get('HTTP_REFERER')
-    redirect_url = http_referer
-    if poams_xlsx_file:
-        try:
-            poams_xlsx_filename = os.path.splitext(poams_xlsx_file.name)
-            poams_xlsx_filename = "poams_list.xlsx"
-            # Save file
-            with open(os.path.join("local", poams_xlsx_filename), 'wb') as destination:
-                for chunk in poams_xlsx_file.chunks():
-                    destination.write(chunk)
-            # Check if file format is .xlsx or .csv
-            filetype = None
-            import pandas
-            try:
-                df = pandas.read_excel(os.path.join("local", poams_xlsx_filename))
-                filetype = 'EXCEL'
-            except Exception:
-                try:
-                    df = pandas.read_csv(os.path.join("local", poams_xlsx_filename))
-                    filetype = 'CSV'
-                except Exception:
-                    pass
-            if filetype == 'EXCEL' or filetype == 'CSV':
-                logger.info(
-                    event=f"poa&ms import file added {poams_xlsx_file.name}",
-                    user={"id": request.user.id, "username": request.user.username}
-                )
-                messages.add_message(request, messages.INFO, f"Successfully imported {len(df.index)} POA&Ms.")
-                return JsonResponse({ "status": "ok", "redirect": redirect_url })
-            else:
-                logger.info(
-                    event=f"failed poa&ms import file added {poams_xlsx_file.name}",
-                    error=f"file type is not .xlsx or .csv",
-                    user={"id": request.user.id, "username": request.user.username}
-                )
-                messages.add_message(request, messages.ERROR, f"POA&Ms file is not .xlsx or .csv.")
-                return JsonResponse({ "status": "ok", "redirect": redirect_url })
-        except ValueError:
-            messages.add_message(request, messages.ERROR, f"Failure processing: {ValueError}")
-            return JsonResponse({ "status": "ok", "redirect": redirect_url })
-    else:
-        messages.add_message(request, messages.ERROR, f"POA&Ms spreadsheet file required.")
-        return JsonResponse({ "status": "ok", "redirect": redirect_url })
-
-@login_required
-@transaction.atomic
-def export_poams_xlsx(request):
-
-    from django.utils.encoding import smart_str
-
-    poams_xlsx_filepath = "local/poams_list.xlsx"
-    file_name = f"poams_list_{datetime.now().strftime('%Y-%m-%d-%H-%M')}.xlsx"
-    path = open(poams_xlsx_filepath, 'rb')
-    response = HttpResponse(path, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') # mimetype is replaced by content_type for django 1.7
-    response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(file_name)
-    return response
 
 # System Deployments
 @login_required

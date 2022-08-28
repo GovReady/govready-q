@@ -1,0 +1,179 @@
+{% extends "project-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+{% load system_tags %}
+
+{% block title %}
+Workflows
+{% endblock %}
+
+{% block head %}
+<!-- <meta http-equiv="refresh" content="30"> -->
+<style type="text/css">
+    .stepper-wrapper { margin-top: auto; display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; flex: 1;
+    @media (max-width: 768px) { font-size: 12px; }
+    }
+    .stepper-item::before { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: -50%; z-index: 2; }
+    .stepper-item::after { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: 50%; z-index: 2; }
+    .stepper-item .step-counter { position: relative; z-index: 5; display: flex; justify-content: center; align-items: center; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 2px solid #bebebe; margin-bottom: 6px; color: #bebebe;
+    font-weight: bold; }
+    .stepper-item.active { font-weight: normal; }
+    .stepper-item.active .step-counter { border: 2px solid #444; color: #444; }
+    .stepper-item.completed .step-counter { background-color: #4bb543; border: 2px solid #4bb543; }
+    .stepper-item.completed::after { position: absolute; content: ""; border-bottom: 2px solid #4bb543; width: 100%; top: 15px; left: 50%; z-index: 3; }
+    .stepper-item:first-child::before { content: none; }
+    .stepper-item:last-child::after { content: none; }
+    .step-name { text-align: center; font-size: .75em;}
+    .step-name a { color: black; }
+    .stepper-item.completed .step-counter { color: white; }
+    .heading { font-weight: bold; text-align: center;}
+    /*.workflowinstance a { color: black; }*/
+    .bottom-border { border-bottom: 0.5px solid #888; }
+
+    summary {
+        font-weight: normal;
+        /*margin: -.5em -.5em 0;*/
+        /*padding: .5em;*/
+        /*border:none;*/
+        /*outline: none;*/
+        cursor: pointer; }
+    details {
+        /*border: 1px solid #aaa;*/
+        border-radius: 4px;
+        padding: .5em .5em 0; 
+        margin-bottom: 20px;}
+</style>
+{% endblock %}
+
+<!-- Remove context bar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div class="container">
+    <p>&nbsp;</p>
+    <h2>All Workflows</h2>
+
+    <p>&nbsp;</p>
+
+    {% for set in workflowinstancesets %}
+    <h2>System Workflows</h2>
+        <details open>
+            <summary><h3>&bull; {{ set.name }} ({{ set.workflowinstances.all|length }} flows)</h3></summary>
+            <p>&nbsp;</p>
+            <div class="row bottom-border">
+                <div class="col-md-4 heading">
+                    System
+                </div>
+                <div class="col-md-1 heading">
+                    wfid
+                </div>
+                <div class="col-mid-7 heading">
+                    workflow instance
+                </div>
+            </div>
+
+            <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
+            {% for wfit in set.workflowinstances.all|dictsort:"system.root_element.name" %}
+                <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
+                    <div class="col-md-4">
+                        <a href="/systems/{{ wfit.system.id }}/poams" target="_blank">{{ wfit.system.root_element.name }}</a>
+                    </div>
+                    <div class="col-md-1" style="text-align: center;">
+                        <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
+                    </div>
+                    <div class="col-mid-7 stepper-wrapper">
+                        {% for key in wfit.workflow.feature_order %}
+                          {% with feature=wfit.workflow.features|get_item:key %}
+                            <div class="stepper-item {{ feature.status }} 
+                                 {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
+                              <div class="step-counter">{{ forloop.counter }}</div>
+                              <div class="step-name">
+                                {% if feature.status == 'completed' %}<span class="glyphicon glyphicon-check"></span>
+                                {{ feature.text }}
+                                {% elif key == wfit.workflow.curr_feature and feature.status != 'completed'  %}
+                                  <a href='/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed'
+                                     onclick="return confirm('Mark \'{{ feature.text }}\' complete?')"
+                                  ><span class="glyphicon glyphicon-unchecked"></span>
+                                  {{ feature.text }}
+                                </a>
+                                {% else %}
+                                    {{ feature.text }}
+                                {% endif %}
+                              </div>
+                            </div>
+                          {% endwith %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {%  endfor %}
+        </details>
+    {% endfor %}
+
+    {% if orphan_workflowinstances|length > 0 %}
+
+    <h2>Other Workflows</h2>
+        <details open>
+            <summary><h3>&bull; Orphan Workflowinstances ({{ orphan_workflowinstances|length }} flows)</h3></summary>
+            <p>&nbsp;</p>
+            <div class="row bottom-border">
+                <div class="col-md-4 heading">
+                    workflow
+                </div>
+                <div class="col-md-1 heading">
+                    wfid
+                </div>
+                <div class="col-mid-7 heading">
+                    workflow instance
+                </div>
+            </div>
+            <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
+            {% for wfit in orphan_workflowinstances %}
+                <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
+                    <div class="col-md-4">
+                        <a href="/systems/{{ wfit.system.id }}/poams" target="_blank">{{ wfit.system.root_element.name }}</a>
+                        <div>{{ wfit.name }} (standalone)</div>
+                    </div>
+                    <div class="col-md-1" style="text-align: center;">
+                        <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
+                    </div>
+                    <div class="col-mid-7 stepper-wrapper">
+                        {% for key in wfit.workflow.feature_order %}
+                          {% with feature=wfit.workflow.features|get_item:key %}
+                            <div class="stepper-item {{ feature.status }} 
+                                 {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
+                              <div class="step-counter">{{ forloop.counter }}</div>
+                              <div class="step-name">
+                                {% if feature.status == 'completed' %}<span class="glyphicon glyphicon-check"></span>
+                                {{ feature.text }}
+                                {% elif key == wfit.workflow.curr_feature and feature.status != 'completed'  %}
+                                  <a href='/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed'
+                                     onclick="return confirm('Mark \'{{ feature.text }}\' complete?')"
+                                  ><span class="glyphicon glyphicon-unchecked"></span>
+                                  {{ feature.text }}
+                                </a>
+                                {% else %}
+                                    {{ feature.text }}
+                                {% endif %}
+                              </div>
+                            </div>
+                          {% endwith %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {%  endfor %}
+        </details>
+    {% endif %}
+
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+{% endblock %}
+

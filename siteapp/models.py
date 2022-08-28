@@ -1,10 +1,8 @@
 from collections import ChainMap
 from itertools import chain
 import logging
-from platform import system
 import structlog
 import uuid as uuid
-import auto_prefetch
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
 from typing import Dict
@@ -29,7 +27,6 @@ from siteapp.enums.assets import AssetTypeEnum
 from siteapp.utils.uploads import hash_file
 from controls.models import Element, ImportRecord, Statement, System
 from controls.enums.statements import StatementTypeEnum
-from controls.utilities import *
 
 logging.basicConfig()
 structlog.configure(logger_factory=LoggerFactory())
@@ -763,7 +760,8 @@ class Project(TagModelMixin, BaseModel):
         # projects -= system_projects
 
         # Sort.
-        projects = sorted(projects, key=lambda x: x.updated, reverse=True)
+        # projects = sorted(projects, key=lambda x: x.updated, reverse=True)
+        projects = sorted(projects, key=lambda x: x.title, reverse=False)
 
         return projects
 

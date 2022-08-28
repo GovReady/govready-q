@@ -26,51 +26,88 @@
                 </form>
             </div>
         </div>
-        <div class="col-md-3 portfolio-org-col ">
-            <h2>Successful Imports</h2>
-            <p>List of systems successfully imported.</p>
-        </div>
-        <div class="col-md-9 portfolio-org-col ">
-            <div class="well">
-                <p>Imported successfully:</p>
-                <ul>
-                {% for system in systems_imported_list %}
-                    <li>{{forloop.counter }}. {{system.root_element.name}}</li>
-                {% endfor %}
-                </ul>
-            </div>
-            <p>View your <a href="{% url 'projects' %}">systems</a> or <a href="{% url 'create_new_system' %}">import more</a> ...</p>
-        </div>
-
-        {% if systems_not_imported_list|length > 0 %}
+        <div class="row">
             <div class="col-md-3 portfolio-org-col ">
-                <h2>Unsuccessful Imports</h2>
-                <p>List of systems not imported.</p>
+                <h2>Successful Imports</h2>
+                <p>List of systems successfully imported.</p>
             </div>
             <div class="col-md-9 portfolio-org-col ">
                 <div class="well">
-                    {% for system in systems_not_imported_list %}
-                        <p>{{forloop.counter }}. {{system}}</p>
-                    {% endfor %}
+                    {% if systems_imported_list|length > 0 %}
+                        {% if systems_imported_list|length > 10 %}
+                            <details>
+                                <summary>Click to view the {{ systems_imported_list|length }} system{{ systems_imported_list|pluralize }} successfully imported.</summary>
+                        {% else %}
+                            <p>Imported {{ systems_imported_list|length }} system{{ systems_imported_list|pluralize }} successfully:</p>
+                        {% endif %}
+                            <p>Imported {{ systems_imported_list|length }} system{{ systems_imported_list|pluralize }} successfully:</p>
+                            <ul>
+                            {% for system in systems_imported_list %}
+                                <li>{{forloop.counter }}. {{system.root_element.name}}</li>
+                            {% endfor %}
+                            </ul>
+                            <p>View your <a href="{% url 'projects' %}">systems</a> or <a href="{% url 'create_new_system' %}">import more</a> ...</p>
+                        {% if systems_imported_list|length > 10 %}
+                            </details>
+                        {% endif %}
+
+
+                        {% comment %}
+                        <div class="well">
+                            <p>Imported {{ systems_imported_list|length }} system{{ systems_imported_list|pluralize }} successfully:</p>
+                            <ul>
+                            {% for system in systems_imported_list %}
+                                <li>{{forloop.counter }}. {{system.root_element.name}}</li>
+                            {% endfor %}
+                            </ul>
+                        </div>
+                        <p>View your <a href="{% url 'projects' %}">systems</a> or <a href="{% url 'create_new_system' %}">import more</a> ...</p>
+                        {% endcomment %}
+                    {% else %}
+                        <p>No systems imported.</p>
+                    {% endif %}
                 </div>
             </div>
-        {% endif %}
+        </div>
 
-        {% if system_logs|length > 0 %}
-            <div class="col-md-3 portfolio-org-col ">
-                <h2>Log of Imports</h2>
-            </div>
-            <div class="col-md-9 portfolio-org-col ">
-                <div class="well">
-                    {% for system in system_logs %}
-                        <p>{{system.name}}</p>
-                        {% for line in system.log %}
-                            <p>&emsp;{{line}}</p>
+        <div class="row">
+            {% if systems_not_imported_list|length > 0 %}
+                <div class="col-md-3 portfolio-org-col ">
+                    <h2>Unsuccessful Imports</h2>
+                    <p>List of systems not imported.</p>
+                </div>
+                <div class="col-md-9 portfolio-org-col ">
+                    <div class="well">
+                        {% for system in systems_not_imported_list %}
+                            <p>{{forloop.counter }}. {{system}}</p>
                         {% endfor %}
-                    {% endfor %}
+                    </div>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
+
+            <style>
+                details > summary::before { content: '▶ '; }
+                details[open] > summary::before { content: '▼ '; }
+            </style>
+            {% if system_logs|length > 0 %}
+                <div class="col-md-3 portfolio-org-col ">
+                    <h2>Log of Imports</h2>
+                </div>
+                <div class="col-md-9 portfolio-org-col ">
+                    <div class="well">
+                        {% for system in system_logs %}
+                            <details>
+                                <summary>{{system.name}}</summary>
+                                {% for line in system.log %}
+                                    <p>&emsp;{{line}}</p>
+                                {% endfor %}
+                            </details>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
     </div>
 </div>
 

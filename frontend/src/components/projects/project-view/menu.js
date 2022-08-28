@@ -72,7 +72,7 @@ window.projectMenu = (data) => {
                                     }
                                 }}
                             >
-                                Project Home
+                                System Home
                             </MenuItem>
                             <MenuItem
                                 id="menu-btn-project-controls"

@@ -1,0 +1,144 @@
+{% extends "project-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+{% load system_tags %}
+
+{% block title %}
+Workflow Images
+{% endblock %}
+
+{% block head %}
+<style type="text/css">
+    /*.stepper-wrapper { margin-top: auto; display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; flex: 1;
+    @media (max-width: 768px) { font-size: 12px; }
+    }
+    .stepper-item::before { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: -50%; z-index: 2; }
+    .stepper-item::after { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: 50%; z-index: 2; }
+    .stepper-item .step-counter { position: relative; z-index: 5; display: flex; justify-content: center; align-items: center; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 2px solid #bebebe; margin-bottom: 6px; color: #bebebe;
+    font-weight: bold; }
+    .stepper-item.active { font-weight: bold; }
+    .stepper-item.completed .step-counter { background-color: #4bb543; border: 2px solid #4bb543; }
+    .stepper-item.completed::after { position: absolute; content: ""; border-bottom: 2px solid #4bb543; width: 100%; top: 15px; left: 50%; z-index: 3; }
+    .stepper-item:first-child::before { content: none; }
+    .stepper-item:last-child::after { content: none; }
+    .step-name { text-align: center; }
+    .stepper-item.completed .step-counter { color: white; }*/
+    .heading { font-weight: bold; text-align: center;}
+    .workflowinstance a { color: black; }
+    .bottom-border { border-bottom: 0.5px solid #888; }
+
+    summary {
+        font-weight: normal;
+        /*margin: -.5em -.5em 0;*/
+        /*padding: .5em;*/
+        /*border:none;*/
+        /*outline: none;*/
+        cursor: pointer; }
+    details {
+        /*border: 1px solid #aaa;*/
+        border-radius: 4px;
+        padding: .5em .5em 0; 
+        margin-bottom: 20px;}
+    a.action-link{ color: #888; }
+</style>
+{% endblock %}
+
+<!-- Remove context bar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div class="container">
+    <p>&nbsp;</p>
+    <h2>All Workflow Images</h2>
+
+    <p>&nbsp;</p>
+            <div class="row bottom-border">
+                <div class="col-md-4 heading">
+                    Workflow Image
+                </div>
+                <div class="col-md-1 heading">
+                    ID
+                </div>
+                <div class="col-md-6 heading">
+                    Details
+                </div>
+                <div class="col-md-6 heading">
+                    Action
+                </div>
+            </div>
+
+            {% for item in workflowimages %}
+                <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
+                    <div class="col-md-4">
+                        {{ item.name }}
+                    </div>
+                    <div class="col-md-1" style="text-align: center;">
+                        <a href="/admin/workflow/workflowimage/{{ item.id }}/change/" target="_blank">{{ item.id }}</a>
+                    </div>
+                    <div class="col-md-6">
+                        {% if 'description' not in item.workflow or item.workflow.description|length == 0 %}
+                            <div style="color:#888;">No description available</div>
+                        {% endif %}
+                        <div>{{ item.workflow.description }}</div>
+
+                        {% comment %}
+                        {% for key in item.workflow.feature_order %}
+                          {% with feature=wfit.workflow.features|get_item:key %}
+                            <div class="stepper-item {{ feature.status }} 
+                                 {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
+                              <div class="step-counter">{{ forloop.counter }}</div>
+                              <div class="step-name">
+                                {% if feature.status == 'completed' %}√{% endif %}
+                                {{ feature.text }}
+                                <!--
+                                {% if key == wfit.workflow.curr_feature and feature.status != 'completed' %}
+                                  <br><a href="/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed">[mark done]</a>
+                                {% else %}
+                                {% endif %}
+                                -->
+                              </div>
+                            </div>
+                          {% endwith %}
+                        {% endfor %}
+                        {% endcomment %}
+                    </div>
+                    <div class="col-md-1" style="text-align: center;">
+                        <span class="dropdown">
+                          <a href="#" class="action-link" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="" aria-label="Dropdown menu for workflow recipe"><span class="glyphicon glyphicon-cog"></span>
+                          </a>
+                          <ul class="dropdown-menu">
+                            <li>
+                                <a id="" class="action-link" href="{% url 'create_workflowinstance' item.id %}" title="Create workflow instance" aria-label="Create workflow instance"><span class="glyphicon glyphicon-flash"></span> create flow instance</a>
+                            </li>
+                            <li>
+                                <a id="" class="action-link" href="{% url 'create_system_worflowinstances' item.id %}" title="Create workflow instance all systems" aria-label="Create workflow instance all systems"><span class="glyphicon glyphicon-flash"></span> assign flow all systems</a>
+                            </li>
+                            <li>
+                                <a id="" class="action-link" href="{% url 'create_workflowrecipe_from_image' item.id %}" title="Create workflow recipe" aria-label="Create workflow recipe"><span class="glyphicon glyphicon-flash"></span> create flow recipe</a>
+                            </li>
+                            <li>
+                                <a id="" class="action-link" href="/admin/workflow/workflowimage/{{ item.id }}/change/" target="_blank" title="Edit recipe" aria-label="Edit recipe" ><span class="glyphicon glyphicon-pencil"></span> edit (Admin only)</a>
+                            </li>
+                            <li>
+                                <a id="" class="action-link" href="{% url 'delete_workflowimage' item.id %}" title="Delete image" aria-label="Delete image"
+                                    onclick="return confirm('Are you sure you want to delete workflow image \'{{ item.name }}\'?\n\nThis cannot be undone.')"><span class="glyphicon glyphicon-trash"></span> delete</a>
+                            </li>
+                          </ul>
+                        </span>
+                    </div>
+                </div>
+            {%  endfor %}
+
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+{% endblock %}
+
