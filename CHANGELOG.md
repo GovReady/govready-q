@@ -13,10 +13,12 @@ v0.11.0-dev (Aug xx, 2022)
 
 * Use React table for displaying list of POA&Ms.
 * Add better styled ACE JSON editing widget to all admin pages for a model with JSONField.
+* Rename "Project" to "System" in navigation and several URLS. (NOTE: Many links still use "project" in code, reverses, etc.)
 
 **Developer changes**
 
 * Imported components in first_run script now associated with single import record.
+* Rename "Project" to "System" in navigation and several URLS. (NOTE: Many links still use "project" in code, reverses, etc.)
 
 
 v0.10.0.2 (August 22, 2022)

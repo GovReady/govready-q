@@ -18,7 +18,7 @@ urlpatterns = [
     url('doc/', include('django.contrib.admindocs.urls')),
 
     # Catalogs
-    url(r'^$', views.catalogs),
+    url(r'^catalogs$', views.catalogs),
     url(r'^catalogs$', views.catalogs),
     url(r'^catalogs/(?P<catalog_key>.*)/$', views.catalog),
 
