@@ -43,25 +43,6 @@ GovReady-Q Setup
 
   {% endif %}
 
-  <h2 style="margin-top: 3em;">POA&Ms Spreadsheet</h2>
-
-  <p class="small help-block">Upload the .xlsx file of the POA&Ms.</p>
-  <div id="import_poam_authoring_tool" class="" style="width: 600px;border:0px solid brown;">
-    <form class="form-horizontal" onsubmit="return false;">
-      <div class="form-group">
-        <div class="col-sm-8">
-          <span><input type="file" class="form-control" id="authoring_tool_q_zipfile" name="file" /></span>
-        </div>
-        <div class="col-sm-3">
-          <span><button class="btn btn-primary btn-sm" onclick="import_poam_xlsx()">Import POA&Ms</button></span>
-        </div>
-      </div>
-    </form>
-  </div>
-  {% if poam_spreadsheet.exists %}
-    <div class="small help-block">Current POA&M Spreadsheet <a href="{% url 'export_poams_xlsx' %}">{{ poam_spreadsheet.file_path }}</a></div>
-  {% endif %}
-
   {# Link to the Django Admin if the user is permitted to go there. #}
   {% if is_django_staff %}
   <h2 style="margin-top: 3em;">Database Records Administration</h2>
