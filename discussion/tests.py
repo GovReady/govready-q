@@ -85,7 +85,7 @@ class DiscussionTests(SeleniumTest):
         self.click_element("form#login_form button[type=submit]")
         if "Warning Message" in self.browser.title:
             self.click_element("#btn-accept")
-        self.assertRegex(self.browser.title, "Your Compliance Sytems")
+        self.assertRegex(self.browser.title, "Your Compliance Systems")
 
     def _new_project(self):
         self.browser.get(self.url("/store"))
