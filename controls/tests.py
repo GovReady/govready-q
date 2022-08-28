@@ -1247,8 +1247,8 @@ class ControlTestHelper(object):
             body='This is a sample statement',
             statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
             producer_element=component,
-            import_record=import_record,
         )
+        statement.import_record.add(import_record)
         statement.save()
 
         return import_record
