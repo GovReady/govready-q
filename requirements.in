@@ -26,6 +26,7 @@ importlib-resources<2,>=1.0 # Apache License
 pyinstrument==3.2.0 # BSD License
 compliance-trestle==1.1.0 # OSI Approved :: Apache Software License
 markdown # As Is Custom License
+xlsxwriter # BSD 2-Clause License
 
 jsonschema # MIT License
 filetype # MIT License
