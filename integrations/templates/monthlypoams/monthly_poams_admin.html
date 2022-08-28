@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Integration Detail
+{% endblock %}
+
+{% block head %}
+    <style>
+
+        h1 { font-size: 24px; border-bottom: 0.5px solid #888;}
+
+        .integration-general { width:80%; margin: auto; padding:12px; }
+        .integration-content { margin-top: 20px; padding: 20px 30px 20px 30px; border: 0.5px solid #888; }
+
+    </style>
+{% endblock %}
+
+{% block contextbar %}
+  {# kill breadcrumbs but add some space below site header #}
+  <div id="contextbar">
+    &nbsp;
+  </div>
+{% endblock %}
+
+{% block body %}
+
+    <div class="integration-general">
+        <h2>{{ integration_record.description }}</h2>
+
+        <div class="integration-content">
+            <div><b>Integration Details</b></div>
+            <table class="table">
+                <tr><td>description</td><td>{{ integration_record.description }}</td></tr>
+                <!-- <tr><td>base_url</td><td>{{ integration_record.config.base_url }}</td></tr> -->
+            </table>
+        </div>
+    </div>
+
+    <div class="integration-general">
+        <p><a id="new-system" href="{% url 'create_new_system' %}">Import system and POA&Ms</a></p>
+        <p>
+            <a href="{% url 'export_csam_poams_xlsx' %}"> Export current POA&Ms to spreadsheet</a> - Export POA&Ms from all system to CSAM spreadsheet
+            <!-- onclick="return confirm('Export all POA&Ms?')" -->
+        </p>
+        <p>Delete all current POA&Ms</p>
+        <p><a href="{% url 'workflowinstances_all' %}">View all open workflows</a></p>
+        <p><a href="{% url 'workflowimages_all' %}" >View workflow images</a></p>
+        <p><a href="{% url 'workflowrecipes_all' %}">View workflow recipes</a></p>
+        <p>Delete all current system workflow instances</p>
+        
+    </div>
+
+
+<!-- Spacer bottom of page -->
+<div class="app-bottom-spacer">&nbsp;</div>
+
+
+{% endblock %}
