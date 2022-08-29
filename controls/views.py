@@ -4196,7 +4196,6 @@ def system_import(request):
                                 sys_log.append(f"Updated {key} = {new_system_info[key]} into System Info Log")
                         # Adding new key into system info
                         if "date" in key.lower() and key not in sys.info and new_system_info[key]:
-                            print("1: ", key)
                             if new_system_info[key]:
                                 sys.info[key] = new_system_info[key].strftime('%m/%d/%Y')
                                 sys_log.append(f"Added {key} = {new_system_info[key].strftime('%m/%d/%Y')} into System Info Log")
@@ -4341,29 +4340,29 @@ def system_import(request):
     }
     return render(request, "systems/new_systems_imported.html", context)
 
-def undo_import(object, import_record_uuid):
+def undo_import(object_type, import_record_uuid):
     import types
     type_system = type(System.objects.first())
-
-    for obj in type(object).objects.filter(import_record__uuid=import_record_uuid):
-        if obj.history.all().count() == 1:
-            # project was just created from the import, we have to delete now
-            # If system also delete system element
-            if type(object) == type_system:
-                element = Element.objects.get(id=obj.root_element.id)
-                element.delete()
-            obj.delete()
-        elif obj.history.all().count() > 1:
-            prev_obj = obj.history.first().prev_record
-            # project was updated, so we must revert to the previous state
-            for key, value in obj.__dict__.items():
-                if not isinstance(value, types.FunctionType or types.MethodType) and not key.startswith('_'):
-                    # if getattr(obj, key) != getattr(prev_obj, key):
-                    print(key, type(key))
-                    setattr(obj, key, getattr(prev_obj, key))
-            obj.save()
-        else:
-            pass
+    if object_type == None:
+        pass
+    else:
+        for obj in type(object_type).objects.filter(import_record__uuid=import_record_uuid):
+            if obj.history.all().count() == 1:
+                # object was just created from the import, we have to delete now
+                # If system also delete system element
+                if type(object_type) == type_system:
+                    element = Element.objects.get(id=obj.root_element.id)
+                    element.delete()
+                obj.delete()
+            elif obj.history.all().count() > 1:
+                prev_obj = obj.history.first().prev_record
+                # object was updated, so we must revert to the previous state
+                for key, value in obj.__dict__.items():
+                    if not isinstance(value, types.FunctionType or types.MethodType) and not key.startswith('_'):
+                        setattr(obj, key, getattr(prev_obj, key))
+                obj.save()
+            else:
+                pass
 
 def revert_system_import(request):
     """
@@ -4383,8 +4382,7 @@ def revert_system_import(request):
         # if element was created, then we need to delete
             # how do we tell which element was created from the system import
             # has IMPORT_RECORD
-        
-        # TODO: FALCON
+
         undo_import(Project.objects.first(), import_uuid)
         undo_import(System.objects.first(), import_uuid)
         undo_import(Statement.objects.first(), import_uuid)
