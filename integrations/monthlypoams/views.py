@@ -46,9 +46,7 @@ from django.conf import settings
 # file = '/usr/src/app/integrations/__init__.py'
 # settings.TEMPLATES[0]['DIRS'].append(os.path.join(os.path.dirname(file), 'monthlypoams','templates'))
 # print(f"[DEBUG] updated TEMPLATES: ", settings.TEMPLATES[0]['DIRS'])
-print(f"[DEBUG] report INSTALLED_APPS: ", settings.INSTALLED_APPS)
-settings.INSTALLED_APPS.append('monthlypoams')
-print(f"[DEBUG] report INSTALLED_APPS: ", settings.INSTALLED_APPS)
+# settings.INSTALLED_APPS.append('monthlypoams')
 
 def set_integration():
     return MonthlyPOAMsCommunication()
