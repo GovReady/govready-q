@@ -3638,68 +3638,60 @@ def system_xlsx_template(request):
     wrap_alignment = Alignment(wrap_text=True)
     ws.title = "Sheet1"
     system_headers = [
-        {'var_name': 'csam_id', 'name': 'CSAM ID', 'width': 32},
-        {'var_name': 'org', 'name': 'Org', 'width': 32},
-        {'var_name': 'sub_org', 'name': 'Sub Org', 'width': 32},
-        {'var_name': 'system_name', 'name': 'System Name', 'width': 32},
-        {'var_name': 'system_description', 'name': 'System Description', 'width': 32},
-        {'var_name': 'acronym', 'name': 'Acronym', 'width': 32},
-        {'var_name': 'system_category', 'name': 'System Category', 'width': 32},
-        {'var_name': 'system_operational_status', 'name': 'System Operational Status', 'width': 32},
-        {'var_name': 'system_type', 'name': 'System Type', 'width': 32},
-        {'var_name': 'contractor_system', 'name': 'Contractor System', 'width': 32},
-        {'var_name': 'financial_system', 'name': 'Financial System', 'width': 32},
-        {'var_name': 'fisma_reportable', 'name': 'FISMA Reportable', 'width': 32},
-        {'var_name': 'critical_infrastructure', 'name': 'Critical Infrastructure', 'width': 32},
-        {'var_name': 'mission_critical', 'name': 'Mission Critical', 'width': 32},
-        {'var_name': 'system_uuid', 'name': 'System UUID', 'width': 32},
-        {'var_name': 'uui_code', 'name': 'UII Code', 'width': 32},
-        {'var_name': 'investment_name', 'name': 'Investment Name', 'width': 32},
-        {'var_name': 'portfolio', 'name': 'Portfolio', 'width': 32},
-        {'var_name': 'poam_id', 'name': 'POAM ID', 'width': 32},
-        {'var_name': 'poam_sequence', 'name': 'POAM Sequence', 'width': 32},
-        {'var_name': 'poam_title', 'name': 'POAM Title', 'width': 32},
-        {'var_name': 'detailed_weakness_description', 'name': 'Detailed Weakness Description', 'width': 32},
-        {'var_name': 'create_date', 'name': 'Create Date', 'width': 32},
-        {'var_name': 'days_since_creation', 'name': 'Days Since Creation', 'width': 32},
-        {'var_name': 'scheduled_completion_date', 'name': 'Scheduled Completion Date', 'width': 32},
-        {'var_name': 'planned_start_date', 'name': 'Planned Start Date', 'width': 32},
-        {'var_name': 'planned_finish_date', 'name': 'Planned Finish Date', 'width': 32},
-        {'var_name': 'status', 'name': 'status', 'width': 32},
-        {'var_name': 'weakness', 'name': 'weakness', 'width': 32},
-        {'var_name': 'cost', 'name': 'cost', 'width': 32},
-        {'var_name': 'control_risk_severity', 'name': 'Control Risk Severity', 'width': 32},
-        {'var_name': 'user_identified_critically', 'name': 'User Identified Critically', 'width': 32},
-        {'var_name': 'severity', 'name': 'Severity', 'width': 32},
-        {'var_name': 'workflow_status', 'name': 'Workflow Status', 'width': 32},
-        {'var_name': 'workflow_status_date', 'name': 'Workflow Status Date', 'width': 32},
-        {'var_name': 'days_until_auto_approved', 'name': 'Days Until Auto-Approved', 'width': 32},
-        {'var_name': 'exclude_from_omb', 'name': 'Exclude From OMB', 'width': 32},
-        {'var_name': 'accepted_risk', 'name': 'Accepted Risk', 'width': 32},
-        {'var_name': 'assigned_to', 'name': 'Assigned To', 'width': 32},
-        {'var_name': 'phone', 'name': 'Phone', 'width': 32},
-        {'var_name': 'email', 'name': 'Email', 'width': 32},
-        {'var_name': 'assigned_date', 'name': 'Assigned Date', 'width': 32},
-        {'var_name': 'delay_reason', 'name': 'Delay Reason', 'width': 32},
-        {'var_name': 'controls', 'name': 'Controls', 'width': 32},
-        {'var_name': 'csffunction', 'name': 'CSFFunction', 'width': 32},
-        {'var_name': 'csfcategory', 'name': 'CSFCategory', 'width': 32},
-        {'var_name': 'csfsubcategory', 'name': 'CSFSubCategory', 'width': 32},
-        {'var_name': 'number_milestones', 'name': 'Number Milestones', 'width': 32},
-        {'var_name': 'number_artifacts', 'name': 'Number Artifacts', 'width': 32},
-        {'var_name': 'rbd_approval_date', 'name': 'RBD Approval Date', 'width': 32},
-        {'var_name': 'deficiency_category', 'name': 'Deficiency Category', 'width': 32},
-        {'var_name': 'source_of_finding', 'name': 'Source of Finding', 'width': 32},
-        {'var_name': 'percent_complete', 'name': 'Percent Complete:', 'width': 32},
-        {'var_name': 'date_percent_complete_late_updated', 'name': 'Date % Complete Last Updated:', 'width': 32},
-
-        {'var_name': 'system_private', 'name': 'System Private', 'width': 32},
-        {'var_name': 'system_require_approval', 'name': 'System Require Approval', 'width': 32},
-        {'var_name': 'system_created', 'name': 'System Created', 'width': 32},
-        {'var_name': 'system_updated', 'name': 'System Updated', 'width': 32},
-        {'var_name': 'system_oscal_version', 'name': 'System OSCAL Version', 'width': 32},
-        {'var_name': 'system_component_type', 'name': 'System Component Type', 'width': 32},
-        {'var_name': 'system_component_state', 'name': 'System Component State', 'width': 32}
+        {"var_name": "csam_id", "name": "CSAM ID", "width": 32},
+        {"var_name": "org", "name": "Org", "width": 32},
+        {"var_name": "sub_org", "name": "Sub Org", "width": 32},
+        {"var_name": "system_name", "name": "System Name", "width": 32},
+        {"var_name": "system_description", "name": "System Description", "width": 32},
+        {"var_name": "acronym", "name": "Acronym", "width": 32},
+        {"var_name": "system_category", "name": "System Category", "width": 32},
+        {"var_name": "system_operational_status", "name": "System Operational Status", "width": 32},
+        {"var_name": "system_type", "name": "System Type", "width": 32},
+        {"var_name": "contractor_system", "name": "Contractor System", "width": 32},
+        {"var_name": "financial_system", "name": "Financial System", "width": 32},
+        {"var_name": "fisma_reportable", "name": "FISMA Reportable", "width": 32},
+        {"var_name": "critical_infrastructure", "name": "Critical Infrastructure", "width": 32},
+        {"var_name": "mission_critical", "name": "Mission Critical", "width": 32},
+        {"var_name": "uui_code", "name": "UII Code", "width": 32},
+        {"var_name": "investment_name", "name": "Investment Name", "width": 32},
+        {"var_name": "portfolio", "name": "Portfolio", "width": 32},
+        {"var_name": "poam_id", "name": "POAM ID", "width": 32},
+        {"var_name": "poam_sequence", "name": "POAM Sequence", "width": 32},
+        {"var_name": "poam_title", "name": "POAM Title", "width": 32},
+        {"var_name": "detailed_weakness_description", "name": "Detailed Weakness Description", "width": 32},
+        {"var_name": "create_date", "name": "Create Date", "width": 32},
+        {"var_name": "days_since_creation", "name": "Days Since Creation", "width": 32},
+        {"var_name": "scheduled_completion_date", "name": "Scheduled Completion Date", "width": 32},
+        {"var_name": "planned_start_date", "name": "Planned Start Date", "width": 32},
+        {"var_name": "planned_finish_date", "name": "Planned Finish Date", "width": 32},
+        {"var_name": "planned_finish_date", "name": "Planned Finish Date", "width": 32},
+        {"var_name": "status", "name": "Status", "width": 32},
+        {"var_name": "weakness", "name": "Weakness", "width": 32},
+        {"var_name": "cost", "name": "Cost", "width": 32},
+        {"var_name": "control_risk_severity", "name": "Control Risk Severity", "width": 32},
+        {"var_name": "user_identified_critically", "name": "User Identified Critically", "width": 32},
+        {"var_name": "severity", "name": "Severity", "width": 32},
+        {"var_name": "workflow_status", "name": "Workflow Status", "width": 32},
+        {"var_name": "workflow_status_date", "name": "Workflow Status Date", "width": 32},
+        {"var_name": "days_until_auto_approved", "name": "Days Until Auto-Approved", "width": 32},
+        {"var_name": "exclude_from_omb", "name": "Exclude From OMB", "width": 32},
+        {"var_name": "accepted_risk", "name": "Accepted Risk", "width": 32},
+        {"var_name": "assigned_to", "name": "Assigned To", "width": 32},
+        {"var_name": "phone", "name": "Phone", "width": 32},
+        {"var_name": "email", "name": "Email", "width": 32},
+        {"var_name": "assigned_date", "name": "Assigned Date", "width": 32},
+        {"var_name": "delay_reason", "name": "Delay Reason", "width": 32},
+        {"var_name": "controls", "name": "Controls", "width": 32},
+        {"var_name": "csffunction", "name": "CSFFunction", "width": 32},
+        {"var_name": "csfcategory", "name": "CSFCategory", "width": 32},
+        {"var_name": "csfsubcategory", "name": "CSFSubCategory", "width": 32},
+        {"var_name": "number_milestones", "name": "Number Milestones", "width": 32},
+        {"var_name": "number_artifacts", "name": "Number Artifacts", "width": 32},
+        {"var_name": "rbd_approval_date", "name": "RBD Approval Date", "width": 32},
+        {"var_name": "deficiency_category", "name": "Deficiency Category", "width": 32},
+        {"var_name": "source_of_finding", "name": "Source of Finding", "width": 32},
+        {"var_name": "percent_complete", "name": "Percent Complete", "width": 32},
+        {"var_name": "date_percent_complete_late_updated", "name": "Date % Complete Last Updated", "width": 32}
     ]
 
      # create header row
@@ -3715,7 +3707,7 @@ def system_xlsx_template(request):
                             right=Side(border_style="thin", color="444444"),
                             bottom=Side(border_style="thin", color="444444"),
                             outline=Side(border_style="thin", color="444444"))
-        ws.column_dimensions[chr(ord_zeroth_column + column)].width = header['width']
+        # ws.column_dimensions[chr(ord_zeroth_column + column)].width = header['width']
 
     filename = "system_template.xlsx"
     mime_type = "application/octet-stream"
@@ -4035,7 +4027,8 @@ def system_import(request):
                 faulty_system = {}
                 sys_name = ''
                 sys_log = []
-                list_of_poam_attributes = ["POAM Sequence", "Days Since Creation", "Scheduled Completion Date", "Planned Start Date", "Actual Start Date", "Planned Finish Date", "Actual Finish Date", "Weakness", "Cost", "Control Risk Severity", "User Identified Criticality", "Severity", "Workflow Status", "Workflow Status Date", "Days Until Auto-Approved", "Exclude from OMB", "Accepted Risk", "Assigned To", "Phone", "Email", "Assigned Date", "Delay Reason", "CSFFunction", "CSFCategory", "CSFSubCategory", "Number Milestones", "Number Artifacts", "RBD Approval Date", "Deficiency Category", "Source of Finding", "Percent Complete", "Date % Complete Last Updated", "Delay Justification", "Status as of June", "Comments"]
+                list_of_system_properties = ["CSAM ID", "Org", "Sub Org", "System Name", "Acronym", "System Category", "System Operational Status", "System Type", "Contractor System", "Financial System", "FISMA Reportable", "Critical Infrastructure", "Mission Critical", "Investment Name", "Portfolio", "UII Code", "Investment Name"]
+                list_of_poam_attributes = ["POAM Sequence", "Days Since Creation", "Scheduled Completion Date", "Planned Start Date", "Actual Start Date", "Planned Finish Date", "Actual Finish Date", "Weakness", "Cost", "Control Risk Severity", "User Identified Criticality", "Severity", "Workflow Status", "Workflow Status Date", "Days Until Auto-Approved", "Exclude From OMB", "Accepted Risk", "Assigned To", "Phone", "Email", "Assigned Date", "Delay Reason", "CSFFunction", "CSFCategory","CSFSubCategory", "Number Milestones", "Number Artifacts", "RBD Approval Date", "Deficiency Category", "Source of Finding", "Percent Complete", "Date % Complete Last Updated", "Delay Justification", "Monthly Status", "Comments"]
                 wasSystemCreated = False
                 hasSystemUpdated = False
                 hasPoamUpdated = False
@@ -4069,6 +4062,18 @@ def system_import(request):
                         wasSystemCreated = True
                         sys_log.append("Creating a new System and Project")
                     
+                    # Add System related properties to info
+                    for key in new_system_info:
+                        if key in list_of_system_properties:
+                            if key in sys.info:
+                                if sys.info[key] != new_system_info[key]:
+                                    hasSystemUpdated = True
+                                    sys.info[key] = new_system_info[key]
+                            else:
+                                hasSystemUpdated = True
+                                sys.info[key] = new_system_info[key]
+                    sys.save_without_historical_record()
+
                     # Check if POAM already exists within System
                     if 'POAM ID' in new_system_info and new_system_info['POAM ID']:
                         poamExists = Poam.objects.filter(poam_id=new_system_info["POAM ID"]).first()
@@ -4115,7 +4120,16 @@ def system_import(request):
                             
                             for key in new_system_info:
                                 if key in list_of_poam_attributes:
-                                    poamExists.extra[key] = system[key]
+                                    if key in poamExists.extra:
+                                        if poamExists.extra[key] != new_system_info[key]:
+                                            hasPoamUpdated = True
+                                            poamExists.extra[key] = system[key]
+                                    else:
+                                        hasPoamUpdated = True
+                                        poamExists.extra[key] = system[key]
+                                    
+                            poamStatement.save_without_historical_record()
+                            poamExists.save_without_historical_record()
                             # Check if POAM has been updated at all, if it has update the updated field to statement and document import_record with this file
                             if hasPoamUpdated or hasPoamStmtUpdated:
                                 poamStatement.updated = datetime.now()

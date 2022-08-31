@@ -1132,7 +1132,10 @@ export const SystemSummary = ({ systemId, projectId }) => {
                               "POAM Sequence": false,
                               "Weakness": false,
                               'Control Risk Severity': false,
-                              'Days Until Auto-Approved': false
+                              'Days Until Auto-Approved': false,
+                              'Date % Complete Last Updated': false,
+                              'Percent Complete': false,
+                              'Exclude From OMB': false,
                             }
                           },
                         }}
