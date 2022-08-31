@@ -1,12 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
-v0.11.0-dev (Aug xx, 2022)
----------------------------
+v0.11.0-dev (September xx, 2022)
+--------------------------------
 
 **Feature changes**
 
 * Support dynamic POA&M spreadsheet upload and editing.
+* Support a system-level control implementation statement.
 
 
 **UI changes**
@@ -14,11 +15,13 @@ v0.11.0-dev (Aug xx, 2022)
 * Use React table for displaying list of POA&Ms.
 * Add better styled ACE JSON editing widget to all admin pages for a model with JSONField.
 * Rename "Project" to "System" in navigation and several URLS. (NOTE: Many links still use "project" in code, reverses, etc.)
+* Display the system-level control implementation statement for a system (AKA "Legacy Control Implementation statement").
 
 **Developer changes**
 
 * Imported components in first_run script now associated with single import record.
 * Rename "Project" to "System" in navigation and several URLS. (NOTE: Many links still use "project" in code, reverses, etc.)
+* Display the system-level control implementation statement for a system (AKA "Legacy Control Implementation statement").
 
 
 v0.10.0.2 (August 22, 2022)
