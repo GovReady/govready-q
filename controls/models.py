@@ -831,6 +831,7 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
         selected_controls = elm.controls.all().values("oscal_ctl_id", "uuid")
         # Get the smts_control_implementations ordered by part, e.g. pid
         smts = elm.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
+        smts_legacy = elm.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name).order_by('pid')
 
         smts_as_dict = {}
 
@@ -839,11 +840,11 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
             if smt.sid in smts_as_dict:
                 smts_as_dict[smt.sid]['control_impl_smts'].append(smt)
             else:
-
                 try:
                     elementcontrol = self.root_element.controls.get(oscal_ctl_id=smt.sid,
                                                                     oscal_catalog_key=smt.sid_class)
                     smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
+                                             "control_impl_smts_legacy": [],
                                              "common_controls": [],
                                              "combined_smt": "",
                                              "elementcontrol_uuid": elementcontrol.uuid,
@@ -853,6 +854,7 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
                     # Handle case where Element control does not exist
                     elementcontrol = None
                     smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
+                                             "control_impl_smts_legacy": [],
                                              "common_controls": [],
                                              "combined_smt": "",
                                              "elementcontrol_uuid": None,
@@ -902,11 +904,44 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
         for ec in selected_controls:
             if ec.get('oscal_ctl_id') not in smts_as_dict:
                 smts_as_dict[ec.get('oscal_ctl_id')] = {"control_impl_smts": [],
+                                                        "control_impl_smts_legacy": [],
                                                         "common_controls": [],
                                                         "combined_smt": "",
                                                         "elementcontrol_uuid": ec.get('ec.uuid'),
                                                         "combined_smt_uuid": uuid.uuid4()
                                                         }
+
+        # Add in legacy control statement if set for system and/or control
+        # TODO: Add conditional test for adding legacy control implementation statements
+        for smt in smts_legacy:
+
+            smts_as_dict[smt.sid]['control_impl_smts_legacy'].append(smt)
+
+            # Define status options
+            impl_statuses = ["Not implemented", "Planned", "Partially implemented", "Implemented", "Unknown"]
+            status_str = ""
+            for status in impl_statuses:
+                if (smt.status is not None) and (smt.status.lower() == status.lower()):
+                    status_str += f'[x] {status} '
+                else:
+                    status_str += f'<span style="color: #888;">[ ] {status}</span> '
+            # Conditionally add statement part in the beginning of a block of statements related to a part
+            if smt.pid != "" and smt.pid != pid_current:
+                smts_as_dict[smt.sid]['combined_smt'] += f"{smt.pid}.\n"
+                pid_current = smt.pid
+            # DEBUG
+            # TODO
+            # Poor performance, at least in some instances, appears to being caused by `smt.producer_element.name`
+            # parameter in the below statement.
+            if smt.producer_element:
+                smt_formatted = smt.body.replace('\n','<br/>')
+                # TODO: Clean up special characters
+                smt_formatted = smt_formatted.replace(u"\u2019", "'").replace(u"\u2022", "<li>")
+                smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i><br/>{status_str}<br/><br/>{smt_formatted}<br/><br/>"
+            # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
+            # for testing purposes, the loop runs 3x faster
+            # The reference `smt.producer_element.name` appears to be calling the database and creating poor performance
+            # even where there are no statements.
 
         # Return the dictionary
         return smts_as_dict

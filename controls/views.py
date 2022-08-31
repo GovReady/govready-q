@@ -2498,6 +2498,20 @@ def save_smt(request):
             )
             new_statement = True
 
+        # handle control_implementation_legacy
+        if form_values['statement_type'].upper() == "CONTROL_IMPLEMENTATION_LEGACY":
+            # we only need to save control implementation statement
+            statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
+            statement.producer_element = statement.consumer_element
+            statement_msg = "Statement associated with System/Consumer Element."
+            statement.save()
+            statement_element_status = "ok"
+            statement_element_msg = "Statement associated with Producer Element."
+            messages.add_message(request, messages.INFO, f"{statement_element_msg} {statement.producer_element.id}.")
+            # TODO: log result
+            serialized_obj = serializers.serialize('json', [statement, ])
+            return JsonResponse({"status": "success", "message": statement_msg, "statement": serialized_obj})
+
         # Updating or saving a new producer_element?
         try:
             # Does the name match and existing element? (Element names are unique.)
@@ -2547,7 +2561,6 @@ def save_smt(request):
         statement_del_msg = ""
         if "form_source" in form_values and form_values['form_source'] == 'component_library':
             # Form received from component library
-            from django.core import serializers
             serialized_obj = serializers.serialize('json', [statement, ])
             # Delete statement
             Statement.objects.filter(pk=statement.id).delete()
@@ -2570,7 +2583,6 @@ def save_smt(request):
             # Serialize saved data object(s) to send back to update web page
             # The submitted form needs to be updated with the object primary keys (ids)
             # in order that future saves will be treated as updates.
-            from django.core import serializers
             serialized_obj = serializers.serialize('json', [statement, ])
 
     # Save Statement object

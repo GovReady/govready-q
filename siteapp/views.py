@@ -882,7 +882,7 @@ def project(request, project):
     poam_status_counts = project.system.poam_status_counts
     open_poam_count = 0
     for status,count in poam_status_counts.items():
-        if status.lower() not in closed_status_list:
+        if status is not None and status.lower() not in closed_status_list:
             open_poam_count += count
 
     # Render.
