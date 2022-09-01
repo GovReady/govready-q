@@ -61,6 +61,7 @@ urlpatterns = [
     # profile
     url(r'account/settings$', views.account_settings, name="account_settings"),
 
+
     # projects
     url(r"^projects$", views.ProjectList.as_view(), name="projects"),
     url(r"^projects/lifecycle$", views.project_list_lifecycle, name="projects_lifecycle"),
@@ -102,6 +103,7 @@ urlpatterns = [
     url(r"^systems/", include("controls.urls")),
     url(r"^api/v1/systems/", include("controls.urls_api")),
     url(r"^controls/", include("controls.urls")),
+    url(r"^controls$", include("controls.urls")),
 
     # portfolios
     url(r'^portfolios$', views.portfolio_list, name="list_portfolios"),

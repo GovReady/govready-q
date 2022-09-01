@@ -22,7 +22,7 @@
         {% if request.user.is_authenticated and not request.user.is_anonymous %}
           <li><a href="/projects" id="menu-projects">Systems</a></li>
           <li><a href="/portfolios" id="menu-portfolios">Portfolios</a></li>
-          <li><a href="/controls" id="menu-controls">Controls</a></li>
+          <li><a href="/controls/catalogs" id="menu-controls">Controls</a></li>
           <li><a href="{% url 'component_library' %}" id="menu-components">Components</a></li>
           <li><a href="{% url 'store' %}" id="menu-templates">Templates</a></li>
           <li class="dropdown">
