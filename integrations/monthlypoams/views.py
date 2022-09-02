@@ -46,9 +46,7 @@ from django.conf import settings
 # file = '/usr/src/app/integrations/__init__.py'
 # settings.TEMPLATES[0]['DIRS'].append(os.path.join(os.path.dirname(file), 'monthlypoams','templates'))
 # print(f"[DEBUG] updated TEMPLATES: ", settings.TEMPLATES[0]['DIRS'])
-print(f"[DEBUG] report INSTALLED_APPS: ", settings.INSTALLED_APPS)
-settings.INSTALLED_APPS.append('monthlypoams')
-print(f"[DEBUG] report INSTALLED_APPS: ", settings.INSTALLED_APPS)
+# settings.INSTALLED_APPS.append('monthlypoams')
 
 def set_integration():
     return MonthlyPOAMsCommunication()
@@ -195,61 +193,65 @@ def export_csam_poams_xlsx(request):
         column_format = workbook.add_format({'bold': True, 'font_color': 'white', 'bg_color': '#6487DC'})
         date_format = workbook.add_format({'num_format': 'mm/dd/yyyy'})
         # Write Column Headers
-        headers = ["CSAM ID", 
-               "Org", 
-               "Sub Org", 
-               "System Name", 
-               "Acronym", 
-               "System Category", 
-               "System Operational Status", 
-               "System Type", 
-               "Contractor System", 
-               "Financial System", 
-               "FISMA Reportable", 
-               "Critical Infrastructure", 
-               "Mission Critical", 
-               "UII Code", 
-               "Investment Name", 
-               "Portfolio", 
-               "POAM ID", 
-               "POAM Sequence", 
-               "POAM Title", 
-               "Detailed Weakness Description", 
-               "Create Date", 
-               "Days Since Creation", 
-               "Scheduled Completion Date", 
-               "Planned Start Date", 
-               "Actual Start Date" , 
-               "Planned Finish Date", 
-               "Actual Finish Date", 
-               "Status", 
-               "Weakness",
-               "Cost", 
-               "Control Risk Severity", 
-               "User Identified Criticality",
-               "Severity", 
-               "Workflow Status", 
-               "Workflow Status Date", 
-               "Days Until Auto-Approved",
-               "Exclude From OMB",
-               "Accepted Risk",
-               "Assigned To",
-               "Phone",
-               "Email",
-               "Assigned Date",
-               "Delay Reason",
-               "Controls",
-               "CSFFunction",
-               "CSFCategory",
-               "CSFSubCategory",
-               "Number Milestones",
-               "Number Artifacts",
-               "RBD Approval Date",
-               "Deficiency Category",
-               "Source of Finding",
-               "Percent Complete:",
-               "Date % Complete Last Updated:"
-              ]
+        headers = [
+            "CSAM ID", 
+            "Org", 
+            "Sub Org", 
+            "System Name", 
+            "Acronym", 
+            "System Category", 
+            "System Operational Status", 
+            "System Type", 
+            "Contractor System", 
+            "Financial System", 
+            "FISMA Reportable", 
+            "Critical Infrastructure", 
+            "Mission Critical", 
+            "UII Code", 
+            "Investment Name", 
+            "Portfolio", 
+            "POAM ID", 
+            "POAM Sequence", 
+            "POAM Title", 
+            "Detailed Weakness Description", 
+            "Create Date", 
+            "Days Since Creation", 
+            "Scheduled Completion Date", 
+            "Planned Start Date", 
+            "Actual Start Date" , 
+            "Planned Finish Date", 
+            "Actual Finish Date", 
+            "Status", 
+            "Weakness",
+            "Cost", 
+            "Control Risk Severity", 
+            "User Identified Criticality",
+            "Severity", 
+            "Workflow Status", 
+            "Workflow Status Date", 
+            "Days Until Auto-Approved",
+            "Exclude From OMB",
+            "Accepted Risk",
+            "Assigned To",
+            "Phone",
+            "Email",
+            "Assigned Date",
+            "Delay Reason",
+            "Controls",
+            "CSFFunction",
+            "CSFCategory",
+            "CSFSubCategory",
+            "Number Milestones",
+            "Number Artifacts",
+            "RBD Approval Date",
+            "Deficiency Category",
+            "Source of Finding",
+            "Percent Complete",
+            "Date % Complete Last Updated",
+            "Delay Justification",
+            "Monthly Status", 
+            "Comments"
+        ]
         # include custom fields
         # if custom_fields:
         #     for cf in custom_fields:
@@ -262,10 +264,45 @@ def export_csam_poams_xlsx(request):
         # write content for each poam
         for index, poam in enumerate(poams_list):
             row_index = index + 1
+            
+            # Get Info from System
+            
+            ele = poam.statement.consumer_element
+            sys = System.objects.get(root_element=ele)
+            worksheet.write(row_index, headers.index("System Name"), ele.name)
             # for field in poam.keys():
+            
+            # 
+            # Check for specific poam fields: 
+            # poam_id => POAM ID
+            worksheet.write(row_index, headers.index("POAM ID"), poam.poam_id) 
+            # weakness => POAM Title
+            worksheet.write(row_index, headers.index("POAM Title"), poam.weakness_name) 
+            # controls => Controls
+            worksheet.write(row_index, headers.index("Controls"), poam.controls)
+            # scheduled_completion_date => Planned Finish Date
+            worksheet.write(row_index, headers.index("Planned Finish Date"), poam.scheduled_completion_date.strftime('%x %X'))
+            # milestones => Number Milestones
+            worksheet.write(row_index, headers.index("Number Milestones"), poam.milestones)
+            
+            # Check POAM Statement for specific fields:
+            # body => Detailed Weakness Description
+            worksheet.write(row_index, headers.index("Detailed Weakness Description"), poam.statement.body)
+            # status => Status
+            worksheet.write(row_index, headers.index("Status"), poam.statement.status)
+            # created => Create Date
+            worksheet.write(row_index, headers.index("Create Date"), poam.created.strftime('%x %X'))
+            
+            # check if "poam extra" is in the list of headers, if it is, add it to the row
             for field in headers:
                 col_index = headers.index(field)
-                worksheet.write(row_index, col_index, poam.extra.get(field) ) 
+                if sys.info.get(field) or sys.info.get(field) == 0:
+                    sys_field = sys.info.get(field)
+                    worksheet.write(row_index, col_index, str(sys_field).strip(":") ) 
+                if poam.extra.get(field) or poam.extra.get(field) == 0:
+                    poam_field = poam.extra.get(field)
+                    worksheet.write(row_index, col_index, str(poam_field).strip(":") ) 
+
         # set column widths
         word_width = 20
         worksheet.set_column(1, 7, word_width)  # Width of columns B:H
