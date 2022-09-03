@@ -180,6 +180,44 @@ class WorkflowUnitTests(TestCase):
         self.assertEqual(len(wfi2.workflow['features']), 3)
         self.assertEqual(wfi2.workflow['feature_order'], ['Start', 'Review', 'cf03ecad'])
 
+    def test_flowimagefactory_rules(self):
+        """Test factories"""
+        
+        # create workflow recipe
+        name = "Monthly POA&M Reviewx"
+        description  = "Simple test recipe for monthly review of POA&Ms"
+        recipe_text = """STEP Start Monthly Reviewx id(Start)
+        STEP Review Monthly POA&Msx id(Review)
+        STEP Submit updated POA&Msx
+        rule: Hide small org internal SOC question +viewque:(org.internal_soc, False) -SETANS:(org.internal_soc, some value)
+        rule: Do something else +viewque:(org.internal_soc, False) -SETANS:(org.internal_soc, some value)
+        """
+        wfr = WorkflowRecipe.objects.create(name=name, description=description,recipe=recipe_text)
+
+        fac_name = "Monthly POA&M Review 2"
+        fif = FlowImageFactory(fac_name)
+        # fif.feature_descriptor_text = wfr.recipe
+        # fif.split_feature_descriptor_text()
+        # fif.prepare_features()
+        workflowimage = fif.create_workflowimage_from_flowtext(recipe_text)
+        print(f'[DEBUG] created workflowimage: ', workflowimage)
+        self.assertEqual(len(workflowimage.workflow['features']), 3)
+        
+        # test retrieving flowimage
+        # flow_image_filename = f"{fi1.flow_image['name']}__{fi1.flow_image['uuid']}.fim"
+        # data_dir = os.path.join(f"{os.getcwd()}", 'data')
+        # filepath = os.path.join(data_dir, flow_image_filename)
+        wfi2 = WorkflowImage.objects.get(name=fac_name)
+        print(f'[DEBUG] retrieved workflowimage: ', wfi2.name)
+        self.assertEqual(wfi2.workflow['name'], fac_name)
+        self.assertEqual(len(wfi2.workflow['features']), 3)
+        self.assertEqual(wfi2.workflow['feature_order'], ['Start', 'Review', 'cf03ecad'])
+
+        # test rules
+        self.assertEqual(len(wfi2.rules['features']), 2)
+        
+
+
 # Scratch code
 
 # wfin = WorkflowInstance.objects.first()

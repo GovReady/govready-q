@@ -7,6 +7,17 @@ import json
 import os
 from .models import WorkflowImage
 
+"""
+
+Current format:
+rule: Hide small org internal SOC question +viewque:(org.internal_soc, False) -setans:(org.internal_soc, some value)
+
+Alternate formats:
+rule: hide small org internal SOC question if($org.size = Small) true=$viewque(org.internal_soc, False) false=$SETANS(org.internal_soc, some value)
+rule: hide small org internal SOC question if($org.size = Small) true=viewque(org.internal_soc, False) false=SETANS(org.internal_soc, some value)
+
+"""
+
 def empty_list():
     return []
 
@@ -29,6 +40,27 @@ def skeleton_feature():
     return Feature()
 
 
+CMD_PATTERN = '(?P<cmd>[A-Z:]+|[a-zA-Z]+:)'
+PROP_PATTERN = '[a-zA-Z_\-.0-9]*\(.*?\)'
+ACTION_PATTERN = '([+-][a-zA-Z_\-.0-9]*:\(.*?\))'
+
+def get_cmd(feature_descriptor):
+    """Return parsed command from feature descriptor."""
+
+    try:
+        regex = fr'^{CMD_PATTERN} (?P<cmd_content>.*)$'
+        m = re.match(regex, feature_descriptor)
+        cmd = m.group('cmd').strip(':')
+        msg = f"[DEBUG] line: '{feature_descriptor}'"
+        print(msg)
+        return cmd
+    except Exception as e:
+        msg = f"[ERROR] command line malformed '{e}' received '{feature_descriptor}'"
+        print(msg)
+        logging.exception(msg)
+        return None
+
+
 @dataclass
 class FeatureFactory:
     """
@@ -43,9 +75,9 @@ class FeatureFactory:
     actions: list = field(default_factory=empty_list)
     id: str = ''
     feature: Feature = field(default_factory=skeleton_feature)
-    cmd_pattern: str = '(?P<cmd>[A-Z:]+|[a-zA-Z]+:)'
-    prop_pattern: str = '[a-zA-Z_\-.0-9]*\(.*?\)'
-    action_pattern: str = '(\+|-)[a-zA-Z_\-.0-9]*\(.*?\)'
+    cmd_pattern: str = CMD_PATTERN
+    prop_pattern: str = PROP_PATTERN
+    action_pattern = ACTION_PATTERN
 
     def __post_init__(self):
         self._set_cmd()
@@ -57,18 +89,19 @@ class FeatureFactory:
     def _set_cmd(self):
         """Parse out command from feature descriptor."""
         
-        try:
-            regex = fr'^{self.cmd_pattern} (?P<cmd_content>.*)$'
-            m = re.match(regex, self.feature_descriptor)
-            self.cmd = m.group('cmd').strip(':')
-            msg = f"[DEBUG] line: '{self.feature_descriptor}'"
-            print(msg)
-        except Exception as e:
-            msg = f"[ERROR] command line malformed '{e}' received '{self.feature_descriptor}'"
-            print(msg)
-            logging.exception(msg)
-            return None
-        self.feature.cmd = self.cmd
+        # try:
+        #     regex = fr'^{self.cmd_pattern} (?P<cmd_content>.*)$'
+        #     m = re.match(regex, self.feature_descriptor)
+        #     self.cmd = m.group('cmd').strip(':')
+        #     msg = f"[DEBUG] line: '{self.feature_descriptor}'"
+        #     print(msg)
+        # except Exception as e:
+        #     msg = f"[ERROR] command line malformed '{e}' received '{self.feature_descriptor}'"
+        #     print(msg)
+        #     logging.exception(msg)
+        #     return None
+        # self.feature.cmd = self.cmd
+        self.feature.cmd = get_cmd(self.feature_descriptor)
         return None
 
     def _set_props(self):
@@ -96,11 +129,16 @@ class FeatureFactory:
         # parse out actions
         try:
             regex = fr'{self.action_pattern}'
+            print(f"[DEBUG] _set_actions() regex: {regex}")
             match_list = re.findall(regex, self.feature_descriptor)
+            # import ipdb; ipdb.set_trace()
             for m_str in match_list:
-                m = re.match(r'(\w+):\((.*)\)', m_str)
+                m = re.match(r'[+-](\w+):\((.*)\)', m_str)
                 if m:
+                    print(f"[DEBUG] _set_actions() in m loop; m: {m}")
                     self.actions.append({m.group(1): m.group(2)})
+                else:
+                    print(f"[DEBUG] _set_actions() in m - no match")
         except Exception as e:
             msg = f"[ERROR] failure '{e}' parsing actions '{self.feature_descriptor}'"
             print(msg)
@@ -113,8 +151,9 @@ class FeatureFactory:
 
         self.text = self.feature_descriptor
         regex_rm_cmd = fr'^{self.cmd_pattern} '
+        regex_rm_actions = fr'{self.action_pattern}'
         regex_rm_props = fr'{self.prop_pattern}'
-        for regex in [regex_rm_cmd, regex_rm_props]:
+        for regex in [regex_rm_cmd, regex_rm_actions, regex_rm_props]:
             self.text = re.sub(regex, '', self.text).strip()
         self.feature.text = self.text
         return None
@@ -234,31 +273,50 @@ class FlowImageFactory:
         # express features list and feature_order
         features_list = {}
         feature_order = []
+
+        rules_list = {}
+        rules_order = []
+        rules = {}
         for feature in self.features:
-            feature_obj = {
-                'cmd': feature.cmd,
-                'props': feature.props,
-                'text': feature.text,
-                'id': feature.id,
-                'complete': False,
-                'status': 'not-started'
-            }
-            features_list[feature_obj['id']] = feature_obj
-            feature_order.append(feature_obj['id'])
+            if feature.cmd in ['rule', 'RULE']:
+                # create rule
+                feature_obj = {
+                    'cmd': feature.cmd,
+                    'props': feature.props,
+                    'actions': feature.actions,
+                    'text': feature.text,
+                    'id': feature.id,
+                    'complete': False,
+                    'status': 'not-started'
+                }
+                rules_list[feature_obj['id']] = feature_obj
+                rules_order.append(feature_obj['id'])
+            else:
+                feature_obj = {
+                    'cmd': feature.cmd,
+                    'props': feature.props,
+                    # temp create actions
+                    'actions': feature.actions,
+                    'text': feature.text,
+                    'id': feature.id,
+                    'complete': False,
+                    'status': 'not-started'
+                }
+                features_list[feature_obj['id']] = feature_obj
+                feature_order.append(feature_obj['id'])
         # build workflow dict
         wf_dict = {'name': self.name,
-              'uuid': fi_uuid,
-              'description': self.description,
-              'type': 'flow_image',
-              'status': 'red',
-              "complete": False,
-              'features': features_list,
-              "curr_feature": feature_order[0],
-              "feature_order": feature_order
+                  'uuid': fi_uuid,
+                  'description': self.description,
+                  'type': 'flow_image',
+                  'status': 'red',
+                  "complete": False,
+                  'features': features_list,
+                  "curr_feature": feature_order[0],
+                  "feature_order": feature_order
               }
-        # build rules
-        # TODO: create RulesFactory
-        rules = {}
+        rules = {'features': rules_list
+            }
 
         workflowimage = WorkflowImage.objects.create(name=wf_dict['name'], uuid=wf_dict['uuid'], workflow=wf_dict, rules=rules)
         return workflowimage
