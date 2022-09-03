@@ -88,19 +88,7 @@ class FeatureFactory:
 
     def _set_cmd(self):
         """Parse out command from feature descriptor."""
-        
-        # try:
-        #     regex = fr'^{self.cmd_pattern} (?P<cmd_content>.*)$'
-        #     m = re.match(regex, self.feature_descriptor)
-        #     self.cmd = m.group('cmd').strip(':')
-        #     msg = f"[DEBUG] line: '{self.feature_descriptor}'"
-        #     print(msg)
-        # except Exception as e:
-        #     msg = f"[ERROR] command line malformed '{e}' received '{self.feature_descriptor}'"
-        #     print(msg)
-        #     logging.exception(msg)
-        #     return None
-        # self.feature.cmd = self.cmd
+
         self.feature.cmd = get_cmd(self.feature_descriptor)
         return None
 
@@ -275,7 +263,7 @@ class FlowImageFactory:
         feature_order = []
 
         rules_list = {}
-        rules_order = []
+        rule_order = []
         rules = {}
         for feature in self.features:
             if feature.cmd in ['rule', 'RULE']:
@@ -290,7 +278,7 @@ class FlowImageFactory:
                     'status': 'not-started'
                 }
                 rules_list[feature_obj['id']] = feature_obj
-                rules_order.append(feature_obj['id'])
+                rule_order.append(feature_obj['id'])
             else:
                 feature_obj = {
                     'cmd': feature.cmd,
@@ -315,7 +303,8 @@ class FlowImageFactory:
                   "curr_feature": feature_order[0],
                   "feature_order": feature_order
               }
-        rules = {'features': rules_list
+        rules = {'features': rules_list,
+                'rule_order': rule_order
             }
 
         workflowimage = WorkflowImage.objects.create(name=wf_dict['name'], uuid=wf_dict['uuid'], workflow=wf_dict, rules=rules)

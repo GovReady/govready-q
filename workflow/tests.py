@@ -215,6 +215,10 @@ class WorkflowUnitTests(TestCase):
 
         # test rules
         self.assertEqual(len(wfi2.rules['features']), 2)
+        self.assertEqual(wfi2.rules['features']['e0d3d432']['text'], 'Do something else')
+        # test rule order
+        self.assertEqual(len(wfi2.rules['rule_order']), 2)
+        self.assertEqual(wfi2.rules['rule_order'][1], 'e0d3d432')
         
 
 
