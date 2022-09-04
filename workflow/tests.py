@@ -17,9 +17,9 @@ class WorkflowUnitTests(TestCase):
         true = True
         false = False
         # create WorkflowImage
-        wfimage = WorkflowImage.objects.create(name="Monthly POA&M Review")
+        wfimage = WorkflowImage.objects.create(name="Monthly POAM Review")
         wfimage.workflow = {
-          "name": "Monthly POA&M Review",
+          "name": "Monthly POAM Review",
           "type": "flow_image",
           "uuid": "5d777289-906a-4b72-8fad-89077e5a15e5",
           "status": "red",
@@ -47,7 +47,7 @@ class WorkflowUnitTests(TestCase):
             "review_poams": {
               "id": "review_poams",
               "cmd": "STEP",
-              "text": "Review POA&Ms",
+              "text": "Review POAMs",
               "props": [
                 {
                   "id": "system.data"
@@ -64,7 +64,7 @@ class WorkflowUnitTests(TestCase):
             "submit_review": {
               "id": "submit_review",
               "cmd": "STEP",
-              "text": "Submit updated POA&Ms",
+              "text": "Submit updated POAMs",
               "props": [
                 {
                   "id": "system.name"
@@ -83,9 +83,9 @@ class WorkflowUnitTests(TestCase):
         wfimage.save()
 
         # create 2 Users
-        u1 = User.objects.create(username="Jane1", email="jane1@example.com")
-        u2 = User.objects.create(username="Jane2", email="jane2@example.com")
-        u3 = User.objects.create(username="Jane3", email="jane3@example.com")
+        self.u1 = u1 = User.objects.create(username="Jane1", email="jane1@example.com")
+        self.u2 = u2 = User.objects.create(username="Jane2", email="jane2@example.com")
+        self.u3 = u3 = User.objects.create(username="Jane3", email="jane3@example.com")
 
         # create 2 Systems
         sre1 = Element.objects.create(name="New Element 1", full_name="New Element Full Name 1", element_type="system")
@@ -104,35 +104,35 @@ class WorkflowUnitTests(TestCase):
         """WorkflowImage attributes working"""
 
         wfimage = WorkflowImage.objects.first()
-        self.assertEqual(wfimage.name, "Monthly POA&M Review")
+        self.assertEqual(wfimage.name, "Monthly POAM Review")
         self.assertEqual(len(wfimage.workflow['features']), 3)
     
     def test_workflowimage_methods(self):
         """WorkflowImage methods working"""
 
         wfimage = WorkflowImage.objects.first()
-        wfimage.create_system_worflowinstances("ALL", name="August Monthly POA&M Review")
+        wfimage.create_system_worflowinstances("ALL", name="August Monthly POAM Review")
 
         wfinstancesets = WorkflowInstanceSet.objects.all()
         self.assertEqual(len(wfinstancesets), 1)
         wfinstanceset = wfinstancesets[0]
-        self.assertEqual(wfinstanceset.name, "August Monthly POA&M Review")
+        self.assertEqual(wfinstanceset.name, "August Monthly POAM Review")
         self.assertEqual(wfinstanceset.description, f'Set created from {wfinstanceset.name}')
 
         wfinstances = WorkflowInstance.objects.all()
         self.assertEqual(len(wfinstances), 3)
         wfinstance = wfinstances[0]
-        self.assertEqual(wfinstance.name, "August Monthly POA&M Review")
+        self.assertEqual(wfinstance.name, "August Monthly POAM Review")
         self.assertEqual(len(wfinstance.workflow['features']), 3)
         
     def test_workflowinstance_methods(self):
 
         wfimage = WorkflowImage.objects.first()
-        self.assertEqual(wfimage.name, "Monthly POA&M Review")
+        self.assertEqual(wfimage.name, "Monthly POAM Review")
         self.assertEqual(len(wfimage.workflow['features']), 3)
 
         wfimage = WorkflowImage.objects.first()
-        wfimage.create_system_worflowinstances("ALL", name="August Monthly POA&M Review")
+        wfimage.create_system_worflowinstances("ALL", name="August Monthly POAM Review")
 
         wfinstances = WorkflowInstance.objects.all()
         self.assertEqual(len(wfinstances), 3)
@@ -142,6 +142,7 @@ class WorkflowUnitTests(TestCase):
         # curr_feature = wfinstance.workflow['curr_feature']
         self.assertEqual(wfinstance.workflow['curr_feature'], "start_review")
         wfinstance.advance()
+        wfinstance.save()
         self.assertEqual(wfinstance.workflow['curr_feature'], "review_poams")
 
         # check if advance saved to database
@@ -153,15 +154,17 @@ class WorkflowUnitTests(TestCase):
         """Test factories"""
         
         # create workflow recipe
-        name = "Monthly POA&M Reviewx"
-        description  = "Simple test recipe for monthly review of POA&Ms"
+        name = "Monthly POAM Reviewx"
+        description  = "Simple test recipe for monthly review of POAMs"
         recipe_text = """STEP Start Monthly Reviewx id(Start)
-        STEP Review Monthly POA&Msx id(Review)
-        STEP Submit updated POA&Msx
+        STEP Review Monthly POAMsx id(Review)
+        STEP Submit updated POAMsx id(Submit)
+        rule: Hide small org internal SOC question +viewque:(org.internal_soc, False) -SETANS:(org.internal_soc, some value) id(rule1)
+        rule: Do something else +viewque:(org.internal_soc, False) -SETANS:(org.internal_soc, some value) id(rule2)
         """
         wfr = WorkflowRecipe.objects.create(name=name, description=description,recipe=recipe_text)
 
-        fac_name = "Monthly POA&M Review 2"
+        fac_name = "Monthly POAM Review 2"
         fif = FlowImageFactory(fac_name)
         # fif.feature_descriptor_text = wfr.recipe
         # fif.split_feature_descriptor_text()
@@ -178,48 +181,34 @@ class WorkflowUnitTests(TestCase):
         print(f'[DEBUG] retrieved workflowimage: ', wfi2.name)
         self.assertEqual(wfi2.workflow['name'], fac_name)
         self.assertEqual(len(wfi2.workflow['features']), 3)
-        self.assertEqual(wfi2.workflow['feature_order'], ['Start', 'Review', 'cf03ecad'])
+        self.assertEqual(wfi2.workflow['feature_order'], ['Start', 'Review', 'Submit'])
 
-    def test_flowimagefactory_rules(self):
-        """Test factories"""
-        
-        # create workflow recipe
-        name = "Monthly POA&M Reviewx"
-        description  = "Simple test recipe for monthly review of POA&Ms"
-        recipe_text = """STEP Start Monthly Reviewx id(Start)
-        STEP Review Monthly POA&Msx id(Review)
-        STEP Submit updated POA&Msx
-        rule: Hide small org internal SOC question +viewque:(org.internal_soc, False) -SETANS:(org.internal_soc, some value)
-        rule: Do something else +viewque:(org.internal_soc, False) -SETANS:(org.internal_soc, some value)
-        """
-        wfr = WorkflowRecipe.objects.create(name=name, description=description,recipe=recipe_text)
-
-        fac_name = "Monthly POA&M Review 2"
-        fif = FlowImageFactory(fac_name)
-        # fif.feature_descriptor_text = wfr.recipe
-        # fif.split_feature_descriptor_text()
-        # fif.prepare_features()
-        workflowimage = fif.create_workflowimage_from_flowtext(recipe_text)
-        print(f'[DEBUG] created workflowimage: ', workflowimage)
-        self.assertEqual(len(workflowimage.workflow['features']), 3)
-        
-        # test retrieving flowimage
-        # flow_image_filename = f"{fi1.flow_image['name']}__{fi1.flow_image['uuid']}.fim"
-        # data_dir = os.path.join(f"{os.getcwd()}", 'data')
-        # filepath = os.path.join(data_dir, flow_image_filename)
-        wfi2 = WorkflowImage.objects.get(name=fac_name)
-        print(f'[DEBUG] retrieved workflowimage: ', wfi2.name)
-        self.assertEqual(wfi2.workflow['name'], fac_name)
-        self.assertEqual(len(wfi2.workflow['features']), 3)
-        self.assertEqual(wfi2.workflow['feature_order'], ['Start', 'Review', 'cf03ecad'])
-
-        # test rules
+        # test parsing of rules
         self.assertEqual(len(wfi2.rules['features']), 2)
-        self.assertEqual(wfi2.rules['features']['e0d3d432']['text'], 'Do something else')
+        self.assertEqual(wfi2.rules['features']['rule2']['text'], 'Do something else')
         # test rule order
         self.assertEqual(len(wfi2.rules['rule_order']), 2)
-        self.assertEqual(wfi2.rules['rule_order'][1], 'e0d3d432')
-        
+        self.assertEqual(wfi2.rules['rule_order'][1], 'rule2')
+
+        # test marking step complete
+        # create workflowinstance
+        wfinst2 = wfi2.create_orphan_worflowinstance()
+        # Need a user
+        # user = self.u2
+        wfinst2.set_curr_feature_completed(self.u2)
+        wfinst2.advance(self.u2)
+        # wfinst2.save() - # saving causes a raise TypeError(f'Object of type {o.__class__.__name__} 'TypeError: Object of type DeferredAttribute is not JSON serializable
+        # process workflowistance rules
+        def proc_rules(workflowinstance):
+            """Process workflowinstance rules"""
+            # this is hardcoded for development
+            msg = "processing workflowinstance rules"
+            print(f"[DEBUG] {msg}")
+            # update log
+            return workflowinstance
+        wfinst3 = proc_rules(wfinst2)
+        print("wfinst3 type is:", type(wfinst3))
+        self.assertEqual(wfinst3.workflow['curr_feature'], wfinst3.workflow['feature_order'][1])
 
 
 # Scratch code

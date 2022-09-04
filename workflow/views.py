@@ -198,6 +198,16 @@ def set_workflowinstance_feature_completed(request, workflowinstance_id):
     workflowinstance = get_object_or_404(WorkflowInstance, id=workflowinstance_id)
     workflowinstance.set_curr_feature_completed(request.user)
     workflowinstance.advance(request.user)
+    workflowinstance.save()
+    # process workflowistance rules
+    def proc_rules(workflowinstance):
+        """Process workflowinstance rules"""
+        # this is hardcoded for development
+        msg = "processing workflowinstance rules"
+        print(f"[DEBUG] {msg}")
+        # update log
+        return workflowinstance
+    proc_rules(workflowinstance)
     # return to referrer page that sent request
     return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
 
@@ -213,7 +223,6 @@ def workflowinstances_all(request):
         "orphan_workflowinstances": orphan_workflowinstances,
     }
     return render(request, "workflow/all.html", context)
-
 
 @login_required
 def create_system_worflowinstances(request, pk):

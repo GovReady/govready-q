@@ -59,6 +59,7 @@ class WorkflowImage(auto_prefetch.Model, TagModelMixin, BaseModel):
 
     def create_workflowinstance_obj(self):
         """Returns a generic workflowinstance unsaved object from workflowimage."""
+
         wfinstance = WorkflowInstance()
         wfinstance.workflowimage = self
         wfinstance.name = self.name
@@ -72,6 +73,8 @@ class WorkflowImage(auto_prefetch.Model, TagModelMixin, BaseModel):
         """Create a workflowinstance not associated with any model/objects."""
 
         wfinstance = self.create_workflowinstance_obj()
+        if name is None:
+            name = self.name
         wfinstance.name = name
         wfinstance.save()
         print(f'[DEBUG] Created 1 instance')
@@ -267,6 +270,6 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
             self.set_curr_feature(self.feature_keys[self.curr_feature_index + 1])
         else:
             self.set_workflowinstance_complete()
-        result = self.save()
-        print(f'[DEBUG] Save result wfinstance {self.name}: {result}')
+        # result = self.save()
+        # print(f'[DEBUG] Save result wfinstance {self.name}: {result}')
         
