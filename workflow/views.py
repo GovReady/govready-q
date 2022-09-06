@@ -236,6 +236,7 @@ def workflowinstances_all(request):
     orphan_workflowinstances = WorkflowInstance.objects.filter(workflowinstanceset=None).order_by('name','id')
 
     context = {
+        "is_admin": request.user.is_superuser,
         "workflowinstancesets": workflowinstancesets,
         "system_workflowinstances": system_workflowinstances,
         "orphan_workflowinstances": orphan_workflowinstances,

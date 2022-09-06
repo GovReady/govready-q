@@ -11,7 +11,7 @@ Workflow Recipes
 
 {% block head %}
 <style type="text/css">
-    .heading { font-weight: bold; text-align: center;}
+    .heading { font-weight: bold; text-align: left;}
     .workflowinstance a { color: black; }
     .bottom-border { border-bottom: 0.5px solid #888; }
 
@@ -50,11 +50,11 @@ Workflow Recipes
                 <div class="col-md-4 heading">
                     Workflow Recipe
                 </div>
+                <div class="col-md-6 heading">
+                    Description
+                </div>
                 <div class="col-md-1 heading">
                     ID
-                </div>
-                <div class="col-md-6 heading">
-                    Details
                 </div>
                 <div class="col-md-1 heading">
                     Actions
@@ -65,9 +65,6 @@ Workflow Recipes
                 <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
                     <div class="col-md-4">
                         <a href="{% url 'edit_recipe' item.id %}" target="">{{ item.name }}</a>
-                    </div>
-                    <div class="col-md-1" style="text-align: center;">
-                        <a href="/admin/workflow/workflowrecipe/{{ item.id }}/change/" target="_blank">{{ item.id }}</a>
                     </div>
                     <div class="col-md-6" style="">
                         <div>{{ item.description }}</div>
@@ -93,7 +90,10 @@ Workflow Recipes
                         {% endfor %}
                         {% endcomment %}
                     </div>
-                    <div class="col-md-1" style="text-align: center;">
+                    <div class="col-md-1" style="">
+                        <a href="/admin/workflow/workflowrecipe/{{ item.id }}/change/" target="_blank">{{ item.id }}</a>
+                    </div>
+                    <div class="col-md-1" style="">
                         <span class="dropdown">
                           <a href="#" class="action-link" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="" aria-label="Dropdown menu for workflow recipe"><span class="glyphicon glyphicon-cog"></span>
                           </a>

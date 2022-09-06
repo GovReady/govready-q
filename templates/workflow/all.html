@@ -29,7 +29,7 @@ Workflows
     .step-name { text-align: center; font-size: .75em;}
     .step-name a { color: black; }
     .stepper-item.completed .step-counter { color: white; }
-    .heading { font-weight: bold; text-align: center;}
+    .heading { font-weight: bold; text-align: left;}
     /*.workflowinstance a { color: black; }*/
     .bottom-border { border-bottom: 0.5px solid #888; }
 
@@ -47,6 +47,8 @@ Workflows
         margin-bottom: 20px;}
 
     a { color: #555555; }
+
+    .row {width: 100% !important;}
 </style>
 {% endblock %}
 
@@ -105,12 +107,13 @@ Workflows
                             <div class="col-md-4 heading">
                                 System
                             </div>
-                            <div class="col-md-1 heading">
-                                wfid
-                            </div>
-                            <div class="col-mid-7 heading">
+                            <div class="col-md-7 heading" style="text-align: center;">
                                 workflow instance
                             </div>
+                            <div class="col-md-1 heading">
+                                {% if is_admin %}wfid{% endif %}
+                            </div>
+
                         </div>
 
                         <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
@@ -119,10 +122,7 @@ Workflows
                                 <div class="col-md-4">
                                     <a href="/systems/{{ wfit.system.id }}/poams" target="_blank">{{ wfit.system.root_element.name }}</a>
                                 </div>
-                                <div class="col-md-1" style="text-align: center;">
-                                    <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
-                                </div>
-                                <div class="col-mid-7 stepper-wrapper">
+                                <div class="col-md-7 stepper-wrapper">
                                     {% for key in wfit.workflow.feature_order %}
                                       {% with feature=wfit.workflow.features|get_item:key %}
                                         <div class="stepper-item {{ feature.status }} 
@@ -144,6 +144,11 @@ Workflows
                                         </div>
                                       {% endwith %}
                                     {% endfor %}
+                                </div>
+                                <div class="col-md-1" style="text-align: left;">
+                                    {% if is_admin %}
+                                        <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
+                                    {% endif %}
                                 </div>
                             </div>
                         {%  endfor %}
@@ -168,11 +173,11 @@ Workflows
                             <div class="col-md-4 heading">
                                 workflow
                             </div>
-                            <div class="col-md-1 heading">
-                                wfid
-                            </div>
-                            <div class="col-mid-7 heading">
+                            <div class="col-md-7 heading">
                                 workflow instance
+                            </div>
+                            <div class="col-md-1 heading">
+                                {% if is_admin %}wfid{% endif %}
                             </div>
                         </div>
                         <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
@@ -182,10 +187,7 @@ Workflows
                                     <a href="/systems/{{ wfit.system.id }}/poams" target="_blank">{{ wfit.system.root_element.name }}</a>
                                     <div>{{ wfit.name }} (standalone)</div>
                                 </div>
-                                <div class="col-md-1" style="text-align: center;">
-                                    <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
-                                </div>
-                                <div class="col-mid-7 stepper-wrapper">
+                                <div class="col-md-7 stepper-wrapper">
                                     {% for key in wfit.workflow.feature_order %}
                                       {% with feature=wfit.workflow.features|get_item:key %}
                                         <div class="stepper-item {{ feature.status }} 
@@ -207,6 +209,12 @@ Workflows
                                         </div>
                                       {% endwith %}
                                     {% endfor %}
+                                </div>
+
+                                <div class="col-md-1" style="text-align: center;">
+                                    {% if is_admin %}
+                                        <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
+                                    {% endif %}
                                 </div>
                             </div>
                         {%  endfor %}
