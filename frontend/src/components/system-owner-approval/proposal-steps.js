@@ -307,7 +307,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                         </Grid>
                     </Grid>
                 </ListGroupItem>
-                <ListGroupItem className={request.status.toLowerCase() === "approve" ? classes.current : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
+                {/* <ListGroupItem className={request.status.toLowerCase() === "approve" ? classes.current : getStatusLevel(proposal.status) > 3 ? classes.completed : classes.notStarted}>
                     <Grid container>
                         <Grid item xs={1}>
                             <span className="dot"><span className="glyphicon glyphicon-plus"></span></span>
@@ -318,7 +318,7 @@ export const ProposalSteps = ({ userId, system, element, proposal, request, hasS
                             </div>
                         </Grid>
                     </Grid>
-                </ListGroupItem>
+                </ListGroupItem> */}
             </ListGroup>}
         </div>
     );
