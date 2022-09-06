@@ -159,8 +159,8 @@ class WorkflowUnitTests(TestCase):
         recipe_text = """STEP Start Monthly Reviewx id(Start)
         STEP Review Monthly POAMsx id(Review)
         STEP Submit updated POAMsx id(Submit)
-        rule: Hide small org internal SOC question +viewque:(org.internal_soc, False) -SETANS:(org.internal_soc, some value) id(rule1)
-        rule: Do something else +viewque:(org.internal_soc, False) -SETANS:(org.internal_soc, some value) id(rule2)
+        rule: Hide small org internal SOC question +viewque:(org.internal_soc, False) -SETANSX:(org.internal_soc, some value) id(rule1)
+        rule: Do something else +viewque:(org.internal_soc, False) -SETANSX:(org.internal_soc, some value) id(rule2)
         """
         wfr = WorkflowRecipe.objects.create(name=name, description=description,recipe=recipe_text)
 
@@ -169,7 +169,7 @@ class WorkflowUnitTests(TestCase):
         # fif.feature_descriptor_text = wfr.recipe
         # fif.split_feature_descriptor_text()
         # fif.prepare_features()
-        workflowimage = fif.create_workflowimage_from_flowtext(recipe_text)
+        workflowimage = fif.update_or_create_workflowimage_from_flowtext(recipe_text)
         print(f'[DEBUG] created workflowimage: ', workflowimage)
         self.assertEqual(len(workflowimage.workflow['features']), 3)
         
@@ -194,21 +194,28 @@ class WorkflowUnitTests(TestCase):
         # create workflowinstance
         wfinst2 = wfi2.create_orphan_worflowinstance()
         # Need a user
-        # user = self.u2
-        wfinst2.set_curr_feature_completed(self.u2)
-        wfinst2.advance(self.u2)
+        user = self.u2
+        wfinst2.set_curr_feature_completed(user)
         # wfinst2.save() - # saving causes a raise TypeError(f'Object of type {o.__class__.__name__} 'TypeError: Object of type DeferredAttribute is not JSON serializable
-        # process workflowistance rules
-        def proc_rules(workflowinstance):
-            """Process workflowinstance rules"""
-            # this is hardcoded for development
-            msg = "processing workflowinstance rules"
-            print(f"[DEBUG] {msg}")
-            # update log
-            return workflowinstance
-        wfinst3 = proc_rules(wfinst2)
-        print("wfinst3 type is:", type(wfinst3))
+
+        wfinst3 = wfinst2.proc_rules()
+        wfinst2.advance(self.u2)
         self.assertEqual(wfinst3.workflow['curr_feature'], wfinst3.workflow['feature_order'][1])
+
+        # test proc_rules appear in log
+        log_event_names = [log_event['name'] for log_event in wfinst3.log]
+        print("log_event_names:", log_event_names)
+        self.assertIn('proc_rules', log_event_names)
+
+        # test editing workflow recipe
+        name = "Monthly POAM Reviewx-2"
+        description  = "Simple test recipe for monthly review of POAMs-2"
+        recipe_text = """STEP Start Monthly Reviewx-2 id(Start-2)
+        STEP Review Monthly POAMsx-2 id(Review-2)
+        STEP Submit updated POAMsx-2 id(Submit-2)
+        rule: Hide small org internal SOC question-2 +viewque:(org.internal_soc-2, False) -SETANSX:(org.internal_soc, some value) id(rule1)
+        rule: Do something else-2 +viewque:(org.internal_soc-2, False) -SETANSX:(org.internal_soc, some value) id(rule2)
+        """
 
 
 # Scratch code

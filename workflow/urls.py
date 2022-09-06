@@ -16,7 +16,9 @@ urlpatterns = [
     url(r'^recipes/(?P<pk>.*)/delete$', views.delete_recipe, name="delete_recipe"),
     url(r'^recipes/(?P<pk>.*)/duplicate$', views.duplicate_recipe, name="duplicate_recipe"),
     url(r'^recipes/(?P<pk>.*)/create_workflowimage$', views.create_workflowimage, name="create_workflowimage"),
-    
+    url(r'^recipes/(?P<pk>.*)/create_workflowinstance_from_recipe$', views.create_workflowinstance_from_recipe, name="create_workflowinstance_from_recipe"), 
+    url(r'^recipes/(?P<pk>.*)/create_system_worflowinstances_from_recipe$', views.create_system_worflowinstances_from_recipe, name="create_system_worflowinstances_from_recipe"),
+
     url(r'^images/all$', views.workflowimages_all, name="workflowimages_all"),
     url(r'^images/(?P<pk>.*)/create_workflowinstance$', views.create_workflowinstance, name="create_workflowinstance"),
     url(r'^images/(?P<pk>.*)/delete$', views.delete_workflowimage, name="delete_workflowimage"),

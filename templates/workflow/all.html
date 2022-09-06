@@ -45,6 +45,8 @@ Workflows
         border-radius: 4px;
         padding: .5em .5em 0; 
         margin-bottom: 20px;}
+
+    a { color: #555555; }
 </style>
 {% endblock %}
 
@@ -55,118 +57,177 @@ Workflows
 
 <div class="container">
     <p>&nbsp;</p>
-    <h2>All Workflows</h2>
+    <h2>Workflow Instances</h2>
 
     <p>&nbsp;</p>
 
-    {% for set in workflowinstancesets %}
-    <h2>System Workflows</h2>
-        <details open>
-            <summary><h3>&bull; {{ set.name }} ({{ set.workflowinstances.all|length }} flows)</h3></summary>
-            <p>&nbsp;</p>
-            <div class="row bottom-border">
-                <div class="col-md-4 heading">
-                    System
-                </div>
-                <div class="col-md-1 heading">
-                    wfid
-                </div>
-                <div class="col-mid-7 heading">
-                    workflow instance
-                </div>
-            </div>
+  <div id="tab-content" class="row">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+      <li id="smt-tab" role="presentation" class="active">
+          <a href="#open_system_workflows" aria-controls="open_system_workflows" role="tab" data-toggle="tab">
+              <span class="glyphicon glyphicon-wrench">&nbsp;</span> Open System Workflows&nbsp;
+              <div id="common-tab-count">{{ system_workflowinstances|length }}</div></a>
+      </li>
+      <li id="smt-tab" role="presentation">
+          <a href="#open_standalone_workflows" aria-controls="open_standalone_workflows" role="tab" data-toggle="tab">
+              <span class="glyphicon glyphicon-wrench">&nbsp;</span> Open Standalone Workflows &nbsp;
+              <div id="common-tab-count">{{ orphan_workflowinstances|length }}</div></a>
+      </li>
+      <li id="systems-tab" role="presentation">
+          <a href="#closed_workflows" aria-controls=closed_workflows role="tab" data-toggle="tab">
+              <span class="glyphicon glyphicon-file"></span> Closed Workflows &nbsp;
+              <div id="common-tab-count">{{ consuming_systems|length }}</div></a>
+      </li>
+      <li id="oscal-tab" role="presentation">
+          <a href="#all_workflows" aria-controls="all_workflows" role="tab" data-toggle="tab">
+              <span class="glyphicon glyphicon-file"></span> All Workflows </a>
+      </li>
+    </ul>
+    <!-- Tab panels -->
+    <div id="component-detail-content" class="tab-content">
+        <!-- Tab panel: open_system_workflows -->
+        <div role="tabpanel" class="tab-pane active" id="open_system_workflows">
 
-            <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
-            {% for wfit in set.workflowinstances.all|dictsort:"system.root_element.name" %}
-                <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
-                    <div class="col-md-4">
-                        <a href="/systems/{{ wfit.system.id }}/poams" target="_blank">{{ wfit.system.root_element.name }}</a>
-                    </div>
-                    <div class="col-md-1" style="text-align: center;">
-                        <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
-                    </div>
-                    <div class="col-mid-7 stepper-wrapper">
-                        {% for key in wfit.workflow.feature_order %}
-                          {% with feature=wfit.workflow.features|get_item:key %}
-                            <div class="stepper-item {{ feature.status }} 
-                                 {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
-                              <div class="step-counter">{{ forloop.counter }}</div>
-                              <div class="step-name">
-                                {% if feature.status == 'completed' %}<span class="glyphicon glyphicon-check"></span>
-                                {{ feature.text }}
-                                {% elif key == wfit.workflow.curr_feature and feature.status != 'completed'  %}
-                                  <a href='/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed'
-                                     onclick="return confirm('Mark \'{{ feature.text }}\' complete?')"
-                                  ><span class="glyphicon glyphicon-unchecked"></span>
-                                  {{ feature.text }}
-                                </a>
-                                {% else %}
-                                    {{ feature.text }}
-                                {% endif %}
-                              </div>
+            {% if workflowinstancesets|length == 0 %}
+                <p>&nbsp;</p>
+                <p>No workflow instances.</p>
+                <div style="height: 600px;">&nbsp;</div>
+            {% endif %}
+          
+            {% for set in workflowinstancesets %}
+                <div>&nbsp;</div>
+                <h2>System Workflows</h2>
+                    <details open>
+                        <summary><h3>&bull; {{ set.name }} ({{ set.workflowinstances.all|length }} flows)</h3></summary>
+                        <p>&nbsp;</p>
+                        <div class="row bottom-border">
+                            <div class="col-md-4 heading">
+                                System
                             </div>
-                          {% endwith %}
-                        {% endfor %}
-                    </div>
-                </div>
-            {%  endfor %}
-        </details>
-    {% endfor %}
-
-    {% if orphan_workflowinstances|length > 0 %}
-
-    <h2>Other Workflows</h2>
-        <details open>
-            <summary><h3>&bull; Orphan Workflowinstances ({{ orphan_workflowinstances|length }} flows)</h3></summary>
-            <p>&nbsp;</p>
-            <div class="row bottom-border">
-                <div class="col-md-4 heading">
-                    workflow
-                </div>
-                <div class="col-md-1 heading">
-                    wfid
-                </div>
-                <div class="col-mid-7 heading">
-                    workflow instance
-                </div>
-            </div>
-            <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
-            {% for wfit in orphan_workflowinstances %}
-                <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
-                    <div class="col-md-4">
-                        <a href="/systems/{{ wfit.system.id }}/poams" target="_blank">{{ wfit.system.root_element.name }}</a>
-                        <div>{{ wfit.name }} (standalone)</div>
-                    </div>
-                    <div class="col-md-1" style="text-align: center;">
-                        <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
-                    </div>
-                    <div class="col-mid-7 stepper-wrapper">
-                        {% for key in wfit.workflow.feature_order %}
-                          {% with feature=wfit.workflow.features|get_item:key %}
-                            <div class="stepper-item {{ feature.status }} 
-                                 {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
-                              <div class="step-counter">{{ forloop.counter }}</div>
-                              <div class="step-name">
-                                {% if feature.status == 'completed' %}<span class="glyphicon glyphicon-check"></span>
-                                {{ feature.text }}
-                                {% elif key == wfit.workflow.curr_feature and feature.status != 'completed'  %}
-                                  <a href='/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed'
-                                     onclick="return confirm('Mark \'{{ feature.text }}\' complete?')"
-                                  ><span class="glyphicon glyphicon-unchecked"></span>
-                                  {{ feature.text }}
-                                </a>
-                                {% else %}
-                                    {{ feature.text }}
-                                {% endif %}
-                              </div>
+                            <div class="col-md-1 heading">
+                                wfid
                             </div>
-                          {% endwith %}
-                        {% endfor %}
-                    </div>
-                </div>
-            {%  endfor %}
-        </details>
-    {% endif %}
+                            <div class="col-mid-7 heading">
+                                workflow instance
+                            </div>
+                        </div>
+
+                        <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
+                        {% for wfit in set.workflowinstances.all|dictsort:"system.root_element.name" %}
+                            <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
+                                <div class="col-md-4">
+                                    <a href="/systems/{{ wfit.system.id }}/poams" target="_blank">{{ wfit.system.root_element.name }}</a>
+                                </div>
+                                <div class="col-md-1" style="text-align: center;">
+                                    <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
+                                </div>
+                                <div class="col-mid-7 stepper-wrapper">
+                                    {% for key in wfit.workflow.feature_order %}
+                                      {% with feature=wfit.workflow.features|get_item:key %}
+                                        <div class="stepper-item {{ feature.status }} 
+                                             {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
+                                          <div class="step-counter">{{ forloop.counter }}</div>
+                                          <div class="step-name">
+                                            {% if feature.status == 'completed' %}<span class="glyphicon glyphicon-check"></span>
+                                            {{ feature.text }}
+                                            {% elif key == wfit.workflow.curr_feature and feature.status != 'completed'  %}
+                                              <a href='/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed'
+                                                 onclick="return confirm('Mark \'{{ feature.text }}\' complete?')"
+                                              ><span class="glyphicon glyphicon-unchecked"></span>
+                                              {{ feature.text }}
+                                            </a>
+                                            {% else %}
+                                                {{ feature.text }}
+                                            {% endif %}
+                                          </div>
+                                        </div>
+                                      {% endwith %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {%  endfor %}
+                    </details>
+            {% endfor %}
+        </div>
+        <!-- Tab panel: open_standalone_workflows -->
+        <div role="tabpanel" class="tab-pane active" id="open_standalone_workflows">
+
+            {% if orphan_workflowinstances|length == 0 %}
+                <p>&nbsp;</p>
+                <p>No workflow instances.</p>
+                <div style="height: 600px;">&nbsp;</div>
+            {% endif %}
+
+            {% if orphan_workflowinstances|length > 0 %}
+                <h2>Standalone Workflows</h2>
+                    <details open>
+                        <summary><h3>&bull; Orphan Workflowinstances ({{ orphan_workflowinstances|length }} flows)</h3></summary>
+                        <p>&nbsp;</p>
+                        <div class="row bottom-border">
+                            <div class="col-md-4 heading">
+                                workflow
+                            </div>
+                            <div class="col-md-1 heading">
+                                wfid
+                            </div>
+                            <div class="col-mid-7 heading">
+                                workflow instance
+                            </div>
+                        </div>
+                        <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
+                        {% for wfit in orphan_workflowinstances %}
+                            <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
+                                <div class="col-md-4">
+                                    <a href="/systems/{{ wfit.system.id }}/poams" target="_blank">{{ wfit.system.root_element.name }}</a>
+                                    <div>{{ wfit.name }} (standalone)</div>
+                                </div>
+                                <div class="col-md-1" style="text-align: center;">
+                                    <a href="/admin/workflow/workflowinstance/{{ wfit.id }}/change/" target="_blank">{{ wfit.id }}</a>
+                                </div>
+                                <div class="col-mid-7 stepper-wrapper">
+                                    {% for key in wfit.workflow.feature_order %}
+                                      {% with feature=wfit.workflow.features|get_item:key %}
+                                        <div class="stepper-item {{ feature.status }} 
+                                             {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
+                                          <div class="step-counter">{{ forloop.counter }}</div>
+                                          <div class="step-name">
+                                            {% if feature.status == 'completed' %}<span class="glyphicon glyphicon-check"></span>
+                                            {{ feature.text }}
+                                            {% elif key == wfit.workflow.curr_feature and feature.status != 'completed'  %}
+                                              <a href='/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed'
+                                                 onclick="return confirm('Mark \'{{ feature.text }}\' complete?')"
+                                              ><span class="glyphicon glyphicon-unchecked"></span>
+                                              {{ feature.text }}
+                                            </a>
+                                            {% else %}
+                                                {{ feature.text }}
+                                            {% endif %}
+                                          </div>
+                                        </div>
+                                      {% endwith %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {%  endfor %}
+                    </details>
+            {% endif %}
+        </div>
+
+        <!-- Tab panel: systems -->
+        <div role="tabpanel" class="tab-pane" id=closed_workflows>
+            <p>&nbsp;</p>
+            <p>Closed workflows here</p>
+        </div>
+        <!-- Tab panel: all_workflows -->
+        <div role="tabpanel" class="tab-pane" id="all_workflows">
+            <p>&nbsp;</p>
+            <p>All workflows here</p>
+        </div>
+    </div>
+  </div>
+
+
 
 </div>
 

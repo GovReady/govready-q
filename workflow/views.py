@@ -9,6 +9,7 @@ from django.http import (Http404, HttpResponse, HttpResponseForbidden,
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.urls import reverse
+from django.db import transaction
 
 from guardian.core import ObjectPermissionChecker
 from guardian.decorators import permission_required_or_403
@@ -46,11 +47,7 @@ def workflowrecipes_all(request):
 def manage_recipe(request):
     context ={}
  
-    # create object of form
-    form = WorkflowRecipeForm(request.POST or None, request.FILES or None)
-    print(f"[DEBUG] form.__dir__(): ",form.__dir__())
-     
-    # check if form data is valid
+    form = WorkflowRecipeForm(request.POST or None, request.FILES or None) 
     if form.is_valid():
         workflowrecipe = form.save()
         # create related workflowimage
@@ -59,9 +56,8 @@ def manage_recipe(request):
         messages.add_message(request, messages.INFO, f"Workflow recipe \"{workflowrecipe.name}\" created.")
         # create related worflowinstanceset
         # create related orphan worflowinstance
-        workflowimage.create_orphan_worflowinstance(name=workflowrecipe.name)
+        # workflowimage.create_orphan_worflowinstance(name=workflowrecipe.name)
         return redirect('workflowrecipes_all')
-
     context['form'] = form
     return render(request, "workflow/recipe_form.html", context)
 
@@ -75,6 +71,10 @@ def edit_recipe(request, pk):
             form = WorkflowRecipeForm(request.POST, instance=workflowrecipe)
             if form.is_valid():
                 form.save()
+                # update related workflowimage
+                fif = FlowImageFactory(workflowrecipe.name)
+                print("[DEBUGGGG] workflowrecipe after form save:", workflowrecipe)
+                workflowimage = fif.create_workflowimage_from_workflowrecipe(workflowrecipe)
                 messages.add_message(request, messages.INFO, f"Workflow recipe \"{form.data['name']}\" updated.")
                 return redirect("workflowrecipes_all")
         except:
@@ -86,18 +86,23 @@ def edit_recipe(request, pk):
     })
 
 @login_required
+@transaction.atomic
 def delete_recipe(request, pk):
     """Form to delete recipes"""
 
+    # import ipdb; ipdb.set_trace()
     if request.method == 'GET':
         workflowrecipe = get_object_or_404(WorkflowRecipe, pk=pk)
         try:
+            if WorkflowImage.objects.filter(workflowrecipe=workflowrecipe).exists():
+                WorkflowImage.objects.filter(workflowrecipe=workflowrecipe).delete()
             WorkflowRecipe.objects.get(pk=pk).delete()
             logger.info(
                 event="delete_workflowrecipe",
                 object={"object": "workflowrecipe", "id": workflowrecipe.id, "title": workflowrecipe.title},
                 user={"id": request.user.id, "username": request.user.username}
             )
+
             messages.add_message(request, messages.INFO, f"Workflow recipe \"{workflowrecipe.name}\" deleted.")
             return redirect("workflowrecipes_all")
         except:
@@ -192,6 +197,22 @@ def create_workflowinstance(request, pk):
     return HttpResponseRedirect(redirect_url)
 
 @login_required
+def create_workflowinstance_from_recipe(request, pk):
+    """Create a workflow instance from a workflow recipe"""
+
+    workflowrecipe = get_object_or_404(WorkflowRecipe, pk=pk)
+    # get workflow image or create it
+    if WorkflowImage.objects.filter(workflowrecipe=workflowrecipe):
+        workflowimage = WorkflowImage.objects.filter(workflowrecipe=workflowrecipe)[0]
+    else:
+        # create workflow image and instance for duplicate
+        fif = FlowImageFactory(workflowrecipe.name)
+        workflowimage = fif.create_workflowimage_from_workflowrecipe(workflowrecipe)
+    workflowimage.create_orphan_worflowinstance(name=workflowimage.name)
+    redirect_url = f'/workflow/instances/all'
+    return HttpResponseRedirect(redirect_url)
+
+@login_required
 def set_workflowinstance_feature_completed(request, workflowinstance_id):
     """Advance workflowinstace"""
 
@@ -200,14 +221,9 @@ def set_workflowinstance_feature_completed(request, workflowinstance_id):
     workflowinstance.advance(request.user)
     workflowinstance.save()
     # process workflowistance rules
-    def proc_rules(workflowinstance):
-        """Process workflowinstance rules"""
-        # this is hardcoded for development
-        msg = "processing workflowinstance rules"
-        print(f"[DEBUG] {msg}")
-        # update log
-        return workflowinstance
-    proc_rules(workflowinstance)
+    
+    workflowinstance.proc_rules()
+    workflowinstance.save()
     # return to referrer page that sent request
     return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
 
@@ -216,10 +232,12 @@ def workflowinstances_all(request):
     """List all workflow instances"""
     
     workflowinstancesets = WorkflowInstanceSet.objects.all()
+    system_workflowinstances = WorkflowInstance.objects.all()
     orphan_workflowinstances = WorkflowInstance.objects.filter(workflowinstanceset=None).order_by('name','id')
 
     context = {
         "workflowinstancesets": workflowinstancesets,
+        "system_workflowinstances": system_workflowinstances,
         "orphan_workflowinstances": orphan_workflowinstances,
     }
     return render(request, "workflow/all.html", context)
@@ -229,6 +247,26 @@ def create_system_worflowinstances(request, pk):
     """Create a workflowinstances from a workflowimage and assign to all systems"""
 
     workflowimage = get_object_or_404(WorkflowImage, pk=pk)
+    assign_filter = 'ALL'
+    workflowimage.create_system_worflowinstances(assign_filter, name=workflowimage.name)
+    if assign_filter == 'ALL':
+        messages.add_message(request, messages.INFO, f"Workflow \"{workflowimage.name}\" assigned to systems.")
+    # TODO: handle INCLUDE, EXCLUDE filters maybe
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+
+def create_system_worflowinstances_from_recipe(request, pk):
+    """Create a workflowinstances from a workflow recipe and assign to all systems"""
+
+    workflowrecipe = get_object_or_404(WorkflowRecipe, pk=pk)
+    # get workflow image or create it
+    if WorkflowImage.objects.filter(workflowrecipe=workflowrecipe):
+        workflowimage = WorkflowImage.objects.filter(workflowrecipe=workflowrecipe)[0]
+    else:
+        # create workflow image and instance for duplicate
+        fif = FlowImageFactory(workflowrecipe.name)
+        workflowimage = fif.create_workflowimage_from_workflowrecipe(workflowrecipe)
+
+    # workflowimage = get_object_or_404(WorkflowImage, pk=pk)
     assign_filter = 'ALL'
     workflowimage.create_system_worflowinstances(assign_filter, name=workflowimage.name)
     if assign_filter == 'ALL':

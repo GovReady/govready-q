@@ -25,6 +25,8 @@ from django.db import transaction
 from django.core.validators import RegexValidator
 from django.core.validators import validate_email
 
+from .functions import *
+
 # Create your models here.
 class WorkflowRecipe(auto_prefetch.Model, TagModelMixin, BaseModel):
     name = models.CharField(max_length=100, help_text="Descriptive name", unique=False, blank=True, null=True)
@@ -272,4 +274,81 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
             self.set_workflowinstance_complete()
         # result = self.save()
         # print(f'[DEBUG] Save result wfinstance {self.name}: {result}')
-        
+
+    def proc_actionfunc(self, answer, actionfunc_str):
+        """Process acton function and return updated workflow"""
+
+        if actionfunc_str is None:
+            return self.workflow
+
+        print(f"[DEBUG] actionfunc_str:", actionfunc_str)
+        m = re.match(r"(?P<func>\w+):\((?P<params>.*)\)", actionfunc_str)
+        if m:
+            func = m.group('func')
+            params = m.group('params')
+            if func in globals():
+                actionfunc_cls = globals()[func]
+                action = actionfunc_cls(params, self.workflow)
+                self.workflow = action.update_workflow()
+                self.log_event('rule_action', f'Rule processed for \'{answer}\': action function \'{actionfunc_str}\'')
+            return self.workflow
+        else:
+            # log error and skip rule
+            # TODO: log error
+            return self.workflow
+
+    def proc_rule(self, rule_obj):
+        """Process rule and return updated workflowinstance
+
+          A rule is processed when:
+          - the name of the rule equals the name of feature (question, step) updated and the rule not yet processed.
+          - the rule is indicated of being processed everytime
+          - the rule is set to be processed once and has not yet been processed
+        """
+
+        # skip rules that don't have true_action
+        if 'true_action' not in rule_obj or rule_obj['true_action'] is None or rule_obj['true_action'] == "":
+            return None
+
+        # skip rules that don't have false_action
+        # if 'false_action' not in rule_obj or rule_obj['false_action'] is None or rule_obj['false_action'] == "":
+        #     return None
+
+        # skip if rule set to skip
+        # if 'process' in rule_obj and not rule_obj['process']:
+          # return None
+
+        # process rule for current answer
+        print(f"[DEBUG] processing individual rule: \"{rule_obj['text']}\"")
+
+        if 1 == 1:
+            self.workflow = self.proc_actionfunc(rule_obj['id'], rule_obj['true_action'])
+
+        # if rule_obj['name'] == self.curr_feature:
+
+        #   # eval test expression
+        #   test_eval = self.eval_rule_test(rule_obj.get('test').strip())
+
+        #   # process rule action function
+        #   if test_eval == True:
+        #       self.q_plan = self.proc_actionfunc(rule_obj['name'], rule_obj.get('onTrue', None))
+        #   elif test_eval == False:
+        #       self.q_plan = self.proc_actionfunc(rule_obj['name'], rule_obj.get('onFalse', None))
+        #   else:
+        #       self.q_plan = self.proc_actionfunc(rule_obj['name'], rule_obj.get('onError', None))
+        return None
+
+    def proc_rules(self):
+        """Iterate through workflowinstance rules"""
+
+        if len(self.rules) == 0:
+            msg = "no rules found to process"
+            event = self.log_event(name="proc_rules", description=msg, who='self')
+            return self
+
+        for rule_id in self.rules['rule_order']:
+            self.proc_rule(self.rules['features'][rule_id])
+        msg = "processing workflowinstance rules"
+        event = self.log_event(name="proc_rules", description=msg, who='self')
+        return self
+
