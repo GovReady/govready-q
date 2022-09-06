@@ -281,8 +281,9 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         if actionfunc_str is None:
             return self.workflow
 
-        print(f"[DEBUG] actionfunc_str:", actionfunc_str)
+        print(f"[DEBUG] actionfunc_str 1:", actionfunc_str)
         m = re.match(r"(?P<func>\w+):\((?P<params>.*)\)", actionfunc_str)
+        print(f"[DEBUG] match 'm' 1:", m)
         if m:
             func = m.group('func')
             params = m.group('params')
@@ -291,10 +292,13 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
                 action = actionfunc_cls(params, self.workflow)
                 self.workflow = action.update_workflow()
                 self.log_event('rule_action', f'Rule processed for \'{answer}\': action function \'{actionfunc_str}\'')
+            else:
+                print(f"[ERROR] action function '{func}' not found in available functions.")
             return self.workflow
         else:
             # log error and skip rule
             # TODO: log error
+            print(f"[DEBUG] actionfunc_str 4 failed to process:", actionfunc_str)
             return self.workflow
 
     def proc_rule(self, rule_obj):
@@ -323,6 +327,7 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
 
         if 1 == 1:
             self.workflow = self.proc_actionfunc(rule_obj['id'], rule_obj['true_action'])
+            print("[DEBUG] within conditional 1 == 1 in proc_rule")
 
         # if rule_obj['name'] == self.curr_feature:
 

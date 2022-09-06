@@ -4,6 +4,8 @@ import re
 import json
 import uuid
 
+from django.contrib import messages
+
 class ActionFunc():
     """Base class for Action Functions"""
     
@@ -31,6 +33,7 @@ class SETANSX(ActionFunc):
     def __init__(self, func_params, workflow):
         super().__init__(func_params, workflow)
         self.parse_params()
+        self.workflow = workflow
 
     def parse_params(self):
         """Parse function params"""
@@ -44,17 +47,17 @@ class SETANSX(ActionFunc):
         """Do action"""
         
         # Update workflow
-        print("PROCESSING SETANS")
-        try:
-            if self.val.startswith("'") or self.val.startswith('"'):
-                # literal
-                ans_val = self.val.strip("'").strip('"')
-            else:
-                # reference
-                ans_val = self.workflow[self.val]['ans']
-            self.workflow[self.ans]['ans'] = ans_val
-        except:
-            print(f"[ERROR] SETANS problem with {self.ans}")
+        print("[DEBUG] [RULE FUNCTION] PROCESSING SETANSX")
+        # try:
+        #     if self.val.startswith("'") or self.val.startswith('"'):
+        #         # literal
+        #         ans_val = self.val.strip("'").strip('"')
+        #     else:
+        #         # reference
+        #         ans_val = self.workflow[self.val]['ans']
+        #     self.workflow[self.ans]['ans'] = ans_val
+        # except:
+        #     print(f"[ERROR] SETANS problem with {self.ans}")
             # self.log_exception('SETANS')
         
         # Return updated workflow
@@ -127,14 +130,15 @@ class VIEWQUE(ActionFunc):
         
         # Set
         print("PROCESSING VIEWQUE")
-        try:
-            if self.val == 'True':
-                self.workflow[self.ans]['ask'] = True
-            else:
-                self.workflow[self.ans]['ask'] = False
-        except:
-            # self.log_exception('VIEWQUE')
-            print(f"[ERROR] SETANS problem with {self.ans}")
+        print("[DEBUG] [RULE FUNCTION] PROCESSING VIEWQUE")
+        # try:
+        #     if self.val == 'True':
+        #         self.workflow[self.ans]['ask'] = True
+        #     else:
+        #         self.workflow[self.ans]['ask'] = False
+        # except:
+        #     # self.log_exception('VIEWQUE')
+        #     print(f"[ERROR] SETANS problem with {self.ans}")
             
         # Return updated workflow
         return self.workflow

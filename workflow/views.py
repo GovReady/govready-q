@@ -213,16 +213,16 @@ def create_workflowinstance_from_recipe(request, pk):
     return HttpResponseRedirect(redirect_url)
 
 @login_required
+@transaction.atomic
 def set_workflowinstance_feature_completed(request, workflowinstance_id):
     """Advance workflowinstace"""
 
     workflowinstance = get_object_or_404(WorkflowInstance, id=workflowinstance_id)
     workflowinstance.set_curr_feature_completed(request.user)
-    workflowinstance.advance(request.user)
     workflowinstance.save()
-    # process workflowistance rules
-    
     workflowinstance.proc_rules()
+    workflowinstance.save()
+    workflowinstance.advance(request.user)
     workflowinstance.save()
     # return to referrer page that sent request
     return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
