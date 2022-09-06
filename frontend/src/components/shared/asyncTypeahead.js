@@ -159,7 +159,6 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds, searchB
           key={option.id}
           value={option.id}
         >
-          
           <span className={classes.username}>{option[primaryKey]}</span>
           <span className={classes.username}>({option[secondarykey]})</span>
         </MenuItem>
