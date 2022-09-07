@@ -68,23 +68,23 @@ Workflows
     <ul class="nav nav-tabs" role="tablist">
       <li id="smt-tab" role="presentation" class="active">
           <a href="#open_system_workflows" aria-controls="open_system_workflows" role="tab" data-toggle="tab">
-              <span class="glyphicon glyphicon-wrench">&nbsp;</span> Open System Workflows&nbsp;
+              <span class="glyphicon">&nbsp;</span> System Workflows&nbsp;
               <div id="common-tab-count">{{ system_workflowinstances|length }}</div></a>
       </li>
       <li id="smt-tab" role="presentation">
           <a href="#open_standalone_workflows" aria-controls="open_standalone_workflows" role="tab" data-toggle="tab">
-              <span class="glyphicon glyphicon-wrench">&nbsp;</span> Open Standalone Workflows &nbsp;
+              <span class="glyphicon">&nbsp;</span> Standalone Workflows &nbsp;
               <div id="common-tab-count">{{ orphan_workflowinstances|length }}</div></a>
       </li>
-      <li id="systems-tab" role="presentation">
+      <!-- <li id="systems-tab" role="presentation">
           <a href="#closed_workflows" aria-controls=closed_workflows role="tab" data-toggle="tab">
               <span class="glyphicon glyphicon-file"></span> Closed Workflows &nbsp;
               <div id="common-tab-count">{{ consuming_systems|length }}</div></a>
-      </li>
-      <li id="oscal-tab" role="presentation">
+      </li> -->
+      <!-- <li id="oscal-tab" role="presentation">
           <a href="#all_workflows" aria-controls="all_workflows" role="tab" data-toggle="tab">
               <span class="glyphicon glyphicon-file"></span> All Workflows </a>
-      </li>
+      </li> -->
     </ul>
     <!-- Tab panels -->
     <div id="component-detail-content" class="tab-content">
@@ -223,15 +223,15 @@ Workflows
         </div>
 
         <!-- Tab panel: systems -->
-        <div role="tabpanel" class="tab-pane" id=closed_workflows>
+        <!-- <div role="tabpanel" class="tab-pane" id=closed_workflows>
             <p>&nbsp;</p>
             <p>Closed workflows here</p>
-        </div>
+        </div> -->
         <!-- Tab panel: all_workflows -->
-        <div role="tabpanel" class="tab-pane" id="all_workflows">
+        <!-- <div role="tabpanel" class="tab-pane" id="all_workflows">
             <p>&nbsp;</p>
             <p>All workflows here</p>
-        </div>
+        </div> -->
     </div>
   </div>
 

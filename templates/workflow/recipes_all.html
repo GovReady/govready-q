@@ -54,7 +54,7 @@ Workflow Recipes
                     Description
                 </div>
                 <div class="col-md-1 heading">
-                    ID
+                    {% if is_admin %}ID{% endif %}
                 </div>
                 <div class="col-md-1 heading">
                     Actions
@@ -91,7 +91,9 @@ Workflow Recipes
                         {% endcomment %}
                     </div>
                     <div class="col-md-1" style="">
-                        <a href="/admin/workflow/workflowrecipe/{{ item.id }}/change/" target="_blank">{{ item.id }}</a>
+                        {% if is_admin %}
+                            <a href="/admin/workflow/workflowrecipe/{{ item.id }}/change/" target="_blank">{{ item.id }}</a>
+                        {% endif %}
                     </div>
                     <div class="col-md-1" style="">
                         <span class="dropdown">
