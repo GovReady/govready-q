@@ -63,8 +63,8 @@ const useStyles = makeStyles({
   }
 });
 
-export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
-
+export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => {
+  console.log("isAdmin: ", isAdmin);
   const classes = useStyles();
   const dgClasses = datagridStyles();
   const [data, setData] = useState([]);
@@ -962,7 +962,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
         <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
           <div style={{ width: "100%", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
             <h2>Parties</h2>
-            { isOwner ?
+            { isOwner || isAdmin ?
               <div>
                 <Button 
                   style={{ width: "150px", height: "40px", marginTop: "0.5rem", marginRight: "0.5rem"}}
@@ -994,7 +994,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
             autoHeight={true}
             density="compact"
             rows={data}
-            columns={isOwner ? columnsForEditor : columns}
+            columns={isOwner || isAdmin ? columnsForEditor : columns}
             pageSize={25}
             rowsPerPageOptions={[25]}
             rowHeight={50}
