@@ -324,7 +324,7 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
 
         # process rule for current answer
         print(f"[DEBUG] processing individual rule: \"{rule_obj['text']}\"")
-
+        # TODO: Properly evaluate test to determine if rule should be run
         if 1 == 1:
             self.workflow = self.proc_actionfunc(rule_obj['id'], rule_obj['true_action'])
             print("[DEBUG] within conditional 1 == 1 in proc_rule")
