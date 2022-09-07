@@ -428,8 +428,8 @@
       </script>
 
       <script>
-        window.cmptPartiesTable( {{ element.id }}, {{ contacts | safe }}, "{{is_owner}}" === 'True' ? true : false );
-        window.permissionsTable( {{ element.id }}, "{{is_owner}}" === 'True' ? true : false );
+        window.permissionsTable( {{ element.id }}, "{{is_owner}}" === 'True' ? true : false);
+        window.cmptPartiesTable( {{ element.id }}, {{ contacts | safe }}, "{{is_owner}}" === 'True' ? true : false, "{{is_admin}}" === 'True' ? true : false);
         window.renderElementTags({{ element.id }}, {{ tags | safe }});
         window.requestsTable( {{ element.id }}, "{{is_owner}}" === 'True' ? true : false );
       </script>

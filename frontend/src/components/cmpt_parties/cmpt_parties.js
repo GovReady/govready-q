@@ -63,8 +63,7 @@ const useStyles = makeStyles({
   }
 });
 
-export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
-
+export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => {
   const classes = useStyles();
   const dgClasses = datagridStyles();
   const [data, setData] = useState([]);
@@ -72,6 +71,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
   const [openPartyModal, setOpenPartyModal] = useState(false);
   const [openRoleModal, setOpenRoleModal] = useState(false);
   const [openAddNewPartyModal, setOpenAddNewPartyModal] = useState(false);
+  const [openAddNewRoleModal, setOpenAddNewRoleModal] = useState(false);
   const [sortby, setSortBy] = useState(["name", "asc"]);
   const [currentParty, setCurrentParty] = useState({});
   const [validated, setValidated] = useState({
@@ -83,6 +83,12 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
     mobile_phone: null,
     role: null,
   });
+  const [roleValidated, setRoleValidated] = useState({
+    role_id: null,
+    title: null,
+    short_name: null,
+    description: null,
+  });
   const [editValidated, setEditValidated] = useState({
     party_type: null,
     name: null,
@@ -93,6 +99,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
     role: null,
   });
   const [isValid, setIsValid] = useState(false);
+  const [isNewRoleValid, setIsNewRoleValid] = useState(false);
   const [isEditValid, setIsEditValid] = useState(false);
   const [removeAppointments, setRemovedAppointments] = useState([]);
   const [createNewParty, setCreateNewParty] = useState({
@@ -112,6 +119,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
   });
   const [tempRoleToAdd, setTempRoleToAdd] = useState([]);
   const [partyNamesList, setPartyNamesList] = useState([]);
+  const [listOfRoleTitles, setListOfRoleTitles] = useState([]);
   const editToolTip = (<Tooltip placement="top" id='tooltip-edit'> Edit role</Tooltip>)
   const deleteToolTip = (<Tooltip placement="top" id='tooltip-edit'> Delete role</Tooltip>)
 
@@ -132,10 +140,32 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
         });
         setPartyNamesList(names);
       });
-      
-
+      axios(`/api/v2/roles/`).then(response => {
+        let roleTitles = [];
+        response.data.data.map(role => {
+          roleTitles.push(role.title);
+        });
+        setListOfRoleTitles(roleTitles);
+      });
   }, []);
 
+  /* Auto update createNewRole validations to see if all values are acceptable */
+  useEffect(() => {
+    // Check if every value in validated is success or null
+    let valid = Object.values(roleValidated).map(val => {
+      if (val === 'warning' || val === 'error') {
+        return false;
+      } else {
+        return true;
+      }
+      
+    });
+    
+    let allAreTrue = valid.every(val => val === true);
+    setIsNewRoleValid(allAreTrue);
+  }, [roleValidated, createNewRole]);
+
+  /* Auto update createNewParty validations to see if all values are acceptable */
   useEffect(() => {
     // Check if every value in validated is success or null
     let valid = Object.values(validated).map(val => {
@@ -152,6 +182,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
     setIsValid(allAreTrue && hasRoles);
   }, [validated, createNewParty]);
 
+  /* Auto update editValidated validations to see if all values are acceptable */
   useEffect(() => {
     // Check if every value in validated is success or null
     let valid = Object.values(editValidated).map(val => {
@@ -232,6 +263,9 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
   const handleNewPartyModal = () => {
     setOpenAddNewPartyModal(true);
   }
+  const handleNewRoleModal = () => {
+    setOpenAddNewRoleModal(true);
+  }
   const handleClickOpen = (row) => {
     setCurrentParty(row);
     setOpenPartyModal(true);
@@ -244,6 +278,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
     setOpenPartyModal(false);
     setOpenRoleModal(false);
     setOpenAddNewPartyModal(false);
+    setOpenAddNewRoleModal(false);
     setCreateNewParty({
       party_type: '',
       name: '',
@@ -261,9 +296,25 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
       phone_number: null,
       mobile_phone: null,
       role: null,
+    });
+    setRoleValidated({
+      role_id: null,
+      title: null,
+      short_name: null,
+      description: null,
     })
     setCurrentParty({})
   }
+
+  const clearRoleInfo = () => {
+    setCreateNewRole({
+      role_id: '',
+      title: '',
+      short_name: '',
+      description: '',
+    });
+  }
+
   const clearPartyInfo = () => {
     setCreateNewParty({
       party_type: '',
@@ -403,6 +454,23 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
       console.error("Something went wrong")
     }
   }
+  
+  const handleAddNewRoleSubmit = async () => {
+    /*
+      Give the owner the ability to create new roles 
+    */
+    if(createNewRole.title !== '' && !listOfRoleTitles.includes(createNewRole.title)){
+      // check if title is not empty and not a pre-existing title from an already existing role
+      const createRoleResponse = await axios.post(`/api/v2/roles/`, createNewRole);
+      if(createRoleResponse.status === 201){  
+        window.location.reload();
+      }else {
+        console.error("Something went wrong in creating a new role")
+      }
+    } else {
+      console.log("THERES AN ERROR!!~~~")
+    }
+  }
 
   const handleAddNewPartySubmit = async () => {
     /**
@@ -472,7 +540,11 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
       setCreateNewParty(updatedNewParty);
     }
   }
-
+  const handleNewRoleSave = (key, value) => {
+    const updatedNewRole = {...createNewRole};
+    updatedNewRole[key] = value;
+    setCreateNewRole(updatedNewRole);
+  }
   
   const [columnsForEditor, setColumnsForEditor] = useState([
     {
@@ -606,7 +678,33 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
       }
     }
   }
-  
+  const getRoleTitleValidation = () => {
+    if(createNewRole.title === ''){
+      if(roleValidated.title === 'warning'){
+        return 'warning';
+      } else {
+        setRoleValidated((prev) => ({...prev, title: 'warning'}));
+        return 'warning';
+      }
+    }
+
+    if(listOfRoleTitles.includes(createNewRole.title)){
+      if(roleValidated.title === 'error'){
+        return 'error';
+      } else {
+        setRoleValidated((prev) => ({...prev, title: 'error'}));
+        return 'error';
+      }
+    } else {
+      if(roleValidated.title !== 'success'){
+        setRoleValidated((prev) => ({...prev, title: 'success'}));
+        return 'success';
+      } else {
+        return 'success';
+      }
+    }
+  }
+
   const getPartyNameValidation = () => {
     if(createNewParty.name === ''){
       if(validated.name === 'warning'){
@@ -863,17 +961,29 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
         <div style={{width: "calc(100% - 1rem - 25px)", marginTop: "1rem" }}>
           <div style={{ width: "100%", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
             <h2>Parties</h2>
-            { isOwner ?
-              <Button 
-                style={{ width: "150px", height: "40px", marginTop: "0.5rem" }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  handleNewPartyModal();
-                }}
-              >
-                Appoint new party
-              </Button> 
+            { isOwner || isAdmin ?
+              <div>
+                <Button 
+                  style={{ width: "150px", height: "40px", marginTop: "0.5rem", marginRight: "0.5rem"}}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleNewRoleModal();
+                  }}
+                >
+                  Create new role
+                </Button>
+                <Button 
+                  style={{ width: "150px", height: "40px", marginTop: "0.5rem" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleNewPartyModal();
+                  }}
+                >
+                  Appoint new party
+                </Button>
+              </div>
               : 
               null
             }
@@ -883,7 +993,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
             autoHeight={true}
             density="compact"
             rows={data}
-            columns={isOwner ? columnsForEditor : columns}
+            columns={isOwner || isAdmin ? columnsForEditor : columns}
             pageSize={25}
             rowsPerPageOptions={[25]}
             rowHeight={50}
@@ -902,103 +1012,485 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
         </div>
       </Grid>
       {!isObjectEmpty(currentParty) && <ReactModal
-          title={`User Permissions`}
-          show={openPartyModal}
-          hide={() => setOpenPartyModal(false)}
-          header={
-            <Form horizontal>
-              <>
-                <FormGroup controlId={`form-title`}>
-                  <Col sm={12}>
-                    <h3>Edit {currentParty.name} permissions</h3>
-                  </Col>
-                </FormGroup>
-              </>
-            </Form>
-          }
-          body={
-            <Form horizontal onSubmit={handleSubmit}>
-              <FormGroup validationState={getEditPartyNameValidation()}>
-                <Row style={{ marginBottom: '1rem'}}>
-                    <Col componentClass={ControlLabel} sm={2}>
-                      {'Name'}
-                    </Col>
-                    <Col sm={10}>
-                      <FormControl 
-                          type="text"
-                          placeholder={'Enter text'} 
-                          value={currentParty.name} 
-                          onChange={(event) => handleSave('name', event.target.value)}
-                          style={{ width: '80%'}}
-                      />
-                      <FormControl.Feedback />
-                    </Col>
-                </Row>
+        title={`User Permissions`}
+        show={openPartyModal}
+        hide={() => setOpenPartyModal(false)}
+        header={
+          <Form horizontal>
+            <>
+              <FormGroup controlId={`form-title`}>
+                <Col sm={12}>
+                  <h3>Edit {currentParty.name} permissions</h3>
+                </Col>
               </FormGroup>
-              <FormGroup validationState={getEditPartyEmailValidation()}>
-                <Row style={{ marginBottom: '1rem'}}>
+            </>
+          </Form>
+        }
+        body={
+          <Form horizontal onSubmit={handleSubmit}>
+            <FormGroup validationState={getEditPartyNameValidation()}>
+              <Row style={{ marginBottom: '1rem'}}>
                   <Col componentClass={ControlLabel} sm={2}>
-                    {'Email'}
-                  </Col>
-                  <Col sm={10}>
-                    <FormControl 
-                        type="email"
-                        placeholder={'Enter text'} 
-                        value={currentParty.email} 
-                        onChange={(event) => handleSave('email', event.target.value)}
-                        style={{ width: '80%'}}
-                    />
-                    <FormControl.Feedback />
-                  </Col>
-                </Row>
-              </FormGroup>
-              <FormGroup validationState={getEditPartyPhoneValidation()}>
-                <Row style={{ marginBottom: '1rem'}}>
-                  <Col componentClass={ControlLabel} sm={2}>
-                    {'Phone Number'}
+                    {'Name'}
                   </Col>
                   <Col sm={10}>
                     <FormControl 
                         type="text"
                         placeholder={'Enter text'} 
-                        value={currentParty.phone_number} 
-                        onChange={(event) => handleSave('phone_number', event.target.value)}
+                        value={currentParty.name} 
+                        onChange={(event) => handleSave('name', event.target.value)}
                         style={{ width: '80%'}}
                     />
                     <FormControl.Feedback />
                   </Col>
-                </Row>
-              </FormGroup>
-              <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
-                  <Button type="button" bsStyle="danger" onClick={handleRemoveParty} style={{float: 'left'}}>Remove Party</Button>
-                  <Button variant="secondary" onClick={handleClose} style={{marginRight: '2rem'}}>Close</Button>
-                  <Button type="submit" bsStyle="success" disabled={!isEditValid}>Save Changes</Button>
-              </Modal.Footer>
-              </Form>
-          }
-        />
+              </Row>
+            </FormGroup>
+            <FormGroup validationState={getEditPartyEmailValidation()}>
+              <Row style={{ marginBottom: '1rem'}}>
+                <Col componentClass={ControlLabel} sm={2}>
+                  {'Email'}
+                </Col>
+                <Col sm={10}>
+                  <FormControl 
+                      type="email"
+                      placeholder={'Enter text'} 
+                      value={currentParty.email} 
+                      onChange={(event) => handleSave('email', event.target.value)}
+                      style={{ width: '80%'}}
+                  />
+                  <FormControl.Feedback />
+                </Col>
+              </Row>
+            </FormGroup>
+            <FormGroup validationState={getEditPartyPhoneValidation()}>
+              <Row style={{ marginBottom: '1rem'}}>
+                <Col componentClass={ControlLabel} sm={2}>
+                  {'Phone Number'}
+                </Col>
+                <Col sm={10}>
+                  <FormControl 
+                      type="text"
+                      placeholder={'Enter text'} 
+                      value={currentParty.phone_number} 
+                      onChange={(event) => handleSave('phone_number', event.target.value)}
+                      style={{ width: '80%'}}
+                  />
+                  <FormControl.Feedback />
+                </Col>
+              </Row>
+            </FormGroup>
+            <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
+                <Button type="button" bsStyle="danger" onClick={handleRemoveParty} style={{float: 'left'}}>Remove Party</Button>
+                <Button variant="secondary" onClick={handleClose} style={{marginRight: '2rem'}}>Close</Button>
+                <Button type="submit" bsStyle="success" disabled={!isEditValid}>Save Changes</Button>
+            </Modal.Footer>
+          </Form>
+        }
+      />
       }
       {!isObjectEmpty(currentParty) && <ReactModal
-          title={`Edit Party Roles`}
-          show={openRoleModal}
-          hide={() => setOpenRoleModal(false)}
-          header={
-            <Form horizontal>
-              <>
-                <FormGroup controlId={`form-title`}>
-                  <Col sm={12}>
-                    <h3>Edit {currentParty.name} roles</h3>
+        title={`Edit Party Roles`}
+        show={openRoleModal}
+        hide={() => setOpenRoleModal(false)}
+        header={
+          <Form horizontal>
+            <>
+              <FormGroup controlId={`form-title`}>
+                <Col sm={12}>
+                  <h3>Edit {currentParty.name} roles</h3>
+                </Col>
+              </FormGroup>
+            </>
+          </Form>
+        }
+        body={
+          <Form horizontal onSubmit={handleRoleSubmit}>
+            <FormGroup>
+              <div 
+                style={{ 
+                  marginLeft: '6rem', 
+                  marginBottom: '2rem', 
+                  width: '80%', 
+                }}
+              >
+                <AsyncPagination
+                  endpoint={endpoint}
+                  order={"title"}
+                  primaryKey={'title'}
+                  secondarykey={'title'}
+                  onSelect={(selected) => {
+                    if (selected.length > 0) {
+                      /* 
+                        Step 1: Create new appointment with chosen role
+                        Step 2: Add appointment to parties instance
+                        Step 3: Post new appointment to backend
+                        Step 4: attach appointment to element component
+                      */
+                      addRoleOntoCurrentParty(selected);
+                    }
+                  }}
+                  excludeIds={currentParty.roles.map((du) => du.id)}
+                  defaultSelected 
+                  searchBarLength={"100%"}
+                  placeholder={"Search for a role..."}
+                />
+              </div>
+              {currentParty.roles.map((role, index) => (
+                <Row key={index}>
+                  <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
+                    {role.role_title}
                   </Col>
+                  <Col sm={8}>
+                    {/** Delete button to remove role by index */}
+                    <div 
+                      onClick={(e) => {
+                        removeRoleFromCurrentParty(index)
+                      }}
+                      style={{
+                        height: '20px',
+                        width: '20px',
+                      }}
+                    >
+                      <OverlayTrigger placement="right" overlay={deleteToolTip}>
+                        <Glyphicon glyph="trash" style={{ color: '#3d3d3d' }} />
+                      </OverlayTrigger>
+                    </div>
+                  </Col>
+                </Row>
+              ))
+              }
+            </FormGroup>
+            <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
+                <Button type="button" bsStyle="danger" onClick={handleRemoveParty} style={{float: 'left'}}>Remove Party</Button>
+                <Button variant="secondary" onClick={handleClose} style={{marginRight: '2rem'}}>Close</Button>
+                <Button type="submit" bsStyle="success">Save Changes</Button>
+            </Modal.Footer>
+          </Form>
+        }
+      />
+      }
+      {/* CREATE NEW ROLE MODAL */}
+      <ReactModal
+        title={`Create New Roles`}
+        show={openAddNewRoleModal}
+        hide={() => setOpenAddNewRoleModal(false)}
+        header={
+          <Form horizontal>
+            <>
+              <FormGroup controlId={`form-title`}>
+                <Col sm={12}>
+                  <h3>Add a new role</h3>
+                </Col>
+              </FormGroup>
+            </>
+          </Form>
+        }
+        body={
+          <Form horizontal onSubmit={handleAddNewRoleSubmit}>
+            <FormGroup>
+              <Row>
+                <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
+                  {'Role ID'}
+                </Col>
+                <Col sm={8}>
+                  <div>
+                    <FormControl 
+                      type="text"
+                      placeholder={'Enter role id'} 
+                      value={createNewRole['role_id']}
+                      // readOnly={createNewRole.id !== undefined ? true : false}
+                      onChange={(event) => handleNewRoleSave('role_id', event.target.value)}
+                      style={{ 
+                        width: '80%',
+                        marginTop: '0.5rem',
+                        marginBottom: '0.5rem',
+                      }}
+                    />
+                    <FormControl.Feedback />
+                  </div>
+                </Col>
+              </Row>
+            </FormGroup>
+            <FormGroup validationState={getRoleTitleValidation()}>
+              <Row>
+                <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
+                  {'Role Title'}
+                </Col>
+                <Col sm={8}>
+                  <div>
+                    <FormControl 
+                      type="text"
+                      placeholder={'Enter role title'} 
+                      value={createNewRole['title']}
+                      // readOnly={createNewRole.id !== undefined ? true : false}
+                      onChange={(event) => handleNewRoleSave('title', event.target.value)}
+                      style={{ 
+                        width: '80%',
+                        marginTop: '0.5rem',
+                        marginBottom: '0.5rem',
+                      }}
+                    />
+                    <FormControl.Feedback />
+                  </div>
+                </Col>
+              </Row>
+            </FormGroup>
+            <FormGroup>
+              <Row>
+                <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
+                  {'Role Short Name'}
+                </Col>
+                <Col sm={8}>
+                  <div>
+                    <FormControl 
+                      type="text"
+                      placeholder={'Enter role short name'} 
+                      value={createNewRole['short_name']}
+                      // readOnly={createNewRole.id !== undefined ? true : false}
+                      onChange={(event) => handleNewRoleSave('short_name', event.target.value)}
+                      style={{ 
+                        width: '80%',
+                        marginTop: '0.5rem',
+                        marginBottom: '0.5rem',
+                      }}
+                    />
+                    <FormControl.Feedback />
+                  </div>
+                </Col>
+              </Row>
+            </FormGroup>
+            <FormGroup>
+              <Row>
+                <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
+                  {'Role Description'}
+                </Col>
+                <Col sm={8}>
+                  <div>
+                    <FormControl 
+                      type="text"
+                      placeholder={'Enter role description'} 
+                      value={createNewRole['description']}
+                      // readOnly={createNewRole.id !== undefined ? true : false}
+                      onChange={(event) => handleNewRoleSave('description', event.target.value)}
+                      style={{ 
+                        width: '80%',
+                        marginTop: '0.5rem',
+                        marginBottom: '0.5rem',
+                      }}
+                    />
+                    <FormControl.Feedback />
+                  </div>
+                </Col>
+              </Row>
+            </FormGroup>
+            <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
+                <Button type="button" onClick={clearRoleInfo} style={{float: 'left'}}>Clear</Button>
+                <Button variant="secondary" onClick={handleClose} style={{marginRight: '2rem'}}>Close</Button>
+                <Button type="submit" bsStyle="success" disabled={!isNewRoleValid}>Save Changes</Button>
+            </Modal.Footer>
+          </Form>
+        }
+      />
+      {/** CREATE A NEW PARTY MODAL **/}
+      <ReactModal
+        title={`Create New Party with appointed roles`}
+        show={openAddNewPartyModal}
+        hide={() => setOpenAddNewPartyModal(false)}
+        header={
+          <Form horizontal>
+            <>
+              <FormGroup controlId={`form-title`}>
+                <Col sm={12}>
+                  <h3>Add a new party</h3>
+                </Col>
+              </FormGroup>
+            </>
+          </Form>
+        }
+        body={
+          <Form horizontal onSubmit={handleAddNewPartySubmit}>
+              <div 
+                style={{ 
+                  marginLeft: '6rem', 
+                  marginBottom: '2rem', 
+                  width: '80%', 
+                }}
+              >
+                <Row>
+                  <AsyncPagination
+                    endpoint={partyEndpoint}
+                    order={"name"}
+                    primaryKey={'name'}
+                    secondarykey={'name'}
+                    onSelect={(selected) => {
+                      if (selected.length > 0) {
+                        setCreateNewParty((prev) => ({
+                          ...prev,
+                          id: selected[0].id,
+                          created: selected[0].created,
+                          updated: selected[0].updated,
+                          party_type: selected[0].party_type,
+                          name: selected[0].name,
+                          short_name: selected[0].short_name,
+                          email: selected[0].email,  
+                          phone_number: selected[0].phone_number,
+                          mobile_phone: selected[0].mobile_phone,
+                        }));
+                      }
+                    }}
+                    excludeIds={data.map((du) => du.party_id)}
+                    defaultSelected 
+                    searchBarLength={"100%"}
+                    placeholder={"Search for a party..."}
+                  />
+                </Row>
+                <FormGroup validationState={getPartyTypeValidation()}>
+                  <Row>
+                    <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
+                      {'Party Type'}
+                    </Col>
+                    <Col sm={8}>
+                      <div>
+                        <FormControl 
+                          type="text"
+                          placeholder={'Enter text'} 
+                          value={createNewParty['party_type']}
+                          readOnly={createNewParty.id !== undefined ? true : false}
+                          onChange={(event) => handleNewPartySave('party_type', event.target.value)}
+                          style={{ 
+                            width: '80%',
+                            marginTop: '0.5rem',
+                            marginBottom: '0.5rem',
+                          }}
+                        />
+                        <FormControl.Feedback />
+                      </div>
+                    </Col>
+                  </Row>
                 </FormGroup>
-              </>
-            </Form>
-          }
-          body={
-            <Form horizontal onSubmit={handleRoleSubmit}>
-              <FormGroup>
+                <FormGroup validationState={createNewParty.id !== undefined ? getPartyNameValidation() : getEditPartyNameValidation()}>
+                  <Row>
+                    <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
+                      {'Name'}
+                    </Col>
+                    <Col sm={8}>
+                      <div>
+                        <FormControl 
+                          type="text"
+                          placeholder={'Enter text'} 
+                          value={createNewParty['name']}
+                          readOnly={createNewParty.id !== undefined ? true : false}
+                          onChange={(event) => handleNewPartySave('name', event.target.value)}
+                          style={{ 
+                            width: '80%',
+                            marginTop: '0.5rem',
+                            marginBottom: '0.5rem',
+                          }}
+                        />
+                        <FormControl.Feedback />
+                      </div>
+                    </Col>
+                  </Row>
+                </FormGroup>
+                <FormGroup validationState={getPartyShortNameValidation()}>
+                  <Row>
+                    <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
+                      {'Short Name'}
+                    </Col>
+                    <Col sm={8}>
+                      <div>
+                        <FormControl 
+                          type="text"
+                          placeholder={'Enter text'} 
+                          value={createNewParty['short_name']}
+                          readOnly={createNewParty.id !== undefined ? true : false}
+                          onChange={(event) => handleNewPartySave('short_name', event.target.value)}
+                          style={{ 
+                            width: '80%',
+                            marginTop: '0.5rem',
+                            marginBottom: '0.5rem',
+                          }}
+                        />
+                        <FormControl.Feedback />
+                      </div>
+                    </Col>
+                  </Row>
+                </FormGroup>
+                <FormGroup validationState={getPartyEmailValidation()}>
+                  <Row>
+                    <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
+                      {'Email'}
+                    </Col>
+                    <Col sm={8}>
+                      <div>
+                        <FormControl 
+                          type="email"
+                          placeholder={'Enter text'} 
+                          value={createNewParty['email']}
+                          readOnly={createNewParty.id !== undefined ? true : false}
+                          onChange={(event) => handleNewPartySave('email', event.target.value)}
+                          style={{ 
+                            width: '80%',
+                            marginTop: '0.5rem',
+                            marginBottom: '0.5rem',
+                          }}
+                        />
+                        <FormControl.Feedback />
+                      </div>
+                    </Col>
+                  </Row>
+                </FormGroup>
+                <FormGroup validationState={getPartyPhoneValidation()}>
+                  <Row>
+                    <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
+                      {'Phone Number'}
+                    </Col>
+                    <Col sm={8}>
+                      <div>
+                        <FormControl 
+                          type="text"
+                          placeholder={'Enter text'} 
+                          value={createNewParty['phone_number']}
+                          readOnly={createNewParty.id !== undefined ? true : false}
+                          onChange={(event) => handleNewPartySave('phone_number', event.target.value)}
+                          style={{ 
+                            width: '80%',
+                            marginTop: '0.5rem',
+                            marginBottom: '0.5rem',
+                          }}
+                        />
+                        <FormControl.Feedback />
+                      </div>
+                    </Col>
+                  </Row>
+                </FormGroup>
+                <FormGroup validationState={getPartyMobilePhoneValidation()}>
+                  <Row>
+                    <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
+                      {'Mobile Phone Number'}
+                    </Col>
+                    <Col sm={8}>
+                      <div>
+                        <FormControl 
+                          type="text"
+                          placeholder={'Enter text'} 
+                          value={createNewParty['mobile_phone']}
+                          readOnly={createNewParty.id !== undefined ? true : false}
+                          onChange={(event) => handleNewPartySave('mobile_phone', event.target.value)}
+                          style={{ 
+                            width: '80%',
+                            marginTop: '0.5rem',
+                            marginBottom: '0.5rem',
+                          }}
+                        />
+                        <FormControl.Feedback />
+                      </div>
+                    </Col>
+                  </Row>
+                </FormGroup>
                 <div 
                   style={{ 
-                    marginLeft: '6rem', 
+                    // marginLeft: '6rem', 
                     marginBottom: '2rem', 
                     width: '80%', 
                   }}
@@ -1016,312 +1508,52 @@ export const ComponentParties = ({ elementId, poc_users, isOwner }) => {
                           Step 3: Post new appointment to backend
                           Step 4: attach appointment to element component
                         */
-                        addRoleOntoCurrentParty(selected);
+                        const updatedCreateNewParty = {...createNewParty};
+                        const updatedRoles = updatedCreateNewParty.roles.push(selected[0]);
+                        setCreateNewParty((prev) => ({
+                          ...prev,
+                          roles: updatedCreateNewParty.roles,
+                        }));
                       }
                     }}
-                    excludeIds={currentParty.roles.map((du) => du.id)}
+                    excludeIds={createNewParty.roles.map((du) => du.id)}
                     defaultSelected 
                     searchBarLength={"100%"}
                     placeholder={"Search for a role..."}
                   />
-                </div>
-                {currentParty.roles.map((role, index) => (
-                  <Row key={index}>
-                    <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
-                      {role.role_title}
-                    </Col>
-                    <Col sm={8}>
-                      {/** Delete button to remove role by index */}
-                      <div 
-                        onClick={(e) => {
-                          removeRoleFromCurrentParty(index)
-                        }}
-                        style={{
-                          height: '20px',
-                          width: '20px',
-                        }}
-                      >
-                        <OverlayTrigger placement="right" overlay={deleteToolTip}>
-                          <Glyphicon glyph="trash" style={{ color: '#3d3d3d' }} />
-                        </OverlayTrigger>
-                      </div>
-                    </Col>
-                  </Row>
-                ))
-                }
-              </FormGroup>
-              <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
-                  <Button type="button" bsStyle="danger" onClick={handleRemoveParty} style={{float: 'left'}}>Remove Party</Button>
-                  <Button variant="secondary" onClick={handleClose} style={{marginRight: '2rem'}}>Close</Button>
-                  <Button type="submit" bsStyle="success">Save Changes</Button>
-              </Modal.Footer>
-              </Form>
-          }
-        />
-      }
-      {/** CREATE A NEW PARTY MODAL **/}
-      <ReactModal
-          title={`Create New Party with appointed roles`}
-          show={openAddNewPartyModal}
-          hide={() => setOpenAddNewPartyModal(false)}
-          header={
-            <Form horizontal>
-              <>
-                <FormGroup controlId={`form-title`}>
-                  <Col sm={12}>
-                    <h3>Add a new party</h3>
+              </div>
+              {createNewParty.roles.length > 0 ? createNewParty.roles.map((role, index) => (
+                <Row key={index}>
+                  <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
+                    {role.title}
                   </Col>
-                </FormGroup>
-              </>
-            </Form>
-          }
-          body={
-            <Form horizontal onSubmit={handleAddNewPartySubmit}>
-                <div 
-                  style={{ 
-                    marginLeft: '6rem', 
-                    marginBottom: '2rem', 
-                    width: '80%', 
-                  }}
-                >
-                  <Row>
-                    <AsyncPagination
-                      endpoint={partyEndpoint}
-                      order={"name"}
-                      primaryKey={'name'}
-                      secondarykey={'name'}
-                      onSelect={(selected) => {
-                        if (selected.length > 0) {
-                          setCreateNewParty((prev) => ({
-                            ...prev,
-                            id: selected[0].id,
-                            created: selected[0].created,
-                            updated: selected[0].updated,
-                            party_type: selected[0].party_type,
-                            name: selected[0].name,
-                            short_name: selected[0].short_name,
-                            email: selected[0].email,  
-                            phone_number: selected[0].phone_number,
-                            mobile_phone: selected[0].mobile_phone,
-                          }));
-                        }
+                  <Col sm={8}>
+                    <div 
+                      onClick={(e) => {
+                        removeRoleFromCreateNewParty(role, index);
                       }}
-                      excludeIds={data.map((du) => du.party_id)}
-                      defaultSelected 
-                      searchBarLength={"100%"}
-                      placeholder={"Search for a party..."}
-                    />
-                  </Row>
-                  <FormGroup validationState={getPartyTypeValidation()}>
-                    <Row>
-                      <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
-                        {'Party Type'}
-                      </Col>
-                      <Col sm={8}>
-                        <div>
-                          <FormControl 
-                            type="text"
-                            placeholder={'Enter text'} 
-                            value={createNewParty['party_type']}
-                            readOnly={createNewParty.id !== undefined ? true : false}
-                            onChange={(event) => handleNewPartySave('party_type', event.target.value)}
-                            style={{ 
-                              width: '80%',
-                              marginTop: '0.5rem',
-                              marginBottom: '0.5rem',
-                            }}
-                          />
-                          <FormControl.Feedback />
-                        </div>
-                      </Col>
-                    </Row>
-                  </FormGroup>
-                  <FormGroup validationState={createNewParty.id !== undefined ? getPartyNameValidation() : getEditPartyNameValidation()}>
-                    <Row>
-                      <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
-                        {'Name'}
-                      </Col>
-                      <Col sm={8}>
-                        <div>
-                          <FormControl 
-                            type="text"
-                            placeholder={'Enter text'} 
-                            value={createNewParty['name']}
-                            readOnly={createNewParty.id !== undefined ? true : false}
-                            onChange={(event) => handleNewPartySave('name', event.target.value)}
-                            style={{ 
-                              width: '80%',
-                              marginTop: '0.5rem',
-                              marginBottom: '0.5rem',
-                            }}
-                          />
-                          <FormControl.Feedback />
-                        </div>
-                      </Col>
-                    </Row>
-                  </FormGroup>
-                  <FormGroup validationState={getPartyShortNameValidation()}>
-                    <Row>
-                      <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
-                        {'Short Name'}
-                      </Col>
-                      <Col sm={8}>
-                        <div>
-                          <FormControl 
-                            type="text"
-                            placeholder={'Enter text'} 
-                            value={createNewParty['short_name']}
-                            readOnly={createNewParty.id !== undefined ? true : false}
-                            onChange={(event) => handleNewPartySave('short_name', event.target.value)}
-                            style={{ 
-                              width: '80%',
-                              marginTop: '0.5rem',
-                              marginBottom: '0.5rem',
-                            }}
-                          />
-                          <FormControl.Feedback />
-                        </div>
-                      </Col>
-                    </Row>
-                  </FormGroup>
-                  <FormGroup validationState={getPartyEmailValidation()}>
-                    <Row>
-                      <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
-                        {'Email'}
-                      </Col>
-                      <Col sm={8}>
-                        <div>
-                          <FormControl 
-                            type="email"
-                            placeholder={'Enter text'} 
-                            value={createNewParty['email']}
-                            readOnly={createNewParty.id !== undefined ? true : false}
-                            onChange={(event) => handleNewPartySave('email', event.target.value)}
-                            style={{ 
-                              width: '80%',
-                              marginTop: '0.5rem',
-                              marginBottom: '0.5rem',
-                            }}
-                          />
-                          <FormControl.Feedback />
-                        </div>
-                      </Col>
-                    </Row>
-                  </FormGroup>
-                  <FormGroup validationState={getPartyPhoneValidation()}>
-                    <Row>
-                      <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
-                        {'Phone Number'}
-                      </Col>
-                      <Col sm={8}>
-                        <div>
-                          <FormControl 
-                            type="text"
-                            placeholder={'Enter text'} 
-                            value={createNewParty['phone_number']}
-                            readOnly={createNewParty.id !== undefined ? true : false}
-                            onChange={(event) => handleNewPartySave('phone_number', event.target.value)}
-                            style={{ 
-                              width: '80%',
-                              marginTop: '0.5rem',
-                              marginBottom: '0.5rem',
-                            }}
-                          />
-                          <FormControl.Feedback />
-                        </div>
-                      </Col>
-                    </Row>
-                  </FormGroup>
-                  <FormGroup validationState={getPartyMobilePhoneValidation()}>
-                    <Row>
-                      <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
-                        {'Mobile Phone Number'}
-                      </Col>
-                      <Col sm={8}>
-                        <div>
-                          <FormControl 
-                            type="text"
-                            placeholder={'Enter text'} 
-                            value={createNewParty['mobile_phone']}
-                            readOnly={createNewParty.id !== undefined ? true : false}
-                            onChange={(event) => handleNewPartySave('mobile_phone', event.target.value)}
-                            style={{ 
-                              width: '80%',
-                              marginTop: '0.5rem',
-                              marginBottom: '0.5rem',
-                            }}
-                          />
-                          <FormControl.Feedback />
-                        </div>
-                      </Col>
-                    </Row>
-                  </FormGroup>
-                  <div 
-                    style={{ 
-                      // marginLeft: '6rem', 
-                      marginBottom: '2rem', 
-                      width: '80%', 
-                    }}
-                  >
-                    <AsyncPagination
-                      endpoint={endpoint}
-                      order={"title"}
-                      primaryKey={'title'}
-                      secondarykey={'title'}
-                      onSelect={(selected) => {
-                        if (selected.length > 0) {
-                          /* 
-                            Step 1: Create new appointment with chosen role
-                            Step 2: Add appointment to parties instance
-                            Step 3: Post new appointment to backend
-                            Step 4: attach appointment to element component
-                          */
-                          const updatedCreateNewParty = {...createNewParty};
-                          const updatedRoles = updatedCreateNewParty.roles.push(selected[0]);
-                          setCreateNewParty((prev) => ({
-                            ...prev,
-                            roles: updatedCreateNewParty.roles,
-                          }));
-                        }
+                      style={{
+                        height: '20px',
+                        width: '20px',
                       }}
-                      excludeIds={createNewParty.roles.map((du) => du.id)}
-                      defaultSelected 
-                      searchBarLength={"100%"}
-                      placeholder={"Search for a role..."}
-                    />
-                </div>
-                {createNewParty.roles.length > 0 ? createNewParty.roles.map((role, index) => (
-                  <Row key={index}>
-                    <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
-                      {role.title}
-                    </Col>
-                    <Col sm={8}>
-                      <div 
-                        onClick={(e) => {
-                          removeRoleFromCreateNewParty(role, index);
-                        }}
-                        style={{
-                          height: '20px',
-                          width: '20px',
-                        }}
-                      >
-                        <OverlayTrigger placement="right" overlay={deleteToolTip}>
-                          <Glyphicon glyph="trash" style={{ color: '#3d3d3d' }} />
-                        </OverlayTrigger>
-                      </div>
-                    </Col>
-                  </Row>
-                )) : null
-                }
-                </div>
-              <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
-                  <Button type="button" onClick={clearPartyInfo} style={{float: 'left'}}>Clear</Button>
-                  <Button variant="secondary" onClick={handleClose} style={{marginRight: '2rem'}}>Close</Button>
-                  <Button type="submit" bsStyle="success" disabled={!isValid}>Save Changes</Button>
-              </Modal.Footer>
-              </Form>
-          }
-        />
+                    >
+                      <OverlayTrigger placement="right" overlay={deleteToolTip}>
+                        <Glyphicon glyph="trash" style={{ color: '#3d3d3d' }} />
+                      </OverlayTrigger>
+                    </div>
+                  </Col>
+                </Row>
+              )) : null
+              }
+              </div>
+            <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
+                <Button type="button" onClick={clearPartyInfo} style={{float: 'left'}}>Clear</Button>
+                <Button variant="secondary" onClick={handleClose} style={{marginRight: '2rem'}}>Close</Button>
+                <Button type="submit" bsStyle="success" disabled={!isValid}>Save Changes</Button>
+            </Modal.Footer>
+          </Form>
+        }
+      />
 
     </div>
   )
