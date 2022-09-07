@@ -64,7 +64,6 @@ const useStyles = makeStyles({
 });
 
 export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => {
-  console.log("isAdmin: ", isAdmin);
   const classes = useStyles();
   const dgClasses = datagridStyles();
   const [data, setData] = useState([]);

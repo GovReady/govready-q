@@ -1352,7 +1352,7 @@ def system_element(request, system_id, element_id):
             states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
             types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
             # Return the system's element information
-
+            
             context = {
                 "states": states,
                 "types": types,
