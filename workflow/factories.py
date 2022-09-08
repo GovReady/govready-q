@@ -42,8 +42,8 @@ def skeleton_feature():
 
 CMD_PATTERN = '(?P<cmd>[A-Z:]+|[a-zA-Z]+:)'
 PROP_PATTERN = '[a-zA-Z_\-.0-9]*\(.*?\)'
+TEST_PATTERN = '(IF:\(.*?\)|if:\(.*?\))'
 TRUE_FUNC_PATTERN = '([+][a-zA-Z_\-.0-9]*:\(.*?\))'
-FALSE_FUNC_PATTERN = '([-][a-zA-Z_\-.0-9]*:\(.*?\))'
 
 def get_cmd(feature_descriptor):
     """Return parsed command from feature descriptor."""
@@ -78,15 +78,14 @@ class FeatureFactory:
     feature: Feature = field(default_factory=skeleton_feature)
     cmd_pattern: str = CMD_PATTERN
     prop_pattern: str = PROP_PATTERN
+    test_pattern: str = TEST_PATTERN
     true_func_pattern = TRUE_FUNC_PATTERN
-    false_func_pattern= FALSE_FUNC_PATTERN
 
     def __post_init__(self):
         self._set_cmd()
         self._set_props()
-        # self._set_actions()
+        self._set_test()
         self._set_true_action()
-        self._set_false_action()
         self._set_text()
         self._set_id()
 
@@ -114,6 +113,20 @@ class FeatureFactory:
         self.feature.props = self.props
         return None
 
+    def _set_test(self):
+        """Parse out rule test from feature descriptor."""
+
+        try:
+            regex = fr'{self.test_pattern}'
+            match_list = re.findall(regex, self.feature_descriptor)
+            if match_list:
+                self.feature.test_pattern = match_list[0]
+        except:
+            msg = f"[ERROR] failure '{e}' parsing test_pattern '{self.feature_descriptor}'"
+            print(msg)
+            logging.exception(msg)
+        return None
+
     def _set_true_action(self):
         """Parse out true action function from feature descriptor."""
 
@@ -128,29 +141,15 @@ class FeatureFactory:
             logging.exception(msg)
         return None
 
-    def _set_false_action(self):
-        """Parse out false action function from feature descriptor."""
-
-        try:
-            regex = fr'{self.false_func_pattern}'
-            match_list = re.findall(regex, self.feature_descriptor)
-            if match_list:
-                self.feature.false_action = match_list[0].lstrip('-')
-        except Exception as e:
-            msg = f"[ERROR] failure '{e}' parsing false_func_pattern '{self.feature_descriptor}'"
-            print(msg)
-            logging.exception(msg)
-        return None
-
     def _set_text(self):
         """Parse out feature content after removing cmd, props from feature descriptor."""
 
         self.text = self.feature_descriptor
         regex_rm_cmd = fr'^{self.cmd_pattern} '
+        regex_rm_test = fr'{self.test_pattern}'
         regex_rm_true_func = fr'{self.true_func_pattern}'
-        regex_rm_false_func = fr'{self.false_func_pattern}'
         regex_rm_props = fr'{self.prop_pattern}'
-        for regex in [regex_rm_cmd, regex_rm_true_func, regex_rm_false_func, regex_rm_props]:
+        for regex in [regex_rm_cmd, regex_rm_test, regex_rm_true_func, regex_rm_props]:
             self.text = re.sub(regex, '', self.text).strip()
         self.feature.text = self.text
         return None
@@ -203,7 +202,6 @@ class FlowImage:
         except:  # handle other exceptions such as attribute errors
             print(f"Unexpected error: {sys.exc_info()[0]}")
             return False
-
 
 @dataclass
 class FlowImageFactory:
@@ -269,8 +267,8 @@ class FlowImageFactory:
                 feature_obj = {
                     'cmd': feature.cmd,
                     'props': feature.props,
+                    'test': feature.test_pattern,
                     'true_action': feature.true_action,
-                    'false_action': feature.false_action,
                     'text': feature.text,
                     'id': feature.id,
                     'complete': False,

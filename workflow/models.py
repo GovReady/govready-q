@@ -275,6 +275,61 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         # result = self.save()
         # print(f'[DEBUG] Save result wfinstance {self.name}: {result}')
 
+    def eval_rule_test(self, test_expr_str):
+        """Evaluate rule text expression and return True, False"""
+
+        ###################################################
+        # Simple eval of test until we build interpreter #
+        ###################################################
+
+        try:
+            m = re.search(r"([a-zA-Z.'\" _-]+)(==|=)([a-zA-Z.'\" _-]+)", test_expr_str)
+            l_expr = m.group(1).strip()
+            op = m.group(2).strip()
+            r_expr = m.group(3).strip()
+
+            # simple eval of l_expr
+            if l_expr.startswith("'") or l_expr.startswith('"'):
+                # literal
+                l_expr_val = l_expr.strip("'").strip('"')
+            else:
+                l_expr_feature = self.workflow['features'][l_expr]
+                l_expr_val = "TBD"
+            # simple eval of r_expr
+            if r_expr.startswith("'") or r_expr.startswith('"'):
+                # literal
+                r_expr_val = r_expr.strip("'").strip('"')
+            else:
+                # TODO:
+                #  - no q_plan, use self.workflow and self.rules instead
+                #  - handle for step
+                #  - ['ans'] only works for question
+                #  - r_expr refers to feature_id
+                r_expr_val = self.q_plan[r_expr]['ans']
+
+            # evaluate based on op
+            if op == '=':
+                self.log_event('WARNING', f'Use of single \'=\' as in test for \'{answer}\': action function \'{actionfunc_str}\'')
+                print(f"[WARNING]: Use of single \'=\' as in test \"{test_expr_str}\"")
+            if op == "==" or op == '=':
+                if l_expr_val == r_expr_val:
+                    test_eval = True
+                else:
+                    test_eval = False
+            elif op == "!=":
+                if l_expr_val != r_expr_val:
+                    test_eval = True
+                else:
+                    test_eval = False
+            else:
+                test_eval = "Error"
+
+            return test_eval
+        except:
+            self.log_event('rule_action_error', f'Error parsing test for \'{answer}\': action function \'{actionfunc_str}\'')
+            print(f"[ERROR]: Error parsing test \"{test_expr_str}\"")
+
+
     def proc_actionfunc(self, answer, actionfunc_str):
         """Process acton function and return updated workflow"""
 
@@ -314,18 +369,19 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         if 'true_action' not in rule_obj or rule_obj['true_action'] is None or rule_obj['true_action'] == "":
             return None
 
-        # skip rules that don't have false_action
-        # if 'false_action' not in rule_obj or rule_obj['false_action'] is None or rule_obj['false_action'] == "":
-        #     return None
-
         # skip if rule set to skip
         # if 'process' in rule_obj and not rule_obj['process']:
           # return None
 
         # process rule for current answer
         print(f"[DEBUG] processing individual rule: \"{rule_obj['text']}\"")
+
+
+        # handling evals rules for steps (cmd = rule) differs from question
+        # if rule is for step, we can only eval if complete or not or next step or who completed
+
         # TODO: Properly evaluate test to determine if rule should be run
-        if 1 == 1:
+        if self.eval_rule_test(rule_obj['test']):
             self.workflow = self.proc_actionfunc(rule_obj['id'], rule_obj['true_action'])
             print("[DEBUG] within conditional 1 == 1 in proc_rule")
 

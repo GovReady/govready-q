@@ -39,6 +39,7 @@ def workflowrecipes_all(request):
 
     workflowrecipes = WorkflowRecipe.objects.all().order_by("name")
     context = {
+        "is_admin": request.user.is_superuser,
         "workflowrecipes": workflowrecipes,
     }
     return render(request, "workflow/recipes_all.html", context)
