@@ -184,8 +184,18 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
     @property
     def feature_keys(self):
         """Return feature keys"""
-        # return list(self.workflow['features'].keys())
         return self.workflow['feature_order']
+
+    @property
+    def curr_feature(self):
+        """Return current feature"""
+        return self.workflow["curr_feature"]
+
+    @property
+    def curr_feature_index(self):
+        """Return current feature index from list of features"""
+        feature_keys = self.workflow['feature_order']
+        return feature_keys.index(self.curr_feature)
 
     def validate_feature_keys(self):
         """Return True if workflow instance feature_order contains all feature keys"""
@@ -199,17 +209,6 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         else:
             raise KeyError
 
-    @property
-    def curr_feature(self):
-        """Return current feature"""
-        return self.workflow["curr_feature"]
-
-    @property
-    def curr_feature_index(self):
-        """Return current feature index from list of features"""
-        feature_keys = self.workflow['feature_order']
-        return feature_keys.index(self.curr_feature)
-
     def is_final_feature(self, feature):
         """Returns True if feature is final feature in workflowinstance"""
         if self.feature_keys.index(feature) == len(self.feature_keys) - 1:
@@ -217,13 +216,20 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         else:
             return False
 
-    def set_workflowinstance_complete(self):
+    def set_curr_feature_completed(self, who='self'):
+        """Set specfic feature complete"""
+        who_name = User.username if (type(who) == User) else 'self'
+        self.workflow['features'][self.workflow['curr_feature']]['status'] = 'completed'
+        self.workflow['features'][self.workflow['curr_feature']]['complete'] = True
+        self.log_event('set_feature_completed', f'Set {self.curr_feature} to completed', who_name)
+
+    def set_workflowinstance_completed(self):
         """Set workflowinstance complete attribute to True"""
         self.workflow['complete'] = True
         self.log_event('set_workflowinstance_completed', f'Workflow set to completed')
         return True
 
-    def set_workflowinstance_not_complete(self):
+    def set_workflowinstance_not_completed(self):
         """Set workflowinstance complete attribute to False"""
         self.workflow['complete'] = False
         self.log_event('set_workflowinstance_not_completed', f'Workflow set to not completed')
@@ -239,14 +245,7 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         self.log.append(event)
         return event
 
-    def set_curr_feature_completed(self, who='self'):
-        """Set specfic feature complete"""
-        who_name = User.username if (type(who) == User) else 'self'
-        self.workflow['features'][self.workflow['curr_feature']]['status'] = 'completed'
-        self.workflow['features'][self.workflow['curr_feature']]['complete'] = True
-        self.log_event('set_feature_completed', f'Set {self.curr_feature} to completed', who_name)
-
-    def advance(self, who='self'):
+    def advance_feature(self, who='self'):
         """Shift curr_feature forward by one"""
         who_name = User.username if (type(who) == User) else 'self'
         # TODO: skip hidden features
@@ -254,11 +253,11 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         if not self.is_final_feature(self.curr_feature):
             self.set_curr_feature(self.feature_keys[self.curr_feature_index + 1])
         else:
-            self.set_workflowinstance_complete()
+            self.set_workflowinstance_completed()
         # result = self.save()
         # print(f'[DEBUG] Save result wfinstance {self.name}: {result}')
 
-    def eval_comparison(self, a, b, op):
+    def rule_eval_comparison(self, a, b, op):
         """Compare two values"""
 
         if op == '==':
@@ -276,7 +275,7 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         else:
             raise ValueError
 
-    def eval_expr_item(self, expr):
+    def rule_eval_expr_item(self, expr):
         """Evaluate expression"""
         # simple eval of expr to determine if it is literal or expression
         try:
@@ -287,11 +286,11 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
             else:
                 expr_feature = self.workflow['features'][expr]
                 expr_val = "TBD"
-            print(f"[DEBUG]: parse value:", expr_val)
+            print(f"[DEBUG] parse value:", expr_val)
         except:
-            print(f"[ERROR]: Error parsing expression \"{expr}\"")
+            print(f"[ERROR] Error parsing expression \"{expr}\"")
 
-    def eval_rule_test(self, rule_obj):
+    def rule_eval_test(self, rule_obj):
         """Evaluate rule text expression and return True, False
             TODO: Replace with an AST interpreter
         """
@@ -301,53 +300,54 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         # expressions have the form "l_exp op r_exp", e.g., "1 == 1", "1 != 2", "var1 > var2", etc.
         try:
             m = re.search(r"([a-zA-Z0-9.'\" _-]+)(==|=|<=|>=|!=)([a-zA-Z0-9.'\" _-]+)", test_expr_str)
-            l_expr = self.eval_expr_item(m.group(1).strip())
+            l_expr = self.rule_eval_expr_item(m.group(1).strip())
             op = m.group(2).strip()
-            r_expr = self.eval_expr_item(m.group(3).strip())
-            print(f"[DEBUG]: parse test expression \"{test_expr_str}\": {l_expr}, {op}, {r_expr}")
-            print(f"[DEBUG]: parse op evaluation:", test_eval)
-            test_eval = self.eval_comparison(l_expr, r_expr, op)
-            return test_eval
+            r_expr = self.rule_eval_expr_item(m.group(3).strip())
+            # print(f"[DEBUG] parse test expression \"{test_expr_str}\": {l_expr}, {op}, {r_expr}")
+            # print(f"[DEBUG] parse op evaluation:", test_eval)
+            return self.rule_eval_comparison(l_expr, r_expr, op)
         except:
-            print(f"[ERROR]: Error parsing expression \"{test_expr_str}\"")
+            print(f"[ERROR] Error parsing expression \"{test_expr_str}\"")
             return False
 
-    def proc_actionfunc(self, answer, actionfunc_str):
+    def rule_proc_actionfunc(self, rule_obj, request):
         """Process acton function and return updated workflow"""
 
-        if actionfunc_str is None:
+        if rule_obj['true_action'] is None:
             return self.workflow
 
-        print(f"[DEBUG] actionfunc_str 1:", actionfunc_str)
-        m = re.match(r"(?P<func>\w+):\((?P<params>.*)\)", actionfunc_str)
-        print(f"[DEBUG] match 'm' 1:", m)
+        #### TODO ####
+        # Currently working on getting rule to process
+        # matches pattern functionname(param1, param2, param3)
+        m = re.match(r"(?P<func>\w+)\((?P<params>.*)\)", rule_obj['true_action'])
+
         if m:
             func = m.group('func')
             params = m.group('params')
+            print(f"[DEBUG] func is '{func}'; params str is '{params}'")
             if func in globals():
                 actionfunc_cls = globals()[func]
-                action = actionfunc_cls(params, self.workflow)
+                action = actionfunc_cls(params, self.workflow, request)
                 self.workflow = action.update_workflow()
-                self.log_event('rule_action', f'Rule processed for \'{answer}\': action function \'{actionfunc_str}\'')
+                self.log_event('rule_action', f"Rule processed for '{rule_obj['id']}': true_action '{rule_obj['true_action']}'")
             else:
                 print(f"[ERROR] action function '{func}' not found in available functions.")
-            return self.workflow
         else:
             # log error and skip rule
             # TODO: log error
-            print(f"[DEBUG] actionfunc_str 4 failed to process:", actionfunc_str)
-            return self.workflow
+            print(f"[DEBUG] rule_obj '{rule_obj['id']}' failed to process:", rule_obj['true_action'])
+        return self.workflow
 
-    def proc_rule(self, rule_obj):
+    def rule_proc_rule(self, rule_obj, request):
         """Process rule and return updated workflowinstance
 
-          A rule is processed when:
+          A rule is executed when:
           - the name of the rule equals the name of feature (question, step) updated and the rule not yet processed.
           - the rule is indicated of being processed everytime
           - the rule is set to be processed once and has not yet been processed
         """
 
-        # skip rules that don't have true_action
+        # skip rule without true_action
         if 'true_action' not in rule_obj or rule_obj['true_action'] is None or rule_obj['true_action'] == "":
             return None
 
@@ -358,28 +358,27 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         # process rule for current answer
         print(f"[DEBUG] processing individual rule: \"{rule_obj['id']}: {rule_obj['text']}\"")
 
-        # handling evals rules for steps (cmd = rule) differs from question
-        # if rule is for step, we can only eval if complete or not or next step or who completed
-
-        # TODO: Properly evaluate test to determine if rule should be run
-        if self.eval_rule_test(rule_obj):
-            self.workflow = self.proc_actionfunc(rule_obj['id'], rule_obj['true_action'])
-            print("[DEBUG] within conditional 1 == 1 in proc_rule")
+        # Note: evaluate rule for steps (.e.g, cmd = rule) differs from question
+        # if rule references status of a step, eval if status of step-completed other step metadata
+        # if rule test is true, process rule action function defined for true
+        if self.rule_eval_test(rule_obj):
+            # self.workflow = self.rule_proc_actionfunc(rule_obj['id'], rule_obj['true_action'])
+            self.workflow = self.rule_proc_actionfunc(rule_obj, request)
+            print("[DEBUG] within conditional 1 == 1 in rule_proc_rule")
 
         # if rule_obj['name'] == self.curr_feature:
         return None
 
-    def proc_rules(self):
+    def rule_proc_rules(self, request):
         """Iterate through workflowinstance rules"""
 
         if len(self.rules) == 0:
             msg = "no rules found to process"
-            event = self.log_event(name="proc_rules", description=msg, who='self')
+            event = self.log_event(name="rule_proc_rules", description=msg, who='self')
             return self
 
         for rule_id in self.rules['rule_order']:
-            self.proc_rule(self.rules['features'][rule_id])
-        msg = "processing workflowinstance rules"
-        event = self.log_event(name="proc_rules", description=msg, who='self')
+            self.rule_proc_rule(self.rules['features'][rule_id], request)
+        self.log_event(name="rule_proc_rules", description="processing workflowinstance rules", who='self')
         return self
 

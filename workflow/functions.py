@@ -9,9 +9,10 @@ from django.contrib import messages
 class ActionFunc():
     """Base class for Action Functions"""
     
-    def __init__(self, func_params, workflow):
+    def __init__(self, func_params, workflow, request):
         self.params = func_params
         self.workflow = workflow
+        self.request = request
         
     def parse_params(self):
         """Parse function params"""
@@ -30,10 +31,11 @@ class ActionFunc():
 
 class SETANSX(ActionFunc):
     
-    def __init__(self, func_params, workflow):
-        super().__init__(func_params, workflow)
+    def __init__(self, func_params, workflow, request):
+        super().__init__(func_params, workflow, request)
         self.parse_params()
         self.workflow = workflow
+        self.request = request
 
     def parse_params(self):
         """Parse function params"""
@@ -72,8 +74,8 @@ class SETANSX(ActionFunc):
 
 class SETANS(ActionFunc):
     
-    def __init__(self, func_params, workflow):
-        super().__init__(func_params, workflow)
+    def __init__(self, func_params, workflow, request):
+        super().__init__(func_params, workflow, request)
         self.parse_params()
 
     def parse_params(self):
@@ -88,7 +90,8 @@ class SETANS(ActionFunc):
         """Do action"""
         
         # Update workflow
-        print("PROCESSING SETANS")
+        print("PROCESSING SETANS 2")
+        messages.add_message(self.request, messages.INFO, f"Setting answer via SETANS action")
         try:
             if self.val.startswith("'") or self.val.startswith('"'):
                 # literal
@@ -113,8 +116,8 @@ class SETANS(ActionFunc):
 
 class VIEWQUE(ActionFunc):
     
-    def __init__(self, func_params, workflow):
-        super().__init__(func_params, workflow)
+    def __init__(self, func_params, workflow, request):
+        super().__init__(func_params, workflow, request)
         self.parse_params()
     
     def parse_params(self):
@@ -131,6 +134,7 @@ class VIEWQUE(ActionFunc):
         # Set
         print("PROCESSING VIEWQUE")
         print("[DEBUG] [RULE FUNCTION] PROCESSING VIEWQUE")
+        messages.add_message(self.request, messages.INFO, f"VIEWQUE action")
         # try:
         #     if self.val == 'True':
         #         self.workflow[self.ans]['ask'] = True
@@ -156,8 +160,8 @@ class SENDEMAIL(ActionFunc):
     format: SENDEMAIL('person@example.com', "This is an alert that FOO happened.")
     """
 
-    def __init__(self, func_params, workflow):
-        super().__init__(func_params, workflow)
+    def __init__(self, func_params, workflow, request):
+        super().__init__(func_params, workflow, request)
         self.parse_params()
 
     def parse_params(self):
@@ -173,6 +177,7 @@ class SENDEMAIL(ActionFunc):
         
         # Set
         print("PROCESSING SENDEMAIL")
+        messages.add_message(self.request, messages.INFO, f"Sending email via SENDEMAIL action")
         try:
             print(f"[INFO] Sending email to '{self.email_str}' stating: '{self.msg_str}'")
         except:

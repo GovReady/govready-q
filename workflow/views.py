@@ -221,9 +221,9 @@ def set_workflowinstance_feature_completed(request, workflowinstance_id):
     workflowinstance = get_object_or_404(WorkflowInstance, id=workflowinstance_id)
     workflowinstance.set_curr_feature_completed(request.user)
     workflowinstance.save()
-    workflowinstance.proc_rules()
+    workflowinstance.rule_proc_rules(request)
     workflowinstance.save()
-    workflowinstance.advance(request.user)
+    workflowinstance.advance_feature(request.user)
     workflowinstance.save()
     # return to referrer page that sent request
     return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))

@@ -141,7 +141,7 @@ class WorkflowUnitTests(TestCase):
         # test advance()
         # curr_feature = wfinstance.workflow['curr_feature']
         self.assertEqual(wfinstance.workflow['curr_feature'], "start_review")
-        wfinstance.advance()
+        wfinstance.advance_feature()
         wfinstance.save()
         self.assertEqual(wfinstance.workflow['curr_feature'], "review_poams")
 
@@ -204,14 +204,14 @@ class WorkflowUnitTests(TestCase):
         wfinst2.set_curr_feature_completed(user)
         # wfinst2.save() - # saving causes a raise TypeError(f'Object of type {o.__class__.__name__} 'TypeError: Object of type DeferredAttribute is not JSON serializable
 
-        wfinst3 = wfinst2.proc_rules()
-        wfinst2.advance(self.u2)
+        wfinst3 = wfinst2.rule_proc_rules()
+        wfinst2.advance_feature(self.u2)
         self.assertEqual(wfinst3.workflow['curr_feature'], wfinst3.workflow['feature_order'][1])
 
-        # test proc_rules appear in log
+        # test rule_proc_rules appear in log
         log_event_names = [log_event['name'] for log_event in wfinst3.log]
         print("log_event_names:", log_event_names)
-        self.assertIn('proc_rules', log_event_names)
+        self.assertIn('rule_proc_rules', log_event_names)
 
 
 # Scratch code
