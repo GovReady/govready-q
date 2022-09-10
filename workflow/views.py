@@ -74,7 +74,7 @@ def edit_recipe(request, pk):
                 form.save()
                 # update related workflowimage
                 fif = FlowImageFactory(workflowrecipe.name)
-                print("[DEBUGGGG] workflowrecipe after form save:", workflowrecipe)
+                print("[DEBUG] 1 workflowrecipe after form save:", workflowrecipe)
                 workflowimage = fif.create_workflowimage_from_workflowrecipe(workflowrecipe)
                 messages.add_message(request, messages.INFO, f"Workflow recipe \"{form.data['name']}\" updated.")
                 return redirect("workflowrecipes_all")

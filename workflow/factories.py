@@ -10,7 +10,13 @@ from .models import WorkflowImage
 """
 
 Current format:
-rule: Hide small org internal SOC question +viewque:(org.internal_soc, False) -setans:(org.internal_soc, some value)
+<step prompt="Wake up 3.1" name="step 1" >
+<question prompt="Exercise" name="exercise>
+<step name="Shower" prompt="Take shower">
+<step prompt="Eat breakfast" name"breakfast">
+<choice step__name="exercise" options="Yes, No">
+<rule step__name="step 1" comment="Set answer a”after step 1 complete test="step 1 == 'done'" true="SETANS(a,b)">
+<rule comment="Send an email 3.1" test="status@step 1 == not-started" true='SENDEMAIL(to="var ",subject="something", msg="this needs to support a long message with variable substitution")'>
 
 Alternate formats:
 rule: hide small org internal SOC question if($org.size = Small) true=$viewque(org.internal_soc, False) false=$SETANS(org.internal_soc, some value)
@@ -40,7 +46,9 @@ def skeleton_feature():
     return Feature()
 
 
-CMD_PATTERN = '(?P<cmd>[A-Z:]+|[a-zA-Z]+:)'
+CMD_PATTERN = '(?P<cmd>^<[A-Za-z:]+|[A-Z:]+|[a-zA-Z]+:)'
+PROMPT_PATTERN = 'prompt=".*?"|PROMPT=\'.*?\''
+PARAM_PATTERN = '[a-zA-Z_\-.0-9]+=".*?"'
 PROP_PATTERN = '[a-zA-Z_\-.0-9]*\(.*?\)'
 TEST_PATTERN = '(IF:\(.*?\)|if:\(.*?\))'
 TRUE_FUNC_PATTERN = '([+][a-zA-Z_\-.0-9]*:\(.*?\))'
@@ -51,8 +59,8 @@ def get_cmd(feature_descriptor):
     try:
         regex = fr'^{CMD_PATTERN} (?P<cmd_content>.*)$'
         m = re.match(regex, feature_descriptor)
-        cmd = m.group('cmd').strip(':')
-        msg = f"[DEBUG] line: '{feature_descriptor}'"
+        cmd = m.group('cmd').strip(':').lstrip('<')
+        msg = f"[DEBUG] line: '{feature_descriptor}; cmd: {cmd}'"
         print(msg)
         return cmd
     except Exception as e:
@@ -71,18 +79,22 @@ class FeatureFactory:
 
     feature_descriptor: str
     cmd: str = ''
-    text: str = ''
-    props: list = field(default_factory=empty_list)
+    text: str = 'f'
+    props: dict = field(default_factory=empty_dict)
+    params: dict = field(default_factory=empty_dict)
     actions: list = field(default_factory=empty_list)
     id: str = ''
     feature: Feature = field(default_factory=skeleton_feature)
     cmd_pattern: str = CMD_PATTERN
+    prompt_pattern: str = PROMPT_PATTERN
+    param_pattern: str = PARAM_PATTERN
     prop_pattern: str = PROP_PATTERN
     test_pattern: str = TEST_PATTERN
-    true_func_pattern = TRUE_FUNC_PATTERN
+    true_func_pattern: str = TRUE_FUNC_PATTERN
 
     def __post_init__(self):
         self._set_cmd()
+        self._set_params()
         self._set_props()
         self._set_test()
         self._set_true_action()
@@ -91,80 +103,106 @@ class FeatureFactory:
 
     def _set_cmd(self):
         """Parse out command from feature descriptor."""
-
         self.feature.cmd = get_cmd(self.feature_descriptor)
+        return None
+
+    def _set_params(self):
+        """Parse out params from feature descriptor."""
+        try:
+            regex = fr'{self.param_pattern}'
+            match_list = re.findall(regex, self.feature_descriptor)
+            for m_str in match_list:
+                m = re.match(r'(\w+)="(.*)"', m_str)
+                if m:
+                    self.params[m.group(1).lower()] = m.group(2)
+                    print(f"[DEBUG] parsed param {m.group(1).lower()} = {m.group(2)}")
+            self.feature.params = self.params
+        except Exception as e:
+            msg = f"[ERROR] failure '{e}' parsing params '{self.feature_descriptor}'"
+            print(msg)
+            logging.exception(msg)
         return None
 
     def _set_props(self):
         """Parse out props from feature descriptor."""
-
-        # parse out props
         try:
             regex = fr'{self.prop_pattern}'
             match_list = re.findall(regex, self.feature_descriptor)
             for m_str in match_list:
                 m = re.match(r'(\w+)\((.*)\)', m_str)
                 if m:
-                    self.props.append({m.group(1): m.group(2)})
+                    self.props[m.group(1).lower()] = m.group(2)
+            self.feature.props = self.props
         except Exception as e:
             msg = f"[ERROR] failure '{e}' parsing props '{self.feature_descriptor}'"
             print(msg)
             logging.exception(msg)
-        self.feature.props = self.props
         return None
 
     def _set_test(self):
         """Parse out rule test from feature descriptor."""
 
-        try:
-            regex = fr'{self.test_pattern}'
-            match_list = re.findall(regex, self.feature_descriptor)
-            if match_list:
-                self.feature.test_pattern = match_list[0]
-        except:
-            msg = f"[ERROR] failure '{e}' parsing test_pattern '{self.feature_descriptor}'"
-            print(msg)
-            logging.exception(msg)
+        self.feature.test_pattern = self.test_pattern = self.params.get('test', None)
         return None
+
+        # try:
+        #     regex = fr'{self.test_pattern}'
+        #     match_list = re.findall(regex, self.feature_descriptor)
+        #     if match_list:
+        #         self.feature.test_pattern = match_list[0]
+        # except:
+        #     msg = f"[ERROR] failure '{e}' parsing test_pattern '{self.feature_descriptor}'"
+        #     print(msg)
+        #     logging.exception(msg)
 
     def _set_true_action(self):
         """Parse out true action function from feature descriptor."""
-
-        try:
-            regex = fr'{self.true_func_pattern}'
-            match_list = re.findall(regex, self.feature_descriptor)
-            if match_list:
-                self.feature.true_action = match_list[0].lstrip('+')
-        except Exception as e:
-            msg = f"[ERROR] failure '{e}' parsing true_func_pattern '{self.feature_descriptor}'"
-            print(msg)
-            logging.exception(msg)
+        self.feature.true_action = self.true_action = self.params.get('true', None)
         return None
+
+        # try:
+        #     regex = fr'{self.true_func_pattern}'
+        #     match_list = re.findall(regex, self.feature_descriptor)
+        #     if match_list:
+        #         self.feature.true_action = match_list[0].lstrip('+')
+        # except Exception as e:
+        #     msg = f"[ERROR] failure '{e}' parsing true_func_pattern '{self.feature_descriptor}'"
+        #     print(msg)
+        #     logging.exception(msg)
 
     def _set_text(self):
         """Parse out feature content after removing cmd, props from feature descriptor."""
 
-        self.text = self.feature_descriptor
-        regex_rm_cmd = fr'^{self.cmd_pattern} '
-        regex_rm_test = fr'{self.test_pattern}'
-        regex_rm_true_func = fr'{self.true_func_pattern}'
-        regex_rm_props = fr'{self.prop_pattern}'
-        for regex in [regex_rm_cmd, regex_rm_test, regex_rm_true_func, regex_rm_props]:
-            self.text = re.sub(regex, '', self.text).strip()
-        self.feature.text = self.text
+        self.feature.text = self.text = self.params.get('prompt', "No prompt provided")
         return None
+
+        # DO NOT DELETE - old method for for feature descriptor format: "step: freetext here prop1(val1) prop2(val2)"
+        # KEEP so we can also process simple text
+        # self.text = self.feature_descriptor
+        # regex_rm_cmd = fr'^{self.cmd_pattern} '
+        # regex_rm_test = fr'{self.test_pattern}'
+        # regex_rm_true_func = fr'{self.true_func_pattern}'
+        # regex_rm_props = fr'{self.prop_pattern}'
+        # for regex in [regex_rm_cmd, regex_rm_test, regex_rm_true_func, regex_rm_props]:
+        #     self.text = re.sub(regex, '', self.text).strip()
+        # self.feature.text = self.text
+        # return None
 
     def _set_id(self):
         """Set feature id via defined prop or hash of text."""
+        h = blake2b(digest_size=4)
+        h.update(str.encode(self.text))
+        self.feature.id = self.id = self.params.get('id', h.hexdigest())
+        return None
 
-        id_prop = next((item for item in self.props if 'id' in item.keys()), None)
-        if id_prop is not None:
-            self.id = id_prop['id']
-        else:
-            h = blake2b(digest_size=4)
-            h.update(str.encode(self.text))
-            self.id = h.hexdigest()
-        self.feature.id = self.id
+        # id_prop = next((item for item in self.props if 'id' in item.keys()), None)
+        # if id_prop is not None:
+        #     self.id = id_prop['id']
+        # else:
+        #     h = blake2b(digest_size=4)
+        #     h.update(str.encode(self.text))
+        #     self.id = h.hexdigest()
+        # self.feature.id = self.id
 
 
 @dataclass
@@ -261,43 +299,35 @@ class FlowImageFactory:
         rules_list = {}
         rule_order = []
         rules = {}
+        # features
         for feature in self.features:
+            feature_obj = {}
+            for field in ['cmd', 'params', 'props', 'text', 'id']:
+                feature_obj[field] = getattr(feature, field, None)
+            feature_obj['complete'] =  False
+            feature_obj['status'] = 'not-started'
+
             if feature.cmd in ['rule', 'RULE']:
-                # create rule
-                feature_obj = {
-                    'cmd': feature.cmd,
-                    'props': feature.props,
-                    'test': feature.test_pattern,
-                    'true_action': feature.true_action,
-                    'text': feature.text,
-                    'id': feature.id,
-                    'complete': False,
-                    'status': 'not-started'
-                }
+                # finalize rule info and save obj to rules
+                for field in ['test_pattern', 'true_action']:
+                    feature_obj[field] = getattr(feature, field, None)
                 rules_list[feature_obj['id']] = feature_obj
                 rule_order.append(feature_obj['id'])
             else:
-                feature_obj = {
-                    'cmd': feature.cmd,
-                    'props': feature.props,
-                    'text': feature.text,
-                    'id': feature.id,
-                    'complete': False,
-                    'status': 'not-started'
-                }
+                # finale step, ask, etc info and save obj to workflow
                 features_list[feature_obj['id']] = feature_obj
                 feature_order.append(feature_obj['id'])
-        # build workflow dict
-        wf_dict = {'name': self.name,
-                  'uuid': fi_uuid,
-                  'description': self.description,
-                  'type': 'flow_image',
-                  'status': 'red',
-                  "complete": False,
-                  'features': features_list,
-                  "curr_feature": feature_order[0],
-                  "feature_order": feature_order
-              }
+        # workflow object
+        wf_dict = { 'name': self.name,
+                    'uuid': fi_uuid,
+                    'description': self.description,
+                    'type': 'flow_image',
+                    'status': 'red',
+                    "complete": False,
+                    'features': features_list,
+                    "curr_feature": feature_order[0],
+                    "feature_order": feature_order}
+        # rules object
         rules = {'features': rules_list,
                 'rule_order': rule_order
             }
@@ -313,32 +343,47 @@ class FlowImageFactory:
         return workflowimage
 
     def update_or_create_workflowimage_from_flowtext(self, flowtext, workflowimage_record=None):
-        """Update or create the workflow image object from input flow feature text descriptions"""
+        """Update or create the workflow image object from input flow feature text descriptions"""  
 
         self.feature_descriptor_text = flowtext
+        # TODO: Support multiple line feature descriptors
         self.split_feature_descriptor_text()
         self.prepare_features()
+        print(11)
         wfi = self.update_or_create_workflowimage(workflowimage_record)
         return wfi
 
     def create_workflowimage_from_workflowrecipe(self, workflowrecipe):
         """Create the workflow image object from workflowrecipe object"""
 
-        flowtext = workflowrecipe.recipe
-        self.description = workflowrecipe.description
-        self.name = workflowrecipe.name
-        # TODO: should we get a new uuid if content of a workflow changes?
-        if WorkflowImage.objects.filter(workflowrecipe=workflowrecipe).exists():
-            wfi = WorkflowImage.objects.filter(workflowrecipe=workflowrecipe)[0]
-            wfi = self.update_or_create_workflowimage_from_flowtext(flowtext, wfi)
-        else:
-            wfi = self.update_or_create_workflowimage_from_flowtext(flowtext)
-            # relate new workflowimage to workflowrecipe
-            wfi.workflowrecipe = workflowrecipe
-        wfi.name = self.name
-        wfi.workflow['name'] = self.name
-        wfi.workflow['description'] = self.description
-        wfi.save()
+        try:
+            flowtext = workflowrecipe.recipe
+            self.description = workflowrecipe.description
+            self.name = workflowrecipe.name
+            print('1')
+            # TODO: should we get a new uuid if content of a workflow changes?
+            if WorkflowImage.objects.filter(workflowrecipe=workflowrecipe).exists():
+                wfi = WorkflowImage.objects.filter(workflowrecipe=workflowrecipe)[0]
+
+                print('2')
+                wfi = self.update_or_create_workflowimage_from_flowtext(flowtext, wfi)
+                print('3')
+            else:
+                print(4)
+                wfi = self.update_or_create_workflowimage_from_flowtext(flowtext)
+                print(5)
+                # relate new workflowimage to workflowrecipe
+                wfi.workflowrecipe = workflowrecipe
+                print(6)
+            wfi.name = self.name
+            wfi.workflow['name'] = self.name
+            print(7)
+            wfi.workflow['description'] = self.description
+            print(8)
+            wfi.save()
+            print(9)
+        except:
+            print("[ERROR] Failure in create_workflowimage_from_workflowrecipe")
         return wfi
 
     def to_json(self):

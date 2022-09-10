@@ -156,11 +156,17 @@ class WorkflowUnitTests(TestCase):
         # create workflow recipe
         name = "Monthly POAM Reviewx"
         description  = "Simple test recipe for monthly review of POAMs"
-        recipe_text = """STEP Start Monthly Reviewx id(Start)
-        STEP Review Monthly POAMsx id(Review)
-        STEP Submit updated POAMsx id(Submit)
-        rule: Hide small org internal SOC question +viewque:(org.internal_soc, False) -SETANSX:(org.internal_soc, some value) id(rule1)
-        rule: Do something else +viewque:(org.internal_soc, False) -SETANSX:(org.internal_soc, some value) id(rule2)
+        # recipe_text_simple = """STEP Start Monthly Reviewx id(Start)
+        # STEP Review Monthly POAMsx id(Review)
+        # STEP Submit updated POAMsx id(Submit)
+        # rule: Hide small org internal SOC question +viewque:(org.internal_soc, False) -SETANSX:(org.internal_soc, some value) id(rule1)
+        # rule: Do something else +viewque:(org.internal_soc, False) -SETANSX:(org.internal_soc, some value) id(rule2)
+        # """
+        recipe_text = """<step prompt="Start Monthly Reviewx" id="Start">
+        <step prompt="Review Monthly POAMsx" id="Review">
+        <step prompt="Submit updated POAMsx" id="Submit">
+        <rule comment="Hide small org internal SOC question" test="1 == 1" true="viewque(org.internal_soc, False)" id="rule1">
+        <rule comment="Do something else" test="1 == 1" true="viewque=(org.internal_soc, False)" id="rule2">
         """
         wfr = WorkflowRecipe.objects.create(name=name, description=description,recipe=recipe_text)
 
@@ -185,7 +191,7 @@ class WorkflowUnitTests(TestCase):
 
         # test parsing of rules
         self.assertEqual(len(wfi2.rules['features']), 2)
-        self.assertEqual(wfi2.rules['features']['rule2']['text'], 'Do something else')
+        self.assertEqual(wfi2.rules['features']['rule2']['params']['comment'], 'Do something else')
         # test rule order
         self.assertEqual(len(wfi2.rules['rule_order']), 2)
         self.assertEqual(wfi2.rules['rule_order'][1], 'rule2')
@@ -206,16 +212,6 @@ class WorkflowUnitTests(TestCase):
         log_event_names = [log_event['name'] for log_event in wfinst3.log]
         print("log_event_names:", log_event_names)
         self.assertIn('proc_rules', log_event_names)
-
-        # test editing workflow recipe
-        name = "Monthly POAM Reviewx-2"
-        description  = "Simple test recipe for monthly review of POAMs-2"
-        recipe_text = """STEP Start Monthly Reviewx-2 id(Start-2)
-        STEP Review Monthly POAMsx-2 id(Review-2)
-        STEP Submit updated POAMsx-2 id(Submit-2)
-        rule: Hide small org internal SOC question-2 +viewque:(org.internal_soc-2, False) -SETANSX:(org.internal_soc, some value) id(rule1)
-        rule: Do something else-2 +viewque:(org.internal_soc-2, False) -SETANSX:(org.internal_soc, some value) id(rule2)
-        """
 
 
 # Scratch code

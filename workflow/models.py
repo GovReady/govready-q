@@ -1,33 +1,16 @@
-from pathlib import Path
-import os
-import json
 import auto_prefetch
 from django.db import models
-from django.db.models import Count
-from django.utils.functional import cached_property
-from guardian.shortcuts import (assign_perm, get_objects_for_user,
-                                get_perms_for_model, get_user_perms,
-                                get_users_with_perms, remove_perm)
-from simple_history.models import HistoricalRecords
-from jsonfield import JSONField
-from natsort import natsorted
 
 from api.base.models import BaseModel
 from controls.models import System
 from siteapp.models import User
 from siteapp.model_mixins.tags import TagModelMixin
-from controls.utilities import *
 
-import uuid
-import tools.diff_match_patch.python3 as dmp_module
-from copy import deepcopy
 from django.db import transaction
-from django.core.validators import RegexValidator
-from django.core.validators import validate_email
 
 from .functions import *
 
-# Create your models here.
+
 class WorkflowRecipe(auto_prefetch.Model, TagModelMixin, BaseModel):
     name = models.CharField(max_length=100, help_text="Descriptive name", unique=False, blank=True, null=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier")
@@ -49,8 +32,8 @@ class WorkflowImage(auto_prefetch.Model, TagModelMixin, BaseModel):
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier")
     workflow = models.JSONField(blank=True, default=dict, help_text="Workflow object")
     rules = models.JSONField(blank=True, default=list, help_text="Rules list")
-    workflowrecipe = auto_prefetch.ForeignKey(WorkflowRecipe, null=True, related_name="workflowimages", on_delete=models.SET_NULL,
-                                            help_text="WorkflowRecipe")
+    workflowrecipe = auto_prefetch.ForeignKey(WorkflowRecipe, null=True, related_name="workflowimages",
+                                              on_delete=models.SET_NULL, help_text="WorkflowRecipe")
 
     def __str__(self):
         return f'<WorkflowImage name="{self.name}" id={self.id}>'
@@ -107,7 +90,7 @@ class WorkflowImage(auto_prefetch.Model, TagModelMixin, BaseModel):
             systems = System.objects.filter(id not in system_id_list)
         else:
             # we have an error
-            raise ValueError (f'Unrecongized filter for system in create_system_workflow_instance: {filter}')
+            raise ValueError(f'Unrecongized filter for system in create_system_workflow_instance: {filter}')
 
         wfinstances = []
         for system in systems:
@@ -157,8 +140,8 @@ class WorkflowImage(auto_prefetch.Model, TagModelMixin, BaseModel):
 class WorkflowInstanceSet(auto_prefetch.Model, TagModelMixin, BaseModel):
     name = models.CharField(max_length=100, help_text="Descriptive name", unique=False, blank=True, null=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier")
-    workflowimage = auto_prefetch.ForeignKey(WorkflowImage, null=True, related_name="workflowinstancesets", on_delete=models.SET_NULL,
-                                            help_text="WorkflowImage")
+    workflowimage = auto_prefetch.ForeignKey(WorkflowImage, null=True, related_name="workflowinstancesets",
+                                             on_delete=models.SET_NULL, help_text="WorkflowImage")
     description = models.CharField(max_length=250, help_text="Brief description", unique=False, blank=True, null=True)
 
     def __str__(self):
@@ -182,12 +165,12 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
     workflow = models.JSONField(blank=True, default=dict, help_text="Workflow object")
     rules = models.JSONField(blank=True, default=list, help_text="Rules list")
     log = models.JSONField(blank=True, default=list, help_text="Log entries")
-    workflowimage = auto_prefetch.ForeignKey(WorkflowImage, null=True, related_name="workflowinstances", on_delete=models.SET_NULL,
-                                            help_text="WorkflowImage")
+    workflowimage = auto_prefetch.ForeignKey(WorkflowImage, null=True, related_name="workflowinstances",
+                                             on_delete=models.SET_NULL, help_text="WorkflowImage")
     # parent = models.ForeignKey(WorkflowImage, related_name="children", on_delete=models.SET_NULL,
     #                                          help_text="Parent WorkflowInstance")
-    workflowinstanceset = auto_prefetch.ForeignKey(WorkflowInstanceSet, related_name='workflowinstances', on_delete=models.SET_NULL, blank=True,
-                                      null=True, help_text="System")
+    workflowinstanceset = auto_prefetch.ForeignKey(WorkflowInstanceSet, related_name='workflowinstances',
+                                                   on_delete=models.SET_NULL, blank=True, null=True, help_text="System")
     system = auto_prefetch.ForeignKey(System, related_name='workflowinstances', on_delete=models.CASCADE, blank=True,
                                       null=True, help_text="System")
 
@@ -258,14 +241,14 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
 
     def set_curr_feature_completed(self, who='self'):
         """Set specfic feature complete"""
-        who_name = User.username if (type(who)==User) else 'self'
+        who_name = User.username if (type(who) == User) else 'self'
         self.workflow['features'][self.workflow['curr_feature']]['status'] = 'completed'
         self.workflow['features'][self.workflow['curr_feature']]['complete'] = True
         self.log_event('set_feature_completed', f'Set {self.curr_feature} to completed', who_name)
 
     def advance(self, who='self'):
         """Shift curr_feature forward by one"""
-        who_name = User.username if (type(who)==User) else 'self'
+        who_name = User.username if (type(who) == User) else 'self'
         # TODO: skip hidden features
         # while not self.is_final_feature(self.curr_feature) and self.workflow['curr_feature']['ask'] == 'skip':
         if not self.is_final_feature(self.curr_feature):
@@ -275,60 +258,59 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         # result = self.save()
         # print(f'[DEBUG] Save result wfinstance {self.name}: {result}')
 
-    def eval_rule_test(self, test_expr_str):
-        """Evaluate rule text expression and return True, False"""
+    def eval_comparison(self, a, b, op):
+        """Compare two values"""
 
-        ###################################################
-        # Simple eval of test until we build interpreter #
-        ###################################################
+        if op == '==':
+            return a == b
+        elif op == '!=':
+            return a != b
+        elif op == '<':
+            return a < b
+        elif op == '<=':
+            return a <= b
+        elif op == '>':
+            return a > b
+        elif op == '>=':
+            return a >= b
+        else:
+            raise ValueError
 
+    def eval_expr_item(self, expr):
+        """Evaluate expression"""
+        # simple eval of expr to determine if it is literal or expression
         try:
-            m = re.search(r"([a-zA-Z.'\" _-]+)(==|=)([a-zA-Z.'\" _-]+)", test_expr_str)
-            l_expr = m.group(1).strip()
+            if expr.isnumeric():
+                expr_val = float(expr)
+            elif expr.startswith("'") or expr.startswith('"'):
+                expr_val = expr.strip("'").strip('"')
+            else:
+                expr_feature = self.workflow['features'][expr]
+                expr_val = "TBD"
+            print(f"[DEBUG]: parse value:", expr_val)
+        except:
+            print(f"[ERROR]: Error parsing expression \"{expr}\"")
+
+    def eval_rule_test(self, rule_obj):
+        """Evaluate rule text expression and return True, False
+            TODO: Replace with an AST interpreter
+        """
+
+        test_expr_str = rule_obj['params']['test']
+        # parse test into left expression, operation, right expression
+        # expressions have the form "l_exp op r_exp", e.g., "1 == 1", "1 != 2", "var1 > var2", etc.
+        try:
+            m = re.search(r"([a-zA-Z0-9.'\" _-]+)(==|=|<=|>=|!=)([a-zA-Z0-9.'\" _-]+)", test_expr_str)
+            l_expr = self.eval_expr_item(m.group(1).strip())
             op = m.group(2).strip()
-            r_expr = m.group(3).strip()
-
-            # simple eval of l_expr
-            if l_expr.startswith("'") or l_expr.startswith('"'):
-                # literal
-                l_expr_val = l_expr.strip("'").strip('"')
-            else:
-                l_expr_feature = self.workflow['features'][l_expr]
-                l_expr_val = "TBD"
-            # simple eval of r_expr
-            if r_expr.startswith("'") or r_expr.startswith('"'):
-                # literal
-                r_expr_val = r_expr.strip("'").strip('"')
-            else:
-                # TODO:
-                #  - no q_plan, use self.workflow and self.rules instead
-                #  - handle for step
-                #  - ['ans'] only works for question
-                #  - r_expr refers to feature_id
-                r_expr_val = self.q_plan[r_expr]['ans']
-
-            # evaluate based on op
-            if op == '=':
-                self.log_event('WARNING', f'Use of single \'=\' as in test for \'{answer}\': action function \'{actionfunc_str}\'')
-                print(f"[WARNING]: Use of single \'=\' as in test \"{test_expr_str}\"")
-            if op == "==" or op == '=':
-                if l_expr_val == r_expr_val:
-                    test_eval = True
-                else:
-                    test_eval = False
-            elif op == "!=":
-                if l_expr_val != r_expr_val:
-                    test_eval = True
-                else:
-                    test_eval = False
-            else:
-                test_eval = "Error"
-
+            r_expr = self.eval_expr_item(m.group(3).strip())
+            print(f"[DEBUG]: parse test expression \"{test_expr_str}\": {l_expr}, {op}, {r_expr}")
+            print(f"[DEBUG]: parse op evaluation:", test_eval)
+            test_eval = self.eval_comparison(l_expr, r_expr, op)
             return test_eval
         except:
-            self.log_event('rule_action_error', f'Error parsing test for \'{answer}\': action function \'{actionfunc_str}\'')
-            print(f"[ERROR]: Error parsing test \"{test_expr_str}\"")
-
+            print(f"[ERROR]: Error parsing expression \"{test_expr_str}\"")
+            return False
 
     def proc_actionfunc(self, answer, actionfunc_str):
         """Process acton function and return updated workflow"""
@@ -374,29 +356,17 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
           # return None
 
         # process rule for current answer
-        print(f"[DEBUG] processing individual rule: \"{rule_obj['text']}\"")
-
+        print(f"[DEBUG] processing individual rule: \"{rule_obj['id']}: {rule_obj['text']}\"")
 
         # handling evals rules for steps (cmd = rule) differs from question
         # if rule is for step, we can only eval if complete or not or next step or who completed
 
         # TODO: Properly evaluate test to determine if rule should be run
-        if self.eval_rule_test(rule_obj['test']):
+        if self.eval_rule_test(rule_obj):
             self.workflow = self.proc_actionfunc(rule_obj['id'], rule_obj['true_action'])
             print("[DEBUG] within conditional 1 == 1 in proc_rule")
 
         # if rule_obj['name'] == self.curr_feature:
-
-        #   # eval test expression
-        #   test_eval = self.eval_rule_test(rule_obj.get('test').strip())
-
-        #   # process rule action function
-        #   if test_eval == True:
-        #       self.q_plan = self.proc_actionfunc(rule_obj['name'], rule_obj.get('onTrue', None))
-        #   elif test_eval == False:
-        #       self.q_plan = self.proc_actionfunc(rule_obj['name'], rule_obj.get('onFalse', None))
-        #   else:
-        #       self.q_plan = self.proc_actionfunc(rule_obj['name'], rule_obj.get('onError', None))
         return None
 
     def proc_rules(self):
