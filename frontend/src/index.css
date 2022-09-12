@@ -18,11 +18,16 @@
     min-width: 90%;
   } */
 
-  .sys-owner-request-modal{
-    min-width: 40%;
-  }
-  .poam-edit-modal{
-    width: 950px;
-    min-height: 70%;
-    margin-top: 10rem;
-  }
+.sys-owner-request-modal{
+  min-width: 40%;
+}
+.poam-edit-modal{
+  width: 950px;
+  min-height: 70%;
+  margin-top: 10rem;
+}
+.roles-list-modal{
+  left: 500px;
+  width: 300px;
+  min-height: 90%;
+}

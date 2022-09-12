@@ -308,6 +308,7 @@ export const RequestsTable = ({ elementId, isOwner }) => {
       {
         field: 'system',
         headerName: 'Requested by',
+        type: 'string', 
         width: 150,
         editable: false,
         valueGetter: (params) => params.row.system.name,
@@ -315,6 +316,7 @@ export const RequestsTable = ({ elementId, isOwner }) => {
       {
         field: 'point_of_contact',
         headerName: 'Point of Contact',
+        type: 'string', 
         width: 300,
         editable: false,
         renderCell: (params) => (
@@ -326,6 +328,7 @@ export const RequestsTable = ({ elementId, isOwner }) => {
       {
         field: 'status',
         headerName: 'Status',
+        type: 'string', 
         width: 150,
         editable: false,
         valueGetter: (params) => params.row.status,
@@ -335,7 +338,7 @@ export const RequestsTable = ({ elementId, isOwner }) => {
         headerName: 'Action',
         width: 300,
         editable: true,
-        type: 'text',
+        type: 'actions',
         renderCell: (params) => (
           <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
             {data.length !== 0 && <Grid item xs={6}>

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable */
+import React, { useState, useEffect, useRef } from "react";
 import Input from "@mui/material/Input";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -53,11 +54,21 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds, searchB
   const [cache, setCache] = useState({});
   const [selected, setSelected] = useState([]);
   const classes = useStyles();
+  const elementRef = useRef(null);
 
+  // useEffect(() => {
+  //   setTimeout(function() {
+  //     // debugger;
+  //     // elementRef.current.clear();
+  //     elementRef.dispatchEvent(new KeyboardEvent('keypress', {
+  //       key: 'DOM_VK_BACK_SPACE',
+  //     }))
+  //   }, 500);
+  // }, [])
+  
   useEffect(() => {
     setState((prev) => ({ ...prev, excludeIds: excludeIds }));
   }, [excludeIds]);
-
   const onSelected = (selected) => {
     setSelected([]);
     onSelect(selected);
@@ -112,15 +123,17 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds, searchB
       }
     );
   };
-
+  
+  console.log("state: ", state);
   return (
     <AsyncTypeahead
       {...state}
       id="user-lookup-async-pagination"
       labelKey={primaryKey}
       isLoading={state.isLoading}
+      ref={elementRef}
       maxResults={PER_PAGE - 1}
-      minLength={2}
+      minLength={1}
       style={{ width: "100%", zIndex: 1 }}
       onInputChange={handleInputChange}
       onPaginate={handlePagination}
@@ -130,6 +143,8 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds, searchB
       promptText={""}
       filterBy={() => true}
       paginate
+      clearButton
+      highlightOnlyResult
       placeholder={placeholder}
       renderInput={({ inputRef, referenceElementRef, ...inputProps }) => (
         <FormControl variant="standard" style={{ width: searchBarLength }}>

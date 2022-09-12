@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DataTable } from '../shared/table';
 import axios from 'axios';
@@ -8,6 +8,7 @@ import { v4 as uuid_v4 } from "uuid";
 import { 
   Chip,
   Grid,
+  Paper,
   Stack,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -21,6 +22,9 @@ import {
   Form,
   FormControl,
   FormGroup, 
+  ListGroup,
+  ListGroupItem,
+  Popover,
   Row,
   Modal
 } from 'react-bootstrap';
@@ -119,11 +123,12 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
   });
   const [tempRoleToAdd, setTempRoleToAdd] = useState([]);
   const [partyNamesList, setPartyNamesList] = useState([]);
+  const [listOfRoles, setListOfRoles] = useState([]);
   const [listOfRoleTitles, setListOfRoleTitles] = useState([]);
   const editToolTip = (<Tooltip placement="top" id='tooltip-edit'> Edit role</Tooltip>)
   const deleteToolTip = (<Tooltip placement="top" id='tooltip-edit'> Delete role</Tooltip>)
 
-  const endpoint = (querystrings) => {
+  const rolesEndpoint = (querystrings) => {
     return axios.get(`/api/v2/roles/`, { params: querystrings });
   };
 
@@ -142,9 +147,12 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
       });
       axios(`/api/v2/roles/`).then(response => {
         let roleTitles = [];
+        let roles = [];
         response.data.data.map(role => {
+          roles.push(role);
           roleTitles.push(role.title);
         });
+        setListOfRoles(roles);
         setListOfRoleTitles(roleTitles);
       });
   }, []);
@@ -203,6 +211,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
       {
         field: 'name',
         headerName: 'Party Name',
+        type: 'string', 
         width: 150,
         editable: false,
         valueGetter: (params) => params.row.name,
@@ -210,6 +219,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
       {
         field: 'email',
         headerName: 'Email',
+        type: 'string', 
         width: 300,
         editable: false,
         valueGetter: (params) => {
@@ -223,6 +233,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
       {
         field: 'phone_number',
         headerName: 'Phone Number',
+        type: 'string', 
         width: 300,
         editable: false,
         valueGetter: (params) => {
@@ -237,6 +248,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
         field: 'displayRoles',
         headerName: 'Roles',
         headerAlign: 'center',
+        type: 'actions',
         width: 300,
         editable: false,
         renderCell: (params) => (
@@ -468,7 +480,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
         console.error("Something went wrong in creating a new role")
       }
     } else {
-      console.log("THERES AN ERROR!!~~~")
+      alert("THERES AN ERROR ON CREATING A NEW ROLE!")
     }
   }
 
@@ -550,6 +562,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
     {
       field: 'name',
       headerName: 'Party Name',
+      type: 'string', 
       width: 150,
       editable: false,
       valueGetter: (params) => params.row.name,
@@ -557,6 +570,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
     {
       field: 'email',
       headerName: 'Email',
+      type: 'string', 
       width: 300,
       editable: false,
       // valueGetter: (params) => params.row.email,
@@ -571,6 +585,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
     {
         field: 'phone_number',
         headerName: 'Phone #',
+        type: 'string', 
         width: 150,
         editable: false,
         // valueGetter: (params) => params.row.phone_number,
@@ -585,6 +600,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
     {
       field: 'edit_party',
       headerName: 'Edit Party',
+      type: 'actions', 
       headerAlign: 'center',
       width: 100,
       editable: false,
@@ -614,6 +630,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
       field: 'displayRoles',
       headerName: 'Roles',
       headerAlign: 'center',
+      type: 'actions', 
       width: 300,
       editable: false,
       renderCell: (params) => (
@@ -633,6 +650,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
     {
       field: 'edit_roles',
       headerName: 'Edit Roles',
+      type: 'actions', 
       headerAlign: 'center',
       width: 150,
       editable: false,
@@ -658,7 +676,6 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
         );
       },
     },
-    
   ]);
 
   const getPartyTypeValidation = () => {
@@ -954,6 +971,25 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
       }
     }
   }
+
+  const popoverHoverFocus = (role) => (
+    <Popover id="popover-trigger-hover-focus" title={role.short_name}>
+      <strong>{role.role_id}</strong>
+      <p>{role.description ? role.description : "No description"}</p>
+    </Popover>
+  );
+
+  const checkAndAddRole = (role) => {
+    //Check if role has already been added to createNewParty
+    if (!createNewParty.roles.includes(role) || createNewParty.roles.length === 0) {
+      const updatedCreateNewParty = {...createNewParty};
+      const updatedRoles = updatedCreateNewParty.roles.push(role);
+      setCreateNewParty((prev) => ({
+        ...prev,
+        roles: updatedCreateNewParty.roles,
+      }));
+    }
+  };
 
   return (
     <div style={{ maxHeight: '2000px', width: '100%' }}>
@@ -1496,7 +1532,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
                   }}
                 >
                   <AsyncPagination
-                    endpoint={endpoint}
+                    endpoint={rolesEndpoint}
                     order={"title"}
                     primaryKey={'title'}
                     secondarykey={'title'}
@@ -1546,6 +1582,25 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
               )) : null
               }
               </div>
+            <Modal.Body style={{ left: '600px', position: 'fixed', top: '-15px', width: '50%' }}>
+              <Paper elevation={3} sx={{ padding: '2rem', maxHeight: "641.188px", overflow: "auto" }}>
+                <h3 style={{ marginTop: '0px' }}>List of Roles</h3>
+                <ListGroup>
+                  {listOfRoles.map((role) => (
+                    <OverlayTrigger
+                      trigger={['hover', 'focus']}
+                      placement="right"
+                      overlay={popoverHoverFocus(role)}
+                      key={role.id}
+                    >
+                      <ListGroupItem key={role.id} onClick={(e) => checkAndAddRole(role)}>
+                        {role.title}
+                      </ListGroupItem>
+                    </OverlayTrigger>
+                  ))}
+                </ListGroup>
+              </Paper>
+            </Modal.Body>
             <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
                 <Button type="button" onClick={clearPartyInfo} style={{float: 'left'}}>Clear</Button>
                 <Button variant="secondary" onClick={handleClose} style={{marginRight: '2rem'}}>Close</Button>
@@ -1554,7 +1609,6 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
           </Form>
         }
       />
-
     </div>
   )
 }
