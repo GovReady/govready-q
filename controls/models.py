@@ -103,6 +103,9 @@ class Statement(auto_prefetch.Model):
     def __repr__(self):
         # For debugging.
         return "'%s %s %s %s %s'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
+    
+    def save(self, *args, **kwargs):
+        return super(Statement, self).save(*args, **kwargs)
 
     @cached_property
     def producer_element_name(self):
@@ -658,7 +661,8 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
     info = models.JSONField(blank=True, default=dict, help_text="JSON object representing additional system information")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
-
+    import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_systems", on_delete=models.CASCADE,
+                                        unique=False, blank=True, null=True, help_text="The Import Record which created this System.")
     # Notes
     # Retrieve system implementation statements
     #   system = System.objects.get(pk=2)
@@ -676,6 +680,9 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
     def __repr__(self):
         # For debugging.
         return "'System %s id=%d'" % (self.root_element.name, self.id)
+
+    def save(self, *args, **kwargs):
+        return super(System, self).save(*args, **kwargs)
 
     # @property
     # def statements_consumed(self):
@@ -1168,7 +1175,10 @@ class Poam(BaseModel):
     def get_next_poam_id(self, system):
         """Count total number of POAMS and return next linear id"""
         return Statement.objects.filter(statement_type="POAM", consumer_element=system.root_element).count()
-
+    
+    def save(self, *args, **kwargs):
+        return super(Poam, self).save(*args, **kwargs)
+        
     # TODO:
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 

@@ -25,39 +25,38 @@
 </div>
 
 {% block scripts %}
+  <script>
+    function show_import_component_modal(callback) {
+      var m = $('#import_component_modal');
+      $("#import_loading_spinner").hide();
+      m.modal();
+    }
 
-<script>
-  function show_import_component_modal(callback) {
-    var m = $('#import_component_modal');
-    $("#import_loading_spinner").hide();
-    m.modal();
-  }
-
-  function fillJSONContent(file) {
+    function fillJSONContent(file) {
       var fileInput = document.getElementById('json_content')
 
       var filePath = fileInput.value;
-      var allowedExtensions =
-          /(\.json)$/i;
+      var allowedExtensions = /(\.json)$/i;
       if (!allowedExtensions.exec(filePath)) {
-          fileInput.value = '';
-          show_modal_error("Wrong File Type Error", "Please only provide json data!");
+        fileInput.value = '';
+        show_modal_error("Wrong File Type Error", "Please only provide json data!");
       } else {
-          filecontents = fileInput.files[0];
-          if (filecontents.size < 5000000) {
-              $('#{{import_form.import_name.auto_id}}').val(filecontents.name);
-              var reader = new FileReader();
-              reader.readAsText(filecontents);
-              reader.onload = function (e) {
-                  $('#{{import_form.json_content.auto_id}}').val(e.target.result);
-              }
-          } else {
-              show_modal_error("File is too large", "Maximum size is under 5MBs");
+        filecontents = fileInput.files[0];
+        if (filecontents.size < 5000000) {
+          $('#{{import_form.import_name.auto_id}}').val(filecontents.name);
+          var reader = new FileReader();
+          reader.readAsText(filecontents);
+          reader.onload = function (e) {
+            $('#{{import_form.json_content.auto_id}}').val(e.target.result);
           }
-      }
-  }
-        function show_spinner() {
-            $("#import_loading_spinner").show();
+        } else {
+          show_modal_error("File is too large", "Maximum size is under 5MBs");
         }
-    </script>
+      }
+    }
+    
+    function show_spinner() {
+      $("#import_loading_spinner").show();
+    }
+  </script>
 {% endblock %}
