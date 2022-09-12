@@ -990,7 +990,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
       }));
     }
   };
-
+  
   return (
     <div style={{ maxHeight: '2000px', width: '100%' }}>
       <Grid className="poc-data-grid" sx={{ minHeight: '500px' }}>
@@ -1056,7 +1056,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
             <>
               <FormGroup controlId={`form-title`}>
                 <Col sm={12}>
-                  <h3>Edit {currentParty.name} permissions</h3>
+                  <h3>Edit {currentParty.name} party details</h3>
                 </Col>
               </FormGroup>
             </>
@@ -1150,7 +1150,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
                 }}
               >
                 <AsyncPagination
-                  endpoint={endpoint}
+                  endpoint={rolesEndpoint}
                   order={"title"}
                   primaryKey={'title'}
                   secondarykey={'title'}
@@ -1388,8 +1388,9 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
                     <Col sm={8}>
                       <div>
                         <FormControl 
-                          type="text"
-                          placeholder={'Enter text'} 
+                          componentClass="select"
+                          placeholder="party type"
+                          // placeholder={'Enter text'} 
                           value={createNewParty['party_type']}
                           readOnly={createNewParty.id !== undefined ? true : false}
                           onChange={(event) => handleNewPartySave('party_type', event.target.value)}
@@ -1398,8 +1399,10 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
                             marginTop: '0.5rem',
                             marginBottom: '0.5rem',
                           }}
-                        />
-                        <FormControl.Feedback />
+                        >
+                          <option value="person">Person</option>
+                          <option value="organization">Organization</option>
+                        </FormControl>
                       </div>
                     </Col>
                   </Row>
@@ -1582,25 +1585,6 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
               )) : null
               }
               </div>
-            <Modal.Body style={{ left: '600px', position: 'fixed', top: '-15px', width: '50%' }}>
-              <Paper elevation={3} sx={{ padding: '2rem', maxHeight: "641.188px", overflow: "auto" }}>
-                <h3 style={{ marginTop: '0px' }}>List of Roles</h3>
-                <ListGroup>
-                  {listOfRoles.map((role) => (
-                    <OverlayTrigger
-                      trigger={['hover', 'focus']}
-                      placement="right"
-                      overlay={popoverHoverFocus(role)}
-                      key={role.id}
-                    >
-                      <ListGroupItem key={role.id} onClick={(e) => checkAndAddRole(role)}>
-                        {role.title}
-                      </ListGroupItem>
-                    </OverlayTrigger>
-                  ))}
-                </ListGroup>
-              </Paper>
-            </Modal.Body>
             <Modal.Footer style={{width: 'calc(100% + 20px)'}}>
                 <Button type="button" onClick={clearPartyInfo} style={{float: 'left'}}>Clear</Button>
                 <Button variant="secondary" onClick={handleClose} style={{marginRight: '2rem'}}>Close</Button>

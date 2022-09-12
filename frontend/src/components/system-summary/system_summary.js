@@ -927,38 +927,40 @@ export const SystemSummary = ({ systemId, projectId }) => {
               valueGetter: (params) => moment(params.row.updated).format('MM/DD/YYYY'),
           },
       ];
-      for (const [key, value] of Object.entries(response.data.data[0].extra)) {
-        if (key === "User Identified Criticality"){
-          newColumns.push({
-            field: key,
-            headerName: key,
-            width: 150,
-            editable: ["Delay Justification", "Status as of June", "Comments"].includes(key) ? true : false,
-            cellClassName: (params) =>
-              clsx('super-app', {
-                critical: params.row.extra[key] === 'Critical',
-                advice: params.row.extra[key] === 'Advisory/Awareness',
-                target: params.row.extra[key] === 'On-Target',
-                closure: params.row.extra[key] === 'Closure Approved',
-                followup: params.row.extra[key] === 'Follow-up Required',
-                new: params.row.extra[key] === 'Newly Opened POAM'
-              }
-            ),
-            valueGetter: (params) => params.row.extra[key] !== null ? params.row.extra[key] : "-"
-          });
-        } else {
-          newColumns.push({
-            field: key,
-            headerName: key,
-            width: 150,
-            editable: ["Delay Justification", "Status as of June", "Comments"].includes(key) ? true : false,
-            valueGetter: (params) => params.row.extra[key] !== null ? params.row.extra[key] : "-"
-          });
+      // debugger;
+      if(response.data.data.length !== 0){
+        for (const [key, value] of Object.entries(response.data.data[0].extra)) {
+          if (key === "User Identified Criticality"){
+            newColumns.push({
+              field: key,
+              headerName: key,
+              width: 150,
+              editable: ["Delay Justification", "Status as of June", "Comments"].includes(key) ? true : false,
+              cellClassName: (params) =>
+                clsx('super-app', {
+                  critical: params.row.extra[key] === 'Critical',
+                  advice: params.row.extra[key] === 'Advisory/Awareness',
+                  target: params.row.extra[key] === 'On-Target',
+                  closure: params.row.extra[key] === 'Closure Approved',
+                  followup: params.row.extra[key] === 'Follow-up Required',
+                  new: params.row.extra[key] === 'Newly Opened POAM'
+                }
+              ),
+              valueGetter: (params) => params.row.extra[key] !== null ? params.row.extra[key] : "-"
+            });
+          } else {
+            newColumns.push({
+              field: key,
+              headerName: key,
+              width: 150,
+              editable: ["Delay Justification", "Status as of June", "Comments"].includes(key) ? true : false,
+              valueGetter: (params) => params.row.extra[key] !== null ? params.row.extra[key] : "-"
+            });
+          }
+          
         }
-        
       }
       
-      /* TODO: RE ORDER COLUMNS */
       const prioritySet = {
         'POA&M': 1,
         'Evidence': 2,
@@ -1069,7 +1071,6 @@ export const SystemSummary = ({ systemId, projectId }) => {
         }
       }
     })
-  
     return flattened
   }
 
