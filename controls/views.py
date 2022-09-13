@@ -994,6 +994,7 @@ class OSCALComponentSerializer(ComponentSerializer):
             "party-uuids": [ str(party.get("uuid")) for party in parties ]
 
         }]
+        import ipdb; ipdb.set_trace()
         of = {
             "component-definition": {
                 "uuid": str(uuid4()),
@@ -4558,6 +4559,7 @@ def project_export(request, project_id):
                     "uuid": str(smt.uuid),
                 }
             }
+            json_serializer(poam)
             # Add json version as an element in the poams list
             poams.append(json.dumps(poam))
     questionnaire_data = json.dumps(project.export_json(include_metadata=True, include_file_content=True))

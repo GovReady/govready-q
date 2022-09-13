@@ -2,11 +2,12 @@
 import re
 import sys
 from structlog import get_logger
+from datetime import date, datetime
 
 def replace_line_breaks(text, break_src="\n", break_trg="<br />"):
     """ replace one type of line break with another in text block """
     if text is None:
-    	return ""
+        return ""
     if break_src in text:
         return break_trg.join(text.split(break_src))
     else:
@@ -134,3 +135,16 @@ def increment_element_name(component_name):
         new_component_name = component_name + " (1)"
 
     return new_component_name
+
+def json_serializer(obj):
+    """JSON Serializer for objects that are not serializable by default settings i.e., datetime objects"""
+    # Get Object
+    # Check each field if it is json serializable
+    # if not, change object format to one that is
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            obj[key] = json_serializer(value)
+    elif isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    else:
+        return obj
