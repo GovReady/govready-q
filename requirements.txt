@@ -49,10 +49,7 @@ backports-zoneinfo==0.2.1 \
     --hash=sha256:e8236383a20872c0cdf5a62b554b27538db7fa1bbec52429d8d106effbaeca08 \
     --hash=sha256:f04e857b59d9d1ccc39ce2da1021d196e47234873820cbeaad210724b1ee28ac \
     --hash=sha256:fadbfe37f74051d024037f223b8e001611eac868b5c5b06144ef4d8b799862f2
-    # via
-    #   -r requirements.in
-    #   pytz-deprecation-shim
-    #   tzlocal
+    # via -r requirements.in
 banal==1.0.6 \
     --hash=sha256:2fe02c9305f53168441948f4a03dfbfa2eacc73db30db4a93309083cb0e250a5 \
     --hash=sha256:877aacb16b17f8fa4fd29a7c44515c5a23dc1a7b26078bc41dd34829117d85e1
@@ -617,7 +614,9 @@ greenlet==1.1.2 \
     --hash=sha256:f9d29ca8a77117315101425ec7ec2a47a22ccf59f5593378fc4077ac5b754fce \
     --hash=sha256:fa877ca7f6b48054f847b61d6fa7bed5cebb663ebc55e018fda12db09dcc664c \
     --hash=sha256:fdcec0b8399108577ec290f55551d926d9a1fa6cad45882093a7a07ac5ec147b
-    # via gevent
+    # via
+    #   gevent
+    #   sqlalchemy
 gunicorn==20.1.0 \
     --hash=sha256:9dcc4547dbb1cb284accfb15ab5667a0e5d1881cc443e0677b4882a4067a807e \
     --hash=sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8
@@ -657,16 +656,11 @@ ilcli==0.3.2 \
 importlib-metadata==4.12.0 \
     --hash=sha256:637245b8bab2b6502fcbc752cc4b7a6f6243bb02b31c5c26156ad103d3d45670 \
     --hash=sha256:7401a975809ea1fdc658c3aa4f78cc2195a0e019c5cbc4c06122884e9ae80c23
-    # via
-    #   -r requirements.in
-    #   alembic
-    #   markdown
+    # via -r requirements.in
 importlib-resources==1.5.0 \
     --hash=sha256:6f87df66833e1942667108628ec48900e02a4ab4ad850e25fbf07cb17cf734ca \
     --hash=sha256:85dc0b9b325ff78c8bef2e4ff42616094e16b98ebd5e3b50fe7e2f0bbcdcde49
-    # via
-    #   -r requirements.in
-    #   alembic
+    # via -r requirements.in
 inflect==5.6.2 \
     --hash=sha256:aadc7ed73928f5e014129794bbac03058cca35d0a973a5fc4eb45c7fa26005f9 \
     --hash=sha256:b45d91a4a28a4e617ff1821117439b06eaa86e2a4573154af0149e9be6687238
@@ -1004,9 +998,9 @@ numpy==1.23.2 \
     #   matplotlib
     #   pandas
     #   wordcloud
-oauthlib==3.2.0 \
-    --hash=sha256:23a8208d75b902797ea29fd31fa80a15ed9dc2c6c16fe73f5d346f83f6fa27a2 \
-    --hash=sha256:6db33440354787f9b7f3a6dbd4febf5d0f93758354060e802f6c06cb493022fe
+oauthlib==3.2.1 \
+    --hash=sha256:1565237372795bf6ee3e5aba5e2a85bd5a65d0e2aa5c628b9a97b7d7a0da3721 \
+    --hash=sha256:88e912ca1ad915e1dcc1c06fc9259d19de8deacd6fd17cc2df266decc2e49066
     # via requests-oauthlib
 openapi-schema-validator==0.1.6 \
     --hash=sha256:230db361c71a5b08b25ec926797ac8b59a8f499bbd7316bd15b6cd0fc9aea5df \
@@ -1778,7 +1772,6 @@ typing-extensions==4.3.0 \
     --hash=sha256:e6d2677a32f47fc7eb2795db1dd15c1f34eff616bcaf2cfb5e997f854fa1c4a6
     # via
     #   -r requirements.in
-    #   black
     #   pydantic
 tzdata==2022.2 \
     --hash=sha256:21f4f0d7241572efa7f7a4fdabb052e61b55dc48274e6842697ccdf5253e5451 \
