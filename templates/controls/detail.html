@@ -59,32 +59,30 @@ Remove contextbar from top of page
     </div>
 
     <div id="tab-content" class="row">
-      {% if control.title is not None %}
       <div id="tab-content" class="row row-control" style="">
         <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-          <div id="control-description" class="control-text"><u>Control</u>: {% if control.description|slice:":6"|cut:" " == 'a.' %}<br /><br />{% endif %}{% if control.description %}{{ control.description }}{% else %}No description provided.{% endif %}</div>
-          <div id="control-guidance" class="control-text"><u>Discussion</u>: {% if control.guidance %}{{ control.guidance|cut:"<br/>" }}{% else %}No guidance provided.{% endif %}</div>
-          <div id="control-links" class="">
-            <u>Links</u>:
-            {% if links %}
-            <ul>
-              {% for link in links %}
-                <li><a href="{{ link.href }}" target="_blank">{% if link.catalog %}{{ link.catalog }} {% endif %}{{ link.text }}</a></li>
-              {% endfor %}
-            </ul>
-            {% else %}
-              No links provided.
-            {% endif %}
-          </div>
+          {% if control.title is not None %}
+            <div id="control-description" class="control-text"><u>Control</u>: {% if control.description|slice:":6"|cut:" " == 'a.' %}<br /><br />{% endif %}{% if control.description %}{{ control.description }}{% else %}No description provided.{% endif %}</div>
+            <div id="control-guidance" class="control-text"><u>Discussion</u>: {% if control.guidance %}{{ control.guidance|cut:"<br/>" }}{% else %}No guidance provided.{% endif %}</div>
+            <div id="control-links" class="">
+              <u>Links</u>:
+              {% if links %}
+              <ul>
+                {% for link in links %}
+                  <li><a href="{{ link.href }}" target="_blank">{% if link.catalog %}{{ link.catalog }} {% endif %}{{ link.text }}</a></li>
+                {% endfor %}
+              </ul>
+              {% else %}
+                No links provided.
+              {% endif %}</div>
+          {% else %}
+            <div id="control-message">
+              <p>{{ catalog.catalog_key_display }} does not have a {{ control_id }}.</p>
+            </div>
+          {% endif %}
         </div>
-      </div>
-      {% else %}
-      <div id="control-message">
-        <p>{{ catalog.catalog_key_display }} does not have a {{ control_id }}.</p>
-      </div>
-      {% endif %}
+      </div> 
     </div>
-
   </div>
 </div>
       {{ block.super }}
