@@ -134,12 +134,16 @@ def group(request, catalog_key, g_id):
 
 def control(request, catalog_key, cl_id):
     """Control detail view"""
+    control_id = cl_id
     cl_id = oscalize_control_id(cl_id)
     catalog_key = oscalize_catalog_key(catalog_key)
 
     # Get catalog
     catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
+    # Handle properly formatted control id that does not exist
+    if cl_id.lower() not in cg_flat:
+        return render(request, "controls/detail.html", {"control_id": control_id, "catalog": catalog,"control": {}})
     # Prepare links
     links = []
     for link in cg_flat[cl_id.lower()]['guidance_links']:
@@ -150,9 +154,6 @@ def control(request, catalog_key, cl_id):
             link['catalog'] = None
         links.append(link)
 
-    # Handle properly formatted control id that does not exist
-    if cl_id.lower() not in cg_flat:
-        return render(request, "controls/detail.html", {"catalog": catalog,"control": {}})
     # Get and return the control
     context = {
         "catalog": catalog,

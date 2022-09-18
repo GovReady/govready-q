@@ -13,7 +13,7 @@
 <style>
 
   #above-tab-content, #tab-content {
-    max-width: 950px;
+    max-width: 800px;
     margin: auto;
   }
 </style>
@@ -38,13 +38,13 @@ Remove contextbar from top of page
             {{ control.id_display }} {{ control.title }}
           </h2>
           {% else %}
-            Control was not found in the catalog.
+            <h2 id="control-heading" class="">{{ control_id }}</h2>
           {% endif %}
         </div>
         <!-- Control Lookup-->
         <div style="float: right;">
             <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
-              <input type="text" name="id" placeholder="Enter control id" title="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
+              <input type="text" name="id" placeholder="Enter control id" title="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% else %}{{ control_id }}{% endif %}">
                   <button type="submit" class="btn btn-success">Look up</button>
                   <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   <a href="/">families</a> -->
@@ -55,22 +55,21 @@ Remove contextbar from top of page
     <p>&nbsp;</p>
 
     <div id="tab-content" class="row rows-header" style="">
-        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Official Control Text</div>
+      <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Control Catalog Text</div>
     </div>
 
     <div id="tab-content" class="row">
       {% if control.title is not None %}
       <div id="tab-content" class="row row-control" style="">
-        <div id="" class="col-xs-11 col-sm-11 col-md-11 col-lg-11 col-xl-11">
-          <div id="control-description" class="control-text"><h3>Description</h3>{% if control.description %}{{ control.description }}{% else %}No description provided.{% endif %}</div>
-          <div id="control-guidance" class="control-text"><h3>Guidance</h3>{% if control.guidance %}{{ control.guidance }}{% else %}No guidance provided.{% endif %}
-          </div>
-          <div id="control-guidance"  class="">
-            <h4>Links</h4>
+        <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+          <div id="control-description" class="control-text"><u>Control</u>: {% if control.description|slice:":6"|cut:" " == 'a.' %}<br /><br />{% endif %}{% if control.description %}{{ control.description }}{% else %}No description provided.{% endif %}</div>
+          <div id="control-guidance" class="control-text"><u>Discussion</u>: {% if control.guidance %}{{ control.guidance|cut:"<br/>" }}{% else %}No guidance provided.{% endif %}</div>
+          <div id="control-links" class="">
+            <u>Links</u>:
             {% if links %}
             <ul>
               {% for link in links %}
-                <li><a href="{{ link.href }}" target="_blank">{{ link.catalog }} {{ link.text }}</a></li>
+                <li><a href="{{ link.href }}" target="_blank">{% if link.catalog %}{{ link.catalog }} {% endif %}{{ link.text }}</a></li>
               {% endfor %}
             </ul>
             {% else %}
@@ -81,7 +80,7 @@ Remove contextbar from top of page
       </div>
       {% else %}
       <div id="control-message">
-        <p>Control is not found in the control catalog.</p>
+        <p>{{ catalog.catalog_key_display }} does not have a {{ control_id }}.</p>
       </div>
       {% endif %}
     </div>

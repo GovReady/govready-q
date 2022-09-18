@@ -16,6 +16,7 @@ v0.11.0-dev (September xx, 2022)
 * Add better styled ACE JSON editing widget to all admin pages for a model with JSONField.
 * Rename "Project" to "System" in navigation and several URLS. (NOTE: Many links still use "project" in code, reverses, etc.)
 * Display the system-level control implementation statement for a system (AKA "Legacy Control Implementation statement").
+* Improve displays of catalog control pages.
 
 **Developer changes**
 
