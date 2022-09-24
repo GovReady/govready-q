@@ -994,7 +994,6 @@ class OSCALComponentSerializer(ComponentSerializer):
             "party-uuids": [ str(party.get("uuid")) for party in parties ]
 
         }]
-        import ipdb; ipdb.set_trace()
         of = {
             "component-definition": {
                 "uuid": str(uuid4()),
