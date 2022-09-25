@@ -4939,8 +4939,9 @@ def __create_new_system(request, new_system_name, new_system_description="Missin
         "score_4": "~",
         "score_5": "~",
     }
-    project.import_record.add(import_record)
-    new_system.import_record.add(import_record)
+    if import_record is not None:
+        project.import_record.add(import_record)
+        new_system.import_record.add(import_record)
     new_system.add_event("SYS", new_system_msg)
     new_system.save_without_historical_record()
     project.save_without_historical_record()    
