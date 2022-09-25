@@ -5,6 +5,7 @@ import uuid
 import logging
 import json
 import os
+from datetime import datetime
 from .models import WorkflowImage
 
 """
@@ -83,6 +84,9 @@ class FeatureFactory:
     props: dict = field(default_factory=empty_dict)
     params: dict = field(default_factory=empty_dict)
     actions: list = field(default_factory=empty_list)
+    start_user: dict = field(default_factory=empty_dict)
+    complete_user: dict = field(default_factory=empty_dict)
+
     id: str = ''
     feature: Feature = field(default_factory=skeleton_feature)
     cmd_pattern: str = CMD_PATTERN
@@ -91,6 +95,8 @@ class FeatureFactory:
     prop_pattern: str = PROP_PATTERN
     test_pattern: str = TEST_PATTERN
     true_func_pattern: str = TRUE_FUNC_PATTERN
+    start_datetime: datetime = None
+    complete_datetime: datetime = None
 
     def __post_init__(self):
         self._set_cmd()
@@ -145,48 +151,31 @@ class FeatureFactory:
         self.feature.test_pattern = self.test_pattern = self.params.get('test', None)
         return None
 
-        # try:
-        #     regex = fr'{self.test_pattern}'
-        #     match_list = re.findall(regex, self.feature_descriptor)
-        #     if match_list:
-        #         self.feature.test_pattern = match_list[0]
-        # except:
-        #     msg = f"[ERROR] failure '{e}' parsing test_pattern '{self.feature_descriptor}'"
-        #     print(msg)
-        #     logging.exception(msg)
-
     def _set_true_action(self):
         """Parse out true action function from feature descriptor."""
         self.feature.true_action = self.true_action = self.params.get('true', None)
         return None
 
-        # try:
-        #     regex = fr'{self.true_func_pattern}'
-        #     match_list = re.findall(regex, self.feature_descriptor)
-        #     if match_list:
-        #         self.feature.true_action = match_list[0].lstrip('+')
-        # except Exception as e:
-        #     msg = f"[ERROR] failure '{e}' parsing true_func_pattern '{self.feature_descriptor}'"
-        #     print(msg)
-        #     logging.exception(msg)
-
     def _set_text(self):
         """Parse out feature content after removing cmd, props from feature descriptor."""
 
-        self.feature.text = self.text = self.params.get('prompt', "No prompt provided")
+        missing_prompt = "No prompt provided"
+        # use indicated prompt when defined
+        self.feature.text = self.text = self.params.get('prompt', None)
+        # use available text when no prompt defined
+        if self.feature.text is None:
+            self.text = self.feature_descriptor
+            regex_rm_cmd = fr'^{self.cmd_pattern} '
+            regex_rm_test = fr'{self.test_pattern}'
+            regex_rm_true_func = fr'{self.true_func_pattern}'
+            regex_rm_props = fr'{self.prop_pattern}'
+            for regex in [regex_rm_cmd, regex_rm_test, regex_rm_true_func, regex_rm_props]:
+                self.text = re.sub(regex, '', self.text).strip()
+            self.feature.text = self.text
+        # indicate missing prompt when no prompt determined
+        if self.feature.text == "" or self.feature.text is None:
+            self.feature.text = self.text = missing_prompt
         return None
-
-        # DO NOT DELETE - old method for for feature descriptor format: "step: freetext here prop1(val1) prop2(val2)"
-        # KEEP so we can also process simple text
-        # self.text = self.feature_descriptor
-        # regex_rm_cmd = fr'^{self.cmd_pattern} '
-        # regex_rm_test = fr'{self.test_pattern}'
-        # regex_rm_true_func = fr'{self.true_func_pattern}'
-        # regex_rm_props = fr'{self.prop_pattern}'
-        # for regex in [regex_rm_cmd, regex_rm_test, regex_rm_true_func, regex_rm_props]:
-        #     self.text = re.sub(regex, '', self.text).strip()
-        # self.feature.text = self.text
-        # return None
 
     def _set_id(self):
         """Set feature id via defined prop or hash of text."""
@@ -194,15 +183,6 @@ class FeatureFactory:
         h.update(str.encode(self.text))
         self.feature.id = self.id = self.params.get('id', h.hexdigest())
         return None
-
-        # id_prop = next((item for item in self.props if 'id' in item.keys()), None)
-        # if id_prop is not None:
-        #     self.id = id_prop['id']
-        # else:
-        #     h = blake2b(digest_size=4)
-        #     h.update(str.encode(self.text))
-        #     self.id = h.hexdigest()
-        # self.feature.id = self.id
 
 
 @dataclass
@@ -306,6 +286,8 @@ class FlowImageFactory:
                 feature_obj[field] = getattr(feature, field, None)
             feature_obj['complete'] =  False
             feature_obj['status'] = 'not-started'
+            feature_obj['start_datetime'] = None
+            feature_obj['complete_datetime'] = None
 
             if feature.cmd in ['rule', 'RULE']:
                 # finalize rule info and save obj to rules
@@ -349,7 +331,6 @@ class FlowImageFactory:
         # TODO: Support multiple line feature descriptors
         self.split_feature_descriptor_text()
         self.prepare_features()
-        print(11)
         wfi = self.update_or_create_workflowimage(workflowimage_record)
         return wfi
 
@@ -364,24 +345,15 @@ class FlowImageFactory:
             # TODO: should we get a new uuid if content of a workflow changes?
             if WorkflowImage.objects.filter(workflowrecipe=workflowrecipe).exists():
                 wfi = WorkflowImage.objects.filter(workflowrecipe=workflowrecipe)[0]
-
-                print('2')
                 wfi = self.update_or_create_workflowimage_from_flowtext(flowtext, wfi)
-                print('3')
             else:
-                print(4)
                 wfi = self.update_or_create_workflowimage_from_flowtext(flowtext)
-                print(5)
                 # relate new workflowimage to workflowrecipe
                 wfi.workflowrecipe = workflowrecipe
-                print(6)
             wfi.name = self.name
             wfi.workflow['name'] = self.name
-            print(7)
             wfi.workflow['description'] = self.description
-            print(8)
             wfi.save()
-            print(9)
         except:
             print("[ERROR] Failure in create_workflowimage_from_workflowrecipe")
         return wfi

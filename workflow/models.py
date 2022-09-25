@@ -5,11 +5,12 @@ from api.base.models import BaseModel
 from controls.models import System
 from siteapp.models import User
 from siteapp.model_mixins.tags import TagModelMixin
-
+import uuid
 from django.db import transaction
+import re
+from datetime import datetime
 
-from .functions import *
-
+from .functions.functions import *
 
 class WorkflowRecipe(auto_prefetch.Model, TagModelMixin, BaseModel):
     name = models.CharField(max_length=100, help_text="Descriptive name", unique=False, blank=True, null=True)
@@ -209,19 +210,29 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
         else:
             raise KeyError
 
-    def is_final_feature(self, feature):
-        """Returns True if feature is final feature in workflowinstance"""
-        if self.feature_keys.index(feature) == len(self.feature_keys) - 1:
-            return True
+    def set_curr_feature_started(self, curr_feature, who_name='self'):
+        """Set current feature started"""
+        if curr_feature in self.workflow['features'].keys():
+            self.workflow['features'][self.workflow['curr_feature']]['status'] = 'started'
+            self.workflow['features'][self.workflow['curr_feature']]['start_datetime'] = datetime.now().strftime("%Y-%m-%d-%H-%M")
+            self.log_event('set_feature_started', f'Set {self.curr_feature} to started', who_name)
         else:
-            return False
+            raise KeyError
 
     def set_curr_feature_completed(self, who='self'):
         """Set specfic feature complete"""
         who_name = User.username if (type(who) == User) else 'self'
         self.workflow['features'][self.workflow['curr_feature']]['status'] = 'completed'
         self.workflow['features'][self.workflow['curr_feature']]['complete'] = True
+        self.workflow['features'][self.workflow['curr_feature']]['complete_datetime'] = datetime.now().strftime("%Y-%m-%d-%H-%M")
         self.log_event('set_feature_completed', f'Set {self.curr_feature} to completed', who_name)
+
+    def is_final_feature(self, feature):
+        """Returns True if feature is final feature in workflowinstance"""
+        if self.feature_keys.index(feature) == len(self.feature_keys) - 1:
+            return True
+        else:
+            return False
 
     def set_workflowinstance_completed(self):
         """Set workflowinstance complete attribute to True"""
@@ -238,9 +249,11 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
     def log_event(self, name, description, who='self'):
         """Log event"""
         event = {
-            'name': name,
+            'who': who,
             'description': description,
-            'who': who
+            'name': name,
+            'curr_feature_id': self.workflow['curr_feature'],
+            'datetime': datetime.now().strftime("%Y-%m-%d-%H-%M")
         }
         self.log.append(event)
         return event
@@ -288,14 +301,14 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
                 expr_val = "TBD"
             print(f"[DEBUG] parse value:", expr_val)
         except:
-            print(f"[ERROR] Error parsing expression \"{expr}\"")
+            print(f"[ERROR] Error parsing expression in rule_eval_expr_item \"{expr}\"")
 
     def rule_eval_test(self, rule_obj):
         """Evaluate rule text expression and return True, False
             TODO: Replace with an AST interpreter
         """
 
-        test_expr_str = rule_obj['params']['test']
+        test_expr_str = rule_obj['test_pattern']
         # parse test into left expression, operation, right expression
         # expressions have the form "l_exp op r_exp", e.g., "1 == 1", "1 != 2", "var1 > var2", etc.
         try:
@@ -307,7 +320,7 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
             # print(f"[DEBUG] parse op evaluation:", test_eval)
             return self.rule_eval_comparison(l_expr, r_expr, op)
         except:
-            print(f"[ERROR] Error parsing expression \"{test_expr_str}\"")
+            print(f"[ERROR] Error parsing expression in rule_eval_test \"{test_expr_str}\"")
             return False
 
     def rule_proc_actionfunc(self, rule_obj, request):
@@ -318,7 +331,7 @@ class WorkflowInstance(auto_prefetch.Model, TagModelMixin, BaseModel):
 
         #### TODO ####
         # Currently working on getting rule to process
-        # matches pattern functionname(param1, param2, param3)
+        # matches pattern function(param1, param2, param3)
         m = re.match(r"(?P<func>\w+)\((?P<params>.*)\)", rule_obj['true_action'])
 
         if m:

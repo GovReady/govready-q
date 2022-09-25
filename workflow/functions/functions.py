@@ -1,9 +1,3 @@
-import random
-import os
-import re
-import json
-import uuid
-
 from django.contrib import messages
 
 class ActionFunc():
