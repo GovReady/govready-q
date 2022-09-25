@@ -4559,6 +4559,7 @@ def project_export(request, project_id):
                     "uuid": str(smt.uuid),
                 }
             }
+            json_serializer(poam)
             # Add json version as an element in the poams list
             poams.append(json.dumps(poam))
     questionnaire_data = json.dumps(project.export_json(include_metadata=True, include_file_content=True))

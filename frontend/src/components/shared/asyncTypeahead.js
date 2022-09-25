@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable */
+import React, { useState, useEffect, useRef } from "react";
+import axios from 'axios';
+
 import Input from "@mui/material/Input";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -53,11 +56,16 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds, searchB
   const [cache, setCache] = useState({});
   const [selected, setSelected] = useState([]);
   const classes = useStyles();
+  const elementRef = useRef(null);
 
+  useEffect(() => {
+    // Query empty string to showcase entire list of options to the user
+    handleSearch('');
+  }, [])
+  
   useEffect(() => {
     setState((prev) => ({ ...prev, excludeIds: excludeIds }));
   }, [excludeIds]);
-
   const onSelected = (selected) => {
     setSelected([]);
     onSelect(selected);
@@ -71,7 +79,6 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds, searchB
   const handlePagination = (e, shownResults) => {
     const { query } = state;
     const cachedQuery = cache[query];
-
     // Don't make another request if:
     // - the cached results exceed the shown results
     // - we've already fetched all possible results
@@ -99,7 +106,6 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds, searchB
     //   setState((prev) => ({ ...prev, options: cache[query].options }));
     //   return;
     // }
-
     setState((prev) => ({ ...prev, isLoading: true }));
     makeAndHandleRequest(endpoint, order, query, state.excludeIds).then(
       (resp) => {
@@ -112,15 +118,16 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds, searchB
       }
     );
   };
-
+  
   return (
     <AsyncTypeahead
       {...state}
       id="user-lookup-async-pagination"
       labelKey={primaryKey}
       isLoading={state.isLoading}
+      ref={elementRef}
       maxResults={PER_PAGE - 1}
-      minLength={2}
+      minLength={0}
       style={{ width: "100%", zIndex: 1 }}
       onInputChange={handleInputChange}
       onPaginate={handlePagination}
@@ -130,6 +137,8 @@ export const AsyncPagination = ({ endpoint, order, onSelect, excludeIds, searchB
       promptText={""}
       filterBy={() => true}
       paginate
+      clearButton
+      highlightOnlyResult
       placeholder={placeholder}
       renderInput={({ inputRef, referenceElementRef, ...inputProps }) => (
         <FormControl variant="standard" style={{ width: searchBarLength }}>
