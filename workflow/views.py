@@ -233,7 +233,7 @@ def workflowinstances_all(request):
     """List all workflow instances"""
     
     workflowinstancesets = WorkflowInstanceSet.objects.all()
-    system_workflowinstances = WorkflowInstance.objects.all()
+    system_workflowinstances = WorkflowInstance.objects.exclude(workflowinstanceset=None).order_by('name','id')
     orphan_workflowinstances = WorkflowInstance.objects.filter(workflowinstanceset=None).order_by('name','id')
 
     context = {
