@@ -107,7 +107,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
   const [isEditValid, setIsEditValid] = useState(false);
   const [removeAppointments, setRemovedAppointments] = useState([]);
   const [createNewParty, setCreateNewParty] = useState({
-    party_type: '',
+    party_type: 'person',
     name: '',
     short_name: '',
     email: '',  
@@ -187,6 +187,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
     
     let hasRoles = createNewParty.roles.length > 0;
     let allAreTrue = valid.every(val => val === true);
+    // debugger;
     setIsValid(allAreTrue && hasRoles);
   }, [validated, createNewParty]);
 
@@ -292,7 +293,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
     setOpenAddNewPartyModal(false);
     setOpenAddNewRoleModal(false);
     setCreateNewParty({
-      party_type: '',
+      party_type: 'person',
       name: '',
       short_name: '',
       email: '',  
@@ -329,7 +330,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
 
   const clearPartyInfo = () => {
     setCreateNewParty({
-      party_type: '',
+      party_type: 'person',
       name: '',
       short_name: '',
       email: '',  
@@ -679,21 +680,22 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
   ]);
 
   const getPartyTypeValidation = () => {
-    if(createNewParty.party_type === ''){
-      if(validated.party_type === 'warning'){
-        return 'warning';
-      } else {
-        setValidated((prev) => ({...prev, party_type: 'warning'}));
-        return 'warning';
-      }
-    } else {
-      if(validated.party_type !== 'success'){
-        setValidated((prev) => ({...prev, party_type: 'success'}));
-        return 'success';
-      } else {
-        return 'success';
-      }
-    }
+    return 'success';
+    // if(createNewParty.party_type === ''){
+    //   if(validated.party_type === 'warning'){
+    //     return 'warning';
+    //   } else {
+    //     setValidated((prev) => ({...prev, party_type: 'warning'}));
+    //     return 'warning';
+    //   }
+    // } else {
+    //   if(validated.party_type !== 'success'){
+    //     setValidated((prev) => ({...prev, party_type: 'success'}));
+    //     return 'success';
+    //   } else {
+    //     return 'success';
+    //   }
+    // }
   }
   const getRoleTitleValidation = () => {
     if(createNewRole.title === ''){
@@ -990,7 +992,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
       }));
     }
   };
-  
+  console.log(`validation: ${validated} isValid: ${isValid}`)
   return (
     <div style={{ maxHeight: '2000px', width: '100%' }}>
       <Grid className="poc-data-grid" sx={{ minHeight: '500px' }}>
@@ -1407,7 +1409,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
                     </Col>
                   </Row>
                 </FormGroup>
-                <FormGroup validationState={createNewParty.id !== undefined ? getPartyNameValidation() : getEditPartyNameValidation()}>
+                <FormGroup validationState={getPartyNameValidation()}>
                   <Row>
                     <Col componentClass={ControlLabel} sm={4} style={{ paddingLeft: '5rem', textAlign: 'left' }}>
                       {'Name'}

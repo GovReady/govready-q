@@ -1419,6 +1419,26 @@ class Tag(BaseModel):
     def serialize(self):
         return {"label": self.label, "system_created": self.system_created, "id": self.id}
 
+class Location(BaseModel):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Location.")
+    title = models.CharField(max_length=250, unique=False, blank=False, null=False, help_text="Title of Location.")
+    address_type = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="Type of address")
+    street = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="Street address")
+    apt = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="Apt/Suite")
+    city = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="City")
+    state = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="State")
+    zipcode = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="Zip")
+    country = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="Country")
+    remarks = models.TextField(unique=False, blank=True, null=True, help_text="Remarks")
+    
+    def __repr__(self):
+        return self.title
+
+    def __str__(self):
+        return self.title
+
+    def serialize(self):
+        return {"title": self.title, "id": self.id}
 
 class Party(BaseModel):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Party.")

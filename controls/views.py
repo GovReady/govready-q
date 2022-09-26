@@ -10,6 +10,7 @@ from collections import defaultdict
 from datetime import datetime
 from itertools import groupby
 from pathlib import PurePath
+from tracemalloc import start
 from urllib.parse import quote, urlunparse
 from uuid import uuid4
 import re
@@ -33,7 +34,7 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView
 from django.urls import reverse
-from jsonschema import validate
+from jsonschema import validate, FormatChecker
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from urllib.parse import quote
 
@@ -981,54 +982,236 @@ class OSCALComponentSerializer(ComponentSerializer):
         source = src_str
         return source
 
-    def as_json(self):
-        # Build OSCAL
-        # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
+    def create_oscal_obj_based_on_version(self, version): 
+        """ Switch OSCAL Component Model version type """
+        # from jsonschema import validates
         comp_uuid = str(self.element.uuid)
         control_implementations = []
-        props = []
         orgs = list(Organization.objects.all())  # TODO: orgs need uuids, not sure which orgs to use for a component
-        parties = [{"uuid": str(uuid.uuid4()), "type": "organization", "name": org.name} for org in orgs]
-        responsible_roles =  [{
-           "role-id": "supplier",# TODO: Not sure what this refers to
-            "party-uuids": [ str(party.get("uuid")) for party in parties ]
+        
+        
 
-        }]
-        import ipdb; ipdb.set_trace()
+        # controls\data\oscal_shemas\1.0.0\oscal_component_schema.json
+        # TODO FALCON: meta data
+       
+        # parties = [{"uuid": str(uuid.uuid4()), "type": "organization", "name": org.name} for org in orgs]
+        # responsibleParties = [] #TODO FALCON: an array of responsible-party objects
+            # role-id - token
+            # party-uuid
+            # props - array of prop objects
+                # name [1]: token,
+                # uuid [0 or 1]: uuid
+                # ns [0 or 1]: uri,
+                # value [1]: string,
+                # class [0 or 1]: token,
+                # remarks [0 or 1]: markup-multiline,
+            # links - array of link objects
+                # href [1]: uri-reference,
+                # rel [0 or 1]: token,
+                # media-type [0 or 1]: string
+                # text [0 or 1]: markup-line,
+            # remarks - markup-multiline
+        # remarks = ""
+
+        # responsible_roles =  [{
+        #    "role-id": "supplier",# TODO: Not sure what this refers to
+        #     "party-uuids": [ str(party.get("uuid")) for party in parties ]
+
+        # }]
+        # Add component's tags if they exist
+        
+
+
+        list_of_parties = []
+        list_of_roles = []
+        list_of_resp_parties = []
+        list_of_resp_roles = []
+        list_of_locations = []
+        list_of_revisions = []
+        list_of_document_ids = []
+        list_of_props = []
+        list_of_links = []
+        remarks = '' # markup-line data type are also supported by the markup-multiline data type,
+        purpose = 'PURPOSEFUL AND STUFF'
+
+
+        if self.element.tags.exists():
+            list_of_props.extend([{"name": "tag", "ns": "https://govready.com/ns/oscal", "value": tag.label} for tag in self.element.tags.all()])
+
+        # for location in Location.objects.all():
+        #     loc = {
+        #         "uuid": str(location.uuid),
+        #         "title": location.title,
+        #         "address": {
+        #             "type": location.address_type,
+        #             "addr-lines": [location.apt, location.street],
+        #             "city": location.city,
+        #             "state": location.state,
+        #             "postal-code": location.zipcode,
+        #         },
+        #         "remarks": location.remarks,
+        #     }
+        #     list_of_locations.append(loc)
+        for appointment in self.element.appointments.all():
+            party = {
+                "uuid": str(appointment.party.uuid),
+                "type": appointment.party.party_type,
+                "name": appointment.party.name,
+                "short-name": appointment.party.short_name,
+                "email-addresses": [appointment.party.email],
+                "telephone-numbers": [
+                    {
+                        "type": "home", "number": appointment.party.phone_number
+                    },
+                    {
+                        "type": "mobile", "number": appointment.party.mobile_phone,
+                    }
+                ]
+            }
+            role = {
+                "id": appointment.role.role_id,
+                "title": appointment.role.title,
+                "short-name": appointment.role.short_name,
+                "description": appointment.role.description,
+                # props
+                # links
+                # remarks
+            }
+            respParty = {
+                'role-id': role["id"],
+                'party-uuids': [party["uuid"]]
+            }
+            respRole = respParty
+
+            if len(list_of_resp_parties) == 0:
+                list_of_resp_parties.append(respParty)
+            
+            if len(list_of_resp_roles) == 0:
+                list_of_resp_roles.append(respRole)
+
+            # Adding resp party to its respective index
+            if role["id"] in [x['role-id'] for x in list_of_resp_parties]:
+                for x in list_of_resp_parties:
+                    if x['role-id'] == role["id"] and party['uuid'] not in x['party-uuids']:
+                        x['party-uuids'].append(party["uuid"])
+            else:
+                list_of_resp_parties.append(respParty)
+
+            if role["id"] in [x['role-id'] for x in list_of_resp_roles]:
+                for x in list_of_resp_roles:
+                    if x['role-id'] == role["id"] and party['uuid'] not in x['party-uuids']:
+                        x['party-uuids'].append(party["uuid"])
+            else:
+                list_of_resp_roles.append(respRole)
+
+            if party not in list_of_parties:
+                list_of_parties.append(party)
+
+            if role not in list_of_roles:
+                list_of_roles.append(role)
+
+        parties = [
+            {
+                "uuid": str(uuid.uuid4()), 
+                "type": "organization", 
+                "name": org.name
+            } for org in orgs]
+        parties.extend(list_of_parties)
+        
+        # Get protocols
+        protocols = [] # array of protocol objects
+            # uuid
+            # name
+            # title
+            # port-ranges # array of port range objects
+            #     start
+            #     end
+            #     transport
+
+
+        # Only initialize required information
         of = {
             "component-definition": {
+                # TODO: component-definition UUID should not be new every load, only updates to new UUID when there has been a change
                 "uuid": str(uuid4()),
                 "metadata": {
                     "title": "{}".format(self.element.name),
+                    # "published": "", #TODO FALCON: published - date oscal was published, could be 0 or 1 instance
                     "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
                     "version": self.element.updated.replace(microsecond=0).isoformat(),
                     "oscal-version": self.element.oscal_version,
-                    "parties": parties
+                    
+                    # revisions
+                    # document-ids
+                    # props
+                    # links
+                    # locoations
                 },
+                #TODO FALCON: import-component-definitions, capabilities, back-matter
                 "components": [
                    {
                         "uuid": comp_uuid,
                         "type": self.element.component_type.lower() if self.element.component_type is not None else "software",
                         "title": self.element.full_name or self.element.name,
                         "description": self.element.description,
-                        "responsible-roles": responsible_roles, # TODO: gathering party-uuids, just filling for now
-                        "props": props,
+                        # "props": props, #TODO FALCON:
                         "control-implementations": control_implementations
                     }
-                ]
+                ],
             },
         }
+        
+        if len(list_of_revisions) != 0:
+            of['component-definition']['metadata']['revisions'] = list_of_revisions
 
-        # Add component's tags if they exist
-        if self.element.tags.exists():
-            props.extend([{"name": "tag", "ns": "https://govready.com/ns/oscal", "value": tag.label} for tag in self.element.tags.all()])
+        if len(list_of_document_ids) != 0:
+            of['component-definition']['metadata']['document-ids'] = list_of_document_ids
+
+        if len(list_of_props) != 0:
+            of['component-definition']['metadata']['props'] = list_of_props
+        
+        if len(list_of_links) != 0:
+            of['component-definition']['metadata']['links'] = list_of_links
+
+        if len(list_of_locations) != 0:
+            of['component-definition']['metadata']['locations'] = list_of_locations
+
+        if len(list_of_roles) != 0:
+            of['component-definition']['metadata']['roles'] = list_of_roles
+
+        if len(parties) != 0:
+            of['component-definition']['metadata']['parties'] = parties
+
+        if len(list_of_resp_parties) != 0:
+            of['component-definition']['metadata']['responsible-parties'] = list_of_resp_parties
+        # TODO FALCON: Add published attribute to element
+        # if self.element.published:
+        #     of['component-definition']['metadata']['published'] == self.element.published
+
+        if remarks:
+            of['component-definition']['metadata']['remarks'] = remarks
+
+
+        # TODO FALCON: Add purpose attribute to element
+        for component in of['component-definition']['components']:
+            if comp_uuid == component['uuid']:
+                indx = of['component-definition']['components'].index(component)
+                
+                if purpose: #self.element.purpose:
+                    of['component-definition']['components'][indx]['purpose'] = purpose
+                if len(list_of_resp_roles) != 0:
+                    of['component-definition']['components'][indx]['responsible-roles'] = list_of_resp_roles
+                # add protocols to components
+                if len(protocols) != 0:
+                    of['component-definition']['components'][indx]['protocols'] = protocols
+        
 
         # Remove 'metadata.props' key if no metadata.props exist
-        if len(props) == 0:
-            of['component-definition']['metadata'].pop('props', None)
+        # if len(list_of_props) == 0:
+        #     of['component-definition']['metadata'].pop('props', None)
 
         # create requirements and organize by source (sid_class)
-
+        # import ipdb; ipdb.set_trace()
         by_class = defaultdict(list)
 
         # work:
@@ -1065,7 +1248,17 @@ class OSCALComponentSerializer(ComponentSerializer):
         # Remove 'control-implementations' key if no implementations exist
         if len(control_implementations) == 0:
             of['component-definition']['components'][0].pop('control-implementations', None)
+        return of
 
+    def as_json(self):
+        # Build OSCAL
+        # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
+        #open the file
+        with open('controls/data/oscal_shemas/1.0.0/oscal_component_schema.json') as f:
+            component_schema = json.load(f)
+        of = self.create_oscal_obj_based_on_version("1.0.4")
+        # import ipdb; ipdb.set_trace()
+        # validated = validate(instance= of, schema=component_schema)
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
 
