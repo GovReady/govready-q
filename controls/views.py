@@ -982,7 +982,7 @@ class OSCALComponentSerializer(ComponentSerializer):
         source = src_str
         return source
 
-    def create_oscal_obj_based_on_version(self, version): 
+    def create_oscal_obj_based_on_version(self): 
         """ Switch OSCAL Component Model version type """
         # from jsonschema import validates
         comp_uuid = str(self.element.uuid)
@@ -1020,8 +1020,6 @@ class OSCALComponentSerializer(ComponentSerializer):
         # }]
         # Add component's tags if they exist
         
-
-
         list_of_parties = []
         list_of_roles = []
         list_of_resp_parties = []
@@ -1052,6 +1050,7 @@ class OSCALComponentSerializer(ComponentSerializer):
         #         "remarks": location.remarks,
         #     }
         #     list_of_locations.append(loc)
+
         for appointment in self.element.appointments.all():
             party = {
                 "uuid": str(appointment.party.uuid),
@@ -1145,7 +1144,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                     # document-ids
                     # props
                     # links
-                    # locoations
+                    # locations
                 },
                 #TODO FALCON: import-component-definitions, capabilities, back-matter
                 "components": [
@@ -1154,7 +1153,6 @@ class OSCALComponentSerializer(ComponentSerializer):
                         "type": self.element.component_type.lower() if self.element.component_type is not None else "software",
                         "title": self.element.full_name or self.element.name,
                         "description": self.element.description,
-                        # "props": props, #TODO FALCON:
                         "control-implementations": control_implementations
                     }
                 ],
@@ -1211,7 +1209,7 @@ class OSCALComponentSerializer(ComponentSerializer):
         #     of['component-definition']['metadata'].pop('props', None)
 
         # create requirements and organize by source (sid_class)
-        # import ipdb; ipdb.set_trace()
+
         by_class = defaultdict(list)
 
         # work:
@@ -1248,19 +1246,36 @@ class OSCALComponentSerializer(ComponentSerializer):
         # Remove 'control-implementations' key if no implementations exist
         if len(control_implementations) == 0:
             of['component-definition']['components'][0].pop('control-implementations', None)
+        
+        
         return of
+
+    def validate_component_oscal(self, oscal_dict):
+        validated = False
+
+        try:
+            # validate that this object is valid by the component definition
+            trestlecomponent.ComponentDefinition.validate(oscal_dict)
+            validated = True
+        except:
+            validated = False
+
+        return validated
 
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
         #open the file
-        with open('controls/data/oscal_shemas/1.0.0/oscal_component_schema.json') as f:
-            component_schema = json.load(f)
-        of = self.create_oscal_obj_based_on_version("1.0.4")
-        # import ipdb; ipdb.set_trace()
-        # validated = validate(instance= of, schema=component_schema)
-        oscal_string = json.dumps(of, sort_keys=False, indent=2)
-        return oscal_string
+        # with open('controls/data/oscal_shemas/1.0.0/oscal_component_schema.json') as f:
+        #     component_schema = json.load(f)
+        of = self.create_oscal_obj_based_on_version()
+        component_val = self.validate_component_oscal(of['component-definition'])
+
+        if component_val:
+            oscal_string = json.dumps(of, sort_keys=False, indent=2)
+            return oscal_string
+        else:
+            return "error"
 
 class OpenControlComponentSerializer(ComponentSerializer):
 
@@ -1390,6 +1405,38 @@ class ComponentImporter(object):
         """Creates Elements (Components) from valid OSCAL JSON"""
         components_created = []
         components = oscal_json['component-definition']['components']
+        # Check roles and parties, if it exists skip, else create
+        
+        for role in oscal_json['component-definition']['metadata']['roles']:
+            original_role, new_role = Role.objects.get_or_create(
+                role_id = role['id'],
+                title = role['title'],
+                short_name = role['short-name'],
+                description = role['description']
+            )
+            print(original_role, new_role)
+        
+        for party in oscal_json['component-definition']['metadata']['parties']:
+            if party['type'] == 'person':
+                # Check if party name is a name in Users
+                try:
+                    getUser = User.objects.get(Q(name=party['name']))
+                except User.DoesNotExist:
+                    getUser = None
+                original_party, new_party = Party.objects.get_or_create(
+                    uuid = party['uuid'],
+                    party_type = party['type'],
+                    name = party['name'],
+                    short_name = party['short-name'] if "short-name" in party else "",
+                    email = party['email-addresses'][0] if "email-addresses" in party else "",
+                    phone_number = party['telephone-numbers'][0]['number'] if "telephone-numbers" in party else "",
+                    mobile_phone = party['telephone-numbers'][1]['number'] if "telephone-numbers" in party else "",
+                    user = getUser if getUser is not None else None
+                )   
+                print(original_party, new_party)
+            else:
+                print('create orgnization')
+
         for component in components:
             new_component = self.create_component(component, user_owner)
             if new_component is not None:
@@ -1420,6 +1467,27 @@ class ComponentImporter(object):
             component_type=component_json['type'] if 'type' in component_json else "software",
             private=private
         )
+
+        # TODO FALCON - Assign users the ability to view/edit the component
+        # Appoint party role to element
+
+        new_appointments = []
+        for resp_role in component_json['responsible-roles']:
+            for party_uuid in resp_role['party-uuids']:
+                party = Party.objects.get(uuid=party_uuid)
+                role = Role.objects.get(role_id=resp_role['role-id'])
+                if party.user is not None:
+                    new_component.assign_user_permissions(party.user, ['view_element', 'change_element'])
+                new_appoint = Appointment.objects.create(
+                    party=party,
+                    role=role,
+                    model_name="element",
+                    comment=f"Assigning Party: {party.name} to the role of {role.title} for the {new_component.name} element through Component Import."
+                )
+                new_appoint.save()
+                new_appointments.append(new_appoint.id)
+        new_component.add_appointments(new_appointments)
+        new_component.save()
 
         logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
         if user_owner:

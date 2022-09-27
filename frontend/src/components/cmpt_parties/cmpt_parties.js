@@ -992,7 +992,7 @@ export const ComponentParties = ({ elementId, poc_users, isOwner, isAdmin }) => 
       }));
     }
   };
-  console.log(`validation: ${validated} isValid: ${isValid}`)
+  
   return (
     <div style={{ maxHeight: '2000px', width: '100%' }}>
       <Grid className="poc-data-grid" sx={{ minHeight: '500px' }}>

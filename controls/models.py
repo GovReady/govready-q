@@ -291,6 +291,7 @@ class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, Request
     component_state = models.CharField(default="operational", max_length=50, help_text="OSCAL Component State.", unique=False, blank=True, null=True, choices=ComponentStateEnum.choices())
     private = models.BooleanField(blank=False, null=False, default=True, help_text="Component is private.")
     require_approval = models.BooleanField(blank=False, null=False, default=False, help_text="Component requires approval to use.")
+    purpose = models.TextField(default="", help_text="A summary of the technological or business purpose of the component.", unique=False, blank=True, null=False)
     # prequisites = models.TextField(unique=False, blank=True, null=True, help_text="Prequisites for the Element.")
 
     # Notes
