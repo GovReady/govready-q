@@ -1371,7 +1371,12 @@ class ComponentImporter(object):
             user_owner = request.user
         else:
             user_owner = User.objects.filter(is_superuser=True)[0]
-        created_components = self.create_components(oscal_json, user_owner)
+        try:
+            created_components = self.create_components(oscal_json, user_owner)
+        except BaseException as e:
+            # REDIRECT TO PREVIOUS PAGE
+            messages.add_message(request, messages.ERROR, f"ERROR: {e.args}")
+            return HttpResponseRedirect("/controls/components")
         new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
         return new_import_record
 
@@ -1407,35 +1412,42 @@ class ComponentImporter(object):
         components = oscal_json['component-definition']['components']
         # Check roles and parties, if it exists skip, else create
         
-        for role in oscal_json['component-definition']['metadata']['roles']:
-            original_role, new_role = Role.objects.get_or_create(
-                role_id = role['id'],
-                title = role['title'],
-                short_name = role['short-name'],
-                description = role['description']
-            )
-            print(original_role, new_role)
+        # TODO What to fix:
+        # what to do if no roles/parties
+        # known parties/roles
         
-        for party in oscal_json['component-definition']['metadata']['parties']:
-            if party['type'] == 'person':
-                # Check if party name is a name in Users
-                try:
-                    getUser = User.objects.get(Q(name=party['name']))
-                except User.DoesNotExist:
-                    getUser = None
-                original_party, new_party = Party.objects.get_or_create(
-                    uuid = party['uuid'],
-                    party_type = party['type'],
-                    name = party['name'],
-                    short_name = party['short-name'] if "short-name" in party else "",
-                    email = party['email-addresses'][0] if "email-addresses" in party else "",
-                    phone_number = party['telephone-numbers'][0]['number'] if "telephone-numbers" in party else "",
-                    mobile_phone = party['telephone-numbers'][1]['number'] if "telephone-numbers" in party else "",
-                    user = getUser if getUser is not None else None
-                )   
-                print(original_party, new_party)
-            else:
-                print('create orgnization')
+        if "roles" in oscal_json['component-definition']['metadata']:
+            for role in oscal_json['component-definition']['metadata']['roles']:
+                original_role, new_role = Role.objects.get_or_create(
+                    role_id = role['id'],
+                    title = role['title'],
+                    short_name = role['short-name'],
+                    description = role['description']
+                )
+        if "parties" in oscal_json['component-definition']['metadata']:
+            for party in oscal_json['component-definition']['metadata']['parties']:
+                if party['type'] == 'person':
+                    # Check if party name is a name in Users
+                    try:
+                        getUser = User.objects.get(Q(name=party['name']))
+                    except User.DoesNotExist:
+                        getUser = None
+                    
+                    getParty, wasPartyCreated = Party.objects.get_or_create(
+                        uuid = party['uuid'],
+                        party_type = party['type'],
+                        name = party['name'],
+                        short_name = party['short-name'] if "short-name" in party else "",
+                        email = party['email-addresses'][0] if "email-addresses" in party else "",
+                        phone_number = party['telephone-numbers'][0]['number'] if "telephone-numbers" in party else "",
+                        mobile_phone = party['telephone-numbers'][1]['number'] if "telephone-numbers" in party else "",
+                    )
+
+                    if getParty and getParty.user is None and getUser is not None:
+                        getParty.user = getUser
+                        getParty.save()
+                else:
+                    print('create orgnization')
 
         for component in components:
             new_component = self.create_component(component, user_owner)
@@ -1468,14 +1480,14 @@ class ComponentImporter(object):
             private=private
         )
 
-        # TODO FALCON - Assign users the ability to view/edit the component
-        # Appoint party role to element
+        # Assign users the ability to view/edit the component
 
         new_appointments = []
         for resp_role in component_json['responsible-roles']:
             for party_uuid in resp_role['party-uuids']:
                 party = Party.objects.get(uuid=party_uuid)
                 role = Role.objects.get(role_id=resp_role['role-id'])
+
                 if party.user is not None:
                     new_component.assign_user_permissions(party.user, ['view_element', 'change_element'])
                 new_appoint = Appointment.objects.create(

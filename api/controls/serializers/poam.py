@@ -69,7 +69,6 @@ class SimpleSpreadsheetPoamSerializer(ReadOnlySerializer):
             try:
                 df_dict = pandas.read_excel(fn, header=1)
                 for index, row in df_dict.iterrows():
-                    # import ipdb; ipdb.set_trace()
                     if "CSAM ID" in system.info  and system.info["CSAM ID"] == row.get('CSAM ID'):
                         poam_dict = {
                             "id": index,
