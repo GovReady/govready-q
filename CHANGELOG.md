@@ -8,7 +8,7 @@ v0.11.0-dev (September xx, 2022)
 
 * Support dynamic POA&M spreadsheet upload and editing.
 * Support a system-level control implementation statement.
-
+* Support workflow capability with ability to define workflows.
 
 **UI changes**
 
