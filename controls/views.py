@@ -1377,6 +1377,15 @@ class ComponentImporter(object):
             # REDIRECT TO PREVIOUS PAGE
             messages.add_message(request, messages.ERROR, f"ERROR: {e.args}")
             return HttpResponseRedirect("/controls/components")
+            
+        # if the user inserted oscal text instead of uploading a file
+        # Create an Import Records name from the components created 
+        if import_name == '':
+            for comp in created_components:
+                import_name += comp.name + '_'
+            import_name = import_name.replace(" ", "_")
+            import_name += "file"
+
         new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
         return new_import_record
 
@@ -1394,6 +1403,7 @@ class ComponentImporter(object):
         """
 
         import_record = ImportRecord.objects.filter(name=import_name).last()
+
         if import_record is None or not existing_import_record:
             import_record = ImportRecord.objects.create(name=import_name)
         for component in components:

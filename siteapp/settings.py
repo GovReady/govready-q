@@ -165,7 +165,8 @@ MIDDLEWARE = [
 	'pyinstrument.middleware.ProfilerMiddleware',
 	#'django.middleware.cache.FetchFromCacheMiddleware',
 	'session_security.middleware.SessionSecurityMiddleware',
-    "siteapp.middleware.banner.BannerMiddleware"
+    "siteapp.middleware.banner.BannerMiddleware",
+    "siteapp.middleware.error.ErrorMiddleware"
 ]  
 
 # The cache connection to use for the cache middleware.
