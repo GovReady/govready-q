@@ -11,22 +11,7 @@ Workflow Recipes
 
 {% block head %}
 <style type="text/css">
-    /*.stepper-wrapper { margin-top: auto; display: flex; justify-content: space-between; margin-bottom: 20px; }
-    .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; flex: 1;
-    @media (max-width: 768px) { font-size: 12px; }
-    }
-    .stepper-item::before { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: -50%; z-index: 2; }
-    .stepper-item::after { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: 50%; z-index: 2; }
-    .stepper-item .step-counter { position: relative; z-index: 5; display: flex; justify-content: center; align-items: center; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 2px solid #bebebe; margin-bottom: 6px; color: #bebebe;
-    font-weight: bold; }
-    .stepper-item.active { font-weight: bold; }
-    .stepper-item.completed .step-counter { background-color: #4bb543; border: 2px solid #4bb543; }
-    .stepper-item.completed::after { position: absolute; content: ""; border-bottom: 2px solid #4bb543; width: 100%; top: 15px; left: 50%; z-index: 3; }
-    .stepper-item:first-child::before { content: none; }
-    .stepper-item:last-child::after { content: none; }
-    .step-name { text-align: center; }
-    .stepper-item.completed .step-counter { color: white; }*/
-    .heading { font-weight: bold; text-align: center;}
+    .heading { font-weight: bold; text-align: left;}
     .workflowinstance a { color: black; }
     .bottom-border { border-bottom: 0.5px solid #888; }
 
@@ -58,18 +43,18 @@ Workflow Recipes
       <a id="new-portfolio" href="/workflow/recipes/manage" class="btn btn-success">Create a recipe</a>
     </div>
     <p>&nbsp;</p>
-    <h2>All Workflow Recipes</h2>
+    <h2>Workflow Recipes</h2>
 
     <p>&nbsp;</p>
             <div class="row bottom-border">
                 <div class="col-md-4 heading">
                     Workflow Recipe
                 </div>
-                <div class="col-md-1 heading">
-                    ID
-                </div>
                 <div class="col-md-6 heading">
-                    Details
+                    Description
+                </div>
+                <div class="col-md-1 heading">
+                    {% if is_admin %}ID{% endif %}
                 </div>
                 <div class="col-md-1 heading">
                     Actions
@@ -80,9 +65,6 @@ Workflow Recipes
                 <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
                     <div class="col-md-4">
                         <a href="{% url 'edit_recipe' item.id %}" target="">{{ item.name }}</a>
-                    </div>
-                    <div class="col-md-1" style="text-align: center;">
-                        <a href="/admin/workflow/workflowrecipe/{{ item.id }}/change/" target="_blank">{{ item.id }}</a>
                     </div>
                     <div class="col-md-6" style="">
                         <div>{{ item.description }}</div>
@@ -108,14 +90,27 @@ Workflow Recipes
                         {% endfor %}
                         {% endcomment %}
                     </div>
-                    <div class="col-md-1" style="text-align: center;">
+                    <div class="col-md-1" style="">
+                        {% if is_admin %}
+                            <a href="/admin/workflow/workflowrecipe/{{ item.id }}/change/" target="_blank">{{ item.id }}</a>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-1" style="">
                         <span class="dropdown">
                           <a href="#" class="action-link" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="" aria-label="Dropdown menu for workflow recipe"><span class="glyphicon glyphicon-cog"></span>
                           </a>
                           <ul class="dropdown-menu">
-                            <li>
+                            <!-- <li>
                                 <a id="" class="action-link" href="{% url 'create_workflowimage' item.id %}" title="Create workflow image" aria-label="Create workflow image"><span class="glyphicon glyphicon-flash"></span> create workflow image</a>
+                            </li> -->
+
+                            <li>
+                                <a id="" class="action-link" href="{% url 'create_workflowinstance_from_recipe' item.id %}" title="Create workflow instance" aria-label="Create workflow instance"><span class="glyphicon glyphicon-flash"></span> create workflow</a>
                             </li>
+                            <li>
+                                <a id="" class="action-link" href="{% url 'create_system_worflowinstances_from_recipe' item.id %}" title="Create workflow instance all systems" aria-label="Create workflow instance all systems"><span class="glyphicon glyphicon-flash"></span> assign workflow all systems</a>
+                            </li>
+
                             <li>
                                 <a id="" class="action-link" href="{% url 'edit_recipe' item.id %}" title="Edit recipe" aria-label="Edit recipe" ><span class="glyphicon glyphicon-pencil"></span> edit</a>
                             </li>

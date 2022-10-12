@@ -5,7 +5,25 @@ import uuid
 import logging
 import json
 import os
+from datetime import datetime
 from .models import WorkflowImage
+
+"""
+
+Current format:
+<step prompt="Wake up 3.1" name="step 1" >
+<question prompt="Exercise" name="exercise>
+<step name="Shower" prompt="Take shower">
+<step prompt="Eat breakfast" name"breakfast">
+<choice step__name="exercise" options="Yes, No">
+<rule step__name="step 1" comment="Set answer a”after step 1 complete test="step 1 == 'done'" true="SETANS(a,b)">
+<rule comment="Send an email 3.1" test="status@step 1 == not-started" true='SENDEMAIL(to="var ",subject="something", msg="this needs to support a long message with variable substitution")'>
+
+Alternate formats:
+rule: hide small org internal SOC question if($org.size = Small) true=$viewque(org.internal_soc, False) false=$SETANS(org.internal_soc, some value)
+rule: hide small org internal SOC question if($org.size = Small) true=viewque(org.internal_soc, False) false=SETANS(org.internal_soc, some value)
+
+"""
 
 def empty_list():
     return []
@@ -29,6 +47,30 @@ def skeleton_feature():
     return Feature()
 
 
+CMD_PATTERN = '(?P<cmd>^<[A-Za-z:]+|[A-Z:]+|[a-zA-Z]+:)'
+PROMPT_PATTERN = 'prompt=".*?"|PROMPT=\'.*?\''
+PARAM_PATTERN = '[a-zA-Z_\-.0-9]+=".*?"'
+PROP_PATTERN = '[a-zA-Z_\-.0-9]*\(.*?\)'
+TEST_PATTERN = '(IF:\(.*?\)|if:\(.*?\))'
+TRUE_FUNC_PATTERN = '([+][a-zA-Z_\-.0-9]*:\(.*?\))'
+
+def get_cmd(feature_descriptor):
+    """Return parsed command from feature descriptor."""
+
+    try:
+        regex = fr'^{CMD_PATTERN} (?P<cmd_content>.*)$'
+        m = re.match(regex, feature_descriptor)
+        cmd = m.group('cmd').strip(':').lstrip('<')
+        msg = f"[DEBUG] line: '{feature_descriptor}; cmd: {cmd}'"
+        print(msg)
+        return cmd
+    except Exception as e:
+        msg = f"[ERROR] command line malformed '{e}' received '{feature_descriptor}'"
+        print(msg)
+        logging.exception(msg)
+        return None
+
+
 @dataclass
 class FeatureFactory:
     """
@@ -38,98 +80,109 @@ class FeatureFactory:
 
     feature_descriptor: str
     cmd: str = ''
-    text: str = ''
-    props: list = field(default_factory=empty_list)
+    text: str = 'f'
+    props: dict = field(default_factory=empty_dict)
+    params: dict = field(default_factory=empty_dict)
     actions: list = field(default_factory=empty_list)
+    start_user: dict = field(default_factory=empty_dict)
+    complete_user: dict = field(default_factory=empty_dict)
+
     id: str = ''
     feature: Feature = field(default_factory=skeleton_feature)
-    cmd_pattern: str = '(?P<cmd>[A-Z:]+|[a-zA-Z]+:)'
-    prop_pattern: str = '[a-zA-Z_\-.0-9]*\(.*?\)'
-    action_pattern: str = '(\+|-)[a-zA-Z_\-.0-9]*\(.*?\)'
+    cmd_pattern: str = CMD_PATTERN
+    prompt_pattern: str = PROMPT_PATTERN
+    param_pattern: str = PARAM_PATTERN
+    prop_pattern: str = PROP_PATTERN
+    test_pattern: str = TEST_PATTERN
+    true_func_pattern: str = TRUE_FUNC_PATTERN
+    start_datetime: datetime = None
+    complete_datetime: datetime = None
 
     def __post_init__(self):
         self._set_cmd()
+        self._set_params()
         self._set_props()
-        self._set_actions()
+        self._set_test()
+        self._set_true_action()
         self._set_text()
         self._set_id()
 
     def _set_cmd(self):
         """Parse out command from feature descriptor."""
-        
+        self.feature.cmd = get_cmd(self.feature_descriptor)
+        return None
+
+    def _set_params(self):
+        """Parse out params from feature descriptor."""
         try:
-            regex = fr'^{self.cmd_pattern} (?P<cmd_content>.*)$'
-            m = re.match(regex, self.feature_descriptor)
-            self.cmd = m.group('cmd').strip(':')
-            msg = f"[DEBUG] line: '{self.feature_descriptor}'"
-            print(msg)
+            regex = fr'{self.param_pattern}'
+            match_list = re.findall(regex, self.feature_descriptor)
+            for m_str in match_list:
+                m = re.match(r'(\w+)="(.*)"', m_str)
+                if m:
+                    self.params[m.group(1).lower()] = m.group(2)
+                    print(f"[DEBUG] parsed param {m.group(1).lower()} = {m.group(2)}")
+            self.feature.params = self.params
         except Exception as e:
-            msg = f"[ERROR] command line malformed '{e}' received '{self.feature_descriptor}'"
+            msg = f"[ERROR] failure '{e}' parsing params '{self.feature_descriptor}'"
             print(msg)
             logging.exception(msg)
-            return None
-        self.feature.cmd = self.cmd
         return None
 
     def _set_props(self):
         """Parse out props from feature descriptor."""
-
-        # parse out props
         try:
             regex = fr'{self.prop_pattern}'
             match_list = re.findall(regex, self.feature_descriptor)
             for m_str in match_list:
                 m = re.match(r'(\w+)\((.*)\)', m_str)
                 if m:
-                    self.props.append({m.group(1): m.group(2)})
+                    self.props[m.group(1).lower()] = m.group(2)
+            self.feature.props = self.props
         except Exception as e:
             msg = f"[ERROR] failure '{e}' parsing props '{self.feature_descriptor}'"
             print(msg)
             logging.exception(msg)
-        self.feature.props = self.props
         return None
 
-    def _set_actions(self):
-        """Parse out actions from feature descriptor."""
+    def _set_test(self):
+        """Parse out rule test from feature descriptor."""
 
-        print(f"[DEBUG] _set_actions()")
-        # parse out actions
-        try:
-            regex = fr'{self.action_pattern}'
-            match_list = re.findall(regex, self.feature_descriptor)
-            for m_str in match_list:
-                m = re.match(r'(\w+):\((.*)\)', m_str)
-                if m:
-                    self.actions.append({m.group(1): m.group(2)})
-        except Exception as e:
-            msg = f"[ERROR] failure '{e}' parsing actions '{self.feature_descriptor}'"
-            print(msg)
-            logging.exception(msg)
-        self.feature.actions = self.actions
+        self.feature.test_pattern = self.test_pattern = self.params.get('test', None)
+        return None
+
+    def _set_true_action(self):
+        """Parse out true action function from feature descriptor."""
+        self.feature.true_action = self.true_action = self.params.get('true', None)
         return None
 
     def _set_text(self):
         """Parse out feature content after removing cmd, props from feature descriptor."""
 
-        self.text = self.feature_descriptor
-        regex_rm_cmd = fr'^{self.cmd_pattern} '
-        regex_rm_props = fr'{self.prop_pattern}'
-        for regex in [regex_rm_cmd, regex_rm_props]:
-            self.text = re.sub(regex, '', self.text).strip()
-        self.feature.text = self.text
+        missing_prompt = "No prompt provided"
+        # use indicated prompt when defined
+        self.feature.text = self.text = self.params.get('prompt', None)
+        # use available text when no prompt defined
+        if self.feature.text is None:
+            self.text = self.feature_descriptor
+            regex_rm_cmd = fr'^{self.cmd_pattern} '
+            regex_rm_test = fr'{self.test_pattern}'
+            regex_rm_true_func = fr'{self.true_func_pattern}'
+            regex_rm_props = fr'{self.prop_pattern}'
+            for regex in [regex_rm_cmd, regex_rm_test, regex_rm_true_func, regex_rm_props]:
+                self.text = re.sub(regex, '', self.text).strip()
+            self.feature.text = self.text
+        # indicate missing prompt when no prompt determined
+        if self.feature.text == "" or self.feature.text is None:
+            self.feature.text = self.text = missing_prompt
         return None
 
     def _set_id(self):
         """Set feature id via defined prop or hash of text."""
-
-        id_prop = next((item for item in self.props if 'id' in item.keys()), None)
-        if id_prop is not None:
-            self.id = id_prop['id']
-        else:
-            h = blake2b(digest_size=4)
-            h.update(str.encode(self.text))
-            self.id = h.hexdigest()
-        self.feature.id = self.id
+        h = blake2b(digest_size=4)
+        h.update(str.encode(self.text))
+        self.feature.id = self.id = self.params.get('id', h.hexdigest())
+        return None
 
 
 @dataclass
@@ -144,14 +197,11 @@ class FlowImage:
 
     def load(self, file_obj):
         """Retrieve flow image from file."""
-        print("[DEBUG] read flow image from file")
-        # print(f"[DEBUG] filename: {filename}")
         self.flow_image = json.load(file_obj)
         return self.flow_image
 
     def save(self):
         """Save flow image to file."""
-
         data_dir = os.path.join(f"{os.getcwd()}", 'data')
         if not os.path.exists(data_dir):
             os.mkdir(data_dir)
@@ -160,7 +210,6 @@ class FlowImage:
         # print(json.dumps(json.loads(json_data), indent=4))
         filename = f"{self.flow_image['name']}__{self.flow_image['uuid']}.fim"
         filepath = os.path.join(data_dir, filename)
-        # print(f"[DEBUG] filename: {filepath}")
         try:
             with open(filepath, 'w') as f:
                 f.write(json.dumps(json.loads(json_data), indent=4))
@@ -171,7 +220,6 @@ class FlowImage:
         except:  # handle other exceptions such as attribute errors
             print(f"Unexpected error: {sys.exc_info()[0]}")
             return False
-
 
 @dataclass
 class FlowImageFactory:
@@ -221,66 +269,93 @@ class FlowImageFactory:
         self.flow_image.save()
         return self.flow_image
 
-    def create_workflowimage(self):
+    def update_or_create_workflowimage(self, workflowimage_record=None):
         """Create the workflow image object that can be serialized and persisted"""
-
-        # name = models.CharField(max_length=100, help_text="Descriptive name", unique=False, blank=True, null=True)
-        # uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier")
-        # workflow = models.JSONField(blank=True, default=dict, help_text="Workflow object")
-        # rules = models.JSONField(blank=True, default=list, help_text="Rules list")
-
+        
         fi_uuid=str(uuid.uuid4())
-
         # express features list and feature_order
         features_list = {}
         feature_order = []
-        for feature in self.features:
-            feature_obj = {
-                'cmd': feature.cmd,
-                'props': feature.props,
-                'text': feature.text,
-                'id': feature.id,
-                'complete': False,
-                'status': 'not-started'
-            }
-            features_list[feature_obj['id']] = feature_obj
-            feature_order.append(feature_obj['id'])
-        # build workflow dict
-        wf_dict = {'name': self.name,
-              'uuid': fi_uuid,
-              'description': self.description,
-              'type': 'flow_image',
-              'status': 'red',
-              "complete": False,
-              'features': features_list,
-              "curr_feature": feature_order[0],
-              "feature_order": feature_order
-              }
-        # build rules
-        # TODO: create RulesFactory
+        rules_list = {}
+        rule_order = []
         rules = {}
+        # features
+        for feature in self.features:
+            feature_obj = {}
+            for field in ['cmd', 'params', 'props', 'text', 'id']:
+                feature_obj[field] = getattr(feature, field, None)
+            feature_obj['complete'] =  False
+            feature_obj['status'] = 'not-started'
+            feature_obj['start_datetime'] = None
+            feature_obj['complete_datetime'] = None
 
-        workflowimage = WorkflowImage.objects.create(name=wf_dict['name'], uuid=wf_dict['uuid'], workflow=wf_dict, rules=rules)
+            if feature.cmd in ['rule', 'RULE']:
+                # finalize rule info and save obj to rules
+                for field in ['test_pattern', 'true_action']:
+                    feature_obj[field] = getattr(feature, field, None)
+                rules_list[feature_obj['id']] = feature_obj
+                rule_order.append(feature_obj['id'])
+            else:
+                # finale step, ask, etc info and save obj to workflow
+                features_list[feature_obj['id']] = feature_obj
+                feature_order.append(feature_obj['id'])
+        # workflow object
+        wf_dict = { 'name': self.name,
+                    'uuid': fi_uuid,
+                    'description': self.description,
+                    'type': 'flow_image',
+                    'status': 'red',
+                    "complete": False,
+                    'features': features_list,
+                    "curr_feature": feature_order[0],
+                    "feature_order": feature_order}
+        # rules object
+        rules = {'features': rules_list,
+                'rule_order': rule_order
+            }
+
+        if workflowimage_record and WorkflowImage.objects.filter(pk=workflowimage_record.pk).exists():
+            recs_updated = WorkflowImage.objects.filter(pk=workflowimage_record.pk).update(name=wf_dict['name'], uuid=wf_dict['uuid'], workflow=wf_dict, rules=rules)
+            if recs_updated:
+                workflowimage = WorkflowImage.objects.filter(pk=workflowimage_record.pk)[0]
+            else:
+                workflowimage = None
+        else:
+            workflowimage = WorkflowImage.objects.create(name=wf_dict['name'], uuid=wf_dict['uuid'], workflow=wf_dict, rules=rules)
         return workflowimage
 
-    def create_workflowimage_from_flowtext(self, flowtext):
-        """Create the workflow image object from input flow feature text descriptions"""
+    def update_or_create_workflowimage_from_flowtext(self, flowtext, workflowimage_record=None):
+        """Update or create the workflow image object from input flow feature text descriptions"""  
 
         self.feature_descriptor_text = flowtext
+        # TODO: Support multiple line feature descriptors
         self.split_feature_descriptor_text()
         self.prepare_features()
-        wfi = self.create_workflowimage()
+        wfi = self.update_or_create_workflowimage(workflowimage_record)
         return wfi
 
     def create_workflowimage_from_workflowrecipe(self, workflowrecipe):
         """Create the workflow image object from workflowrecipe object"""
 
-        flowtext = workflowrecipe.recipe
-        wfi = self.create_workflowimage_from_flowtext(flowtext)
-        wfi.workflow['description'] = workflowrecipe.description
-        # relate workflowimage to workflowrecipe
-        wfi.workflowrecipe = workflowrecipe
-        wfi.save()
+        try:
+            flowtext = workflowrecipe.recipe
+            self.description = workflowrecipe.description
+            self.name = workflowrecipe.name
+            print('1')
+            # TODO: should we get a new uuid if content of a workflow changes?
+            if WorkflowImage.objects.filter(workflowrecipe=workflowrecipe).exists():
+                wfi = WorkflowImage.objects.filter(workflowrecipe=workflowrecipe)[0]
+                wfi = self.update_or_create_workflowimage_from_flowtext(flowtext, wfi)
+            else:
+                wfi = self.update_or_create_workflowimage_from_flowtext(flowtext)
+                # relate new workflowimage to workflowrecipe
+                wfi.workflowrecipe = workflowrecipe
+            wfi.name = self.name
+            wfi.workflow['name'] = self.name
+            wfi.workflow['description'] = self.description
+            wfi.save()
+        except:
+            print("[ERROR] Failure in create_workflowimage_from_workflowrecipe")
         return wfi
 
     def to_json(self):
