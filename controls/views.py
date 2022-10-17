@@ -34,7 +34,7 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView
 from django.urls import reverse
-from jsonschema import validate, FormatChecker
+from jsonschema import validate, Draft7Validator, FormatChecker
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from urllib.parse import quote
 
@@ -1262,6 +1262,7 @@ class OSCALComponentSerializer(ComponentSerializer):
             validated = False
 
         return validated
+
 
     def as_json(self):
         # Build OSCAL
