@@ -116,6 +116,9 @@ urlpatterns = [
     # System Security plan
     url(r'^(?P<system_id>.*)/export/oscal', views.OSCAL_ssp_export, name="ssp_export_oscal"),
 
+    # Assessment Plan
+    url(r'^(?P<system_id>.*)/export/assessment_plan', views.OSCAL_assessment_plan_export, name="assessment_plan_export"),
+
     # Baselines
     url(r'^(?P<system_id>.*)/controls/baseline/(?P<catalog_key>.*)/(?P<baseline_name>.*)/_assign$', views.assign_baseline, name="assign_baseline"),
 

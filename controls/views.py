@@ -56,6 +56,8 @@ from .models import *
 from .utilities import *
 from integrations.models import Integration
 
+# from .assessment_plan import example
+
 logging.basicConfig()
 import structlog
 from structlog import get_logger
@@ -841,6 +843,7 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
         # Create a list of dicts that are the implementation requirements
         # Each element is for each control sid group
         # Each group has that controls statements
+        
         for control_id, group in groupby(natsorted(self.impl_smts, key=lambda ismt: ismt.sid),
                                          lambda ismt: ismt.sid):
                 imp_req_dict = {
@@ -957,6 +960,609 @@ class OSCALSystemSecurityPlanSerializer(SystemSecurityPlanSerializer):
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
 
+# TODO FALCON: OSCAL Assessment Plan
+class AssessmentPlanSerializer(object):
+    def __init__(self, system, impl_smts):
+        self.system = system
+        self.impl_smts = impl_smts
+
+class OSCALAssessmentPlanSerializer(AssessmentPlanSerializer):
+    # The OSCAL assessment plan model represents the information contained within an assessment plan, 
+    # and is typically used by anyone planning to perform an assessment or continuous monitoring activities 
+    # on an information system to determine the degree to which that system complies with a given control baseline
+    # used by the system.
+
+    # It was designed to use identical syntax to the assessment results model, 
+    # for overlapping assemblies (Objectives, Assessment Subject, Assets, and Assessment Activities).
+    @staticmethod
+    def generate_metadata(self):
+        project = self.system.projects.first()
+        orgs = list(Organization.objects.all())
+
+        list_of_parties = []
+        list_of_roles = []
+        list_of_resp_parties = []
+        list_of_resp_roles = []
+        list_of_locations = []
+        list_of_revisions = []
+        list_of_document_ids = []
+        list_of_props = []
+        list_of_links = []
+        remarks = '' # markup-line data type are also supported by the markup-multiline data type,
+        published = '' #datetime with timezone
+
+        if self.system.root_element.tags.exists():
+            list_of_props.extend([{"name": "tag", "ns": "https://govready.com/ns/oscal", "value": tag.label} for tag in self.element.tags.all()])
+
+        for appointment in self.system.root_element.appointments.all():
+            party = {
+                "uuid": str(appointment.party.uuid),
+                "type": appointment.party.party_type,
+                "name": appointment.party.name,
+                "short-name": appointment.party.short_name,
+                "email-addresses": [appointment.party.email],
+                "telephone-numbers": [
+                    {
+                        "type": "home", "number": appointment.party.phone_number
+                    },
+                    {
+                        "type": "mobile", "number": appointment.party.mobile_phone,
+                    }
+                ]
+            }
+            role = {
+                "id": appointment.role.role_id,
+                "title": appointment.role.title,
+                "short-name": appointment.role.short_name,
+                "description": appointment.role.description,
+                # props
+                # links
+                # remarks
+            }
+            respParty = {
+                'role-id': role["id"],
+                'party-uuids': [party["uuid"]]
+            }
+            respRole = respParty
+
+            if len(list_of_resp_parties) == 0:
+                list_of_resp_parties.append(respParty)
+            
+            if len(list_of_resp_roles) == 0:
+                list_of_resp_roles.append(respRole)
+
+            # Adding resp party to its respective index
+            if role["id"] in [x['role-id'] for x in list_of_resp_parties]:
+                for x in list_of_resp_parties:
+                    if x['role-id'] == role["id"] and party['uuid'] not in x['party-uuids']:
+                        x['party-uuids'].append(party["uuid"])
+            else:
+                list_of_resp_parties.append(respParty)
+
+            if role["id"] in [x['role-id'] for x in list_of_resp_roles]:
+                for x in list_of_resp_roles:
+                    if x['role-id'] == role["id"] and party['uuid'] not in x['party-uuids']:
+                        x['party-uuids'].append(party["uuid"])
+            else:
+                list_of_resp_roles.append(respRole)
+
+            if party not in list_of_parties:
+                list_of_parties.append(party)
+
+            if role not in list_of_roles:
+                list_of_roles.append(role)
+
+        parties = [
+            {
+                "uuid": str(uuid.uuid4()), 
+                "type": "organization", 
+                "name": org.name
+            } for org in orgs]
+        parties.extend(list_of_parties)
+        
+
+        metadata = {
+            "title": "{} System Security Plan".format(self.system.root_element.name),
+            "last-modified": self.system.root_element.updated.replace(microsecond=0).isoformat(),
+            "version": project.version,
+            "oscal-version": self.system.root_element.oscal_version
+        }
+        
+        if published:
+            metadata['published'] = published
+        # Addition of Optional Metadata 
+        if len(list_of_revisions) != 0:
+            metadata['revisions'] = list_of_revisions
+
+        if len(list_of_document_ids) != 0:
+            metadata['document-ids'] = list_of_document_ids
+
+        if len(list_of_props) != 0:
+            metadata['props'] = list_of_props
+        
+        if len(list_of_links) != 0:
+            metadata['links'] = list_of_links
+
+        if len(list_of_roles) != 0:
+            metadata['roles'] = list_of_roles
+
+        if len(list_of_locations) != 0:
+            metadata['locations'] = list_of_locations
+
+        if len(parties) != 0:
+            metadata['parties'] = parties
+
+        if len(list_of_resp_parties) != 0:
+            metadata['responsible-parties'] = list_of_resp_parties
+
+        if remarks:
+            metadata['remarks'] = remarks
+
+        return metadata
+    
+    def generate_import_ssp(self):
+        #  Identifies the OSCAL-based SSP of the system being assessed. 
+        # Several pieces of information about a system that normally appear in an assessment plan are now 
+        # referenced via this import statement, eliminating the need to duplicate and maintain the same 
+        # information in multiple places.
+
+        # href: A resolvable URL reference to the system security plan for the system being assessed
+        # The value of the href can be an internet resource, or a local reference using a fragment e.g. #fragment that points to a back-matter resource in the same document.
+
+        import_ssp = {
+            'href': 'https://link',
+            'remarks': 'additional commentary on the containing object in markup-multiline'
+        }
+        return import_ssp
+
+    def generate_local_definitions(self):
+        # Normally other aspects of the assessment plan point to content in the linked SSP. 
+        # When the AP must reference information that is missing from linked SSP, assessors define it here instead.
+
+        local_definitions = {}
+        return local_definitions
+
+    def generate_terms_and_conditions(self):
+        # Identifies the rules of engagement, disclosures, limitation of liability statements, assumption statements, 
+        # methodology, and other explanatory content as needed.
+
+        terms_and_conditions = {}
+        return terms_and_conditions
+
+    def generate_reviewed_controls(self):
+        # Identifies the controls to be included within the scope of the assessment, as well as the control objectives and assessment methods.
+
+        # reviewed-controls: identifies the controls being assessed and their control objectives'
+
+        # control-selection:  Identifies the controls being assessed. 
+        # In the assessment plan, these are the planned controls. 
+        # In the assessment results, these are the actual controls, and reflects any changes from the plan.
+        # The include-all, specifies all control identified in the baseline are included in the scope if this assessment, as specified by the include-profile statement within the linked SSP.
+
+            # Any control specified within exclude-controls must first be within a range of explicitly 
+            # included controls, via include-controls or include-all.
+        reviewed_controls = {
+            "description": "additional commentary on the containing object in markup-multiline",
+            "props": ["props"],
+            "links": ["links"],
+            "control-selections": [
+                {
+                    "description": "additional commentary on the containing object in markup-multiline",
+                    "props": ["props"],
+                    "links": ["links"],
+                    "exclude-controls": [],
+                    # "include-all": {}, # or include-controls
+                    "include-controls": [{
+                        "control-id": "token", 
+                        "statement-ids": ["stmt_id"]
+                    }],
+                    "exclude-controls": [{
+                        "control-id": "token", 
+                        "statement-ids": ["stmt_id"]
+                    }],
+                    "remarks": 'markup-multiline'
+                }
+            ]
+        }
+        return reviewed_controls
+
+    def generate_assessment_subjects(self):
+        # Identifies the elements of the system that are in scope for the assessment, 
+        # including locations, components, inventory items, and users.
+
+        assessment_subjects = {}
+        return assessment_subjects
+
+    def generate_assessment_assets(self):
+        # Identifies the assessor's assets used to perform the assessment, including the teams, 
+        # tools, and rules of engagement.
+
+        assessment_assets = {}
+        return assessment_assets
+
+    def generate_tasks(self):
+        # Identifies the intended schedule of milestones and assessment actions.
+
+        tasks = {}
+        return tasks
+
+    def generate_back_matter(self):
+        # Back matter syntax is identical in all OSCAL models. 
+        # It is used for attachments, citations, and embedded content such as graphics.
+
+        back_matter = {}
+        return back_matter
+
+    def generate_assessment_plan(self):
+        # Generate OSCAL Assessment Plan as JSON
+        # Generate base of Assessment Plan
+
+        metadata = self.generate_metadata()
+        import_ssp = self.generate_import_ssp()
+        local_definitions = self.generate_local_definitions()
+        terms_and_conditions = self.generate_terms_and_conditions()
+        reviewed_controls = self.generate_reviewed_controls()
+        assessment_subjects = self.generate_assessment_subjects()
+        assessment_assets = self.generate_assessment_assets()
+        tasks = self.generate_tasks()
+        back_matter = self.generate_back_matter()
+
+        assessment_plan = {
+            "assessment-plan": {
+                "uuid": str(uuid4()),
+                "metadata": metadata,
+                "import-ssp": import_ssp,
+                "reviewed-controls": reviewed_controls
+            }
+        }
+        
+        # Addition of optional Assessment Plan properties
+        if local_definitions:
+            assessment_plan["assessment-plan"]["local-definitions"] = local_definitions
+        
+        if terms_and_conditions:
+            assessment_plan["assessment-plan"]["terms-and-conditions"] = terms_and_conditions
+        
+        if assessment_subjects:
+            assessment_plan["assessment-plan"]["assessment-subjects"] = assessment_subjects
+        
+        if assessment_assets:
+            assessment_plan["assessment-plan"]["assessment-assets"] = assessment_assets
+
+        if tasks:
+            assessment_plan["assessment-plan"]["tasks"] = tasks
+        
+        if back_matter:
+            assessment_plan["assessment-plan"]["back-matter"] = back_matter
+        
+        return assessment_plan
+
+    def validate(self, assessment_plan):
+        validated = False
+
+        try:
+            # validate that this object is valid by the component definition
+            trestlecomponent.ComponentDefinition.validate(assessment_plan)
+            validated = True
+        except:
+            validated = False
+
+        return validated
+    
+    def as_json(self):
+        # Build OSCAL
+        # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
+        #open the file
+        # with open('controls/data/oscal_shemas/1.0.0/oscal_component_schema.json') as f:
+        #     component_schema = json.load(f)
+        assessment_plan = self.generate_assessment_plan()
+        # validate_assessment_plan = self.validate(assessment_plan['assessment-plan'])
+
+        # if validate_assessment_plan:
+        #     assessment_plan_oscal_json = json.dumps(assessment_plan, sort_keys=False, indent=2)
+        #     return assessment_plan_oscal_json
+        # else:
+        #     return "error"
+        assessment_plan_oscal_json = json.dumps(assessment_plan, sort_keys=False, indent=2)
+        return assessment_plan_oscal_json
+
+
+class AssessmentResultSerializer(object):
+    def __init__(self, system, impl_smts):
+        self.system = system
+        self.impl_smts = impl_smts
+
+class OSCALAssessmentResultSerializer(AssessmentResultSerializer):
+    @staticmethod
+    def generate_metadata(self):
+        project = self.system.projects.first()
+        orgs = list(Organization.objects.all())
+
+        list_of_parties = []
+        list_of_roles = []
+        list_of_resp_parties = []
+        list_of_resp_roles = []
+        list_of_locations = []
+        list_of_revisions = []
+        list_of_document_ids = []
+        list_of_props = []
+        list_of_links = []
+        remarks = '' # markup-line data type are also supported by the markup-multiline data type,
+        published = '' #datetime with timezone
+
+        if self.system.root_element.tags.exists():
+            list_of_props.extend([{"name": "tag", "ns": "https://govready.com/ns/oscal", "value": tag.label} for tag in self.element.tags.all()])
+
+        for appointment in self.system.root_element.appointments.all():
+            party = {
+                "uuid": str(appointment.party.uuid),
+                "type": appointment.party.party_type,
+                "name": appointment.party.name,
+                "short-name": appointment.party.short_name,
+                "email-addresses": [appointment.party.email],
+                "telephone-numbers": [
+                    {
+                        "type": "home", "number": appointment.party.phone_number
+                    },
+                    {
+                        "type": "mobile", "number": appointment.party.mobile_phone,
+                    }
+                ]
+            }
+            role = {
+                "id": appointment.role.role_id,
+                "title": appointment.role.title,
+                "short-name": appointment.role.short_name,
+                "description": appointment.role.description,
+                # props
+                # links
+                # remarks
+            }
+            respParty = {
+                'role-id': role["id"],
+                'party-uuids': [party["uuid"]]
+            }
+            respRole = respParty
+
+            if len(list_of_resp_parties) == 0:
+                list_of_resp_parties.append(respParty)
+            
+            if len(list_of_resp_roles) == 0:
+                list_of_resp_roles.append(respRole)
+
+            # Adding resp party to its respective index
+            if role["id"] in [x['role-id'] for x in list_of_resp_parties]:
+                for x in list_of_resp_parties:
+                    if x['role-id'] == role["id"] and party['uuid'] not in x['party-uuids']:
+                        x['party-uuids'].append(party["uuid"])
+            else:
+                list_of_resp_parties.append(respParty)
+
+            if role["id"] in [x['role-id'] for x in list_of_resp_roles]:
+                for x in list_of_resp_roles:
+                    if x['role-id'] == role["id"] and party['uuid'] not in x['party-uuids']:
+                        x['party-uuids'].append(party["uuid"])
+            else:
+                list_of_resp_roles.append(respRole)
+
+            if party not in list_of_parties:
+                list_of_parties.append(party)
+
+            if role not in list_of_roles:
+                list_of_roles.append(role)
+
+        parties = [
+            {
+                "uuid": str(uuid.uuid4()), 
+                "type": "organization", 
+                "name": org.name
+            } for org in orgs]
+        parties.extend(list_of_parties)
+        
+
+        metadata = {
+            "title": "{} System Security Plan".format(self.system.root_element.name),
+            "last-modified": self.system.root_element.updated.replace(microsecond=0).isoformat(),
+            "version": project.version,
+            "oscal-version": self.system.root_element.oscal_version
+        }
+        
+        if published:
+            metadata['published'] = published
+        # Addition of Optional Metadata 
+        if len(list_of_revisions) != 0:
+            metadata['revisions'] = list_of_revisions
+
+        if len(list_of_document_ids) != 0:
+            metadata['document-ids'] = list_of_document_ids
+
+        if len(list_of_props) != 0:
+            metadata['props'] = list_of_props
+        
+        if len(list_of_links) != 0:
+            metadata['links'] = list_of_links
+
+        if len(list_of_roles) != 0:
+            metadata['roles'] = list_of_roles
+
+        if len(list_of_locations) != 0:
+            metadata['locations'] = list_of_locations
+
+        if len(parties) != 0:
+            metadata['parties'] = parties
+
+        if len(list_of_resp_parties) != 0:
+            metadata['responsible-parties'] = list_of_resp_parties
+
+        if remarks:
+            metadata['remarks'] = remarks
+
+        return metadata
+    
+    def generate_import_ap(self):
+        #  Identifies the OSCAL-based SSP of the system being assessed. 
+        # Several pieces of information about a system that normally appear in an assessment plan are now 
+        # referenced via this import statement, eliminating the need to duplicate and maintain the same 
+        # information in multiple places.
+
+        # href: A resolvable URL reference to the system security plan for the system being assessed
+        # The value of the href can be an internet resource, or a local reference using a fragment e.g. #fragment that points to a back-matter resource in the same document.
+
+        import_ap = {
+            'href': 'https://link',
+            'remarks': 'additional commentary on the containing object in markup-multiline'
+        }
+        return import_ap
+
+    def generate_local_definitions(self):
+        # Normally other aspects of the assessment plan point to content in the linked SSP. 
+        # When the AP must reference information that is missing from linked SSP, assessors define it here instead.
+
+        local_definitions = {}
+        return local_definitions
+
+    def generate_results(self):
+        # array of result objects
+        prop = {
+            'name': 'token',
+            'uuid': 'uuid',
+            'ns': 'uri',
+            'value': 'string',
+            'class': 'token',
+            'remarks': 'markup'
+        }
+        link = {
+            'href': 'uri-reference',
+            'rel': 'token',
+            'media-type': 'string',
+            'text': 'markup-line',
+        }
+
+        resultObj = {
+            'uuid': 'uuid',
+            'title': 'markup-line',
+            'description': 'markup-multiline',
+            'start': 'dateTime-with-timezone',
+            
+            'reviewed-controls': 'controls',
+            
+        }
+
+        
+        # 'end': 'dateTime-with-timezone',
+        # 'props': [prop],
+        # 'links': [link],
+        # 'local-definitions':,
+        # 'attestations': ,
+        # 'assessment-log':,
+        # 'observations': ,
+        # 'risks': ,
+        # 'findings': ,
+        # 'remarks': 'markup-multiline'
+        results = [
+
+        ]
+
+        return results
+
+    def generate_back_matter(self):
+        # Back matter syntax is identical in all OSCAL models. 
+        # It is used for attachments, citations, and embedded content such as graphics.
+        hashObj = {
+            'algorithm': 'string',
+            'value': 'string'
+        }
+
+        prop = {
+            'name': 'token',
+            'uuid': 'uuid',
+            'ns': 'uri',
+            'value': 'string',
+            'class': 'token',
+            'remarks': 'markup'
+        }
+        link = {
+            'href': 'uri-reference',
+            'rel': 'token',
+            'media-type': 'string',
+            'text': 'markup-line',
+        }
+        rlink = {
+            'href': 'uri-reference',
+            'media-type': 'string',
+            'hashes': [hashObj],
+        }
+        documentId = {
+            'scheme': 'uri',
+            'identifier': 'string'
+        }
+        
+        back_matter = {
+            "resources": [
+                {
+                    'uuid': str(uuid4()),
+                    'title': 'title',
+                    'description': 'description',
+                    'props': [prop],
+                    'document-ids': [documentId],
+                    'citation': {
+                        'text': '',
+                        'props': [prop],
+                        'links': [link]
+                    },
+                    'rlinks': [rlink],
+                    'base64': {
+                        'filename': 'uri-reference',
+                        'media-type': 'string',
+                        'value': 'base64Binary'
+                    },
+                    'remarks': 'markup'
+                }
+            ]
+        }
+        return back_matter
+
+    def generate_assessment_result(self):
+        # Generate OSCAL Assessment Plan as JSON
+        # Generate base of Assessment Plan
+
+        metadata = self.generate_metadata()
+        import_ap = self.generate_import_ap()
+        local_definitions = self.generate_local_definitions()
+        results = self.generate_results()
+        back_matter = self.generate_back_matter()
+
+        assessment_result = {
+            "assessment-plan": {
+                "uuid": str(uuid4()),
+                "metadata": metadata,
+                "import-ap": import_ap,
+                "results": results
+            }
+        }
+        
+        # Addition of optional Assessment Plan properties
+        if local_definitions:
+            assessment_result["assessment-plan"]["local-definitions"] = local_definitions
+        
+        if back_matter:
+            assessment_result["assessment-plan"]["back-matter"] = back_matter
+        
+        return assessment_result
+
+
+    def as_json(self):
+        
+        assessment_result = self.generate_assessment_result()
+        # validate_assessment_plan = self.validate(assessment_plan['assessment-plan'])
+
+        # if validate_assessment_plan:
+        #     assessment_plan_oscal_json = json.dumps(assessment_plan, sort_keys=False, indent=2)
+        #     return assessment_plan_oscal_json
+        # else:
+        #     return "error"
+        assessment_result_oscal_json = json.dumps(assessment_result, sort_keys=False, indent=2)
+        return assessment_result_oscal_json
 class ComponentSerializer(object):
 
     def __init__(self, element, impl_smts):
@@ -1032,7 +1638,6 @@ class OSCALComponentSerializer(ComponentSerializer):
         list_of_links = []
         remarks = '' # markup-line data type are also supported by the markup-multiline data type,
         purpose = 'PURPOSEFUL AND STUFF'
-
 
         if self.element.tags.exists():
             list_of_props.extend([{"name": "tag", "ns": "https://govready.com/ns/oscal", "value": tag.label} for tag in self.element.tags.all()])
@@ -2243,6 +2848,24 @@ def OSCAL_ssp_export(*args, **kwargs):
     system = System.objects.get(id=system_id)
     impl_smts = Statement.objects.filter(consumer_element=system.root_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
     oscal_string = OSCALSystemSecurityPlanSerializer(system, impl_smts).as_json()
+    # File name construction and JSON response
+    filename = "{}_OSCAL_{}.json".format(system.root_element.name.replace(" ", "_"),
+                                                           datetime.now().strftime("%Y-%m-%d-%H-%M"))
+    resp = HttpResponse(oscal_string, content_type="application/json")
+    resp["content-disposition"] = "attachment; filename=%s" % quote(filename)
+    return resp
+
+@login_required
+def OSCAL_assessment_plan_export(*args, **kwargs):
+    """
+    Exporting an Assessment Plan in OSCAL
+    """
+    system_id = kwargs.get('system_id', 1)
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    impl_smts = Statement.objects.filter(consumer_element=system.root_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
+    # oscal_string = OSCALSystemSecurityPlanSerializer(system, impl_smts).as_json()
+    oscal_string = OSCALAssessmentPlanSerializer(system, impl_smts).as_json()
     # File name construction and JSON response
     filename = "{}_OSCAL_{}.json".format(system.root_element.name.replace(" ", "_"),
                                                            datetime.now().strftime("%Y-%m-%d-%H-%M"))
@@ -5649,7 +6272,7 @@ def view_system_assessment_result_summary(request, system_id, sar_id=None):
     # Temporarily assume only one project and get first project
     project = system.projects.all()[0]
     sar = get_object_or_404(SystemAssessmentResult, pk=sar_id) if sar_id else None
-
+    
     # Get assessment targets results from wrapped SAR data
     sar_items = [item for item in sar.assessment_results['sar']] if sar.assessment_results != None else []
 

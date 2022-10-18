@@ -416,6 +416,12 @@ h3.question-group-title {
                   Export Project Data
                 </button>
               </form>
+              <form method="post" action="{% url "assessment_plan_export" project.system.id %}" style="display: inline-block; margin: 0; padding: 0;">{% csrf_token %}
+                <button class="btn btn-default">
+                  <span class="glyphicon glyphicon-share" style="margin-right: .25em"></span>
+                  Export Assessment Plan
+                </button>
+              </form>
               {# import #}
               <button class="btn btn-default" onclick="$('#import-file-input').click()" style="margin-left: 12px;">
                 <span class="glyphicon glyphicon-cloud-upload" style="margin-right: .25em"> </span> Import Answers From File
