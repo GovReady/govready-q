@@ -26,6 +26,27 @@ v0.11.0-dev (September xx, 2022)
 * Refactored controls.control_implementation_as_dict for DRY and placing legacy control implementation statements at start of combined statement
 
 
+v0.10.0.5 (October 22, 2022)
+---------------------------
+
+* Update NPM packages.
+
+v0.10.0.4 (October 22, 2022)
+---------------------------
+
+**Security fixes**
+
+* Upgrade Python libraries.
+
+
+v0.10.0.3 (October 06, 2022)
+---------------------------
+
+**Security fixes**
+
+* Upgrade Python libraries.
+
+
 v0.10.0.2 (August 22, 2022)
 ---------------------------
 
