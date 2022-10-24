@@ -5,6 +5,7 @@ from unicodedata import name
 import auto_prefetch
 from django.db import models
 from django.db.models import Count
+from django.db.models import Q
 from django.utils.functional import cached_property
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
@@ -825,45 +826,10 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
 
     @cached_property
     def control_implementation_as_dict(self):
-        pid_current = None
+        self.pid_current = None
 
-        # Fetch all selected controls
-        elm = self.root_element
-        selected_controls = elm.controls.all().values("oscal_ctl_id", "uuid")
-        # Get the smts_control_implementations ordered by part, e.g. pid
-        smts = elm.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
-        smts_legacy = elm.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name).order_by('pid')
-
-        smts_as_dict = {}
-
-        # Retrieve all of the existing statements
-        for smt in smts:
-            if smt.sid in smts_as_dict:
-                smts_as_dict[smt.sid]['control_impl_smts'].append(smt)
-            else:
-                try:
-                    elementcontrol = self.root_element.controls.get(oscal_ctl_id=smt.sid,
-                                                                    oscal_catalog_key=smt.sid_class)
-                    smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
-                                             "control_impl_smts_legacy": [],
-                                             "common_controls": [],
-                                             "combined_smt": "",
-                                             "elementcontrol_uuid": elementcontrol.uuid,
-                                             "combined_smt_uuid": uuid.uuid4()
-                                             }
-                except ElementControl.DoesNotExist:
-                    # Handle case where Element control does not exist
-                    elementcontrol = None
-                    smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
-                                             "control_impl_smts_legacy": [],
-                                             "common_controls": [],
-                                             "combined_smt": "",
-                                             "elementcontrol_uuid": None,
-                                             "combined_smt_uuid": uuid.uuid4()
-                                             }
-
-            # Build combined statement
-
+        def combined_smt_partial(smt):
+            """ Return the built partial statement to display in a document """
             # Define status options
             impl_statuses = ["Not implemented", "Planned", "Partially implemented", "Implemented", "Unknown"]
             status_str = ""
@@ -873,35 +839,29 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
                 else:
                     status_str += f'<span style="color: #888;">[ ] {status}</span> '
             # Conditionally add statement part in the beginning of a block of statements related to a part
-            if smt.pid != "" and smt.pid != pid_current:
-                smts_as_dict[smt.sid]['combined_smt'] += f"{smt.pid}.\n"
-                pid_current = smt.pid
-            # DEBUG
-            # TODO
-            # Poor performance, at least in some instances, appears to being caused by `smt.producer_element.name`
-            # parameter in the below statement.
+            print(f"self.pid_current: {self.pid_current}")
+            # if smt.pid != "" and smt.pid != self.pid_current:
+            #     smts_as_dict[smt.sid]['combined_smt'] += f"{smt.pid}.\n"
+            #     print(f"self.pid_current: {self.pid_current} XXXXXXXXXXXXX") # DEBUG
+            #     self.pid_current = smt.pid
             if smt.producer_element:
                 smt_formatted = smt.body.replace('\n','<br/>')
                 # TODO: Clean up special characters
                 smt_formatted = smt_formatted.replace(u"\u2019", "'").replace(u"\u2022", "<li>")
-                smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i><br/>{status_str}<br/><br/>{smt_formatted}<br/><br/>"
-            # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
-            # for testing purposes, the loop runs 3x faster
-            # The reference `smt.producer_element.name` appears to be calling the database and creating poor performance
-            # even where there are no statements.
+                # Poor performance, at least in some instances, appears to being caused by `smt.producer_element.name`
+                # parameter in the above statement.
+                # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
+                # for testing purposes, the loop runs 3x faster
+                # The reference `smt.producer_element.name` appears to be calling the database and creating poor performance
+                # even where there are no statements.
+            return f"<i>{smt.producer_element.name}</i><br/>{status_str}<br/><br/>{smt_formatted}<br/><br/>"
 
-        # Deprecated implementation of inherited/common controls
-        # Leave commented out until we can fully delete...Greg - 2020-10-12
-        # # Add in the common controls
-        # for cc in self.root_element.common_controls.all():
-        #     if cc.common_control.oscal_ctl_id in smts_as_dict:
-        #         smts_as_dict[smt.sid]['common_controls'].append(cc)
-        #     else:
-        #         smts_as_dict[cc.common_control.oscal_ctl_id] = {"control_impl_smts": [], "common_controls": [cc], "combined_smt": ""}
-        #     # Build combined statement
-        #     smts_as_dict[cc.common_control.oscal_ctl_id]['combined_smt'] += "{}\n{}\n\n".format(cc.common_control.name, cc.common_control.body)
+        # Fetch all controls from assigned baseline
+        elm = self.root_element
+        selected_controls = elm.controls.all().values("oscal_ctl_id", "uuid")
 
-        # Populate any controls from assigned baseline that do not have statements
+        # Construct statements dictionary for all controls from assigned baseline
+        smts_as_dict = {}
         for ec in selected_controls:
             if ec.get('oscal_ctl_id') not in smts_as_dict:
                 smts_as_dict[ec.get('oscal_ctl_id')] = {"control_impl_smts": [],
@@ -912,37 +872,19 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
                                                         "combined_smt_uuid": uuid.uuid4()
                                                         }
 
-        # Add in legacy control statement if set for system and/or control
+        # Get the smts_control_implementations ordered by part, e.g. pid
+        smts_all = elm.statements_consumed.filter(Q(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name) | 
+            Q(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)).order_by('pid')
+
+        # Populate control statement if set for system and/or control
         # TODO: Add conditional test for adding legacy control implementation statements
-        for smt in smts_legacy:
-
-            smts_as_dict[smt.sid]['control_impl_smts_legacy'].append(smt)
-
-            # Define status options
-            impl_statuses = ["Not implemented", "Planned", "Partially implemented", "Implemented", "Unknown"]
-            status_str = ""
-            for status in impl_statuses:
-                if (smt.status is not None) and (smt.status.lower() == status.lower()):
-                    status_str += f'[x] {status} '
-                else:
-                    status_str += f'<span style="color: #888;">[ ] {status}</span> '
-            # Conditionally add statement part in the beginning of a block of statements related to a part
-            if smt.pid != "" and smt.pid != pid_current:
-                smts_as_dict[smt.sid]['combined_smt'] += f"{smt.pid}.\n"
-                pid_current = smt.pid
-            # DEBUG
-            # TODO
-            # Poor performance, at least in some instances, appears to being caused by `smt.producer_element.name`
-            # parameter in the below statement.
-            if smt.producer_element:
-                smt_formatted = smt.body.replace('\n','<br/>')
-                # TODO: Clean up special characters
-                smt_formatted = smt_formatted.replace(u"\u2019", "'").replace(u"\u2022", "<li>")
-                smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i><br/>{status_str}<br/><br/>{smt_formatted}<br/><br/>"
-            # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
-            # for testing purposes, the loop runs 3x faster
-            # The reference `smt.producer_element.name` appears to be calling the database and creating poor performance
-            # even where there are no statements.
+        for smt in smts_all:
+            if smt.sid in smts_as_dict:
+                smts_as_dict[smt.sid]['control_impl_smts_legacy'].append(smt)
+                if smt.pid != "" and smt.pid != self.pid_current:
+                    smts_as_dict[smt.sid]['combined_smt'] += f"{smt.pid}.\n"
+                    self.pid_current = smt.pid
+                smts_as_dict[smt.sid]['combined_smt'] += combined_smt_partial(smt)
 
         # Return the dictionary
         return smts_as_dict
