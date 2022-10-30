@@ -24,6 +24,8 @@ v0.11.0-dev (September xx, 2022)
 * Rename "Project" to "System" in navigation and several URLS. (NOTE: Many links still use "project" in code, reverses, etc.)
 * Display the system-level control implementation statement for a system (AKA "Legacy Control Implementation statement").
 * Refactored controls.control_implementation_as_dict for DRY and placing legacy control implementation statements at start of combined statement
+* Update Speedy SSP to have new question.
+* Update Components to have tags to work better out of the box.
 
 
 v0.10.0.2 (August 22, 2022)
