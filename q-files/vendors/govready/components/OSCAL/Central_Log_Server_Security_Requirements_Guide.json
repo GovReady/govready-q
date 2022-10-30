@@ -20,6 +20,28 @@
         "type": "software",
         "title": "Central Log Server Security Requirements Guide",
         "description": "Central Log Server Security Requirements Guide based on DOD SRG/STIG.",
+        "props": [
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "sample"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "logs"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "EDC"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "CDC"
+                }
+              ],
         "responsible-roles": [
           {
             "role-id": "supplier",
@@ -28,7 +50,6 @@
             ]
           }
         ],
-        "props": [],
         "control-implementations": [
           {
             "uuid": "92b9f55e-9cb2-4a2e-80ee-eef85ba4b543",
