@@ -248,6 +248,45 @@ class Catalog(object):
         param = self.find_dict_by_value(control['parameters'], "id", param_id)
         return param['label']
 
+    def get_control_parameters_by_control(self, control):
+        """Return an array of control parameter dictionaries for a given oscal control"""
+        parameters = control.get('parameters',[])
+        return parameters
+
+    def get_control_parameter_ids_by_control(self, control):
+        """Return an array of control parameter ids for a given oscal control"""
+        parameters = self.get_control_parameters_by_control(control)
+        parameter_ids = [p['id'] for p in parameters]
+        return parameter_ids
+
+    def get_control_parameters_by_control_id(self, control_id):
+        """Return an array of control parameter dictionaries for a given oscal control_id"""
+        control = self.get_control_by_id(control_id)
+        return self.get_control_parameters_by_control(control)
+
+    def get_control_parameter_ids_by_control_id(self, control_id):
+        """Return an array of control parameter ids for a given oscal control id"""
+        control = self.get_control_by_id(control_id)
+        return self.get_control_parameter_ids_by_control(control)
+
+    def get_all_control_parameters_for_catalog(self):
+        """Return a dictionary of all parameters for all controls in a catalog indexed by parameter id"""
+        controls_flattened = self.get_flattened_controls_all_as_dict()
+        all_parameters = {}
+        for key,val in controls_flattened.items():
+            for param_obj in val['parameters']:
+                all_parameters[param_obj['id']] = param_obj
+        return all_parameters
+
+    def get_all_control_parameter_ids_for_catalog(self):
+        """Return an array of all parameter ids for all controls in a catalog ordered by parameter id"""
+        all_parameters = self.get_all_control_parameters_for_catalog()
+        return all_parameters.keys()
+
+    def get_org_defined_parameter_by_id(self, parameter_id):
+        """Return an organization defined parameter object dictionary by parameter id"""
+        return self.get_all_control_parameters_for_catalog()[parameter_id]
+
     def get_control_prose_as_markdown(self, control_data, part_types={"statement"}, parameter_values=dict()):
         # Concatenate the prose text of all of the 'parts' of this control
         # in Markdown. Filter out the parts that are not wanted.
@@ -379,6 +418,7 @@ class Catalog(object):
                 "description": description,
                 "description_print": description_print,
                 "guidance": None,
+                "parameters": [],
                 "catalog_file": None,
                 "catalog_key": None,
                 "catalog_id": None,
@@ -401,6 +441,7 @@ class Catalog(object):
                 "description": description,
                 "description_print": description_print,
                 "guidance": self.get_control_prose_as_markdown(control, part_types={"guidance"}),
+                "parameters": self.get_control_parameters_by_control(control),
                 "catalog_file": self.catalog_file,
                 "catalog_key": self.catalog_file.split('_catalog.json')[0],
                 "catalog_id": self.catalog_id,
