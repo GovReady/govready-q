@@ -1,11 +1,13 @@
 from pathlib import Path
 import os
 import json
+from platform import version
 from unicodedata import name
 import auto_prefetch
 from django.db import models
 from django.db.models import Count
 from django.db.models import Q
+from django.db.models.fields import EmailField
 from django.utils.functional import cached_property
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
@@ -20,6 +22,8 @@ from siteapp.model_mixins.tags import TagModelMixin
 from siteapp.model_mixins.appointments import AppointmentModelMixin
 from siteapp.model_mixins.requests import RequestsModelMixin
 from siteapp.model_mixins.proposals import ProposalModelMixin
+from siteapp.model_mixins.links import LinkModelMixin
+from siteapp.model_mixins.props import PropModelMixin
 from controls.enums.statements import StatementTypeEnum
 from controls.enums.remotes import RemoteTypeEnum
 from controls.oscal import Catalogs, Catalog, CatalogData
@@ -34,6 +38,7 @@ from django.core.validators import validate_email
 import structlog
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
+
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
@@ -63,6 +68,35 @@ STATEMENT_SYNCHED = 'synched'
 STATEMENT_NOT_SYNCHED = 'not_synched'
 STATEMENT_ORPHANED = 'orphaned'
 
+class DocumentId(BaseModel):
+    scheme = models.URLField(max_length=250, help_text="Qualifies the kind of document identifier using a URI. If the scheme is not provided the value of the element will be interpreted as a string of characters", unique=True, blank=False, null=False)
+    identifier = models.CharField(max_length=250, help_text="An attribute, characteristic, or quality of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values.", unique=True, blank=False, null=False)
+    
+    def __repr__(self):
+        return self.identifier
+
+    def __str__(self):
+        return self.identifier
+
+    def serialize(self):
+        return {"Document identifier": self.identifier, "scheme": self.scheme, "id": self.id}
+
+class Revision(BaseModel, PropModelMixin, LinkModelMixin):
+    title = models.CharField(max_length=250, unique=False, blank=False, null=False, help_text="A name given to the document revision, which may be used by a tool for display and navigation.")
+    published = models.DateTimeField(blank=True, null=True, help_text="The date and time the document was published.")
+    last_modified = models.DateTimeField(blank=True, null=True, help_text="The date and time the document was last modified.")
+    version = models.CharField(default="1.0", max_length=20, help_text="A string used to distinguish the current version of the document from other previous (and future) versions.", unique=False, blank=False, null=False)
+    oscal_version = models.CharField(default="1.0.0", max_length=20, help_text="OSCAL version number.", unique=False, blank=True, null=True)
+    remarks = models.TextField(help_text="Additional commentary on the containing object.")
+
+    def __repr__(self):
+        return self.title
+
+    def __str__(self):
+        return self.title
+
+    def serialize(self):
+        return {"Revision": self.title, "version": self.version, "id": self.id}
 
 class SystemException(Exception):
     """Class for raising custom exceptions with Systems"""
@@ -276,7 +310,7 @@ class StatementRemote(auto_prefetch.Model):
                                              unique=False, blank=True, null=True, help_text="The Import Record which created this record.")
 
 
-class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, RequestsModelMixin):
+class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, RequestsModelMixin, PropModelMixin, LinkModelMixin):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
     description = models.TextField(default="Description needed", help_text="Description of the Element", unique=False, blank=False, null=False)
@@ -292,9 +326,17 @@ class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, Request
     component_state = models.CharField(default="operational", max_length=50, help_text="OSCAL Component State.", unique=False, blank=True, null=True, choices=ComponentStateEnum.choices())
     private = models.BooleanField(blank=False, null=False, default=True, help_text="Component is private.")
     require_approval = models.BooleanField(blank=False, null=False, default=False, help_text="Component requires approval to use.")
+    lastModified = models.DateTimeField(default=None, null=True, blank=True)
+    published = models.DateTimeField(blank=True, null=True, help_text="The date and time the document was published.")
     purpose = models.TextField(default="", help_text="A summary of the technological or business purpose of the component.", unique=False, blank=True, null=False)
-    # prequisites = models.TextField(unique=False, blank=True, null=True, help_text="Prequisites for the Element.")
-
+    locations = models.ManyToManyField("siteapp.Location", related_name="locations", 
+                                    unique=False, blank=True, help_text="A location, with associated metadata that can be referenced.")
+    documents = models.ManyToManyField(DocumentId, related_name="documents", 
+                                    unique=False, blank=True, help_text="A document identifier qualified by an identifier scheme.")
+    revisions = models.ManyToManyField(Revision, related_name="revisions", 
+                                    unique=False, blank=True, help_text="An entry in a sequential list of revisions to the containing document in reverse chronological order (i.e., most recent previous revision first).")
+    remarks = models.TextField(help_text="Additional commentary on the containing object.", unique=False, blank=True, null=True)
+    
     # Notes
     # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)
     #    element_id = 8
@@ -1235,3 +1277,177 @@ class SystemAssessmentResult(auto_prefetch.Model, BaseModel):
     def __repr__(self):
         # For debugging.
         return "<SystemAssesmentResult %s id=%d>" % (self.system, self.id)
+
+class Prop(BaseModel):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for a Task.")
+    name = models.CharField(max_length=250, help_text="A textual label that uniquely identifies a specific attribute, characteristic, or quality of the property's containing object.", 
+        unique=True, blank=False, null=False)
+    ns = models.CharField(max_length=250, help_text="A namespace qualifying the property's name. This allows different organizations to associate distinct semantics with the same name.", 
+        unique=True, blank=False, null=False)
+    value = models.CharField(max_length=250, help_text="Title of a Task", 
+        unique=True, blank=False, null=False)
+    propsClass = models.CharField(max_length=250, help_text="A textual label that provides a sub-type or characterization of the property's name. This can be used to further distinguish or discriminate between the semantics of multiple properties of the same object with the same name and ns.", 
+        unique=True, blank=False, null=False)
+    remarks = models.TextField(help_text="Additional commentary on the containing object.", 
+        blank=True, null=True)
+    
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+    def serialize(self):
+        return {"prop": self.name, "value": self.value, "id": self.id}
+
+class Link(BaseModel):
+    href = models.CharField(max_length=250, help_text="A resolvable URL reference to a resource.", 
+        unique=True, blank=False, null=False)
+    rel = models.URLField(max_length=250, help_text="Describes the type of relationship provided by the link. This can be an indicator of the link's purpose.", 
+        unique=False, blank=True, null=True)
+    mediaType = models.CharField(max_length=250, help_text="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.", 
+        unique=False, blank=True, null=True)
+    text = models.TextField(help_text="A textual label to associate with the link, which may be used for presentation in a tool.", 
+        unique=False, blank=True, null=True)
+    
+    def __repr__(self):
+        return self.href
+
+    def __str__(self):
+        return self.href
+
+    def serialize(self):
+        return {"href": self.href, "text": self.text, "id": self.id}
+
+class Hash(BaseModel):
+    algorithm = models.CharField(max_length=250, help_text="Method by which a hash is derived. ", unique=True, blank=False, null=False)
+    value = models.CharField(max_length=250, help_text="Hash value", unique=False, blank=True, null=True)
+    
+    def __repr__(self):
+        return self.algorithm
+
+    def __str__(self):
+        return self.algorithm
+
+    def serialize(self):
+        return {"algorithm": self.algorithm, "id": self.id}
+
+class RLink(BaseModel):
+    href = models.CharField(max_length=250, help_text="A resolvable URL reference to a resource.", 
+        unique=True, blank=False, null=False)
+    mediaType = models.CharField(max_length=250, help_text="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.", 
+        unique=False, blank=True, null=True)
+    hashes = models.ManyToManyField(Hash, blank=True, related_name="rLink")
+
+    def __repr__(self):
+        return self.href
+
+    def __str__(self):
+        return self.href
+
+    def serialize(self):
+        return {"href": self.href, "mediaType": self.mediaType, "id": self.id}
+
+class Timing(BaseModel):
+    # A choice of onDate, withinDateRange, atFrequency
+    onDate = models.DateField(unique=False, blank=True, null=True, help_text="The timing under which the task is intended to occur.")
+    # withinDateRange
+    # atFrequency
+
+    def __repr__(self):
+        return self.id
+
+    def __str__(self):
+        return self.id
+
+    def serialize(self):
+        return {"Timing id": self.id}
+
+# class Dependencies(BaseModel):
+#     task = models.ForeignKey(SystemTask, on_delete=models.CASCADE, help_text="Dependent task, only need to UUID")
+#     remarks = models.TextField(help_text="Additional commentary on the containing object.", blank=True, null=True)
+
+#     def __repr__(self):
+#         return self.taskUUID
+
+#     def __str__(self):
+#         return self.taskUUID
+
+#     def serialize(self):
+#         return {"taskUUID": self.taskUUID, "id": self.id}
+
+class SystemTask(BaseModel):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for a Task.")
+    taskType = models.CharField(max_length=250, help_text="Type of the Task", unique=True, blank=False, null=False) # may be locally defined or ['milestone', 'action']
+    name = models.CharField(max_length=250, help_text="Title of a Task", unique=True, blank=False, null=False)
+    description = models.CharField(max_length=255, help_text="Brief description of a Task",unique=False, blank=True, null=True)
+    props = models.ManyToManyField(Prop, blank=True, related_name="task")
+    links = models.ManyToManyField(Link, blank=True, related_name="task")
+    # timing
+    # dependencies
+    # tasks - embedded tasks
+    # associated-activities
+    # subjects
+    # responsible-roles
+    remarks = models.TextField(help_text="Additional commentary on the containing object.", unique=False, blank=True, null=True)
+
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+    def serialize(self):
+        return {"name": self.name, "id": self.id}
+
+class Citation(BaseModel, PropModelMixin, LinkModelMixin):
+    text = models.TextField(help_text="A line of citation text.", unique=True, blank=False, null=False)
+
+    def __repr__(self):
+        return self.text
+
+    def __str__(self):
+        return self.text
+
+    def serialize(self):
+        return {"text": self.text, "id": self.id}
+
+class Base64(BaseModel):
+    text = models.TextField(help_text="Name of the file before it was encoded as Base64 to be embedded in a resource. This is the name that will be assigned to the file when the file is decoded.", unique=False, blank=True, null=True)
+    mediaType = models.CharField(max_length=250, help_text="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry", unique=False, blank=True, null=True)
+    value = models.CharField(max_length=250, help_text="Title of a Task", unique=False, blank=False, null=False)
+
+    def __repr__(self):
+        return self.text
+
+    def __str__(self):
+        return self.text
+
+    def serialize(self):
+        return {"text": self.text, "id": self.id}
+
+class Resource(auto_prefetch.Model, BaseModel, PropModelMixin, LinkModelMixin):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this defined resource elsewhere in this or other OSCAL instances.")
+    title = models.CharField(max_length=250, unique=False, blank=False, null=False, help_text="Title of Location.")
+    description = models.TextField(blank=True, null=True, help_text="Description of this Role.")
+    documents = models.ManyToManyField(DocumentId, blank=True, related_name="resource", help_text="A document identifier qualified by an identifier scheme.")
+    citation = auto_prefetch.ForeignKey(Citation, blank=True, null=True, on_delete=models.CASCADE, help_text="A citation consisting of end note text and optional structured bibliographic data.")
+    rlinks = models.ManyToManyField(RLink, unique=False, blank=True, related_name="resource", help_text="A pointer to an external resource with an optional hash for verification and change detection.")
+    base64 = models.ForeignKey(Base64, blank=True, null=True, on_delete=models.CASCADE, help_text="The Base64 alphabet in RFC 2045 - aligned with XSD.")
+    remarks = models.TextField(help_text="Additional commentary on the containing object.", blank=True, null=True)
+
+    def __repr__(self):
+        return self.title
+
+    def __str__(self):
+        return self.title
+
+    def serialize(self):
+        return {"title": self.title, "id": self.id}
+
+class InventoryItem(BaseModel, PropModelMixin, LinkModelMixin):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this defined resource elsewhere in this or other OSCAL instances.")
+    description = models.TextField(blank=True, null=True, help_text="Description of this Role.")
+    responsible_parties = models.ManyToManyField("siteapp.Party", blank=True, related_name="inventory_item", help_text="A reference to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object.")
+    implemented_components = models.ManyToManyField(Element, blank=True, related_name="inventory_item", help_text="The set of components that are implemented in a given system inventory item.")
+    remarks = models.TextField(help_text="Additional commentary on the containing object.", blank=True, null=True)

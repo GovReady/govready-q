@@ -19,14 +19,17 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
 from jsonfield import JSONField
+from django.db.models.fields import EmailField
 
 from api.base.models import BaseModel
 from siteapp.enums.access_level import AccessLevelEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from siteapp.enums.assets import AssetTypeEnum
 from siteapp.utils.uploads import hash_file
-from controls.models import Element, ImportRecord, Statement, System
+from controls.models import Element, ImportRecord, Statement, System, Link, Prop
 from controls.enums.statements import StatementTypeEnum
+from siteapp.model_mixins.links import LinkModelMixin
+from siteapp.model_mixins.props import PropModelMixin
 
 logging.basicConfig()
 structlog.configure(logger_factory=LoggerFactory())
@@ -1419,17 +1422,55 @@ class Tag(BaseModel):
     def serialize(self):
         return {"label": self.label, "system_created": self.system_created, "id": self.id}
 
-class Location(BaseModel):
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Location.")
-    title = models.CharField(max_length=250, unique=False, blank=False, null=False, help_text="Title of Location.")
+class EmailAddress(BaseModel):
+    email = EmailField(max_length=254)
+
+    def __repr__(self):
+        return self.email
+
+    def __str__(self):
+        return self.email
+
+    def serialize(self):
+        return {"email": self.email, "id": self.id}
+class TelephoneNumber(BaseModel):
+    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+    phone_type = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text=" Indicates the type of phone number. May be locally defined or home, office, mobile")
+    phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True) # validators should be a list
+
+    def __repr__(self):
+        return self.phone_number
+
+    def __str__(self):
+        return self.phone_number
+
+    def serialize(self):
+        return {"phone_number": self.phone_number, "id": self.id}
+class Address(BaseModel):
     address_type = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="Type of address")
-    street = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="Street address")
-    apt = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="Apt/Suite")
+    addr_line = JSONField(default=list, blank=True, null=True)
     city = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="City")
     state = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="State")
-    zipcode = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="Zip")
+    postal_code = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="Zip")
     country = models.CharField(max_length=250, unique=False, blank=True, null=True, help_text="Country")
-    remarks = models.TextField(unique=False, blank=True, null=True, help_text="Remarks")
+
+    def __repr__(self):
+        return f"{self.addr_line} {self.city}, {self.state} {self.postal_code} {self.country}"
+
+    def __str__(self):
+        return f"{self.addr_line} {self.city}, {self.state} {self.postal_code} {self.country}"
+
+    def serialize(self):
+        return {"address_type": self.address_type, "id": self.id}
+
+class Location(BaseModel, PropModelMixin, LinkModelMixin):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Location.")
+    title = models.CharField(max_length=250, unique=False, blank=False, null=False, help_text="Title of Location.")
+    address = models.ManyToManyField(Address, blank=True, related_name="location")
+    emailAddresses = models.ManyToManyField(EmailAddress, blank=True, related_name="location")
+    telephoneNumbers = models.ManyToManyField(TelephoneNumber, blank=True, related_name="location")
+    urls = JSONField(default=list, blank=True, null=True)
+    remarks = models.TextField(unique=False, blank=True, null=True, help_text="Additional commentary on the containing object.")
     
     def __repr__(self):
         return self.title
@@ -1440,7 +1481,7 @@ class Location(BaseModel):
     def serialize(self):
         return {"title": self.title, "id": self.id}
 
-class Party(BaseModel):
+class Party(BaseModel, PropModelMixin, LinkModelMixin):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Party.")
     party_type = models.CharField(max_length=100, unique=False, help_text="type for Party.")
     name = models.CharField(max_length=250, unique=True, help_text="Name of this Party.")
@@ -1450,6 +1491,7 @@ class Party(BaseModel):
     mobile_phone = models.CharField(validators=[PHONE_NUMBER_REGEX], max_length=16, null=True, blank=True)
     user = models.ForeignKey(User, blank=True, null=True, related_name="party", on_delete=models.SET_NULL,
                                    help_text="User associated with the Party.")
+    remarks = models.TextField(help_text="Additional commentary on the containing object.", unique=False, blank=True, null=True)
 
     def __repr__(self):
         return self.name
@@ -1461,11 +1503,12 @@ class Party(BaseModel):
         return {"name": self.name, "id": self.id}
 
 
-class Role(BaseModel):
+class Role(BaseModel, PropModelMixin, LinkModelMixin):
     role_id = models.CharField(validators=[TOKEN_REGEX], max_length=16, null=True, blank=True)
     title = models.CharField(max_length=250, unique=False, blank=False, null=False, help_text="Title of Role.")
     short_name = models.CharField(max_length=100, unique=False, blank=True, null=True, help_text="Short name of this Role.")
     description = models.TextField(blank=True, null=True, help_text="Description of this Role.")
+    remarks = models.TextField(help_text="Additional commentary on the containing object.", unique=False, blank=True, null=True)
 
     def __repr__(self):
         return self.title
@@ -1476,6 +1519,13 @@ class Role(BaseModel):
     def serialize(self):
         return {"title": self.title, "id": self.id}
 
+class ResponsibleRoles(BaseModel):
+    roleId = models.ForeignKey(Role, on_delete=models.CASCADE, help_text="The Role being appointed.")
+    # regex=r'^(\p{L}|_)(\p{L}|\p{N}|[.\-_])*$'
+    partyUUIDs = models.ManyToManyField(Party, blank=True, related_name="parties")
+    props = models.ManyToManyField(Prop, blank=True, related_name="responsible_role")
+    links = models.ManyToManyField(Link, blank=True, related_name="responsible_role")
+    remarks = models.TextField(help_text="Additional commentary on the containing object.", blank=True, null=True)
 
 class Appointment(BaseModel):
     role = models.ForeignKey(Role, on_delete=models.CASCADE, help_text="The Role being appointed.")

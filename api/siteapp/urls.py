@@ -15,6 +15,7 @@ from api.siteapp.views.appointment import AppointmentViewSet
 from api.siteapp.views.request import RequestViewSet
 from api.siteapp.views.proposal import ProposalViewSet
 from api.siteapp.views.location import LocationViewSet
+# from api.siteapp.views.props import PropViewSet
 
 router = routers.DefaultRouter()
 router.register(r'organizations', OrganizationViewSet)
