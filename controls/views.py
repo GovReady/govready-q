@@ -1112,7 +1112,6 @@ class ComponentImporter(object):
         @rtype: ImportRecord if success, bool (false) if failure
         @returns: ImportRecord linked to the created components (if success) or False if failure
         """
-
         issues = []
         try:
             # Create a temporary directory and dump the json_object in there.
@@ -1179,7 +1178,6 @@ class ComponentImporter(object):
         @rtype: ImportRecord
         @returns: New ImportRecord object with components and statements associated
         """
-
         import_record = ImportRecord.objects.filter(name=import_name).last()
         if import_record is None or not existing_import_record:
             import_record = ImportRecord.objects.create(name=import_name)
@@ -1215,6 +1213,7 @@ class ComponentImporter(object):
         """
 
         component_name = component_json['title']
+        
         while Element.objects.filter(name=component_name).count() > 0:
             component_name = increment_element_name(component_name)
 
@@ -1238,7 +1237,7 @@ class ComponentImporter(object):
             )
 
         component_props = component_json.get('props', None)
-        if component_props is not None:
+        if component_props:
             desired_tags = set([prop['value'] for prop in component_props if prop['name'] == 'tag' and 'ns' in prop and prop['ns'] == "https://govready.com/ns/oscal"])
             existing_tags = Tag.objects.filter(label__in=desired_tags).values('id', 'label')
             tags_to_create = desired_tags.difference(set([tag['label'] for tag in existing_tags]))

@@ -1,18 +1,26 @@
 import collections
+import json
+from datetime import datetime
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from api.base.views.base import SerializerClasses
 from api.base.views.viewsets import ReadOnlyViewSet, ReadWriteViewSet
-from api.controls.serializers.element import DetailedElementSerializer, SimpleElementSerializer, \
-    WriteElementTagsSerializer, ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer, WriteElementAppointPartySerializer, ElementPartySerializer, DeletePartyAppointmentsFromElementSerializer, CreateMultipleAppointmentsFromRoleIds, ElementRequestsSerializer, ElementSetRequestsSerializer, ElementCreateAndSetRequestSerializer
+from api.controls.serializers.element import DetailedElementSerializer, SimpleElementSerializer, SimpleWriteElementSerializer, \
+    WriteElementTagsSerializer, ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer, \
+    WriteElementAppointPartySerializer, ElementPartySerializer, DeletePartyAppointmentsFromElementSerializer, CreateMultipleAppointmentsFromRoleIds, \
+    ElementRequestsSerializer, ElementSetRequestsSerializer, ElementCreateAndSetRequestSerializer, \
+    WriteElementOscalSerializer, ReadElementOscalSerializer
 from controls.models import Element, System
 from siteapp.models import Appointment, Party, Proposal, Role, Request, User
-
-class ElementViewSet(ReadOnlyViewSet):
+from controls.views import ComponentImporter, import_component
+class ElementViewSet(ReadWriteViewSet):
     queryset = Element.objects.all()
     serializer_classes = SerializerClasses(retrieve=DetailedElementSerializer,
                                            list=SimpleElementSerializer,
+                                           create=SimpleWriteElementSerializer,
+                                           update=SimpleWriteElementSerializer,
+                                           destroy=SimpleWriteElementSerializer,
                                            tags=WriteElementTagsSerializer,
                                            retrieveParties=ElementPartySerializer,
                                            appointments=WriteElementAppointPartySerializer,
@@ -22,7 +30,61 @@ class ElementViewSet(ReadOnlyViewSet):
                                            retrieveRequests=ElementRequestsSerializer,
                                            setRequest=ElementSetRequestsSerializer,
                                            CreateAndSetRequest=ElementCreateAndSetRequestSerializer,
-                                           )
+                                           createOSCAL=WriteElementOscalSerializer,
+                                           updateOSCAL=WriteElementOscalSerializer,
+                                           getOSCAL=ReadElementOscalSerializer,
+                                           getOSCALFile=ReadElementOscalSerializer)
+
+    @action(detail=False, url_path="createOSCAL", methods=["POST"])
+    def createOSCAL(self, request, **kwargs):
+        # Create component
+        title = 'none'
+        if "metadata" in request.data["oscal"]["component-definition"]:
+            title = request.data["oscal"]["component-definition"]["metadata"]["title"]
+        date_string = datetime.now().strftime("%Y-%m-%d-%H-%M")
+        
+        import_record_name = title + "_api-import_" + date_string
+        oscal_component_json = json.dumps(request.data["oscal"])
+        
+        import_record_result = ComponentImporter().import_components_as_json(import_record_name, oscal_component_json, request)
+        element = Element.objects.filter(import_record=import_record_result).first()
+        
+        serializer_class = self.get_serializer_class('retrieve')
+        serializer = self.get_serializer(serializer_class, element)
+        return Response(serializer.data)
+    
+    @action(detail=True, url_path="updateOSCAL", methods=["PUT"])
+    def updateOSCAL(self, request, **kwargs):
+        element, validated_data = self.validate_serializer_and_get_object(request)
+        print("UPDATING COMPONENT USING OSCAL-JSON")
+        # TODO: update component with new OSCAL file - add revision, new uuid, etc
+        element.save()
+
+        serializer_class = self.get_serializer_class('retrieve')
+        serializer = self.get_serializer(serializer_class, element)
+        return Response(serializer.data)
+
+    @action(detail=True, url_path="getOSCAL", methods=["GET"])
+    def getOSCAL(self, request, **kwargs):
+        element, validated_data = self.validate_serializer_and_get_object(request)
+        print("GET COMPONENT's OSCAL-JSON")
+        # TODO: get component OSCAL
+        element.save()
+
+        serializer_class = self.get_serializer_class('retrieve')
+        serializer = self.get_serializer(serializer_class, element)
+        return Response(serializer.data)
+
+    @action(detail=True, url_path="getOSCALFile", methods=["GET"])
+    def getOSCALFile(self, request, **kwargs):
+        element, validated_data = self.validate_serializer_and_get_object(request)
+        # TODO: generate OSCAL file
+        print("GET COMPONENT's OSCAL-JSON")
+        element.save()
+
+        serializer_class = self.get_serializer_class('retrieve')
+        serializer = self.get_serializer(serializer_class, element)
+        return Response(serializer.data)
 
     @action(detail=True, url_path="tags", methods=["PUT"])
     def tags(self, request, **kwargs):
@@ -42,6 +104,7 @@ class ElementViewSet(ReadOnlyViewSet):
         
         serializer_class = self.get_serializer_class('retrieve')
         serializer = self.get_serializer(serializer_class, element)
+        import ipdb; ipdb.set_trace()
         return Response(serializer.data)
     
     @action(detail=True, url_path="appointments", methods=["PUT"])
