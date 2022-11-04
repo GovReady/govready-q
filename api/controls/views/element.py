@@ -5,6 +5,7 @@ import shutil
 import pathlib
 from datetime import datetime
 from pathlib import PurePath
+from django.db.models import Q
 from django.http import HttpResponse, FileResponse
 from django.utils.text import slugify
 from rest_framework import renderers
@@ -18,7 +19,7 @@ from api.controls.serializers.element import DetailedElementSerializer, SimpleEl
     WriteElementTagsSerializer, ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer, \
     WriteElementAppointPartySerializer, ElementPartySerializer, DeletePartyAppointmentsFromElementSerializer, CreateMultipleAppointmentsFromRoleIds, \
     ElementRequestsSerializer, ElementSetRequestsSerializer, ElementCreateAndSetRequestSerializer, \
-    WriteElementOscalSerializer, ReadElementOscalSerializer
+    WriteElementOscalSerializer, ReadElementOscalSerializer, SimpleGetElementByNameSerializer
 from controls.models import Element, System
 from siteapp.models import Appointment, Party, Proposal, Role, Request, User
 from controls.views import ComponentImporter, OSCALComponentSerializer
@@ -40,6 +41,7 @@ class ElementViewSet(ReadWriteViewSet):
                                            update=SimpleWriteElementSerializer,
                                            destroy=SimpleWriteElementSerializer,
                                            tags=WriteElementTagsSerializer,
+                                           getElementsByName=SimpleGetElementByNameSerializer,
                                            retrieveParties=ElementPartySerializer,
                                            appointments=WriteElementAppointPartySerializer,
                                            removeAppointments=WriteElementAppointPartySerializer,
@@ -49,7 +51,6 @@ class ElementViewSet(ReadWriteViewSet):
                                            setRequest=ElementSetRequestsSerializer,
                                            CreateAndSetRequest=ElementCreateAndSetRequestSerializer,
                                            createOSCAL=WriteElementOscalSerializer,
-                                        #    updateOSCAL=WriteElementOscalSerializer,
                                            getOSCAL=ReadElementOscalSerializer,
                                            downloadOSCAL=ReadElementOscalSerializer)
 
@@ -131,6 +132,19 @@ class ElementViewSet(ReadWriteViewSet):
         serializer = self.get_serializer(serializer_class, element)
         return Response(serializer.data)
 
+    @action(detail=False, url_path="getElementsByName", methods=["POST"])
+    def getElementsByName(self, request, **kwargs):
+        nameSearch = request.data['nameSearch']
+        elements = Element.objects.filter(Q(name__icontains=nameSearch) | Q(full_name__icontains=nameSearch))
+
+        serialized_queryset = []
+        serializer_class = self.get_serializer_class('list')
+        for element in elements:
+            serializer = self.get_serializer(serializer_class, element)
+            serialized_queryset.append(serializer.data)
+
+        return Response(serialized_queryset)
+
     @action(detail=True, url_path="retrieveParties", methods=["GET"])
     def retrieveParties(self, request, **kwargs):
         element, validated_data = self.validate_serializer_and_get_object(request)
@@ -138,7 +152,6 @@ class ElementViewSet(ReadWriteViewSet):
         
         serializer_class = self.get_serializer_class('retrieve')
         serializer = self.get_serializer(serializer_class, element)
-        import ipdb; ipdb.set_trace()
         return Response(serializer.data)
     
     @action(detail=True, url_path="appointments", methods=["PUT"])

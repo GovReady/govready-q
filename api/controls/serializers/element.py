@@ -28,6 +28,12 @@ class SimpleWriteElementSerializer(WriteOnlySerializer):
         model = Element
         fields = ['name', 'full_name', 'description', 'element_type']
 
+class SimpleGetElementByNameSerializer(WriteOnlySerializer):
+    nameSearch = serializers.CharField(min_length=None, max_length=None, allow_blank=True, trim_whitespace=True)
+    class Meta:
+        model = Element
+        fields = ['nameSearch']
+
 class WriteElementOscalSerializer(WriteOnlySerializer):
     oscal = serializers.JSONField()
     class Meta:
