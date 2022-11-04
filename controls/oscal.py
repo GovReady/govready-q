@@ -124,7 +124,6 @@ class Catalog(object):
         self.parameter_values = parameter_values
         self.flattened_controls_all_as_dict = self.get_flattened_controls_all_as_dict()
         self.flattened_controls_all_as_dict_list = self.get_flattened_controls_all_as_dict_list()
-        self.parameters_by_control = self._cache_parameters_by_control()
 
     def _load_catalog_json(self):
         """Read catalog file - JSON"""
@@ -243,6 +242,8 @@ class Catalog(object):
         links_text = [ l['text'] for l in self.get_control_guidance_links(control) if l['rel']=="related" and value in l['href'] ]
         return links_text
 
+    # Organizational Defined Parameters
+
     def get_control_parameter_label_by_id(self, control, param_id):
         """Return value of a parameter of a control by id of parameter"""
         param = self.find_dict_by_value(control['parameters'], "id", param_id)
@@ -286,6 +287,8 @@ class Catalog(object):
     def get_org_defined_parameter_by_id(self, parameter_id):
         """Return an organization defined parameter object dictionary by parameter id"""
         return self.get_all_control_parameters_for_catalog()[parameter_id]
+
+    # Control prose
 
     def get_control_prose_as_markdown(self, control_data, part_types={"statement"}, parameter_values=dict()):
         # Concatenate the prose text of all of the 'parts' of this control
@@ -472,18 +475,4 @@ class Catalog(object):
             cl_dict = self.get_flattened_control_as_dict(cl)
             cl_all_list.append(cl_dict)
         return cl_all_list
-
-    def _cache_parameters_by_control(self):
-        cache = defaultdict(list)
-        if self.oscal:
-            groups = self.oscal["groups"]
-            for family in groups:
-                for control in family["controls"]:
-                    control_id = control["id"]
-                    for parameter in control.get("parameters", []):
-                        cache[control_id].append(parameter["id"])
-        return dict(cache)
-
-    def get_parameter_ids_for_control(self, control_id):
-        return self.parameters_by_control.get(control_id, [])
 

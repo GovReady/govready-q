@@ -343,7 +343,7 @@ def oscal_context(answers):
             "statements": []
         }
 
-        param_ids = catalog.get_parameter_ids_for_control(control_id)
+        param_ids = catalog.get_control_parameter_ids_by_control_id(control_id)
         ir["parameter_settings"] = [
             dict(param_id=param_id, value=params.get(param_id))
             for param_id in param_ids
