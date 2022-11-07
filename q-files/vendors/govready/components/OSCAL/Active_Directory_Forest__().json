@@ -2,7 +2,7 @@
   "component-definition": {
     "uuid": "168f68cd-c4c6-49d5-b9cb-06bb0e589e47",
     "metadata": {
-      "title": "Active Directory Forest  ()",
+      "title": "Active Directory Forest",
       "last-modified": "2022-06-12T20:17:23",
       "version": "2022-06-12T20:17:23",
       "oscal-version": "1.0.0",
@@ -18,8 +18,25 @@
       {
         "uuid": "33fa2e7c-a8e0-4551-b524-522e22dd14d8",
         "type": "software",
-        "title": "Active Directory Forest  ()",
+        "title": "Active Directory Forest",
         "description": "Active Directory Forest  () based on DOD SRG/STIG.",
+        "props": [
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "sample"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "IAM"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "MicrosoftActiveDirectory"
+                }
+              ],
         "responsible-roles": [
           {
             "role-id": "supplier",
@@ -28,7 +45,6 @@
             ]
           }
         ],
-        "props": [],
         "control-implementations": [
           {
             "uuid": "2e5d7529-4b86-4280-8dae-ecef42dad0a7",

@@ -1,0 +1,137 @@
+{% extends "project-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+{% load system_tags %}
+
+{% block title %}
+Workflow Recipes
+{% endblock %}
+
+{% block head %}
+<style type="text/css">
+    .heading { font-weight: bold; text-align: left;}
+    .workflowinstance a { color: black; }
+    .bottom-border { border-bottom: 0.5px solid #888; }
+
+    summary {
+        font-weight: normal;
+        /*margin: -.5em -.5em 0;*/
+        /*padding: .5em;*/
+        /*border:none;*/
+        /*outline: none;*/
+        cursor: pointer; }
+    details {
+        /*border: 1px solid #aaa;*/
+        border-radius: 4px;
+        padding: .5em .5em 0; 
+        margin-bottom: 20px;}
+
+    .container { margin-top: 40px; }
+    a.action-link{ color: #888; }
+</style>
+{% endblock %}
+
+<!-- Remove context bar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div class="container">
+    <div class="portfolio-main">
+      <a id="new-portfolio" href="/workflow/recipes/manage" class="btn btn-success">Create a recipe</a>
+    </div>
+    <p>&nbsp;</p>
+    <h2>Workflow Recipes</h2>
+
+    <p>&nbsp;</p>
+            <div class="row bottom-border">
+                <div class="col-md-4 heading">
+                    Workflow Recipe
+                </div>
+                <div class="col-md-6 heading">
+                    Description
+                </div>
+                <div class="col-md-1 heading">
+                    {% if is_admin %}ID{% endif %}
+                </div>
+                <div class="col-md-1 heading">
+                    Actions
+                </div>
+            </div>
+
+            {% for item in workflowrecipes %}
+                <div class="row workflowinstance" style=" border-top: 0.5px solid #888;padding-top: 8px;">
+                    <div class="col-md-4">
+                        <a href="{% url 'edit_recipe' item.id %}" target="">{{ item.name }}</a>
+                    </div>
+                    <div class="col-md-6" style="">
+                        <div>{{ item.description }}</div>
+
+                        {% comment %}
+                        {% for key in item.workflow.feature_order %}
+                          {% with feature=item.workflow.features|get_item:key %}
+                            <div class="stepper-item {{ feature.status }} 
+                                 {% if key == item.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
+                              <div class="step-counter">{{ forloop.counter }}</div>
+                              <div class="step-name">
+                                {% if feature.status == 'completed' %}√{% endif %}
+                                {{ feature.text }}
+                                <!--
+                                {% if key == item.workflow.curr_feature and feature.status != 'completed' %}
+                                  <br><a href="/workflow/{{ item.id }}/set_workflowinstance_feature_completed">[mark done]</a>
+                                {% else %}
+                                {% endif %}
+                                -->
+                              </div>
+                            </div>
+                          {% endwith %}
+                        {% endfor %}
+                        {% endcomment %}
+                    </div>
+                    <div class="col-md-1" style="">
+                        {% if is_admin %}
+                            <a href="/admin/workflow/workflowrecipe/{{ item.id }}/change/" target="_blank">{{ item.id }}</a>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-1" style="">
+                        <span class="dropdown">
+                          <a href="#" class="action-link" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="" aria-label="Dropdown menu for workflow recipe"><span class="glyphicon glyphicon-cog"></span>
+                          </a>
+                          <ul class="dropdown-menu">
+                            <!-- <li>
+                                <a id="" class="action-link" href="{% url 'create_workflowimage' item.id %}" title="Create workflow image" aria-label="Create workflow image"><span class="glyphicon glyphicon-flash"></span> create workflow image</a>
+                            </li> -->
+
+                            <li>
+                                <a id="" class="action-link" href="{% url 'create_workflowinstance_from_recipe' item.id %}" title="Create workflow instance" aria-label="Create workflow instance"><span class="glyphicon glyphicon-flash"></span> create workflow</a>
+                            </li>
+                            <li>
+                                <a id="" class="action-link" href="{% url 'create_system_worflowinstances_from_recipe' item.id %}" title="Create workflow instance all systems" aria-label="Create workflow instance all systems"><span class="glyphicon glyphicon-flash"></span> assign workflow all systems</a>
+                            </li>
+
+                            <li>
+                                <a id="" class="action-link" href="{% url 'edit_recipe' item.id %}" title="Edit recipe" aria-label="Edit recipe" ><span class="glyphicon glyphicon-pencil"></span> edit</a>
+                            </li>
+                            <li>
+                                <a id="" class="action-link" href="{% url 'duplicate_recipe' item.id %}" title="Duplicate recipe" aria-label="Duplicate recipe" ><span class="glyphicon glyphicon-duplicate"></span> duplicate</a>
+                            </li>
+                            <li>
+                                <a id="" class="action-link" href="{% url 'delete_recipe' item.id %}" title="Delete recipe" aria-label="Delete recipe"
+                                    onclick="return confirm('Are you sure you want to delete workflow recipe \'{{ item.name }}\'?\n\nThis cannot be undone.')"><span class="glyphicon glyphicon-trash"></span> delete</a>
+                            </li>
+                          </ul>
+                        </span>
+                    </div>
+                </div>
+            {%  endfor %}
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+{% endblock %}
+

@@ -20,6 +20,23 @@
         "type": "software",
         "title": "Active Directory Domain",
         "description": "Active Directory Domain based on DOD SRG/STIG.",
+        "props": [
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "sample"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "IAM"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "MicrosoftActiveDirectory"
+                }
+              ],
         "responsible-roles": [
           {
             "role-id": "supplier",
@@ -28,7 +45,6 @@
             ]
           }
         ],
-        "props": [],
         "control-implementations": [
           {
             "uuid": "86b717b6-7049-479c-915e-efcf5d45b9b0",

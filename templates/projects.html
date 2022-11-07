@@ -105,7 +105,7 @@ Systems
 <div class="container">
 
 <div class="project-main">
-  <a id="new-project-link-from-projects" href="{% url 'create_system_from_string' %}" class=" btn btn-success">New system</a>
+  <a id="new-project-link-from-projects" href="{% url 'create_new_system' %}" class=" btn btn-success">New system</a>
 </div>
 
 <h2 class="">Systems</h2>
@@ -125,12 +125,12 @@ Systems
 </form>
 
 {% if projects_access|length < 1 %}
-<p>You do not currently have access to any projects.</p>
+<p>You do not currently have access to any systems.</p>
 {% else %}
   {% if user.is_superuser %}
-    <p>You are a Superuser and have access to all {{ projects_access|length }} project{{ projects_access|pluralize }}.</p>
+    <p>You are a Superuser and have access to all {{ projects_access|length }} system{{ projects_access|pluralize }}.</p>
   {% else %}
-    <p>You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}.</p>
+    <p>You have access to {{ projects_access|length }} system{{ projects_access|pluralize }}.</p>
   {% endif %}
   <p>&nbsp;</p>
   <div class="container">

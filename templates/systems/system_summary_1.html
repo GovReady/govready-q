@@ -173,7 +173,8 @@ admin@sdfsdqfqfqf.com</p>
   <div class="col-md-12">
   <span class="vuln-header">Plan of Action & Milestones</span><span style="font-size:1.2em; color:#808080;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( 16 open / 72 resolved )</span>
 
-    <div id="system-summary-poam-datagrid"></div>
+    <!-- <div id="system-summary-poam-datagrid"></div> -->
+    <div id="system-summary-poam-spreadsheet-datagrid"></div>
 </div>
 
 </div>
@@ -184,7 +185,10 @@ admin@sdfsdqfqfqf.com</p>
 {% block scripts %}
     {{ block.super }}
 <script>
-    window.system_summary({{system.id}}, {{project.id}});
+   // window.system_summary({{system.id}}, {{project.id}});
+</script>
+<script>
+    window.system_summary_spreadsheet({{system.id}}, {{project.id}});
 </script>
 
 {% endblock %}

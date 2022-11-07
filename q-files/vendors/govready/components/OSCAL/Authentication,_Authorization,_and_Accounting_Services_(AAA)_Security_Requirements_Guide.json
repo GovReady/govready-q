@@ -20,6 +20,28 @@
         "type": "software",
         "title": "Authentication, Authorization, and Accounting Services (AAA) Security Requirements Guide",
         "description": "Authentication, Authorization, and Accounting Services (AAA) Security Requirements Guide based on DOD SRG/STIG.",
+        "props": [
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "sample"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "IAM"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "EDC"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "CDC"
+                }
+              ],
         "responsible-roles": [
           {
             "role-id": "supplier",
@@ -28,7 +50,6 @@
             ]
           }
         ],
-        "props": [],
         "control-implementations": [
           {
             "uuid": "5206c107-0fd8-469b-a7ce-d1700b7702a1",

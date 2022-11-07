@@ -7,7 +7,7 @@ class SystemSettingsAdmin(admin.ModelAdmin):
   list_display = ('setting', 'active', 'details')
   fields = ('setting', 'active', 'details')
   formfield_overrides = {
-      models.JSONField: {'widget': JSONEditorWidget},
+      models.JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
   }
 
 admin.site.register(SystemSettings, SystemSettingsAdmin)

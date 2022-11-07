@@ -46,12 +46,6 @@ urlpatterns = [
     url(r"^tasks/", include("guidedmodules.urls")),
     url(r"^discussion/", include("discussion.urls")),
 
-    # Controls and Systems
-    url(r"^system/", include("controls.urls")),
-    url(r"^systems/", include("controls.urls")),
-    url(r"^api/v1/systems/", include("controls.urls_api")),
-    url(r"^controls/", include("controls.urls")),
-
     # app store
     url(r'^store$', views.apps_catalog, name="store"),
     url(r'^store/app/(?P<appversion_id>.*)/modules$', views.apps_catalog_item_modules, name='apps_catalog_item_modules'),
@@ -66,6 +60,7 @@ urlpatterns = [
 
     # profile
     url(r'account/settings$', views.account_settings, name="account_settings"),
+
 
     # projects
     url(r"^projects$", views.ProjectList.as_view(), name="projects"),
@@ -83,6 +78,12 @@ urlpatterns = [
         name="update_project_assets"),
     url(r'^projects/(\d+)/$', views.project, name="view_project_id"),
     url(r'^projects/(\d+)/(?:[\w\-]+)()$', views.project, name="view_project"), # must be last because regex matches some previous URLs
+    
+    url(r"^system/", include("controls.urls")),
+    url(r'^systems/(\d+)/$', views.project, name="view_project_id_2"),
+    url(r'^systems/(\d+)/(?:[\w\-]+)()$', views.project, name="view_project_2"), # must be last because regex matches some previous URLs
+    
+
     url(r'^projects/(\d+)/(?:[\w\-]+)(/settings)$', views.project_settings, name="project_settings"),
     url(r'^projects/(\d+)/(?:[\w\-]+)(/startapps)$', views.project_start_apps),
     # must be last because regex matches some previous URLs
@@ -92,6 +93,18 @@ urlpatterns = [
     # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api),
     # must be last because regex matches some previous URLs
+
+    # Controls and Systems
+    url(r"^systems$", views.ProjectList.as_view(), name="systems"),
+    url(r"^systems/$", views.ProjectList.as_view(), name="systems_2"),
+    url(r"^system$", views.ProjectList.as_view(), name="systems_3"),
+    url(r"^system/$", views.ProjectList.as_view(), name="systems_4"),
+    
+    url(r"^systems/", include("controls.urls")),
+    url(r"^api/v1/systems/", include("controls.urls_api")),
+
+    url(r"^controls$", include("controls.urls")),
+    url(r"^controls/", include("controls.urls")),
 
     # portfolios
     url(r'^portfolios$', views.portfolio_list, name="list_portfolios"),
@@ -142,6 +155,7 @@ urlpatterns = [
 
 urlpatterns += [url(r'^api/v2/', include('api.urls'))]
 urlpatterns += [url(r'^integrations/', include('integrations.urls'))]
+urlpatterns += [url(r'^workflow/', include('workflow.urls'))]
 
 if settings.OKTA_CONFIG or settings.OIDC_CONFIG:
     urlpatterns += [

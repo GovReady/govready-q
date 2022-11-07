@@ -20,12 +20,13 @@ def project_context(project, is_project_page=False):
         "project": DetailedProjectsSerializer(project).data,
         "urls": {
             "home": project.get_absolute_url(),
-            "controls": f"/systems/{project.system_id}/controls/selected",
-            "components": f"/systems/{project.system_id}/components/selected",
-            "poa_ms": f'/systems/{project.system_id}/poams',
-            "deployments": f'/systems/{project.system_id}/deployments',
-            "assesments": f"/systems/{project.system_id}/assessments",
-            "export_project": f"/systems/{project.id}/export",
+            "controls": f"/system/{project.system_id}/controls/selected",
+            "components": f"/system/{project.system_id}/components/selected",
+            "poa_ms": f'/system/{project.system_id}/poams',
+            # "poa_ms": f'/systems/{project.system_id}/aspen/summary/poams',
+            "deployments": f'/system/{project.system_id}/deployments',
+            "assesments": f"/system/{project.system_id}/assessments",
+            "export_project": f"/system/{project.id}/export",
             "settings": f"{project.get_absolute_url()}/settings",
             "review": f'{project.get_absolute_url()}/list',
             "documents": f'{project.get_absolute_url()}/outputs',
@@ -170,7 +171,7 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         project.portfolio = portfolio
 
         # Save and add to folder
-        project.save()
+        project.save_without_historical_record()
         project.set_root_task(appver.modules.get(module_name="app"), user)
         # Update default name to be unique by using project.id
         project.root_task.title_override = project.title + " " + str(project.id)
@@ -200,7 +201,7 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         element.save()
         # Create system
         system = System(root_element=element)
-        system.save()
+        system.save_without_historical_record()
         system.add_event("SYS", f"Created new System in GovReady based on template '{appver.catalog_metadata['title']}'.")
         system.info == {
             "created_from_template": project.title,
@@ -232,10 +233,10 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             "score_4": "~",
             "score_5": "~",
         }
-        system.save()
+        system.save_without_historical_record()
         # Link system to project
         project.system = system
-        project.save()
+        project.save_without_historical_record()
         # Log start app / new project
         logger.info(
             event="new_element new_system",

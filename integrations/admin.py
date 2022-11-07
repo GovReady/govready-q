@@ -16,7 +16,7 @@ class IntegrationAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     actions = ["export_as_csv"]
     readonly_fields = ('created', 'updated')
     formfield_overrides = {
-        models.JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
 class EndpointAdmin(SimpleHistoryAdmin, ExportCsvMixin):
@@ -29,7 +29,7 @@ class EndpointAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     actions = ["export_as_csv"]
     readonly_fields = ('created', 'updated')
     formfield_overrides = {
-        models.JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
 admin.site.register(Integration, IntegrationAdmin)

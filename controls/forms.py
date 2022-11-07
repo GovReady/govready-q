@@ -128,6 +128,20 @@ class ImportProjectForm(forms.Form):
     )
     json_content = forms.CharField(label='Project (JSON)', widget=forms.Textarea(), help_text="The JSON necessary for importing a project.")
 
+class ImportSystemForm(forms.Form):
+
+    file = forms.FileField(label="Select system file (.json)",
+        widget=forms.FileInput(
+            attrs={
+                'onchange': "fillFileContent(this);",
+                # 'accept':'application/json'
+            }
+        ),
+        required=False
+    )
+    file_content = forms.CharField(label='System (File)', widget=forms.Textarea(), help_text="The FILE necessary for importing a system.")
+    file_name = forms.CharField(label='Imported File Name', widget=forms.HiddenInput(), required=False)
+
 class DeploymentForm(ModelForm):
 
     def __init__(self, *args, **kwargs):

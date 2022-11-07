@@ -50,6 +50,16 @@ class Command(BaseCommand):
                 ]
                 org.save()
 
+        # Set values for default apps (templates) for Aspen new system page
+        if "default_appversion_name_list" not in org.extra:
+            org.extra["default_appversion_name_list"] = [
+                "Blank Project",
+                "Speedy SSP",
+                "General IT System ATO for 800-53 (low)"
+            ]
+            org.save()
+        # ["Blank Project", "Speedy SSP", "General IT System ATO for 800-53 (low)"]
+
         # Create GovReady admin users, if specified in local/environment.json
         if len(settings.GOVREADY_ADMINS):
             for admin_user in settings.GOVREADY_ADMINS:
@@ -182,7 +192,7 @@ class Command(BaseCommand):
                         with open(os.path.join(path, component_file)) as f:
                             print(f"[INFO] Imported sample generic component {component_file}.")
                             oscal_component_json = f.read()
-                            result = ComponentImporter().import_components_as_json(import_name, oscal_component_json)
+                            result = ComponentImporter().import_components_as_json(import_name, oscal_component_json, existing_import_record=True)
             print("[INFO] Imported sample generic components.")
         else:
             print("[INFO] Components exists. Skipping sample generic components import.")

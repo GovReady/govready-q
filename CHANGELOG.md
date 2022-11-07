@@ -1,6 +1,34 @@
 GovReady-Q Release Notes
 ========================
 
+v0.11.0-dev (September xx, 2022)
+--------------------------------
+
+**Feature changes**
+
+* Support dynamic POA&M spreadsheet upload and editing.
+* Support a system-level control implementation statement.
+* Support workflow capability with ability to define workflows.
+
+**UI changes**
+
+* Use React table for displaying list of POA&Ms.
+* Add better styled ACE JSON editing widget to all admin pages for a model with JSONField.
+* Rename "Project" to "System" in navigation and several URLS. (NOTE: Many links still use "project" in code, reverses, etc.)
+* Display the system-level control implementation statement for a system (AKA "Legacy Control Implementation statement").
+* Improve displays of catalog control pages.
+
+**Developer changes**
+
+* Imported components in first_run script now associated with single import record.
+* Rename "Project" to "System" in navigation and several URLS. (NOTE: Many links still use "project" in code, reverses, etc.)
+* Display the system-level control implementation statement for a system (AKA "Legacy Control Implementation statement").
+* Refactored controls.control_implementation_as_dict for DRY and placing legacy control implementation statements at start of combined statement
+* Update Speedy SSP to have new question.
+* Update Components to have tags to work better out of the box.
+* Add API endpoint to upload OSCAL components.
+
+
 v0.10.0.4 (October 22, 2022)
 ---------------------------
 
@@ -76,6 +104,7 @@ and provides a solid foundation for even more exciting innovations to come.
 
 **UI changes**
 
+* Change to Aspen UI.
 * Change label 'certified statement' to 'reference statement'.
 * Warning Message appears at the top of home page and login page while using an Internet Explorer browser informing the user of Internet Explorer not being supported.
 * Indicate private components with lock icon.
@@ -86,6 +115,7 @@ and provides a solid foundation for even more exciting innovations to come.
 * Only Component owner can edit user permissions.
 * Display the control framework along side of controls in component control listing page.
 * Remove icons from project listing.
+* Change 'Template Library' to 'Questionnaires'.
 * Add Component search filter to filter results to components owned by user.
 * Add form to create system from string or URLs.
 * Change language in interface to 'system, systems' instead of 'project, projects'.

@@ -1,0 +1,70 @@
+<style type="text/css" scoped>
+  .file-droppable i::before {
+    display: block;
+
+  }
+
+  .file-droppable:hover i::before {
+    display: block;
+    color: #009900 !important;
+  }
+  .file-droppable:hover .btn-info::before {
+    display: block;
+    color: #009900 !important;
+  }
+  .btn-info:hover {
+    display: block;
+    color: #009900 !important;
+  }
+  
+</style>
+<div id="dropContainer">
+    <div class="file-droppable" align="center">
+        <i class="glyphicon glyphicon-save fa-3x"></i>
+        <br>
+        <div class="upload-text">Select a file or drag here</div>
+        <br>
+        <button id="select-file" type="button" class="btn btn-info btn-lg" data-toggle="collapse" data-target="#">Select a file</button>
+        <span>&times;</span>
+        <input type="file" id="file_content"/>
+        
+    </div>
+</div>
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelectorAll('.file-droppable').forEach(function(droppable) {
+    var originalText = droppable.querySelector('div').innerHTML;
+    var input = droppable.querySelector('input');
+    var fileChanged = function() {
+      var files = input.files;
+
+      console.log('files: ', files);
+      if (files.length) {
+        droppable.querySelector('span').style.display = 'block';
+        droppable.querySelector('div').innerHTML = '';
+				for (var i = 0; i < files.length; i++) {
+					droppable.querySelector('div').innerHTML += files[i].name + '<br>';
+        }
+        droppable.classList.add('filled');
+				fillFileContent(files)// file content box
+      } else {
+        droppable.querySelector('div').innerHTML = originalText;
+        droppable.classList.remove('filled');
+        droppable.querySelector('span').style.display = 'none';
+      }
+    };
+    
+    input.addEventListener('change', fileChanged);
+    fileChanged(input);
+    
+    droppable.querySelector('span').addEventListener('click', function() {
+		  input.value = '';
+	    fileChanged(input);
+    });
+  });
+
+});
+</script>
+
+{% endblock %}

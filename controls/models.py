@@ -5,6 +5,7 @@ from unicodedata import name
 import auto_prefetch
 from django.db import models
 from django.db.models import Count
+from django.db.models import Q
 from django.utils.functional import cached_property
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
@@ -46,6 +47,7 @@ PHONE_NUMBER_REGEX = RegexValidator(regex=r"^\+?1?\d{8,15}$")
 class ImportRecord(BaseModel):
     name = models.CharField(max_length=100, help_text="File name of the import", unique=False, blank=True, null=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier for this Import Record.")
+    comment = models.TextField(help_text="Comment for this import record", unique=False, blank=True, null=True)
 
     def get_components_statements(self):
         components = Element.objects.filter(import_record=self)
@@ -87,8 +89,8 @@ class Statement(auto_prefetch.Model):
     consumer_element = auto_prefetch.ForeignKey('Element', related_name='statements_consumed', on_delete=models.CASCADE, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
-    import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_statements", on_delete=models.CASCADE,
-                                      unique=False, blank=True, null=True, help_text="The Import Record which created this Statement.")
+    import_record = models.ManyToManyField(ImportRecord, related_name="import_record_statements",
+                                           unique=False, blank=True, help_text="The Import Record which created this Statement.")
     change_log = models.JSONField(blank=True, null=True, help_text="JSON object representing changes to the statement")
     history = HistoricalRecords(cascade_delete_history=True)
 
@@ -103,6 +105,17 @@ class Statement(auto_prefetch.Model):
     def __repr__(self):
         # For debugging.
         return "'%s %s %s %s %s'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
+
+    def save(self, *args, **kwargs):
+        return super(Statement, self).save(*args, **kwargs)
+
+    def save_without_historical_record(self, *args, **kwargs):
+        self.skip_history_when_saving = True
+        try:
+            ret = self.save(*args, **kwargs)
+        finally:
+            del self.skip_history_when_saving
+        return ret
 
     @cached_property
     def producer_element_name(self):
@@ -658,7 +671,10 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
     info = models.JSONField(blank=True, default=dict, help_text="JSON object representing additional system information")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
-
+    import_record = models.ManyToManyField(ImportRecord, related_name="import_record_systems",
+                                        unique=False, blank=True, help_text="The Import Record which created this System.")
+    history = HistoricalRecords(cascade_delete_history=True)
+    extra = models.JSONField(blank=True, default=dict, help_text="Additional fields")
     # Notes
     # Retrieve system implementation statements
     #   system = System.objects.get(pk=2)
@@ -676,6 +692,17 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
     def __repr__(self):
         # For debugging.
         return "'System %s id=%d'" % (self.root_element.name, self.id)
+
+    def save(self, *args, **kwargs):
+        return super(System, self).save(*args, **kwargs)
+
+    def save_without_historical_record(self, *args, **kwargs):
+        self.skip_history_when_saving = True
+        try:
+            ret = self.save(*args, **kwargs)
+        finally:
+            del self.skip_history_when_saving
+        return ret
 
     # @property
     # def statements_consumed(self):
@@ -798,43 +825,10 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
 
     @cached_property
     def control_implementation_as_dict(self):
-        pid_current = None
+        self.pid_current = None
 
-        # Fetch all selected controls
-        elm = self.root_element
-        selected_controls = elm.controls.all().values("oscal_ctl_id", "uuid")
-        # Get the smts_control_implementations ordered by part, e.g. pid
-        smts = elm.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
-
-        smts_as_dict = {}
-
-        # Retrieve all of the existing statements
-        for smt in smts:
-            if smt.sid in smts_as_dict:
-                smts_as_dict[smt.sid]['control_impl_smts'].append(smt)
-            else:
-
-                try:
-                    elementcontrol = self.root_element.controls.get(oscal_ctl_id=smt.sid,
-                                                                    oscal_catalog_key=smt.sid_class)
-                    smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
-                                             "common_controls": [],
-                                             "combined_smt": "",
-                                             "elementcontrol_uuid": elementcontrol.uuid,
-                                             "combined_smt_uuid": uuid.uuid4()
-                                             }
-                except ElementControl.DoesNotExist:
-                    # Handle case where Element control does not exist
-                    elementcontrol = None
-                    smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
-                                             "common_controls": [],
-                                             "combined_smt": "",
-                                             "elementcontrol_uuid": None,
-                                             "combined_smt_uuid": uuid.uuid4()
-                                             }
-
-            # Build combined statement
-
+        def combined_smt_partial(smt):
+            """ Return the built partial statement to display in a document """
             # Define status options
             impl_statuses = ["Not implemented", "Planned", "Partially implemented", "Implemented", "Unknown"]
             status_str = ""
@@ -844,43 +838,52 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
                 else:
                     status_str += f'<span style="color: #888;">[ ] {status}</span> '
             # Conditionally add statement part in the beginning of a block of statements related to a part
-            if smt.pid != "" and smt.pid != pid_current:
-                smts_as_dict[smt.sid]['combined_smt'] += f"{smt.pid}.\n"
-                pid_current = smt.pid
-            # DEBUG
-            # TODO
-            # Poor performance, at least in some instances, appears to being caused by `smt.producer_element.name`
-            # parameter in the below statement.
+            print(f"self.pid_current: {self.pid_current}")
+            # if smt.pid != "" and smt.pid != self.pid_current:
+            #     smts_as_dict[smt.sid]['combined_smt'] += f"{smt.pid}.\n"
+            #     print(f"self.pid_current: {self.pid_current} XXXXXXXXXXXXX") # DEBUG
+            #     self.pid_current = smt.pid
             if smt.producer_element:
                 smt_formatted = smt.body.replace('\n','<br/>')
                 # TODO: Clean up special characters
                 smt_formatted = smt_formatted.replace(u"\u2019", "'").replace(u"\u2022", "<li>")
-                smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i><br/>{status_str}<br/><br/>{smt_formatted}<br/><br/>"
-            # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
-            # for testing purposes, the loop runs 3x faster
-            # The reference `smt.producer_element.name` appears to be calling the database and creating poor performance
-            # even where there are no statements.
+                # Poor performance, at least in some instances, appears to being caused by `smt.producer_element.name`
+                # parameter in the above statement.
+                # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
+                # for testing purposes, the loop runs 3x faster
+                # The reference `smt.producer_element.name` appears to be calling the database and creating poor performance
+                # even where there are no statements.
+            return f"<i>{smt.producer_element.name}</i><br/>{status_str}<br/><br/>{smt_formatted}<br/><br/>"
 
-        # Deprecated implementation of inherited/common controls
-        # Leave commented out until we can fully delete...Greg - 2020-10-12
-        # # Add in the common controls
-        # for cc in self.root_element.common_controls.all():
-        #     if cc.common_control.oscal_ctl_id in smts_as_dict:
-        #         smts_as_dict[smt.sid]['common_controls'].append(cc)
-        #     else:
-        #         smts_as_dict[cc.common_control.oscal_ctl_id] = {"control_impl_smts": [], "common_controls": [cc], "combined_smt": ""}
-        #     # Build combined statement
-        #     smts_as_dict[cc.common_control.oscal_ctl_id]['combined_smt'] += "{}\n{}\n\n".format(cc.common_control.name, cc.common_control.body)
+        # Fetch all controls from assigned baseline
+        elm = self.root_element
+        selected_controls = elm.controls.all().values("oscal_ctl_id", "uuid")
 
-        # Populate any controls from assigned baseline that do not have statements
+        # Construct statements dictionary for all controls from assigned baseline
+        smts_as_dict = {}
         for ec in selected_controls:
             if ec.get('oscal_ctl_id') not in smts_as_dict:
                 smts_as_dict[ec.get('oscal_ctl_id')] = {"control_impl_smts": [],
+                                                        "control_impl_smts_legacy": [],
                                                         "common_controls": [],
                                                         "combined_smt": "",
                                                         "elementcontrol_uuid": ec.get('ec.uuid'),
                                                         "combined_smt_uuid": uuid.uuid4()
                                                         }
+
+        # Get the smts_control_implementations ordered by part, e.g. pid
+        smts_all = elm.statements_consumed.filter(Q(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name) | 
+            Q(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)).order_by('pid')
+
+        # Populate control statement if set for system and/or control
+        # TODO: Add conditional test for adding legacy control implementation statements
+        for smt in smts_all:
+            if smt.sid in smts_as_dict:
+                smts_as_dict[smt.sid]['control_impl_smts_legacy'].append(smt)
+                if smt.pid != "" and smt.pid != self.pid_current:
+                    smts_as_dict[smt.sid]['combined_smt'] += f"{smt.pid}.\n"
+                    self.pid_current = smt.pid
+                smts_as_dict[smt.sid]['combined_smt'] += combined_smt_partial(smt)
 
         # Return the dictionary
         return smts_as_dict
@@ -903,21 +906,13 @@ class System(auto_prefetch.Model, TagModelMixin, ProposalModelMixin):
         return status_stats
 
     @cached_property
-    def poam_status_count(self):
+    def poam_status_counts(self):
         """Retrieve counts of poam status"""
 
-        # Temporarily hard code status list
-        status_list = ['Open', 'Closed', "In Progress"]
-        # TODO
-        # Get a unique filter of status list and gather on that...
-        status_stats = {status: 0 for status in status_list}
-        # Fetch all system POA&Ms
-        counts = Statement.objects.filter(statement_type="POAM", consumer_element=self.root_element,
-                                          status__in=status_list).values('status').order_by('status').annotate(
+        status_qr = self.root_element.statements_consumed.all().values('status').order_by('status').annotate(
             count=Count('status'))
-        status_stats.update({r['status']: r['count'] for r in counts})
-        # TODO add index on statement status
-        return status_stats
+        status_counts = {sc['status']:sc['count'] for sc in status_qr}
+        return status_counts
 
     # @property (See below for creation of property from method)
     def get_producer_elements(self):
@@ -1154,9 +1149,10 @@ class Poam(BaseModel):
                                             help_text="The current or modified risk rating of the weakness.")
     poam_group = models.CharField(max_length=50, unique=False, blank=True, null=True,
                                   help_text="A name to collect related POA&Ms together.")
-
-    # spec = JSONField(help_text="A load_modules ModuleRepository spec.", load_kwargs={'object_pairs_hook': OrderedDict})
-    # Spec will hold additional values, such as: POC, resources_required, vendor_dependency
+    import_record = models.ManyToManyField(ImportRecord, related_name="import_record_poam", 
+                                      unique=False, blank=True, help_text="The Import Record which created this Poam.")
+    history = HistoricalRecords(cascade_delete_history=True)
+    extra = models.JSONField(blank=True, default=dict, help_text="Additional fields")
 
     def __str__(self):
         return "<Poam %s id=%d>" % (self.statement, self.id)
@@ -1168,7 +1164,17 @@ class Poam(BaseModel):
     def get_next_poam_id(self, system):
         """Count total number of POAMS and return next linear id"""
         return Statement.objects.filter(statement_type="POAM", consumer_element=system.root_element).count()
+    
+    def save(self, *args, **kwargs):
+        return super(Poam, self).save(*args, **kwargs)
 
+    def save_without_historical_record(self, *args, **kwargs):
+        self.skip_history_when_saving = True
+        try:
+            ret = self.save(*args, **kwargs)
+        finally:
+            del self.skip_history_when_saving
+        return ret    
     # TODO:
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
@@ -1228,4 +1234,3 @@ class SystemAssessmentResult(auto_prefetch.Model, BaseModel):
     def __repr__(self):
         # For debugging.
         return "<SystemAssesmentResult %s id=%d>" % (self.system, self.id)
-

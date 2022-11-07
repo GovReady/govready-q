@@ -44,7 +44,7 @@ class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('slug', 'name', 'id')
     filter_horizontal = ('help_squad', 'reviewers')
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
     def save_model(self, request, obj, form, change):
@@ -125,21 +125,24 @@ class OrganizationAdmin(admin.ModelAdmin):
 class OrganizationalSettingAdmin(admin.ModelAdmin):
     list_display = ('id', 'organization', 'catalog_key', 'parameter_key', 'value')
     readonly_fields = ('id',)
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
+    }
 
 
 class FolderAdmin(admin.ModelAdmin):
     list_display = ('title', 'created')
     raw_id_fields = ('organization', 'admin_users')
-    readonly_fields = ('projects', 'extra')
+    readonly_fields = ('projects',)
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
 
 class InvitationAdmin(admin.ModelAdmin):
     list_display = ('to_user', 'to_email', 'into_project', 'email_invitation_code', 'from_user', 'sent_at')
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
 
@@ -151,9 +154,9 @@ class NotificationAdmin(admin.ModelAdmin):
 class ProjectAdmin(GuardedModelAdmin):
     list_display = ('id', 'portfolio_name', 'organization_name', 'title', 'root_task', 'created')
     raw_id_fields = ('root_task',)
-    readonly_fields = ('id', 'extra',)
+    readonly_fields = ('id',)
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
     def portfolio_name(self, obj):
@@ -209,7 +212,7 @@ class ProjectAssetAdmin(admin.ModelAdmin):
     readonly_fields = ('content_hash', 'filename',)
     ordering = ('project', 'asset_type', 'created')
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
 
