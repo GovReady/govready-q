@@ -28,6 +28,22 @@ v0.11.0-dev (September xx, 2022)
 * Update Components to have tags to work better out of the box.
 
 
+v0.10.0.4 (October 22, 2022)
+---------------------------
+
+**Security fixes**
+
+* Upgrade Python libraries.
+
+
+v0.10.0.3 (October 06, 2022)
+---------------------------
+
+**Security fixes**
+
+* Upgrade Python libraries.
+
+
 v0.10.0.2 (August 22, 2022)
 ---------------------------
 
