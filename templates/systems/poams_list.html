@@ -19,6 +19,75 @@
 
 {% block body_content %}
 <div  class="systems-top">
+    <h2>POA&Ms (Plan of Actions and Milestones)</h2>
+    <!-- <h3>TEST CONTENT</h3> -->
+    <p>&nbsp;</p>
+    <!-- <div style="width:250px;font-weight: bold;">Process Monthly POA&Ms</div> -->
+
+    <div id="" class="row">
+        <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+          <a href={% url 'new_poam' system_id=system.id %} class="btn btn-sm btn-success systems-element-button pull-right">New POA&M</a>
+        </div>
+    </div>
+
+    {% comment %}
+    <style type="text/css">
+      .stepper-wrapper { margin-top: auto; display: flex; justify-content: space-between; margin-bottom: 20px; }
+      .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; flex: 1;
+        @media (max-width: 768px) { font-size: 12px; }
+      }
+      .stepper-item::before { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: -50%; z-index: 2; }
+      .stepper-item::after { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 15px; left: 50%; z-index: 2; }
+      .stepper-item .step-counter { position: relative; z-index: 5; display: flex; justify-content: center; align-items: center; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 2px solid #bebebe; margin-bottom: 6px; color: #bebebe;
+        font-weight: bold; }
+      .stepper-item.active { font-weight: normal; }
+      .stepper-item.completed .step-counter { background-color: #4bb543; border: 2px solid #4bb543; }
+      .stepper-item.completed::after { position: absolute; content: ""; border-bottom: 2px solid #4bb543; width: 100%; top: 15px; left: 50%; z-index: 3; }
+      .stepper-item:first-child::before { content: none; }
+      .stepper-item:last-child::after { content: none; }
+      .step-name { text-align: center; font-size: .85em; }
+      .stepper-item.completed .step-counter { color: white; }
+      .workflow-name {text-align: center;}
+    </style>
+
+    {% if project.system.workflowinstances.all|length > 0 %}
+        <!-- <p>{{ project.system.workflowinstances.all|length }} workflows</p> -->
+        {% for wfit in project.system.workflowinstances.all %}
+
+          <div class="workflow-name">{{ wfit.name }}</div>
+          <div class="stepper-wrapper">
+            {% for key in wfit.workflow.feature_order %}
+              {% with feature=wfit.workflow.features|get_item:key %}
+                <div class="stepper-item {{ feature.status }} 
+                     {% if key == wfit.workflow.curr_feature and feature.status != 'completed'%}active{% endif %}">
+                  <div class="step-counter">{{ forloop.counter }}</div>
+                  <div class="step-name">
+                    {% if feature.status == 'completed' %}√{% endif %}
+                    {{ feature.text }} 
+                    {% if key == wfit.workflow.curr_feature and feature.status != 'completed' %}
+                      <br><a class="btn btn-success btn-small" href="/workflow/{{ wfit.id }}/set_workflowinstance_feature_completed">mark done &raquo;</a>
+                    {% else %}
+                    {% endif %}
+                  </div>
+                </div>
+              {% endwith %}
+            {% endfor %}
+          </div>
+        {%  endfor %}
+    {% endif %}
+    {% endcomment %}
+
+    <div id="system-summary-poam-datagrid"></div>
+    {% comment %} <script>
+      window.system_summary_spreadsheet({{system.id}}, {{project.id}});
+    </script> {% endcomment %}
+    <script>
+      window.system_summary({{system.id}}, {{project.id}});
+    </script>
+
+  {% comment %} 
+    <h3>POA&MS Managed Locally in GovReady-Q</h3>
+    <p>The following POA&Ms originate locally in GovReady-Q.</p>
     <div id="tab-content" class="row rows-header">
         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam"><span class="systems-selected-items">POA&Ms</span></div>
         <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">&nbsp;</div>
@@ -53,6 +122,7 @@
         </div>
       {% endfor %}
     {% endif %}
+  {% endcomment %}
 </div>
 
 {% endblock %}

@@ -19,6 +19,8 @@ def set_integration(integration):
         return GithubCommunication()
     elif integration == "jsonplaceholder":
         return JsonplaceholderCommunication()
+    elif integration == "monthlypoams":
+        return MonthlyPOAMsCommunication()
     else:
         return None
 

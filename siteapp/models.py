@@ -1,13 +1,12 @@
 from collections import ChainMap
 from itertools import chain
 import logging
-from platform import system
 import structlog
 import uuid as uuid
-import auto_prefetch
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
 from typing import Dict
+from simple_history.models import HistoricalRecords
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -28,7 +27,6 @@ from siteapp.enums.assets import AssetTypeEnum
 from siteapp.utils.uploads import hash_file
 from controls.models import Element, ImportRecord, Statement, System
 from controls.enums.statements import StatementTypeEnum
-from controls.utilities import *
 
 logging.basicConfig()
 structlog.configure(logger_factory=LoggerFactory())
@@ -494,8 +492,9 @@ class Project(TagModelMixin, BaseModel):
                                help_text="Project's version identifier")
     version_comment = models.TextField(unique=False, blank=True, null=True,
                                        help_text="Project's version comment")
-    import_record = auto_prefetch.ForeignKey(ImportRecord, related_name="import_record_projects", on_delete=models.CASCADE,
-                                      unique=False, blank=True, null=True, help_text="The Import Record which created this Project.")
+    import_record = models.ManyToManyField(ImportRecord, related_name="import_record_projects",
+                                      unique=False, blank=True, help_text="The Import Record which created this Project.")
+    history = HistoricalRecords(cascade_delete_history=True)
 
     class Meta:
         unique_together = [('organization', 'is_organization_project')]  # ensures only one can be true
@@ -522,6 +521,14 @@ class Project(TagModelMixin, BaseModel):
                                         file=File(open('assets/system-reference.docx', 'rb')),
                                         project_id=self.pk)
         return project
+
+    def save_without_historical_record(self, *args, **kwargs):
+        self.skip_history_when_saving = True
+        try:
+            ret = self.save(*args, **kwargs)
+        finally:
+            del self.skip_history_when_saving
+        return ret
 
     @property
     def title(self):
@@ -753,7 +760,8 @@ class Project(TagModelMixin, BaseModel):
         # projects -= system_projects
 
         # Sort.
-        projects = sorted(projects, key=lambda x: x.updated, reverse=True)
+        # projects = sorted(projects, key=lambda x: x.updated, reverse=True)
+        projects = sorted(projects, key=lambda x: x.title, reverse=False)
 
         return projects
 
@@ -796,7 +804,7 @@ class Project(TagModelMixin, BaseModel):
 
         # update the project
         self.root_task = task
-        self.save()
+        self.save_without_historical_record()
 
     def set_system_task(self, app, editor):
         from guidedmodules.models import Module

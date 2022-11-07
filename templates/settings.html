@@ -9,7 +9,10 @@ GovReady-Q Setup
 {% endblock %}
 
 {% block body %}
-  <h1>Settings</h1>
+
+<div class="container">
+
+  <h1 class="">Settings</h1>
 
   {% if is_django_staff %}
   <p class="small">You are a Django Administrator. You have extra permissions on this page and can visit the <a href="{{django_admin_url}}">Django Admin homepage</a>.</p>
@@ -37,6 +40,7 @@ GovReady-Q Setup
 
   {% include "settings_usertable.html" with users=reviewers listid="reviewers" listname="Reviewers" %}
 
+
   {% endif %}
 
   {# Link to the Django Admin if the user is permitted to go there. #}
@@ -62,6 +66,7 @@ GovReady-Q Setup
 
   Database in use: {{db_type}}
 
+</div>
 
 {% endblock %}
 
@@ -159,5 +164,28 @@ GovReady-Q Setup
         }
     });
   }
+
+  function import_poam_xlsx_form(argument) {
+    $('#import_poam_authoring_tool').modal();
+  }
+
+  function import_poam_xlsx() {
+    // Use FormData to serialize form object including uploaded file
+    var data = new FormData($('#import_poam_authoring_tool form')[0]);
+    console.log("data is: "+JSON.stringify(data));
+    ajax_with_indicator({
+        url: "/systems/import-poams",
+        method: "POST",
+        data: data,
+        keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+        success: function(res) {
+          // Modal can stay up until the redirect finishes.
+          window.location = res.redirect;
+          if (window.location.hash.length > 1)
+            window.location.reload(); // if there is a # in the URL, the browser won't actually reload
+        }
+    });
+  }
+
 </script>
 {% endblock %}

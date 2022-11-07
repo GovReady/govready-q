@@ -202,7 +202,7 @@ class AppSourceAdmin(admin.ModelAdmin):
     readonly_fields = ('is_system_source', "available_to_role",)
     ordering = ('id',)
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
     def source(self, obj):
@@ -242,7 +242,7 @@ class AppVersionAdmin(admin.ModelAdmin):
     raw_id_fields = ('source', 'asset_files',)
     readonly_fields = ('asset_files', 'asset_paths', 'system_app')
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
 class AppInputAdmin(admin.ModelAdmin):
@@ -257,7 +257,7 @@ class ModuleAdmin(admin.ModelAdmin):
     raw_id_fields = ('source', 'app', 'superseded_by')
     readonly_fields = ('id',)
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
     def app_(self, obj): return "{} [{}]".format(obj.app.appname, obj.app.id) if obj.app else "(not in an app)"
 
@@ -266,7 +266,7 @@ class ModuleQuestionAdmin(admin.ModelAdmin):
     raw_id_fields = ('module', 'answer_type_module')
     readonly_fields = ("id",)
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
 class ModuleAssetAdmin(admin.ModelAdmin):
@@ -274,7 +274,7 @@ class ModuleAssetAdmin(admin.ModelAdmin):
     raw_id_fields = ('source',)
     readonly_fields = ('source', 'content_hash', 'file')
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
 class TaskAdmin(admin.ModelAdmin):
@@ -284,7 +284,7 @@ class TaskAdmin(admin.ModelAdmin):
     readonly_fields = ('id', 'title', 'module', 'invitation_history')
     search_fields = ('project__organization__name', 'editor__username', 'editor__email', 'module__key')
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
 
     def submodule_of(self, obj):
@@ -303,7 +303,7 @@ class TaskAnswerAdmin(admin.ModelAdmin):
         (None, {"fields": ('extra',)}),
         ]
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
     def _project(self, obj): return obj.task.project
 
@@ -320,7 +320,7 @@ class TaskAnswerHistoryAdmin(admin.ModelAdmin):
         (None, {"fields": ('extra',)}),
         ]
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
     }
     def answer(self, obj): return obj.get_answer_display()
 
@@ -329,6 +329,9 @@ class InstrumentationEventAdmin(admin.ModelAdmin):
     raw_id_fields = ('project', 'user', 'module', 'question', 'task', 'answer')
     readonly_fields = ('event_time', 'event_type', 'event_value', 'user',
                        'module', 'question', 'task', 'answer')
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget(attrs={'style': 'height: 20em; width: 650px; margin-left: 160px;'})},
+    }
 
 admin.site.register(AppSource, AppSourceAdmin)
 admin.site.register(AppVersion, AppVersionAdmin)

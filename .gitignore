@@ -1,6 +1,7 @@
 # GovReady-Q App
 __pycache__/
 /local
+data/*
 /modules/local
 apps/
 static_root/*

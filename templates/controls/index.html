@@ -16,6 +16,8 @@
     max-width: 950px;
     margin: auto;
   }
+
+  h2 > a { color: black; }
 </style>
 {% endblock %}
 
@@ -33,6 +35,7 @@ Remove contextbar from top of page
         <!-- Page Title-->
         <div style="float: left;">
           <h2 id="control-heading" class="">
+            <a href="/controls/catalogs/{{ catalog.catalog_key }}">{{ catalog.catalog_key_display }}</a> &gt;
             {% if "SP-800-53" in catalog.catalog_key_display %}
               Control Families {{system.root_element.name}}
             {% else %}
@@ -54,8 +57,9 @@ Remove contextbar from top of page
     <p>&nbsp;</p>
 
     <div id="tab-content" class="row rows-header" style="">
-        <div id="tab-content" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">{{ catalog.catalog_key_display }}</div>
+      <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Control Families/Groupings</div>
     </div>
+
    {% for group in control_groups %}
     <div id="tab-content" class="row row-control" style="">
         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">

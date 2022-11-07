@@ -20,6 +20,28 @@
         "type": "software",
         "title": "Cisco ASA Firewall",
         "description": "Cisco ASA Firewall based on DOD SRG/STIG.",
+        "props": [
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "sample"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "firewall"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "EDC"
+                },
+                {
+                  "name": "tag",
+                  "ns": "https://govready.com/ns/oscal",
+                  "value": "CDC"
+                }
+              ],
         "responsible-roles": [
           {
             "role-id": "supplier",
@@ -28,7 +50,6 @@
             ]
           }
         ],
-        "props": [],
         "control-implementations": [
           {
             "uuid": "b211c24f-13d8-43c8-b872-76f285e57240",

@@ -9,8 +9,8 @@
           <div class="modal-body">
             <label for="id_portfolio">Move project to portfolio</label>:&nbsp;
             <select id='selected-portfolio' aria-label='Select portfolio'>
-              {% for a in project_form.fields.portfolio.choices %}
-                  <option value = {{ a.0 }}> {{ a.1 }} </option>
+              {% for port in portfolios %}
+                  <option value = {{ port.id }}> {{ port.title }} </option>
               {% endfor %}
             </select>
            </div>

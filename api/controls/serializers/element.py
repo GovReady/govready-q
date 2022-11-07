@@ -18,13 +18,38 @@ class SimpleElementRoleSerializer(ReadOnlySerializer):
         model = ElementRole
         fields = ['role', 'description']
 
-
 class SimpleElementSerializer(ReadOnlySerializer):
     class Meta:
         model = Element
         fields = ['name', 'full_name', 'description', 'element_type', 'uuid']
 
+class SimpleWriteElementSerializer(WriteOnlySerializer):
+    class Meta:
+        model = Element
+        fields = ['name', 'full_name', 'description', 'element_type']
 
+class SimpleGetElementByNameSerializer(WriteOnlySerializer):
+    nameSearch = serializers.CharField(min_length=None, max_length=None, allow_blank=True, trim_whitespace=True)
+    class Meta:
+        model = Element
+        fields = ['nameSearch']
+
+class WriteElementOscalSerializer(WriteOnlySerializer):
+    oscal = serializers.JSONField()
+    class Meta:
+        model = Element
+        fields = ['oscal']
+class ReadElementOscalSerializer(ReadOnlySerializer):
+    oscal = serializers.SerializerMethodField('get_oscal')
+
+    def get_oscal(self):
+        # TODO: Get OSCAL of the indicated element
+        oscal = {}
+        return oscal
+    class Meta:
+        model = Element
+        fields = ['oscal']
+        
 class DetailedElementSerializer(SimpleElementSerializer):
     import_record = SimpleImportRecordSerializer()
     roles = SimpleElementRoleSerializer(many=True)
@@ -115,11 +140,13 @@ class UpdateElementPermissionSerializer(WriteOnlySerializer):
     class Meta:
         model = Element
         fields = ['users_with_permissions']
+
 class RemoveUserPermissionFromElementSerializer(WriteOnlySerializer):
     user_to_remove = serializers.JSONField()
     class Meta:
         model = Element
         fields = ['user_to_remove']
+
 class SimpleElementControlSerializer(ReadOnlySerializer):
     class Meta:
         model = ElementControl
@@ -131,7 +158,6 @@ class DetailedElementControlSerializer(SimpleElementControlSerializer):
     class Meta:
         model = ElementControl
         fields = SimpleElementControlSerializer.Meta.fields + ['element']
-
 
 class WriteElementTagsSerializer(WriteOnlySerializer):
     tag_ids = PrimaryKeyRelatedField(source='tags', many=True, queryset=Tag.objects)

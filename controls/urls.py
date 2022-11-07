@@ -18,7 +18,7 @@ urlpatterns = [
     url('doc/', include('django.contrib.admindocs.urls')),
 
     # Catalogs
-    url(r'^$', views.catalogs),
+    url(r'^catalogs$', views.catalogs),
     url(r'^catalogs$', views.catalogs),
     url(r'^catalogs/(?P<catalog_key>.*)/$', views.catalog),
 
@@ -28,7 +28,7 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/controls/selected$', views.controls_selected, name="controls_selected"),
     url(r'^(?P<system_id>.*)/controls/add$', views.system_controls_add, name="system_controls_add"),
     url(r'^(?P<system_id>.*)/controls/remove/(?P<element_control_id>.*)$',  views.system_control_remove, name="system_control_remove"),
-    
+
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/compare$', views.editor_compare, name="control_compare"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),
     url(r'^editor_autocomplete/', views.EditorAutocomplete.as_view(), name="search_system_component"),
@@ -42,11 +42,16 @@ urlpatterns = [
     url(r'^statement_history/(?P<smt_id>.*)/$', views.statement_history, name="statement_history"),
     url(r'^restore_to/(?P<smt_id>.*)/(?P<history_id>.*)/$', views.restore_to_history, name="restore_to"),
 
-    url(r'^(?P<system_id>.*)/aspen/summary/fake$', views.system_summary_1_aspen, name="system_summary_1"),
     url(r'^(?P<system_id>.*)/aspen/summary$', views.system_summary_aspen, name="system_summary"),
+    url(r'^(?P<system_id>.*)/aspen/summary/fake$', views.system_summary_1_aspen, name="system_summary_1"),
     url(r'^(?P<system_id>.*)/aspen/integrations$', views.system_integrations_aspen, name="system_integrations"),
 
-    url(r'^new', views.create_system_from_string, name="create_system_from_string"),
+    url(r'^(?P<system_id>.*)/aspen/summary/poams$', views.system_poams_aspen, name="system_summary_poams"),
+
+    url(r'^new', views.create_new_system, name="create_new_system"),
+    url(r'^csv_system_template', views.system_csv_template, name="csv_system_template"),
+    url(r'^xlsx_system_template', views.system_xlsx_template, name="xlsx_system_template"),
+    url(r'^oscal_system_template', views.system_oscal_template, name="oscal_system_template"),
 
     # Systems Assessment Results
     url(r'^(?P<system_id>.*)/assessments$', views.system_assessment_results_list, name="system_assessment_results_list"),
@@ -81,6 +86,8 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/components/(?P<element_id>.*)/proposal_message$', views.proposal_message, name="proposal_message"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
     url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
+    url(r'^system_import$', views.system_import, name="system_import"),
+    url(r'^revert_system_import$', views.revert_system_import, name="revert_system_import"),
 
     # Component Library
     url(r'^components$', views.component_library, name="component_library"),
@@ -114,8 +121,7 @@ urlpatterns = [
 
     # Poams
     url(r'^(?P<system_id>.*)/aspen/poams$', views.system_poams_aspen, name="system_poams_aspen"),
-    url(r'^import-poams$', views.import_poams_xlsx, name="import_poams_xlsx"),
-
+    
     url(r'^(?P<system_id>.*)/poams$', views.poams_list, name="poams_list"),
     url(r'^(?P<system_id>.*)/poams/new$', views.new_poam, name="new_poam"),
     url(r'^(?P<system_id>.*)/poams/(?P<poam_id>.*)/edit$', views.edit_poam, name="edit_poam"),

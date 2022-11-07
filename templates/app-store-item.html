@@ -28,9 +28,9 @@
         /
         <!-- fix this to display if I am in another app or store -->
         {% if portfolio %}
-          <a href="/store?portfolio={{ portfolio.id }}" class="breadcrumb-link">Compliance Apps</a>
+          <a href="/store?portfolio={{ portfolio.id }}" class="breadcrumb-link">Templates</a>
         {% else %}
-          <a href="{% url 'store' %}">Compliance Apps</a>
+          <a href="{% url 'store' %}">Templates</a>
         {% endif %}
         / {{app.title|truncatewords:6}}
     </div>
