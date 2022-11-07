@@ -26,6 +26,7 @@ v0.11.0-dev (September xx, 2022)
 * Refactored controls.control_implementation_as_dict for DRY and placing legacy control implementation statements at start of combined statement
 * Update Speedy SSP to have new question.
 * Update Components to have tags to work better out of the box.
+* Add API endpoint to upload OSCAL components.
 
 
 v0.10.0.4 (October 22, 2022)
