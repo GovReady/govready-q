@@ -1,8 +1,8 @@
 GovReady-Q Release Notes
 ========================
 
-v0.11.1-dev (November 29, 2022)
--------------------------------
+v0.11.1 (November 29, 2022)
+---------------------------
 **Developer changes**
 
 * Upgrade Python libraries.
