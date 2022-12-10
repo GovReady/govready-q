@@ -47,6 +47,9 @@ django-guardian # MIT License
 django-simple-history # BSD License
 django-auto-prefetch # MIT License
 
+# Transitive dependencies made explicit
+sqlalchemy>=2.0.0b1 # MIT License
+
 # Logging
 JSON-log-formatter==0.2.0 # MIT License
 
