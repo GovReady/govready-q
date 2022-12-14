@@ -71,10 +71,10 @@ jobs:
       #     project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
       #     additional-arguments: "--file=requirements_util.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
 
-      - snyk/scan:
-          token-variable: SNYK_API_TOKEN
-          project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
-          additional-arguments: "--file=requirements.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
+      # - snyk/scan:
+      #     token-variable: SNYK_API_TOKEN
+      #     project: '${CIRCLE_USERNAME}/${CIRCLE_PROJECT_REPONAME}'
+      #     additional-arguments: "--file=requirements.txt --package-manager=pip --org=snyk-4sy --show-vulnerable-paths=all --fail-on=all"
 
   tests:
     docker:
