@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v0.11.4 (December 17, 2022)
+---------------------------
+
+**Developer changes**
+
+* Dynamically set Internet schme (http or https) for swagger interface to support proper URL strings in swagger.
+
+
 v0.11.3 (December 10, 2022)
 ---------------------------
 
