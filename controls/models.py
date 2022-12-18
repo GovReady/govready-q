@@ -490,7 +490,7 @@ class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, Request
                     changed_controls['no_change'].append(f"{oscal_ctl_id}=+={baselines_key}")
                     next
                 else:
-                    # Control in in selected, add control to selected controls and append to 'add' list
+                    # Control is in selected, add control to selected controls and append to 'add' list
                     ec = ElementControl(element=self, oscal_ctl_id=oscal_ctl_id, oscal_catalog_key=baselines_key)
                     ec.save()
                     changed_controls['add'].append(f"{oscal_ctl_id}=+={baselines_key}")
@@ -503,6 +503,43 @@ class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, Request
                     remove_result = self.remove_element_control(oscal_ctl_id_rm, catalog_key_rm)
                     if remove_result:
                         changed_controls['remove'].append(scc)
+            return True
+        else:
+            # print("User does not have permission to assign selected controls to element's system.")
+            return False
+
+    @transaction.atomic
+    def add_baseline_controls(self, user, baselines_key, baseline_name):
+        """Add additional set of controls from baseline to system.root_element without changing existing assigned controls"""
+
+        # Usage
+        # s = System.objects.get(pk=20)
+        # s.root_element.assign_baseline_controls(user, 's', 'low')
+
+        # Get system's existing selected controls and build list control ids
+        selected_controls_cur = self.controls.all()
+        selected_controls_ids_cur = set([f"{sc.oscal_ctl_id}=+={sc.oscal_catalog_key}" for sc in selected_controls_cur])
+
+        # Create object to track controls added, removed, and no_change in existing selected controls
+        changed_controls = {"add": [], "remove": [], "no_change": []}
+
+        # Does user have edit permissions on system?
+        can_assign_controls = user.has_perm('change_element', self)
+        if can_assign_controls:
+            bs = Baselines()
+            controls = bs.get_baseline_controls(baselines_key, baseline_name)
+            for oscal_ctl_id in controls:
+                if f"{oscal_ctl_id}=+={baselines_key}" in selected_controls_ids_cur:
+                    # Control already in selected, just append to 'no_change' list
+                    changed_controls['no_change'].append(f"{oscal_ctl_id}=+={baselines_key}")
+                    next
+                else:
+                    # Control is in selected, add control to selected controls and append to 'add' list
+                    ec = ElementControl(element=self, oscal_ctl_id=oscal_ctl_id, oscal_catalog_key=baselines_key)
+                    ec.save()
+                    changed_controls['add'].append(f"{oscal_ctl_id}=+={baselines_key}")
+            # We are done adding new controls to selected
+            # Do not change any existing controls
             return True
         else:
             # print("User does not have permission to assign selected controls to element's system.")

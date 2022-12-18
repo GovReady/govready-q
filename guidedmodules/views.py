@@ -481,7 +481,7 @@ def save_answer(request, task, answered, context, __):
                 #   2. `system/update_system_and_project_name/<value>` - Automatically sets the system, project names
                 if a_obj == 'system' and skipped_reason is None:
 
-                    # Assign baseline set of controls to a root_element
+                    # Assign baseline set of controls to a root_element and delete controls not part of baseline
                     if a_verb == "assign_baseline":
 
                         # Split a_filter into catalog and baseline
@@ -515,6 +515,27 @@ def save_answer(request, task, answered, context, __):
                             else:
                                 messages.add_message(request, messages.ERROR,
                                                               f'I failed to set the system FISMA impact level to "{baseline}."')
+
+                    # Add baseline set of controls to a root_element without deleting already assigned controls
+                    # Do not change assigned security_sensitivity_level statement
+                    if a_verb == "add_baseline":
+
+                        # Split a_filter into catalog and baseline
+                        catalog, baseline = a_filter.split("=+=")
+                        if catalog is None or baseline is None:
+                            # Problem, we did not get two values
+                            print("Problem - add_baseline a_filter did not produce catalog, baseline", a_filter)
+                        #element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'moderate')
+                        system.root_element.add_baseline_controls(request.user, catalog, baseline)
+                        catalog_display = catalog.replace("_", " ")
+                        messages.add_message(request, messages.INFO,
+                                                     f'I\'ve added controls from baseline "{catalog_display} {baseline}."')
+                        # Log setting baseline
+                        logger.info(
+                            event=f"system add_baseline {baseline}",
+                            object={"object": "system", "id": system.id, "name": system.root_element.name},
+                            user={"id": request.user.id, "username": request.user.username}
+                        )
 
                     # Update name of system and project
                     if a_verb == "update_system_and_project_name":
