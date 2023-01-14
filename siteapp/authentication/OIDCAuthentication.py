@@ -28,7 +28,7 @@ class OIDCAuth(OIDCAuthenticationBackend):
                 'first_name': claims[settings.OIDC_CLAIMS_MAP['first_name']],
                 'last_name': claims[settings.OIDC_CLAIMS_MAP['last_name']],
                 'username': claims[settings.OIDC_CLAIMS_MAP['username']],
-                'is_staff': self.is_admin(claims[settings.OIDC_CLAIMS_MAP['groups']])
+                'is_staff': self.is_admin(claims[settings.OIDC_CLAIMS_MAP['groups']])}
 
         user = self.UserModel.objects.create_user(**data)
         portfolio = Portfolio.objects.create(title=user.email.split('@')[0], description="Personal Portfolio")
