@@ -11,6 +11,7 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
 from simple_history.models import HistoricalRecords
+from simple_history.utils import bulk_update_with_history
 from jsonfield import JSONField
 from natsort import natsorted
 
@@ -394,6 +395,7 @@ class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, Request
                 user={"id": user.id, "username": user.username}
             )
             return False
+
     def remove_all_permissions_from_user(self, user):
         try:
             current_permissions = get_user_perms(user, self)
@@ -619,34 +621,38 @@ class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, Request
         # update values
         return None
 
-    def update_control_implementation_with_prototype():
+    @transaction.atomic
+    def synch_consuming_systems_implementation_statements(self):
         """
-        Force update all control implementation statements assigned to systems to be the same
-        as the control implementation prototype statements assigned to this Element
+        Force update all Element's consuming systems' control implementation statements to be the same
+        as the Element's control implementation prototype statements
         """
 
-        # get the control_implementation_prototype statements of this element
-        prototype_smts = self.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
-        # loop through this Element's control_implementation_prototype statements
-        for prototype_smt in prototype_smts:
-            # find the control_implementation statements assigned to systems to be updated with current control_implementation_prototype
-            smts_to_update = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name, prototype_id=prototype_smt.id)
-            smts_updated = []
+        # get Element's control_implementation_prototype statements
+        element_prototype_smts = self.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
+        # track system control implementation statements touched via synchronization (whether changed or not)
+        total_system_smts_updated = 0
+        # loop through Element's control_implementation_prototype statements
+        for prototype_smt in element_prototype_smts:
+            # find the consuming systems' control implementation statements to be updated with current control_implementation_prototype
+            system_smts_to_update = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name, prototype_id=prototype_smt.id)
+            system_smts_updated = []
             # update the related control_implementation statements
-            for smt in smts_to_update:
+            for smt in system_smts_to_update:
                 print(f"smt: {smt} | {smt.statement_type}")
                 smt.body = prototype_smt.body
-                # smt.pid = prototype_smt.pid
+                smt.pid = prototype_smt.pid
                 # smt.status = prototype_smt.status
                 # TODO: add changelog
+                # TODO: log change
                 # record a reason for the change in simple_history
                 smt._change_reason = 'Forced synchronization with library component statement'
-                smts_updated.append(smt)
-            # use bulk_update_with_history to bulk save the changes and bulk update simple_history records
-            # using bulk update reduces database calls
-            bulk_update_with_history(smts_updated, Statement, ['body'], batch_size=500)
+                system_smts_updated.append(smt)
+            # bulk save the changes and update simple_history records to reduce database calls
+            bulk_update_with_history(system_smts_updated, Statement, ['body'], batch_size=500)
+            total_system_smts_updated += len(system_smts_updated)
 
-        return None
+        return total_system_smts_updated
 
     @property
     def selected_controls_oscal_ctl_ids(self):

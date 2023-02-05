@@ -39,6 +39,14 @@ class WriteElementOscalSerializer(WriteOnlySerializer):
     class Meta:
         model = Element
         fields = ['oscal']
+
+class WriteSynchConsumingSystemsImplementationStatementsSerializer(WriteOnlySerializer):
+    # oscal = serializers.JSONField()
+    componentId = serializers.IntegerField(min_value=1, max_value=None)
+    class Meta:
+        model = Element
+        fields = ['componentId']
+
 class ReadElementOscalSerializer(ReadOnlySerializer):
     oscal = serializers.SerializerMethodField('get_oscal')
 
@@ -277,3 +285,4 @@ class ElementCreateAndSetRequestSerializer(WriteOnlySerializer):
     class Meta:
         model = Element
         fields = ['proposalId', 'userId', 'systemId', 'criteria_comment', 'criteria_reject_comment', 'status']
+

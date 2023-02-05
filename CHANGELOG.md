@@ -6,7 +6,7 @@ v0.12.0-dev (February 4, 2022)
 
 **Developer changes**
 
-* Add method to Element (component) model to bulk update a component's statements across all systems by copying component control implementation statements in the library to system-level component control implementation statements.
+* Add API endpoint and Element (component) model method to force update all Element consuming systems's control implementation statements with library Elements content.
 * Upgrade Python libraries.
 * Update NPM libraries.
 

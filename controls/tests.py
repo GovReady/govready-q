@@ -581,6 +581,19 @@ class ElementUnitTests(TestCase):
         self.assertTrue(e2.component_type == "hardware")
         self.assertTrue(e2.component_state == "disposition")
 
+    def test_element_update_control_implementation_with_prototype(self):
+        e = Element.objects.create(name="New component",  element_type="system")
+        self.assertTrue(e.id is not None)
+        self.assertTrue(e.component_type == "software")
+        # add two statements
+        # create two systems
+        # assign element to two systems
+        # check statements
+        # modify element statements
+        # execute element_update_control_implementation_with_prototype
+        # assert system statements changed
+
+
 class ElementUITests(OrganizationSiteFunctionalTests):
 
     def test_element_create_form(self):
