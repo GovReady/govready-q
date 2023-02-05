@@ -597,6 +597,57 @@ class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, Request
             smt_copy.save()
         return e_copy
 
+    def overwrite_with_element(self, element_src):
+        """
+        Overwrite all details of element with data of specified element, used to update element in-place
+        Advantage of overwriting element statements is that we maintain versioning of statements
+        """
+
+        # get all statements from self
+        # build a statement index o controls
+
+        # QUESTION - Do we update statement UUIDs? - NO!
+
+        # get all statements from element_src
+        # TODO - all statement types?
+        for smt_src in element_src.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name):
+            print(smt_src)
+            # if smt exists update
+
+            # add statement
+
+        # update values
+        return None
+
+    def update_control_implementation_with_prototype():
+        """
+        Force update all control implementation statements assigned to systems to be the same
+        as the control implementation prototype statements assigned to this Element
+        """
+
+        # get the control_implementation_prototype statements of this element
+        prototype_smts = self.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
+        # loop through this Element's control_implementation_prototype statements
+        for prototype_smt in prototype_smts:
+            # find the control_implementation statements assigned to systems to be updated with current control_implementation_prototype
+            smts_to_update = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name, prototype_id=prototype_smt.id)
+            smts_updated = []
+            # update the related control_implementation statements
+            for smt in smts_to_update:
+                print(f"smt: {smt} | {smt.statement_type}")
+                smt.body = prototype_smt.body
+                # smt.pid = prototype_smt.pid
+                # smt.status = prototype_smt.status
+                # TODO: add changelog
+                # record a reason for the change in simple_history
+                smt._change_reason = 'Forced synchronization with library component statement'
+                smts_updated.append(smt)
+            # use bulk_update_with_history to bulk save the changes and bulk update simple_history records
+            # using bulk update reduces database calls
+            bulk_update_with_history(smts_updated, Statement, ['body'], batch_size=500)
+
+        return None
+
     @property
     def selected_controls_oscal_ctl_ids(self):
         """Return array of selected controls oscal ids"""

@@ -1,6 +1,17 @@
 GovReady-Q Release Notes
 ========================
 
+v0.12.0 (February 4, 2022)
+---------------------------
+
+
+**Developer changes**
+
+* Add method to Element (component) model to bulk update a component's statements across all systems by copying component control implementation statements in the library to system-level component control implementation statements.
+* Upgrade Python libraries.
+* Update NPM libraries.
+
+
 v0.11.4 (December 17, 2022)
 ---------------------------
 
@@ -14,7 +25,7 @@ v0.11.3 (December 10, 2022)
 
 **Developer changes**
 
-* Add processing for question actions targeted at system to handle `system/add_baseline/<value>` to add additional baseline set of controls to a system without deleting already assigned controls.A
+* Add processing for question actions targeted at system to handle `system/add_baseline/<value>` to add additional baseline set of controls to a system without deleting already assigned controls.
 
 
 

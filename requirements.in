@@ -7,6 +7,7 @@ python-dateutil # Simplified BSD License
 Pillow>=8.3.2 # MIT-like License
 Jinja2==3.0.3 # BSD License
 setuptools # MIT License
+requests==2.28.1 # Apache 2.0
 
 # Less Common Python Packages
 html5lib # MIT License
@@ -22,11 +23,11 @@ GitPython # BSD License
 Pygments==2.7.4 # BSD License
 termcolor # MIT License
 xxhash # BSD License
-importlib-resources<2,>=1.0 # Apache License
+importlib-resources # Apache License
 pyinstrument==3.2.0 # BSD License
 cryptography==36.0.2 # LICENSE.APACHE or LICENSE.BSD
 pyopenssl==21.0.0 # Apache 2.0
-compliance-trestle==1.1.0 # OSI Approved :: Apache Software License
+compliance-trestle==1.2.0 # OSI Approved :: Apache Software License
 markdown # As Is Custom License
 xlsxwriter # BSD 2-Clause License
 
@@ -48,7 +49,7 @@ django-simple-history # BSD License
 django-auto-prefetch # MIT License
 
 # Transitive dependencies made explicit
-sqlalchemy>=2.0.0b1 # MIT License
+sqlalchemy>=2.0.1 # MIT License
 
 # Logging
 JSON-log-formatter==0.2.0 # MIT License
@@ -56,13 +57,13 @@ JSON-log-formatter==0.2.0 # MIT License
 # Rest Framework
 djangorestframework==3.12.4 # BSD License
 djangorestframework-filters==1.0.0.dev0 # MIT License
-drf-yasg==1.20.0 # BSD License
+drf-yasg==1.21.4 # BSD License
 djangorestframework-recursive==0.1.2 # ISC License
 drf-nested-routers==0.93.3 # Apache License 2.0
 mozilla-django-oidc==1.2.4 # Mozilla Public License Version 2.0
 
 # NLP
-dataset # MIT License
+# dataset # MIT License
 click # BSD License (BSD-3-Clause)
 # more-itertools # MIT License
 simplejson # Academic Free License (AFL), MIT License
@@ -122,6 +123,7 @@ django-querycount==0.7.0 # MIT License
 
 # Helper Library
 django-extensions==3.1.2 # MIT License
+pkgutil-resolve-name>=1.3.10 # MIT License
 
 # Excel Parsing
 python-xlsxio==0.1.3 # MIT License
