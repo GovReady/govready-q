@@ -7,6 +7,7 @@ v0.12.0-dev (February 4, 2022)
 **Developer changes**
 
 * Add API endpoint and Element (component) model method to force update all Element consuming systems's control implementation statements with library Elements content.
+* Add parameter createOSCAL API endpoint to indicate update existing components.
 * Upgrade Python libraries.
 * Update NPM libraries.
 

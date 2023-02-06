@@ -63,11 +63,17 @@ class ElementViewSet(ReadWriteViewSet):
         if "metadata" in request.data["oscal"]["component-definition"]:
             title = request.data["oscal"]["component-definition"]["metadata"]["title"]
         date_string = datetime.now().strftime("%Y-%m-%d-%H-%M")
+
+        # check if update value set to True
+        if "update" in request.data and request.data["update"]:
+            update = True
+        else:
+            update = False
         
         import_record_name = title + "_api-import_" + date_string
         oscal_component_json = json.dumps(request.data["oscal"])
         
-        import_record_result = ComponentImporter().import_components_as_json(import_record_name, oscal_component_json, request)
+        import_record_result = ComponentImporter().import_components_as_json(import_record_name, oscal_component_json, request, update=update)
         element = Element.objects.filter(import_record=import_record_result).first()
         
         serializer_class = self.get_serializer_class('retrieve')

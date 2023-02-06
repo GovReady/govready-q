@@ -599,28 +599,6 @@ class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, Request
             smt_copy.save()
         return e_copy
 
-    def overwrite_with_element(self, element_src):
-        """
-        Overwrite all details of element with data of specified element, used to update element in-place
-        Advantage of overwriting element statements is that we maintain versioning of statements
-        """
-
-        # get all statements from self
-        # build a statement index o controls
-
-        # QUESTION - Do we update statement UUIDs? - NO!
-
-        # get all statements from element_src
-        # TODO - all statement types?
-        for smt_src in element_src.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name):
-            print(smt_src)
-            # if smt exists update
-
-            # add statement
-
-        # update values
-        return None
-
     @transaction.atomic
     def synch_consuming_systems_implementation_statements(self):
         """
