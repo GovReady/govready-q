@@ -19,7 +19,7 @@ from api.controls.serializers.element import DetailedElementSerializer, SimpleEl
     WriteElementTagsSerializer, ElementPermissionSerializer, UpdateElementPermissionSerializer, RemoveUserPermissionFromElementSerializer, \
     WriteElementAppointPartySerializer, ElementPartySerializer, DeletePartyAppointmentsFromElementSerializer, CreateMultipleAppointmentsFromRoleIds, \
     ElementRequestsSerializer, ElementSetRequestsSerializer, ElementCreateAndSetRequestSerializer, \
-    WriteElementOscalSerializer, ReadElementOscalSerializer, SimpleGetElementByNameSerializer
+    WriteElementOscalSerializer, ReadElementOscalSerializer, SimpleGetElementByNameSerializer, WriteSynchConsumingSystemsImplementationStatementsSerializer
 from controls.models import Element, System
 from siteapp.models import Appointment, Party, Proposal, Role, Request, User
 from controls.views import ComponentImporter, OSCALComponentSerializer
@@ -52,7 +52,9 @@ class ElementViewSet(ReadWriteViewSet):
                                            CreateAndSetRequest=ElementCreateAndSetRequestSerializer,
                                            createOSCAL=WriteElementOscalSerializer,
                                            getOSCAL=ReadElementOscalSerializer,
-                                           downloadOSCAL=ReadElementOscalSerializer)
+                                           downloadOSCAL=ReadElementOscalSerializer,
+                                           synchConsumingSystemsImplementationStatements=WriteSynchConsumingSystemsImplementationStatementsSerializer                                       
+                                           )
 
     @action(detail=False, url_path="createOSCAL", methods=["POST"])
     def createOSCAL(self, request, **kwargs):
@@ -61,11 +63,17 @@ class ElementViewSet(ReadWriteViewSet):
         if "metadata" in request.data["oscal"]["component-definition"]:
             title = request.data["oscal"]["component-definition"]["metadata"]["title"]
         date_string = datetime.now().strftime("%Y-%m-%d-%H-%M")
+
+        # check if update value set to True
+        if "update" in request.data and request.data["update"]:
+            update = True
+        else:
+            update = False
         
         import_record_name = title + "_api-import_" + date_string
         oscal_component_json = json.dumps(request.data["oscal"])
         
-        import_record_result = ComponentImporter().import_components_as_json(import_record_name, oscal_component_json, request)
+        import_record_result = ComponentImporter().import_components_as_json(import_record_name, oscal_component_json, request, update=update)
         element = Element.objects.filter(import_record=import_record_result).first()
         
         serializer_class = self.get_serializer_class('retrieve')
@@ -83,6 +91,24 @@ class ElementViewSet(ReadWriteViewSet):
     #     serializer_class = self.get_serializer_class('retrieve')
     #     serializer = self.get_serializer(serializer_class, element)
     #     return Response(serializer.data)
+
+    @action(detail=False, url_path="synchConsumingSystemsImplementationStatements", methods=["POST"])
+    def synchConsumingSystemsImplementationStatements(self, request, **kwargs):
+        """
+        Force update all element consuming system control impl smts with content of protoype component control impl smt
+        """
+        if "componentId" in request.data:
+            component_id = request.data['componentId']
+            element = Element.objects.filter(id=component_id).first()
+            if element is not None:
+                # TODO: check user permisson
+                system_smts_updated = element.synch_consuming_systems_implementation_statements()
+                result = {"system_smts_updated": system_smts_updated}
+                return Response(result)
+            else:
+                # element not found
+                result = {"system_smts_updated": 0}
+                return Response(result2)
 
     @action(detail=True, url_path="getOSCAL", methods=["GET"])
     def getOSCAL(self, request, **kwargs):

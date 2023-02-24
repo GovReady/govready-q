@@ -82,7 +82,7 @@ def oscalize_control_id(cl_id):
     cl_id = re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)([ ]*)\(([0-9]*)\)$', r'\1\2.\4', cl_id)
     # Remove trailing space
     cl_id = cl_id.strip(" ")
-    # makes ure lowercase
+    # makes sure lowercase
     cl_id = cl_id.lower()
 
     return cl_id

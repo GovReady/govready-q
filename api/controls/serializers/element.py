@@ -36,9 +36,18 @@ class SimpleGetElementByNameSerializer(WriteOnlySerializer):
 
 class WriteElementOscalSerializer(WriteOnlySerializer):
     oscal = serializers.JSONField()
+    update = serializers.NullBooleanField()
     class Meta:
         model = Element
-        fields = ['oscal']
+        fields = ['oscal', 'update']
+
+class WriteSynchConsumingSystemsImplementationStatementsSerializer(WriteOnlySerializer):
+    # oscal = serializers.JSONField()
+    componentId = serializers.IntegerField(min_value=1, max_value=None)
+    class Meta:
+        model = Element
+        fields = ['componentId']
+
 class ReadElementOscalSerializer(ReadOnlySerializer):
     oscal = serializers.SerializerMethodField('get_oscal')
 
