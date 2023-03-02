@@ -1,0 +1,440 @@
+{
+  "component-definition": {
+    "uuid": "e6a9207c-3030-4935-b8aa-3ce481547784",
+    "metadata": {
+      "title": "Microsoft Windows 2012 Server Domain Name System",
+      "last-modified": "2022-06-12T20:17:22",
+      "version": "2022-06-12T20:17:22",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "1e90a1c1-3054-43c4-9dfe-9da37b451630",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "77c0667c-9775-4e34-ae13-d6b03310800c",
+        "type": "software",
+        "title": "Microsoft Windows 2012 Server Domain Name System",
+        "description": "Microsoft Windows 2012 Server Domain Name System based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "1e90a1c1-3054-43c4-9dfe-9da37b451630"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "c42e474b-6c5b-4fa0-b4b5-45bd11ded6ea",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "9f07704e-4ed9-403d-83c4-08969788bd5e",
+                "description": "The Windows 2012 DNS Server must restrict incoming dynamic update requests to known clients.",
+                "control-id": "ac-10"
+              }
+            ]
+          },
+          {
+            "uuid": "d033e33a-6850-4d97-a448-4cad3e9fdfbc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "8fe15dc2-e9df-44bc-892d-f9cc2df1694d",
+                "description": "The Windows 2012 DNS Servers audit records must be backed up at least every seven days onto a different system or system component than the system or component being audited.",
+                "control-id": "au-9.2"
+              }
+            ]
+          },
+          {
+            "uuid": "20dde548-9a3e-4602-b24d-97dfa5764854",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-10.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "56fe0105-dd19-41c7-b600-fc58f6cac82e",
+                "description": "The Windows 2012 DNS Server must be configured to record, and make available to authorized personnel, who added/modified/deleted DNS zone information.",
+                "control-id": "au-10.1"
+              }
+            ]
+          },
+          {
+            "uuid": "cacef8b7-5d6c-4988-8f21-7a57c341c6ac",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-10.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "ee04c83e-d459-4595-b0bd-f7ca281ff6b8",
+                "description": "The Windows 2012 DNS Server must, in the event of an error validating another DNS servers identity, send notification to the DNS administrator.",
+                "control-id": "au-10.2"
+              }
+            ]
+          },
+          {
+            "uuid": "9cf1dba2-ea0c-4c9b-a797-189c25ad5c35",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "96da3244-e567-4fc5-ba05-343c1fdf8503",
+                "description": "The Windows 2012 DNS Server logging criteria must only be configured by the ISSM or individuals appointed by the ISSM.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "16c9befd-c1aa-4ef3-b1c5-d5ad435f7ff4",
+                "description": "The Windows 2012 DNS Server log must be enabled.\nThe Windows 2012 DNS Server logging must be enabled to record events from all DNS server functions.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "ce0629a0-7d72-49ed-b751-39b44d049573",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "d9dbf3fe-71bd-436e-9c9f-f96dfa62f2f4",
+                "description": "The Windows 2012 DNS Server must prohibit recursion on authoritative name servers for which forwarders have not been configured for external queries.\nForwarders on an authoritative Windows 2012 DNS Server, if enabled for external resolution, must only forward to either an internal, non-AD-integrated DNS server or to the DoD Enterprise Recursive Services (ERS).\nThe Windows 2012 DNS Server with a caching name server role must restrict recursive query responses to only the IP addresses and IP address ranges of known supported clients.\nThe Windows 2012 DNS Server with a caching name server role must be secured against pollution by ensuring the authenticity and integrity of queried records.\nThe Windows 2012 DNS Server must implement cryptographic mechanisms to detect changes to information during transmission unless otherwise protected by alternative physical safeguards, such as, at a minimum, a Protected Distribution System (PDS).\nThe validity period for the RRSIGs covering a zones DNSKEY RRSet must be no less than two days and no more than one week.\nNSEC3 must be used for all internal DNS zones.\nThe Windows 2012 DNS Servers zone files must have NS records that point to active name servers authoritative for the domain specified in that record.\nAll authoritative name servers for a zone must be located on different network segments.\nAll authoritative name servers for a zone must have the same version of zone information.\nThe Windows 2012 DNS Server must be configured to enable DNSSEC Resource Records.\nDigital signature algorithm used for DNSSEC-enabled zones must be FIPS-compatible.\nFor zones split between the external and internal sides of a network, the RRs for the external hosts must be separate from the RRs for the internal hosts.\nIn a split DNS configuration, where separate name servers are used between the external and internal networks, the external name server must be configured to not be reachable from inside resolvers.\nIn a split DNS configuration, where separate name servers are used between the external and internal networks, the internal name server must be configured to not be reachable from outside resolvers.\nPrimary authoritative name servers must be configured to only receive zone transfer requests from specified secondary name servers.\nThe Windows 2012 DNS Servers zone database files must not be accessible for edit/write by users and/or processes other than the Windows 2012 DNS Server service account and/or the DNS database administrator.\nThe Windows 2012 DNS Server must implement internal/external role separation.\nThe Windows 2012 DNS Server authoritative for local zones must only point root hints to the DNS servers that host the internal root domain.\nThe DNS name server software must be at the latest version.\nThe Windows 2012 DNS Servers zone files must not include resource records that resolve to a fully qualified domain name residing in another zone.\nThe Windows 2012 DNS Servers zone files must not include CNAME records pointing to a zone with lesser security for more than six months.\nNon-routable IPv6 link-local scope addresses must not be configured in any zone.\nAAAA addresses must not be configured in a zone for hosts that are not IPv6-aware.\nThe Windows 2012 DNS Servers IP address must be statically defined and configured locally on the server.\nThe Windows 2012 DNS Server must return data information in responses to internal name/address resolution queries.\nThe Windows 2012 DNS Server must use DNSSEC data within queries to confirm data origin to DNS resolvers.\nThe Windows 2012 DNS Server must, when a component failure is detected, activate a notification to the system administrator.\nThe Windows 2012 DNS Server must perform verification of the correct operation of security functions: upon system start-up and/or restart; upon command by a user with privileged access; and/or every 30 days.\nThe Windows 2012 DNS Server must be configured to record, and make available to authorized personnel, who added/modified/deleted DNS zone information.\nThe Windows 2012 DNS Server must, in the event of an error validating another DNS servers identity, send notification to the DNS administrator.\nThe Windows 2012 DNS Server logging criteria must only be configured by the ISSM or individuals appointed by the ISSM.\nThe validity period for the RRSIGs covering the DS RR for a zones delegated children must be no less than two days and no more than one week.\nThe Windows DNS name servers for a zone must be geographically dispersed.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "1f446258-c0e5-4d77-8b5a-ef660658c8f7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "410688ea-aab3-473a-a5ba-f6a09bc631f8",
+                "description": "The Windows 2012 DNS Server must be configured to prohibit or restrict unapproved ports and protocols.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "c756d5cb-3225-4317-8a2e-12b4c07d70f4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "8803c437-eca8-4fdc-84bb-9c33c6ba007b",
+                "description": "The Windows 2012 DNS Server must uniquely identify the other DNS server before responding to a server-to-server transaction.",
+                "control-id": "ia-3"
+              },
+              {
+                "uuid": "a7567948-d9e2-45b8-810d-350ae6c7f9bc",
+                "description": "The secondary Windows DNS name servers must cryptographically authenticate zone transfers from primary name servers.\nThe Windows DNS primary server must only send zone transfers to a specific list of secondary name servers.\nThe Windows 2012 DNS Server must provide its identity with returned DNS information by enabling DNSSEC and TSIG/SIG(0).",
+                "control-id": "ia-3"
+              }
+            ]
+          },
+          {
+            "uuid": "f047c663-695e-4f25-b383-299ca4514d36",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "fbd993bc-d907-4a4a-b8b8-3171f018f018",
+                "description": "The Windows 2012 DNS Server must be configured to enforce authorized access to the corresponding private key.\nThe Windows 2012 DNS Server key file must be owned by the account under which the Windows 2012 DNS Server service is run.\nThe Windows 2012 DNS Server permissions must be set so that the key file can only be read or modified by the account that runs the name server software.\nThe private key corresponding to the ZSK must only be stored on the name server that does support dynamic updates.",
+                "control-id": "ia-5.2"
+              },
+              {
+                "uuid": "91b0f4db-959e-49e3-bdf3-0d5436d4a33e",
+                "description": "The Windows 2012 DNS Server must implement a local cache of revocation data for PKIauthentication in the event revocation information via the network is not accessible.",
+                "control-id": "ia-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "641c4afd-de02-4351-b22f-8da93f6afcac",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "18da8578-ede9-48d5-9179-adfcd23cbee1",
+                "description": "The Windows 2012 DNS Server must require devices to re-authenticate for each dynamic update request connection attempt.",
+                "control-id": "ia-11"
+              }
+            ]
+          },
+          {
+            "uuid": "d768c0b7-db12-4caf-9375-5ee5c108d3ad",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "43c66187-b7ee-4c98-affe-c60869b53dc3",
+                "description": "The Windows 2012 DNS Server must restrict individuals from using it for launching Denial of Service (DoS) attacks against other information systems.",
+                "control-id": "sc-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "eb22d05a-5c48-455b-ab08-6510b4a3959b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "a705dc96-f92d-40af-b0b4-99024ed18a48",
+                "description": "The Windows 2012 DNS Server must use DNS Notify to prevent denial of service through increase in workload.",
+                "control-id": "sc-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "e0afe253-191b-46da-a136-ae6e6d801ab3",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "183de220-2ab6-4e6d-b825-6f87b8e78c13",
+                "description": "The Windows 2012 DNS Server must protect the integrity of transmitted information.",
+                "control-id": "sc-8"
+              }
+            ]
+          },
+          {
+            "uuid": "59b9e9da-befb-4b71-adfa-f91cd706a3b8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "d97ab788-c561-4341-8ca9-bc9ea7778b85",
+                "description": "The Windows 2012 DNS Server must maintain the integrity of information during preparation for transmission.",
+                "control-id": "sc-8.1"
+              }
+            ]
+          },
+          {
+            "uuid": "725cf686-0787-4dfc-8fc5-07d0d9c494d0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "f790af35-b216-43fe-97ac-20926503e6a1",
+                "description": "The Windows 2012 DNS Server must maintain the integrity of information during reception.",
+                "control-id": "sc-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "42bebda8-4b82-4de3-9882-7dfb274780ab",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-13.",
+            "implemented-requirements": [
+              {
+                "uuid": "f16595ac-5d58-4bee-86f9-6f50aa5855e1",
+                "description": "The salt value for zones signed using NSEC3 RRs must be changed every time the zone is completely re-signed.\nThe Windows 2012 DNS Server must implement NIST FIPS-validated cryptography for provisioning digital signatures, generating cryptographic hashes, and protecting unclassified information requiring confidentiality.",
+                "control-id": "sc-13"
+              }
+            ]
+          },
+          {
+            "uuid": "d96e0e97-4f66-4f23-9bda-23ac69896512",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-20.",
+            "implemented-requirements": [
+              {
+                "uuid": "e787d1d5-4325-41ee-a6b5-8a47370f0e6d",
+                "description": "WINS lookups must be disabled on the Windows 2012 DNS Server.\nThe Windows 2012 DNS Server must use DNSSEC data within queries to confirm data integrity to DNS resolvers.",
+                "control-id": "sc-20"
+              },
+              {
+                "uuid": "cd890131-0129-4bfd-b10b-bb9f995f8e07",
+                "description": "The Windows 2012 DNS Server must enforce approved authorizations between DNS servers through the use of digital signatures in the RRSet.\nThe Name Resolution Policy Table (NRPT) must be configured in Group Policy to enforce clients to request DNSSEC validation for a domain.\nThe Windows 2012 DNS Server must be configured to validate an authentication chain of parent and child domains via response data.\nTrust anchors must be exported from authoritative Windows 2012 DNS Servers and distributed to validating Windows 2012 DNS Servers.\nAutomatic Update of Trust Anchors must be enabled on key rollover.",
+                "control-id": "sc-20"
+              },
+              {
+                "uuid": "6b3d7550-1c04-4f05-aecb-b5abf8e18dd5",
+                "description": "The Windows 2012 DNS Server must be configured with the DS RR carrying the signature for the RR that contains the public key of the child zone.",
+                "control-id": "sc-20"
+              },
+              {
+                "uuid": "3f599ae3-6306-49a3-9e33-1177879c46ac",
+                "description": "The Windows 2012 DNS Server must include data origin with authoritative data the system returns in response to external name/address resolution queries.",
+                "control-id": "sc-20"
+              }
+            ]
+          },
+          {
+            "uuid": "bd036f11-e04f-46fa-9de6-25be40a5ebc3",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-20.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "f53015a0-c363-4be9-aa35-80560345cbb4",
+                "description": "The Windows 2012 DNS Server must use DNSSEC data within queries to confirm data origin to DNS resolvers.",
+                "control-id": "sc-20.2"
+              },
+              {
+                "uuid": "12966a9f-2457-456a-ad60-046dbdd86366",
+                "description": "The Windows 2012 DNS Servers IP address must be statically defined and configured locally on the server.\nThe Windows 2012 DNS Server must return data information in responses to internal name/address resolution queries.",
+                "control-id": "sc-20.2"
+              }
+            ]
+          },
+          {
+            "uuid": "1b17669a-3144-4cfe-84df-6345e4937683",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-21.",
+            "implemented-requirements": [
+              {
+                "uuid": "f5fd6024-e7f5-4ec9-8d13-bdd8249924f5",
+                "description": "The Windows DNS secondary server must validate data integrity verification on the name/address resolution responses received from primary name servers.",
+                "control-id": "sc-21"
+              },
+              {
+                "uuid": "2b4994ca-dbf5-42b2-93cb-1c0fc2468db0",
+                "description": "The Windows DNS secondary server must validate data origin verification authentication on the name/address resolution responses received from primary name servers.",
+                "control-id": "sc-21"
+              },
+              {
+                "uuid": "a7bf88a3-1d09-413a-854e-b21be8b5ebc0",
+                "description": "The Windows DNS secondary server must request data integrity verification from the primary server when requesting name/address resolution.",
+                "control-id": "sc-21"
+              },
+              {
+                "uuid": "62f6edfb-58a9-4db5-a169-4a9a10bd992d",
+                "description": "The Windows DNS secondary servers must request data origin authentication verification from the primary server when requesting name/address resolution.",
+                "control-id": "sc-21"
+              }
+            ]
+          },
+          {
+            "uuid": "4be902e4-3d93-42a4-9c05-6cd3ac3a0943",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.",
+            "implemented-requirements": [
+              {
+                "uuid": "351d2d22-9014-4f9f-b3a5-b8f37f495eb0",
+                "description": "The Windows 2012 DNS Server must protect the authenticity of zone transfers via transaction signing.\nThe Windows 2012 DNS Server must protect the authenticity of dynamic updates via transaction signing.\nThe Windows 2012 DNS Server must protect the authenticity of query responses via DNSSEC.",
+                "control-id": "sc-23"
+              }
+            ]
+          },
+          {
+            "uuid": "b6a1a6c6-1b91-4aad-b080-2d1eb3612e28",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "af31906e-e9f1-4408-8394-e254e84fe513",
+                "description": "The Windows 2012 DNS Server must only allow the use of an approved DoD PKI-established certificate authorities for verification of the establishment of protected transactions.",
+                "control-id": "sc-23.5"
+              }
+            ]
+          },
+          {
+            "uuid": "adc476e2-7aef-4a5a-92cd-b094a6f51429",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.",
+            "implemented-requirements": [
+              {
+                "uuid": "a9677a05-4790-4b55-93f4-cd9fb897f885",
+                "description": "The Windows 2012 DNS Server must protect secret/private cryptographic keys while at rest.",
+                "control-id": "sc-28"
+              }
+            ]
+          },
+          {
+            "uuid": "19d26493-768c-4297-abb3-d83c360a98cb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "a947bc4d-9d21-41bf-8d36-83d8b352822e",
+                "description": "The Windows 2012 DNS Server must not contain zone records that have not been validated in over a year.",
+                "control-id": "sc-28.1"
+              }
+            ]
+          },
+          {
+            "uuid": "3bfa2cd1-6d01-4840-8485-348c14b9eaec",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "4b290032-40ce-43d9-8d13-107b04973f6b",
+                "description": "The Windows 2012 DNS Server must log the event and notify the system administrator when anomalies in the operation of the signed zone transfers are discovered.",
+                "control-id": "si-6"
+              },
+              {
+                "uuid": "07870ced-e703-4902-ad54-4fbde95701fa",
+                "description": "The Windows 2012 DNS Server must be configured to notify the ISSO/ISSM/DNS administrator when functionality of DNSSEC/TSIG has been removed or broken.",
+                "control-id": "si-6"
+              }
+            ]
+          },
+          {
+            "uuid": "14a8e745-d100-433b-ba8d-0316c77cc587",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "e87a29ab-575c-4251-8b37-e83a3cb9a612",
+                "description": "The Windows 2012 DNS Server must be configured to only allow zone information that reflects the environment for which it is authoritative, to include IP ranges and IP versions.",
+                "control-id": "si-10"
+              }
+            ]
+          },
+          {
+            "uuid": "13c415f9-aa19-4692-9b57-63ecbc9c1426",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "66b2fa5e-95c3-419f-8651-728a1ee86324",
+                "description": "The Windows 2012 DNS Server must follow procedures to re-role a secondary name server as the master name server should the master name server permanently lose functionality.",
+                "control-id": "si-10.3"
+              }
+            ]
+          },
+          {
+            "uuid": "570b9b77-9bd4-4b2c-b6c6-def54f68c22e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "a09c0321-53f3-461c-b6d5-669a78c3d650",
+                "description": "The DNS Name Server software must be configured to refuse queries for its version information.\nThe HINFO, RP, TXT and LOC RR types must not be used in the zone SOA.",
+                "control-id": "si-11"
+              }
+            ]
+          },
+          {
+            "uuid": "13db9ce2-9735-4df4-93b2-c85307bdc552",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-13.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "578e50c5-47fc-47a8-b044-c7fc8f17a9f4",
+                "description": "The Windows 2012 DNS Server must, when a component failure is detected, activate a notification to the system administrator.",
+                "control-id": "si-13.4"
+              }
+            ]
+          },
+          {
+            "uuid": "dfcaa026-7554-43f0-b660-e968cf212453",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-17.",
+            "implemented-requirements": [
+              {
+                "uuid": "94e811b3-c3bf-4223-8fef-0148c48ff004",
+                "description": "The Windows 2012 DNS Server must perform verification of the correct operation of security functions: upon system start-up and/or restart; upon command by a user with privileged access; and/or every 30 days.",
+                "control-id": "si-17"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

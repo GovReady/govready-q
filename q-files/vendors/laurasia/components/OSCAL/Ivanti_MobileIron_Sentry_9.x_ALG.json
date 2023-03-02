@@ -1,0 +1,305 @@
+{
+  "component-definition": {
+    "uuid": "3cac7255-e707-4c5c-97b4-30498369e864",
+    "metadata": {
+      "title": "Ivanti MobileIron Sentry 9.x ALG",
+      "last-modified": "2022-06-12T20:17:24",
+      "version": "2022-06-12T20:17:24",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "7033a43a-1fbd-4807-8e5b-e182d4c5c614",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "49847860-65aa-4752-b9eb-0a3f770436f7",
+        "type": "software",
+        "title": "Ivanti MobileIron Sentry 9.x ALG",
+        "description": "Ivanti MobileIron Sentry 9.x ALG based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "7033a43a-1fbd-4807-8e5b-e182d4c5c614"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "1222ac35-0c9c-4797-85b9-0d91b4ad5b4c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "9c803fa0-960f-43c6-a3bb-34ff3dee1919",
+                "description": "The Sentry must enforce approved authorizations for logical access to information and system resources by enabling identity-based, role-based, and/or attribute-based security policies. These controls are enabled in MobileIron UEM (MobileIron Core) and applied by the Sentry for conditional access enforcement.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "eb988670-219f-440c-b66a-50ddfd774e9c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "d1f4ce94-a20d-467f-b1ce-9335228f5e95",
+                "description": "The Sentry must enforce approved authorizations for controlling the flow of information within the network based on attribute-based inspection of the source, destination, and headers, of the communications traffic.",
+                "control-id": "ac-4"
+              },
+              {
+                "uuid": "759720c3-6153-40d5-b74f-1c6fee13c2fd",
+                "description": "The Sentry must restrict or block harmful or suspicious communications traffic by controlling the flow of information between interconnected networks based on attribute- and content-based inspection of the source, destination, headers, and/or content of the communications traffic.",
+                "control-id": "ac-4"
+              }
+            ]
+          },
+          {
+            "uuid": "cbbb3964-2fbb-4496-b4a3-52b1486c1826",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-17.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "d04c483c-5771-40c7-bd02-e75f4c4acff2",
+                "description": "The Sentry providing intermediary services for remote access communications traffic must use encryption services that implement NIST FIPS-validated cryptography to protect the confidentiality of remote access sessions.\nIf Sentry stores secret or private keys, it must use FIPS-approved key management technology and processes in the production and control of private/secret cryptographic keys.\nThe Sentry that provides intermediary services for TLS must be configured to comply with the required TLS settings in NIST SP 800-52.",
+                "control-id": "ac-17.2"
+              },
+              {
+                "uuid": "f1e0402c-988e-481e-a8c7-d5fe3e1c4ab6",
+                "description": "The Sentry providing intermediary services for remote access communications traffic must use NIST FIPS-validated cryptography to protect the integrity of remote access sessions.",
+                "control-id": "ac-17.2"
+              }
+            ]
+          },
+          {
+            "uuid": "39cbe28d-e5d5-452f-b9df-06b2f6308efd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "95e25097-f8cc-4659-949d-62ff6ef5da8c",
+                "description": "The Sentry must produce audit records containing information to establish what type of events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "446e7fe5-0020-43a5-9122-474f64b7a52e",
+                "description": "The Sentry must produce audit records containing information to establish where the events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "735e65a9-a5fd-4e63-a6c6-c7047727cb5f",
+                "description": "The Sentry must produce audit records containing information to establish when (date and time) the events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "384dc648-1205-481d-b297-bdd7ace7611d",
+                "description": "The Sentry must produce audit records containing information to establish the source of the events.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "4eeb7ca4-49fd-4d56-b56e-25b54b4b3caf",
+                "description": "The Sentry must generate audit records containing information to establish the identity of any individual or process associated with the event.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "86d86847-42a5-4db7-8d47-40876de122a1",
+                "description": "The Sentry must produce audit records containing information to establish the outcome of the events.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "4a4a035a-3f26-4731-ae4d-8abcb548f2c6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "5d425a82-15bb-4cd2-9197-49b6272d83cd",
+                "description": "The Sentry must offload audit records onto a centralized log server.\nThe Sentry must offload audit records onto a centralized log server in real time.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "b3f9eb70-2bfd-48b8-9b66-4b68f40b8c16",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "29bd4e2b-8648-4493-bf57-1ca1e2b67077",
+                "description": "The Sentry must send an alert to, at a minimum, the ISSO and SCA when an audit processing failure occurs.",
+                "control-id": "au-5"
+              }
+            ]
+          },
+          {
+            "uuid": "de345594-cc50-4303-b484-d53d97c1067b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "189c7bb1-8db1-4856-865f-1662c907044c",
+                "description": "The Sentry must be configured to prohibit or restrict the use of functions, ports, protocols, and/or services, as defined in the PPSM CAL and vulnerability assessments.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "4fc0648b-3797-47bd-969e-72fe50937dc9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "df5f316c-3d19-423c-aa39-8a165f8b9eeb",
+                "description": "The Sentry must be configured to prohibit or restrict the use of functions, ports, protocols, and/or services, as defined in the PPSM CAL and vulnerability assessments.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "1aa7b365-bfa5-42fe-9e60-32b82632a7bc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "06ae4ad0-1ceb-48d5-b340-19489d380256",
+                "description": "The Sentry providing mobile device access control intermediary services must be configured with a pre-established trust relationship and mechanisms with appropriate authorities (e.g., Active Directory or AAA server) which validate mobile device account access authorizations and privileges.\nThe Sentry providing mobile device authentication intermediary services must restrict mobile device authentication traffic to specific authentication server(s).",
+                "control-id": "ia-2"
+              }
+            ]
+          },
+          {
+            "uuid": "07fb43ed-b7ed-4314-8897-ef5cc6d9bf8d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "9d521a95-0c76-41dc-8dcb-f8f3b8d2aedd",
+                "description": "The Sentry providing mobile device authentication intermediary services must use multifactor authentication for network access to non-privileged accounts.",
+                "control-id": "ia-2.2"
+              }
+            ]
+          },
+          {
+            "uuid": "150fedc0-331d-4e4c-b3e2-f0492b117ff2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.9.",
+            "implemented-requirements": [
+              {
+                "uuid": "66a1377d-bbc2-4f6f-a875-ad507754e204",
+                "description": "The Sentry providing mobile device authentication intermediary services must implement replay-resistant authentication mechanisms for network access to non-privileged accounts.",
+                "control-id": "ia-2.9"
+              }
+            ]
+          },
+          {
+            "uuid": "1c43511d-a2d1-4fbb-b827-aa6109162dc1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.11.",
+            "implemented-requirements": [
+              {
+                "uuid": "04b7eebe-d8ad-49dc-98bb-73a88e4b5450",
+                "description": "The Sentry providing mobile device authentication intermediary services must implement multifactor authentication for remote access to non-privileged accounts such that one of the factors is provided by a device separate from the system gaining access.",
+                "control-id": "ia-2.11"
+              }
+            ]
+          },
+          {
+            "uuid": "0ce1ebaf-aef4-4dc6-ad4b-ec910548e682",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "13b96db2-eb14-4d99-a69b-adc0e6a40f43",
+                "description": "The Sentry that provides intermediary services for TLS must validate certificates used for TLS functions by performing RFC 5280-compliant certification path validation.",
+                "control-id": "ia-5.2"
+              },
+              {
+                "uuid": "1bfa019f-abaa-4c70-9046-5d94fac6055a",
+                "description": "The Sentry providing PKI-based mobile device authentication intermediary services must map authenticated identities to the mobile device account.",
+                "control-id": "ia-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "ee8bd180-f33a-4aab-a79a-aba102e5cced",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "77a79139-b1e8-4e07-a70a-37b0a485adb5",
+                "description": "The Sentry must implement load balancing to limit the effects of known and unknown types of Denial-of-Service (DoS) attacks.",
+                "control-id": "sc-5"
+              }
+            ]
+          },
+          {
+            "uuid": "c7abe5fd-e225-44c1-9470-626266456ffd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-7.11.",
+            "implemented-requirements": [
+              {
+                "uuid": "40709155-e188-4aff-8e49-e2eb33f1f9f3",
+                "description": "The Sentry must only allow incoming communications from organization-defined authorized sources routed to organization-defined authorized destinations.",
+                "control-id": "sc-7.11"
+              }
+            ]
+          },
+          {
+            "uuid": "4b999ff5-c31d-4d78-9fb7-8b584fb1d9df",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "cd15eb31-046e-42c7-aef2-a9c0003b544d",
+                "description": "The Sentry must terminate all network connections associated with a communications session at the end of the session, or as follows: for in-band management sessions (privileged sessions), the session must be terminated after 10 minutes of inactivity; and for mobile device sessions (non-privileged session), the session must be terminated after 15 minutes of inactivity.",
+                "control-id": "sc-10"
+              }
+            ]
+          },
+          {
+            "uuid": "3fb1407a-945f-4ad5-ae42-4f7b48c8bf68",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-13.",
+            "implemented-requirements": [
+              {
+                "uuid": "a0536541-d698-414d-adf8-2bbd4d4e98a5",
+                "description": "The Sentry providing encryption intermediary services must implement NIST FIPS-validated cryptography to generate cryptographic hashes.\nThe Sentry providing encryption intermediary services must implement NIST FIPS-validated cryptography for digital signatures.\nThe Sentry providing encryption intermediary services must use NIST FIPS-validated cryptography to implement encryption services.",
+                "control-id": "sc-13"
+              }
+            ]
+          },
+          {
+            "uuid": "905e705e-3ca7-4fd4-a52e-e6e0788d159c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "765a1e59-3e41-42b6-8265-9a0437dd73a4",
+                "description": "The Sentry providing mobile device authentication intermediary services using PKI-based mobile device authentication must only accept end entity certificates issued by DoD PKI or DoD-approved PKI Certification Authorities (CAs) for the establishment of protected sessions.",
+                "control-id": "sc-23.5"
+              }
+            ]
+          },
+          {
+            "uuid": "72c3fa5c-65f4-4190-bc24-bcb12a7b81d1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "702f012e-3b8b-41a3-b315-025eb23c4875",
+                "description": "The Sentry must reveal error messages only to the ISSO, ISSM, and SCA.",
+                "control-id": "si-11"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,87 @@
+id: app
+title: JSIG v4 SSP
+type: project
+version: 1.1
+icon: ssp_icon.jpg
+introduction:
+  format: markdown
+  template: JSIG System Questionnaires
+catalog:
+  category: IT System Template
+  description:
+    long: |2+
+
+      Prepare a draft ATP/ATO package for an IT System.
+
+      **Who Should Use:**
+
+      - Teams at developing an IT System that will need and ATP or ATO package
+
+      **What App Does:**
+
+      - Helps navigate the first three steps of the RMF and prepare various artifacts needed for an ATP/ATO
+
+      **What You Do:**
+
+      - Complete the questionnaires
+
+      **Support:**
+
+      This app is maintained by Schaadm.
+
+
+      Version 1.0.1 February 1, 2023
+      -----------------------------
+
+      * Update templates/SSP_Template_Laurasia.md to dynamically include OSCAL control guidance and implementation statements from new authoring tool.
+      * Use Microsfot Word filtered HTML as design tool
+      * Update this README
+
+    short: Template for JSIG rev4 System Security Plan
+  source_url: https://github.com/GovReady/apps
+  status: development
+  vendor: Schaadm
+  vendor_url: ~
+  parameters:
+  - id: catalog_key
+    value: JSIG_rev4
+  - id: baseline
+    value: moderate
+  version: '1.0'
+questions:
+- id: system_info
+  title: System Info
+  type: module
+  icon: system_info.png
+  module-id: system_info
+  group: JSIG SSP
+- id: roles
+  title: Roles
+  type: module
+  icon: roles.png
+  module-id: roles
+  group: JSIG SSP
+- id: system_env
+  title: System Environment
+  type: module
+  icon: system_env.png
+  module-id: system_env
+  group: JSIG SSP
+- id: system_info_technical
+  title: System Info Technical
+  type: module
+  icon: system_info_technical.png
+  module-id: system_info_technical
+  group: JSIG SSP
+- id: system_connection
+  title: System Connection
+  type: module
+  icon: system_connection.png
+  module-id: system_connection
+  group: JSIG SSP
+- id: ssp_review
+  title: SSP Review
+  type: module
+  icon: ssp_icon.png
+  module-id: ssp_review
+  group: JSIG SSP

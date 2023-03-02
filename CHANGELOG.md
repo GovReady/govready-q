@@ -1,5 +1,42 @@
 GovReady-Q Release Notes
 ========================
+v0.12.1-dev (April 19, 2023)
+---------------------------
+
+**Laurasia changes**
+
+* Add new siteapp/management/commands to load default Laurasia SSP if it doesn't exist. This works
+around the problem of this feature in API.
+
+- Bulk update a component's statements across all systems 
+- Add JSIG and Privacy catalogs/baselines
+- Extended Django Webhooks and Management Commands
+  - load_app_template.py calls a compliance app template like JSIG_SSP
+  - set_baseline_controls.py sets compliance catalog baseline
+  - Add support for multiple overlays
+  - load_component_from_library.py places a Library Component into a target SSP
+  - import_control_catalog.py allows uploading a new control catalog source
+- Update python packages and pin urllib3
+- Add Laurasia JSIG questionnaire template and Appsource
+- Added support for printing SSP with multiple catalogs
+
+v0.11.6 (March 14, 2023)
+---------------------------
+
+**Developer changes**
+
+* Upgrade Python libraries.
+
+**Developer changes**
+* Add siteapp.management_views as webhooks for calling Django management commands.
+
+v0.11.5 (March 2, 2023)
+---------------------------
+
+**Developer changes**
+
+* Upgrade Python libraries.
+* Update npm packages.
 
 v0.12.0-dev (February 4, 2022)
 ---------------------------

@@ -1,0 +1,808 @@
+{
+  "component-definition": {
+    "uuid": "2389998c-b8bd-4c43-9ea2-1216cb773ed4",
+    "metadata": {
+      "title": "Database Security Requirements Guide",
+      "last-modified": "2022-06-12T20:17:27",
+      "version": "2022-06-12T20:17:27",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "19c7670e-f706-4d50-89ec-9dc468536844",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "6a5c3e10-db88-490b-b206-a9097cce9ae1",
+        "type": "software",
+        "title": "Database Security Requirements Guide",
+        "description": "Database Security Requirements Guide based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "19c7670e-f706-4d50-89ec-9dc468536844"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "b2dc8d4b-277e-47c9-b19e-b79367cefdc5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "fd87ba08-f0e3-4fe5-b864-89e08226f609",
+                "description": "The DBMS must integrate with an organization-level authentication/access mechanism providing account management and automation for all users, groups, roles, and any other principals.",
+                "control-id": "ac-2.1"
+              }
+            ]
+          },
+          {
+            "uuid": "b344e2a0-95c1-45b4-8f45-b66b879d839d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "3dea38ca-d661-41ad-b5d4-5157919bd10c",
+                "description": "The DBMS must enforce approved authorizations for logical access to information and system resources in accordance with applicable access control policies.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "23880460-ecca-404a-8960-4fc69b876046",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "ba291489-7522-431c-9d9c-fa04b93fd962",
+                "description": "The DBMS must enforce discretionary access control policies, as defined by the data owner, over defined subjects and objects.",
+                "control-id": "ac-3.4"
+              }
+            ]
+          },
+          {
+            "uuid": "0c0b2630-09cf-471c-9277-b1be2a7088a0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "96527f7e-de09-4d5b-8095-107cf596214e",
+                "description": "Execution of software modules (to include stored procedures, functions, and triggers) with elevated privileges must be restricted to necessary cases only.",
+                "control-id": "ac-6.8"
+              }
+            ]
+          },
+          {
+            "uuid": "57a7389f-46af-4459-9412-ea23d04b3310",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "fdc06d80-d324-4b92-a70c-0fb532324a6c",
+                "description": "The DBMS must prevent non-privileged users from executing privileged functions, to include disabling, circumventing, or altering implemented security safeguards/countermeasures.",
+                "control-id": "ac-6.10"
+              }
+            ]
+          },
+          {
+            "uuid": "113b8272-4e97-4801-ae15-bc3a26445ae6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "c2ef56c3-9cce-4d61-b09a-88ce4be8430f",
+                "description": "The DBMS must limit the number of concurrent sessions to an organization-defined number per user for all accounts and/or account types.",
+                "control-id": "ac-10"
+              }
+            ]
+          },
+          {
+            "uuid": "add96538-317b-4e98-9c57-20c070059059",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "dd05ef06-a46c-41c1-a616-ff80339d4568",
+                "description": "The DBMS must automatically terminate a user session after organization-defined conditions or trigger events requiring session disconnect.",
+                "control-id": "ac-12"
+              }
+            ]
+          },
+          {
+            "uuid": "b8aeae0a-7f03-4d08-87ad-5a054246f8ee",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-12.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "d73d1eb7-5a93-41ea-b4fb-aa50f6ba76c8",
+                "description": "The DBMS must provide logout functionality to allow the user to manually terminate a session initiated by that user.",
+                "control-id": "ac-12.1"
+              }
+            ]
+          },
+          {
+            "uuid": "e5a18908-d9c7-4618-956f-746bd6f24fa3",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-16.",
+            "implemented-requirements": [
+              {
+                "uuid": "33934ea3-0ae9-4810-8d0f-aa4b0fe0c69f",
+                "description": "The DBMS must associate organization-defined types of security labels having organization-defined security label values with information in process.",
+                "control-id": "ac-16"
+              },
+              {
+                "uuid": "33037161-f040-4e14-849d-a6fcef19c6f6",
+                "description": "The DBMS must associate organization-defined types of security labels having organization-defined security label values with information in storage.",
+                "control-id": "ac-16"
+              },
+              {
+                "uuid": "9b66859d-cce5-450a-9173-144cd95c05c2",
+                "description": "The DBMS must associate organization-defined types of security labels having organization-defined security label values with information in transmission.",
+                "control-id": "ac-16"
+              }
+            ]
+          },
+          {
+            "uuid": "c698d635-d8d2-4859-a478-334397f681da",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "e9c3ad88-0362-4925-835f-3c1a2ecf53cd",
+                "description": "The DBMS must produce audit records containing sufficient information to establish the sources (origins) of the events.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "d60f9b07-fc10-41fd-9357-f50864860b38",
+                "description": "The DBMS must produce audit records containing sufficient information to establish what type of events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "b3122934-ffc3-4678-8eee-280b7cfc6e92",
+                "description": "The DBMS must produce audit records containing sufficient information to establish the identity of any user/subject or process associated with the event.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "459a905a-7e18-4989-83ef-6c27160d1a31",
+                "description": "The DBMS must produce audit records containing sufficient information to establish the outcome (success or failure) of the events.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "313a878b-431a-4a92-b4f7-4de729d9e80f",
+                "description": "The DBMS must produce audit records containing time stamps to establish when the events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "911202e6-29b0-4f60-878f-968052d399ed",
+                "description": "The DBMS must produce audit records containing sufficient information to establish where the events occurred.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "0e75ce6f-9cbb-4e79-b427-82494923de73",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "40e9f423-28d8-41bd-a508-9ca1e089f7b7",
+                "description": "The DBMS must include additional, more detailed, organization-defined information in the audit records for audit events identified by type, location, or subject.",
+                "control-id": "au-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "1fa5fe8d-dc9c-4413-b1f7-7bc7d6ded293",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "378c26ec-d410-454e-bfa4-d7aab32c3f8f",
+                "description": "The DBMS must utilize centralized management of the content captured in audit records generated by all components of the DBMS.\nThe DBMS must provide centralized configuration of the content to be captured in audit records generated by all components of the DBMS.",
+                "control-id": "au-3.2"
+              }
+            ]
+          },
+          {
+            "uuid": "9e8d81d5-8e97-4415-8758-1934f21ccf1f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "e064c151-cad7-41da-b1c0-97a65d815903",
+                "description": "The DBMS must allocate audit record storage capacity in accordance with organization-defined audit record storage requirements.",
+                "control-id": "au-4"
+              }
+            ]
+          },
+          {
+            "uuid": "315fc31c-99cf-4c46-9ff6-0e82ef0c01b1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "b4506129-5870-48f2-a88a-51d155d744e4",
+                "description": "The DBMS must off-load audit data to a separate log management facility; this shall be continuous and in near real time for systems with a network connection to the storage facility and weekly or more often for stand-alone systems.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "b7fcfb1b-3fc2-4905-acbd-caf36d632480",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "b86d7d37-b184-45f3-b229-970d5e120f0d",
+                "description": "The DBMS must by default shut down upon audit failure, to include the unavailability of space for more audit log records; or must be configurable to shut down upon audit failure.\nThe DBMS must be configurable to overwrite audit log records, oldest first (First-In-First-Out - FIFO), in the event of unavailability of space for more audit log records.",
+                "control-id": "au-5"
+              }
+            ]
+          },
+          {
+            "uuid": "9242d808-e804-4db4-a20e-0a3c69b5dc56",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "330a58aa-e8f7-4fcf-8ff0-73295ab5f4cf",
+                "description": "The DBMS must provide a warning to appropriate support staff when allocated audit record storage volume reaches 75% of maximum audit record storage capacity.",
+                "control-id": "au-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "792f7c58-0370-46fa-9d04-b5b383e0d6da",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "dac99703-d015-498a-870f-3b63708f3f4a",
+                "description": "The DBMS must provide an immediate real-time alert to appropriate support staff of all audit log failures.",
+                "control-id": "au-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "53eba500-9bbd-4334-93d2-55ae5cffb1fd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "8f1701ad-9b17-493d-9a19-474eda5d4460",
+                "description": "The DBMS must generate time stamps, for audit records and application data, with a minimum granularity of one second.",
+                "control-id": "au-8"
+              },
+              {
+                "uuid": "4cd1e302-d8e5-4136-8b73-9f95a9c0cd17",
+                "description": "The DBMS must record time stamps, in audit records and application data, that can be mapped to Coordinated Universal Time (UTC, formerly GMT).",
+                "control-id": "au-8"
+              },
+              {
+                "uuid": "7091b13e-7672-407e-bc85-6b1f180080b2",
+                "description": "The DBMS must use system clocks to generate time stamps for use in audit records and application data.",
+                "control-id": "au-8"
+              }
+            ]
+          },
+          {
+            "uuid": "c47a404c-b3ba-46d0-92f2-2f50226bde44",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "6d8f2663-65c4-46d6-918b-d3e0e6d6a070",
+                "description": "The audit information produced by the DBMS must be protected from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "79b5a5be-60aa-48e4-ac45-08f7a7f875a2",
+                "description": "The DBMS must protect its audit configuration from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "19df186b-b4fa-4c7c-8a0d-b76925e79da6",
+                "description": "The DBMS must protect its audit features from unauthorized access.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "b8ee497d-1898-47eb-b3af-0730f2eb8f94",
+                "description": "The audit information produced by the DBMS must be protected from unauthorized deletion.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "422c4204-dfc5-4a06-9648-9e5ad1858b85",
+                "description": "The audit information produced by the DBMS must be protected from unauthorized read access.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "e3fe3db2-d6b8-4710-a33e-789a8fdcb852",
+                "description": "The DBMS must protect its audit features from unauthorized removal.",
+                "control-id": "au-9"
+              }
+            ]
+          },
+          {
+            "uuid": "3c2407de-ea27-4375-a578-1d4ffded6b98",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "e0276b6c-8bc0-4fcf-a3bf-6eef403c2f1f",
+                "description": "The DBMS must protect against a user falsely repudiating having performed organization-defined actions.",
+                "control-id": "au-10"
+              }
+            ]
+          },
+          {
+            "uuid": "1ab167f0-f25b-47b3-9bdd-09f0821083ad",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "2e4ac681-9c04-42ea-a5a3-4ae648217915",
+                "description": "The DBMS must be able to generate audit records when privileges/permissions are retrieved.\nThe DBMS must be able to generate audit records when unsuccessful attempts to retrieve privileges/permissions occur.\nThe DBMS must be able to generate audit records when security objects are accessed.\nThe DBMS must generate audit records when unsuccessful attempts to access security objects occur.\nThe DBMS must generate audit records when categories of information (e.g., classification levels/security levels) are accessed.\nThe DBMS must generate audit records when unsuccessful attempts to access categories of information (e.g., classification levels/security levels) occur.\nThe DBMS must generate audit records when privileges/permissions are added.\nThe DBMS must generate audit records when unsuccessful attempts to add privileges/permissions occur.\nThe DBMS must generate audit records when privileges/permissions are modified.\nThe DBMS must generate audit records when unsuccessful attempts to modify privileges/permissions occur.\nThe DBMS must generate audit records when security objects are modified.\nThe DBMS must generate audit records when unsuccessful attempts to modify security objects occur.\nThe DBMS must generate audit records when categories of information (e.g., classification levels/security levels) are modified.\nThe DBMS must generate audit records when unsuccessful attempts to modify categories of information (e.g., classification levels/security levels) occur.\nThe DBMS must generate audit records when privileges/permissions are deleted.\nThe DBMS must generate audit records when unsuccessful attempts to delete privileges/permissions occur.\nThe DBMS must generate audit records when security objects are deleted.\nThe DBMS must generate audit records when unsuccessful attempts to delete security objects occur.\nThe DBMS must generate audit records when categories of information (e.g., classification levels/security levels) are deleted.\nThe DBMS must generate audit records when unsuccessful attempts to delete categories of information (e.g., classification levels/security levels) occur.\nThe DBMS must generate audit records when successful logons or connections occur.\nThe DBMS must generate audit records when unsuccessful logons or connection attempts occur.\nThe DBMS must generate audit records for all privileged activities or other system-level access.\nThe DBMS must generate audit records when unsuccessful attempts to execute privileged activities or other system-level access occur.\nThe DBMS must generate audit records showing starting and ending time for user access to the database(s).\nThe DBMS must generate audit records when concurrent logons/connections by the same user from different workstations occur.\nThe DBMS must be able to generate audit records when successful accesses to objects occur.\nThe DBMS must generate audit records when unsuccessful accesses to objects occur.\nThe DBMS must generate audit records for all direct access to the database(s).",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "449aba62-8671-4df6-a925-03aa8c21e03d",
+                "description": "The DBMS must allow only the ISSM (or individuals or roles appointed by the ISSM) to select which auditable events are to be audited.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "a0b4d2b5-030b-4c4f-b1b5-5c30648cb366",
+                "description": "The DBMS must provide audit record generation capability for DoD-defined auditable events within all DBMS/database components.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "aaef7b43-1d57-4490-aa8a-e958abd5c4b8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-14.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "7802e5ed-aa9e-4570-970c-c2f92063d5a8",
+                "description": "The DBMS must initiate session auditing upon startup.",
+                "control-id": "au-14.1"
+              }
+            ]
+          },
+          {
+            "uuid": "a8c762a4-0de8-4cc0-ab10-bec78946f195",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "83fcfccb-be78-47f0-bced-e5e7f043f314",
+                "description": "The DBMS must enforce access restrictions associated with changes to the configuration of the DBMS or database(s).",
+                "control-id": "cm-5.1"
+              },
+              {
+                "uuid": "a24c3a71-8718-413d-8297-51340fe8a5f5",
+                "description": "The DBMS must produce audit records of its enforcement of access restrictions associated with changes to the configuration of the DBMS or database(s).",
+                "control-id": "cm-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "df46a35c-cd92-4f0a-bcaa-6a10311aa253",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "de0748f4-c948-4b08-9835-3a804d7d6979",
+                "description": "The DBMS must limit privileges to change software modules, to include stored procedures, functions and triggers, and links to software external to the DBMS.\nThe DBMS software installation account must be restricted to authorized users.\nDatabase software, including DBMS configuration files, must be stored in dedicated directories, or DASD pools, separate from the host OS and other applications.\nDatabase objects (including but not limited to tables, indexes, storage, stored procedures, functions, triggers, links to software external to the DBMS, etc.) must be owned by database/DBMS principals authorized for ownership.\nThe role(s)/group(s) used to modify database structure (including but not necessarily limited to tables, indexes, storage, etc.) and logic modules (stored procedures, functions, triggers, links to software external to the DBMS, etc.) must be restricted to authorized users.",
+                "control-id": "cm-5.6"
+              }
+            ]
+          },
+          {
+            "uuid": "a30ef487-5c27-4b69-aab1-a27388a423d8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "03b81942-39a7-44f5-9e89-4f93f0fd4b30",
+                "description": "The DBMS must be configured in accordance with the security configuration settings based on DoD security configuration and implementation guidance, including STIGs, NSA configuration guides, CTOs, DTMs, and IAVMs.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "1a0ae217-842f-496c-9d77-fafd275c51f5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "5283a94b-9295-47b0-945c-2de40c16f87d",
+                "description": "The DBMS must be configured to prohibit or restrict the use of organization-defined functions, ports, protocols, and/or services, as defined in the PPSM CAL and vulnerability assessments.",
+                "control-id": "cm-7"
+              },
+              {
+                "uuid": "bc0c8bf2-a7e9-4487-8575-8cbea986c8d5",
+                "description": "Default demonstration and sample databases, database objects, and applications must be removed.\nUnused database components, DBMS software, and database objects must be removed.\nUnused database components that are integrated in the DBMS and cannot be uninstalled must be disabled.\nAccess to external executables must be disabled or restricted.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "e7cbddc2-b22f-4c54-9568-0c58f5e241ad",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "5d329061-e6aa-46f1-b878-a47eecc3a29f",
+                "description": "The DBMS must disable network functions, ports, protocols, and services deemed by the organization to be nonsecure, in accord with the Ports, Protocols, and Services Management (PPSM) guidance.",
+                "control-id": "cm-7.1"
+              }
+            ]
+          },
+          {
+            "uuid": "ef5e5e19-f218-4aca-ba68-674cfe5146b9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-11.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "ffc1f57e-dfb1-440c-9cc2-2989a6893e5a",
+                "description": "The DBMS must prohibit user installation of logic modules (stored procedures, functions, triggers, views, etc.) without explicit privileged status.",
+                "control-id": "cm-11.2"
+              }
+            ]
+          },
+          {
+            "uuid": "4fd1c1e8-e620-48c9-aa7f-972261496c9e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "814a4fb6-9378-47b1-b367-a6462481257b",
+                "description": "The DBMS must uniquely identify and authenticate organizational users (or processes acting on behalf of organizational users).",
+                "control-id": "ia-2"
+              }
+            ]
+          },
+          {
+            "uuid": "d55becf7-0f0a-4ffc-98c0-ad784d530c1f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "1647fca6-bab4-49de-aadd-a3d0e1f95ff5",
+                "description": "If passwords are used for authentication, the DBMS must store only hashed, salted representations of passwords.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "a3bc1f0b-7e15-42e1-aeaf-1be7a629ebbc",
+                "description": "If passwords are used for authentication, the DBMS must transmit only encrypted representations of passwords.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "a9bccddf-b5bb-4434-bb8e-f2d097a0aaca",
+                "description": "If DBMS authentication, using passwords, is employed, the DBMS must enforce the DoD standards for password complexity and lifetime.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "4bbc68e4-76dd-4f98-b304-e4962a3d498e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "7eccebc0-7835-4f1b-9a33-049e99eacd50",
+                "description": "The DBMS, when utilizing PKI-based authentication, must validate certificates by performing RFC 5280-compliant certification path validation.",
+                "control-id": "ia-5.2"
+              },
+              {
+                "uuid": "8707a934-52c6-4e7c-aba2-2518b5e80ffe",
+                "description": "The DBMS must enforce authorized access to all PKI private keys stored/utilized by the DBMS.",
+                "control-id": "ia-5.2"
+              },
+              {
+                "uuid": "e686f0dc-fe8f-40b0-9e30-f19053d54ded",
+                "description": "The DBMS must map the PKI-authenticated identity to an associated user account.",
+                "control-id": "ia-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "6ff2885c-ad7e-40fc-acdd-8b970799139b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.13.",
+            "implemented-requirements": [
+              {
+                "uuid": "253ff4b7-16e1-426a-9236-c2fff2e5fe78",
+                "description": "The DBMS must prohibit the use of cached authenticators after an organization-defined time period.",
+                "control-id": "ia-5.13"
+              }
+            ]
+          },
+          {
+            "uuid": "4a247481-2e47-4928-8022-3665f687a4bd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "8c7e3376-10a9-4df7-8441-3cbf289cd449",
+                "description": "The DBMS must obscure feedback of authentication information during the authentication process to protect the information from possible exploitation/use by unauthorized individuals.",
+                "control-id": "ia-6"
+              }
+            ]
+          },
+          {
+            "uuid": "fc2d4d3c-8c6c-4f7e-bbe2-ff3761db7a66",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "8877f9cb-5485-4a8d-b819-9a64fa23f3b1",
+                "description": "The DBMS must use NIST FIPS 140-2 validated cryptographic modules for cryptographic operations.",
+                "control-id": "ia-7"
+              }
+            ]
+          },
+          {
+            "uuid": "41bf76ef-f5d7-45d4-868b-3b55ae761157",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "84af6fe0-ec36-458d-a4f0-71e88ecf265b",
+                "description": "The DBMS must uniquely identify and authenticate non-organizational users (or processes acting on behalf of non-organizational users).",
+                "control-id": "ia-8"
+              }
+            ]
+          },
+          {
+            "uuid": "b3fdd39b-6c63-4d1b-a388-ab1b12b6d1fe",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "124af2fd-dd12-4d84-a12e-916327b55e73",
+                "description": "The DBMS must require users to re-authenticate when organization-defined circumstances or situations require re-authentication.",
+                "control-id": "ia-11"
+              }
+            ]
+          },
+          {
+            "uuid": "25593de5-7837-4e9e-baea-19002c423bd6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "3156d53a-c541-4e8a-a120-46fb4116ed64",
+                "description": "The DBMS must separate user functionality (including user interface services) from database management functionality.",
+                "control-id": "sc-2"
+              }
+            ]
+          },
+          {
+            "uuid": "49495f81-0f06-46cc-8c22-f70a125a0626",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "e4611002-352d-4828-8437-fc9c33b66d9b",
+                "description": "The DBMS must isolate security functions from non-security functions.",
+                "control-id": "sc-3"
+              }
+            ]
+          },
+          {
+            "uuid": "ffe02d9f-9303-458d-b87d-917952dcd897",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "75cb5312-3b9e-4836-99d4-f7833bdb678f",
+                "description": "Database contents must be protected from unauthorized and unintended information transfer by enforcement of a data-transfer policy.\nThe DBMS must prevent unauthorized and unintended information transfer via shared system resources.\nAccess to database files must be limited to relevant processes and to authorized, administrative users.",
+                "control-id": "sc-4"
+              }
+            ]
+          },
+          {
+            "uuid": "517eb68e-55e3-4639-bbb1-2d07629932ec",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "81d99d52-c9d6-4d80-b469-9aa37489e679",
+                "description": "The DBMS must maintain the confidentiality and integrity of information during reception.",
+                "control-id": "sc-8.2"
+              },
+              {
+                "uuid": "9cf78748-aad9-4a0f-8eea-f4d340f981da",
+                "description": "The DBMS must maintain the confidentiality and integrity of information during preparation for transmission.",
+                "control-id": "sc-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "559f8f4e-8e01-4451-afcf-27503891a9da",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-13.",
+            "implemented-requirements": [
+              {
+                "uuid": "4f3a4c6b-dd6d-4246-a1d2-9b95e52f2df4",
+                "description": "The DBMS must implement NIST FIPS 140-2 validated cryptographic modules to provision digital signatures.\nThe DBMS must implement NIST FIPS 140-2 validated cryptographic modules to generate and validate cryptographic hashes.\nThe DBMS must implement NIST FIPS 140-2 validated cryptographic modules to protect unclassified information requiring confidentiality and cryptographic protection, in accordance with the data owners requirements.\nThe DBMS must use NSA-approved cryptography to protect classified information in accordance with the data owner's requirements.",
+                "control-id": "sc-13"
+              }
+            ]
+          },
+          {
+            "uuid": "a135802c-bc8a-4e3f-b31d-e1e555c68dfe",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "99e65797-e3fa-44ea-9485-6412e3135b66",
+                "description": "The DBMS must invalidate session identifiers upon user logout or other session termination.",
+                "control-id": "sc-23.1"
+              }
+            ]
+          },
+          {
+            "uuid": "9a24e495-19e3-4e14-bfc6-3f9e11e2910a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "434d83db-8654-4868-bb91-6c858c7bdfaf",
+                "description": "The DBMS must recognize only system-generated session identifiers.",
+                "control-id": "sc-23.3"
+              },
+              {
+                "uuid": "16d18f1c-2e5f-4512-b096-1f6db7509bfd",
+                "description": "The DBMS must maintain the authenticity of communications sessions by guarding against man-in-the-middle attacks that guess at Session ID values.",
+                "control-id": "sc-23.3"
+              }
+            ]
+          },
+          {
+            "uuid": "222b914f-9f8b-4ba1-9dbd-4c82b401e906",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "73095fa1-642b-4e35-81c8-134a775e288b",
+                "description": "The DBMS must only accept end entity certificates issued by DoD PKI or DoD-approved PKI Certification Authorities (CAs) for the establishment of all encrypted sessions.",
+                "control-id": "sc-23.5"
+              }
+            ]
+          },
+          {
+            "uuid": "9dbe8266-f885-4e5a-9f01-981136a6f255",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-24.",
+            "implemented-requirements": [
+              {
+                "uuid": "dbc18e95-97af-403c-813a-9c6e063f6151",
+                "description": "The DBMS must fail to a secure state if system initialization fails, shutdown fails, or aborts fail.",
+                "control-id": "sc-24"
+              },
+              {
+                "uuid": "7ba45fdb-9699-4e95-9c31-4e6b7eeed856",
+                "description": "In the event of a system failure, the DBMS must preserve any information necessary to determine cause of failure and any information necessary to return to operations with least disruption to mission processes.",
+                "control-id": "sc-24"
+              }
+            ]
+          },
+          {
+            "uuid": "f8a7c40e-11dd-4a07-aa79-f5c77c27f614",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.",
+            "implemented-requirements": [
+              {
+                "uuid": "96707ed3-7930-4163-a1d6-f0e22d888694",
+                "description": "The DBMS must protect the confidentiality and integrity of all information at rest.",
+                "control-id": "sc-28"
+              }
+            ]
+          },
+          {
+            "uuid": "c69f65a6-08c7-4e41-b831-aaea701e2350",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "5066e6cd-675c-4adb-8495-88f6daaedfa7",
+                "description": "The DBMS must implement cryptographic mechanisms to prevent unauthorized modification of organization-defined information at rest (to include, at a minimum, PII and classified information) on organization-defined information system components.",
+                "control-id": "sc-28.1"
+              },
+              {
+                "uuid": "3f0979b3-755f-4651-a43b-0e84370a87da",
+                "description": "The DBMS must implement cryptographic mechanisms preventing the unauthorized disclosure of organization-defined information at rest on organization-defined information system components.",
+                "control-id": "sc-28.1"
+              }
+            ]
+          },
+          {
+            "uuid": "bff18f4a-90ab-4632-889b-e663f1bfdb42",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-39.",
+            "implemented-requirements": [
+              {
+                "uuid": "b50d4cde-80ac-4b24-a0a6-eafe633cecba",
+                "description": "The DBMS must maintain a separate execution domain for each executing process.",
+                "control-id": "sc-39"
+              }
+            ]
+          },
+          {
+            "uuid": "f47601d1-dfed-405c-ac5d-74ea3f3db5ca",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "02aca93b-ca39-404e-8cf1-aa88813fe907",
+                "description": "Security-relevant software updates to the DBMS must be installed within the time period directed by an authoritative source (e.g. IAVM, CTOs, DTMs, and STIGs).\nDBMS products must be a version supported by the vendor.",
+                "control-id": "si-2"
+              }
+            ]
+          },
+          {
+            "uuid": "b9d5189a-5765-4574-b2be-525323e86f01",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "f880ea20-06cc-4dc4-8d86-0ab34864b93c",
+                "description": "When updates are applied to the DBMS software, any software components that have been replaced or made unnecessary must be removed.",
+                "control-id": "si-2.6"
+              }
+            ]
+          },
+          {
+            "uuid": "68014e2e-5765-4133-91b3-65dd1a0f72d0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "c199f765-c47f-49ef-b8c4-248b1f4d2d93",
+                "description": "The DBMS must check the validity of all data inputs except those specifically identified by the organization.\nThe DBMS and associated applications must reserve the use of dynamic code execution for situations that require it.\nThe DBMS and associated applications, when making use of dynamic code execution, must scan input data for invalid values that may indicate a code injection attack.",
+                "control-id": "si-10"
+              }
+            ]
+          },
+          {
+            "uuid": "7c71b9a4-1076-4f55-b676-f96fbb57d0d8",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "1293a18d-5459-4650-9e1b-83b053550596",
+                "description": "When invalid inputs are received, the DBMS must behave in a predictable and documented manner that reflects organizational and system objectives.",
+                "control-id": "si-10.3"
+              }
+            ]
+          },
+          {
+            "uuid": "115be9d8-539c-450c-826f-1c77ad7e9def",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "70b4b693-2954-4e06-bba8-e51c828ac27b",
+                "description": "The DBMS must reveal detailed error messages only to the ISSO, ISSM, SA and DBA.",
+                "control-id": "si-11"
+              },
+              {
+                "uuid": "e10b6167-e5a0-4c06-bfeb-3741c42f8b0a",
+                "description": "The DBMS must provide non-privileged users with error messages that provide information necessary for corrective actions without revealing information that could be exploited by adversaries.",
+                "control-id": "si-11"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

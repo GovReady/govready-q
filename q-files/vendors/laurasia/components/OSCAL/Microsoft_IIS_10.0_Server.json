@@ -1,0 +1,398 @@
+{
+  "component-definition": {
+    "uuid": "2a7cce11-e86d-43bc-ae14-12601c9a15e7",
+    "metadata": {
+      "title": "Microsoft IIS 10.0 Server",
+      "last-modified": "2022-06-12T20:17:22",
+      "version": "2022-06-12T20:17:22",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "ea95b0da-82a3-40aa-999d-704e01bd2912",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "81000943-8447-45e0-9b64-30f6c0f6ac5f",
+        "type": "software",
+        "title": "Microsoft IIS 10.0 Server",
+        "description": "Microsoft IIS 10.0 Server based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "ea95b0da-82a3-40aa-999d-704e01bd2912"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "310d508f-a56f-43b0-a049-7076993cc0ea",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "8e553176-d063-4bae-a741-eb864ce6eb65",
+                "description": "Access to web administration tools must be restricted to the web manager and the web managers designees.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "ddd6d80c-15f5-4470-9603-6dc82d80c6e2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "528efad1-b581-41ad-9247-a9244e00f093",
+                "description": "IIS 10.0 web server system files must conform to minimum file permission requirements.",
+                "control-id": "ac-6.10"
+              }
+            ]
+          },
+          {
+            "uuid": "6f513e91-4793-40c6-b8c8-fe11c634d3c1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "836b650e-1645-42fa-9171-68310280fec1",
+                "description": "The IIS 10.0 websites MaxConnections setting must be configured to limit the number of allowed simultaneous session requests.",
+                "control-id": "ac-10"
+              }
+            ]
+          },
+          {
+            "uuid": "fa8f3438-95aa-4075-bad0-e9b2bd73c0c1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-17.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "9ffd5e61-3948-4517-a417-ef9b92bd6edf",
+                "description": "Remote access to the IIS 10.0 web server must follow access policy or work in conjunction with enterprise tools designed to enforce policy requirements.\nThe IIS 10.0 web server must restrict inbound connections from non-secure zones.",
+                "control-id": "ac-17.1"
+              }
+            ]
+          },
+          {
+            "uuid": "434de140-dc88-47aa-badc-4550b9ee593c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-17.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "ffbbdf3f-43e5-42e5-9794-f0c07526f047",
+                "description": "The IIS 10.0 web server remote authors or content providers must only use secure encrypted logons and connections to upload web server content.",
+                "control-id": "ac-17.2"
+              }
+            ]
+          },
+          {
+            "uuid": "514933e8-b5b5-4b1a-b336-46fe3de7977a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-17.9.",
+            "implemented-requirements": [
+              {
+                "uuid": "3ac60d2b-0dc3-45bf-a128-72380bbe4e70",
+                "description": "The IIS 10.0 web server must provide the capability to immediately disconnect or disable remote access to the hosted applications.",
+                "control-id": "ac-17.9"
+              }
+            ]
+          },
+          {
+            "uuid": "7a4f4e79-b9ac-4250-b0cf-a6b3714f3708",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "ed58622e-c4b0-40d7-ab49-ddbb403dd70b",
+                "description": "The enhanced logging for the IIS 10.0 web server must be enabled and capture all user and web server events.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "14e9112c-e60c-4e06-a654-4ff464773572",
+                "description": "The enhanced logging for the IIS 10.0 web server must be enabled and capture all user and web server events.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "c2ca89b6-32b4-4818-ace1-c49c6b77bd0e",
+                "description": "The enhanced logging for the IIS 10.0 web server must be enabled and capture all user and web server events.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "36336a07-21ba-4cea-aa5b-28298b832781",
+                "description": "The enhanced logging for the IIS 10.0 web server must be enabled and capture all user and web server events.\nAn IIS 10.0 web server behind a load balancer or proxy server must produce log records containing the source client IP and destination information.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "189af012-1d4c-4e53-9d61-de5c81f820f7",
+                "description": "The IIS 10.0 web server must produce log records containing sufficient information to establish the identity of any user/subject or process associated with an event.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "5a412204-316e-434f-b396-bd7544e19413",
+                "description": "The IIS 10.0 web server must produce log records that contain sufficient information to establish the outcome (success or failure) of IIS 10.0 web server events.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "a2a64d54-3bfa-434d-a30e-732835e2ef6d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "d3437a92-bc51-40fe-ae66-2fe1fac38c85",
+                "description": "The IIS 10.0 web server must use a logging mechanism configured to allocate log record storage capacity large enough to accommodate the logging requirements of the IIS 10.0 web server.",
+                "control-id": "au-4"
+              }
+            ]
+          },
+          {
+            "uuid": "cb89551b-35a8-4b92-94d9-cbf6d2e4410e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "4d411a99-f65a-4264-b4ae-5661c8a6f085",
+                "description": "Both the log file and Event Tracing for Windows (ETW) for the IIS 10.0 web server must be enabled.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "ee202c5a-b842-4030-80f1-38322372f91b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "4ae7f688-ddf5-4f4f-82b4-b5c83fc4e108",
+                "description": "Both the log file and Event Tracing for Windows (ETW) for the IIS 10.0 web server must be enabled.",
+                "control-id": "au-5"
+              }
+            ]
+          },
+          {
+            "uuid": "6a8e4132-b8f6-4298-b7e1-0b8addcde2a3",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "bffb6f3f-fdb9-4ca9-a347-245c1447e530",
+                "description": "The log information from the IIS 10.0 web server must be protected from unauthorized modification or deletion.",
+                "control-id": "au-9"
+              }
+            ]
+          },
+          {
+            "uuid": "c74afe97-684f-434c-a876-4487aab7e1fa",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "b1bc4de8-8265-417c-aad2-14fb4339d441",
+                "description": "The log data and records from the IIS 10.0 web server must be backed up onto a different system or media.",
+                "control-id": "au-9.2"
+              }
+            ]
+          },
+          {
+            "uuid": "a1a59630-6400-4589-9b76-841d20ac60fe",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-14.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "ecc4e139-49cf-4551-9e98-6253457d5759",
+                "description": "The enhanced logging for the IIS 10.0 web server must be enabled and capture all user and web server events.\nBoth the log file and Event Tracing for Windows (ETW) for the IIS 10.0 web server must be enabled.",
+                "control-id": "au-14.1"
+              }
+            ]
+          },
+          {
+            "uuid": "5b2d40a0-9454-4daf-8c39-3f31092e8501",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-14.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "beb6d523-4533-4a5b-a061-a3e4e02268d7",
+                "description": "The enhanced logging for the IIS 10.0 web server must be enabled and capture all user and web server events.",
+                "control-id": "au-14.2"
+              }
+            ]
+          },
+          {
+            "uuid": "547bd45a-3a58-48e2-99f6-8c3f5f0f60fa",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "b980cbd2-0e5b-4eac-80d7-404d2499a97f",
+                "description": "Access to web administration tools must be restricted to the web manager and the web managers designees.",
+                "control-id": "cm-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "6fc9639d-14f1-41b4-829d-7799030aa270",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "5d6c1759-7115-4cbd-b0db-fc2b4315f3e1",
+                "description": "All accounts installed with the IIS 10.0 web server software and tools must have passwords assigned and default passwords changed.\nUnspecified file extensions on a production IIS 10.0 web server must be removed.\nThe IIS 10.0 web server must have a global authorization rule configured to restrict access.\nThe IIS 10.0 web server must enable HTTP Strict Transport Security (HSTS).",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "85c1f030-8c15-47b7-81d1-c635c7fc23c6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "d0e84c97-0c83-4af8-b5c1-630ff8231822",
+                "description": "The IIS 10.0 web server must not perform user management for hosted applications.\nThe IIS 10.0 web server must only contain functions necessary for operation.\nThe IIS 10.0 web server must not be both a website server and a proxy server.\nAll IIS 10.0 web server sample code, example applications, and tutorials must be removed from a production IIS 10.0 server.\nThe accounts created by uninstalled features (i.e., tools, utilities, specific, etc.) must be deleted from the IIS 10.0 server.\nThe IIS 10.0 web server must be reviewed on a regular basis to remove any Operating System features, utility programs, plug-ins, and modules not necessary for operation.\nThe IIS 10.0 web server must have Multipurpose Internet Mail Extensions (MIME) that invoke OS shell programs disabled.\nThe IIS 10.0 web server must have Web Distributed Authoring and Versioning (WebDAV) disabled.\nAn IIS Server configured to be a SMTP relay must require authentication.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "7b640f00-ae2f-4cc0-b34c-277d041d11e2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "d8d23beb-e406-4849-899c-be1021bc6eff",
+                "description": "The IIS 10.0 web server must not be running on a system providing any other role.\nThe Internet Printing Protocol (IPP) must be disabled on the IIS 10.0 web server.",
+                "control-id": "cm-7.1"
+              }
+            ]
+          },
+          {
+            "uuid": "7db28d8e-8551-4a11-a4ff-db4b58be0421",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "8ce902a8-7d84-430b-86b3-86dad4518737",
+                "description": "The IIS 10.0 web server must perform RFC 5280-compliant certification path validation.",
+                "control-id": "ia-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "3d31808a-886a-4951-9159-d59b6f354311",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "abbd8ef0-4449-4258-a5f0-c72d1c9a5544",
+                "description": "IIS 10.0 Web server accounts accessing the directory tree, the shell, or other operating system functions and utilities must only be administrative accounts.\nThe IIS 10.0 web server must separate the hosted applications from hosted web server management functionality.",
+                "control-id": "sc-2"
+              }
+            ]
+          },
+          {
+            "uuid": "35453228-89e6-4b0f-bc17-0cd845e5f634",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "0b37166b-ca30-45f6-92cc-40f09afb7b0c",
+                "description": "Access to web administration tools must be restricted to the web manager and the web managers designees.\nThe IIS 10.0 web server must be tuned to handle the operational requirements of the hosted application.",
+                "control-id": "sc-5"
+              }
+            ]
+          },
+          {
+            "uuid": "bd935a0c-1530-4b9b-b361-4b1610c79598",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "6b87a1da-aef3-46df-b45b-ef3515f7edbf",
+                "description": "IIS 10.0 web server session IDs must be sent to the client using TLS.\nAn IIS 10.0 web server must maintain the confidentiality of controlled information during transmission through the use of an approved Transport Layer Security (TLS) version.\nThe IIS 10.0 web server must maintain the confidentiality of controlled information during transmission through the use of an approved Transport Layer Security (TLS) version.",
+                "control-id": "sc-8"
+              }
+            ]
+          },
+          {
+            "uuid": "1ac8b6e5-3382-4d22-a920-e83e276b91e2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-18.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "10a68d25-47dd-4cff-ae96-c088f43a9557",
+                "description": "Java software installed on a production IIS 10.0 web server must be limited to .class files and the Java Virtual Machine.",
+                "control-id": "sc-18.1"
+              }
+            ]
+          },
+          {
+            "uuid": "05738a6f-083b-4010-a4bd-e874923814c7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "414863d5-7335-4035-a2d2-35af198aa5a6",
+                "description": "The IIS 10.0 web server must use cookies to track session state.\nThe IIS 10.0 web server must accept only system-generated session identifiers.",
+                "control-id": "sc-23.3"
+              }
+            ]
+          },
+          {
+            "uuid": "3bd40e4d-0924-4600-84cf-b9576e591215",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-24.",
+            "implemented-requirements": [
+              {
+                "uuid": "05d7e6e1-9dd5-4e58-bf4f-32735b91adb3",
+                "description": "The IIS 10.0 web server must augment re-creation to a stable and known baseline.",
+                "control-id": "sc-24"
+              }
+            ]
+          },
+          {
+            "uuid": "41c36df4-a8b7-4a37-bcb1-30cfb5070346",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.",
+            "implemented-requirements": [
+              {
+                "uuid": "9a856a79-20fd-4fc1-bea6-05a0b5a25ac2",
+                "description": "The production IIS 10.0 web server must utilize SHA2 encryption for the Machine Key.",
+                "control-id": "sc-28"
+              }
+            ]
+          },
+          {
+            "uuid": "c324106d-d56b-4142-9f90-d5be555ce0c5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "f9aca760-8cf5-4884-ac93-58bdc3f93382",
+                "description": "Directory Browsing on the IIS 10.0 web server must be disabled.",
+                "control-id": "si-10"
+              }
+            ]
+          },
+          {
+            "uuid": "ba37afc0-135d-4b46-896a-d65ef469c486",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "61e087cb-1f43-4804-9dd0-5ffc369a3062",
+                "description": "The IIS 10.0 web server Indexing must only index web content.\nWarning and error messages displayed to clients must be modified to minimize the identity of the IIS 10.0 web server, patches, loaded modules, and directory paths.\nHTTPAPI Server version must be removed from the HTTP Response Header information.\nASP.NET version must be removed from the HTTP Response Header information.",
+                "control-id": "si-11"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

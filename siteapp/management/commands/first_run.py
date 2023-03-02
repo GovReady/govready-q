@@ -44,18 +44,14 @@ class Command(BaseCommand):
             # Set values for default apps (templates) for Aspen new system page
             if "default_appversion_name_list" not in org.extra:
                 org.extra["default_appversion_name_list"] = [
-                    "Blank Project",
-                    "Speedy SSP",
-                    "General IT System ATO for 800-53 (low)"
+                    "JSIG v4 SSP"
                 ]
                 org.save()
 
         # Set values for default apps (templates) for Aspen new system page
         if "default_appversion_name_list" not in org.extra:
             org.extra["default_appversion_name_list"] = [
-                "Blank Project",
-                "Speedy SSP",
-                "General IT System ATO for 800-53 (low)"
+                "JSIG v4 SSP"
             ]
             org.save()
         # ["Blank Project", "Speedy SSP", "General IT System ATO for 800-53 (low)"]
@@ -130,7 +126,7 @@ class Command(BaseCommand):
             print("\n[INFO] Superuser(s) already exists, not creating default admin superuser. Did you specify 'govready_admins' in 'local/environment.json'? Did you specify an admin or are you connecting to a persistent database?\n")
 
         # Install default AppSources and compliance apps if no AppSources installed
-        if not AppSource.objects.filter(slug="govready-q-files-startpack").exists():
+        if not AppSource.objects.filter(slug="laurasia").exists():
             # Create AppSources that we want.
             if os.path.exists("/mnt/q-files-host"):
                 # For our docker image.
@@ -143,20 +139,19 @@ class Command(BaseCommand):
             # Second, for 0.9.x startpack
             # We can use forward slashes because we are storing the path in the database
             # and the path will be applied correctly to the operating OS.
-            qfiles_path = 'q-files/vendors/govready/govready-q-files-startpack/q-files'
+            qfiles_path = 'q-files/vendors/laurasia/bundle'
             if os.path.exists(qfiles_path):
                 # For 0.9.x+.
                 AppSource.objects.get_or_create(
-                    slug="govready-q-files-startpack",
+                    slug="laurasia",
                     defaults={
                         "spec": { "type": "local", "path": qfiles_path }
                     }
                 )
                 # Load the AppSource's assessments (apps) we want
                 # We will do some hard-coding here temporarily
-                created_appsource = AppSource.objects.get(slug="govready-q-files-startpack")
-                for appname in ["blank", "speedyssp", "System-Description-Demo",
-                                "PTA-Demo", "rules-of-behavior", "lightweight-ato", "lightweight-ato-800-171"]:
+                created_appsource = AppSource.objects.get(slug="laurasia")
+                for appname in ["JSIG_SSP"]:
                     print("Adding appname '{}' from AppSource '{}' to catalog.".format(appname, created_appsource))
                     try:
                         appver = created_appsource.add_app_to_catalog(appname)
@@ -168,7 +163,7 @@ class Command(BaseCommand):
             if os.path.exists(qfiles_path):
                 # For 0.9.x+.
                 appsource, created = AppSource.objects.get_or_create(
-                    slug="govready-q-files-stubs",
+                    slug="laurasia",
                     defaults={
                         "spec": { "type": "local", "path": qfiles_path }
                     }
@@ -183,7 +178,7 @@ class Command(BaseCommand):
         # Install default example components if no components in library
         if len(Element.objects.all()) == 0:
             from controls.views import ComponentImporter
-            path = 'q-files/vendors/govready/components/OSCAL'
+            path = 'q-files/vendors/laurasia/components/OSCAL'
             import_name = "Default components"
             if os.path.exists(path):
                 for component_file in os.listdir(path):

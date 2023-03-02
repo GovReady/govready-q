@@ -1,0 +1,60 @@
+# **Section 1 - System Identification**
+project.system_info.system_name
+project.system_info.system_short_name
+project.system_info.unique_id
+project.system_info.operational_status
+project.system_info.system_type
+project.system_info.system_classification
+project.system_info.info_impact_categorization
+project.system_info.info_impact_categorization_adj
+project.system_info.controls_baseline
+project.system_info.controls_overlays
+
+# **Section 2 - Key Roles and Contact Info**
+project.roles.system_ao
+project.roles.system_dao
+project.roles.system_sca
+project.roles.system_information_owner
+project.roles.system_org
+project.roles.system_owner
+project.roles.system_pso
+project.roles.system_issm
+project.roles.system_isso
+project.roles.system_sa
+project.roles.system_dta
+
+# **Section 3 - System Environment**
+project.system_env.pe_facility_accred
+project.system_env.pe_facility_accred_by
+project.system_env.pe_facility_type
+project.system_env.pe_facility_classification
+project.system_env.pe_facility_unattended_processing
+project.system_env.pe_facility_24hour
+project.system_env.pe_facility_storage_type
+project.system_env.pe_facility_open_storage_items
+project.system_env.pe_facility_closed_storage_items
+project.system_env.pe_facility_colocated_systems
+project.system_env.facility_system_layout
+project.system_env.personnel_auth_min
+project.system_env.personnel_clearance
+project.system_env.personnel_accesses
+project.system_env.account_manangement_policy
+
+# **Section 4 - General System Description/Purpose**
+project.system_info_technical.system_description
+project.system_info_technical.system_architecture
+project.system_info_technical.system_dataflow
+project.system_info_technical.system_users
+
+# **Section 5 - Interconnections/Information Sharing**
+project.system_connection.direct_connect
+project.system_connection.direct_connect_systems
+project.system_connection.indirect_connect_input
+project.system_connection.indirect_connect_input_systems
+project.system_connection.indirect_connect_output
+project.system_connection.indirect_connect_output_systems
+project.system_connection.system_mou_isa
+project.system_connection.system_mou_isa_systems
+
+# **Section 6 - Security Control Traceability Matrix (SCTM)**
+project.system_sctm.var
