@@ -33,22 +33,23 @@ def index(request):
         '<html><body>'
         '<h3>Call Django management commands</h3>'
         '<ul>'
+        '<li><a href="/management/is_superuser">is_superuser</a> - check if user is_superuser</li>'
         '<li><a href="/management/listcomponents">manage.py listcomponents</a> - generate a list of components</li>'
         '</body></html>' )
     return HttpResponse(html)
 
-def example(request):
+def is_superuser(request):
     # output = subprocess.check_output(["./check-system.sh"]).decode("utf-8")
-    html = f"<html><body><pre>EXAMPLE Command</pre></body></html>"
+    html = f"<html><body><pre>is_superuser: {request.user.is_superuser}</pre></body></html>"
     return HttpResponse(html)
 
 @print_http_response
 def listcomponents(request):
-    # output = subprocess.check_output(["./check-system.sh"]).decode("utf-8")
-    # if user not admin:
-    #     html = f"<html><body><pre>Page only available to admins</pre></body></html>"
+    if not request.user.is_superuser:
+        html = f"<html><body><pre>Page only available to admins - won't be displayed because of decorator</pre></body></html>"
+        return HttpResponse(html)
 
     # user is admin, run command
     result = management.call_command('listcomponents')
-    html = f"<html><body><pre>manage.py listcomponents\n {result}</pre></body></html>"
+    html = f"<html><body><pre>manage.py listcomponents\n request.user.is_superuser: 333{request.user.is_superuser} {result}</pre></body></html>"
     return HttpResponse(html)

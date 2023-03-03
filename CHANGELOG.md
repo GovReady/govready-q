@@ -4,6 +4,10 @@ GovReady-Q Release Notes
 v0.12.0-dev (February 4, 2022)
 ------------------------------
 
+**Developer changes**
+
+* Add siteapp.management_views as webhooks for calling Django management commands.
+
 
 v0.11.5 (March 2, 2023)
 ---------------------------

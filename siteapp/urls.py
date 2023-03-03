@@ -155,6 +155,7 @@ urlpatterns = [
 
     # management commands
     url(r'^management/$', views_management.index),
+    url(r'^management/is_superuser$', views_management.is_superuser),
     url(r'^management/listcomponents$', views_management.listcomponents),
 ]
 
