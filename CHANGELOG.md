@@ -1,6 +1,10 @@
 GovReady-Q Release Notes
 ========================
 
+v0.12.0-dev (February 4, 2022)
+------------------------------
+
+
 v0.11.5 (March 2, 2023)
 ---------------------------
 
@@ -24,7 +28,6 @@ v0.11.3 (December 10, 2022)
 **Developer changes**
 
 * Add processing for question actions targeted at system to handle `system/add_baseline/<value>` to add additional baseline set of controls to a system without deleting already assigned controls.A
-
 
 
 v0.11.2 (December 10, 2022)
