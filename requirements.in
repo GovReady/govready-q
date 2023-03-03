@@ -22,11 +22,11 @@ GitPython # BSD License
 Pygments==2.7.4 # BSD License
 termcolor # MIT License
 xxhash # BSD License
-importlib-resources<2,>=1.0 # Apache License
+importlib-resources # Apache License
 pyinstrument==3.2.0 # BSD License
 cryptography==36.0.2 # LICENSE.APACHE or LICENSE.BSD
 pyopenssl==21.0.0 # Apache 2.0
-compliance-trestle==1.1.0 # OSI Approved :: Apache Software License
+compliance-trestle==2.0.0 # OSI Approved :: Apache Software License
 markdown # As Is Custom License
 xlsxwriter # BSD 2-Clause License
 
@@ -62,7 +62,7 @@ drf-nested-routers==0.93.3 # Apache License 2.0
 mozilla-django-oidc==1.2.4 # Mozilla Public License Version 2.0
 
 # NLP
-dataset # MIT License
+# dataset # MIT License
 click # BSD License (BSD-3-Clause)
 # more-itertools # MIT License
 simplejson # Academic Free License (AFL), MIT License
