@@ -155,7 +155,7 @@ urlpatterns = [
 
     # management commands
     url(r'^management/$', views_management.index),
-    url(r'^management/example$', views_management.example),
+    url(r'^management/listcomponents$', views_management.listcomponents),
 ]
 
 urlpatterns += [url(r'^api/v2/', include('api.urls'))]
