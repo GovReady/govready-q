@@ -17,6 +17,7 @@ admin.autodiscover()
 import siteapp.views as views
 import siteapp.views_landing as views_landing
 import siteapp.views_health as views_health
+import siteapp.views_management as views_management
 from .good_settings_helpers import signup_wrapper
 from .settings import *
 
@@ -151,6 +152,10 @@ urlpatterns = [
 
     # Session
     url(r'session_security/', include('session_security.urls')),
+
+    # management commands
+    url(r'^management/$', views_management.index),
+    url(r'^management/example$', views_management.example),
 ]
 
 urlpatterns += [url(r'^api/v2/', include('api.urls'))]
