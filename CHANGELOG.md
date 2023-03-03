@@ -5,6 +5,15 @@ v0.12.0-dev (February 4, 2022)
 ------------------------------
 
 
+v0.11.5 (March 2, 2023)
+---------------------------
+
+**Developer changes**
+
+* Upgrade Python libraries.
+* Update npm packages.
+
+
 v0.11.4 (December 17, 2022)
 ---------------------------
 
