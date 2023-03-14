@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v0.11.6 (March 14, 2023)
+---------------------------
+
+**Developer changes**
+
+* Upgrade Python libraries.
+
+
 v0.11.5 (March 2, 2023)
 ---------------------------
 
