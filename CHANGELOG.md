@@ -34,7 +34,6 @@ v0.11.3 (December 10, 2022)
 * Add processing for question actions targeted at system to handle `system/add_baseline/<value>` to add additional baseline set of controls to a system without deleting already assigned controls.A
 
 
-
 v0.11.2 (December 10, 2022)
 ---------------------------
 
