@@ -8,6 +8,10 @@ v0.11.6 (March 14, 2023)
 
 * Upgrade Python libraries.
 
+**Developer changes**
+
+* Add siteapp.management_views as webhooks for calling Django management commands.
+
 
 v0.11.5 (March 2, 2023)
 ---------------------------
