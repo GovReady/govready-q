@@ -46,7 +46,9 @@ ENV DISPLAY=:99
 # Put the Python source code here.
 WORKDIR /usr/src/app
 
-RUN apt-get update && apt-get install -y wkhtmltopdf;
+RUN apt-get update && apt-get install -y wkhtmltopdf \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip to version 20.1+ - IMPORTANT
 RUN python3 -m pip install --upgrade pip
