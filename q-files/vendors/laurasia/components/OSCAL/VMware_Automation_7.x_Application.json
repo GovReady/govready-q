@@ -1,0 +1,121 @@
+{
+  "component-definition": {
+    "uuid": "90354c51-df1b-4591-88e4-06126d370d56",
+    "metadata": {
+      "title": "VMware Automation 7.x Application",
+      "last-modified": "2022-06-12T20:17:32",
+      "version": "2022-06-12T20:17:32",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "c2182e39-d65a-4cd9-ab42-1e8370ad7dc2",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "730146ac-fde6-4ba8-95dd-a4eb5d0a3c78",
+        "type": "software",
+        "title": "VMware Automation 7.x Application",
+        "description": "VMware Automation 7.x Application based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "c2182e39-d65a-4cd9-ab42-1e8370ad7dc2"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "46a79466-8cfb-4c23-a7d2-3c53b1346503",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "1ffd6177-3538-4f2f-8ad8-fd7ccece7f99",
+                "description": "The vRealize Automation security file must be restricted to the vcac user.",
+                "control-id": "ac-6.10"
+              }
+            ]
+          },
+          {
+            "uuid": "6924f4ca-7828-4045-b8c7-5f8258242faf",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "06da53d2-223c-4bf4-9645-41ed3b81e05f",
+                "description": "The vRealize Automation appliance must be configured in accordance with the security configuration settings based on DoD security configuration or implementation guidance, including STIGs, NSA configuration guides, CTOs, and DTMs.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "28958bd9-92a0-4d0d-a08a-26f33b25f216",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "04f52a72-af74-484d-bea6-b2eb0501eefb",
+                "description": "vRA must enable FIPS Mode.",
+                "control-id": "ia-7"
+              }
+            ]
+          },
+          {
+            "uuid": "fc449bb8-1906-4831-bef3-cdee5c30a644",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-13.",
+            "implemented-requirements": [
+              {
+                "uuid": "66ebf60a-82aa-4575-a021-49b2bd42bea8",
+                "description": "The application server must use DoD- or CNSS-approved PKI Class 3 or Class 4 certificates.",
+                "control-id": "sc-13"
+              }
+            ]
+          },
+          {
+            "uuid": "e43b452a-add9-4194-91fc-7132403e4774",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "dbf7349b-d33d-4e9d-849b-088e1458213b",
+                "description": "The vRealize Automation application must be configured to a 15 minute of less session timeout.",
+                "control-id": "sc-23.1"
+              }
+            ]
+          },
+          {
+            "uuid": "4a061fc5-0bdd-4206-959e-0f5f26662780",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "1cf6857f-0577-4972-a3e3-ca7aa3f06e19",
+                "description": "The application server must only allow the use of DoD PKI-established certificate authorities for verification of the establishment of protected sessions.",
+                "control-id": "sc-23.5"
+              }
+            ]
+          },
+          {
+            "uuid": "e24c0556-a462-471e-bf20-0a90ceb8b291",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-24.",
+            "implemented-requirements": [
+              {
+                "uuid": "03a54b3d-66a7-4189-bdcf-399f7ed93ff0",
+                "description": "The vRealize Automation server must be configured to perform complete application deployments.",
+                "control-id": "sc-24"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

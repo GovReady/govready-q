@@ -1100,7 +1100,7 @@ class OpenControlComponentSerializer(ComponentSerializer):
 
 class ComponentImporter(object):
 
-    def import_components_as_json(self, import_name, json_object, request=None, existing_import_record=False, stopinvalid=True):
+    def import_components_as_json(self, import_name, json_object, request=None, existing_import_record=False, stopinvalid=True, update=False):
         """Imports Components from a JSON object
 
         @type import_name: str
@@ -1151,7 +1151,6 @@ class ComponentImporter(object):
                     import sys
                     sys.exit()
 
-
         # If importing from importcomponents script print issues
         if len(issues) > 0:
             print("\nNOTICE - ISSUES DURING COMPONENT IMPORT\n")
@@ -1162,7 +1161,7 @@ class ComponentImporter(object):
             user_owner = request.user
         else:
             user_owner = User.objects.filter(is_superuser=True)[0]
-        created_components = self.create_components(oscal_json, user_owner)
+        created_components = self.create_or_update_components(oscal_json, user_owner, update)
         new_import_record = self.create_import_record(import_name, created_components, existing_import_record=existing_import_record)
         return new_import_record
 
@@ -1191,16 +1190,26 @@ class ComponentImporter(object):
 
         return import_record
 
-    def create_components(self, oscal_json, user_owner=None):
-        """Creates Elements (Components) from valid OSCAL JSON"""
-        components_created = []
+    def create_or_update_components(self, oscal_json, user_owner=None, update=False):
+        """
+        Creates or updates Elements (Components) from valid OSCAL JSON
+        """
+        components_created_or_updated = []
         components = oscal_json['component-definition']['components']
         for component in components:
-            new_component = self.create_component(component, user_owner)
-            if new_component is not None:
-                components_created.append(new_component)
+            # update existing component if update set to true and a component exists with same name
+            component_name = component['title']
+            if update and Element.objects.filter(name=component_name).count() > 0:
+                print(f"[DEBUG] ****** update equals 4: {update}; 1 or more components matching name exists")
+                updated_component = self.update_component(component, user_owner)
+                if updated_component is not None:
+                    components_created_or_updated.append(updated_component)
+            else:
+                new_component = self.create_component(component, user_owner)
+                if new_component is not None:
+                    components_created_or_updated.append(new_component)
 
-        return components_created
+        return components_created_or_updated
 
     def create_component(self, component_json, user_owner=None, private=False):
         """Creates a component from a JSON dict
@@ -1252,11 +1261,6 @@ class ComponentImporter(object):
             for control_element in control_implementation_statements:
                 catalog = oscalize_catalog_key(control_element.get('source', None))
                 created_statements = self.create_control_implementation_statements(catalog, control_element, new_component)
-        # If there are no valid statements in the json object
-        if created_statements == []:
-            logger.info(f"The Component {new_component.name} will be deleted as there were no valid statements provided.")
-            new_component.delete()
-            new_component = None
 
         return new_component
 
@@ -1293,6 +1297,73 @@ class ComponentImporter(object):
             new_statements.append(new_statement)
         statements_created = Statement.objects.bulk_create(new_statements)
         return statements_created
+
+        #TODO: add atomic
+    def update_component(self, component_json, user_owner=None, private=False):
+        """Updates an existing component from a JSON dict
+
+        @type component_json: dict
+        @param component_json: Component attributes from JSON object
+        @param user_owner: Django user
+        @rtype: Element
+        @returns: Element object updated, None otherwise
+        """
+
+        component_name = component_json['title']
+        
+        # while Element.objects.filter(name=component_name).count() > 0:
+        #     component_name = increment_element_name(component_name)
+        if Element.objects.filter(name=component_name).count() > 0:
+            existing_component = Element.objects.filter(name=component_name)[0]
+
+        # update basic details
+        #new_component = Element.objects.create(
+        existing_component.name = component_name
+        existing_component.description = component_json['description'] if 'description' in component_json else 'Description missing'
+        # Components uploaded to the Component Library are all system_element types
+        existing_component.element_type = "system_element"
+        #existing_component.uuid=component_json['uuid'] if 'uuid' in component_json else uuid.uuid4(),
+        existing_component.component_type=component_json['type'] if 'type' in component_json else "software"
+        existing_component.private=private
+        #)
+        existing_component.save()
+
+        logger.info(f"Component {existing_component.name} with UUID {existing_component.uuid} updated.")
+        # TODO: Should change of ownership be allowed?
+        if user_owner:
+            existing_component.assign_owner_permissions(user_owner)
+            logger.info(
+                event="new_element with user as owner",
+                object={"object": "element", "id": existing_component.id, "name":existing_component.name},
+                user={"id": user_owner.id, "username": user_owner.username}
+            )
+
+        component_props = component_json.get('props', None)
+        if component_props:
+            desired_tags = set([prop['value'] for prop in component_props if prop['name'] == 'tag' and 'ns' in prop and prop['ns'] == "https://govready.com/ns/oscal"])
+            existing_tags = Tag.objects.filter(label__in=desired_tags).values('id', 'label')
+            tags_to_create = desired_tags.difference(set([tag['label'] for tag in existing_tags]))
+            new_tags = Tag.objects.bulk_create([Tag(label=tag) for tag in tags_to_create])
+            all_tag_ids = [tag.id for tag in new_tags] + [tag['id'] for tag in existing_tags]
+            existing_component.add_tags(all_tag_ids)
+            existing_component.save()
+        created_statements = []
+        control_implementation_statements = component_json.get('control-implementations', None)
+        # If there data exists the OSCAL component's control-implementations key
+
+        # delete all existing control implementation prototype statements for component
+        statements_deleted = Statement.objects.filter(producer_element_id=existing_component.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).delete()
+        print(f"[DEBUG] deleting existing control impl prototype smts: {statements_deleted}")
+        # add new statements from OSCAL
+        print(f"[DEBUG] adding new smts from OSCAL")
+        if control_implementation_statements:
+            for control_element in control_implementation_statements:
+                catalog = oscalize_catalog_key(control_element.get('source', None))
+                created_statements = self.create_control_implementation_statements(catalog, control_element, existing_component)
+
+        # TODO: Sync statements to consuming_elements
+
+        return existing_component
 
 def add_selected_components(system, import_record):
         """Add a component from the library or a compliance app to the project and its statements using the import record"""

@@ -1,0 +1,634 @@
+{
+  "component-definition": {
+    "uuid": "e8a8859c-56ce-4063-beaa-513c91489b5f",
+    "metadata": {
+      "title": "EDB Postgres Advanced Server",
+      "last-modified": "2022-06-12T20:17:27",
+      "version": "2022-06-12T20:17:27",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "e0e8965e-0771-454b-bf60-7df69790ccf2",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "4eb5bd00-2ff9-4b6b-a51e-5c04966cade9",
+        "type": "software",
+        "title": "EDB Postgres Advanced Server",
+        "description": "EDB Postgres Advanced Server based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "e0e8965e-0771-454b-bf60-7df69790ccf2"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "7b707405-d30b-464e-b593-f0ea6cc697cc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "e2695d21-4cbd-48e7-97f9-774b1aa9b5bd",
+                "description": "The EDB Postgres Advanced Server must integrate with an organization-level authentication/access mechanism providing account management and automation for all users, groups, roles, and any other principals.",
+                "control-id": "ac-2.1"
+              }
+            ]
+          },
+          {
+            "uuid": "a2f43084-c521-43f2-864c-9c7b0af961eb",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "c0a59e1f-23cc-4159-823a-a7c2d231627f",
+                "description": "The EDB Postgres Advanced Server must enforce approved authorizations for logical access to information and system resources in accordance with applicable access control policies.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "7cba78c7-fe90-4267-89f2-dbb8ed42bf96",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "4ea42a84-4f96-45ff-b7e0-06a96f7afeea",
+                "description": "Execution of software modules (to include stored procedures, functions, and triggers) with elevated privileges must be restricted to necessary cases only.\nExecution of software modules (to include stored procedures, functions, and triggers) with elevated privileges must be restricted to necessary cases only.",
+                "control-id": "ac-6.8"
+              }
+            ]
+          },
+          {
+            "uuid": "b027b074-2d2a-4ab1-a8d8-d57096a87307",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.10.",
+            "implemented-requirements": [
+              {
+                "uuid": "7153de11-c32d-4e7b-8a92-8c95313beedc",
+                "description": "The EDB Postgres Advanced Server must prevent non-privileged users from executing privileged functions, to include disabling, circumventing, or altering implemented security safeguards/countermeasures.",
+                "control-id": "ac-6.10"
+              }
+            ]
+          },
+          {
+            "uuid": "5c6878a0-5bf8-4df8-a592-68247bfdf6cf",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "33262961-92be-4e70-aa31-807646632b1f",
+                "description": "The EDB Postgres Advanced Server must limit the number of concurrent sessions to an organization-defined number per user for all accounts and/or account types.",
+                "control-id": "ac-10"
+              }
+            ]
+          },
+          {
+            "uuid": "9b3c7dc5-4b54-46a6-8b22-d8eeeab5a23a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "1203146c-4ca1-48bd-8640-58fb0d034d90",
+                "description": "The EDB Postgres Advanced Server must automatically terminate a user session after organization-defined conditions or trigger events requiring session disconnect.",
+                "control-id": "ac-12"
+              }
+            ]
+          },
+          {
+            "uuid": "ca781e51-7197-469a-a3a5-ca8ddd9a4ddd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-16.",
+            "implemented-requirements": [
+              {
+                "uuid": "a0801ad4-6f33-4f09-8a70-485d0a13793e",
+                "description": "The EDB Postgres Advanced Server must associate organization-defined types of security labels having organization-defined security label values with information in storage.",
+                "control-id": "ac-16"
+              },
+              {
+                "uuid": "3f43f4f3-eaa6-45d6-8333-2777e7a2642f",
+                "description": "The EDB Postgres Advanced Server must associate organization-defined types of security labels having organization-defined security label values with information in process.",
+                "control-id": "ac-16"
+              },
+              {
+                "uuid": "c38bb1a7-ac23-43fd-b16e-f751d07d7b25",
+                "description": "The EDB Postgres Advanced Server must associate organization-defined types of security labels having organization-defined security label values with information in transmission.",
+                "control-id": "ac-16"
+              }
+            ]
+          },
+          {
+            "uuid": "d5773205-672f-45ba-8057-6b037163a18c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "7d72f0d5-a5cc-42bc-af33-b49dba48bb52",
+                "description": "The EDB Postgres Advanced Server must produce audit records containing sufficient information to establish what type of events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "baccf42f-780b-4df3-9e86-f1c24ae7d7be",
+                "description": "The EDB Postgres Advanced Server must produce audit records containing sufficient information to establish where the events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "2f84c8af-cef9-4bca-ba6e-dcb54d60e46f",
+                "description": "The EDB Postgres Advanced Server must produce audit records containing time stamps to establish when the events occurred.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "f2d002e7-fe35-45c4-83ed-038c6621211f",
+                "description": "The EDB Postgres Advanced Server must produce audit records containing sufficient information to establish the sources (origins) of the events.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "7f2b0c9b-a71d-4ce1-b1e0-ae9e4e4c017e",
+                "description": "The EDB Postgres Advanced Server must produce audit records containing sufficient information to establish the identity of any user/subject or process associated with the event.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "cf5d2f1b-3b35-400d-ad46-293692454279",
+                "description": "The EDB Postgres Advanced Server must produce audit records containing sufficient information to establish the outcome (success or failure) of the events.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "dc9e7f19-a1d4-42f9-8f41-7c2e178c8ea0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "995b91fe-2f6c-4329-8230-2b4ba9b3662a",
+                "description": "The EDB Postgres Advanced Server must include additional, more detailed, organization-defined information in the audit records for audit events identified by type, location, or subject.",
+                "control-id": "au-3.1"
+              }
+            ]
+          },
+          {
+            "uuid": "4bd7decb-afab-4ebe-b09d-0b853980f40f",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "b36a325e-c5fc-45d7-a0a6-6e56a8e0b372",
+                "description": "The EDB Postgres Advanced Server must utilize centralized management of the content captured in audit records generated by all components of the EDB Postgres Advanced Server.\nThe EDB Postgres Advanced Server must provide centralized configuration of the content to be captured in audit records generated by all components of the EDB Postgres Advanced Server.",
+                "control-id": "au-3.2"
+              }
+            ]
+          },
+          {
+            "uuid": "e3f89383-1d59-41ae-a176-3c5d97eca89e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "18bbcc46-58a5-4de6-a2a5-1c76b57d58f5",
+                "description": "The EDB Postgres Advanced Server must allocate audit record storage capacity in accordance with organization-defined audit record storage requirements.",
+                "control-id": "au-4"
+              }
+            ]
+          },
+          {
+            "uuid": "b6194e31-01be-484f-bdf2-75e7fefc59e5",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-4.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "69c487a0-b73a-408a-ac1d-2674f5701caa",
+                "description": "The EDB Postgres Advanced Server must off-load audit data to a separate log management facility; this must be continuous and in near real time for systems with a network connection to the storage facility and weekly or more often for stand-alone systems.",
+                "control-id": "au-4.1"
+              }
+            ]
+          },
+          {
+            "uuid": "62f87530-e099-4167-b34a-bb00d250e578",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "2adab072-cc11-44d7-857f-59519fc1fbe6",
+                "description": "The EDB Postgres Advanced Server must by default shut down upon audit failure, to include the unavailability of space for more audit log records; or must be configurable to shut down upon audit failure.\nThe EDB Postgres Advanced Server must be configurable to overwrite audit log records, oldest first (First-In-First-Out - FIFO), in the event of unavailability of space for more audit log records.",
+                "control-id": "au-5"
+              }
+            ]
+          },
+          {
+            "uuid": "14148326-7547-4ca1-ad17-787eb3480ce2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "76071f21-2595-4b6e-83c4-ed13928a640a",
+                "description": "The EDB Postgres Advanced Server must provide a warning to appropriate support staff when allocated audit record storage volume reaches 75% of maximum audit record storage capacity.",
+                "control-id": "au-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "72e954f3-98e7-47db-9a07-a175b6daded2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "774f94ab-d08f-4f31-aeaf-e01400201d60",
+                "description": "The EDB Postgres Advanced Server must provide an immediate real-time alert to appropriate support staff of all audit log failures.",
+                "control-id": "au-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "30f6c949-7587-46f6-ad90-a135c77c3a50",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "68575086-cf2b-4b76-bdaa-c778a7b40405",
+                "description": "The audit information produced by the EDB Postgres Advanced Server must be protected from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "ba68b8a1-9059-4b79-87e1-6729ad4c020f",
+                "description": "The EDB Postgres Advanced Server must protect its audit configuration from unauthorized modification.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "68060a0e-9291-4e70-8322-a137d3bf44a1",
+                "description": "The audit information produced by the EDB Postgres Advanced Server must be protected from unauthorized deletion.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "ba4e58cb-58dc-43d8-8448-5e74acffdbbe",
+                "description": "The audit information produced by the EDB Postgres Advanced Server must be protected from unauthorized read access.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "e2d7e3cd-9e6a-413a-8e95-282afa9e3716",
+                "description": "The EDB Postgres Advanced Server must protect its audit features from unauthorized removal.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "c1262ad9-a9ea-4d2e-a0c2-d8eac092f971",
+                "description": "The EDB Postgres Advanced Server must protect its audit features from unauthorized access.",
+                "control-id": "au-9"
+              }
+            ]
+          },
+          {
+            "uuid": "6bb06f97-3ac1-4035-9262-f65dfd54e63d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "6e511f30-01bb-4c6f-9313-4fa8383d5a2b",
+                "description": "The EDB Postgres Advanced Server must protect against a user falsely repudiating having performed organization-defined actions.",
+                "control-id": "au-10"
+              }
+            ]
+          },
+          {
+            "uuid": "c181c20a-e280-4876-9f72-803f5f7c705a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "1087416e-2fbd-4a85-b94b-0cf6e55a6a07",
+                "description": "The EDB Postgres Advanced Server must allow only the ISSM (or individuals or roles appointed by the ISSM) to select which auditable events are to be audited.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "036eb351-a901-405e-a1d8-117440b64f54",
+                "description": "The EDB Postgres Advanced Server must provide audit record generation capability for DoD-defined auditable events within all EDB Postgres Advanced Server/database components.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "100a4196-a585-40e6-9020-ae3f1df755e7",
+                "description": "The EDB Postgres Advanced Server must generate audit records when privileges/permissions are retrieved.\nThe EDB Postgres Advanced Server must generate audit records when unsuccessful attempts to retrieve privileges/permissions occur.\nThe EDB Postgres Advanced Server must generate audit records when security objects are accessed.\nThe EDB Postgres Advanced Server must generate audit records when unsuccessful attempts to access security objects occur.\nThe DBMS must generate audit records when categories of information (e.g., classification levels/security levels) are accessed.\nAudit records must be generated  when unsuccessful attempts to access categorized information (e.g., classification levels/security levels) occur.\nThe EDB Postgres Advanced Server must generate audit records when privileges/permissions are added.\nThe EDB Postgres Advanced Server must generate audit records when unsuccessful attempts to add privileges/permissions occur.\nThe EDB Postgres Advanced Server must generate audit records when security objects are modified.\nThe EDB Postgres Advanced Server must generate audit records when unsuccessful attempts to modify security objects occur.\nAudit records must be generated when categorized information (e.g., classification levels/security levels) is created.\nAudit records must be generated when categorized information (e.g., classification levels/security levels) is modified.\nAudit records must be generated when unsuccessful attempts to create categorized information (e.g., classification levels/security levels) occur.\nAudit records must be generated when unsuccessful attempts to modify categorized information (e.g., classification levels/security levels) occur.\nThe EDB Postgres Advanced Server must generate audit records when privileges/permissions are deleted.\nThe EDB Postgres Advanced Server must generate audit records when unsuccessful attempts to delete privileges/permissions occur.\nThe EDB Postgres Advanced Server must generate audit records when security objects are deleted.\nThe EDB Postgres Advanced Server must generate audit records when unsuccessful attempts to delete security objects occur.\nAudit records must be generated when categorized information (e.g., classification levels/security levels) is deleted.\nAudit records must be generated when unsuccessful attempts to delete categorized information (e.g., classification levels/security levels) occur.\nThe EDB Postgres Advanced Server must generate audit records when successful logons or connections occur.\nThe EDB Postgres Advanced Server must generate audit records when unsuccessful logons or connection attempts occur.\nThe EDB Postgres Advanced Server must generate audit records for all privileged activities or other system-level access.\nThe EDB Postgres Advanced Server must generate audit records when unsuccessful attempts to execute privileged activities or other system-level access occur.\nThe EDB Postgres Advanced Server must generate audit records showing starting and ending time for user access to the database(s).\nThe EDB Postgres Advanced Server must generate audit records when concurrent logons/connections by the same user from different workstations occur.\nThe EDB Postgres Advanced Server must be able to generate audit records when successful accesses to objects occur.\nThe EDB Postgres Advanced Server must generate audit records when unsuccessful accesses to objects occur.\nThe EDB Postgres Advanced Server must generate audit records for all direct access to the database(s).",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "dcafb49f-c47e-4afe-ad4e-630cb7d9522b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-14.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "065ca7e3-ff99-4588-aa3f-d3bd4f7b75f7",
+                "description": "The EDB Postgres Advanced Server must initiate support of session auditing upon startup.",
+                "control-id": "au-14.1"
+              }
+            ]
+          },
+          {
+            "uuid": "120180a6-5687-4334-ad6a-787c84d8c931",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "038b5185-4200-4bd8-a612-d035261c5cbd",
+                "description": "The EDB Postgres Advanced Server must enforce access restrictions associated with changes to the configuration of the EDB Postgres Advanced Server or database(s).",
+                "control-id": "cm-5.1"
+              },
+              {
+                "uuid": "9c0ed3bf-d0ca-4b8f-92d0-103a72829b7a",
+                "description": "The EDB Postgres Advanced Server must produce audit records of its enforcement of access restrictions associated with changes to the configuration of the EDB Postgres Advanced Server or database(s).",
+                "control-id": "cm-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "56c2a5a5-5769-448b-acfc-90a6018c4570",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "128fe75b-499b-45b5-9799-a9e25882fefe",
+                "description": "Software, applications, and configuration files that are part of, or related to, the Postgres Plus Advanced Server  installation must be monitored to discover unauthorized changes.\nEDB Postgres Advanced Server software modules, to include stored procedures, functions and triggers must be monitored to discover unauthorized changes.\nThe EDB Postgres Advanced Server software installation account must be restricted to authorized users.\nDatabase software, including EDB Postgres Advanced Server configuration files, must be stored in dedicated directories, separate from the host OS and other applications.\nDatabase objects (including but not limited to tables, indexes, storage, stored procedures, functions, triggers, links to software external to the EDB Postgres Advanced Server, etc.) must be owned by database/EDB Postgres Advanced Server principals authorized for ownership.\nThe role(s)/group(s) used to modify database structure (including but not necessarily limited to tables, indexes, storage, etc.) and logic modules (stored procedures, functions, triggers, links to software external to the EDB Postgres Advanced Server, etc.) must be restricted to authorized users.",
+                "control-id": "cm-5.6"
+              }
+            ]
+          },
+          {
+            "uuid": "0ddc6d48-32aa-48cb-a3f5-abbb47d90255",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "e1760b6e-eddb-433c-9e80-e9ab262ef3dc",
+                "description": "The EDB Postgres Advanced Server must be configured to prohibit or restrict the use of organization-defined functions, ports, protocols, and/or services, as defined in the PPSM CAL and vulnerability assessments.",
+                "control-id": "cm-7"
+              },
+              {
+                "uuid": "0437bf37-f540-41e6-b5f1-5f5eb4711925",
+                "description": "Default, demonstration and sample databases, database objects, and applications must be removed.\nUnused database components, EDB Postgres Advanced Server software, and database objects must be removed.\nUnused database components which are integrated in the EDB Postgres Advanced Server and cannot be uninstalled must be disabled.\nAccess to external executables must be disabled or restricted.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "8fb4275d-ee3f-4857-8196-43ba6fc0981e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "9c5ea2d6-056c-497c-a758-840fcc29b4b8",
+                "description": "The EDB Postgres Advanced Server must disable network functions, ports, protocols, and services deemed by the organization to be nonsecure, in accord with the Ports, Protocols, and Services Management (PPSM) guidance.",
+                "control-id": "cm-7.1"
+              }
+            ]
+          },
+          {
+            "uuid": "8c0e3db1-3809-414a-a27c-67532bde2151",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-11.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "02000da2-75e0-4cc0-92fd-49e072d3efac",
+                "description": "The EDB Postgres Advanced Server must prohibit user installation of logic modules (stored procedures, functions, triggers, views, etc.) without explicit privileged status.",
+                "control-id": "cm-11.2"
+              }
+            ]
+          },
+          {
+            "uuid": "2d16896b-f803-4566-ae5a-1e9f45455176",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "57190599-da1d-47f0-8f59-fc1d9b27a78e",
+                "description": "The EDB Postgres Advanced Server must uniquely identify and authenticate organizational users (or processes acting on behalf of organizational users).",
+                "control-id": "ia-2"
+              }
+            ]
+          },
+          {
+            "uuid": "f17710db-2d9a-47ac-a3e0-d2738eedd4d6",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "203cab68-61b1-450c-b62f-9de619728b7d",
+                "description": "If passwords are used for authentication, the EDB Postgres Advanced Server must store only hashed, salted representations of passwords.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "fc4ca6b0-c0fb-4534-ac81-9530517cc899",
+                "description": "If passwords are used for authentication, the EDB Postgres Advanced Server must transmit only encrypted representations of passwords.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "286d709e-bfc6-46fb-adff-4d36b56de830",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "82577e4b-1fb8-4a37-bc51-6ece566f9628",
+                "description": "The EDB Postgres Advanced Server must enforce authorized access to all PKI private keys stored/utilized by the EDB Postgres Advanced Server.",
+                "control-id": "ia-5.2"
+              },
+              {
+                "uuid": "70a0b44e-a5d5-4e7a-84e1-bd78569e2046",
+                "description": "The EDB Postgres Advanced Server, when utilizing PKI-based authentication, must validate certificates by performing RFC 5280-compliant certification path validation.",
+                "control-id": "ia-5.2"
+              }
+            ]
+          },
+          {
+            "uuid": "8d738f9b-0e0b-48b8-9a2b-4700d2d21812",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "91427d6b-090b-468b-88ec-a00da544399b",
+                "description": "Applications must obscure feedback of authentication information during the authentication process to protect the information from possible exploitation/use by unauthorized individuals.\nWhen using command-line tools such as psql, users must use a logon method that does not expose the password.",
+                "control-id": "ia-6"
+              }
+            ]
+          },
+          {
+            "uuid": "403305a7-9964-47dd-85a0-d01b98255365",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "5151037c-2524-4803-b21d-d13877ca2b2e",
+                "description": "The EDB Postgres Advanced Server must use NIST FIPS 140-2 validated cryptographic modules for cryptographic operations.\nThe EDB Postgres Advanced Server must be configured on a platform that has a NIST certified FIPS 140-2 installation of OpenSSL.",
+                "control-id": "ia-7"
+              }
+            ]
+          },
+          {
+            "uuid": "33d277ab-78a5-46db-8a19-6d54f56c34e4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "46656ba1-21a7-4cff-b8f4-b6b6668f9f2b",
+                "description": "The EDB Postgres Advanced Server must require users to re-authenticate when organization-defined circumstances or situations require re-authentication.",
+                "control-id": "ia-11"
+              }
+            ]
+          },
+          {
+            "uuid": "3badab59-49e2-47af-9c74-237623536bbf",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "a34273ed-5489-491c-b78d-a1dee528fd5b",
+                "description": "The EDB Postgres Advanced Server must isolate security functions from non-security functions.",
+                "control-id": "sc-3"
+              }
+            ]
+          },
+          {
+            "uuid": "de6fa9bf-a2dc-41bb-8491-4a1406c54b65",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-4.",
+            "implemented-requirements": [
+              {
+                "uuid": "aed8e310-f26e-4bfb-9637-2209798ecdea",
+                "description": "Database contents must be protected from unauthorized and unintended information transfer by enforcement of a data-transfer policy.\nAccess to database files must be limited to relevant processes and to authorized, administrative users.",
+                "control-id": "sc-4"
+              }
+            ]
+          },
+          {
+            "uuid": "f2f964e8-43b4-4e5b-bfbb-42323dd81540",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "1b4da860-9973-4add-b520-f9252b2da393",
+                "description": "The EDB Postgres Advanced Server must maintain the confidentiality and integrity of information during preparation for transmission.",
+                "control-id": "sc-8.2"
+              },
+              {
+                "uuid": "6914887f-ff19-4845-bf34-dba2485129da",
+                "description": "The EDB Postgres Advanced Server must maintain the confidentiality and integrity of information during reception.",
+                "control-id": "sc-8.2"
+              }
+            ]
+          },
+          {
+            "uuid": "c6dcbe60-b199-4caf-ba48-0c5fb474c5f7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-13.",
+            "implemented-requirements": [
+              {
+                "uuid": "e15a6de9-88b6-42a0-8f0b-c24b87ef3973",
+                "description": "The EDB Postgres Advanced Server must implement NIST FIPS 140-2 validated cryptographic modules to provision digital signatures.\nThe EDB Postgres Advanced Server must implement NIST FIPS 140-2 validated cryptographic modules to generate and validate cryptographic hashes.\nThe EDB Postgres Advanced Server must implement NIST FIPS 140-2 validated cryptographic modules to protect unclassified information requiring confidentiality and cryptographic protection, in accordance with the requirements of the data owner.",
+                "control-id": "sc-13"
+              }
+            ]
+          },
+          {
+            "uuid": "3ff7183f-bc21-40ae-940e-ddf0ca7dd72d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-23.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "815d539e-e46b-4b81-af30-56c671f26a62",
+                "description": "The EDB Postgres Advanced Server must only accept end entity certificates issued by DoD PKI or DoD-approved PKI Certification Authorities (CAs) for the establishment of all encrypted sessions.",
+                "control-id": "sc-23.5"
+              }
+            ]
+          },
+          {
+            "uuid": "24dc0182-aa65-4cf7-a6aa-de27f2a31c6d",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.",
+            "implemented-requirements": [
+              {
+                "uuid": "8f1524a9-2a06-43ae-a675-5426dc545c40",
+                "description": "The EDB Postgres Advanced Server must protect the confidentiality and integrity of all information at rest.",
+                "control-id": "sc-28"
+              }
+            ]
+          },
+          {
+            "uuid": "b7a27de0-ca9b-414f-847b-27a8f28724c9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-28.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "8d903f1d-9ef0-4686-8f32-58c5b40a341d",
+                "description": "The EDB Postgres Advanced Server must implement cryptographic mechanisms to prevent unauthorized modification of organization-defined information at rest (to include, at a minimum, PII and classified information) on organization-defined information system components.",
+                "control-id": "sc-28.1"
+              },
+              {
+                "uuid": "3d02750a-3f85-48ac-bded-bcd52c6b91f0",
+                "description": "The EDB Postgres Advanced Server must implement cryptographic mechanisms preventing the unauthorized disclosure of organization-defined information at rest on organization-defined information system components.",
+                "control-id": "sc-28.1"
+              }
+            ]
+          },
+          {
+            "uuid": "98518db5-e31a-478a-9ff5-0defc5aa374c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "5ca78197-3498-4a42-8ace-5e61d74b8886",
+                "description": "Security-relevant software updates to the EDB Postgres Advanced Server must be installed within the time period directed by an authoritative source (e.g., IAVM, CTOs, DTMs, and STIGs).",
+                "control-id": "si-2"
+              }
+            ]
+          },
+          {
+            "uuid": "b326d668-ff6d-4637-b3cc-694ae9012b8a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.",
+            "implemented-requirements": [
+              {
+                "uuid": "a78e4f78-a01b-4dda-974e-4c2bb075fa1e",
+                "description": "The EDB Postgres Advanced Server must check the validity of all data inputs except those specifically identified by the organization.\nThe EDB Postgres Advanced Server and associated applications must reserve the use of dynamic code execution for situations that require it.\nThe EDB Postgres Advanced Server and associated applications, when making use of dynamic code execution, must scan input data for invalid values that may indicate a code injection attack.",
+                "control-id": "si-10"
+              }
+            ]
+          },
+          {
+            "uuid": "cda6cf87-e1ea-41c0-8390-370397a4c5f0",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-10.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "d222ca93-05a1-4592-929d-26460cf99005",
+                "description": "When invalid inputs are received, the EDB Postgres Advanced Server must behave in a predictable and documented manner that reflects organizational and system objectives.",
+                "control-id": "si-10.3"
+              }
+            ]
+          },
+          {
+            "uuid": "d8efe545-58ab-4004-bd2e-91912dac4032",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "052fd72c-77f0-485d-b15d-70add348d5ee",
+                "description": "The EDB Postgres Advanced Server must provide non-privileged users with error messages that provide information necessary for corrective actions without revealing information that could be exploited by adversaries.",
+                "control-id": "si-11"
+              },
+              {
+                "uuid": "39ee8614-bc92-4cd5-bcf0-46ec472d0854",
+                "description": "The EDB Postgres Advanced Server must reveal detailed error messages only to the ISSO, ISSM, SA and DBA.",
+                "control-id": "si-11"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

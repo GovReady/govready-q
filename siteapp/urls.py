@@ -17,6 +17,7 @@ admin.autodiscover()
 import siteapp.views as views
 import siteapp.views_landing as views_landing
 import siteapp.views_health as views_health
+import siteapp.views_management as views_management
 from .good_settings_helpers import signup_wrapper
 from .settings import *
 
@@ -151,6 +152,15 @@ urlpatterns = [
 
     # Session
     url(r'session_security/', include('session_security.urls')),
+
+    # management commands
+    url(r'^management/$', views_management.index),
+    url(r'^management/is_superuser$', views_management.is_superuser),
+    url(r'^management/listcomponents$', views_management.listcomponents),
+    url(r'^management/set_baseline_controls$', views_management.set_baseline_controls),
+    url(r'^management/load_app_template$', views_management.load_app_template),
+    url(r'^management/load_component_from_library$', views_management.load_component_from_library),
+    url(r'^management/import_control_catalog$', views_management.import_control_catalog),
 ]
 
 urlpatterns += [url(r'^api/v2/', include('api.urls'))]

@@ -1,0 +1,617 @@
+{
+  "component-definition": {
+    "uuid": "ef59ba2e-08d1-43b9-94da-51efc9b7f422",
+    "metadata": {
+      "title": "Solaris 10 X86",
+      "last-modified": "2022-06-12T20:17:26",
+      "version": "2022-06-12T20:17:26",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "18d22fc2-1c78-41fd-95c6-6df301d23ec4",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "a8d797d2-a242-49ff-bd44-223d84b9adf8",
+        "type": "software",
+        "title": "Solaris 10 X86",
+        "description": "Solaris 10 X86 based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "18d22fc2-1c78-41fd-95c6-6df301d23ec4"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "bd4e3b7f-c4b8-4c81-a417-fb69ca3222bd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "23a5a60f-a547-43b8-87a7-a9b15c377c3d",
+                "description": "Accounts must be locked upon 35 days of inactivity.",
+                "control-id": "ac-2.3"
+              }
+            ]
+          },
+          {
+            "uuid": "6a47ba1d-cffa-41e5-b139-c8fd0a070b93",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-2.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "e54db046-633d-409e-b649-b6430bccd415",
+                "description": "The audit system must be configured to audit account creation.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "e6ec73b4-0946-4a91-bb83-d3ac46ba08d2",
+                "description": "The audit system must be configured to audit account disabling.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "c6abafe9-4d26-410f-9cf5-e8df956e043b",
+                "description": "The audit system must be configured to audit account modification.",
+                "control-id": "ac-2.4"
+              },
+              {
+                "uuid": "86fb62ab-ebf0-4c55-849a-40640d48a04c",
+                "description": "The audit system must be configured to audit account termination.",
+                "control-id": "ac-2.4"
+              }
+            ]
+          },
+          {
+            "uuid": "c179b8e2-1aeb-452f-a922-f017cf2fffce",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "7fd1114f-eeca-4415-89ba-d1c63f234ece",
+                "description": "The system must require authentication upon booting into single-user and maintenance modes.\nThe system boot loader must require authentication.\nThe system boot loader must protect passwords using an MD5 or stronger cryptographic hash.\nSystem BIOS or system controllers supporting password protection must have administrator accounts/passwords configured, and no others.",
+                "control-id": "ac-3"
+              }
+            ]
+          },
+          {
+            "uuid": "8c849ae4-ff14-4479-bb8a-3bf7907e0279",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-3.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "1ca2b3df-5d7b-4f2c-8c4b-ff241a3cf031",
+                "description": "The time synchronization configuration file (such as /etc/ntp.conf) must have mode 0640 or less permissive.\nSystem files and directories must not have uneven access permissions.\nAll network services daemon files must have mode 0755 or less permissive.\nManual page files must have mode 0655 or less permissive.\nNIS/NIS+/yp files must be owned by root, sys, or bin.\nNIS/NIS+/yp files must be group-owned by root, sys, or bin.\nThe NIS/NIS+/yp command files must have mode 0755 or less permissive.\nThe /etc/passwd file must have mode 0644 or less permissive.\nThe /etc/shadow (or equivalent) file must be owned by root.\nThe /etc/shadow (or equivalent) file must have mode 0400.\nAll users' home directories must have mode 0750 or less permissive.\nAll skeleton files (typically those in /etc/skel) must have mode 0644 or less permissive.\nAudio devices must have mode 0660 or less permissive.\nAll public directories must be owned by root or an application account.\nThe cron.deny file must have mode 0600 or less permissive.\nCron programs must not set the umask to a value less restrictive than 077.\nAccess to the at utility must be controlled via the at.allow and/or at.deny file(s).\nThe at.allow file must have mode 0600 or less permissive.\nThe \"at\" directory must have mode 0755 or less permissive.\n\"At\" jobs must not set the umask to a value less restrictive than 077.\nThe inetd.conf file must be owned by root or bin.\nThe inetd.conf file must have mode 0440 or less permissive.\nThe services file must be owned by root or bin.\nThe services file must have mode 0444 or less permissive.\nThe hosts.lpd (or equivalent) file must be owned by root.\nThe hosts.lpd (or equivalent) must have mode 0644 or less permissive.\nThe traceroute file must have mode 0700 or less permissive.\nThe alias file must be owned by root.\nThe alias file must have mode 0644 or less permissive.\nFiles executed through a mail aliases file must be owned by root and must reside within a directory owned and writable only by root.\nThe SMTP service log file must be owned by root.\nThe SMTP service log file must have mode 0644 or less permissive.\nThe ftpusers file must exist.\nThe ftpusers file must contain account names not allowed to use FTP.\nThe ftpusers file must be owned by root.\nThe ftpusers file must have mode 0640 or less permissive.\nThe TFTP daemon must have mode 0755 or less permissive.\nThe snmpd.conf file must have mode 0600 or less permissive.\nManagement Information Base (MIB) files must have mode 0640 or less permissive.\nThe smb.conf file must have mode 0644 or less permissive.\nThe smbpasswd file must have mode 0600 or less permissive.\nThe /etc/news/hosts.nntp (or equivalent) must have mode 0600 or less permissive.\nThe /etc/news/hosts.nntp.nolimit (or equivalent) must have mode 0600 or less permissive.\nThe /etc/news/nnrp.access (or equivalent) must have mode 0600 or less permissive.\nThe /etc/news/passwd.nntp file (or equivalent) must have mode 0600 or less permissive.\nThe system's boot loader configuration file(s) must have mode 0600 or less permissive.",
+                "control-id": "ac-3.4"
+              }
+            ]
+          },
+          {
+            "uuid": "51c28d57-66d1-43e2-90be-cce42cb5ace7",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-4.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "a5e73a22-dd4b-43f3-8317-017cea9ce222",
+                "description": "The ASET master files must be located in the /usr/aset/masters directory.\nThe asetenv file YPCHECK variable must be set to true when NIS+ is configured.\nThe /usr/aset/masters/uid_aliases must be empty.\nIf the system is a firewall, ASET must be used on the system, and the firewall parameters must be set in /usr/aset/asetenv.\nThe Solaris system Automated Security Enhancement Tool (ASET) configurable parameters in the asetenv file must be correct.\nThe /usr/aset/userlist file must exist.\nHidden extended file attributes must not exist on the system.",
+                "control-id": "ac-4.8"
+              }
+            ]
+          },
+          {
+            "uuid": "46c31e5c-aa30-40af-895a-538893f26624",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "b26e9a78-3f2e-488e-a835-0d9034b863b5",
+                "description": "The ASET master files must be located in the /usr/aset/masters directory.",
+                "control-id": "ac-6"
+              }
+            ]
+          },
+          {
+            "uuid": "8b1e543f-7522-485c-9425-ccc5581b0d91",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-6.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "d7332e48-2138-4082-9860-0f7cae576639",
+                "description": "The root user must not own the logon session for an application requiring a continuous display.\nThe root account's home directory (other than /) must have mode 0700.",
+                "control-id": "ac-6.8"
+              }
+            ]
+          },
+          {
+            "uuid": "7fab8580-a51c-4d70-ac8e-5b20cfcd6cfa",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "c831cd61-9c11-49e2-83aa-9c77a54a756a",
+                "description": "The delay between login prompts following a failed login attempt must be at least 4 seconds.",
+                "control-id": "ac-7"
+              },
+              {
+                "uuid": "d5595b5c-2c27-4863-8ede-12104acbd4c6",
+                "description": "The system must disable accounts after three consecutive unsuccessful login attempts.",
+                "control-id": "ac-7"
+              }
+            ]
+          },
+          {
+            "uuid": "cb1c5203-da54-4220-ab08-a13493b2c752",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "d54cdeea-e38b-4db0-9532-22e4e25d1712",
+                "description": "The Department of Defense (DoD) login banner must be displayed immediately prior to, or as part of, console login prompts.\nThe Department of Defense (DoD) login banner must be displayed immediately prior to, or as part of, graphical desktop environment login prompts.\nThe FTPS/FTP service on the system must be configured with the Department of Defense (DoD) login banner.\nThe SSH daemon must be configured with the Department of Defense (DoD) login banner.",
+                "control-id": "ac-8"
+              }
+            ]
+          },
+          {
+            "uuid": "0938ae6b-0210-4828-95c7-cd12f9182fb3",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "fda1805b-4abe-455f-8b38-77ecbbe195dc",
+                "description": "The system must display the date and time of the last successful account login upon login.",
+                "control-id": "ac-9"
+              }
+            ]
+          },
+          {
+            "uuid": "f5af465d-0dc7-4af8-b8c5-9767b6213d58",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "3d837c89-3752-405d-8580-9a269f2534e0",
+                "description": "Graphical desktop environments provided by the system must automatically lock after 15 minutes of inactivity and the system must require users to re-authenticate to unlock the environment.\nThe system must display a publicly-viewable pattern during a graphical desktop environment session lock.",
+                "control-id": "ac-11"
+              }
+            ]
+          },
+          {
+            "uuid": "ff8761ef-8965-4028-898c-2233c4545608",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-17.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "8471dabc-1134-4353-8501-bd27c0cc13f8",
+                "description": "Remote consoles must be disabled or protected from unauthorized access.\nThe system's local firewall must implement a deny-all, allow-by-exception policy.",
+                "control-id": "ac-17.1"
+              }
+            ]
+          },
+          {
+            "uuid": "59a3c1ce-b579-458c-9117-e43c3d30e2fa",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-17.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "6ef74c84-a4e6-4879-bf32-2c485894cb07",
+                "description": "The rsh daemon must not be running.\nThe rlogind service must not be running.\nThe operating system must implement DoD-approved encryption to protect the confidentiality of SSH connections.\nThe SSH client must be configured to only use FIPS 140-2 approved ciphers.",
+                "control-id": "ac-17.2"
+              },
+              {
+                "uuid": "fa3f6452-f7a4-4bda-b1ff-19f181c63f0d",
+                "description": "The SSH daemon must be configured to only use Message Authentication Codes (MACs) employing FIPS 140-2 approved cryptographic hash algorithms.\nThe SSH client must be configured to only use Message Authentication Codes (MACs) employing FIPS 140-2 approved cryptographic hash algorithms.\nIf the system is using LDAP for authentication or account information, the system must use a TLS connection using FIPS 140-2 approved cryptographic algorithms.",
+                "control-id": "ac-17.2"
+              }
+            ]
+          },
+          {
+            "uuid": "b443c35d-be7a-44d7-a689-1d938a1baa66",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ac-18.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "bf1202c3-9626-4ff2-b66b-8b98f8e50f36",
+                "description": "Wireless network adapters must be disabled.",
+                "control-id": "ac-18.1"
+              },
+              {
+                "uuid": "0c26bb24-6228-4d21-9e35-cf32e33c4549",
+                "description": "Wireless network adapters must be disabled.",
+                "control-id": "ac-18.1"
+              }
+            ]
+          },
+          {
+            "uuid": "e8b54b88-49f4-424e-80b5-0a78e812184e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-3.",
+            "implemented-requirements": [
+              {
+                "uuid": "3e2ba1a3-622f-4ee9-8b64-05aec72aa3ac",
+                "description": "The FTP daemon must be configured for logging or verbose mode.",
+                "control-id": "au-3"
+              },
+              {
+                "uuid": "d6e101aa-3767-46bb-a0f4-ac501ceffa19",
+                "description": "Inetd or xinetd logging/tracing must be enabled.",
+                "control-id": "au-3"
+              }
+            ]
+          },
+          {
+            "uuid": "b2e13de4-4db4-481d-96d5-755766927075",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.",
+            "implemented-requirements": [
+              {
+                "uuid": "2844b60f-17a5-4c81-ba91-c22794e4f0de",
+                "description": "The audit system must alert the SA in the event of an audit processing failure.",
+                "control-id": "au-5"
+              }
+            ]
+          },
+          {
+            "uuid": "3c566798-ae83-455b-8124-41b63767f79a",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "6b8e47e2-3f7d-4091-b6e3-4ab83bd56019",
+                "description": "The audit system must alert the SA when the audit storage volume approaches its capacity.",
+                "control-id": "au-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "d952d4d0-ed46-4bd8-9b2f-e1a0f03f73dd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-8.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "55b1133c-4853-45f7-83de-d975591532eb",
+                "description": "The system clock must be synchronized to an authoritative DoD time source.\nThe system must use at least two time sources for clock synchronization.\nThe system must use time sources local to the enclave.",
+                "control-id": "au-8.1"
+              }
+            ]
+          },
+          {
+            "uuid": "7968dad7-957a-4d45-9c3f-e8ccc4315779",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.",
+            "implemented-requirements": [
+              {
+                "uuid": "8c02546b-2fd5-4a84-8b13-6d21020323c9",
+                "description": "System audit logs must be group-owned by root, bin, or sys.\nSystem audit logs must have mode 0640 or less permissive.\nAll system audit files must not have extended ACLs.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "c2803a53-0f08-43ef-84b8-83b015126ae4",
+                "description": "The /etc/security/audit_user file must have mode 0640 or less permissive.\nSystem audit logs must be owned by root.\nSystem audit logs must be group-owned by root, bin, or sys.\nThe cronlog file must have mode 0600 or less permissive.",
+                "control-id": "au-9"
+              },
+              {
+                "uuid": "7e56459f-e2f7-422d-bf46-4c9699561f18",
+                "description": "System audit tool executables must be owned by root.\nSystem audit tool executables must be group-owned by root, bin, or sys.\nSystem audit tool executables must have mode 0750 or less permissive.\nSystem audit tool executables must not have extended ACLs.",
+                "control-id": "au-9"
+              }
+            ]
+          },
+          {
+            "uuid": "39c77632-a44d-4c3b-943d-db9ba15007c2",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "c3c0f959-fc14-48e9-bf14-fa31cc6770da",
+                "description": "The system must be configured to send audit records to a remote audit server.\nThe system must use a remote syslog server (log host).",
+                "control-id": "au-9.2"
+              }
+            ]
+          },
+          {
+            "uuid": "1915b0d9-da18-4ac9-8cc0-9bbf5b5f500c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-9.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "67080d22-4108-42a2-b211-9a41c2f4d3f8",
+                "description": "The file integrity tool must use FIPS 140-2 approved cryptographic hashes for validating file contents.",
+                "control-id": "au-9.3"
+              }
+            ]
+          },
+          {
+            "uuid": "d750e7ce-2a3d-4818-b1ee-2aa3e1204776",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement au-12.",
+            "implemented-requirements": [
+              {
+                "uuid": "76f2b376-607c-4d38-8d23-44fd54243ea0",
+                "description": "The system must log successful and unsuccessful access to the root account.\nAuditing must be implemented.\nThe audit system must be configured to audit file deletions.\nThe audit system must be configured to audit all administrative, privileged, and security actions.\nThe audit system must be configured to audit the loading and unloading of dynamic kernel modules.\nThe system must log martian packets.\nThe system must log authentication informational data.\nThe system syslog service must log informational and more severe SMTP service messages.",
+                "control-id": "au-12"
+              },
+              {
+                "uuid": "420f26ab-c0e6-48b1-8234-a7fac3a196de",
+                "description": "The /etc/security/audit_user file must not define a different auditing level for specific users.\nThe NFS server must have logging implemented.\nSuccessful and unsuccessful logins and logouts must be logged.\nThe audit system must be configured to audit failed attempts to access files and programs.\nThe audit system must be configured to audit login, logout, and session initiation.\nThe audit system must be configured to audit all discretionary access control permission modifications.\nCron logging must be implemented.\nThe system's access control program must log each system access attempt.",
+                "control-id": "au-12"
+              }
+            ]
+          },
+          {
+            "uuid": "cfe2257d-0475-4411-8caa-3ad937df5e33",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-3.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "0cabc15b-990f-49c0-b1ff-fc8653fef673",
+                "description": "A file integrity baseline must be created and maintained.\nA file integrity tool must be used at least weekly to check for unauthorized file changes, particularly the addition of unauthorized system libraries or binaries, or for unauthorized modification to authorized system libraries or binaries.\nThe system must be checked for extraneous device files at least weekly.\nThe system must be checked weekly for unauthorized setuid files, as well as, unauthorized modification to authorized setuid files.\nThe system must be checked weekly for unauthorized setgid files, as well as, unauthorized modification to authorized setgid files.",
+                "control-id": "cm-3.5"
+              }
+            ]
+          },
+          {
+            "uuid": "cefc2f13-1dc2-4b8a-8286-9753e447290c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "f615a23b-e833-4c25-bfa5-9d335d027447",
+                "description": "The system package management tool must cryptographically verify the authenticity of software packages during installation.",
+                "control-id": "cm-5.3"
+              }
+            ]
+          },
+          {
+            "uuid": "cb434c18-a528-4e9b-994e-17a6112af9d4",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-5.6.",
+            "implemented-requirements": [
+              {
+                "uuid": "b0e0b67c-8787-4388-ac75-cbd2d2b980e1",
+                "description": "Library files must have mode 0755 or less permissive.\nAll system command files must have mode 755 or less permissive.\nAll system command files must not have extended ACLs.\nAll system files, programs, and directories must be owned by a system account.\nSystem files, programs, and directories must be group-owned by a system group.\nAll library files must not have extended ACLs.",
+                "control-id": "cm-5.6"
+              }
+            ]
+          },
+          {
+            "uuid": "8608b8fa-172b-4780-a31f-beffb8bd2b78",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "51fc4d10-18f0-4df2-a09d-2e6d4bcd177a",
+                "description": "The asetenv file YPCHECK variable must be set to true when NIS+ is configured.\nThe root account must be the only account having an UID of 0.\nThe root account must not have world-writable directories in its executable search path.\nAll interactive user's home directories must be owned by their respective users.\nAll interactive user's home directories must be group-owned by the home directory owner's primary group.\nAll global initialization files must have mode 0644 or less permissive.\nAll global initialization files must be owned by root.\nAll global initialization files must be group-owned by root, sys, or bin.\nGlobal initialization files must contain the mesg -n or mesg n commands.\nLocal initialization files must be group-owned by the user's primary group or root.\nThe portmap or rpcbind service must not be running unless needed.\nThe hosts.lpd (or equivalent) file must be group-owned by root, bin, or sys.\nThe aliases file must be group-owned by root, sys, smmsp, or bin.\nThe SMTP service HELP command must not be enabled.\nThe SMTP services SMTP greeting must not provide version information.\nThe system must not use .forward files.\nThe SMTP service must be an up-to-date version.\nThe Sendmail server must have the debug feature disabled.\nThe TFTP daemon must be configured to vendor specifications, including a dedicated TFTP user account, a non-login shell, such as /bin/false, and a home directory owned by the TFTP user.\nThe system must not be used as a syslog server (log host) for systems external to the enclave.\nThe syslog daemon must not accept remote messages unless it is a syslog server documented using site-defined procedures.\nIP forwarding for IPv4 must not be enabled, unless the system is a router.\nThe system must not have IP forwarding for IPv6 enabled, unless the system is an IPv6 router.\nThe NFS server must be configured to restrict file system access to local hosts.\nThe system must not have a public Instant Messaging (IM) client installed.\nThe system vulnerability assessment tool, host-based intrusion detection tool, and file integrity tool must notify the SA and the IAO of a security breach or a suspected security breach.\nThe system package management tool must be used to verify system software periodically.\nThe system must use an access control program.\nThe system's access control program must be configured to grant or deny system access to specific hosts.\nIf the system is using LDAP for authentication or account information, the LDAP TLS certificate authority file and/or directory (as appropriate) must not have an extended ACL.\nThe system must not use removable media as the boot loader.\nFor systems capable of using GRUB, the system must be configured with GRUB as the default boot loader unless another boot loader has been authorized, justified, and documented using site-defined procedures.\nThe system's boot loader configuration file(s) must not have extended ACLs.\nThe system's boot loader configuration files must be owned by root.\nThe system's boot loader configuration file(s) must be group-owned by root, bin, sys, or system.\nThe nosuid option must be configured in the /etc/rmmount.conf file.\nThe /etc/security/audit_user file must be owned by root.\nThe /etc/security/audit_user file must be group-owned by root, sys, or bin.\nThe /etc/security/audit_user file must not have an extended ACL.\nIf the system is a firewall, ASET must be used on the system, and the firewall parameters must be set in /usr/aset/asetenv.\nThe Solaris system Automated Security Enhancement Tool (ASET) configurable parameters in the asetenv file must be correct.\nThe /usr/aset/userlist file must exist.\nThe /usr/aset/userlist file must be owned by root.\nThe /usr/aset/userlist file must be group-owned by root.\nThe /usr/aset/userlist file must have mode 0600 or less permissive.\nThe /usr/aset/userlist file must not have an extended ACL.\nThe root account must be the only account with GID of 0.\nThe /etc/zones directory, and its contents, must be owned by root.\nThe /etc/zones directory, and its contents, must be group-owned by root, sys, or bin.\nThe /etc/zones directory, and its contents, must not be group- or world-writable.\nThe /etc/zones directory, and its contents, must not have an extended ACL.\nThe inherit-pkg-dir zone option must be set to none or the system default list defined for sparse root zones.\nThe limitpriv zone option must be set to the vendor default or less permissive.\nThe physical devices must not be assigned to non-global zones.\nThe operating system must be a supported release.\nSystem security patches and updates must be installed and up-to-date.\nThe system clock must be synchronized continuously.\nThe time synchronization configuration file (such as /etc/ntp.conf) must be owned by root.\nThe time synchronization configuration file (such as /etc/ntp.conf) must be group-owned by root, bin, or sys.\nThe time synchronization configuration file (such as /etc/ntp.conf) must not have an extended ACL.\nThe system must not have unnecessary accounts.\nUIDs reserved for system accounts must not be assigned to non-system accounts.\nGIDs reserved for system accounts must not be assigned to non-system groups.\nAll GIDs referenced in the /etc/passwd file must be defined in the /etc/group file.\nThe system must not have accounts configured with blank or null passwords.\nThe system must require passwords to contain no more than three consecutive repeating characters.\nThe system must prevent the use of dictionary words for passwords.\nThe root user's home directory must not be the root directory (/).\nThe root account's home directory must not have an extended ACL.\nThe root accounts executable search path must contain only authorized paths.\nThe root account's library search path must be the system default and must contain only absolute paths.\nThe root account's list of preloaded libraries must be empty.\nThe root shell must be located in the / file system.\nAll files and directories must have a valid owner.\nAll files and directories must have a valid group-owner.\nAll network services daemon files must not have extended ACLs.\nAll manual page files must not have extended ACLs.\nNIS/NIS+/yp command files must not have extended ACLs.\nThe /etc/resolv.conf file must be owned by root.\nThe /etc/resolv.conf file must be group-owned by root, bin, or sys.\nThe /etc/resolv.conf file must have mode 0644 or less permissive.\nThe /etc/resolv.conf file must not have an extended ACL.\nThe /etc/hosts file must be owned by root.\nThe /etc/hosts file must be group-owned by root, bin, or sys.\nThe /etc/hosts file must have mode 0644 or less permissive.\nThe /etc/hosts file must not have an extended ACL.\nThe /etc/nsswitch.conf file must be owned by root.\nThe /etc/nsswitch.conf file must be group-owned by root, bin, or sys.\nThe /etc/nsswitch.conf file must have mode 0644 or less permissive.\nThe /etc/nsswitch.conf file must not have an extended ACL.\nThe /etc/passwd file must be owned by root.\nThe /etc/passwd file must be group-owned by root, bin, or sys.\nThe /etc/passwd file must not have an extended ACL.\nThe /etc/group file must be owned by root.\nThe /etc/group file must be group-owned by root, bin, or sys.\nThe /etc/group file must have mode 0644 or less permissive.\nThe /etc/group file must not have an extended ACL.\nThe /etc/shadow file (or equivalent) must be group-owned by root, bin, or sys.\nThe /etc/shadow file must not have an extended ACL.\nAll interactive users must be assigned a home directory in the /etc/passwd file.\nAll interactive user home directories defined in the /etc/passwd file must exist.\nThe /etc/group file must not contain any group password hashes.\nUser's home directories must not have extended ACLs.\nAll files and directories contained in interactive user's home directories must be owned by the home directory's owner.\nAll files and directories contained in user home directories must be group-owned by a group of which the home directory's owner is a member.\nAll files and directories contained in user's home directories must have mode 0750 or less permissive.\nAll files and directories contained in user home directories must not have extended ACLs.\nAll run control scripts must have mode 0755 or less permissive.\nAll run control scripts must have no extended ACLs.\nRun control scripts executable search paths must contain only authorized paths.\nRun control scripts lists of preloaded libraries must contain only authorized paths.\nRun control scripts lists of preloaded libraries must contain only authorized paths.\nRun control scripts must not execute world-writable programs or scripts.\nAll system start-up files must be owned by root.\nAll system start-up files must be group-owned by root, sys, or bin.\nSystem start-up files must only execute programs owned by a privileged UID or an application.\nAll global initialization files must not have extended ACLs.\nSkeleton files must not have extended ACLs.\nAll skeleton files and directories (typically in /etc/skel) must be owned by root.\nAll skeleton files (typically in /etc/skel) must be group-owned by root, bin, or sys.\nAll global initialization files executable search paths must contain only authorized paths.\nGlobal initialization files library search paths must contain only authorized paths.\nGlobal initialization files lists of preloaded libraries must contain only authorized paths.\nAll local initialization files must be owned by the user or root.\nAll local initialization files must have mode 0740 or less permissive.\nLocal initialization files must not have extended ACLs.\nAll local initialization files executable search paths must contain only authorized paths.\nLocal initialization files library search paths must contain only authorized paths.\nLocal initialization files lists of preloaded libraries must contain only authorized paths.\nUser start-up files must not execute world-writable programs.\nThe .rhosts, .shosts, hosts.equiv, shosts.equiv, /etc/passwd, /etc/shadow, and/or /etc/group files must not contain a plus (+) without defining entries for NIS+ netgroups.\nAll .rhosts, .shosts, or host.equiv files must only contain trusted host-user pairs.\nThere must be no .rhosts, .shosts, hosts.equiv, or shosts.equiv files on the system.\nAll .rhosts, .shosts, .netrc, or hosts.equiv files must be accessible by only root or the owner.\nThe .rhosts file must not be supported in PAM.\nThe /etc/shells (or equivalent) file must exist.\nAll shells referenced in /etc/passwd must be listed in the /etc/shells file, except any shells specified for the purpose of preventing logins.\nAll shell files must be owned by root or bin.\nAll shell files must be group-owned by root, bin, or sys.\nAll shell files must have mode 0755 or less permissive.\nAll shell files must not have extended ACLs.\nDevice files and directories must only be writable by users with a system account or as configured by the vendor.\nDevice files used for backup must only be readable and/or writable by root or the backup user.\nAudio devices must not have extended ACLs.\nAudio devices must be owned by root.\nAudio devices must be group-owned by root, sys, or bin.\nThe owner, group owner, mode, ACL, and location of files with the setuid bit set must be documented using site-defined procedures.\nThe owner, group-owner, mode, ACL, and location of files with the setgid bit set must be documented using site-defined procedures.\nPublic directories must be the only world-writable directories and world-writable files must be located only in public directories.\nThe sticky bit must be set on all public directories.\nAll public directories must be group-owned by root or an application group.\nThe system and user default umask must be 077.\nAudit logs must be rotated daily.\nAccess to the cron utility must be controlled using the cron.allow and/or cron.deny file(s).\nThe cron.allow file must have mode 0600 or less permissive.\nThe cron.allow file must not have an extended ACL.\nCron must not execute group-writable or world-writable programs.\nCron must not execute programs in, or subordinate to, world-writable directories.\nCrontabs must be owned by root or the crontab creator.\nCrontab files must be group-owned by root, sys, or the crontab creator's primary group.\nDefault system accounts (with the exception of root) must not be listed in the cron.allow file or must be included in the cron.deny file, if cron.allow does not exist.\nCrontab files must have mode 0600 or less permissive.\nCrontab files must not have extended ACLs.\nCron and crontab directories must have mode 0755 or less permissive.\nCron and crontab directories must not have extended ACLs.\nCron and crontab directories must be owned by root or bin.\nCron and crontab directories must be group-owned by root, sys, or bin.\nThe cron log files must not have extended ACLs.\nThe cron.deny file must not have an extended ACL.\nThe cron.allow file must be owned by root, bin, or sys.\nThe at.allow file must not have an extended ACL.\nThe cron.allow file must be group-owned by root, bin, or sys.\nThe at.deny file must have mode 0600 or less permissive.\nThe at.deny file must not have an extended ACL.\nThe cron.deny file must be owned by root, bin, or sys.\nThe cron.deny file must be group-owned by root, bin, or sys.\nThe at.deny file must not be empty if it exists.\nDefault system accounts (with the exception of root) must not be listed in the at.allow file or must be included in the at.deny file if the at.allow file does not exist.\nThe \"at\" daemon must not execute group-writable or world-writable programs.\nThe \"at\" daemon must not execute programs in, or subordinate to, world-writable directories.\nThe \"at\" directory must not have an extended ACL.\nThe \"at\"  directory must be owned by root, bin, or sys.\nThe \"at\" directory must be group-owned by root, bin, or sys.\nThe at.allow file must be owned by root, bin, or sys.\nThe at.allow file must be group-owned by root, bin, or sys.\nThe at.deny file must be owned by root, bin, or sys.\nThe at.deny file must be group-owned by root, bin, or sys.\nProcess core dumps must be disabled unless needed.\nThe system must be configured to store any process core dumps in a specific, centralized directory.\nThe centralized process core dump data directory must be owned by root.\nThe centralized process core dump data directory must be group-owned by root, bin, or sys.\nThe centralized process core dump data directory must have mode 0700 or less permissive.\nThe centralized process core dump data directory must not have an extended ACL.\nKernel core dumps must be disabled unless needed.\nThe kernel core dump data directory must be owned by root.\nThe kernel core dump data directory must be group-owned by root.\nThe kernel core dump data directory must have mode 0700 or less permissive.\nThe kernel core dump data directory must not have an extended ACL.\nThe system must implement non-executable program stacks.\nThe system must use initial TCP sequence numbers most resistant to sequence number guessing attacks.\nThe system must not forward IPv4 source-routed packets.\nTCP backlog queue sizes must be set appropriately.\nThe system must not process ICMP timestamp requests.\nThe system must not respond to ICMPv4 echoes sent to a broadcast address.\nThe system must not respond to ICMP timestamp requests sent to a broadcast address.\nThe system must not apply reversed source routing to TCP responses.\nThe system must prevent local applications from generating source-routed packets.\nThe system must not accept source-routed IPv4 packets.\nProxy ARP must not be enabled on the system.\nThe system must ignore IPv4 ICMP redirect messages.\nThe system must not send IPv4 ICMP redirects.\nA separate file system must be used for user home directories (such as /home or equivalent).\nThe system must use a separate file system for the system audit data path.\nThe system must use a separate filesystem for /tmp (or equivalent).\nThe root file system must employ journaling or another mechanism ensuring file system consistency.\nAll local file systems must employ journaling or another mechanism ensuring file system consistency.\nThe inetd.conf file must be group-owned by root, bin, or sys.\nThe inetd.conf file must not have extended ACLs.\nThe services file must be group-owned by root, bin, or sys.\nThe services file must not have an extended ACL.\nThe system must not have the finger service active.\nThe hosts.lpd file (or equivalent) must not contain a \"+\" character.\nThe hosts.lpd (or equivalent) file must not have an extended ACL.\nThe traceroute command owner must be root.\nThe traceroute command must be group-owned by sys, bin, or root.\nThe traceroute file must not have an extended ACL.\nAdministrative accounts must not run a web browser, except as needed for local service administration.\nThe alias file must not have an extended ACL.\nFiles executed through a mail aliases file must be group-owned by root, bin, or sys, and must reside within a directory group-owned by root, bin, or sys.\nFiles executed through a mail aliases file must not have extended ACLs.\nSendmail logging must not be set to less than nine in the sendmail.cf file.\nThe SMTP service log file must not have an extended ACL.\nThe SMTP service must not have the EXPN feature active.\nThe SMTP service must not have the VRFY feature active.\nThe Sendmail service must not have the wizard backdoor active.\nMail relaying must be restricted.\nUnencrypted FTP must not be used on the system.\nAnonymous FTP must not be active on the system unless authorized.\nIf the system is an anonymous FTP server, it must be isolated to the DMZ network.\nThe ftpusers file must be group-owned by root, bin, or sys.\nThe ftpusers file must not have an extended ACL.\nAnonymous FTP accounts must not have a functional shell.\nThe anonymous FTP account must be configured to use chroot or a similarly isolated environment.\nAll FTP users must have a default umask of 077.\nThe TFTP daemon must operate in secure mode which provides access only to a single directory on the host file system.\nAny active TFTP daemon must be authorized and approved in the system accreditation package.\nAny X Windows host must write .Xauthority files.\nAll .Xauthority files must have mode 0600 or less permissive.\nThe .Xauthority files must not have extended ACLs.\nX displays must not be exported to the world.\n.Xauthority or X*.hosts (or equivalent) file(s) must be used to restrict access to the X server.\nThe .Xauthority utility must only permit access to authorized hosts.\nSNMP communities, users, and passphrases must be changed from the default.\nManagement Information Base (MIB) files must not have extended ACLs.\nThe snmpd.conf files must be owned by root.\nThe snmpd.conf file must be group-owned by root, sys, or bin.\nThe snmpd.conf file must not have an extended ACL.\nThe /etc/syslog.conf file must have mode 0640 or less permissive.\nThe /etc/syslog.conf file must not have an extended ACL.\nThe /etc/syslog.conf file must be owned by root.\nThe /etc/syslog.conf file must be group-owned by root, bin, or sys.\nThe system must only use remote syslog servers (log hosts) justified and documented using site-defined procedures.\nThe SSH daemon must only listen on management network addresses unless authorized for uses other than management.\nThe SSH daemon must be configured to not use Cipher-Block Chaining (CBC) ciphers.\nThe SSH client must be configured to not use CBC-based ciphers.\nThe SSH daemon must restrict login ability to specific users and/or groups.\nThe SSH public host key files must have mode 0644 or less permissive.\nThe SSH private host key files must have mode 0600 or less permissive.\nThe SSH daemon must not permit GSSAPI authentication unless needed.\nThe SSH client must not permit GSSAPI authentication unless needed.\nThe SSH daemon must perform strict mode checking of home directory configuration files.\nThe SSH daemon must not allow rhosts RSA authentication.\nThe SSH daemon must not allow compression or must only allow compression after successful authentication.\nThe SSH daemon must be configured for IP filtering.\nThe system must be configured with a default gateway for IPv4 if the system uses IPv4, unless the system is a router.\nThe system must be configured with a default gateway for IPv6 if the system uses IPv6, unless the system is a router.\nA system used for routing must not run other network services or applications.\nThe system must not be running any routing protocol daemons, unless the system is a router.\nThe NFS export configuration file must be owned by root.\nThe NFS export configuration file must be group-owned by root, bin, or sys.\nThe NFS export configuration file must have mode 0644 or less permissive.\nThe NFS exports configuration file must not have an extended ACL.\nAll NFS-exported system files and system directories must be owned by root.\nAll NFS exported system files and system directories must be group-owned by root, bin, or sys.\nThe system's NFS export configuration must not have the sec option set to none (or equivalent); additionally, the default authentication must not to be set to none.\nThe NFS server must not allow remote root access.\nThe nosuid option must be enabled on all NFS client mounts.\nThe smb.conf file must be owned by root.\nThe smb.conf file must be group-owned by root, bin, or sys.\nThe smb.conf file must not have an extended ACL.\nThe smbpasswd file must be owned by root.\nThe smbpasswd file must be group-owned by root.\nThe smbpasswd file must not have an extended ACL.\nThe smb.conf file must use the hosts option to restrict access to Samba.\nSamba must be configured to use an authentication mechanism other than \"share.\"\nSamba must be configured to use encrypted passwords.\nSamba must be configured to not allow guest access to shares.\nThe /etc/news/hosts.nntp file must not have an extended ACL.\nThe /etc/news/hosts.nntp.nolimit file must not have an extended ACL.\nThe /etc/news/nnrp.access file must not have an extended ACL.\nThe /etc/news/passwd.nntp file must not have an extended ACL.\nFiles in /etc/news must be owned by root.\nThe files in /etc/news must be group-owned by root.\nNIS maps must be protected through hard-to-guess domain names.\nThe system must use a virus scan program.\nThe system must not have 6to4 enabled.\nThe system must not have IP tunnels configured.\nThe DHCP client must be disabled if not needed.\nThe system must ignore IPv6 ICMP redirect messages.\nThe system must not send IPv6 ICMP redirects.\nThe system must use an appropriate reverse-path filter for IPv6 network traffic, if the system uses IPv6.\nThe system must not forward IPv6 source-routed packets.\nThe system must not respond to ICMPv6 echo requests sent to a broadcast address.\nIf the system is using LDAP for authentication or account information the LDAP client configuration file must have mode 0600 or less permissive.\nIf the system is using LDAP for authentication or account information, the LDAP configuration file must be owned by root.\nIf the system is using LDAP for authentication or account information, the LDAP configuration file must be group-owned by root, bin, or sys.\nIf the system is using LDAP for authentication or account information, the /etc/ldap.conf (or equivalent) file must not have an extended ACL.\nIf the system is using LDAP for authentication or account information, the TLS certificate authority file and/or directory (as appropriate) must be owned by root.\nIf the system is using LDAP for authentication or account information, the TLS certificate authority file and/or directory (as appropriate) must be group-owned by root, bin, or sys.\nIf the system is using LDAP for authentication or account information, the TLS certificate authority file and/or directory (as appropriate) must have mode 0644 (0755 for directories) or less permissive.\nAutomated file system mounting tools must not be enabled unless needed.\nThe system must have USB disabled unless needed.\nThe system must have USB Mass Storage disabled unless needed.\nThe system must have IEEE 1394 (Firewire) disabled unless needed.\nThe system must employ a local firewall.\nThe system must be configured to only boot from the system boot device.\nIf the system boots from removable media, it must be stored in a safe or similarly secured container.\nX11 forwarding for SSH must be disabled.\nThe sshd server must bind the X11 forwarding server to the loopback address.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "22c279bb-1d75-4c01-adb1-f93ace501131",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "fdcf36df-0c76-4c1e-80c3-108d981b08e3",
+                "description": "Any NIS+ server must be operating at security level 2.\nThe Reliable Datagram Sockets (RDS) protocol must be disabled or not installed unless required.\nThe Transparent Inter-Process Communication (TIPC) protocol must be disabled or not installed.",
+                "control-id": "cm-7"
+              },
+              {
+                "uuid": "75758724-cc29-4062-85b5-68c47d489f4d",
+                "description": "The system must not be configured for network bridging.\nNetwork analysis tools must not be installed.\nThe SMTP service must not have a uudecode alias active.\nThe Samba Web Administration Tool (SWAT) must be restricted to the local host or require SSL.\nDefault system accounts must be disabled or removed.\nInetd and xinetd must be disabled or removed if no network services utilizing them are enabled.\nThe portmap or rpcbind service must not be installed unless needed.\nThe rshd service must not be installed.\nThe rlogind service must not be installed.\nThe rexec daemon must not be running.\nThe rexecd service must not be installed.\nX Window System connections that are not required must be disabled.\nThe system must not have the UUCP service active.\nThe SNMP service must use only SNMPv3 or its successors.\nIf the system is a Network Management System (NMS) server, it must only run the NMS and any software required by the NMS.\nThe system must not have any peer-to-peer file-sharing application installed.\nThe system must not run Samba unless needed.\nThe system must not run an Internet Network News (INN) server.\nThe system must not use UDP for NIS/NIS+.\nThe Network Information System (NIS) protocol must not be used.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "54bf1988-5157-4cf9-943a-169e899723f1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "50153ae5-3744-4034-9004-75c112e6c0e8",
+                "description": "Removable media, remote file systems, and any file system that does not contain approved setuid files must be mounted with the \"nosuid\" option.",
+                "control-id": "cm-7.2"
+              }
+            ]
+          },
+          {
+            "uuid": "8ef9ff01-f68c-41a2-b58f-6bdbaf037a79",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.",
+            "implemented-requirements": [
+              {
+                "uuid": "17a5c589-c356-4512-8913-2477b309cdd9",
+                "description": "All accounts on the system must have unique user or account names.\nAll accounts must be assigned unique User Identification Numbers (UIDs).\nThe NFS anonymous UID and GID must be configured to values that have no permissions.",
+                "control-id": "ia-2"
+              }
+            ]
+          },
+          {
+            "uuid": "fbe75f46-a0bc-40ad-bbab-52f4044af599",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "03fc4807-9e4e-49ff-9581-b50baf5ebbe3",
+                "description": "The system, if capable, must be configured to require the use of a CAC, PIV compliant hardware token, or Alternate Logon Token (ALT) for authentication.",
+                "control-id": "ia-2.4"
+              }
+            ]
+          },
+          {
+            "uuid": "090a94b0-21e2-4341-9777-1e49b3a7dcb9",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.5.",
+            "implemented-requirements": [
+              {
+                "uuid": "79d4b8d6-aacf-4a3c-8469-b2a327e110e5",
+                "description": "Direct logins must not be permitted to shared, default, application, or utility accounts.\nThe system must restrict the ability to switch to the root user to members of a defined group.\nThe system must prevent the root account from directly logging in except from the system console.\nThe root account must not be used for direct logins.\nThe system must not permit root logins using remote access programs such as SSH.",
+                "control-id": "ia-2.5"
+              }
+            ]
+          },
+          {
+            "uuid": "c940ab42-a8cc-41e6-a75b-3878379739cd",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-2.8.",
+            "implemented-requirements": [
+              {
+                "uuid": "01c59059-2c7f-4283-ba2c-eb772153fc1c",
+                "description": "The SSH daemon must be configured to only use the SSHv2 protocol.",
+                "control-id": "ia-2.8"
+              }
+            ]
+          },
+          {
+            "uuid": "c0ca30b0-6dee-4da0-8f58-130338b35134",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-5.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "708aea25-c360-4a6a-a1f1-9359c8518a12",
+                "description": "Users must not be able to change passwords more than once every 24 hours.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "c4b07e09-1d7f-460e-a60a-b48196057e74",
+                "description": "The system must require passwords contain a minimum of 15 characters.\nThe system must enforce compliance of the entire password during authentication.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "957b3551-a7fe-4fee-b675-64048aa41b31",
+                "description": "The system must require passwords to contain at least one uppercase alphabetic character.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "2cce2e9b-aaa9-4d27-a4a3-3a0420c16f76",
+                "description": "The system must require passwords to contain at least one numeric character.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "c7b8128b-18f0-442a-973d-efdd82a0c98c",
+                "description": "User passwords must be changed at least every 60 days.\nAll non-interactive/automated processing account passwords must be changed at least once per year or be locked.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "c8bc2fa4-6491-4e63-b4b9-1b8800f08cdb",
+                "description": "The password hashes stored on the system must have been generated using a FIPS 140-2 approved cryptographic hashing algorithm.\nThe /etc/passwd file must not contain password hashes.\nThere must be no .netrc files on the system.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "54aba99f-8029-4cf0-9c2e-2211a7daa96f",
+                "description": "The system must require at least eight characters be changed between the old and new passwords during a password change.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "4a0bb96d-5df8-4b7c-8884-7ecbcb373a80",
+                "description": "The system must require passwords to contain at least one special character.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "7784aafb-299b-4791-a172-c285015f51a0",
+                "description": "The system must prohibit the reuse of passwords within five iterations.",
+                "control-id": "ia-5.1"
+              },
+              {
+                "uuid": "6de0a3f8-f1ce-4c81-9a22-a68bf3240da3",
+                "description": "Root passwords must never be passed over a network in clear text form.\nThe telnet daemon must not be running.\nThe SSH client must be configured to only use the SSHv2 protocol.",
+                "control-id": "ia-5.1"
+              }
+            ]
+          },
+          {
+            "uuid": "7137313d-c61c-49f3-92dd-26b374445725",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement ia-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "80ffa2ad-dca4-4d20-a6b9-6cb27012df14",
+                "description": "The system must use a FIPS 140-2 approved cryptographic hashing algorithm for generating account password hashes.",
+                "control-id": "ia-7"
+              }
+            ]
+          },
+          {
+            "uuid": "eab6a07b-1807-4246-8294-e3d838c7c148",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sa-10.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "a0a03102-235b-40a0-9aa3-0693ad16fb74",
+                "description": "The system package management tool must be used to verify system software periodically.",
+                "control-id": "sa-10.1"
+              }
+            ]
+          },
+          {
+            "uuid": "43f000b6-9ecc-499d-9d0d-f97292e2d0df",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-8.",
+            "implemented-requirements": [
+              {
+                "uuid": "f9f889cf-81e8-488a-bddc-da39d8f485a8",
+                "description": "Wireless network adapters must be disabled.",
+                "control-id": "sc-8"
+              }
+            ]
+          },
+          {
+            "uuid": "e7e409f9-9318-4f71-a0fa-efdfaf6780b1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-2.2.",
+            "implemented-requirements": [
+              {
+                "uuid": "6dc81f03-ab25-4779-84f0-08c4b2f03142",
+                "description": "The system must have a host-based intrusion detection tool installed.\nThe system package management tool must not automatically obtain updates.",
+                "control-id": "si-2.2"
+              }
+            ]
+          },
+          {
+            "uuid": "38d6a408-6c2c-4f7e-8765-a7a634825a50",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-4.7.",
+            "implemented-requirements": [
+              {
+                "uuid": "ee23bf3c-29a3-42f7-83de-c5b1ce6acf02",
+                "description": "The system vulnerability assessment tool, host-based intrusion detection tool, and file integrity tool must notify the SA and the IAO of a security breach or a suspected security breach.",
+                "control-id": "si-4.7"
+              }
+            ]
+          },
+          {
+            "uuid": "7fc50e11-eb52-4df8-ba7c-e2d177d6129c",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "65ba0ae8-2733-4ee0-b5d4-388d370344fe",
+                "description": "The file integrity tool must be configured to verify ACLs.\nThe file integrity tool must be configured to verify extended attributes.",
+                "control-id": "si-6"
+              }
+            ]
+          },
+          {
+            "uuid": "76a368bf-e17d-44bd-8452-ca7d51b63c5b",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement si-11.",
+            "implemented-requirements": [
+              {
+                "uuid": "9ee49db6-df38-456e-acc1-dd2d1a663238",
+                "description": "System log files must have mode 0640 or less permissive.\nSystem log files must not have extended ACLs, except as needed to support authorized software.",
+                "control-id": "si-11"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

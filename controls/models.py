@@ -11,6 +11,7 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
 from simple_history.models import HistoricalRecords
+from simple_history.utils import bulk_update_with_history
 from jsonfield import JSONField
 from natsort import natsorted
 
@@ -394,6 +395,7 @@ class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, Request
                 user={"id": user.id, "username": user.username}
             )
             return False
+
     def remove_all_permissions_from_user(self, user):
         try:
             current_permissions = get_user_perms(user, self)
@@ -417,6 +419,7 @@ class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, Request
                 user={"id": user.id, "username": user.username}
             )
             return False
+
     def get_permissible_users(self):
         return get_users_with_perms(self, attach_perms=True)
 
@@ -596,6 +599,70 @@ class Element(auto_prefetch.Model, TagModelMixin, AppointmentModelMixin, Request
             smt_copy.id = None
             smt_copy.save()
         return e_copy
+
+    @transaction.atomic
+    def synch_consuming_systems_implementation_statements(self):
+        """
+        Force update all Element's consuming systems' control implementation statements to be the same
+        as the Element's control implementation prototype statements
+        """
+
+        # get Element's consuming_systems
+        consuming_systems = self.consuming_systems()
+        # get Element's control_implementation_prototype statements
+        element_prototype_smts = self.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
+        # track system control implementation statements touched via synchronization (whether changed or not)
+        total_system_smts_updated = 0
+        consuming_systems_updated = []
+        # loop through Element's control_implementation_prototype statements
+        for prototype_smt in element_prototype_smts:
+            # find the consuming systems' control implementation statements to be updated with current control_implementation_prototype
+            system_smts_to_update = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name, prototype_id=prototype_smt.id)
+            # track updated smts for bulk update
+            system_smts_updated = []
+            # determine list of all consuming systems to be updated
+            consuming_systems_to_update = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name, prototype_id=prototype_smt.id).values('consumer_element')
+
+            # consuming systems that have a statement that has been removed from the producing Element
+
+            # update the related control_implementation statements
+            for smt in system_smts_to_update:
+
+                # update the system if not already synced with prototype
+                # TODO: improve Statement.protype_synched() to check pid, status, etc
+                if smt.prototype_synched == STATEMENT_NOT_SYNCHED:
+                    smt.body = prototype_smt.body
+                    smt.pid = prototype_smt.pid
+                    # smt.status = prototype_smt.status
+                    # TODO: add changelog
+                    # TODO: log change
+                    # record a reason for the change in simple_history
+                    smt._change_reason = 'Forced synchronization with library component statement'
+                    system_smts_updated.append(smt)
+            # bulk save the changes and update simple_history records to reduce database calls
+            bulk_update_with_history(system_smts_updated, Statement, ['body'], batch_size=500)
+            total_system_smts_updated += len(system_smts_updated)
+
+            # add this prototype smt to any consuming system not currently having a child smt
+            # determine which consuming systems are missing the prototype smt
+            consuming_systems_missing_smt = [cs for cs in consuming_systems if cs not in consuming_systems_to_update]
+            for cs in consuming_systems_missing_smt:
+                # add statement to consuming system's root element
+                prototype_smt.create_system_control_smt_from_component_prototype_smt(cs.root_element.id)
+                total_system_smts_updated =+ 1
+
+        # remove any statements deleted from element in consuming systems
+        # by searching through consuming systems's to delete orphaned statements
+        # associated with the this element
+        for consuming_system in consuming_systems:
+            consumed_smts = consuming_system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name, producer_element=self)
+            for consumed_smt in consumed_smts:
+                if consumed_smt.prototype_synched == STATEMENT_ORPHANED:
+                    # delete statement
+                    consumed_smt.delete()
+                    total_system_smts_updated =+ 1
+                    # TODO: add count for deleted smt
+        return total_system_smts_updated
 
     @property
     def selected_controls_oscal_ctl_ids(self):

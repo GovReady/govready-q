@@ -1,0 +1,1446 @@
+{
+    "catalog": {
+      "id": "87c23925-4a47-447b-aef0-b9faee597444",
+      "groups": [
+        {
+          "id": "ap",
+          "class": "family",
+          "title": "Authority and Purpose",
+          "controls": [
+            {
+              "id": "ap-1",
+              "class": "CNSSI-Privacy",
+              "title": "Authority To Collect",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "AP-1"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ap-1"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ap-1_smt",
+                  "name": "statement",
+                  "prose": "The organization determines and documents the legal authority that permits the collection, use, maintenance, and sharing of personally identifiable information (PII), either generally or in support of a specific program or information system need."
+                }
+              ]
+            },
+            {
+              "id": "ap-2",
+              "class": "CNSSI-Privacy",
+              "title": "Purpose Specification",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "AP-2"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ap-2"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ap-2_smt",
+                  "name": "statement",
+                  "prose": "The organization describes the purpose(s) for which personally identifiable information (PII) is collected, used, maintained, and shared in its privacy notices."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ar",
+          "class": "family",
+          "title": "Accountability, Audit, and Risk Management",
+          "controls": [
+            {
+              "id": "ar-1",
+              "class": "CNSSI-Privacy",
+              "title": "Governance And Privacy Program",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "AR-1"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ar-1"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ar-1_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "ar-1_smt.a",
+                      "name": "item",
+                      "prose": "Appoints a Senior Agency Official for Privacy (SAOP)/Chief Privacy Officer (CPO) accountable for developing, implementing, and maintaining an organization-wide governance and privacy program to ensure compliance with all applicable laws and regulations regarding the collection, use, maintenance, sharing, and disposal of personally identifiable information (PII) by programs and information systems;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ar-1_smt.b",
+                      "name": "item",
+                      "prose": "Monitors federal privacy laws and policy for changes that affect the privacy program;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ar-1_smt.c",
+                      "name": "item",
+                      "prose": "Allocates [Assignment: organization-defined allocation of budget and staffing] sufficient resources to implement and operate the organization-wide privacy program;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "c."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ar-1_smt.d",
+                      "name": "item",
+                      "prose": "Develops a strategic organizational privacy plan for implementing applicable privacy controls, policies, and procedures;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "d."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ar-1_smt.e",
+                      "name": "item",
+                      "prose": "Develops, disseminates, and implements operational privacy policies and procedures that govern the appropriate privacy and security controls for programs, information systems, or technologies involving PII; and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "e."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ar-1_smt.f",
+                      "name": "item",
+                      "prose": "Updates privacy plan, policies, and procedures at least biennially.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "f."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ar-2",
+              "class": "CNSSI-Privacy",
+              "title": "Privacy Impact And Risk Assessment",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "AR-2"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ar-2"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ar-2_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "ar-2_smt.a",
+                      "name": "item",
+                      "prose": "Documents and implements a privacy risk management process that assesses privacy risk to individuals resulting from the collection, sharing, storing, transmitting, use, and disposal of personally identifiable information (PII); and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ar-2_smt.b",
+                      "name": "item",
+                      "prose": "Conducts Privacy Impact Assessments (PIAs) for information systems, programs, or other activities that pose a privacy risk in accordance with applicable law, OMB policy, or any existing organizational policies and procedures.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ar-3",
+              "class": "CNSSI-Privacy",
+              "title": "Privacy Requirements For Contractors And Service Providers",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "AR-3"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ar-3"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ar-3_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "ar-3_smt.a",
+                      "name": "item",
+                      "prose": "Establishes privacy roles, responsibilities, and access requirements for contractors and service providers; and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ar-3_smt.b",
+                      "name": "item",
+                      "prose": "Includes privacy requirements in contracts and other acquisition-related documents.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ar-4",
+              "class": "CNSSI-Privacy",
+              "title": "Privacy Monitoring And Auditing",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "AR-4"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ar-4"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ar-4_smt",
+                  "name": "statement",
+                  "prose": "The organization monitors and audits privacy controls and internal privacy policy continuously to ensure effective implementation. "
+                }
+              ]
+            },
+            {
+              "id": "ar-5",
+              "class": "CNSSI-Privacy",
+              "title": "Privacy Awareness And Training",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "AR-5"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ar-5"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ar-5_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "ar-5_smt.a",
+                      "name": "item",
+                      "prose": "Develops, implements, and updates a comprehensive training and awareness strategy aimed at ensuring that personnel understand privacy responsibilities and procedures;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ar-5_smt.b",
+                      "name": "item",
+                      "prose": "Administers basic privacy training at least annually and targeted, role-based privacy training for personnel having responsibility for personally identifiable information (PII) or for activities that involve PII at least annually; and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ar-5_smt.c",
+                      "name": "item",
+                      "prose": "Ensures that personnel certify (manually or electronically) acceptance of responsibilities for privacy requirements at least annually.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "c."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ar-6",
+              "class": "CNSSI-Privacy",
+              "title": "Privacy Reporting",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "AR-6"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ar-6"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ar-6_smt",
+                  "name": "statement",
+                  "prose": "The organization develops, disseminates, and updates reports to the Office of Management and Budget (OMB), Congress, and other oversight bodies, as appropriate, to demonstrate accountability with specific statutory and regulatory privacy program mandates, and to senior management and other personnel with responsibility for monitoring privacy program progress and compliance."
+                }
+              ]
+            },
+            {
+              "id": "ar-7",
+              "class": "CNSSI-Privacy",
+              "title": "Privacy-Enhanced System Design And Development",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "AR-7"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ar-7"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ar-7_smt",
+                  "name": "statement",
+                  "prose": "The organization designs information systems to support privacy by automating privacy controls."
+                }
+              ]
+            },
+            {
+              "id": "ar-8",
+              "class": "CNSSI-Privacy",
+              "title": "Accounting Of Disclosures",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "AR-8"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ar-8"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ar-8_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "ar-8_smt.a",
+                      "name": "item",
+                      "prose": "Keeps an accurate accounting of disclosures of information held in each system of records under its control, including:",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a.",
+                          "parts": [
+                            {
+                              "id": "ar-8_smt.a.1",
+                              "name": "item",
+                              "prose": "Date, nature, and purpose of each disclosure of a record; and",
+                              "properties": [
+                                {
+                                  "name": "label",
+                                  "value": "1."
+                                }
+                              ]
+                            },
+                            {
+                              "id": "ar-8_smt.a.2",
+                              "name": "item",
+                              "prose": "Name and address of the person or agency to which the disclosure was made;",
+                              "properties": [
+                                {
+                                  "name": "label",
+                                  "value": "2."
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ar-8_smt.b",
+                      "name": "item",
+                      "prose": "Retains the accounting of disclosures for the life of the record or five years after the disclosure is made, whichever is longer; and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ar-8_smt.c",
+                      "name": "item",
+                      "prose": "Makes the accounting of disclosures available to the person named in the record upon request.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "c."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "di",
+          "class": "family",
+          "title": "Data Quality and Integrity",
+          "controls": [
+            {
+              "id": "di-1",
+              "class": "CNSSI-Privacy",
+              "title": "Data Quality",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "DI-1"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "di-1"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "di-1_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "di-1_smt.a",
+                      "name": "item",
+                      "prose": "Confirms to the greatest extent practicable upon collection or creation of personally identifiable information (PII), the accuracy, relevance, timeliness, and completeness of that information;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "di-1_smt.b",
+                      "name": "item",
+                      "prose": "Collects PII directly from the individual to the greatest extent practicable;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "di-1_smt.c",
+                      "name": "item",
+                      "prose": "Checks for, and corrects as necessary, any inaccurate or outdated PII used by its programs or systems at least every 180 days; and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "c."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "di-1_smt.d",
+                      "name": "item",
+                      "prose": "Issues guidelines ensuring and maximizing the quality, utility, objectivity, and integrity of disseminated information.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "d."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dm",
+          "class": "family",
+          "title": "Data Minimization and Retention",
+          "controls": [
+            {
+              "id": "dm-1",
+              "class": "CNSSI-Privacy",
+              "title": "Minimization Of Personally Identifiable Information",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "DM-1"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "dm-1"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "dm-1_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "dm-1_smt.a",
+                      "name": "item",
+                      "prose": "Identifies the minimum personally identifiable information (PII) elements that are relevant and necessary to accomplish the legally authorized purpose of collection;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "dm-1_smt.b",
+                      "name": "item",
+                      "prose": "Limits the collection and retention of PII to the minimum elements identified for the purposes described in the notice and for which the individual has provided consent; and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "dm-1_smt.c",
+                      "name": "item",
+                      "prose": "Conducts an initial evaluation of PII holdings and establishes and follows a schedule for regularly reviewing those holdings at least annually to ensure that only PII identified in the notice is collected and retained, and that the PII continues to be necessary to accomplish the legally authorized purpose.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "c."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "dm-2",
+              "class": "CNSSI-Privacy",
+              "title": "Data Retention And Disposal",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "DM-2"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "dm-2"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "dm-2_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "dm-2_smt.a",
+                      "name": "item",
+                      "prose": "Retains each collection of personally identifiable information (PII) for in accordance with National Archives and Records Administration (NARA) to fulfill the purpose(s) identified in the notice or as required by law;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "dm-2_smt.b",
+                      "name": "item",
+                      "prose": "Disposes of, destroys, erases, and/or anonymizes the PII, regardless of the method of storage, in accordance with a NARA-approved record retention schedule and in a manner that prevents loss, theft, misuse, or unauthorized access; and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "dm-2_smt.c",
+                      "name": "item",
+                      "prose": "Uses [Assignment: organization-defined techniques or methods] to ensure secure deletion or destruction of PII (including originals, copies, and archived records).",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "c."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "dm-3",
+              "class": "CNSSI-Privacy",
+              "title": "Minimization Of PII Used In Testing, Training, And Research",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "DM-3"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "dm-3"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "dm-3_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "dm-3_smt.a",
+                      "name": "item",
+                      "prose": "Develops policies and procedures that minimize the use of personally identifiable information (PII) for testing, training, and research; and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "dm-3_smt.b",
+                      "name": "item",
+                      "prose": "Implements controls to protect PII used for testing, training, and research.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ip",
+          "class": "family",
+          "title": "Individual Participation and Redress",
+          "controls": [
+            {
+              "id": "ip-1",
+              "class": "CNSSI-Privacy",
+              "title": "Consent",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "IP-1"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ip-1"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ip-1_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "ip-1_smt.a",
+                      "name": "item",
+                      "prose": "Provides means, where feasible and appropriate, for individuals to authorize the collection, use, maintaining, and sharing of personally identifiable information (PII) prior to its collection;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ip-1_smt.b",
+                      "name": "item",
+                      "prose": "Provides appropriate means for individuals to understand the consequences of decisions to approve or decline the authorization of the collection, use, dissemination, and retention of PII;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ip-1_smt.c",
+                      "name": "item",
+                      "prose": "Obtains consent, where feasible and appropriate, from individuals prior to any new uses or disclosure of previously collected PII; and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "c."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ip-1_smt.d",
+                      "name": "item",
+                      "prose": "Ensures that individuals are aware of and, where feasible, consent to all uses of PII not initially described in the public notice that was in effect at the time the organization collected the PII.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "d."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ip-2",
+              "class": "CNSSI-Privacy",
+              "title": "Individual Access",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "IP-2"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ip-2"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ip-2_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "ip-2_smt.a",
+                      "name": "item",
+                      "prose": "Provides individuals the ability to have access to their personally identifiable information (PII) maintained in its system(s) of records;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ip-2_smt.b",
+                      "name": "item",
+                      "prose": "Publishes rules and regulations governing how individuals may request access to records maintained in a Privacy Act system of records;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ip-2_smt.c",
+                      "name": "item",
+                      "prose": "Publishes access procedures in System of Records Notices (SORNs); and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "c."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ip-2_smt.d",
+                      "name": "item",
+                      "prose": "Adheres to Privacy Act requirements and OMB policies and guidance for the proper processing of Privacy Act requests.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "d."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ip-3",
+              "class": "CNSSI-Privacy",
+              "title": "Redress",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "IP-3"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ip-3"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ip-3_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "ip-3_smt.a",
+                      "name": "item",
+                      "prose": "Provides a process for individuals to have inaccurate personally identifiable information (PII) maintained by the organization corrected or amended, as appropriate; and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ip-3_smt.b",
+                      "name": "item",
+                      "prose": "Establishes a process for disseminating corrections or amendments of the PII to other authorized users of the PII, such as external information-sharing partners and, where feasible and appropriate, notifies affected individuals that their information has been corrected or amended.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ip-4",
+              "class": "CNSSI-Privacy",
+              "title": "Complaint Management",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "ip-4"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ip-4"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ip-4_smt",
+                  "name": "statement",
+                  "prose": "The organization implements a process for receiving and responding to complaints, concerns, or questions from individuals about the organizational privacy practices. "
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "se",
+          "class": "family",
+          "title": "Security",
+          "controls": [
+            {
+              "id": "se-1",
+              "class": "CNSSI-Privacy",
+              "title": "Inventory Of Personally Identifiable Information",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "SE-1"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "se-1"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "se-1_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "se-1_smt.a",
+                      "name": "item",
+                      "prose": "Establishes, maintains, and updates at least annually an inventory that contains a listing of all programs and information systems identified as collecting, using, maintaining, or sharing personally identifiable information (PII); and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "se-1_smt.b",
+                      "name": "item",
+                      "prose": "Provides each update of the PII inventory to the CIO or information security official at least annually to support the establishment of information security requirements for all new or modified information systems containing PII.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "se-2",
+              "class": "CNSSI-Privacy",
+              "title": "Privacy Incident Response",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "SE-1"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "se-2"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "se-2_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "se-2_smt.a",
+                      "name": "item",
+                      "prose": "Develops and implements a Privacy Incident Response Plan; and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "se-2_smt.b",
+                      "name": "item",
+                      "prose": "Provides an organized and effective response to privacy incidents in accordance with the organizational Privacy Incident Response Plan.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "tr",
+          "class": "family",
+          "title": "Transparency",
+          "controls": [
+            {
+              "id": "tr-1",
+              "class": "CNSSI-Privacy",
+              "title": "Privacy Notice",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "TR-1"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "tr-1"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "tr-1_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "tr-1_smt.a",
+                      "name": "item",
+                      "prose": "Provides effective notice to the public and to individuals regarding: (i) its activities that impact privacy, including its collection, use, sharing, safeguarding, maintenance, and disposal of personally identifiable information (PII); (ii) authority for collecting PII; (iii) the choices, if any, individuals may have regarding how the organization uses PII and the consequences of exercising or not exercising those choices; and (iv) the ability to access and have PII amended or corrected if necessary;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ],
+                      "parts": [
+                        {
+                          "id": "tr-1_smt.a.i",
+                          "name": "item",
+                          "prose": "its activities that impact privacy, including its collection, use, sharing, safeguarding, maintenance, and disposal of personally identifiable information (PII);",
+                          "properties": [
+                            {
+                              "name": "label",
+                              "value": "i."
+                            }
+                          ]
+                        },
+                        {
+                          "id": "tr-1_smt.a.ii",
+                          "name": "item",
+                          "prose": "authority for collecting PII;",
+                          "properties": [
+                            {
+                              "name": "label",
+                              "value": "ii."
+                            }
+                          ]
+                        },
+                        {
+                          "id": "tr-1_smt.a.iii",
+                          "name": "item",
+                          "prose": "the choices, if any, individuals may have regarding how the organization uses PII and the consequences of exercising or not exercising those choices; and",
+                          "properties": [
+                            {
+                              "name": "label",
+                              "value": "iii."
+                            }
+                          ]
+                        },
+                        {
+                          "id": "tr-1_smt.a.iv",
+                          "name": "item",
+                          "prose": "the ability to access and have PII amended or corrected if necessary;",
+                          "properties": [
+                            {
+                              "name": "label",
+                              "value": "iv."
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "tr-1_smt.b",
+                      "name": "item",
+                      "prose": "Describes:",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ],
+                      "parts": [
+                        {
+                          "id": "tr-1_smt.b.i",
+                          "name": "item",
+                          "prose": "the PII the organization collects and the purpose(s) for which it collects that information;",
+                          "properties": [
+                            {
+                              "name": "label",
+                              "value": "i."
+                            }
+                          ]
+                        },
+                        {
+                          "id": "tr-1_smt.b.ii",
+                          "name": "item",
+                          "prose": "how the organization uses PII internally;",
+                          "properties": [
+                            {
+                              "name": "label",
+                              "value": "ii."
+                            }
+                          ]
+                        },
+                        {
+                          "id": "tr-1_smt.b.iii",
+                          "name": "item",
+                          "prose": "whether the organization shares PII with external entities, the categories of those entities, and the purposes for such sharing;",
+                          "properties": [
+                            {
+                              "name": "label",
+                              "value": "iii."
+                            }
+                          ]
+                        },
+                        {
+                          "id": "tr-1_smt.b.iv",
+                          "name": "item",
+                          "prose": "whether individuals have the ability to consent to specific uses or sharing of PII and how to exercise any such consent;",
+                          "properties": [
+                            {
+                              "name": "label",
+                              "value": "iv."
+                            }
+                          ]
+                        },
+                        {
+                          "id": "tr-1_smt.b.v",
+                          "name": "item",
+                          "prose": "how individuals may obtain access to PII; and (vi) how the PII will be protected; and",
+                          "properties": [
+                            {
+                              "name": "label",
+                              "value": "v."
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "tr-1_smt.c",
+                      "name": "item",
+                      "prose": "Revises its public notices to reflect changes in practice or policy that affect PII or changes in its activities that impact privacy, before or as soon as practicable after the change.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "c."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "tr-2",
+              "class": "CNSSI-Privacy",
+              "title": "System Of Records Notices And Privacy Act Statements",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "TR-2"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "tr-2"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "tr-2_smt",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "tr-2_smt.a",
+                      "name": "item",
+                      "prose": " Publishes System of Records Notices (SORNs) in the Federal Register, subject to required oversight processes, for systems containing personally identifiable information (PII);",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "tr-2_smt.b",
+                      "name": "item",
+                      "prose": "Keeps SORNs current; and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "tr-2_smt.c",
+                      "name": "item",
+                      "prose": "Includes Privacy Act Statements on its forms that collect PII, or on separate forms that can be retained by individuals, to provide additional formal notice to individuals from whom the information is being collected.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "c."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "tr-2.1",
+              "class": "CNSSI-Privacy",
+              "title": "Public Website Publication",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "TR-2.1"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "tr-2.1"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "tr-2.1_smt",
+                  "name": "statement",
+                  "prose": "The organization publishes SORNs on its public website."
+                }
+              ]
+            },
+            {
+              "id": "tr-3",
+              "class": "CNSSI-Privacy",
+              "title": "Dissemination Of Privacy Program Information",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "TR-3"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "tr-3"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "tr-3",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "tr-3_smt.a",
+                      "name": "item",
+                      "prose": "Ensures that the public has access to information about its privacy activities and is able to communicate with its Senior Agency Official for Privacy (SAOP)/Chief Privacy Officer (CPO); and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "tr-3_smt.b",
+                      "name": "item",
+                      "prose": "Ensures that its privacy practices are publicly available through organizational websites or otherwise.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ul",
+          "class": "family",
+          "title": "Use Limitation",
+          "controls": [
+            {
+              "id": "ul-1",
+              "class": "CNSSI-Privacy",
+              "title": "Internal Use",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "UL-1"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ul-1"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ul-1_smt",
+                  "name": "statement",
+                  "prose": "The organization uses personally identifiable information (PII) internally only for the authorized purpose(s) identified in the Privacy Act and/or in public notices."
+                }
+              ]
+            },
+            {
+              "id": "ul-2",
+              "class": "CNSSI-Privacy",
+              "title": "Information Sharing With Third Parties",
+              "properties": [
+                {
+                  "name": "label",
+                  "value": "UL-2"
+                },
+                {
+                  "name": "sort-id",
+                  "value": "ul-2"
+                }
+              ],
+              "parts": [
+                {
+                  "id": "ul-2",
+                  "name": "statement",
+                  "prose": "The organization:",
+                  "parts": [
+                    {
+                      "id": "ul-2_smt.a",
+                      "name": "item",
+                      "prose": "Shares personally identifiable information (PII) externally, only for the authorized purposes identified in the Privacy Act and/or described in its notice(s) or for a purpose that is compatible with those purposes;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "a."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ul-2_smt.b",
+                      "name": "item",
+                      "prose": "Where appropriate, enters into Memoranda of Understanding, Memoranda of Agreement, Letters of Intent, Computer Matching Agreements, or similar agreements, with third parties that specifically describe the PII covered and specifically enumerate the purposes for which the PII may be used;",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "b."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ul-2_smt.c",
+                      "name": "item",
+                      "prose": "Monitors, audits, and trains its staff on the authorized sharing of PII with third parties and on the consequences of unauthorized use or sharing of PII; and",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "c."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ul-2_smt.d",
+                      "name": "item",
+                      "prose": "Evaluates any proposed new instances of sharing PII with third parties to assess whether the sharing is authorized and whether additional or new public notice is required.",
+                      "properties": [
+                        {
+                          "name": "label",
+                          "value": "d."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "links": [
+          {
+            "rel": "canonical",
+            "href": "https://www.cnss.gov/CNSS/openDoc.cfm?KPB0HT+OAJP+rWgpFDjP1A==",
+            "text": "Committee on National Security Systems publication"
+          }
+        ],
+        "roles": [
+          {
+            "id": "creator",
+            "title": "Document creator"
+          },
+          {
+            "id": "contact",
+            "title": "Contact"
+          }
+        ],
+        "title": "CNSSI 1253 Appendix F, Attachment 6, Privacy Overlay, April 20, 2015",
+        "parties": [
+          {
+            "id": "CNSSI",
+            "org": {
+              "org-name": "Committee on National Security Systems",
+              "addresses": [
+                {
+                  "city": "city",
+                  "state": "state",
+                  "postal-code": "postal-code",
+                  "postal-address": "postal address"
+                }
+              ],
+              "email-addresses": "user@email.gov"
+            }
+          }
+        ],
+        "version": "2013-08-27",
+        "properties": [
+          {
+            "name": "keywords",
+            "value": "privacy overlay CNSSI 1253"
+          }
+        ],
+        "last-modified": "2020-02-04T14:55:16.051-05:00",
+        "oscal-version": "1.0.0-milestone3",
+        "responsible-parties": {
+          "contact": {
+            "party-ids": "CNSSI"
+          },
+          "creator": {
+            "party-ids": "CNSSI"
+          }
+        }
+      }
+    }
+  }

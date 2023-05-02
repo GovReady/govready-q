@@ -1,0 +1,107 @@
+{
+  "component-definition": {
+    "uuid": "86a1a0ff-84e3-4471-9120-9aa32ac34435",
+    "metadata": {
+      "title": "Microsoft OneDrive",
+      "last-modified": "2022-06-12T20:17:23",
+      "version": "2022-06-12T20:17:23",
+      "oscal-version": "1.0.0",
+      "parties": [
+        {
+          "uuid": "bb251389-edc4-442c-a960-5be1f6ef3228",
+          "type": "organization",
+          "name": "Example Organization"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "e6c6c502-b634-4d2f-a43c-df345f81950e",
+        "type": "software",
+        "title": "Microsoft OneDrive",
+        "description": "Microsoft OneDrive based on DOD SRG/STIG.",
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "bb251389-edc4-442c-a960-5be1f6ef3228"
+            ]
+          }
+        ],
+        "props": [],
+        "control-implementations": [
+          {
+            "uuid": "cc8d502a-85b5-4912-9013-800c3daada3e",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-6.",
+            "implemented-requirements": [
+              {
+                "uuid": "286844de-1a71-417e-aaad-bd30e6501986",
+                "description": "OneDrive must only allow synchronizing of accounts for DoD organization instances.",
+                "control-id": "cm-6"
+              }
+            ]
+          },
+          {
+            "uuid": "8797de8f-6255-49c1-afb8-bf04ecb6ffb1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement cm-7.",
+            "implemented-requirements": [
+              {
+                "uuid": "255cb2cf-634c-45c0-b2bd-1005cd3c2880",
+                "description": "The use of personal accounts for OneDrive synchronization must be disabled.",
+                "control-id": "cm-7"
+              }
+            ]
+          },
+          {
+            "uuid": "af12fb98-8e38-412a-b32e-0d58e3a00a42",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-18.1.",
+            "implemented-requirements": [
+              {
+                "uuid": "3154380e-a7d5-468c-8240-f7cc43fdddb0",
+                "description": "Add-on Management functionality must be allowed.\nLinks that invoke instances of Internet Explorer from within an Office product must be blocked.",
+                "control-id": "sc-18.1"
+              }
+            ]
+          },
+          {
+            "uuid": "e9a183fa-d0c7-4a53-b911-dab998d36905",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-18.3.",
+            "implemented-requirements": [
+              {
+                "uuid": "d9530618-f038-4688-9354-533efd4a800d",
+                "description": "Enabling IE Bind to Object functionality must be present.\nScripted Window Security must be enforced.\nProtection from zone elevation must be enforced.",
+                "control-id": "sc-18.3"
+              },
+              {
+                "uuid": "3d08ffc5-7d9e-4509-a2dc-6b5da709f08b",
+                "description": "File Downloads must be configured for proper restrictions.",
+                "control-id": "sc-18.3"
+              }
+            ]
+          },
+          {
+            "uuid": "dcb18ca9-5cf5-4fe7-b6d8-91b3e67f43c1",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "This is a partial implementation of the NIST_SP-800-53_rev4 catalog, focusing on the control enhancement sc-18.4.",
+            "implemented-requirements": [
+              {
+                "uuid": "e9ee1160-fbe2-4bae-9bcd-5cd1a155a3cc",
+                "description": "Disabling of user name and password syntax from being used in URLs must be enforced.\nSaved from URL mark to assure Internet zone processing must be enforced.\nNavigation to URLs embedded in Office products must be blocked.",
+                "control-id": "sc-18.4"
+              },
+              {
+                "uuid": "58995aa4-d06c-497e-887c-3aa50142824f",
+                "description": "ActiveX Installs must be configured for proper restriction.",
+                "control-id": "sc-18.4"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
