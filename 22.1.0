@@ -1,0 +1,11 @@
+Collecting pyopenssl
+  Using cached pyOpenSSL-23.1.1-py3-none-any.whl (57 kB)
+Collecting cryptography<41,>=38.0.0 (from pyopenssl)
+  Downloading cryptography-40.0.2-cp36-abi3-manylinux_2_28_x86_64.whl (3.7 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.7/3.7 MB 3.5 MB/s eta 0:00:00
+Collecting cffi>=1.12 (from cryptography<41,>=38.0.0->pyopenssl)
+  Using cached cffi-1.15.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (441 kB)
+Collecting pycparser (from cffi>=1.12->cryptography<41,>=38.0.0->pyopenssl)
+  Using cached pycparser-2.21-py2.py3-none-any.whl (118 kB)
+Installing collected packages: pycparser, cffi, cryptography, pyopenssl
+Successfully installed cffi-1.15.1 cryptography-40.0.2 pycparser-2.21 pyopenssl-23.1.1
