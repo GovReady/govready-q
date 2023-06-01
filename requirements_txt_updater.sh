@@ -39,6 +39,9 @@ function run_update() {
 	safety check -r ${FILE_BASE}.txt
 }
 
+echo ___RUN UPDATE REQUIREMENTS____
 run_update requirements
+echo ___RUN UPDATE REQUIREMENTS MYSQL____
 run_update requirements_mysql
+echo ___RUN UPDATE REQUIREMENTS UTIL____
 run_update requirements_util

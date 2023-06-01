@@ -1789,7 +1789,9 @@ pyyaml==6.0 \
     #   openapi-spec-validator
     #   python-frontmatter
     #   rtyaml
-requests
+requests==2.28.2 \
+    --hash=sha256:64299f4909223da747622c030b781c0d7811e359c37124b4bd368fb8c6518baa \
+    --hash=sha256:98b1b2782e3c6c4904938b84c0eb932721069dfdb9134313beff7c83c2df24bf
     # via
     #   coreapi
     #   django-allauth
@@ -2128,7 +2130,9 @@ uritemplate==4.1.1 \
     # via
     #   coreapi
     #   drf-yasg
-urllib3[secure,socks]
+urllib3[secure,socks]==1.26.15 \
+    --hash=sha256:8a388717b9476f934a21484e8c8e61875ab60644d29b9b39e11e4b9dc1c6b305 \
+    --hash=sha256:aa751d169e23c7479ce47a0cb0da579e3ede798f994f5816a74e4f4500dcea42
     # via
     #   -r requirements.in
     #   requests
@@ -2445,4 +2449,4 @@ setuptools==67.6.0 \
     #   josepy
     #   safety
     #   zope-event
-    #   zope-interface 
+    #   zope-interface
