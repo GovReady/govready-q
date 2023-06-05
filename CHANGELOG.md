@@ -1,5 +1,13 @@
 GovReady-Q Release Notes
 ========================
+v0.12.2-multi (June 5, 2023)
+---------------------------
+
+* Add CMMC version2 catalog and baseline level 1 & 2
+* Updated VERSION and CHANGELOG.md
+
+**Laurasia changes**
+
 v0.12.1-dev (April 19, 2023)
 ---------------------------
 
