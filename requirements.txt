@@ -1,5 +1,4 @@
---index-url https://nexus.svcs.lab/repository/pypi-proxy/simple/
---extra-index-url https://pypi.org/simple/
+--index-url https://pypi.org/simple/
 
 anyio==3.7.0 \
     --hash=sha256:275d9973793619a5374e1c89a4f4ad3f4b0a5510a2b5b939444bee8f4c4d37ce \
