@@ -1,5 +1,13 @@
 GovReady-Q Release Notes
 ========================
+v0.12.2-multi (June 5, 2023)
+---------------------------
+
+* Add CMMC version2 catalog and baseline level 1 & 2
+* Updated VERSION and CHANGELOG.md
+
+**Laurasia changes**
+
 v0.12.1-dev (April 19, 2023)
 ---------------------------
 
@@ -2065,12 +2073,12 @@ v0.9.1.20 (May 31, 2020)
     # Legacy version local/environment.json file using deprecated host, https parameter
 
     {
-       "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
-       "host": "localhost:8000",
-       "https": false,
-       "debug": false,
-       "secret-key": "long_random_string_here",
-       ...
+      "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+      "host": "localhost:8000",
+      "https": false,
+      "debug": false,
+      "secret-key": "long_random_string_here",
+      ...
     }
 ```
 

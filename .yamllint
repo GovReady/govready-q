@@ -1,0 +1,13 @@
+---
+extends: default
+rules:
+  document-end: disable
+  document-start: disable
+  comments:
+    min-spaces-from-content: 1
+  line-length:
+    level: warning
+    max: 500
+
+yaml-files:
+  - '*.yaml'
