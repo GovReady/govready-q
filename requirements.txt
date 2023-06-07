@@ -1,4 +1,4 @@
---index-url https://pypi.org/simple/
+--index-url https://nexus.svcs.lab/repository/pypi-proxy/simple/
 
 anyio==3.7.0 \
     --hash=sha256:275d9973793619a5374e1c89a4f4ad3f4b0a5510a2b5b939444bee8f4c4d37ce \
@@ -26,7 +26,6 @@ attrs==23.1.0 \
     # via
     #   compliance-trestle
     #   jsonschema
-    #   openapi-schema-validator
     #   outcome
     #   trio
 backports-zoneinfo==0.2.1 \
@@ -469,9 +468,9 @@ cycler==0.11.0 \
     --hash=sha256:3a27e95f763a428a739d2add979fa7494c912a32c17c4c38c4d5f082cad165a3 \
     --hash=sha256:9c87405839a19696e837b3b818fed3f5f69f16f1eec1a1ad77e043dcea9c772f
     # via matplotlib
-datamodel-code-generator[http]==0.19.0 \
-    --hash=sha256:082c8c0f72b42953fb04bd4a4e76bbd7b1cd4c07f3000fbd019c9a196e2bdf6b \
-    --hash=sha256:13ca59944d6aa347dd5f674f90f5d7f1004626a65ecade6c364b90c1a47ef499
+datamodel-code-generator[http]==0.20.0 \
+    --hash=sha256:84dc7d6ae64ca67834b414c107adf3510f46a474ac21467a683aca0a4a8f0806 \
+    --hash=sha256:fdb8dc18fd3a5d2c92e5e3ac473c5a48f3540066941e56fd947d2975cfebd281
     # via compliance-trestle
 defusedxml==0.7.1 \
     --hash=sha256:1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69 \
@@ -811,9 +810,7 @@ importlib-metadata==6.6.0 \
 importlib-resources==5.12.0 \
     --hash=sha256:4be82589bf5c1d7999aedf2a45159d10cb3ca4f19b2271f8792bc8e6da7b22f6 \
     --hash=sha256:7b1deeebbf351c7578e09bf2f63fa2ce8b5ffec296e0d349139d43cca061a81a
-    # via
-    #   -r requirements.in
-    #   openapi-spec-validator
+    # via -r requirements.in
 inflect==5.6.2 \
     --hash=sha256:aadc7ed73928f5e014129794bbac03058cca35d0a973a5fc4eb45c7fa26005f9 \
     --hash=sha256:b45d91a4a28a4e617ff1821117439b06eaa86e2a4573154af0149e9be6687238
@@ -1225,13 +1222,13 @@ oauthlib==3.2.2 \
     --hash=sha256:8139f29aac13e25d502680e9e19963e83f16838d48a0d71c287fe40e7067fbca \
     --hash=sha256:9859c40929662bec5d64f34d01c99e093149682a3f38915dc0655d5a633dd918
     # via requests-oauthlib
-openapi-schema-validator==0.3.4 \
-    --hash=sha256:34fbd14b7501abe25e64d7b4624a9db02cde1a578d285b3da6f34b290cdf0b3a \
-    --hash=sha256:7cf27585dd7970b7257cefe48e1a3a10d4e34421831bdb472d96967433bc27bd
+openapi-schema-validator==0.4.4 \
+    --hash=sha256:79f37f38ef9fd5206b924ed7a6f382cea7b649b3b56383c47f1906082b7b9015 \
+    --hash=sha256:c573e2be2c783abae56c5a1486ab716ca96e09d1c3eab56020d1dc680aa57bf8
     # via openapi-spec-validator
-openapi-spec-validator==0.5.1 \
-    --hash=sha256:4a8aee1e45b1ac868e07ab25e18828fe9837baddd29a8e20fdb3d3c61c8eea3d \
-    --hash=sha256:8248634bad1f23cac5d5a34e193ab36e23914057ca69e91a1ede5af75552c465
+openapi-spec-validator==0.5.2 \
+    --hash=sha256:1f8db08ecbcf4ec8c558d65b65b3b7b428f81da6642f2f163e992ae3e17b229c \
+    --hash=sha256:ebed7f1c567780859402ad64b128e17f519d15f605f1b41d1e9a4a7a1690be07
     # via datamodel-code-generator
 openpyxl==3.1.2 \
     --hash=sha256:a6f5977418eff3b2d5500d54d9db50c8277a368436f4e4f8ddb1be3422870184 \
@@ -1768,7 +1765,6 @@ pyyaml==6.0 \
     # via
     #   bandit
     #   jsonschema-spec
-    #   openapi-spec-validator
     #   python-frontmatter
     #   rtyaml
 requests==2.31.0 \
@@ -1787,6 +1783,10 @@ requests-oauthlib==1.3.1 \
     --hash=sha256:2577c501a2fb8d05a304c09d090d6e47c306fef15809d102b327cf8364bddab5 \
     --hash=sha256:75beac4a47881eeb94d5ea5d6ad31ef88856affe2332b9aafb52c6452ccf0d7a
     # via django-allauth
+rfc3339-validator==0.1.4 \
+    --hash=sha256:138a2abdf93304ad60530167e51d2dfb9549521a836871b88d7f4695d0022f6b \
+    --hash=sha256:24f6ec1eda14ef823da9e36ec7113124b39c04d50a4d3d3a3c2859577e7791fa
+    # via openapi-schema-validator
 rfc5424-logging-handler==1.4.3 \
     --hash=sha256:9ae14073ef6d76d0c730ad6b6e3aeece841a6d413672d282876c0506dc097257 \
     --hash=sha256:eaba528e47fba3e2845d52d559885cbc27a37db42a9d265ea539b3b4452d3057
@@ -1957,6 +1957,7 @@ six==1.16.0 \
     #   orderedmultidict
     #   prance
     #   python-dateutil
+    #   rfc3339-validator
 smmap==5.0.0 \
     --hash=sha256:2aba19d6a040e78d8b09de5c57e96207b09ed71d8e55ce0959eeee6c8e190d94 \
     --hash=sha256:c840e62059cd3be204b0c9c9f74be2c09d5648eddd4580d9314c3ecde0b30936
