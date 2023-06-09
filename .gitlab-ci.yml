@@ -1,5 +1,122 @@
-# This file is a template, and might need editing before it works on your project.
+---
+variables:
+  PYTHONIOENCODING: "utf-8"
+  LDRNET_CERT: $LDRNET_CERT
+  UMBRELLA_CERT: $UMBRELLA_CERT
+
+default:
+  tags:
+    - docker
+
 include:
   - template: Jobs/SAST-IaC.gitlab-ci.yml
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+stages:
+  - lint
+  - test
+
+lint-terraform:
+  stage: lint
+  image:
+    name: hashicorp/terraform:latest
+    entrypoint: [""]
+  environment:
+    name: "Terraform Lint Check"
+  script:
+    - terraform fmt -check=true -diff=true -recursive
+  when: always
+  only:
+    - pushes
+    - merge_requests
+  tags:
+    - docker
+
+lint-editorconfig:
+  stage: lint
+  image: moskey71/eclint-lint:v1
+  script:
+    - make -f /Makefile eclint/lint
+  when: always
+  only:
+    - pushes
+    - merge_requests
+  tags:
+    - docker
+
+secret_detection:
+  tags:
+    - docker
+
+iac-sast:
+  tags:
+    - docker
+
+kics-iac-sast:
+  tags:
+    - docker
+
+sast:
+  tags:
+    - docker
+
+bandit-sast:
+  tags:
+    - docker
+
+brakeman-sast:
+  tags:
+    - docker
+
+eslint-sast:
+  tags:
+    - docker
+
+flawfinder-sast:
+  tags:
+    - docker
+
+kubesec-sast:
+  tags:
+    - docker
+
+gosec-sast:
+  tags:
+    - docker
+
+mobsf-android-sast:
+  tags:
+    - docker
+
+mobsf-ios-sast:
+  tags:
+    - docker
+
+nodejs-scan-sast:
+  tags:
+    - docker
+
+phpcs-security-audit-sast:
+  tags:
+    - docker
+
+pmd-apex-sast:
+  tags:
+    - docker
+
+security-code-scan-sast:
+  tags:
+    - docker
+
+semgrep-sast:
+  tags:
+    - docker
+
+sobelow-sast:
+  tags:
+    - docker
+
+spotbugs-sast:
+  tags:
+    - docker
