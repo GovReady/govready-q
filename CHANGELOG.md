@@ -1,6 +1,16 @@
 GovReady-Q Release Notes
 ========================
 
+v0.11.7 (June 11, 2023)
+---------------------------
+
+**Developer changes**
+
+* Upgrade Python libraries.
+* Upgrade NPM packages
+* NOTE: Selenium updated and many UI tests are curently failing.
+
+
 v0.11.6 (March 14, 2023)
 ---------------------------
 
