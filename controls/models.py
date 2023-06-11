@@ -94,7 +94,7 @@ class Statement(auto_prefetch.Model):
     change_log = models.JSONField(blank=True, null=True, help_text="JSON object representing changes to the statement")
     history = HistoricalRecords(cascade_delete_history=True)
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         indexes = [models.Index(fields=['producer_element'], name='producer_element_idx'), ]
         permissions = [('can_grant_smt_owner_permission', 'Grant a user statement owner permission'), ]
         ordering = ['producer_element__name', 'sid']
@@ -647,7 +647,7 @@ class ElementControl(auto_prefetch.Model, BaseModel):
     #       print("Implementation Statement")
     #       print(ec.get_flattened_impl_smt_as_dict())
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         unique_together = [('element', 'oscal_ctl_id', 'oscal_catalog_key')]
 
     def __str__(self):
@@ -1059,7 +1059,7 @@ class ElementCommonControl(auto_prefetch.Model, BaseModel):
                                          help_text="Catalog key from which catalog file can be derived (e.g., 'NIST_SP-800-53_rev4')",
                                          blank=True, null=True)
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         unique_together = [('element', 'common_control', 'oscal_ctl_id', 'oscal_catalog_key')]
 
     def __str__(self):
