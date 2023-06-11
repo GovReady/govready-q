@@ -142,7 +142,7 @@ jobs:
 
 
     # - run: coverage run --source='.' --branch -p manage.py test siteapp
-    # - run: coverage run --source='.' --branch -p manage.py test controls.tests
+    - run: coverage run --source='.' --branch -p manage.py test controls.tests
     - run: coverage run --source='.' --branch -p manage.py test siteapp.tests
     - run: coverage run --source='.' --branch -p manage.py test guidedmodules
     - run: coverage run --source='.' --branch -p manage.py test discussion
