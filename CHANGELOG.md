@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.11.8 (June 11, 2023)
+---------------------------
+
+**Developer changes**
+
+* Upgrade NPM packages
+
 v0.11.7 (June 11, 2023)
 ---------------------------
 
