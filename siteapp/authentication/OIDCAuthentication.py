@@ -1,7 +1,6 @@
 import time
 from urllib.parse import urlencode
 import json
-import requests
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
@@ -23,14 +22,14 @@ class OIDCAuth(OIDCAuthenticationBackend):
     def get_userinfo(self, access_token, id_token, payload):
         """Return user details dictionary. The id_token and payload are not used in
         the default implementation, but may be used when overriding this method"""
-        default_timeout = 15
+        import requests
         user_response = requests.get(
             self.OIDC_OP_USER_ENDPOINT,
             headers={
                 'Authorization': 'Bearer {0}'.format(access_token)
             },
             verify=self.get_settings('OIDC_VERIFY_SSL', True),
-            timeout=self.get_settings('OIDC_TIMEOUT', default_timeout),
+            timeout=self.get_settings('OIDC_TIMEOUT', 15),
             proxies=self.get_settings('OIDC_PROXY', None))
         user_response.raise_for_status()
         # LOGGER.warning(f"DEBUG (5) user_response, {type(user_response.text)}, {user_response.text}")
