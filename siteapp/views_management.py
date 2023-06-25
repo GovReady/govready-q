@@ -278,4 +278,5 @@ def import_control_catalog(request, *args):
     # user is authorized, run command
     result = management.call_command('import_control_catalog',catalog_key=catalog_key, catalog_file=catalog_file, baseline=baseline)
     html = f"<html><body><pre>manage.py import_control_catalog\n request.user.is_superuser: {request.user} {result} with args {params} userid is superuser: {user_id.is_superuser} </pre></body></html>"
+    # (OLD VERSION) html = f"<html><body><pre>manage.py listcomponents\n request.user.is_superuser: 333{request.user.is_superuser} {result}</pre></body></html>"
     return HttpResponse(html)

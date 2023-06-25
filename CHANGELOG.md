@@ -65,13 +65,51 @@ v0.11.4 (December 17, 2022)
 * Dynamically set Internet schme (http or https) for swagger interface to support proper URL strings in swagger.
 
 
+v0.11.7 (June 11, 2023)
+---------------------------
+
+**Developer changes**
+
+* Upgrade Python libraries.
+* Upgrade NPM packages
+* NOTE: Selenium updated and many UI tests are curently failing.
+
+
+v0.11.6 (March 14, 2023)
+---------------------------
+
+**Developer changes**
+
+* Upgrade Python libraries.
+
+**Developer changes**
+
+* Add siteapp.management_views as webhooks for calling Django management commands.
+
+
+v0.11.5 (March 2, 2023)
+---------------------------
+
+**Developer changes**
+
+* Upgrade Python libraries.
+* Update npm packages.
+
+
+v0.11.4 (December 17, 2022)
+---------------------------
+
+**Developer changes**
+
+* Dynamically set Internet schme (http or https) for swagger interface to support proper URL strings in swagger.
+
+
 v0.11.3 (December 10, 2022)
 ---------------------------
 
 **Developer changes**
 
 * Add processing for question actions targeted at system to handle `system/add_baseline/<value>` to add additional baseline set of controls to a system without deleting already assigned controls.
-
 
 v0.11.2 (December 10, 2022)
 ---------------------------

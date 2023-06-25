@@ -25,11 +25,12 @@ termcolor # MIT License
 xxhash # BSD License
 importlib-resources # Apache License
 pyinstrument==3.2.0 # BSD License
-cryptography==39.0.1 # LICENSE.APACHE or LICENSE.BSD
+cryptography==41.0.0 # LICENSE.APACHE or LICENSE.BSD
 pyopenssl==23.2.0 # Apache 2.0
 compliance-trestle==2.0.0 # OSI Approved :: Apache Software License
 markdown # As Is Custom License
 xlsxwriter # BSD 2-Clause License
+tomli==2.0.1 # MIT License
 
 jsonschema # MIT License
 filetype # MIT License
@@ -38,8 +39,6 @@ Django==3.2.19 # BSD License
 django-allauth # MIT License
 django-bootstrap3 # BSD 3-Clause License
 importlib-metadata>=1.7.0 # Apache License 2.0
-#importlib-metadata>=1.7.0,<2,>=0.12 # Apache License 2.0
-# importlib-metadata>=1.7,<2 for bandit 1.7 / stevedore 3.3, django-bootstrap3 14.2  +  ==any for importlib-resources 1.5, jsonschema 3.2  all Python<3.8
 django-notifications-hq==1.6 # MIT License
 jsonfield # MIT License
 dj_database_url # BSD License
