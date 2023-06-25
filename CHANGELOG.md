@@ -1,5 +1,69 @@
 GovReady-Q Release Notes
 ========================
+v0.12.2-multi (June 5, 2023)
+---------------------------
+
+* Add CMMC version2 catalog and baseline level 1 & 2
+* Updated VERSION and CHANGELOG.md
+
+**Laurasia changes**
+
+v0.12.1-dev (April 19, 2023)
+---------------------------
+
+**Laurasia changes**
+
+* Add new siteapp/management/commands to load default Laurasia SSP if it doesn't exist. This works
+around the problem of this feature in API.
+
+- Bulk update a component's statements across all systems 
+- Add JSIG and Privacy catalogs/baselines
+- Extended Django Webhooks and Management Commands
+  - load_app_template.py calls a compliance app template like JSIG_SSP
+  - set_baseline_controls.py sets compliance catalog baseline
+  - Add support for multiple overlays
+  - load_component_from_library.py places a Library Component into a target SSP
+  - import_control_catalog.py allows uploading a new control catalog source
+- Update python packages and pin urllib3
+- Add Laurasia JSIG questionnaire template and Appsource
+- Added support for printing SSP with multiple catalogs
+
+v0.11.6 (March 14, 2023)
+---------------------------
+
+**Developer changes**
+
+* Upgrade Python libraries.
+
+**Developer changes**
+* Add siteapp.management_views as webhooks for calling Django management commands.
+
+v0.11.5 (March 2, 2023)
+---------------------------
+
+**Developer changes**
+
+* Upgrade Python libraries.
+* Update npm packages.
+
+v0.12.0-dev (February 4, 2022)
+---------------------------
+
+**Developer changes**
+
+* Add API endpoint and Element (component) model method to force update all Element consuming systems's control implementation statements with library Elements content.
+* Add parameter createOSCAL API endpoint to indicate update existing components.
+* Upgrade Python libraries.
+* Update NPM libraries.
+
+
+v0.11.4 (December 17, 2022)
+---------------------------
+
+**Developer changes**
+
+* Dynamically set Internet schme (http or https) for swagger interface to support proper URL strings in swagger.
+
 
 v0.11.7 (June 11, 2023)
 ---------------------------
@@ -45,8 +109,7 @@ v0.11.3 (December 10, 2022)
 
 **Developer changes**
 
-* Add processing for question actions targeted at system to handle `system/add_baseline/<value>` to add additional baseline set of controls to a system without deleting already assigned controls.A
-
+* Add processing for question actions targeted at system to handle `system/add_baseline/<value>` to add additional baseline set of controls to a system without deleting already assigned controls.
 
 v0.11.2 (December 10, 2022)
 ---------------------------
@@ -2048,12 +2111,12 @@ v0.9.1.20 (May 31, 2020)
     # Legacy version local/environment.json file using deprecated host, https parameter
 
     {
-       "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
-       "host": "localhost:8000",
-       "https": false,
-       "debug": false,
-       "secret-key": "long_random_string_here",
-       ...
+      "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+      "host": "localhost:8000",
+      "https": false,
+      "debug": false,
+      "secret-key": "long_random_string_here",
+      ...
     }
 ```
 

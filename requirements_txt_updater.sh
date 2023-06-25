@@ -29,7 +29,7 @@ function run_update() {
 	# generate a requirements.txt file from scratch, and any unpinned
 	# packages will be pinned to the latest upstream version, and if we
 	# don't do the same here, the files won't match and the check will fail.)
-	pip-compile --generate-hashes --resolver=backtracking --allow-unsafe  --upgrade --output-file ${FILE_BASE}.txt --no-header ${FILE_BASE}.in
+	pip-compile -v --generate-hashes --resolver=backtracking --allow-unsafe  --upgrade --output-file ${FILE_BASE}.txt --no-header ${FILE_BASE}.in
 	# --allow-unsafe
 	#   prevents errors during `pip3 install -r requirements.txt`
 	#     by enabling pinning setuptools etc. dependencies
@@ -39,6 +39,9 @@ function run_update() {
 	safety check -r ${FILE_BASE}.txt
 }
 
+echo ___RUN UPDATE REQUIREMENTS____
 run_update requirements
-# run_update requirements_mysql
-# run_update requirements_util
+echo ___RUN UPDATE REQUIREMENTS MYSQL____
+run_update requirements_mysql
+echo ___RUN UPDATE REQUIREMENTS UTIL____
+run_update requirements_util
