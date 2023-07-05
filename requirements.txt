@@ -484,9 +484,9 @@ dj-database-url==2.0.0 \
     --hash=sha256:9c9e5f7224f62635a787e9cc3c6762c9be2b19541a21e3c08fa573bd01609b4b \
     --hash=sha256:a35a9f0f43775ca6f90d819dc456233ef7bcc76b47377d5d908b75c7eb320624
     # via -r requirements.in
-django==3.2.19 \
-    --hash=sha256:031365bae96814da19c10706218c44dff3b654cc4de20a98bd2d29b9bde469f0 \
-    --hash=sha256:21cc991466245d659ab79cb01204f9515690f8dae00e5eabde307f14d24d4d7d
+django==3.2.20 \
+    --hash=sha256:a477ab326ae7d8807dc25c186b951ab8c7648a3a23f9497763c37307a2b5ef87 \
+    --hash=sha256:dec2a116787b8e14962014bf78e120bba454135108e1af9e9b91ade7b2964c40
     # via
     #   -r requirements.in
     #   dj-database-url
@@ -541,7 +541,7 @@ django-model-utils==4.3.1 \
     --hash=sha256:2e2e4f13e4f14613134a9777db7ad4265f59a1d8f1384107bcaa3028fe3c87c1 \
     --hash=sha256:8c0b0177bab909a8635b602d960daa67e80607aa5469217857271a60726d7a4b
     # via django-notifications-hq
-django-notifications-hq==1.6.0 \
+django-notifications-hq==1.6 \
     --hash=sha256:debeb71b7076b08487b40bf07664d1cc43b9977c4480bbc969b30236dda7a461 \
     --hash=sha256:dfc6f8bd4034ceae91143bc3802ddfb6e276eaec90e63dd23e2584c052561576
     # via -r requirements.in
@@ -760,7 +760,9 @@ greenlet==2.0.2 \
     --hash=sha256:eff4eb9b7eb3e4d0cae3d28c283dc16d9bed6b193c2e1ace3ed86ce48ea8df19 \
     --hash=sha256:f82d4d717d8ef19188687aa32b8363e96062911e63ba22a0cff7802a8e58e5f1 \
     --hash=sha256:fc3a569657468b6f3fb60587e48356fe512c1754ca05a564f11366ac9e306526
-    # via gevent
+    # via
+    #   gevent
+    #   sqlalchemy
 gunicorn==20.1.0 \
     --hash=sha256:9dcc4547dbb1cb284accfb15ab5667a0e5d1881cc443e0677b4882a4067a807e \
     --hash=sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8

@@ -35,7 +35,7 @@ tomli==2.0.1 # MIT License
 jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages
-Django==3.2.19 # BSD License
+Django==3.2.20 # BSD License
 django-allauth # MIT License
 django-bootstrap3 # BSD 3-Clause License
 importlib-metadata>=1.7.0 # Apache License 2.0
