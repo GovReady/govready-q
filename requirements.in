@@ -20,7 +20,7 @@ graphviz # MIT License
 fs # BSD License
 PyGithub # LGPL License
 GitPython # BSD License
-Pygments==2.7.4 # BSD License
+Pygments==2.15.0 # BSD License
 termcolor # MIT License
 xxhash # BSD License
 importlib-resources # Apache License
