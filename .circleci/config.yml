@@ -15,7 +15,7 @@ workflows:
 jobs:
   security-checks:
     docker:
-      - image: cimg/python:3.8.12
+      - image: cimg/python:3.10.5
     steps:
       # Add .local/bin to PATH for utilities install by `pip install --user`.
       - run: echo 'export PATH=~/.local/bin:$PATH' >> $BASH_ENV
