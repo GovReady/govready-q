@@ -1,5 +1,3 @@
-# Ubuntu 20.04 focal-20210119
-# FROM ubuntu:focal-20210119
 # Ubuntu 22.04 jammy-20231004
 FROM ubuntu:jammy-20231004
 
@@ -38,11 +36,11 @@ RUN python3 -m pip install --upgrade setuptools
 
 ENV CHROME_VERSION "google-chrome-stable"
 RUN sed -i -- 's&deb http://deb.debian.org/debian jessie-updates main&#deb http://deb.debian.org/debian jessie-updates main&g' /etc/apt/sources.list \
-  && apt-get update && apt-get install wget -y
+  && apt-get install wget -y
 ENV CHROME_VERSION "google-chrome-stable"
 #RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
 #  && echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list \
-#  && apt-get update && apt-get -qqy install ${CHROME_VERSION:-google-chrome-stable}
+#  && apt-get -qqy install ${CHROME_VERSION:-google-chrome-stable}
 
 # Chromium for Headless Selenium tests
 #RUN wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip \

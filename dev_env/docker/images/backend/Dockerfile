@@ -1,12 +1,12 @@
-# Ubuntu 20.04 focal-20210119
-FROM ubuntu:focal-20210119
+# Ubuntu 22.04 jammy-20231004
+FROM ubuntu:jammy-20231004
 
 # Update package list.
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Set up the locale.
 RUN apt-get update && \
-  apt-get install -y locales openssh-sftp-server openssh-server xvfb libfontconfig libmariadbclient-dev && \
+  apt-get install -y locales openssh-sftp-server openssh-server xvfb libfontconfig && \
   echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
   dpkg-reconfigure locales && \
   update-locale LANG=en_US.UTF-8
@@ -18,25 +18,29 @@ RUN echo "root:root" | chpasswd && \
   mkdir /var/run/sshd
 
 # Set up the timezone.
-RUN apt-get update && apt-get install -y --no-install-recommends tzdata && \
+RUN apt-get install -y --no-install-recommends tzdata && \
   ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
   dpkg-reconfigure tzdata
 
 # Install GovReady-Q prerequisites.
-RUN apt-get update && apt-get -y install \
+RUN apt-get -y install \
   unzip git curl jq \
   python3 python3-pip \
   python3-yaml \
   graphviz pandoc \
-  gunicorn
+  gunicorn libmagic-dev
+
+# Set up tools
+RUN apt install -y build-essential
+RUN python3 -m pip install --upgrade setuptools
 
 ENV CHROME_VERSION "google-chrome-stable"
 RUN sed -i -- 's&deb http://deb.debian.org/debian jessie-updates main&#deb http://deb.debian.org/debian jessie-updates main&g' /etc/apt/sources.list \
-  && apt-get update && apt-get install wget -y
+  && apt-get install wget -y
 ENV CHROME_VERSION "google-chrome-stable"
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
   && echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list \
-  && apt-get update && apt-get -qqy install ${CHROME_VERSION:-google-chrome-stable}
+  && apt-get -qqy install ${CHROME_VERSION:-google-chrome-stable}
 
 # Chromium for Headless Selenium tests
 RUN wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip \
@@ -46,7 +50,7 @@ ENV DISPLAY=:99
 # Put the Python source code here.
 WORKDIR /usr/src/app
 
-RUN apt-get update && apt-get install -y wkhtmltopdf;
+RUN apt-get install -y wkhtmltopdf;
 
 # Upgrade pip to version 20.1+ - IMPORTANT
 RUN python3 -m pip install --upgrade pip

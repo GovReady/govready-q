@@ -8,12 +8,13 @@ v0.11.10 (Nov 11, 2023)
 **Developer changes**
 
 * Upgrade Backend docker image from ubuntu:focal-20210119 to ubuntu:jammy-20231004
+* Modification to docker image to install libmagic and and other changes
+* Reduce calls to update Ubuntu in Docker image doing in install
 * Upgrade to using Python 3.10.x
 * Upgrade Python Packages: Django (3.2.19 to 3.2.22), urllib3 (2.0.3 to 2.0.7), compliance-trestle (2.0.0 to 2.4.0), Pygments (2.7.4 to 2.16.1),  cryptography (41.0.0 to 41.0.5), and transitive packages
 * Add Python package +python-magic=
 * Remove  libmariadbclient from install in Docker file
 * Remove backports.zoneinfo
-* Reduce calls to update Ubuntu doing in install
 * Remove backports.zoneinfo==0.2.1 # Apache 2.0 from installs because using Python 3.10
 * Install Ubuntu libmagic library and python-magic package
 * Add 'allauth.account.middleware.AccountMiddleware', to settings.py MIDDLEWARE
