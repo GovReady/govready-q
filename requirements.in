@@ -4,10 +4,10 @@
 
 # Common Python Packages
 python-dateutil # Simplified BSD License
-Pillow>=8.3.2 # MIT-like License
+Pillow>=10.1.0 # MIT-like License
 Jinja2==3.0.3 # BSD License
 setuptools # MIT License
-urllib3==2.0.3 # MIT License
+urllib3==2.0.7 # MIT License
 
 # Less Common Python Packages
 html5lib # MIT License
@@ -20,14 +20,14 @@ graphviz # MIT License
 fs # BSD License
 PyGithub # LGPL License
 GitPython # BSD License
-Pygments==2.7.4 # BSD License
+Pygments==2.16.1 # BSD License
 termcolor # MIT License
 xxhash # BSD License
 importlib-resources # Apache License
 pyinstrument==3.2.0 # BSD License
-cryptography==41.0.0 # LICENSE.APACHE or LICENSE.BSD
+cryptography==41.0.5 # LICENSE.APACHE or LICENSE.BSD
 pyopenssl==23.2.0 # Apache 2.0
-compliance-trestle==2.0.0 # OSI Approved :: Apache Software License
+compliance-trestle==2.4.0 # OSI Approved :: Apache Software License
 markdown # As Is Custom License
 xlsxwriter # BSD 2-Clause License
 tomli==2.0.1 # MIT License
@@ -35,7 +35,7 @@ tomli==2.0.1 # MIT License
 jsonschema # MIT License
 filetype # MIT License
 # Common Django Packages
-Django==3.2.19 # BSD License
+Django==3.2.22 # BSD License
 django-allauth # MIT License
 django-bootstrap3 # BSD 3-Clause License
 importlib-metadata>=1.7.0 # Apache License 2.0
@@ -50,6 +50,7 @@ django-auto-prefetch # MIT License
 # Transitive dependencies made explicit
 sqlalchemy>=2.0.0b1 # MIT License
 pkgutil-resolve-name # MIT License
+python-magic==0.4.27 # MIT License
 
 # Logging
 JSON-log-formatter==0.2.0 # MIT License
@@ -62,6 +63,7 @@ djangorestframework-recursive==0.1.2 # ISC License
 drf-nested-routers==0.93.3 # Apache License 2.0
 mozilla-django-oidc==1.2.4 # Mozilla Public License Version 2.0
 
+
 # NLP
 # dataset # MIT License
 click # BSD License (BSD-3-Clause)
@@ -72,7 +74,6 @@ pandas # BSD License (BSD-3-Clause)
 Unidecode # GNU General Public License
 wordcloud # MIT License
 numpy>=1.23.0 # BSD 3-Clause "New" or "Revised" License
-backports.zoneinfo==0.2.1 # Apache 2.0
 
 # Python Packages Developed by GovReady and/or Josh
 rtyaml # CC0
